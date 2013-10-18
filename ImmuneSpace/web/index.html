@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Welcome to ImmuneSpace</title>
+
+<link rel="stylesheet" type="text/css" href="css/style.css" >
+<link rel="stylesheet" type="text/css" href="css/media.css" >
+<link rel="stylesheet" type="text/css" href="css/rotator.css">
+
+<script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="js/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="js/rotator.js"></script>
+<script type="text/javascript" src="js/form.js"></script>
+
+</head>
+
+<body>
+
+<div id="slideshow" class="page">
+
+    <!-- left -->
+    <div class="left">
+
+        <div class="slides">  
+            <ul>
+                <li id="slide-start"><img src="images/ring_start.png" width="364" height="364" /></li>  
+                <li id="slide-one"><img src="images/ring.png" width="364" height="364" /></li>
+                <li id="slide-two"><img src="images/ring2.png" width="364" height="364" /></li>
+                <li id="slide-three"><img src="images/ring3.png" width="364" height="364" /></li>
+                <li id="slide-four"><img src="images/ring4.png" width="364" height="364" /></li>
+            </ul>
+        </div>
+
+        <h2>Data Summary</h2>
+        <table>
+            <tr>
+                <td>Studies</td>
+                <td align="right">2</td>
+            </tr>
+            <tr>
+                <td>Subjects</td>
+                <td align="right">133</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td align="right">&nbsp;</td>
+            </tr>
+            <tr>
+                <td>ELISA Results</td>
+                <td align="right">85</td>
+            </tr>
+            <tr>
+                <td>ELISpot Results</td>
+                <td align="right">56</td>
+            </tr><tr>
+                <td>Flow Cytometry Results</td>
+                <td align="right">59</td>
+            </tr>
+            <tr>
+                <td>Gene Expression Results</td>
+                <td align="right">82</td>
+            </tr>
+            <tr>
+                <td>HAI Results</td>
+                <td align="right">60</td>
+            </tr>
+            
+        </table>  
+    </div>
+    <!-- /left -->
+    
+    
+    <!-- right -->
+    <div class="right">
+    
+        <img src="images/immunespace.png" width="484" height="36" alt="ImmuneSpace" />
+        <p class="tagline">Enabling integrative modeling of human immunological data</p> 
+        <p class="intro">The Human Immunology Project Consortium (HIPC) program, established in 2010 by the NIAID Division of Allergy, Immunology, and Transplantation, is a major <a id="one" href="#">collaborative effort</a> that is generating large amounts of <a id="two" href="#">cross-center and cross-assay data</a> &#8212; including high-dimensional data &#8212; to characterize the status of the immune system in diverse populations under both normal conditions and in response to stimuli. This large data problem has given birth to ImmuneSpace, a powerful <a id="three" href="#">data management and analysis engine</a> where datasets can be easily explored and analyzed using state-of-the-art <a id="four" href="#">computational tools</a>.</p>
+
+        <!-- content -->
+        <div class="content">
+    
+            <!-- news -->
+            <div class="news">
+
+                <h2>Recent   <span><script type="text/javascript">
+                    var monthNames = new Array(
+                        "January","February","March","April","May","June","July", 
+                        "August","September","October","November","December");
+                    var now = new Date();
+                    document.write(monthNames[now.getMonth()] + " " + 
+                    now.getDate() + ", " + now.getFullYear());
+                    </script></span></h2>
+                
+                <div class="news-text">
+                    <p><strong>Two new studies available<br>
+                    </strong>Data and analyses results are available for two new ImmPort studies.</p>
+
+                    <p><strong>HIPC face-to-face meeting Sept 10-11, 2013<br>
+                    </strong>
+Please mark your calendar for the next HIPC meeting. Agenda to be posted soon.                </p>
+                </div>
+                
+            </div>
+            <!-- /news -->
+    
+            <!-- signin -->
+            <div class="signin">
+                <h2>Sign In <!-- <input name="" type="button" value="Request Account"> --></h2>
+                <form name="login" method="POST" action="https://www.immunespace.org/login/home/login.view" id="loginForm">
+                    <ul>
+                        <li>
+                            <label style="font-size: 90%;">User Name</label>
+                        </li>
+                        <li>
+                            <input id="email" type="text" name="email" value="">
+                        </li>
+                        <br/>
+                        <li>
+                            <label style="font-size: 90%;">Password</label>
+                        </li>
+                        <li>
+                            <input id="password" type="password" name="password" onkeydown="if (event.keyCode == 13) document.getElementById('submitButton').click();">
+                            <a class="forgotpw" href="https://www.immunespace.org/login/home/resetPassword.view?">?</a>
+                        </li>
+                        <li>
+                            <a id="submitButton" class="labkey-button" onclick="document.getElementById('loginForm').submit();" href="javascript:void(0);">Sign In</a>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+            <!-- /signin -->
+        
+        </div>
+        <!-- /content -->
+    
+        
+
+    </div>
+    <!-- right -->
+    
+    <div style="clear: both"></div>
+    
+    <div class="footer">ImmuneSpace is supported by HIPC and NIAID &#8226; <a href="mailto:info@immunespace.org">info@immunespace.org</a></div>
+ 
+</div>
+<!-- page -->
+
+
+
+
+</body>
+</html>
