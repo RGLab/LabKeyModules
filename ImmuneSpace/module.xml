@@ -6,8 +6,8 @@
     <bean id="moduleBean" class="org.labkey.api.module.SimpleModule">
         <property name="name" value="immunespace"/>
         <property name="version" value="0.0"/>
-        <property name="requiredServerVersion" value="0.0"/>
-        <property name="sourcePath" value="@@SourcePath@@">
-        <property name="supportedDatabases" value="pgsql"/>
+        <property name="requiredServerVersion" value="0.0" />
+        <property name="sourcePath" value="@@SourcePath@@" />
+        <property name="supportedDatabases" value="pgsql" />
     </bean>
 </beans>
