@@ -13,9 +13,9 @@
 
 <target name="build_immunespace">
   <mkdir dir="${basedir}/ImmuneSpace/config" />
-  <copy file="${basedir}/ImmuneSpace/module.xml" overwrite="true" tofile="${basedir}/ImmuneSpace/config/module.xml">
-    <filterset>
-      <filter token="@@SourcePath@@" value="${basedir}/ImmuneSpace"/>
+  <copy file="${basedir}/ImmuneSpace/module.xml" tofile="${basedir}/ImmuneSpace/config/module.xml" overwrite="true">
+    <filterset begintoken="@@" endtoken="@@">
+      <filter token="SourcePath" value="${basedir}/ImmuneSpace"/>
     </filterset>
   </copy>
   <zip destfile="immunespace.module">

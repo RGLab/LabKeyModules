@@ -7,7 +7,7 @@
         <property name="name" value="immunespace"/>
         <property name="version" value="0.0"/>
         <property name="requiredServerVersion" value="0.0"/>
-        <property name="sourcePath" value="/Users/matthew/github/RGLab/LabKeyModules/ImmuneSpace"/>
+        <property name="sourcePath" value="@@SourcePath@@">
         <property name="supportedDatabases" value="pgsql"/>
     </bean>
 </beans>
