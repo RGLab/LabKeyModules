@@ -1,0 +1,6 @@
+<webpart xmlns="http://labkey.org/data/xml/webpart" title="ImmPort Summary">
+    <view name="summary"/>
+    <locations>
+        <location name="right"/>
+    </locations>
+</webpart>
