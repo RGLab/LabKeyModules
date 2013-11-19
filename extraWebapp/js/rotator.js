@@ -1,15 +1,15 @@
 $(document).ready(function(){
  
-    $("a#one").mouseover(function() { 
-        $("#slide-start img, #slide-two img, #slide-three img, #slide-four img").hide(
+	$("a#one").mouseover(function() { 
+		$("#slide-start img, #slide-two img, #slide-three img, #slide-four img").hide(
             0,
             function(){
                 $("#slide-one img").show();       
             }
         );
     });
-    
-    $("a#two").mouseover(function() {
+	
+	$("a#two").mouseover(function() {
         $("#slide-start img, #slide-one img, #slide-three img, #slide-four img").hide(
             0,
             function(){
@@ -17,8 +17,8 @@ $(document).ready(function(){
             }
         );
     });
-    
-    $("a#three").mouseover(function() {
+	
+	$("a#three").mouseover(function() {
         $("#slide-start img, #slide-one img, #slide-two img, #slide-four img").hide(
             0,
             function(){
@@ -26,8 +26,8 @@ $(document).ready(function(){
             }
         );
     });
-    
-    $("a#four").mouseover(function() {
+	
+	$("a#four").mouseover(function() {
         $("#slide-start img, #slide-one img, #slide-two img, #slide-three img").hide(
             0,
             function(){
@@ -35,8 +35,8 @@ $(document).ready(function(){
             }
         );
     });
-    
-    $("p.intro").mouseout(function() {
+	
+	$("p.intro").mouseout(function() {
         $("#slide-one img, #slide-two img, #slide-three img, #slide-four img").hide(
             0,
             function(){
@@ -44,6 +44,6 @@ $(document).ready(function(){
             }
         );
     });
-        
+		
 });  
 

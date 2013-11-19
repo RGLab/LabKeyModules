@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Welcome to ImmuneSpace</title>
+
+<link rel="stylesheet" type="text/css" href="css/style.css" >
+<link rel="stylesheet" type="text/css" href="css/media.css" >
+<link rel="stylesheet" type="text/css" href="css/rotator.css">
+
+<script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="js/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="js/rotator.js"></script>
+<script type="text/javascript" src="js/form.js"></script>
+<script type="text/javascript" src="js/labkey.js"></script>
+<script type="text/javascript" src="js/ext-3.4.1/adapter/ext-base.js"></script>
+<script type="text/javascript" src="js/ext-3.4.1/ext-all.js"></script>
+<script type="text/javascript" src="js/ext-3.4.1/ext-patches.js"></script>
+<script type="text/javascript" src="js/ext-4.2.1/ext-all-sandbox.js"></script>
+<script type="text/javascript" src="js/clientapi.min.js"></script>
+<!-- <script type="text/javascript" src="js/dynamicSummary.js"></script> -->
+<script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+
+</head>
+
+<body>
+
+<div id="slideshow" class="page">
+
+    <!-- left -->
+    <div class="left">
+
+        <div class="slides">  
+            <ul>
+                <li id="slide-start"><img src="images/ring_start.png" width="364" height="364"></li>  
+                <li id="slide-one"><img src="images/ring.png" width="364" height="364"></li>
+                <li id="slide-two"><img src="images/ring2.png" width="364" height="364"></li>
+                <li id="slide-three"><img src="images/ring3.png" width="364" height="364"></li>
+                <li id="slide-four"><img src="images/ring4.png" width="364" height="364"></li>
+            </ul>
+        </div>
+
+        <h2>Data Summary</h2>
+
+<!-- <div id='Summary' style='margin-left: 30px; font-size: 13px'></div> -->
+
+    <table>
+        <tbody>
+            <tr>
+                <td>Studies</td>
+
+                <td align="right" style="white-space: nowrap;">6</td>
+            </tr>
+
+            <tr>
+                <td>Subjects</td>
+
+                <td align="right" style="white-space: nowrap;">275</td>
+            </tr>
+
+            <tr>
+                <td>&nbsp;</td>
+
+                <td>&nbsp;</td>
+            </tr>
+
+            <tr>
+                <td>ELISA Results</td>
+
+                <td align="right" style="white-space: nowrap;">129</td>
+            </tr>
+
+            <tr>
+                <td>ELISPOT Results</td>
+
+                <td align="right" style="white-space: nowrap;">100</td>
+            </tr>
+
+            <tr>
+                <td>Flow Cytometry Results</td>
+
+                <td align="right" style="white-space: nowrap;">103</td>
+            </tr>
+
+            <tr>
+                <td>Gene Expression Results</td>
+
+                <td align="right" style="white-space: nowrap;">173</td>
+            </tr>
+
+            <tr>
+                <td>HAI Results</td>
+
+                <td align="right" style="white-space: nowrap;">104</td>
+            </tr>
+
+            <tr>
+                <td>Neutralizing Antibody Results</td>
+
+                <td align="right" style="white-space: nowrap;">133</td>
+            </tr>
+
+            <tr>
+                <td>PCR Results</td>
+
+                <td align="right" style="white-space: nowrap;">40</td>
+            </tr>
+        </tbody>
+    </table>
+
+    </div>
+    <!-- /left -->
+    
+    
+    <!-- right -->
+    <div class="right">
+    
+        <img src="images/immunespace.png" width="484" height="36" alt="ImmuneSpace"/>
+        <p class="tagline">Enabling integrative modeling of human immunological data</p> 
+        <p class="intro">The Human Immunology Project Consortium (HIPC) program, established in 2010 by the NIAID Division of Allergy, Immunology, and Transplantation, is a major <a id="one" href="#">collaborative effort</a> that is generating large amounts of <a id="two" href="#">cross-center and cross-assay data</a> &#8212; including high-dimensional data &#8212; to characterize the status of the immune system in diverse populations under both normal conditions and in response to stimuli. This large data problem has given birth to ImmuneSpace, a powerful <a id="three" href="#">data management and analysis engine</a> where datasets can be easily explored and analyzed using state-of-the-art <a id="four" href="#">computational tools</a>.
+        </p>
+
+        <div class='roundedCorners message-banner'>
+            Access to the portal is currently available by invitation only.<br/>
+            Grand opening is scheduled for the fall of 2014.<br/>
+            Join the official <a href='https://groups.google.com/forum/#!forum/ImmuneSpace' target='_blank'>Google group</a> for updates.
+        </div>
+
+
+        <!-- content -->
+        <div class="content">
+    
+            <!-- news -->
+            <div class="news">
+
+                <h2>Recent   <span><script type="text/javascript">
+                    var monthNames = new Array(
+                        "January","February","March","April","May","June","July", 
+                        "August","September","October","November","December");
+                    var now = new Date();
+                    document.write(monthNames[now.getMonth()] + " " + 
+                    now.getDate() + ", " + now.getFullYear());
+                    </script></span></h2>
+                
+                <div class="news-text">
+                    <p><strong>An ImmuneSpace Google group has been created</strong></br>
+                    Please <a href='https://groups.google.com/forum/#!forum/ImmuneSpace' target='_blank'>join</a> for more information and updates.</p>
+
+                    <p><strong>Two new studies available</strong></br>
+                    Data and analyses results are available for two new ImmPort studies.</p>
+
+                    <p><strong>HIPC face-to-face meeting Sept 10-11, 2013</strong></br>
+                    Please mark your calendar for the next HIPC meeting. Agenda to be posted soon.</p>
+                </div>
+               
+            </div>
+            <!-- /news -->
+    
+            <!-- signin -->
+            <div class="signin">
+                <h2>Sign In</h2>
+                <form name="login" method="POST" action="/login/home/login.view" id="loginForm">
+                <!-- <input name="" type="button" value="Request Account"> -->
+                    <ul>
+                        <li>
+                            <label style="font-size: 90%;">User Name</label>
+                        </li>
+                        <li>
+                            <input class='roundedCorners' id="email" type="text" name="email" value="">
+                        </li>
+                        <br/>
+                        <li>
+                            <label style="font-size: 90%;">Password</label>
+                        </li>
+                        <li>
+                            <input class='roundedCorners' id="password" type="password" name="password" onkeydown="if (event.keyCode == 13) document.getElementById('submitButton').click();">
+                            <a class="forgotpw" href="/login/home/resetPassword.view" title='Reset password'>?</a>
+                        </li>
+                        <li>
+                            <a id="submitButton" class="labkey-button" onclick="document.getElementById('loginForm').submit();" href="javascript:void(0);">Sign In</a>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+            <!-- /signin -->
+        
+        </div>
+        <!-- /content -->
+    
+        
+
+    </div>
+    <!-- right -->
+   
+    <div style="clear: both"></div>
+
+    <div class="footer">
+        <a href="https://twitter.com/immunespace" class="twitter-follow-button" data-show-count="true">Follow @immunespace</a>
+        <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://immunespace.org" data-via="immunespace">Tweet</a>
+        ImmuneSpace is supported by <a href='http://www.immuneprofiling.org' target='_blank'>HIPC</a> and <a href='http://www.niaid.nih.gov' target='_blank'>NIAID</a> &#8226; <a href="mailto:info@immunespace.org">Contact Us</a>
+    </div>
+
+</div>
+<!-- page -->
+
+</body>
+</html>
