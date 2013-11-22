@@ -1,0 +1,5 @@
+<customView xmlns="http://labkey.org/data/xml/queryCustomView">
+	<filters>
+		<filter column="study_accession" operator="eq" value="SDY61"/>
+	</filters>
+</customView>

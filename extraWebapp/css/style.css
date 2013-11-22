@@ -40,7 +40,7 @@ body {
 .right {
 	width: 540px;
 	float: right;
-	padding: 30px 10px 40px 0;
+	padding: 30px 10px 0px 0;
 	
 }
 
@@ -56,7 +56,7 @@ h2 {
 
 .left h2 {
 	margin-left: 30px;
-	margin-top: 10px;
+	margin-top: 38px;
 }
 
 p {
@@ -66,9 +66,9 @@ p {
 }
 
 p.tagline {
-	font-size: 180%;
-	line-height: 135%;
-	margin-top: 45px;
+	font-size: 190%;
+	line-height: 130%;
+	margin-top: 19px;
 	margin-bottom: 10px;
 	color: #e8e8d2;
 }
@@ -76,7 +76,7 @@ p.tagline {
 p.intro {
 	line-height: 150%;
 	font-size: 90%;
-	margin-bottom: 40px;
+	margin-bottom: 20px;
 }
 
 a, a:visited {
@@ -99,12 +99,21 @@ table {
 	margin-left: 30px;
 }
 
+
+td {
+	/* background: rgba(241, 245, 222, 0.4); */
+	background: rgba(255, 255, 255, 0.5);
+}
+
+td.nobg {
+	background: none;
+}
+
 .news {
 	width: 260px;
-	margin-right: 30px;
+	margin-right: 35px;
 	float: left;
-	padding-bottom: 50px;
-	
+	padding-bottom: 40px;
 }
 
 .news h2 span {
@@ -122,6 +131,10 @@ table {
 	position: relative;
 	width: 245px;
 	float: left;
+}
+
+label {
+	font-size: 85%;
 }
 
 label.user {
@@ -174,9 +187,8 @@ a.labkey-button {
 
 a.forgotpw {
 	display: inline-block;
-	/* color: #519eda; */
-	color: #fff;
-	/* font-weight: bold; */
+	color: #519eda;
+	font-weight: bold;
 	padding: 5px;
 }
 
@@ -206,9 +218,66 @@ a.forgotpw:hover {
 
 .footer a, .footer a:visited {
 	color: #888;
+    text-decoration: underline;
 }
 
 .footer a:hover {
 	color: #333;
 }
 
+.roundedCorners {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.message-banner {
+    font-size: 90%;
+    padding: 5px 10px;
+    background-color: #F1F5DE;
+    margin-bottom: 10px;
+	line-height: 145%;
+}
+
+.message-banner a, a:visited {
+	/* color: black;
+    text-decoration: underline; */
+	color: #519eda;
+	font-weight: bold;
+}
+
+.message-banner a:hover {
+    text-decoration: none;
+	color: #333;
+}
+
+.news-text a, a:visited {
+	/* color: black;
+    text-decoration: underline; */
+	color: #2e84c7;
+	font-weight: bold;
+}
+
+.news-text a:hover {
+    text-decoration: none;
+	color: #333;
+}
+
+
+.mask-loading {
+    border-left: 0px;
+    left: 0 !important;
+    margin-left: 0px;
+    padding-left: 0px;
+    width: 100%;
+    z-index: 999;
+}   
+    
+.mask-loading div {
+    background: no-repeat 5px 5px;
+    background-color: white !important;
+    background-image: url(js/ext-3.4.1/resources/images/default/grid/loading.gif) !important;
+    background-position: 0% 50%;
+    padding: 5px 10px 5px 25px;
+    text-align: center;
+} 

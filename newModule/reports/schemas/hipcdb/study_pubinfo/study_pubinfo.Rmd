@@ -1,0 +1,5 @@
+# This is the test Rmd file
+```{r test}
+labkey.data
+2+2
+```
