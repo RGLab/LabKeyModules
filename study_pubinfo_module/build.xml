@@ -1,0 +1,27 @@
+<project name="LabKeyModules" default="build" basedir=".">
+
+<property environment="env"/>
+<property name="modules.dir" value="${env.MODULES_DIR}" />
+
+<target name="build" depends="build_study_pubinfo_module">
+</target>
+
+<target name="deploy" depends="build">
+  <echo message="deploy study_pubinfo_module.module to ${modules.dir}" />
+  <copy file="study_pubinfo_module.module" overwrite="true" tofile="${modules.dir}/study_pubinfo_module.module" />
+</target>
+
+<target name="build_study_pubinfo_module">
+  <mkdir dir="${basedir}/config" />
+  <copy file="${basedir}/module.xml" tofile="${basedir}/config/module.xml" overwrite="true">
+    <filterset begintoken="@@" endtoken="@@">
+      <filter token="SourcePath" value="${basedir}/study_pubinfo_module"/>
+    </filterset>
+  </copy>
+  <zip destfile="study_pubinfo_module.module">
+    <zipfileset dir="./" />
+  </zip>
+</target>
+
+</project>
+
