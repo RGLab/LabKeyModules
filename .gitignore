@@ -1,4 +1,5 @@
 
 *.module
+*.swp
 
 ImmuneSpace/config/module.xml

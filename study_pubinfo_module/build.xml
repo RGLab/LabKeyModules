@@ -2,24 +2,25 @@
 
 <property environment="env"/>
 <property name="modules.dir" value="${env.MODULES_DIR}" />
+<property name="module.name" value="study_pubinfo_module" />
 
-<target name="build" depends="build_study_pubinfo_module">
+<target name="build" depends="build_${module.name}">
 </target>
 
 <target name="deploy" depends="build">
-  <echo message="deploy study_pubinfo_module.module to ${modules.dir}" />
-  <copy file="study_pubinfo_module.module" overwrite="true" tofile="${modules.dir}/study_pubinfo_module.module" />
+  <echo message="deploy ${module.name}.module to ${modules.dir}" />
+  <copy file="${module.name}.module" overwrite="true" tofile="${modules.dir}/${module.name}.module" />
 </target>
 
-<target name="build_study_pubinfo_module">
+<target name="build_${module.name}">
   <mkdir dir="${basedir}/config" />
   <copy file="${basedir}/module.xml" tofile="${basedir}/config/module.xml" overwrite="true">
     <filterset begintoken="@@" endtoken="@@">
-      <filter token="SourcePath" value="${basedir}/study_pubinfo_module"/>
+      <filter token="SourcePath" value="${basedir}/${module.name}"/>
     </filterset>
   </copy>
-  <zip destfile="study_pubinfo_module.module">
-    <zipfileset dir="./" />
+  <zip destfile="../${module.name}.module">
+  	<zipfileset dir="./" />
   </zip>
 </target>
 

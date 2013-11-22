@@ -1,17 +1,16 @@
 ```{r knitr-options, echo=FALSE, eval=TRUE, cache=FALSE}
 library(knitr)
 opts_knit$set(progress = TRUE, verbose = TRUE)
-opts_chunk$set(cache=TRUE, echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, error=TRUE, dev="png", fig.width=6, fig.height=4, dpi=100, autodep=FALSE)
+opts_chunk$set(cache=FALSE, echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, error=TRUE, dev="png", fig.width=6, fig.height=4, dpi=100, autodep=FALSE)
 options(width=80)
 ```
-
 ```{r load-required-packages, cache=FALSE}
 # Required librairies
 library(Rlabkey)
 library(rentrez)
 ```
 
-```{r }
+```{r filter}
 study_acc <- gsub(".*/", "", gsub("/@files", "", labkey.file.root))
 
 dat <- labkey.data
