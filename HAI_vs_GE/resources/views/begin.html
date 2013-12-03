@@ -1,0 +1,97 @@
+<!--
+vim: ts=2:sw=2:nu:fdc=2:spell
+-->
+<!--
+    Copyright 2012 Fred Hutchinson Cancer Research Center
+
+    Licensed under the Apache License, Version 2.0 (the 'License');
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an 'AS IS' BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<!--<script type='text/javascript'>	LABKEY.requiresExt4ClientAPI(); </script>-->
+<script type='text/javascript'>
+    if ( window.jQuery == undefined )
+        document.write( decodeURI("%3Cscript src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js' type='text/javascript'%3E%3C/script%3E") );
+</script>
+
+<script type='text/javascript'>
+
+    var initHAI_vs_GE = function(){
+        var webPartDiv = <%=webpartContext%>.wrapperDivId;
+
+        var resizeModule;
+// REMOVE once issue #18 in OpenCytoVisualization is taken care of
+
+        LABKEY.Query.getQueries({
+            failure: LABKEY.ext.HAI_vs_GE.onFailure,
+            schemaName: 'study',
+            success: function(queriesInfo){
+                var i, array = queriesInfo.queries, length = queriesInfo.queries.length;
+                for ( i = 0; i < length; i ++ ){
+                    if ( array[i].name == 'hai' ){
+                        i = length;
+                    }
+                }
+                i = length + 1; // REMOVE ON SERVER WHERE 'hai' query in the 'study' schema is present
+                if ( i != length ){ // i == length + 1 => query present => module present => regular instanciation
+// END REMOVE
+
+        var HAI_vs_GE = new LABKEY.ext.HAI_vs_GE({
+            webPartDivId: webPartDiv
+        });
+
+        resizeModule = function(w, h){
+
+            LABKEY.ext.Utils.resizeToViewport( HAI_vs_GE, w, -1, null, null, -5 );
+
+            HAI_vs_GE.resize();
+        };
+
+// REMOVE once issue #18 in OpenCytoVisualization is taken care of
+                } else {
+                    var maskMsg =
+                            'Seems like you have not enabled the HAI vs GE module, click <a href=\'' +
+                                    LABKEY.ActionURL.buildURL('admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
+                                    '\'>here</a> to do so.';
+
+                    var temp = new Ext.Panel({
+                        border: false,
+                        frame: false,
+                        height: 100,
+                        layout: 'fit',
+                        listeners: {
+                            afterrender: function(){
+                                this.getEl().mask( maskMsg, 'infoMask' );
+                            }
+                        },
+                        renderTo: webPartDiv
+                    });
+
+                    resizeModule = function(){
+                        temp.getEl().mask( maskMsg, 'infoMask' );
+                    };
+                }
+
+// EXCLUDE FROM REMOVE START
+        Ext.EventManager.onWindowResize( resizeModule );
+        Ext.EventManager.fireWindowResize();
+// EXCLUDE FROM REMOVE END
+            }
+        });
+
+// END REMOVE
+
+    };
+
+    Ext.onReady( initHAI_vs_GE );
+
+</script>
