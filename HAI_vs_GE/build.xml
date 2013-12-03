@@ -1,0 +1,50 @@
+<project name='HAI_vs_GE' basedir='.' default='deploy'>
+
+  <property environment='env'/>
+  <property name='project.root' value='../../..'/>
+  <property name='staging.modules.dir' value='${project.root}/build/staging/modules'/>
+  <property name='deploy.modules.dir' value='${project.root}/build/deploy/modules'/>
+
+  <property name='module.name' value='HAI_vs_GE'/>
+  <property name='module.file' value='HAI_vs_GE.module'/>
+  <property name='module.resources.dir' value='${basedir}/resources'/>
+
+  <target name='init'>
+    <ant target='query_svn_number' dir='${project.root}/server' inheritall='false'/>
+    <tstamp>
+      <format property='buildtime' pattern='MMMM d yyyy, h:mm aa' />
+    </tstamp>
+  </target>
+
+  <target name='module.properties' depends='init'>
+    <mkdir dir='${module.resources.dir}/config'/>
+    <copy tofile='${module.resources.dir}/config/module.xml' file='${basedir}/module.template.xml' overwrite='true'>
+      <filterset begintoken='@@' endtoken='@@'>
+        <filtersfile file='${basedir}/module.properties' />
+        <filtersfile file='${project.root}/build/svn.properties'/>
+        <filter token='RequiredServerVersion' value='${RequiredServerVersion}' />
+        <filter token='ModuleDependencies' value='' />
+        <filter token='BuildTime' value='${buildtime}' />
+        <filter token='BuildOS' value='${os.name}' />
+        <filter token='BuildUser' value='${user.name}' />
+        <filter token='BuildPath' value='${deploy.modules.dir}/${module.name}' />
+        <filter token='SourcePath' value='${basedir}/resources' />
+        <filter token='URL' value='Not built from a Subversion source tree' />
+        <filter token='Revision' value='Not built from a Subversion source tree' />
+      </filterset>
+    </copy>
+  </target>
+
+  <target name='stage' depends='module.properties'>
+    <jar jarfile='${staging.modules.dir}/${module.file}'>
+      <fileset dir='${module.resources.dir}'>
+        <include name='**/*'/>
+      </fileset>
+    </jar>
+  </target>
+
+  <target name='deploy' depends='stage'>
+    <copy todir='${deploy.modules.dir}' file='${staging.modules.dir}/${module.file}' />
+  </target>
+
+</project>
