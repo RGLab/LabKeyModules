@@ -1,0 +1,56 @@
+# TITLE
+
+text text
+
+```{r test}
+colnames(labkey.data)
+```
+
+```{r load-required-packages, cache=FALSE, results="hide", message=FALSE}
+# Required librairies
+library(ggplot2)
+library(reshape2)
+library(data.table)
+library(RColorBrewer)
+library(Rlabkey)
+library(Biobase)
+library(pheatmap)
+library(glmnet)
+```
+
+```{r global-options}
+mypalette <- rev(brewer.pal(name="PiYG", n=11))
+brewer.qual <- "Paired"
+IS_theme <- theme_bw(base_size=14)
+```
+
+```{r filter-probes, cache=TRUE, cache.extra=digest::digest(labkey.data)}
+dt_probes <- data.table(labkey.data)
+probes_selected <- unique(dt_probes[,feature_id]) 
+```
+
+The model selection is based on `r length(unique(probes_selected))` selected probes. Optimal parameters for the Elastic Net are selected via cross-validation.
+The best predictive probes are summarized in Table 1, along with t-values and p-values calculated by fitting a multivariate linear model with the selected probes.
+
+```{r expression}
+exMat <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "study", queryName = "gene_expression_matrices", colNameOpt="rname")
+exMat <- data.table(exMat)
+exMat <- exMat[,keep:=(sum(study_time_collected%in%c(0,3))==2),by="biosample_accession_name,subject_accession"]
+exMat <- exMat[keep==TRUE]
+
+exMat07 <- data.frame(exMat[matrix_description_description%like%"TIV" & matrix_description_description%like%"2007"])
+exMat08 <- data.frame(exMat[matrix_description_description%like%"TIV" & matrix_description_description%like%"2009"])
+
+exMatLink <- URLdecode(unique(exMat07$download_link_download_link))
+exMatLink <- gsub(labkey.url.base, "", exMatLink)
+exMatLink <- gsub(labkey.url.path, "", exMatLink)
+exMatLink <- gsub("_webdav@files", labkey.file.root, exMatLink)
+exprs07 <- read.table(exMatLink)
+
+exMatLink <- URLdecode(unique(exMat08$download_link_download_link))
+exMatLink <- gsub(labkey.url.base, "", exMatLink)
+exMatLink <- gsub(labkey.url.path, "", exMatLink)
+exMatLink <- gsub("_webdav@files", labkey.file.root, exMatLink)
+exprs08 <- read.table(exMatLink)
+```
+

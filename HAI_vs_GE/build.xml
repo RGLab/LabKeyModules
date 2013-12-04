@@ -1,7 +1,7 @@
 <project name='HAI_vs_GE' basedir='.' default='deploy'>
 
   <property environment='env'/>
-  <property name='project.root' value='../../..'/>
+  <property name='project.root' value='../'/>
   <property name='staging.modules.dir' value='${project.root}/build/staging/modules'/>
   <property name='deploy.modules.dir' value='${project.root}/build/deploy/modules'/>
 
@@ -9,19 +9,11 @@
   <property name='module.file' value='HAI_vs_GE.module'/>
   <property name='module.resources.dir' value='${basedir}/resources'/>
 
-  <target name='init'>
-    <ant target='query_svn_number' dir='${project.root}/server' inheritall='false'/>
-    <tstamp>
-      <format property='buildtime' pattern='MMMM d yyyy, h:mm aa' />
-    </tstamp>
-  </target>
-
-  <target name='module.properties' depends='init'>
+  <target name='module.properties'>
     <mkdir dir='${module.resources.dir}/config'/>
     <copy tofile='${module.resources.dir}/config/module.xml' file='${basedir}/module.template.xml' overwrite='true'>
       <filterset begintoken='@@' endtoken='@@'>
         <filtersfile file='${basedir}/module.properties' />
-        <filtersfile file='${project.root}/build/svn.properties'/>
         <filter token='RequiredServerVersion' value='${RequiredServerVersion}' />
         <filter token='ModuleDependencies' value='' />
         <filter token='BuildTime' value='${buildtime}' />
