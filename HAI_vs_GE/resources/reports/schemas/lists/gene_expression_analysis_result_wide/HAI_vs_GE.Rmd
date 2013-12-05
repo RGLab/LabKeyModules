@@ -142,7 +142,7 @@ x <- t(lFC_08[rownames(lFC_08)%in%probes_selected,])
 y <- log2(dt_hai_08$hai_response)
 
 #fit_hai_tiv08 <- glmnet(x, y, alpha=.5)
-alphavalue <- as.numeric(labkey.url.params$paramValue)
+alphavalue <- as.numeric(labkey.url.params$alpha)
 fit_hai_tiv08 <- glmnet(x, y, alpha=alphavalue)
 plot(fit_hai_tiv08, col=brewer.pal(name="Paired",n=11))
 ```

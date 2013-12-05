@@ -87,9 +87,27 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         //     ComboBoxes / TextFields     //
         /////////////////////////////////////
 
-        var tfParam = new Ext.form.TriggerField({
+        var strCohort = new LABKEY.ext.Store({
+            queryName: 'get_study_cohorts',
+            schemaName: 'study'
+        });
+
+        /////////////////////////////////////
+        //     ComboBoxes / TextFields     //
+        /////////////////////////////////////
+
+        var cbCohort = new Ext.form.ComboBox({
+            displayField: 'cohort',
+            emptyText: 'Click...',
+            fieldLabel: 'Select a cohort',
+            store: strCohort,
+            valueField: 'cohort'
+        });
+
+        var tfAlpha = new Ext.form.TriggerField({
             emptyText: 'Type...',
             enableKeyEvents: true,
+            fieldLabel: 'Enter \'alpha\' value',
             listeners: {
                 keyup: {
                     buffer: 150,
@@ -109,21 +127,22 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                     }
                 }
             },
-            triggerClass:'x-form-clear-trigger',
             onTriggerClick: function(){
                 this.reset();
-            }
+            },
+            triggerClass: 'x-form-clear-trigger'
         });
 
 
         /////////////////////////////////////
         //             Buttons             //
         /////////////////////////////////////
+
         var btnRun = new Ext.Button({
             disabled: true,
             handler: function(){
                 cnfReport.inputParams = {
-                    paramValue: tfParam.getValue()
+                    alpha: tfAlpha.getValue()
                 };
 
                 maskReport.show();
@@ -180,21 +199,20 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             bodyStyle: { paddingTop: '1px' },
             border: false,
             defaults: {
-                autoHeight: true,
-            	forceLayout: true,
+//                autoHeight: true,
+//            	forceLayout: true,
                 hideMode: 'offsets',
-                layout: 'fit',
-                style: 'padding-right: 20px;'
+                labelStyle: 'width: 110px;',
+                width: 200
             },
             deferredRender: false,
             forceLayout: true,
             items: [
-                {
-                    border: false,
-                    items: tfParam
-                },
-                btnRun ],
-            layout: 'hbox',
+                cbCohort,
+                tfAlpha,
+                btnRun
+            ],
+            layout: 'form',
             listeners: {
                 afterrender: function(){
                     maskReport = new Ext.LoadMask(
