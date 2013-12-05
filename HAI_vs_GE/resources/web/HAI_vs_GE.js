@@ -165,7 +165,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
 
                 LABKEY.ext.HAI_vs_GE_Lib.onFailure( errorInfo, options, responseObj );
             },
-            reportId: 'module:HAI_vs_GE/lists/gene_expression_analysis_result_wide/HAI_vs_GE.Rmd',
+            reportId: 'module:HAI_vs_GE/study/module_test_cohort_query/HAI_vs_GE.Rmd',
             success: function( result ){
                 maskReport.hide();
                 btnRun.setDisabled( false );
