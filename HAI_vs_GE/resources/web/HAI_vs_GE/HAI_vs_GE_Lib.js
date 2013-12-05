@@ -15,21 +15,21 @@
  limitations under the License.
 */
 
-Ext.namespace('LABKEY.ext.HAI_vs_GE');
+Ext.namespace('LABKEY.ext.HAI_vs_GE_Lib');
 
 //============================//
 // Ext specific functionality //
 //============================//
 
 // Sets the width of the row numberer depending on the maximum number of digits in the number of records in the underlying store
-LABKEY.ext.HAI_vs_GE.factoryRowNumberer = function ( store ){
+LABKEY.ext.HAI_vs_GE_Lib.factoryRowNumberer = function ( store ){
     return new Ext.grid.RowNumberer({
         filterable: false,
         width: Math.round( 23 * ( store.getCount().toString().length  ) / 2 )
     })
 };
 
-LABKEY.ext.HAI_vs_GE.initTableQuickTips = function( o ){
+LABKEY.ext.HAI_vs_GE_Lib.initTableQuickTips = function( o ){
     var strngInstruction =
         '1) click the arrow on the right of a selected column header to access the sorting, filtering and hiding/showing options menu for the column <br/>' +
         '2) drag and drop column headers to rearrange the order of the columns <br/>' +
@@ -294,7 +294,7 @@ Ext.override( Ext.layout.ToolbarLayout, {
 });
 
 
-LABKEY.ext.HAI_vs_GE.captureEvents = function(observable) {
+LABKEY.ext.HAI_vs_GE_Lib.captureEvents = function(observable) {
     Ext.util.Observable.capture(
         observable,
         function(eventName, o) {
@@ -314,7 +314,7 @@ LABKEY.ext.HAI_vs_GE.captureEvents = function(observable) {
     );
 };
 
-LABKEY.ext.HAI_vs_GE.onFailure = function(errorInfo, options, responseObj){
+LABKEY.ext.HAI_vs_GE_Lib.onFailure = function(errorInfo, options, responseObj){
     var strngErrorContact = '\nPlease, contact support, if you have questions.', text = 'Failure: ';
 
     if (errorInfo && errorInfo.exception){
