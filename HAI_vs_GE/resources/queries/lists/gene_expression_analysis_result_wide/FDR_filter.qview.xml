@@ -1,0 +1,8 @@
+<customView xmlns="http://labkey.org/data/xml/queryCustomView">
+    <filters>
+        <filter column="adj_p_val" operator="lt" value="0.2"/>
+    </filters>
+    <sorts>
+        <sort column="adj_p_val" descending="false"/>
+    </sorts>
+</customView>

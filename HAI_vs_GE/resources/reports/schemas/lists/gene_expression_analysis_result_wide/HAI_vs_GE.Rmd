@@ -43,7 +43,7 @@ In this report, we use a penalized regression approach to select a set of genes 
 
 ## Results
 ### Probe selection via the Elastic Net
-```{r knitr-options, eval=TRUE, cache=FALSE}
+```{r knitr-options, echo=FALSE, eval=TRUE, cache=FALSE}
 library(knitr)
 opts_knit$set(progress = TRUE, verbose = TRUE)
 #opts_chunk$set(cache=TRUE, echo=FALSE, eval=FALSE, message=FALSE, warning=FALSE, error=TRUE, dev="png", dev.args=list(bg="transparent"), out.width="900px", fig.width=10, fig.height=6, dpi=150, fig.align="center", autodep=TRUE, use.highlight=TRUE)
