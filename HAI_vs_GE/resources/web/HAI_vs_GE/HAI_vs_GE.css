@@ -19,6 +19,37 @@
 
 @charset 'utf-8';
 
+
+#fw_container { width: 80%; margin: 0 auto; }
+
+.caption {
+    font-weight:bold;
+    font-size:100%;
+    text-align:center;
+}
+
+.knitr_table {
+    margin: 0px auto;
+}
+
+.knitr_table table {
+    border-collapse:collapse; 	border-spacing:0px; margin:0px;
+}
+.knitr_table th {
+    padding:5px; font-weight:bold; background-color:#ccc;
+}
+.knitr_table td {
+    padding:5px;
+}
+.knitr_table tr:nth-child(odd) {
+    background-color:#fff;
+}
+.knitr_table tr:nth-child(even) {
+    background-color:#eee;
+}
+
+
+
 .hai_vs_ge {
     line-height: 100% !important;
 }

@@ -26,7 +26,8 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var
-            me                                  = this
+            me                                  = this,
+            maskReport                          = undefined
             ;
 
 
@@ -68,7 +69,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
 
                 if ( j == count + 1 ){
                     LABKEY.Query.getQueryDetails({
-                        failure: LABKEY.ext.HAI_vs_GE.onFailure,
+                        failure: LABKEY.ext.HAI_vs_GE_Lib.onFailure,
                         queryName: 'Samples',
                         schemaName: 'Samples',
                         success: function(queryInfo){
@@ -78,7 +79,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
 
                 }
             },
-            failure: LABKEY.ext.HAI_vs_GE.onFailure
+            failure: LABKEY.ext.HAI_vs_GE_Lib.onFailure
         });
 
 
@@ -121,11 +122,12 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         var btnRun = new Ext.Button({
             disabled: true,
             handler: function(){
-                btnRun.setDisabled( true );
-
                 cnfReport.inputParams = {
                     paramValue: tfParam.getValue()
                 };
+
+                maskReport.show();
+                btnRun.setDisabled( true );
 
                 LABKEY.Report.execute( cnfReport );
             },
@@ -139,25 +141,29 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
 
         var cnfReport = {
             failure: function( errorInfo, options, responseObj ){
+                maskReport.hide();
                 btnRun.setDisabled( false );
 
-                LABKEY.ext.HAI_vs_GE.onFailure( errorInfo, options, responseObj );
+                LABKEY.ext.HAI_vs_GE_Lib.onFailure( errorInfo, options, responseObj );
             },
             reportId: 'module:HAI_vs_GE/lists/gene_expression_analysis_result_wide/HAI_vs_GE.Rmd',
             success: function( result ){
+                maskReport.hide();
                 btnRun.setDisabled( false );
 
                 var errors = result.errors;
                 var outputParams = result.outputParams;
 
                 if (errors && errors.length > 0){
-                    LABKEY.ext.HAI_vs_GE.onFailure({
+                    LABKEY.ext.HAI_vs_GE_Lib.onFailure({
                         exception: errors.join('\n')
                     });
                 } else {
                     var p = outputParams[0];
 
                     pnlReport.update(p.value);
+
+                    $('#res_table').dataTable();
 
                     pnlTabs.setActiveTab(1);
                 }
@@ -189,6 +195,17 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                 },
                 btnRun ],
             layout: 'hbox',
+            listeners: {
+                afterrender: function(){
+                    maskReport = new Ext.LoadMask(
+                        this.getEl(),
+                        {
+                            msg: 'Generating the report...',
+                            msgCls: 'mask-loading'
+                        }
+                    );
+                }
+            },
             title: 'Parameters'
         });
 
@@ -200,18 +217,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                 hideMode: 'offsets'
             },
             forceLayout: true,
-            layout: 'fit',
-            listeners: {
-                afterrender: function(){
-                    maskDelete = new Ext.LoadMask(
-                        this.getEl(),
-                        {
-                            msg: 'Generating the report...',
-                            msgCls: 'mask-loading'
-                        }
-                    );
-                }
-            }
+            layout: 'fit'
         });
 
         var pnlTabs = new Ext.TabPanel({
