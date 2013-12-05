@@ -138,7 +138,12 @@ x <- t(lFC_08[rownames(lFC_08)%in%probes_selected,])
 y <- log2(dt_hai_08$hai_response)
 
 #fit_hai_tiv08 <- glmnet(x, y, alpha=.5)
+<<<<<<< HEAD
 fit_hai_tiv08 <- glmnet(x, y, alpha=0.5)
+=======
+alphavalue <- as.numeric(labkey.url.params$alpha)
+fit_hai_tiv08 <- glmnet(x, y, alpha=alphavalue)
+>>>>>>> d8a47bc6db031412139d07d3a27bb92657809717
 plot(fit_hai_tiv08, col=brewer.pal(name="Paired",n=11))
 ```
 ```{r hai-prediction-cv, cache=TRUE, dependson="hai-feature-selection", fig.keep="none"}
