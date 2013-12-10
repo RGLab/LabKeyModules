@@ -1,4 +1,6 @@
 resources/config/module.xml
+build.xml
+build.xml_BAK
 
 # OS generated files #
 ######################

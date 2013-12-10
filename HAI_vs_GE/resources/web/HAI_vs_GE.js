@@ -1,6 +1,6 @@
 // vim: sw=4:ts=4:nu:nospell:fdc=4
 /*
- Copyright 2012 Fred Hutchinson Cancer Research Center
+ Copyright 2013 Fred Hutchinson Cancer Research Center
 
  Licensed under the Apache License, Version 2.0 (the 'License');
  you may not use this file except in compliance with the License.
@@ -27,111 +27,150 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
 
         var
             me                                  = this,
-            maskReport                          = undefined
+            maskReport                          = undefined,
+            arrayCohorts                        = [],
+            arrayTimePoints                     = []
             ;
-
-
-        /////////////////////////////////////
-        //             Strings             //
-        /////////////////////////////////////
-
-        var strngErrorContactWithLink   = ' Please, contact support, if you have questions.';
 
 
         ///////////////////////////////////
         //            Stores             //
         ///////////////////////////////////
 
-        var strngSqlStartTable  =   'SELECT' +
-                                    ' FCSAnalyses.Name AS FileName,' +
-                                    ' FCSAnalyses.RowId AS FileIdLink,' +
-                                    ' FCSAnalyses.Run.Name AS RunName,' +
-                                    ' FCSAnalyses.Run.RowId AS RunId,' +
-                                    ' FCSAnalyses.FCSFile.RowId AS FileIdMeta',
-            strngSqlEndTable    =   ' FROM FCSAnalyses' +
-                                    ' WHERE' +
-                                    ' FCSAnalyses.FCSFile.OriginalFCSFile.Original = TRUE OR' +
-                                    ' FCSAnalyses.FCSFile.Original = TRUE';
-
-
-        //////////////////////////////////////////////////////////////////
-        //             Queries and associated functionality             //
-        //////////////////////////////////////////////////////////////////
-        LABKEY.Query.getQueries({
-            schemaName: 'Samples',
-            success: function( queriesInfo ){
-                var queries = queriesInfo.queries, count = queries.length, j;
-                for ( j = 0; j < count; j ++ ){
-                    if ( queries[j].name == 'Samples' ){
-                        j = count;
-                    }
-                }
-
-                if ( j == count + 1 ){
-                    LABKEY.Query.getQueryDetails({
-                        failure: LABKEY.ext.HAI_vs_GE_Lib.onFailure,
-                        queryName: 'Samples',
-                        schemaName: 'Samples',
-                        success: function(queryInfo){
-                            var i = 13, toAdd, len = queryInfo.columns.length; // the first 13 columns are system and are of no interest
-                        }
-                    });
-
-                }
+        var strGrandTable = new LABKEY.ext.Store({
+            autoLoad: true,
+            listeners: {
+                load: function(){
+                    arrayCohorts = this.collect( 'cohort' );
+                    Ext.each( arrayCohorts, function(r, i, p){ p[i] = [ r ]; } );
+                    strCohort.loadData( arrayCohorts );
+                },
+                loadexception: LABKEY.ext.HAI_vs_GE_Lib.onFailure
             },
-            failure: LABKEY.ext.HAI_vs_GE_Lib.onFailure
-        });
-
-
-        /////////////////////////////////////
-        //     ComboBoxes / TextFields     //
-        /////////////////////////////////////
-
-        var strCohort = new LABKEY.ext.Store({
             queryName: 'study_cohorts_info',
             schemaName: 'study'
         });
 
+        var strCohort = new Ext.data.ArrayStore({
+            data: [],
+            fields: ['cohort', 'cohort'],
+            listeners: {
+                loadexception: LABKEY.ext.HAI_vs_GE_Lib.onFailure
+            }
+        });
+
+        var strTimePoint = new Ext.data.ArrayStore({
+            data: [],
+            fields: ['timepoint', 'timepoint'],
+            listeners: {
+                loadexception: LABKEY.ext.HAI_vs_GE_Lib.onFailure
+            }
+        });
+
+
         /////////////////////////////////////
         //     ComboBoxes / TextFields     //
         /////////////////////////////////////
 
-        var cbCohort = new Ext.form.ComboBox({
+        var cbCohort = new Ext.ux.form.ExtendedComboBox({
+            disabled: true,
             displayField: 'cohort',
-            //emptyText: 'Click...',
+            emptyText: 'Click...',
             fieldLabel: 'Select a cohort',
-            store: strCohort,
-            valueField: 'cohort'
-        });
-
-        var tfAlpha = new Ext.form.TriggerField({
-            emptyText: 'Type...',
-            enableKeyEvents: true,
-            fieldLabel: 'Enter \'alpha\' value',
             listeners: {
-                keyup: {
-                    buffer: 150,
-                    fn: function(field, e) {
-                        if( Ext.EventObject.ESC == e.getKey() ){
-                            field.onTriggerClick();
-                        }
-                        else {
-                            if ( Ext.util.Format.trim( this.getValue() ) != '' ){
-                                btnRun.setDisabled( false );
-                            } else {
-                                btnRun.setDisabled( true );
-                            }
+                change: function(){
+                    if ( this.getValue() == '' ){
+                        cbTimePoint.clearValue();
+                        cbTimePoint.setDisabled( true );
+                        btnRun.setDisabled( true );
+                    } else {
+                        strGrandTable.filter( 'cohort', this.getValue(), false, true, true );
 
-                            var val = field.getRawValue();
+                        arrayTimePoints = strGrandTable.collect( 'timepoint' );
+                        Ext.each( arrayTimePoints, function(r, i, p){ p[i] = [ r ]; } );
+                        strTimePoint.loadData( arrayTimePoints );
+                    }
+                },
+                cleared: function(){
+                    cbTimePoint.clearValue();
+                    cbTimePoint.setDisabled( true );
+                    btnRun.setDisabled( true );
+                },
+                select: function(){
+                    strGrandTable.filter( 'cohort', this.getValue(), false, true, true );
+
+                    arrayTimePoints = strGrandTable.collect( 'timepoint' );
+                    Ext.each( arrayTimePoints, function(r, i, p){ p[i] = [ r ]; } );
+                    strTimePoint.loadData( arrayTimePoints );
+                }
+            },
+            store: strCohort,
+            valueField: 'cohort',
+            width: 240
+        });
+        strCohort.on( 'load', function(){ cbCohort.setDisabled( false ); } );
+
+        var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
+            disabled: true,
+            displayField: 'timepoint',
+            emptyText: 'Click...',
+            fieldLabel: 'Select a time point',
+            listeners: {
+                change: function(){
+                    if ( this.getValue() == '' ){
+                        btnRun.setDisabled( true );
+                    } else {
+                        strGrandTable.filterBy(
+                            function(r){
+                                return  r.get( 'cohort' )       == cbCohort.getValue() &&
+                                        r.get( 'timepoint' )    == cbTimePoint.getValue();
+                            }
+                        );
+
+                        var count = strGrandTable.getCount();
+                        if ( count == 1 ){
+                            btnRun.setDisabled( false );
+                        } else if ( count > 1 ) {
+                            LABKEY.ext.HAI_vs_GE_Lib.onFailure({
+                                exception: 'The selected values do not result in a unique set of parameters.'
+                            });
+                        } else if ( count < 1 ) {
+                            LABKEY.ext.HAI_vs_GE_Lib.onFailure({
+                                exception: 'The selected values result in an empty set of parameters.'
+                            });
                         }
+                    }
+                },
+                cleared: function(){
+                    btnRun.setDisabled( true );
+                },
+                select: function(){
+                    strGrandTable.filterBy(
+                        function(r){
+                            return  r.get( 'cohort' )       == cbCohort.getValue() &&
+                                    r.get( 'timepoint' )    == cbTimePoint.getValue();
+                        }
+                    );
+
+                    var count = strGrandTable.getCount();
+                    if ( count == 1 ){
+                        btnRun.setDisabled( false );
+                    } else if ( count > 1 ) {
+                        LABKEY.ext.HAI_vs_GE_Lib.onFailure({
+                            exception: 'The selected values do not result in a unique set of parameters.'
+                        });
+                    } else if ( count < 1 ) {
+                        LABKEY.ext.HAI_vs_GE_Lib.onFailure({
+                            exception: 'The selected values result in an empty set of parameters.'
+                        });
                     }
                 }
             },
-            onTriggerClick: function(){
-                this.reset();
-            },
-            triggerClass: 'x-form-clear-trigger'
+            store: strTimePoint,
+            valueField: 'timepoint',
+            width: 240
         });
+        strTimePoint.on( 'load', function(){ cbTimePoint.setDisabled( false ); } );
 
         /////////////////////////////////////
         //             Buttons             //
@@ -140,17 +179,23 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         var btnRun = new Ext.Button({
             disabled: true,
             handler: function(){
-	    /*cnfReport.inputParams = {*/
-	    /*alpha: tfAlpha.getValue()*/
-	    /*};*/
-                cnfReport.inputParams = {
-                    GEA_acc: cbCohort.getValue()
-                };
+                var r = strGrandTable.getAt( 0 );
 
-                maskReport.show();
-		btnRun.setDisabled( true );
+                if ( r != undefined ){
+                    cnfReport.inputParams = {
+                        timePoint:                  cbTimePoint.getValue(),
+                        analysisAccession:          r.get( 'analysis_accession' ),
+                        expressionMatrixAccession:  r.get( 'expression_matrix_accession' )
+                    };
 
-                LABKEY.Report.execute( cnfReport );
+                    setReportRunning( true );
+
+                    LABKEY.Report.execute( cnfReport );
+                } else {
+                    LABKEY.ext.HAI_vs_GE_Lib.onFailure({
+                        exception: 'The values selected result in an empty set of parameters.'
+                    });
+                }
             },
             text: 'Run'
         });
@@ -162,15 +207,13 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
 
         var cnfReport = {
             failure: function( errorInfo, options, responseObj ){
-                maskReport.hide();
-                btnRun.setDisabled( false );
+                setReportRunning( false );
 
                 LABKEY.ext.HAI_vs_GE_Lib.onFailure( errorInfo, options, responseObj );
             },
             reportId: 'module:HAI_vs_GE/study/study_cohorts_info/HAI_vs_GE.Rmd',
             success: function( result ){
-                maskReport.hide();
-                btnRun.setDisabled( false );
+                setReportRunning( false );
 
                 var errors = result.errors;
                 var outputParams = result.outputParams;
@@ -197,47 +240,36 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var pnlParameters = new Ext.Panel({
-            activeItem: 0,
             bodyStyle: { paddingTop: '1px' },
-            border: false,
             defaults: {
-//                autoHeight: true,
-//            	forceLayout: true,
-                hideMode: 'offsets',
-                labelStyle: 'width: 110px;',
-                width: 200
+                autoHeight: true,
+                forceLayout: true,
+                hideMode: 'offsets'
             },
             deferredRender: false,
             forceLayout: true,
             items: [
                 cbCohort,
-		tfAlpha,
+                cbTimePoint,
                 btnRun
             ],
-            layout: 'form',
-            listeners: {
-                afterrender: function(){
-                    maskReport = new Ext.LoadMask(
-                        this.getEl(),
-                        {
-                            msg: 'Generating the report...',
-                            msgCls: 'mask-loading'
-                        }
-                    );
-                }
+            layout: {
+                labelWidth: 115,
+                type: 'form'
             },
             title: 'Parameters'
         });
 
         var pnlReport = new Ext.Panel({
-            autoHeight: true,
-            border: false,
+            bodyStyle: 'padding: 1px;',
             defaults: {
                 autoHeight: true,
                 hideMode: 'offsets'
             },
             forceLayout: true,
-            layout: 'fit'
+            html: 'Switch to the \'Parameters\' tab, select the parameter values and click the \'RUN\' button to generate the report',
+            layout: 'fit',
+            title: 'Report'
         });
 
         var pnlTabs = new Ext.TabPanel({
@@ -245,6 +277,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             autoHeight: true,
             defaults: {
                 autoHeight: true,
+                border: false,
                 hideMode: 'offsets',
                 style: 'padding-bottom: 4px; padding-right: 4px; padding-left: 4px;'
             },
@@ -252,14 +285,19 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             forceLayout: true,
             items: [
                 pnlParameters,
-                {
-                    items: pnlReport,
-                    layout: 'fit',
-                    title: 'Report'
-                }
+                pnlReport
             ],
             layoutOnTabChange: true,
             listeners: {
+                afterrender: function(){
+                    maskReport = new Ext.LoadMask(
+                            this.getEl(),
+                            {
+                                msg: 'Generating the report...',
+                                msgCls: 'mask-loading'
+                            }
+                    );
+                },
                 tabchange: function(tabPanel, tab){
                     if ( tab.title == 'Create' ){
                     }
@@ -274,6 +312,16 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         //             Functions           //
         /////////////////////////////////////
 
+        var setReportRunning = function( bool ){
+            if ( bool ){
+                maskReport.show();
+            } else {
+                maskReport.hide();
+            }
+            btnRun.setDisabled( bool );
+            cbCohort.setDisabled( bool );
+            cbTimePoint.setDisabled( bool );
+        };
 
         // jQuery-related
 

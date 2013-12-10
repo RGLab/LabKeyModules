@@ -1,6 +1,6 @@
 // vim: sw=4:ts=4:nu:nospell:fdc=4
 /*
- Copyright 2012 Fred Hutchinson Cancer Research Center
+ Copyright 2013 Fred Hutchinson Cancer Research Center
 
  Licensed under the Apache License, Version 2.0 (the 'License');
  you may not use this file except in compliance with the License.

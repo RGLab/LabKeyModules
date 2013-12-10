@@ -1,36 +1,3 @@
-<link rel="stylesheet" type="text/css" href="https://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css">
-
-
-<style type="text/css">
-
-#fw_container { width: 80%; margin: 0 auto; }
-
-.caption {
-   font-weight:bold;
-   font-size:100%;
-   text-align:center;
-}
-
-.knitr_table {
-   margin: 0px auto; 
-}
-
-.knitr_table table { 
-   border-collapse:collapse;   border-spacing:0px; margin:0px;
-}
-.knitr_table th { 
-   padding:5px; font-weight:bold; background-color:#ccc;
-}
-.knitr_table td { 
-   padding:5px;
-}
-.knitr_table tr:nth-child(odd) { 
-   background-color:#fff; 
-}
-.knitr_table tr:nth-child(even) { 
-   background-color:#eee; 
-}
-</style>
 
 ```{r knitr-options, echo=FALSE, eval=TRUE, cache=FALSE}
 library(knitr)
@@ -73,9 +40,13 @@ IS_theme <- theme_bw(base_size=14)
 
 
 ```{r envir-var}
-labkey.url.base <- "https://posey.fhcrc.org/"
-labkey.url.path <- "/Emory/SDY61/"
-labkey.url.param <-list(day = 7, GEA_acc = "GEA1", EM_acc = "EXPM0001", FDR_thresh = 0.02, FC_thresh = 0)
+param <- list(
+    timepoint   = as.numeric( labkey.url.param$timePoint ),
+    GEA_acc     = labkey.url.param$analysisAccession,
+    EM_acc      = labkey.url.param$expressionMatrixAccession,
+    FDR_thresh  = 0.02, # as.numeric( labkey.url.param$fdrThreshold ),
+    FC_thresh   = 0     # as.numeric( labkey.url.param$fcThreshold )
+)
 ```
 
 ```{r reading-the tables, cache=TRUE}
@@ -167,19 +138,6 @@ predictor_table[,"gene_symbol"] <- paste0('<a href="http://www.genenames.org/cgi
 
 ```{r kable, echo=FALSE, results='asis', htab.cap=TRUE, fig.cap="Table 1. Table of selected probes by the Elastic Net."}
 kable(predictor_table, digits=2, format="html", row.names=FALSE, table.attr="id=\"res_table\"")
-```
-<br>
-<br>
-<script type="text/javascript" charset="utf-8">
-    $(document).ready(function() {
-        $('#res_table').dataTable();
-    } );
-</script>
-<br>
-<br>
-
-```{r echo=FALSE}
-options(markdown.HTML.header = unlist(sapply(system.file("misc", c("vignette.css", "datatables.txt"), package = "knitr"), readLines)))
 ```
 
 <h3> Heatmap of selected probes </h3>

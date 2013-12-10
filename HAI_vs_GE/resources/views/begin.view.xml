@@ -15,6 +15,7 @@
         <dependency path='HAI_vs_GE/gridfilters/filter/ListFilter.js'/>
         <dependency path='HAI_vs_GE/gridfilters/filter/NumericFilter.js'/>
         <dependency path='HAI_vs_GE/gridfilters/filter/BooleanFilter.js'/>
+        <dependency path='HAI_vs_GE/ExtendedComboBox.js'/>
         <dependency path='HAI_vs_GE/GridPanelHeaderResize.js'/>
         <dependency path='HAI_vs_GE/HAI_vs_GE_Lib.js'/>
 

@@ -2,7 +2,7 @@
     vim: ts=4:sw=4:nu:fdc=4:nospell
 */
 /*
-    Copyright 2012 Fred Hutchinson Cancer Research Center
+    Copyright 2013 Fred Hutchinson Cancer Research Center
 
     Licensed under the Apache License, Version 2.0 (the 'License');
     you may not use this file except in compliance with the License.
@@ -20,36 +20,62 @@
 @charset 'utf-8';
 
 
-#fw_container { width: 80%; margin: 0 auto; }
-
-.caption {
-    font-weight:bold;
-    font-size:100%;
-    text-align:center;
+.labkey-knitr #fw_container {
+    width: 80%;
+    margin: 0 auto;
 }
 
-.knitr_table {
+.labkey-knitr .caption {
+    font-weight: bold;
+    font-size: 100%;
+    text-align: center;
+}
+
+.labkey-knitr .knitr_table {
     margin: 0px auto;
 }
 
-.knitr_table table {
-    border-collapse:collapse; 	border-spacing:0px; margin:0px;
+.labkey-knitr .knitr_table table {
+    border-collapse: collapse;
+    border-spacing: 0px;
+    margin: 0px;
 }
-.knitr_table th {
-    padding:5px; font-weight:bold; background-color:#ccc;
+.labkey-knitr .knitr_table th {
+    padding: 5px;
+    font-weight: bold;
+    background-color: #ccc;
 }
-.knitr_table td {
-    padding:5px;
+.labkey-knitr .knitr_table td {
+    padding: 5px;
 }
-.knitr_table tr:nth-child(odd) {
+
+.labkey-knitr .knitr_table tr:nth-child(odd) {
     background-color:#fff;
 }
-.knitr_table tr:nth-child(even) {
+
+.labkey-knitr .knitr_table tr:nth-child(even) {
     background-color:#eee;
 }
 
+.labkey-knitr p {
+    clear: both;
+}
 
+.labkey-knitr body {
+    width: 800px;
+    margin: auto;
+}
 
+.labkey-knitr pre, .labkey-knitr img {
+    max-width: 100%;
+}
+
+.labkey-knitr img {
+    display: block;
+    margin: auto;
+}
+
+/* ************************************************************ */
 .hai_vs_ge {
     line-height: 100% !important;
 }
@@ -99,7 +125,7 @@ pre, .ext-mb-text {
 }
 
 /* Centered text */
-.centered-text, .bold-centered-text, .sortable-list li, .hai_vs_ge .x-grid3-hd-row, {
+.centered-text, .bold-centered-text, .sortable-list li, .hai_vs_ge .x-grid3-hd-row {
     text-align: center !important;
 }
 
