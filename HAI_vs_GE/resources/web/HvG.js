@@ -31,6 +31,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             ;
 
 
+/*
         /////////////////////////////////////
         //             Strings             //
         /////////////////////////////////////
@@ -54,6 +55,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                                     ' FCSAnalyses.FCSFile.Original = TRUE';
 
 
+	*/
         //////////////////////////////////////////////////////////////////
         //             Queries and associated functionality             //
         //////////////////////////////////////////////////////////////////
@@ -82,11 +84,11 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             failure: LABKEY.ext.HAI_vs_GE_Lib.onFailure
         });
 
-
         /////////////////////////////////////
         //     ComboBoxes / TextFields     //
         /////////////////////////////////////
 
+	/*
         var strCohort = new LABKEY.ext.Store({
             queryName: 'study_cohorts_info',
             schemaName: 'study'
@@ -96,14 +98,23 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         //     ComboBoxes / TextFields     //
         /////////////////////////////////////
 
+
         var cbCohort = new Ext.form.ComboBox({
             displayField: 'cohort',
-            //emptyText: 'Click...',
+	    //emptyText: 'Click...',
             fieldLabel: 'Select a cohort',
             store: strCohort,
             valueField: 'cohort'
         });
 
+        var cbTimepoint = new Ext.form.ComboBox({
+            displayField: 'timepoint',
+	    //emptyText: 'Click...',
+            fieldLabel: 'Select a timepoint',
+            store: strCohort,
+            valueField: 'timepoint'
+        });
+	*/
         var tfAlpha = new Ext.form.TriggerField({
             emptyText: 'Type...',
             enableKeyEvents: true,
@@ -133,6 +144,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             triggerClass: 'x-form-clear-trigger'
         });
 
+
         /////////////////////////////////////
         //             Buttons             //
         /////////////////////////////////////
@@ -140,15 +152,15 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         var btnRun = new Ext.Button({
             disabled: true,
             handler: function(){
-	    /*cnfReport.inputParams = {*/
-	    /*alpha: tfAlpha.getValue()*/
-	    /*};*/
-                cnfReport.inputParams = {
-                    GEA_acc: cbCohort.getValue()
-                };
+	    cnfReport.inputParams = {
+			alpha: tfAlpha.getValue()
+		};
+		/*cnfReport.inputParams = {*/
+		/*GEA_acc: cbCohort.getValue()*/
+		    /*};*/
 
                 maskReport.show();
-		btnRun.setDisabled( true );
+                btnRun.setDisabled( true );
 
                 LABKEY.Report.execute( cnfReport );
             },
@@ -211,7 +223,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             forceLayout: true,
             items: [
                 cbCohort,
-		tfAlpha,
+                tfAlpha,
                 btnRun
             ],
             layout: 'form',
@@ -295,4 +307,3 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
     resize: function(){
     }
 }); // end HAI_vs_GE Panel class
-
