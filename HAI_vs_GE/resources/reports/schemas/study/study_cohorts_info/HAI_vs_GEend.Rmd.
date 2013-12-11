@@ -1,7 +1,7 @@
 
 ```{r knitr-options, echo=FALSE, eval=TRUE, cache=FALSE}
 library(knitr)
-opts_chunk$set(cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, dpi=100, fig.align="center")
+opts_chunk$set(cache=FALSE, echo=TRUE, message=FALSE, warning=TRUE, fig.width=8, fig.height=4, dpi=100, fig.align="center")
 options(width=80)
 
 ## Custom hooks to add caption to figures
@@ -47,34 +47,64 @@ param <- list(
     FC_thresh   = 0     # as.numeric( labkey.url.params$fcThreshold )
 )
 ```
-```{r eset, cache=FALSE}
-  s1 <- system.time({
+```{r ls, echo=TRUE}
+labkey.url.params
+```
+```{r ISpaceR}
+library(Biobase)
+library(Rlabkey)
+library(RCurl)
+read_exprs_mat <- function(e_m_a){
+  lEset <- vector('list', length(e_m_a))
+  names(lEset) <- e_m_a
+  for(exm in 1:length(e_m_a)){
+    exprs <- as.matrix(exprs_dfs[[exm]])
+    phenodata <- exMat[ exMat$expression_matrix_accession==e_m_a[exm],]
+    phenodata <- phenodata[ match(colnames(exprs), phenodata$biosample_accession),]
+    phenodata <- as(phenodata, "AnnotatedDataFrame")
+    fdata <- as(fdata_dfs[[exm]], "AnnotatedDataFrame")
+    descr <- paste(umat[exm, "expression_matrix_accession"], ": ", umat[exm, "matrix_description_description"])
+    eset <- ExpressionSet(assayData = exprs, phenoData = phenodata, featureData = fdata)
+    eset@experimentData@title <- descr
+    lEset[[exm]] <- eset  
+  }
+  return(lEset)
+}
+```
+```{r create-eset, echo=TRUE}
   em_filter <- makeFilter(c("expression_matrix_accession", "IN", paste(param$EM_acc, collapse=";")))
   exMat <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "study",
                              colFilter=em_filter, queryName = "gene_expression_matrices", colNameOpt = "rname")
   rownames(exMat) <- exMat$biosample_accession
   umat <- unique(exMat[, c("expression_matrix_accession", "download_link_download_link", "feature_mapping_file", "feature_mapping_file_link_download_link", "matrix_description_description")])
   EM_files <- gsub(".*%40files", labkey.file.root, umat$download_link_download_link)
-  #exprs <- as.matrix(read.table(EM_files, sep="\t"))
-  header <- scan(EM_files, what="character", nlines=1, sep="\t", quiet=TRUE)
-  exprs <- fread(EM_files)
-  exprs <- data.frame(exprs[, 2:ncol(exprs), with=FALSE], row.names=exprs[, 1, with=FALSE][[1]])
-  colnames(exprs) <- header
-  exprs <- as.matrix(exprs)
-
+  dts <- lapply(EM_files, fread, header=TRUE, sep="\t")
+  print(read.table(EM_files[[1]], sep="\t")[1:4, 1:4])
+  names(dts) <- umat$expression_matrix_accession
+  exprs_dfs <- lapply(dts, function(X){ data.frame(X[,2:ncol(X), with=FALSE], row.names=X[,1, with=FALSE][[1]])})
   fdata_links <- gsub(".*%40files", labkey.file.root, umat[[grep("feature.*download", colnames(umat))]])
-  fdata <- read.table(fdata_links, header=TRUE, sep="\t")
-  fdata <- fdata[na.omit(match(rownames(exprs), fdata$feature_id)),]
-  phenodata <- exMat[ exMat$expression_matrix_accession==param$EM_acc,]
-  phenodata <- phenodata[ match(colnames(exprs), phenodata$biosample_accession),]
-  phenodata <- as(phenodata, "AnnotatedDataFrame")
-  fdata <- as(fdata, "AnnotatedDataFrame")
-  GEM <- ExpressionSet(assayData = exprs, phenoData = phenodata, featureData = fdata)
-  })
+  fdata_dfs <- lapply(fdata_links, read.table, header=TRUE, sep="\t")
+  names(fdata_dfs) <- umat$expression_matrix_accession
+  lEset <- vector('list', length(param$EM_acc))
+  names(lEset) <- param$EM_acc
+  for(exm in 1:length(param$EM_acc)){
+    exprs <- as.matrix(exprs_dfs[[exm]])
+	print(exprs[1:4, 1:4])
+	print(head(fdata_dfs[[exm]]))
+    phenodata <- exMat[ exMat$expression_matrix_accession==param$EM_acc[exm],]
+	print(head(phenodata))
+    phenodata <- phenodata[ match(colnames(exprs), phenodata$biosample_accession),]
+    phenodata <- as(phenodata, "AnnotatedDataFrame")
+    fdata <- as(fdata_dfs[[exm]], "AnnotatedDataFrame")
+    descr <- paste(umat[exm, "expression_matrix_accession"], ": ", umat[exm, "matrix_description_description"])
+    eset <- ExpressionSet(assayData = exprs, phenoData = phenodata, featureData = fdata)
+    eset@experimentData@title <- descr
+    lEset[[exm]] <- eset  
+  }
+  lEset
+#GEM <- read_exprs_mat(param$EM_acc)[[1]]
 ```
 
-```{r get-data}
-s2 <- system.time({
 GER_filter <- makeFilter(c("analysis_accession", "EQUAL", param$GEA_acc),
                          c("adj_p_val", "LESS_THAN", param$FDR_thresh))
 ds_GER <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "lists", queryName = "gene_expression_analysis_result_wide", colNameOpt="rname", colFilter=GER_filter)
@@ -83,11 +113,9 @@ GER <- data.table(ds_GER)
 HAI_filter <- makeFilter(c("subject_accession", "IN", paste(GEM$subject_accession, collapse=";")))
 ds_HAI <- labkey.selectRows(baseUrl=labkey.url.base, schemaName="study", folderPath=labkey.url.path, queryName ="hai", colNameOpt="rname", colFilter=HAI_filter)
 HAI <- data.table(ds_HAI)
-})
 ```
 
-```{r subset, echo=FALSE}
-s3 <- system.time({
+```{r subset}
 #Filter-subset
 #Filter out subjects with missing timepoints
 #Filter selected probes
@@ -96,34 +124,23 @@ timepoints <- c(0, param$timepoint)
 pd <- pd[,keep:=(sum(study_time_reported%in%timepoints)==length(timepoints)), by="biosample_accession_name,subject_accession"]
 pd <- pd[keep==TRUE]
 pd <- pd[study_time_reported %in% timepoints]
-GER <- GER[abs(log_fc) > param$FC_thresh, ]
-if(nrow(GER)==0){
-  opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE, stop_on_error=2L)
-  stop("There are 0 probes selected. Try lowering the FDR threshold or the log-FoldChange threshold")
-}
 probes_selected <- unique(GER$feature_id)
 GES <- GEM[probes_selected, pd$biosample_accession] #sorted by subject, time
 HAI <- HAI[subject_accession %in% GES$subject_accession & biosample_accession_name %in% GES$biosample_accession_name]
-})
 ```
 
 ```{r lFC}
 #lFC
-#print(GES)
-#print(GES$study_time_reported)
 lFC <- exprs(GES)[, GES$study_time_reported == param$timepoint] - exprs(GES)[, GES$study_time_reported == 0]
-#print(lFC[1:2,])
 ```
 
 ```{r hai}
-s4 <- system.time({
 #hai
 #Class subjects as high/low responders
 HAI <- HAI[,list(study_time_collected=study_time_collected, hai_response=value_reported/value_reported[study_time_collected==0]),by="virus_strain,biosample_accession_name,subject_accession"]
 HAI <- HAI[study_time_collected==28]
 HAI <- HAI[,list(hai_response=max(hai_response)),by="subject_accession"]
 HAI <- HAI[,responder:=ifelse(hai_response<=2, "Low", ifelse(hai_response>=4, "High", "Medium"))]
-})
 ```
 
 ```{r glmnet}
@@ -134,6 +151,7 @@ fit_hai <- glmnet(x, y, alpha=0.5)
 cv_fit_hai <- cv.glmnet(x, y)
 coef_hai <- predict(fit_hai, s=cv_fit_hai$lambda.min, type="coefficients")
 ```
+
 ```{r probes_selection}
 #Selected probes
 selected_probes <- names(which(coef_hai[,1] > 0))
@@ -152,6 +170,7 @@ if(nrow(selected_probes) < 2){
 }
 ```
 
+### Probe selection via the Elastic Net
 The model selection is based on `r length(unique(probes_selected))` selected probes. Optimal parameters for the Elastic Net are selected via cross-validation.
 The best predictive probes are summarized in Table 1, along with t-values and p-values calculated by fitting a multivariate linear model with the selected probes.
 ```{r lasso}
@@ -159,8 +178,6 @@ The best predictive probes are summarized in Table 1, along with t-values and p-
 relasso <- lm(y~x.selected)
 sum_relasso <- summary(relasso)
 sum_relasso_coef <- sum_relasso$coefficients
-#print(selected_probes)
-#print(sum_relasso_coef[,c("t value","Pr(>|t|)")][-1,])
 predictor_table <- cbind(selected_probes, sum_relasso_coef[,c("t value","Pr(>|t|)")][-1,])
 setnames(predictor_table, c("t value","Pr(>|t|)"), c("t-value","p-value"))
 ```
@@ -175,17 +192,16 @@ predictor_table[,"gene_symbol"] <- paste0('<a href="http://www.genenames.org/cgi
 kable(predictor_table, digits=2, format="html", row.names=FALSE, table.attr="id=\"res_table\"")
 ```
 
-<br>
-<h3> Heatmap </h3>
+<h3> Heatmap of selected probes </h3>
 ```{r heatmap, hfig.cap=TRUE, fig.cap="Figure 1. Heatmap of selected probes with HAI status annotation."}
 #Heatmap
 annotation <- data.frame(hai=log2(HAI$hai_response))
 rownames(annotation) <- colnames(lFC)
 mat <- lFC[ as.character(predictor_table$feature_id), order(annotation$hai)]
-pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
-         breaks = seq(-1, 1, length.out = length(mypalette) + 1),
+pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE, 
+         breaks = seq(-1, 1, length.out = length(mypalette) + 1), 
          show_rownames=TRUE, show_colnames=FALSE, scale="none",cluster_method="ward",
-         cluster_distance="correlation",color=mypalette, annotation=annotation,
+         cluster_distance="correlation",color=mypalette, annotation=annotation, 
          annotation_colors=list(hai=grey(10:0/10)))
 ```
 
@@ -195,14 +211,6 @@ pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
 x.test <- data.frame(t(lFC[ as.character(selected_probes$feature_id),]), check.names=FALSE)
 hai_pred <- as.matrix(x.test)%*%as.vector((coef(relasso)[-1]))+coef(relasso)[1]
 df <- data.frame(observed=HAI$hai_response, fitted=relasso$fitted.values)
-ggplot(df, aes(x=log2(observed), y=fitted)) + geom_point() +
+ggplot(df, aes(x=log2(observed), y=fitted)) + geom_point() + 
   geom_smooth(method="lm") +IS_theme
-```
-
-```{r printS, results="hide"}
-param
-print(s1)
-print(s2)
-print(s3)
-print(s4)
 ```
