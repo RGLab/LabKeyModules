@@ -43,11 +43,13 @@ param <- list(
     timepoint   = as.numeric( labkey.url.params$timePoint ),
     GEA_acc     = labkey.url.params$analysisAccession,
     EM_acc      = labkey.url.params$expressionMatrixAccession,
-    EM_pred     = "EXPM0003",
+    EM_pred     = labkey.url.params$testCohort,
     FDR_thresh  = as.numeric( labkey.url.params$fdrThreshold ),
-    FC_thresh   = as.numeric( labkey.url.params$fcThreshold )
+    FC_thresh   = as.numeric( labkey.url.params$fcThreshold ),
+    dichotomize = as.logical(labkey.url.params$dichotomize)
 )
 ```
+
 ```{r eset-func, cache=FALSE}
 
 eset_from_EM <- function(EM){
@@ -120,7 +122,7 @@ lFC <- exprs(GEM)[, GEM$study_time_reported == param$timepoint] - exprs(GEM)[, G
 ```
 
 ```{r hai}
-process_hai <- function(eset){ 
+process_hai <- function(eset, dichotomize){ 
   HAI_filter <- makeFilter(c("subject_accession", "IN", paste(eset$subject_accession, collapse=";")))
   ds_HAI <- labkey.selectRows(baseUrl=labkey.url.base, schemaName="study", folderPath=labkey.url.path, queryName ="hai", colNameOpt="rname", colFilter=HAI_filter)
   HAI <- data.table(ds_HAI)
@@ -129,9 +131,12 @@ process_hai <- function(eset){
   HAI <- HAI[,list(study_time_collected=study_time_collected, response=value_reported/value_reported[study_time_collected==0]),by="virus_strain,biosample_accession_name,subject_accession"]
   HAI <- HAI[study_time_collected==28]
   HAI <- HAI[,list(response=max(response)),by="subject_accession"]
+  if(isTRUE(dichotomize)){
+    HAI <- HAI[,response:=ifelse(response<=4, FALSE,  TRUE)]
+  }
   return(HAI)
 }
-OUTCOME_train <- process_hai(GEM)
+OUTCOME_train <- process_hai(GEM, dichotomize=param$dichotomize)
 ```
 
 ```{r glmnet}
@@ -162,7 +167,6 @@ if(nrow(selected_probes) < 2){
 ```
 
 ### Probe selection via the Elastic Net
-```{r len}
 The model selection is based on `r length(probes_selected)` selected probes. Optimal parameters for the Elastic Net are selected via cross-validation.
 The best predictive probes are summarized in Table 1, along with t-values and p-values calculated by fitting a multivariate linear model with the selected probes.
 ```{r lasso}
@@ -209,12 +213,12 @@ pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
 ```
 
 ```{r testing-cohort}
-if(!is.null(param$EM_pred)){
+if(param$EM_pred != ""){
   GEP <- eset_from_EM(param$EM_pred)
   pd_GEP <- all_tp(GEP, param$timepoint)
   GEP <- GEP[probes_selected, pd_GEP$biosample_accession]
   lFC_pred <- exprs(GEP)[, GEP$study_time_reported == param$timepoint] - exprs(GEP)[, GEP$study_time_reported == 0]
-  OUTCOME_pred <- process_hai(GEP)
+  OUTCOME_pred <- process_hai(GEP, dichotomize=param$dichotomize)
 }
 ```
 
@@ -222,7 +226,7 @@ if(!is.null(param$EM_pred)){
 ### Predicting the response using the selected features
 ```{r predictionhfig.cap=TRUE, fig.cap="Figure 2. Predicted vs. observed values for the prediction model."}
 #Prediction on training set
-if(is.null(param$EM_pred)){
+if(param$EM_pred ==""){
   df <- data.frame(observed=OUTCOME_train$response, fitted=relasso$fitted.values)
   ggplot(df, aes(x=log2(observed), y=fitted)) + geom_point() + geom_smooth(method="lm") +IS_theme
 } else{
@@ -231,13 +235,13 @@ if(is.null(param$EM_pred)){
   df <- data.frame(observed = c(OUTCOME_train$response, OUTCOME_pred$response),
 		   fitted = c(relasso$fitted.values, pred),
 		   cohort = c(rep(paste("a:", param$EM_acc, "(Training)"), length(OUTCOME_train$response)),
-			      rep(paste("a:", param$EM_pred, "(Training)"), length(OUTCOME_pred$response))))
+			      rep(paste("a:", param$EM_pred, "(Testing)"), length(OUTCOME_pred$response))))
   ggplot(df, aes(x=log2(observed), y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme +
   	 facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predicted response")
 }
 ```
 
-```{r printS}
+```{r printS, results="hide"}
 param
 labkey.url.params
 ```
