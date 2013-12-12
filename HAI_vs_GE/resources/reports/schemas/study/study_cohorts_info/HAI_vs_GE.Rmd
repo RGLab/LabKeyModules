@@ -131,7 +131,7 @@ process_hai <- function(eset, dichotomize){
   HAI <- HAI[,list(study_time_collected=study_time_collected, response=value_reported/value_reported[study_time_collected==0]),by="virus_strain,biosample_accession_name,subject_accession"]
   HAI <- HAI[study_time_collected==28]
   HAI <- HAI[,list(response=log2(max(response))),by="subject_accession"]
-  if(isTRUE(dichotomize)){
+  if(dichotomize){
     HAI <- HAI[,response:=ifelse(response>=log2(4), FALSE,  TRUE)]
   }
   return(HAI)
@@ -143,7 +143,11 @@ OUTCOME_train <- process_hai(GEM, dichotomize=param$dichotomize)
 #glmnet
 x <- t(lFC)
 y <- OUTCOME_train$response
-fit_hai <- glmnet(x, y, alpha=0.5)
+if(param$dichotomize){
+  fit_hai <- glmnet(x, as.factor(y), alpha=0.5, family="binomial")
+} else{
+  fit_hai <- glmnet(x, y, alpha=0.5)
+}
 cv_fit_hai <- cv.glmnet(x, y)
 coef_hai <- predict(fit_hai, s=cv_fit_hai$lambda.min, type="coefficients")
 ```
@@ -181,11 +185,22 @@ if(nObs < nFeatures){
   x.selected <- x[,names(topFeatures)]
   selected_probes <- fData(GEM)[names(topFeatures),]
 }
-relasso <- lm(y~x.selected)
+x.selected<- data.frame(x.selected)
+form <- as.formula(paste0("y~", paste(colnames(x.selected), collapse="+")))
+if(param$dichotomize){
+  relasso <- glm(form, x.selected, family="binomial")
+} else{
+  relasso <- lm(form, x.selected)
+}
 sum_relasso <- summary(relasso)
 sum_relasso_coef <- sum_relasso$coefficients
-predictor_table <- cbind(selected_probes, sum_relasso_coef[,c("t value","Pr(>|t|)")][-1,])
-setnames(predictor_table, c("t value","Pr(>|t|)"), c("t-value","p-value"))
+pred_cIdx <- grep("value|Pr", colnames(sum_relasso_coef))
+predictor_table <- sum_relasso_coef[,pred_cIdx][-1,]
+colnames(predictor_table) <- c("statistic", "p-value")
+predictor_table <- cbind(selected_probes, predictor_table)
+#predictor_table <- cbind(selected_probes, sum_relasso_coef[,c("t value","Pr(>|t|)")][-1,])
+#predictor_table <- cbind(selected_probes, sum_relasso_coef[,pred_cIdx])
+#setnames(predictor_table, c("t value","Pr(>|t|)"), c("t-value","p-value"))
 ```
 
 ```{r table}
@@ -216,7 +231,8 @@ pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
 if(param$EM_pred != ""){
   GEP <- eset_from_EM(param$EM_pred)
   pd_GEP <- all_tp(GEP, param$timepoint)
-  GEP <- GEP[probes_selected, pd_GEP$biosample_accession]
+  #GEP <- GEP[probes_selected, pd_GEP$biosample_accession]
+  GEP <- GEP[as.character(selected_probes$feature_id), pd_GEP$biosample_accession]
   lFC_pred <- exprs(GEP)[, GEP$study_time_reported == param$timepoint] - exprs(GEP)[, GEP$study_time_reported == 0]
   OUTCOME_pred <- process_hai(GEP, dichotomize=param$dichotomize)
 }
@@ -230,10 +246,12 @@ if(param$EM_pred ==""){
   df <- data.frame(observed=OUTCOME_train$response, fitted=relasso$fitted.values)
   ggplot(df, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") +IS_theme
 } else{
-  x.test <- data.frame(t(lFC_pred[ as.character(selected_probes$feature_id),]), check.names=FALSE)
-  pred <- as.matrix(x.test)%*%as.vector((coef(relasso)[-1]))+coef(relasso)[1]
+  prediction_data <- data.frame(t(lFC_pred))
+  names(prediction_data) <- names(x.selected)
+  predicted_val <- predict(relasso, newdata=prediction_data, type="response")
   df <- data.frame(observed = c(OUTCOME_train$response, OUTCOME_pred$response),
-		   fitted = c(relasso$fitted.values, pred),
+		   #fitted = c(relasso$fitted.values, pred),
+		   fitted = c(relasso$fitted.values, predicted_val),
 		   cohort = c(rep(paste("a:", param$EM_acc, "(Training)"), length(OUTCOME_train$response)),
 			      rep(paste("a:", param$EM_pred, "(Testing)"), length(OUTCOME_pred$response))))
   ggplot(df, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme +
