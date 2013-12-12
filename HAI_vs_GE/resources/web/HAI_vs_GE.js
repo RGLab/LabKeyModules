@@ -72,6 +72,10 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         //     ComboBoxes / TextFields     //
         /////////////////////////////////////
 
+        var chDichotomize = new Ext.form.Checkbox({
+            fieldLabel: 'Dichotomize'
+        });
+
         var cbCohort = new Ext.ux.form.ExtendedComboBox({
             disabled: true,
             displayField: 'cohort',
@@ -172,6 +176,23 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         });
         strTimePoint.on( 'load', function(){ cbTimePoint.setDisabled( false ); } );
 
+        var nfFalseDiscoveryRate = new Ext.form.NumberField({
+            emptyText: 'Type...',
+            fieldLabel: 'False discovery rate threshold',
+            height: 22,
+            value: 0.02,
+            width: 240
+        });
+
+        var nfFoldChange = new Ext.form.NumberField({
+            emptyText: 'Type...',
+            fieldLabel: 'Fold change threshold',
+            height: 22,
+            value: 0,
+            width: 240
+        });
+
+
         /////////////////////////////////////
         //             Buttons             //
         /////////////////////////////////////
@@ -185,7 +206,9 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                     cnfReport.inputParams = {
                         timePoint:                  cbTimePoint.getValue(),
                         analysisAccession:          r.get( 'analysis_accession' ),
-                        expressionMatrixAccession:  r.get( 'expression_matrix_accession' )
+                        expressionMatrixAccession:  r.get( 'expression_matrix_accession' ),
+                        fdrThreshold:               nfFalseDiscoveryRate.getValue(),
+                        fcThreshold:                nfFoldChange.getValue()
                     };
 
                     setReportRunning( true );
@@ -249,12 +272,15 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             deferredRender: false,
             forceLayout: true,
             items: [
+                chDichotomize,
                 cbCohort,
                 cbTimePoint,
+                nfFalseDiscoveryRate,
+                nfFoldChange,
                 btnRun
             ],
             layout: {
-                labelWidth: 115,
+                labelWidth: 185,
                 type: 'form'
             },
             title: 'Parameters'
@@ -291,11 +317,11 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             listeners: {
                 afterrender: function(){
                     maskReport = new Ext.LoadMask(
-                            this.getEl(),
-                            {
-                                msg: 'Generating the report...',
-                                msgCls: 'mask-loading'
-                            }
+                        this.getEl(),
+                        {
+                            msg: 'Generating the report...',
+                            msgCls: 'mask-loading'
+                        }
                     );
                 },
                 tabchange: function(tabPanel, tab){

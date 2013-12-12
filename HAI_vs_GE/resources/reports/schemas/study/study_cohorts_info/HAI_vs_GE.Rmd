@@ -43,8 +43,8 @@ param <- list(
     timepoint   = as.numeric( labkey.url.params$timePoint ),
     GEA_acc     = labkey.url.params$analysisAccession,
     EM_acc      = labkey.url.params$expressionMatrixAccession,
-    FDR_thresh  = 0.02, # as.numeric( labkey.url.params$fdrThreshold ),
-    FC_thresh   = 0     # as.numeric( labkey.url.params$fcThreshold )
+    FDR_thresh  = as.numeric( labkey.url.params$fdrThreshold ),
+    FC_thresh   = as.numeric( labkey.url.params$fcThreshold )
 )
 ```
 ```{r eset, cache=FALSE}
