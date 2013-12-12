@@ -45,11 +45,13 @@ param <- list(
     EM_acc      = labkey.url.params$expressionMatrixAccession,
     FDR_thresh  = as.numeric( labkey.url.params$fdrThreshold ),
     FC_thresh   = as.numeric( labkey.url.params$fcThreshold )
+    EM_pred     = "EXPM0003",
 )
 ```
-```{r eset, cache=FALSE}
-  s1 <- system.time({
-  em_filter <- makeFilter(c("expression_matrix_accession", "IN", paste(param$EM_acc, collapse=";")))
+```{r eset-func, cache=FALSE}
+
+eset_from_EM <- function(EM){
+  em_filter <- makeFilter(c("expression_matrix_accession", "IN", paste(EM, collapse=";")))
   exMat <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "study",
                              colFilter=em_filter, queryName = "gene_expression_matrices", colNameOpt = "rname")
   rownames(exMat) <- exMat$biosample_accession
@@ -65,83 +67,84 @@ param <- list(
   fdata_links <- gsub(".*%40files", labkey.file.root, umat[[grep("feature.*download", colnames(umat))]])
   fdata <- read.table(fdata_links, header=TRUE, sep="\t")
   fdata <- fdata[na.omit(match(rownames(exprs), fdata$feature_id)),]
-  phenodata <- exMat[ exMat$expression_matrix_accession==param$EM_acc,]
+  phenodata <- exMat[ exMat$expression_matrix_accession==EM,]
   phenodata <- phenodata[ match(colnames(exprs), phenodata$biosample_accession),]
   phenodata <- as(phenodata, "AnnotatedDataFrame")
   fdata <- as(fdata, "AnnotatedDataFrame")
-  GEM <- ExpressionSet(assayData = exprs, phenoData = phenodata, featureData = fdata)
-  })
+  eset <- ExpressionSet(assayData = exprs, phenoData = phenodata, featureData = fdata)
+  return(eset)
+  }
 ```
+
+
 
 ```{r get-data}
 s2 <- system.time({
+GEM <- eset_from_EM(param$EM_acc)
 GER_filter <- makeFilter(c("analysis_accession", "EQUAL", param$GEA_acc),
                          c("adj_p_val", "LESS_THAN", param$FDR_thresh))
 ds_GER <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "lists", queryName = "gene_expression_analysis_result_wide", colNameOpt="rname", colFilter=GER_filter)
 GER <- data.table(ds_GER)
 
-HAI_filter <- makeFilter(c("subject_accession", "IN", paste(GEM$subject_accession, collapse=";")))
-ds_HAI <- labkey.selectRows(baseUrl=labkey.url.base, schemaName="study", folderPath=labkey.url.path, queryName ="hai", colNameOpt="rname", colFilter=HAI_filter)
-HAI <- data.table(ds_HAI)
 })
 ```
 
 ```{r subset, echo=FALSE}
-s3 <- system.time({
-#Filter-subset
-#Filter out subjects with missing timepoints
-#Filter selected probes
-pd <- data.table(pData(GEM))
-timepoints <- c(0, param$timepoint)
-pd <- pd[,keep:=(sum(study_time_reported%in%timepoints)==length(timepoints)), by="biosample_accession_name,subject_accession"]
-pd <- pd[keep==TRUE]
-pd <- pd[study_time_reported %in% timepoints]
 GER <- GER[abs(log_fc) > param$FC_thresh, ]
 if(nrow(GER)==0){
   opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE, stop_on_error=2L)
   stop("There are 0 probes selected. Try lowering the FDR threshold or the log-FoldChange threshold")
 }
 probes_selected <- unique(GER$feature_id)
-GES <- GEM[probes_selected, pd$biosample_accession] #sorted by subject, time
-HAI <- HAI[subject_accession %in% GES$subject_accession & biosample_accession_name %in% GES$biosample_accession_name]
-})
+
+all_tp <- function(eset, timepoint){
+  pd <- data.table(pData(eset))
+  timepoints <- c(0, timepoint)
+  pd <- pd[,keep:=(sum(study_time_reported%in%timepoints)==length(timepoints)), by="biosample_accession_name,subject_accession"]
+  pd <- pd[keep==TRUE]
+  pd <- pd[study_time_reported %in% timepoints]
+  return(pd)
+}
+pd_GEM <- all_tp(GEM, param$timepoint)
+GEM <- GEM[probes_selected, pd_GEM$biosample_accession] #sorted by subject, time
 ```
 
 ```{r lFC}
-#lFC
-#print(GES)
-#print(GES$study_time_reported)
-lFC <- exprs(GES)[, GES$study_time_reported == param$timepoint] - exprs(GES)[, GES$study_time_reported == 0]
-#print(lFC[1:2,])
+lFC <- exprs(GEM)[, GEM$study_time_reported == param$timepoint] - exprs(GEM)[, GEM$study_time_reported == 0]
 ```
 
 ```{r hai}
-s4 <- system.time({
-#hai
-#Class subjects as high/low responders
-HAI <- HAI[,list(study_time_collected=study_time_collected, hai_response=value_reported/value_reported[study_time_collected==0]),by="virus_strain,biosample_accession_name,subject_accession"]
-HAI <- HAI[study_time_collected==28]
-HAI <- HAI[,list(hai_response=max(hai_response)),by="subject_accession"]
-HAI <- HAI[,responder:=ifelse(hai_response<=2, "Low", ifelse(hai_response>=4, "High", "Medium"))]
-})
+process_hai <- function(eset){ 
+  HAI_filter <- makeFilter(c("subject_accession", "IN", paste(eset$subject_accession, collapse=";")))
+  ds_HAI <- labkey.selectRows(baseUrl=labkey.url.base, schemaName="study", folderPath=labkey.url.path, queryName ="hai", colNameOpt="rname", colFilter=HAI_filter)
+  HAI <- data.table(ds_HAI)
+  HAI <- HAI[subject_accession %in% eset$subject_accession & biosample_accession_name %in% eset$biosample_accession_name]
+  
+  HAI <- HAI[,list(study_time_collected=study_time_collected, response=value_reported/value_reported[study_time_collected==0]),by="virus_strain,biosample_accession_name,subject_accession"]
+  HAI <- HAI[study_time_collected==28]
+  HAI <- HAI[,list(response=max(response)),by="subject_accession"]
+  return(HAI)
+}
+OUTCOME_train <- process_hai(GEM)
 ```
 
 ```{r glmnet}
 #glmnet
 x <- t(lFC)
-y <- log2(HAI$hai_response)
+y <- log2(OUTCOME_train$response)
 fit_hai <- glmnet(x, y, alpha=0.5)
 cv_fit_hai <- cv.glmnet(x, y)
 coef_hai <- predict(fit_hai, s=cv_fit_hai$lambda.min, type="coefficients")
 ```
+
 ```{r probes_selection}
 #Selected probes
-selected_probes <- names(which(coef_hai[,1] > 0))
-selected_probes <- fData(GES)[selected_probes[grep("Intercept", selected_probes, invert=TRUE)],]
+selected_probes <- names(which(abs(coef_hai[,1]) > 0))
+selected_probes <- fData(GEM)[selected_probes[grep("Intercept", selected_probes, invert=TRUE)],]
 #If the user selected less variables than observation, no selection is done
-if(length(probes_selected) < nrow(HAI)){
+if(length(probes_selected) < nrow(OUTCOME_train)){
   x.selected <- x
-  selected_probes <- fData(GES)[probes_selected,]
+  selected_probes <- fData(GEM)[probes_selected,]
 } else{
   x.selected <- x[, colnames(x) %in% selected_probes$feature_id, drop=FALSE]
 }
@@ -152,15 +155,24 @@ if(nrow(selected_probes) < 2){
 }
 ```
 
+### Probe selection via the Elastic Net
 The model selection is based on `r length(unique(probes_selected))` selected probes. Optimal parameters for the Elastic Net are selected via cross-validation.
 The best predictive probes are summarized in Table 1, along with t-values and p-values calculated by fitting a multivariate linear model with the selected probes.
 ```{r lasso}
 #lasso
+nFeatures <- dim(x.selected)[2]
+nObs <- length(y)
+if(nObs < nFeatures){
+  cat("You selected more features (", nFeatures, ") than observations (", nObs, ").\nThe ", nObs-2, "most significant features will be kept.\n")
+  topFeatures <- sort(abs(coef_hai[coef_hai[,1] >0,]), decreasing=TRUE)
+  topFeatures <- topFeatures[grep("Intercept", names(topFeatures), invert=TRUE)]
+  topFeatures <- topFeatures[1:(nObs-2)]
+  x.selected <- x[,names(topFeatures)]
+  selected_probes <- fData(GEM)[names(topFeatures),]
+}
 relasso <- lm(y~x.selected)
 sum_relasso <- summary(relasso)
 sum_relasso_coef <- sum_relasso$coefficients
-#print(selected_probes)
-#print(sum_relasso_coef[,c("t value","Pr(>|t|)")][-1,])
 predictor_table <- cbind(selected_probes, sum_relasso_coef[,c("t value","Pr(>|t|)")][-1,])
 setnames(predictor_table, c("t value","Pr(>|t|)"), c("t-value","p-value"))
 ```
@@ -179,7 +191,7 @@ kable(predictor_table, digits=2, format="html", row.names=FALSE, table.attr="id=
 <h3> Heatmap </h3>
 ```{r heatmap, hfig.cap=TRUE, fig.cap="Figure 1. Heatmap of selected probes with HAI status annotation."}
 #Heatmap
-annotation <- data.frame(hai=log2(HAI$hai_response))
+annotation <- data.frame(hai=log2(OUTCOME_train$response))
 rownames(annotation) <- colnames(lFC)
 mat <- lFC[ as.character(predictor_table$feature_id), order(annotation$hai)]
 pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
@@ -189,20 +201,35 @@ pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
          annotation_colors=list(hai=grey(10:0/10)))
 ```
 
-### Prediction on training set
+```{r testing-cohort}
+if(!is.null(param$EM_pred)){
+  GEP <- eset_from_EM(param$EM_pred)
+  pd_GEP <- all_tp(GEP, param$timepoint)
+  GEP <- GEP[probes_selected, pd_GEP$biosample_accession]
+  lFC_pred <- exprs(GEP)[, GEP$study_time_reported == param$timepoint] - exprs(GEP)[, GEP$study_time_reported == 0]
+  OUTCOME_pred <- process_hai(GEP)
+}
+```
+
+
+### Predicting the response using the selected features
 ```{r predictionhfig.cap=TRUE, fig.cap="Figure 2. Predicted vs. observed values for the prediction model."}
 #Prediction on training set
-x.test <- data.frame(t(lFC[ as.character(selected_probes$feature_id),]), check.names=FALSE)
-hai_pred <- as.matrix(x.test)%*%as.vector((coef(relasso)[-1]))+coef(relasso)[1]
-df <- data.frame(observed=HAI$hai_response, fitted=relasso$fitted.values)
-ggplot(df, aes(x=log2(observed), y=fitted)) + geom_point() +
-  geom_smooth(method="lm") +IS_theme
+if(is.null(param$EM_pred)){
+  df <- data.frame(observed=OUTCOME_train$response, fitted=relasso$fitted.values)
+  ggplot(df, aes(x=log2(observed), y=fitted)) + geom_point() + geom_smooth(method="lm") +IS_theme
+} else{
+  x.test <- data.frame(t(lFC_pred[ as.character(selected_probes$feature_id),]), check.names=FALSE)
+  pred <- as.matrix(x.test)%*%as.vector((coef(relasso)[-1]))+coef(relasso)[1]
+  df <- data.frame(observed = c(OUTCOME_train$response, OUTCOME_pred$response),
+		   fitted = c(relasso$fitted.values, pred),
+		   cohort = c(rep(paste("a:", param$EM_acc, "(Training)"), length(OUTCOME_train$response)),
+			      rep(paste("a:", param$EM_pred, "(Training)"), length(OUTCOME_pred$response))))
+  ggplot(df, aes(x=log2(observed), y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme +
+  	 facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predicted response")
+}
 ```
 
 ```{r printS, results="hide"}
 param
-print(s1)
-print(s2)
-print(s3)
-print(s4)
 ```
