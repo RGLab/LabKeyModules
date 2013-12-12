@@ -43,10 +43,11 @@ param <- list(
     timepoint   = as.numeric( labkey.url.params$timePoint ),
     GEA_acc     = labkey.url.params$analysisAccession,
     EM_acc      = labkey.url.params$expressionMatrixAccession,
-    EM_pred     = labkey.url.params$testCohort,
+    dichValue   = as.numeric( labkey.url.params$dichotomizeValue ),
     FDR_thresh  = as.numeric( labkey.url.params$fdrThreshold ),
     FC_thresh   = as.numeric( labkey.url.params$fcThreshold ),
-    dichotomize = as.logical(labkey.url.params$dichotomize)
+    dichotomize = as.logical( labkey.url.params$dichotomize ),
+    EM_pred     = labkey.url.params$expressionMatrixPredict
 )
 ```
 
@@ -132,7 +133,7 @@ process_hai <- function(eset, dichotomize){
   HAI <- HAI[study_time_collected==28]
   HAI <- HAI[,list(response=log2(max(response))),by="subject_accession"]
   if(isTRUE(dichotomize)){
-    HAI <- HAI[,response:=ifelse(response>=log2(4), FALSE,  TRUE)]
+    HAI <- HAI[,response:=ifelse(response>=log2(dichValue), FALSE,  TRUE)]
   }
   return(HAI)
 }
@@ -245,3 +246,4 @@ if(param$EM_pred ==""){
 param
 labkey.url.params
 ```
+

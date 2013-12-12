@@ -28,43 +28,55 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         var
             me                                  = this,
             maskReport                          = undefined,
-            arrayCohorts                        = [],
-            arrayTimePoints                     = []
+            fieldWidth                          = 240
             ;
 
+        var checkBtnRunStatus = function(){
+            if (    cbCohortPredict.getValue() != '' &&
+                    cbTimePoint.getValue() != '' &&
+                    nfFalseDiscoveryRate.getRawValue() != '' &&
+                    nfFoldChange.getRawValue() != '' &&
+                    ( ( chDichotomize.getValue() && nfDichotomize.getRawValue() != '' ) || ! chDichotomize.getValue() )
+                    ){
+                btnRun.setDisabled( false );
+            } else {
+                btnRun.setDisabled( true );
+            }
+        };
 
         ///////////////////////////////////
         //            Stores             //
         ///////////////////////////////////
 
-        var strGrandTable = new LABKEY.ext.Store({
+        var strCohort = new LABKEY.ext.Store({
             autoLoad: true,
             listeners: {
-                load: function(){
-                    arrayCohorts = this.collect( 'cohort' );
-                    Ext.each( arrayCohorts, function(r, i, p){ p[i] = [ r ]; } );
-                    strCohort.loadData( arrayCohorts );
-                },
                 loadexception: LABKEY.ext.HAI_vs_GE_Lib.onFailure
             },
-            queryName: 'study_cohorts_info',
+            queryName: 'cohorts',
             schemaName: 'study'
         });
 
-        var strCohort = new Ext.data.ArrayStore({
-            data: [],
-            fields: ['cohort', 'cohort'],
+        var strTimePoint = new LABKEY.ext.Store({
             listeners: {
+                load: function(){
+                    cbTimePoint.setDisabled( false );
+                },
                 loadexception: LABKEY.ext.HAI_vs_GE_Lib.onFailure
-            }
+            },
+            queryName: 'timepoints',
+            schemaName: 'study'
         });
 
-        var strTimePoint = new Ext.data.ArrayStore({
-            data: [],
-            fields: ['timepoint', 'timepoint'],
+        var strCohortPredict = new LABKEY.ext.Store({
             listeners: {
+                load: function(){
+                    cbCohortPredict.setDisabled( false );
+                },
                 loadexception: LABKEY.ext.HAI_vs_GE_Lib.onFailure
-            }
+            },
+            queryName: 'cohorts',
+            schemaName: 'study'
         });
 
 
@@ -73,46 +85,87 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var chDichotomize = new Ext.form.Checkbox({
-            fieldLabel: 'Dichotomize'
+            checked: true,
+            fieldLabel: 'Dichotomize',
+            handler: function( cb, s ){
+                if ( s ){
+                    nfDichotomize.show();
+                } else {
+                    nfDichotomize.hide();
+                }
+            }
+        });
+
+        var nfDichotomize = new Ext.form.NumberField({
+            emptyText: 'Type...',
+            enableKeyEvents: true,
+            fieldLabel: 'Enter dichotomization threshold',
+            height: 22,
+            listeners: {
+                keyup: {
+                    buffer: 150,
+                    fn: function(field, e) {
+                        if( Ext.EventObject.ESC == e.getKey() ){
+                            field.setValue('');
+                        }
+
+                        checkBtnRunStatus();
+                    }
+                }
+            },
+            value: 0,
+            width: fieldWidth
         });
 
         var cbCohort = new Ext.ux.form.ExtendedComboBox({
-            disabled: true,
             displayField: 'cohort',
             emptyText: 'Click...',
-            fieldLabel: 'Select a cohort',
+            fieldLabel: 'Select a cohort for training',
             listeners: {
                 change: function(){
                     if ( this.getValue() == '' ){
                         cbTimePoint.clearValue();
                         cbTimePoint.setDisabled( true );
+                        cbCohortPredict.clearValue();
+                        cbCohortPredict.setDisabled( true );
                         btnRun.setDisabled( true );
                     } else {
-                        strGrandTable.filter( 'cohort', this.getValue(), false, true, true );
+                        strTimePoint.load( { params: { 'query.param.COHORT_VALUE': this.getRawValue() } } );
 
-                        arrayTimePoints = strGrandTable.collect( 'timepoint' );
-                        Ext.each( arrayTimePoints, function(r, i, p){ p[i] = [ r ]; } );
-                        strTimePoint.loadData( arrayTimePoints );
+                        strCohortPredict.setUserFilters([
+                            LABKEY.Filter.create(
+                                'expression_matrix_accession',
+                                this.getValue(),
+                                LABKEY.Filter.Types.NOT_EQUAL
+                            )
+                        ]);
+                        strCohortPredict.load();
                     }
                 },
                 cleared: function(){
                     cbTimePoint.clearValue();
                     cbTimePoint.setDisabled( true );
+                    cbCohortPredict.clearValue();
+                    cbCohortPredict.setDisabled( true );
                     btnRun.setDisabled( true );
                 },
                 select: function(){
-                    strGrandTable.filter( 'cohort', this.getValue(), false, true, true );
+                    strTimePoint.load( { params: { 'query.param.COHORT_VALUE': this.getRawValue() } } );
 
-                    arrayTimePoints = strGrandTable.collect( 'timepoint' );
-                    Ext.each( arrayTimePoints, function(r, i, p){ p[i] = [ r ]; } );
-                    strTimePoint.loadData( arrayTimePoints );
+                    strCohortPredict.setUserFilters([
+                        LABKEY.Filter.create(
+                            'expression_matrix_accession',
+                            this.getValue(),
+                            LABKEY.Filter.Types.NOT_EQUAL
+                        )
+                    ]);
+                    strCohortPredict.load();
                 }
             },
             store: strCohort,
-            valueField: 'cohort',
-            width: 240
+            valueField: 'expression_matrix_accession',
+            width: fieldWidth
         });
-        strCohort.on( 'load', function(){ cbCohort.setDisabled( false ); } );
 
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
             disabled: true,
@@ -120,20 +173,105 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             emptyText: 'Click...',
             fieldLabel: 'Select a time point',
             listeners: {
-                change: function(){
-                    if ( this.getValue() == '' ){
-                        btnRun.setDisabled( true );
-                    } else {
-                        strGrandTable.filterBy(
-                            function(r){
-                                return  r.get( 'cohort' )       == cbCohort.getValue() &&
-                                        r.get( 'timepoint' )    == cbTimePoint.getValue();
-                            }
-                        );
+                change:     checkBtnRunStatus,
+                cleared:    checkBtnRunStatus,
+                select:     checkBtnRunStatus
+            },
+            store: strTimePoint,
+            valueField: 'timepoint',
+            width: fieldWidth
+        });
 
-                        var count = strGrandTable.getCount();
+        var nfFalseDiscoveryRate = new Ext.form.NumberField({
+            emptyText: 'Type...',
+            enableKeyEvents: true,
+            fieldLabel: 'Enter false discovery rate threshold',
+            height: 22,
+            listeners: {
+                keyup: {
+                    buffer: 150,
+                    fn: function(field, e) {
+                        if( Ext.EventObject.ESC == e.getKey() ){
+                            field.setValue('');
+                        }
+
+                        checkBtnRunStatus();
+                    }
+                }
+            },
+            value: 0.02,
+            width: fieldWidth
+        });
+
+        var nfFoldChange = new Ext.form.NumberField({
+            emptyText: 'Type...',
+            enableKeyEvents: true,
+            fieldLabel: 'Enter fold change threshold',
+            height: 22,
+            listeners: {
+                keyup: {
+                    buffer: 150,
+                    fn: function(field, e) {
+                        if( Ext.EventObject.ESC == e.getKey() ){
+                            field.setValue('');
+                        }
+
+                        checkBtnRunStatus();
+                    }
+                }
+            },
+            value: 0,
+            width: fieldWidth
+        });
+
+        var cbCohortPredict = new Ext.ux.form.ExtendedComboBox({
+            disabled: true,
+            displayField: 'cohort',
+            emptyText: 'Click...',
+            fieldLabel: 'Select a cohort for predicting',
+            listeners: {
+                change:     checkBtnRunStatus,
+                cleared:    checkBtnRunStatus,
+                select:     checkBtnRunStatus
+            },
+            store: strCohortPredict,
+            valueField: 'expression_matrix_accession',
+            width: fieldWidth
+        });
+
+
+        /////////////////////////////////////
+        //             Buttons             //
+        /////////////////////////////////////
+
+        var btnRun = new Ext.Button({
+            disabled: true,
+            handler: function(){
+                LABKEY.Query.selectRows({
+                    failure: LABKEY.ext.HAI_vs_GE_Lib.onFailure,
+                    filterArray: [
+                        LABKEY.Filter.create( 'expression_matrix_accession', cbCohort.getValue() ),
+                        LABKEY.Filter.create( 'timepoint', cbTimePoint.getValue() )
+                    ],
+                    queryName: 'study_cohorts_info',
+                    schemaName: 'study',
+                    success: function(data){
+                        var count = data.rows.length;
                         if ( count == 1 ){
-                            btnRun.setDisabled( false );
+                            cnfReport.inputParams = {
+                                dichotomize:                chDichotomize.getValue(),
+                                dichotomizeValue:           nfDichotomize.getValue(),
+                                timePoint:                  cbTimePoint.getValue(),
+                                analysisAccession:          data.rows[0].analysis_accession,
+                                expressionMatrixAccession:  cbCohort.getValue(),
+                                fdrThreshold:               nfFalseDiscoveryRate.getValue(),
+                                fcThreshold:                nfFoldChange.getValue(),
+                                expressionMatrixPredict:    cbCohortPredict.getValue()
+                            };
+
+                            setReportRunning( true );
+
+                            LABKEY.Report.execute( cnfReport );
                         } else if ( count > 1 ) {
                             LABKEY.ext.HAI_vs_GE_Lib.onFailure({
                                 exception: 'The selected values do not result in a unique set of parameters.'
@@ -144,90 +282,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                             });
                         }
                     }
-                },
-                cleared: function(){
-                    btnRun.setDisabled( true );
-                },
-                select: function(){
-                    strGrandTable.filterBy(
-                        function(r){
-                            return  r.get( 'cohort' )       == cbCohort.getValue() &&
-                                    r.get( 'timepoint' )    == cbTimePoint.getValue();
-                        }
-                    );
-
-                    var count = strGrandTable.getCount();
-                    if ( count == 1 ){
-                        btnRun.setDisabled( false );
-                    } else if ( count > 1 ) {
-                        LABKEY.ext.HAI_vs_GE_Lib.onFailure({
-                            exception: 'The selected values do not result in a unique set of parameters.'
-                        });
-                    } else if ( count < 1 ) {
-                        LABKEY.ext.HAI_vs_GE_Lib.onFailure({
-                            exception: 'The selected values result in an empty set of parameters.'
-                        });
-                    }
-                }
-            },
-            store: strTimePoint,
-            valueField: 'timepoint',
-            width: 240
-        });
-        strTimePoint.on( 'load', function(){ cbTimePoint.setDisabled( false ); } );
-
-        var nfFalseDiscoveryRate = new Ext.form.NumberField({
-            emptyText: 'Type...',
-            fieldLabel: 'False discovery rate threshold',
-            height: 22,
-            value: 0.02,
-            width: 240
-        });
-
-        var nfFoldChange = new Ext.form.NumberField({
-            emptyText: 'Type...',
-            fieldLabel: 'Fold change threshold',
-            height: 22,
-            value: 0,
-            width: 240
-        });
-
-        var tfTestCohort = new Ext.form.TextField({
-            emptyText: '',
-            fieldLabel: 'Testing cohort',
-            height: 22,
-            value: '',
-            width: 240
-        });
-
-        /////////////////////////////////////
-        //             Buttons             //
-        /////////////////////////////////////
-
-        var btnRun = new Ext.Button({
-            disabled: true,
-            handler: function(){
-                var r = strGrandTable.getAt( 0 );
-
-                if ( r != undefined ){
-                    cnfReport.inputParams = {
-			dichotomize:                chDichotomize.getValue(),
-                        timePoint:                  cbTimePoint.getValue(),
-                        analysisAccession:          r.get( 'analysis_accession' ),
-                        expressionMatrixAccession:  r.get( 'expression_matrix_accession' ),
-                        fdrThreshold:               nfFalseDiscoveryRate.getValue(),
-                        fcThreshold:                nfFoldChange.getValue(),
-                        testCohort:                 tfTestCohort.getValue()
-                    };
-
-                    setReportRunning( true );
-
-                    LABKEY.Report.execute( cnfReport );
-                } else {
-                    LABKEY.ext.HAI_vs_GE_Lib.onFailure({
-                        exception: 'The values selected result in an empty set of parameters.'
-                    });
-                }
+                });
             },
             text: 'Run'
         });
@@ -282,15 +337,16 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             forceLayout: true,
             items: [
                 chDichotomize,
+                nfDichotomize,
                 cbCohort,
                 cbTimePoint,
                 nfFalseDiscoveryRate,
                 nfFoldChange,
-		tfTestCohort,
+                cbCohortPredict,
                 btnRun
             ],
             layout: {
-                labelWidth: 185,
+                labelWidth: 210,
                 type: 'form'
             },
             title: 'Parameters'

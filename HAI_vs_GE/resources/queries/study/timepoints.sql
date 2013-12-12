@@ -1,0 +1,7 @@
+PARAMETERS( COHORT_VALUE VARCHAR )
+SELECT DISTINCT
+ timepoint
+FROM
+ study_cohorts_info
+WHERE
+ cohort = COHORT_VALUE
