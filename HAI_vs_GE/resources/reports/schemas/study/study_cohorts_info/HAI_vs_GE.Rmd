@@ -44,8 +44,8 @@ param <- list(
     GEA_acc     = labkey.url.params$analysisAccession,
     EM_acc      = labkey.url.params$expressionMatrixAccession,
     EM_pred     = "EXPM0003",
-    FDR_thresh  = 0.02, # as.numeric( labkey.url.params$fdrThreshold ),
-    FC_thresh   = 0     # as.numeric( labkey.url.params$fcThreshold )
+    FDR_thresh  = as.numeric( labkey.url.params$fdrThreshold ),
+    FC_thresh   = as.numeric( labkey.url.params$fcThreshold )
 )
 ```
 ```{r eset-func, cache=FALSE}
@@ -92,8 +92,14 @@ GER <- data.table(ds_GER)
 ```{r subset, echo=FALSE}
 GER <- GER[abs(log_fc) > param$FC_thresh, ]
 if(nrow(GER)==0){
-  opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE, stop_on_error=2L)
-  stop("There are 0 probes selected. Try lowering the FDR threshold or the log-FoldChange threshold")
+  #GER_filter <- makeFilter(c("analysis_accession", "EQUAL", param$GEA_acc))
+  #ds_GER <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "lists", queryName = "gene_expression_analysis_result_wide", colNameOpt="rname", colFilter=GER_filter)
+  #maxFC <- max(abs(ds_GER$log_fc))
+  #minFDR <- min(ds_GER$adj_p_val)
+  opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
+  stop("There are 0 probes selected. Try lowering the FDR threshold or increasing the absolute log-FoldChange threshold.")
+       #"The minimum FDR for this cohort at this timepoint is ", minFDR,". Selected:", param$FDR_thresh, "\n",
+       #"The maximum log Fold-Change is ", maxFC,". Selected:", param$FC_thresh)
 }
 probes_selected <- unique(GER$feature_id)
 
@@ -156,7 +162,8 @@ if(nrow(selected_probes) < 2){
 ```
 
 ### Probe selection via the Elastic Net
-The model selection is based on `r length(unique(probes_selected))` selected probes. Optimal parameters for the Elastic Net are selected via cross-validation.
+```{r len}
+The model selection is based on `r length(probes_selected)` selected probes. Optimal parameters for the Elastic Net are selected via cross-validation.
 The best predictive probes are summarized in Table 1, along with t-values and p-values calculated by fitting a multivariate linear model with the selected probes.
 ```{r lasso}
 #lasso
@@ -230,6 +237,7 @@ if(is.null(param$EM_pred)){
 }
 ```
 
-```{r printS, results="hide"}
+```{r printS}
 param
+labkey.url.params
 ```

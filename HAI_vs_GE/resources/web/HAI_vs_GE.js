@@ -172,6 +172,68 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         });
         strTimePoint.on( 'load', function(){ cbTimePoint.setDisabled( false ); } );
 
+
+
+        var tfFC_thresh = new Ext.form.TriggerField({
+	    emptyText: '',
+            enableKeyEvents: true,
+            fieldLabel: 'Absolute log-FC threshold',
+            listeners: {
+                keyup: {
+                    buffer: 150,
+                    fn: function(field, e) {
+                        if( Ext.EventObject.ESC == e.getKey() ){
+                            field.onTriggerClick();
+                        }
+                        else {
+                            if ( Ext.util.Format.trim( this.getValue() ) != '' ){
+                                btnRun.setDisabled( false );
+                            } else {
+                                btnRun.setDisabled( true );
+                            }
+
+                            var val = field.getRawValue();
+                        }
+                    }
+                }
+            },
+            onTriggerClick: function(){
+                this.reset();
+            },
+            triggerClass: 'x-form-clear-trigger'
+        });
+
+        var tfFDR_thresh = new Ext.form.TriggerField({
+            emptyText: '',
+            enableKeyEvents: true,
+            fieldLabel: 'FDR threshold',
+            listeners: {
+                keyup: {
+                    buffer: 150,
+                    fn: function(field, e) {
+                        if( Ext.EventObject.ESC == e.getKey() ){
+                            field.onTriggerClick();
+                        }
+                        else {
+                            if ( Ext.util.Format.trim( this.getValue() ) != '' ){
+                                btnRun.setDisabled( false );
+                            } else {
+                                btnRun.setDisabled( true );
+                            }
+
+                            var val = field.getRawValue();
+                        }
+                    }
+                }
+            },
+            onTriggerClick: function(){
+                this.reset();
+            },
+            triggerClass: 'x-form-clear-trigger'
+        });
+
+
+
         /////////////////////////////////////
         //             Buttons             //
         /////////////////////////////////////
@@ -184,6 +246,8 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                 if ( r != undefined ){
                     cnfReport.inputParams = {
                         timePoint:                  cbTimePoint.getValue(),
+                        fcThreshold:                tfFC_thresh.getValue(),
+                        fdrThreshold:               tfFDR_thresh.getValue(),
                         analysisAccession:          r.get( 'analysis_accession' ),
                         expressionMatrixAccession:  r.get( 'expression_matrix_accession' )
                     };
@@ -251,6 +315,8 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
             items: [
                 cbCohort,
                 cbTimePoint,
+		tfFC_thresh,
+		tfFDR_thresh,
                 btnRun
             ],
             layout: {
