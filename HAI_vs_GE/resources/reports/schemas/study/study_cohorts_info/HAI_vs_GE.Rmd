@@ -130,9 +130,9 @@ process_hai <- function(eset, dichotomize){
   
   HAI <- HAI[,list(study_time_collected=study_time_collected, response=value_reported/value_reported[study_time_collected==0]),by="virus_strain,biosample_accession_name,subject_accession"]
   HAI <- HAI[study_time_collected==28]
-  HAI <- HAI[,list(response=max(response)),by="subject_accession"]
+  HAI <- HAI[,list(response=log2(max(response))),by="subject_accession"]
   if(isTRUE(dichotomize)){
-    HAI <- HAI[,response:=ifelse(response<=4, FALSE,  TRUE)]
+    HAI <- HAI[,response:=ifelse(response<=log2(4), FALSE,  TRUE)]
   }
   return(HAI)
 }
@@ -142,7 +142,7 @@ OUTCOME_train <- process_hai(GEM, dichotomize=param$dichotomize)
 ```{r glmnet}
 #glmnet
 x <- t(lFC)
-y <- log2(OUTCOME_train$response)
+y <- OUTCOME_train$response
 fit_hai <- glmnet(x, y, alpha=0.5)
 cv_fit_hai <- cv.glmnet(x, y)
 coef_hai <- predict(fit_hai, s=cv_fit_hai$lambda.min, type="coefficients")
