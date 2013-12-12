@@ -132,7 +132,7 @@ process_hai <- function(eset, dichotomize){
   HAI <- HAI[study_time_collected==28]
   HAI <- HAI[,list(response=log2(max(response))),by="subject_accession"]
   if(isTRUE(dichotomize)){
-    HAI <- HAI[,response:=ifelse(response<=log2(4), FALSE,  TRUE)]
+    HAI <- HAI[,response:=ifelse(response>=log2(4), FALSE,  TRUE)]
   }
   return(HAI)
 }
@@ -202,7 +202,7 @@ kable(predictor_table, digits=2, format="html", row.names=FALSE, table.attr="id=
 <h3> Heatmap </h3>
 ```{r heatmap, hfig.cap=TRUE, fig.cap="Figure 1. Heatmap of selected probes with HAI status annotation."}
 #Heatmap
-annotation <- data.frame(hai=log2(OUTCOME_train$response))
+annotation <- data.frame(hai=as.numeric(OUTCOME_train$response))
 rownames(annotation) <- colnames(lFC)
 mat <- lFC[ as.character(predictor_table$feature_id), order(annotation$hai)]
 pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
@@ -228,7 +228,7 @@ if(param$EM_pred != ""){
 #Prediction on training set
 if(param$EM_pred ==""){
   df <- data.frame(observed=OUTCOME_train$response, fitted=relasso$fitted.values)
-  ggplot(df, aes(x=log2(observed), y=fitted)) + geom_point() + geom_smooth(method="lm") +IS_theme
+  ggplot(df, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") +IS_theme
 } else{
   x.test <- data.frame(t(lFC_pred[ as.character(selected_probes$feature_id),]), check.names=FALSE)
   pred <- as.matrix(x.test)%*%as.vector((coef(relasso)[-1]))+coef(relasso)[1]
@@ -236,7 +236,7 @@ if(param$EM_pred ==""){
 		   fitted = c(relasso$fitted.values, pred),
 		   cohort = c(rep(paste("a:", param$EM_acc, "(Training)"), length(OUTCOME_train$response)),
 			      rep(paste("a:", param$EM_pred, "(Testing)"), length(OUTCOME_pred$response))))
-  ggplot(df, aes(x=log2(observed), y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme +
+  ggplot(df, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme +
   	 facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predicted response")
 }
 ```
