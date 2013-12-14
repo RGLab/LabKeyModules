@@ -230,12 +230,23 @@ pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
 
 ```{r testing-cohort}
 if(param$EM_pred != ""){
-  GEP <- eset_from_EM(param$EM_pred)
-  pd_GEP <- all_tp(GEP, param$timepoint)
-  #GEP <- GEP[probes_selected, pd_GEP$biosample_accession]
-  GEP <- GEP[as.character(selected_probes$feature_id), pd_GEP$biosample_accession]
-  lFC_pred <- exprs(GEP)[, GEP$study_time_reported == param$timepoint] - exprs(GEP)[, GEP$study_time_reported == 0]
-  OUTCOME_pred <- process_hai(GEP, dichotomize=param$dichotomize)
+  GEP <- lapply(param$EM_pred, eset_from_EM)
+  GEP <- lapply(GEP, function(x){
+		pd <- all_tp(x, param$timepoint)
+		x[as.character(selected_probes$feature_id), pd$biosample_accession]
+	 })
+  lFC_pred <- lapply(GEP, function(x){
+			exprs(x)[, x$study_time_reported == param$timepoint] - exprs(x)[, x$study_time_reported == 0]
+		})
+  pred_lengths <- lapply(lFC_pred, ncol)
+  lFC_pred <- do.call("cbind", lFC_pred)
+  OUTCOME_pred <- rbindlist(lapply(GEP, process_hai, dichotomize=param$dichotomize))
+
+  #GEP <- eset_from_EM(param$EM_pred)
+  #pd_GEP <- all_tp(GEP, param$timepoint)
+  #GEP <- GEP[as.character(selected_probes$feature_id), pd_GEP$biosample_accession]
+  #lFC_pred <- exprs(GEP)[, GEP$study_time_reported == param$timepoint] - exprs(GEP)[, GEP$study_time_reported == 0]
+  #OUTCOME_pred <- process_hai(GEP, dichotomize=param$dichotomize)
 }
 ```
 
@@ -251,10 +262,9 @@ if(param$EM_pred ==""){
   names(prediction_data) <- names(x.selected)
   predicted_val <- predict(relasso, newdata=prediction_data, type="response")
   df <- data.frame(observed = c(OUTCOME_train$response, OUTCOME_pred$response),
-		   #fitted = c(relasso$fitted.values, pred),
 		   fitted = c(relasso$fitted.values, predicted_val),
 		   cohort = c(rep(paste("a:", param$EM_acc, "(Training)"), length(OUTCOME_train$response)),
-			      rep(paste("a:", param$EM_pred, "(Testing)"), length(OUTCOME_pred$response))))
+  			      rep(paste("b:", param$EM_pred, "(Testing)"), pred_lengths)))
   ggplot(df, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme +
   	 facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predicted response")
 }
