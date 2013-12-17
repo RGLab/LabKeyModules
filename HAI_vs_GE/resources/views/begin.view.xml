@@ -1,11 +1,13 @@
 <view xmlns='http://labkey.org/data/xml/view' title='Prediction of antibody response from gene-expression'>
     <dependencies>
+        <dependency path='Ext.ux.form.LovCombo.css'/>
         <dependency path='HAI_vs_GE/gridfilters/css/RangeMenu.css'/>
         <dependency path='HAI_vs_GE/gridfilters/css/GridFilters.css'/>
         <dependency path='HAI_vs_GE/HAI_vs_GE.css'/>
 
         <dependency path='Ext3'/>
 
+        <dependency path='Ext.ux.form.LovCombo.js'/>
         <dependency path='HAI_vs_GE/gridfilters/menu/RangeMenu.js'/>
         <dependency path='HAI_vs_GE/gridfilters/menu/ListMenu.js'/>
         <dependency path='HAI_vs_GE/gridfilters/GridFilters.js'/>
@@ -16,6 +18,7 @@
         <dependency path='HAI_vs_GE/gridfilters/filter/NumericFilter.js'/>
         <dependency path='HAI_vs_GE/gridfilters/filter/BooleanFilter.js'/>
         <dependency path='HAI_vs_GE/ExtendedComboBox.js'/>
+        <dependency path='HAI_vs_GE/ExtendedLovCombo.js'/>
         <dependency path='HAI_vs_GE/GridPanelHeaderResize.js'/>
         <dependency path='HAI_vs_GE/HAI_vs_GE_Lib.js'/>
 

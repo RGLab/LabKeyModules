@@ -2,7 +2,6 @@ SELECT DISTINCT
  GEM.matrix_description.description AS cohort,
  GEM.study_time_reported AS timepoint,
  GEA.analysis_accession,
- GEA.description,
  GEM.expression_matrix_accession
 FROM
  hai,

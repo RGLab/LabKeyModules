@@ -76,6 +76,13 @@
 }
 
 /* ************************************************************ */
+.hai_vs_ge legend {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+
+
 .hai_vs_ge {
     line-height: 100% !important;
 }
