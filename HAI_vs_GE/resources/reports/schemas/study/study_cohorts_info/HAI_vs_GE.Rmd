@@ -44,6 +44,7 @@ param <- list(
     timepoint   = as.numeric( labkey.url.params$timePoint ),
     GEA_acc     = labkey.url.params$analysisAccession,
     EM_acc      = labkey.url.params$expressionMatrixAccession,
+    #EM_acc      = c("EXPM0001", "EXPM0003")
     dichValue   = as.numeric( labkey.url.params$dichotomizeValue ),
     FDR_thresh  = as.numeric( labkey.url.params$fdrThreshold ),
     FC_thresh   = as.numeric( labkey.url.params$fcThreshold ),
@@ -53,7 +54,7 @@ param <- list(
 ```
 
 ```{r eset-func, cache=FALSE}
-
+# Create an eset
 eset_from_EM <- function(EM){
   em_filter <- makeFilter(c("expression_matrix_accession", "IN", paste(EM, collapse=";")))
   exMat <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "study",
@@ -78,35 +79,7 @@ eset_from_EM <- function(EM){
   eset <- ExpressionSet(assayData = exprs, phenoData = phenodata, featureData = fdata)
   return(eset)
   }
-```
-
-
-
-```{r get-data}
-s2 <- system.time({
-GEM <- eset_from_EM(param$EM_acc)
-GER_filter <- makeFilter(c("analysis_accession", "EQUAL", param$GEA_acc),
-                         c("adj_p_val", "LESS_THAN", param$FDR_thresh))
-ds_GER <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "lists", queryName = "gene_expression_analysis_result_wide", colNameOpt="rname", colFilter=GER_filter)
-GER <- data.table(ds_GER)
-
-})
-```
-
-```{r subset, echo=FALSE}
-GER <- GER[abs(log_fc) > param$FC_thresh, ]
-if(nrow(GER)==0){
-  #GER_filter <- makeFilter(c("analysis_accession", "EQUAL", param$GEA_acc))
-  #ds_GER <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "lists", queryName = "gene_expression_analysis_result_wide", colNameOpt="rname", colFilter=GER_filter)
-  #maxFC <- max(abs(ds_GER$log_fc))
-  #minFDR <- min(ds_GER$adj_p_val)
-  opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
-  stop("There are 0 probes selected. Try lowering the FDR threshold or increasing the absolute log-FoldChange threshold.")
-       #"The minimum FDR for this cohort at this timepoint is ", minFDR,". Selected:", param$FDR_thresh, "\n",
-       #"The maximum log Fold-Change is ", maxFC,". Selected:", param$FC_thresh)
-}
-probes_selected <- unique(GER$feature_id)
-
+# Return only the subjects with all required timepoints (and 0)
 all_tp <- function(eset, timepoint){
   pd <- data.table(pData(eset))
   timepoints <- c(0, timepoint)
@@ -115,6 +88,34 @@ all_tp <- function(eset, timepoint){
   pd <- pd[study_time_reported %in% timepoints]
   return(pd)
 }
+```
+
+
+
+```{r get-data}
+#GEM <- lapply(EM_acc, eset_from_EM)
+
+ 
+GEM <- eset_from_EM(param$EM_acc)
+GER_filter <- makeFilter(c("analysis_accession", "IN", paste(param$GEA_acc, collapse=";")),
+                         c("adj_p_val", "LESS_THAN", param$FDR_thresh))
+GER <-data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "lists", queryName = "gene_expression_analysis_result_wide", colNameOpt="rname", colFilter=GER_filter))
+```
+
+```{r subset, echo=FALSE}
+GER <- GER[abs(log_fc) > param$FC_thresh, ]
+if(nrow(GER)==0){
+  opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
+  stop("There are 0 probes selected. Try lowering the FDR threshold or increasing the absolute log-FoldChange threshold.")
+}
+probes_selected <- unique(GER$feature_id)
+
+#GEM <- lapply(GEM, function(x){
+  #pd <- all_tp(x, param$timepoint)
+  #x[as.character(probes_selected$feature_id), pd$biosample_accession]
+#})
+#print(GEM)
+
 pd_GEM <- all_tp(GEM, param$timepoint)
 GEM <- GEM[probes_selected, pd_GEM$biosample_accession] #sorted by subject, time
 ```
@@ -230,7 +231,7 @@ pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
 ```
 
 ```{r testing-cohort}
-if(param$EM_pred != ""){
+if(length(param$EM_pred) > 0){
   GEP <- lapply(param$EM_pred, eset_from_EM)
   GEP <- lapply(GEP, function(x){
 		pd <- all_tp(x, param$timepoint)
@@ -242,12 +243,6 @@ if(param$EM_pred != ""){
   pred_lengths <- lapply(lFC_pred, ncol)
   lFC_pred <- do.call("cbind", lFC_pred)
   OUTCOME_pred <- rbindlist(lapply(GEP, process_hai, dichotomize=param$dichotomize))
-
-  #GEP <- eset_from_EM(param$EM_pred)
-  #pd_GEP <- all_tp(GEP, param$timepoint)
-  #GEP <- GEP[as.character(selected_probes$feature_id), pd_GEP$biosample_accession]
-  #lFC_pred <- exprs(GEP)[, GEP$study_time_reported == param$timepoint] - exprs(GEP)[, GEP$study_time_reported == 0]
-  #OUTCOME_pred <- process_hai(GEP, dichotomize=param$dichotomize)
 }
 ```
 
@@ -255,7 +250,7 @@ if(param$EM_pred != ""){
 ### Predicting the response using the selected features
 ```{r predictionhfig.cap=TRUE, fig.cap="Figure 2. Predicted vs. observed values for the prediction model."}
 #Prediction on training set
-if(param$EM_pred ==""){
+if(length(param$EM_pred) == 0){
   df <- data.frame(observed=OUTCOME_train$response, fitted=relasso$fitted.values)
   ggplot(df, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") +IS_theme
 } else{
