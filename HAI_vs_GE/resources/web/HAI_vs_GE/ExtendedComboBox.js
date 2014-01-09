@@ -106,6 +106,7 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
             }
             if ( this.innerList != undefined ){
                 this.innerList.setWidth( width );
+                this.restrictHeight();
             }
         }
     },
@@ -114,7 +115,8 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
     onTrigger2Click : function()
     {
         this.collapse();
-        this.reset();                       // clear contents of combobox, clear any filters as well
+        this.reset();                       // reset contents of combobox, clear any filters as well
+        this.clearValue();
         this.fireEvent('cleared');          // send notification that contents have been cleared
     },
 

@@ -157,7 +157,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
 
         var chDichotomize = new Ext.form.Checkbox({
             checked: false,
-            fieldLabel: 'Dichotomize',
+            fieldLabel: 'Dichotomize values',
             handler: function( cb, s ){
                 if ( s ){
                     nfDichotomize.show();
@@ -192,7 +192,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
 
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
             disabled: true,
-            displayField: 'timepoint',
+            displayField: 'displayTimepoint',
             emptyText: 'Click...',
             fieldLabel: 'Select a time point',
             listeners: {
@@ -209,7 +209,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         var nfFalseDiscoveryRate = new Ext.form.NumberField({
             emptyText: 'Type...',
             enableKeyEvents: true,
-            fieldLabel: 'Enter false discovery rate threshold',
+            fieldLabel: 'False discovery rate is less than',
             height: 22,
             listeners: {
                 keyup: {
@@ -223,14 +223,14 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                     }
                 }
             },
-            value: 0.02,
+            value: 0.1,
             width: fieldWidth
         });
 
         var nfFoldChange = new Ext.form.NumberField({
             emptyText: 'Type...',
             enableKeyEvents: true,
-            fieldLabel: 'Enter fold change threshold',
+            fieldLabel: 'Absolute fold change to baseline is greater than',
             height: 22,
             listeners: {
                 keyup: {
@@ -244,13 +244,13 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                     }
                 }
             },
-            value: 0,
+            value: 1,
             width: fieldWidth
         });
 
 
         /////////////////////////////////////
-        //             Buttons             //
+        //    Buttons and Radio Groups     //
         /////////////////////////////////////
 
         var btnRun = new Ext.Button({
@@ -271,11 +271,13 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                                 dichotomize:                chDichotomize.getValue(),
                                 dichotomizeValue:           nfDichotomize.getValue(),
                                 timePoint:                  cbTimePoint.getValue(),
+                                timePointDisplay:           cbTimePoint.getRawValue(),
                                 analysisAccession:          data.rows[0].analysis_accession,
                                 expressionMatrixAccession:  cbCohortTraining.getValue(),
                                 fdrThreshold:               nfFalseDiscoveryRate.getValue(),
                                 fcThreshold:                nfFoldChange.getValue(),
-                                expressionMatrixPredict:    Ext.encode( cbCohortTesting.getCheckedArray() )
+                                expressionMatrixPredict:    Ext.encode( cbCohortTesting.getCheckedArray() ),
+                                individualProbesFlag:       rgIndividualProbes.getValue()
                             };
 
                             setReportRunning( true );
@@ -294,6 +296,27 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                 });
             },
             text: 'Run'
+        });
+
+
+        var rgIndividualProbes = new Ext.form.RadioGroup({
+            columns: 1,
+            fieldLabel: 'Should individual probes be used as predictors or averaged for each gene',
+            items: [
+                {
+                    boxLabel: 'Yes',
+                    inputValue: true,
+                    name: 'ip',
+                    value: true
+                },
+                {
+                    boxLabel: 'No',
+                    checked: true,
+                    inputValue: false,
+                    name: 'ip',
+                    value: false
+                }
+            ]
         });
 
 
@@ -334,6 +357,31 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //  Panels, Containers, Components //
         /////////////////////////////////////
+
+        var arGeneExpression = [
+            new Ext.form.Label({
+                cls: 'x-form-item bold-text',
+                text: 'Gene expression'
+            }),
+            new Ext.Spacer({
+                height: 20
+            }),
+            new Ext.form.Label({
+                cls: 'x-form-item',
+                text: 'Only consider probes (or genes) that meet the following criteria:'
+            }),
+            new Ext.Spacer({
+                height: 7
+            }),
+            nfFalseDiscoveryRate,
+            nfFoldChange,
+            rgIndividualProbes,
+            new Ext.form.Label({
+                cls: 'x-form-item',
+                text: '(Note: \'No\' should be the default behavior for a cross-platform analysis)'
+            })
+        ],
+        boolGeneExpression = true;
 
         var pnlParameters = new Ext.form.FormPanel({
             bodyStyle: { paddingTop: '1px' },
@@ -381,15 +429,33 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                     autoScroll: true,
                     items: [
                         cbTimePoint,
-                        new Ext.ux.form.ExtendedLovCombo({
-                            disabled: true,
+                        new Ext.ux.form.ExtendedComboBox({
                             displayField: 'name',
-                            fieldLabel: 'Select a variable',
+                            fieldLabel: 'Select assay',
+                            listeners: {
+                                change: function(){
+                                    if ( this.getValue() == '' ){
+                                        boolGeneExpression = false;
+                                        Ext.each( arGeneExpression, function( e ){ e.hide(); } );
+                                    } else {
+                                        boolGeneExpression = true;
+                                        Ext.each( arGeneExpression, function( e ){ e.show(); } )
+                                    }
+                                },
+                                cleared: function(){
+                                    boolGeneExpression = false;
+                                    Ext.each( arGeneExpression, function( e ){ e.hide(); } );
+                                },
+                                select: function(){
+                                    boolGeneExpression = true;
+                                    Ext.each( arGeneExpression, function( e ){ e.show(); } )
+                                }
+                            },
                             store: new Ext.data.ArrayStore({
-                                data: [ [ 'gene-expression', 'gene-expression' ] ],
+                                data: [ [ 'Gene expression', 'Gene expression' ] ],
                                 fields: [ 'name', 'name' ]
                             }),
-                            value: 'gene-expression',
+                            value: 'Gene expression',
                             valueField: 'name',
                             width: fieldWidth
                         })
@@ -398,22 +464,12 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                 }),
                 new Ext.form.FieldSet({
                     autoScroll: true,
-                    items: [
-                        new Ext.form.Label({
-                            cls: 'x-form-item',
-                            text: 'Filters'
-                        }),
-                        new Ext.Spacer({
-                            height: 7
-                        }),
-                        nfFalseDiscoveryRate,
-                        nfFoldChange
-                    ],
+                    items: arGeneExpression,
                     title: 'Step 3: Options'
                 }),
                 btnRun
             ],
-            labelWidth: 210,
+            labelWidth: 300,
             title: 'Parameters'
         });
 

@@ -273,6 +273,7 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
             }
             if ( this.innerList != undefined ){
                 this.innerList.setWidth( width );
+                this.restrictHeight();
             }
         }
     },
@@ -282,7 +283,8 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
     {
         this.collapse();
         this.allSelected = false;
-        this.reset();                       // clear contents of combobox
+        this.reset();                       // reset contents of combobox, clear any filters as well
+        this.clearValue();
         this.fireEvent('cleared');          // send notification that contents have been cleared
     },
 
