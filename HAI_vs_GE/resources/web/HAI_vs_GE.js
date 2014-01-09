@@ -277,7 +277,7 @@ LABKEY.ext.HAI_vs_GE = Ext.extend( Ext.Panel, {
                                 fdrThreshold:               nfFalseDiscoveryRate.getValue(),
                                 fcThreshold:                nfFoldChange.getValue(),
                                 expressionMatrixPredict:    Ext.encode( cbCohortTesting.getCheckedArray() ),
-                                individualProbesFlag:       rgIndividualProbes.getValue()
+                                individualProbesFlag:       rgIndividualProbes.getValue().getGroupValue()
                             };
 
                             setReportRunning( true );

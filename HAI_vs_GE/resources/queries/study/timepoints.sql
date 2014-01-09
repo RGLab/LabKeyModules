@@ -1,7 +1,7 @@
 PARAMETERS( COHORT_VALUE VARCHAR )
 SELECT DISTINCT
  timepoint,
- timepoint || ' ' || LCASE( biosample_accession.study_time_collected_unit ) AS displayTimepoint
+ CAST( timepoint AS INTEGER ) || ' ' || LCASE( biosample_accession.study_time_collected_unit ) AS displayTimepoint
 FROM
  study_cohorts_info,
  expression_matrix_2_biosample_query
