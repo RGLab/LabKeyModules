@@ -1,0 +1,205 @@
+<!-- CreateMatrix.html -->
+
+<div id='analysisForm'></div>
+
+<script>
+
+function renderPanel()
+{
+    var schemaName = LABKEY.ActionURL.getParameter("schemaName");
+    var queryName = LABKEY.ActionURL.getParameter("queryName");
+    var selectionKey = LABKEY.ActionURL.getParameter("selectionKey");
+    if (!schemaName || !queryName || !selectionKey) {
+        alert("schemaName and queryName parameters required");
+        return;
+    }
+
+    var selectedRows = [];
+
+    function getSelectedSamples() {
+        // get selected sample names from dataregion
+        // CONSIDER: render a QWP grid of the selected rows or maybe an Ext grid
+        LABKEY.Query.selectRows({
+            schemaName: schemaName,
+            queryName: queryName,
+            selectionKey: selectionKey,
+            showRows: "selected",
+            columns: [ "SUBJECT_ACCESSION", "biosample_accession", "file_info_name", "study_time_collected", "study_time_collected_unit" ],
+            success: function (data) {
+                selectedRows = data.rows;
+                if (selectedRows.length == 0)
+                {
+                    Ext4.Msg.alert("No samples selected", "No samples selected");
+                }
+            }
+        });
+    }
+
+    getSelectedSamples();
+
+
+    function onSubmit() {
+        var form = panel.getForm();
+        if (form.isValid()) {
+            createSamples();
+        }
+    };
+
+    // ensure exp sample for each biosample_accession from selection
+    function createSamples() {
+
+        // create tab-delimited rows of 'Name' and 'biosample_accession' columns
+        // NOTE: a biosample may show up more than once (for .CEL file and .chp.gz files)
+        var data = ["Name\tbiosample_accession"];
+        var seen = {};
+        for (var i = 0; i < selectedRows.length; i++)
+        {
+            var biosample = selectedRows[i].biosample_accession;
+            if (seen[biosample])
+                continue;
+            data.push(biosample + "\t" + biosample);
+            seen[biosample] = true;
+        }
+
+        // HACK: POST directly to the SampleSet html form so we get upsert functionality
+        LABKEY.ExtAdapter.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('experiment', 'showUploadMaterials.view'),
+            method: 'POST',
+            params: {
+                name: 'Samples',
+                importMoreSamples: true,
+                createNewSampleSet: false,
+                nameReadOnly: true,
+                insertUpdateChoice: 'insertOrUpdate',
+                createNewColumnsOnExistingSampleSet: false,
+                data: data.join("\n")
+            },
+            success: function (ret) {
+                // TODO: grep for 'labkey-error' class and display an error message
+                console.log("created samples");
+                startAnalysis();
+            },
+        });
+    }
+
+    // Once samples are inserted, kick off the analysis
+    function startAnalysis() {
+        var values = panel.getValues();
+        var assayName = values['name'];
+        var assayComments = values['comments'];
+        var featureSet = values['featureSet'];
+        var taskId = values['pipelineId'];
+
+        var files = [];
+        var seen = {};
+        for (var i = 0; i < selectedRows.length; i++)
+        {
+            var path = selectedRows[i]["file_info_name"];
+            if (seen[path])
+                continue;
+            files.push(path);
+            seen[path] = true;
+        }
+
+        LABKEY.Pipeline.startAnalysis({
+            taskId: taskId,
+            // NOTE: PipelinePathForm requires all files to come from the same directory
+            path: "rawdata/gene_expression",
+            files: files,
+            //fileIds: [],
+            protocolName: assayName,
+            //protocolDescription: "",
+            jsonParameters: {
+                // assay import parameters are defined in AssayImportRunTask
+                'protocolName': 'matrix',
+
+                'assay name': assayName,
+                'assay comments': assayComments,
+
+                'assay run property, importValues': false,
+                'assay run property, featureSet': featureSet
+            },
+            saveProtocol: false,
+            allowNonExistentFiles: true,
+            success: function() {
+                window.location = LABKEY.ActionURL.buildURL("pipeline-status", "showList.view")
+            }
+        });
+    }
+
+
+    function onCancel() {
+        var url = LABKEY.ActionURL.getParameter("returnUrl");
+        if (!url)
+            url = LABKEY.ActionURL.buildURL("query", "executeQuery.view", null, schemaName, queryName);
+        window.location = url;
+    };
+
+
+    panel = Ext4.create('Ext.form.Panel', {
+        renderTo: 'analysisForm',
+        border: false,
+        bodyStyle: 'background-color: transparent;',
+        bodyPadding: 10,
+        width: 700,
+        defaults: {
+            width: 580,
+            labelWidth: 200
+        },
+        items: [{
+            xtype: 'textfield',
+            name: 'name',
+            fieldLabel: 'Name',
+            allowBlank: false
+        },{
+            xtype: 'textfield',
+            name: 'comments',
+            fieldLabel: 'Comments',
+            allowBlank: true
+        },{
+            xtype: 'combobox',
+            name: 'featureset',
+            fieldLabel: 'Feature Annotation Set',
+            allowBlank: false,
+            valueField: 'RowId',
+            displayField: 'Name',
+            store: Ext4.create('LABKEY.ext4.data.Store', {
+                schemaName: 'Microarray',
+                queryName: 'FeatureAnnotationSet',
+                autoLoad: true
+            })
+        },{
+            xtype: 'combobox',
+            name: 'pipelineId',
+            fieldLabel: 'Pipeline',
+            allowBlank: false,
+            valueField: 'taskid',
+            displayField: 'description',
+            // TODO: Dynamically get the list of matrix pipelines
+            store: Ext4.create('Ext.data.Store', {
+                fields: ['taskid', 'description'],
+                data: [
+                    {'taskid': 'ExpressionMatrix:pipeline:create-matrix', 'description': 'Create Matrix using R'}
+                ]
+            })
+        }],
+        dockedItems: [{
+            xtype: 'toolbar',
+            style: 'background-color: transparent;',
+            dock: 'bottom',
+            ui: 'footer',
+            items: [
+                '->',
+                {text: 'Create Matrix', handler: onSubmit, scope: this},
+                {text: 'Cancel', handler: onCancel, scope: this},
+            ]
+        }]
+    });
+}
+
+Ext4.onReady(function () {
+    renderPanel();
+});
+
+</script>
+

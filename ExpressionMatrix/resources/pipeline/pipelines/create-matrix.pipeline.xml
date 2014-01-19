@@ -1,0 +1,14 @@
+<pipeline xmlns="http://labkey.org/pipeline/xml"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          name="create-matrix" version="0.0">
+    <description>Create expression matrix</description>
+    <author>keivnk@labkey.com</author>
+    <analyzeURL>/pipelinetest/CreateMatrix.view</analyzeURL>
+    <tasks>
+        <taskref ref="ExpressionMatrix:task:create-matrix"/>
+        <task xsi:type="AssayImportRunTaskType">
+            <providerName>ExpressionMatrix</providerName>
+        </task>
+    </tasks>
+</pipeline>
+
