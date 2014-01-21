@@ -1,3 +1,25 @@
+```{r knitr-options, echo=FALSE, eval=TRUE, cache=FALSE}
+library(knitr)
+opts_chunk$set(cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, dpi=100, fig.align="center")
+options(width=80)
+
+## Custom hooks to add caption to figures
+knit_hooks$set(hfig.cap = function(before, options, envir) {
+  if(!before & options$hfig.cap) {
+    paste0('<div class="caption">',options$fig.cap,"</div>\n", sep="")
+  }
+})
+
+## Custom hooks to add caption to figures
+knit_hooks$set(htab.cap = function(before, options, envir) {
+  if(before & options$htab.cap) {
+    paste0('<div class="caption">',options$fig.cap,"</div>", sep="")
+ } else if(options$htab.cap) {
+    paste0("\n\n")
+ }
+})
+```
+
 ```{r envir-var}
 param <- list(
     timepoint   = as.numeric( labkey.url.params$timePoint ),
@@ -7,18 +29,11 @@ param <- list(
     FDR_thresh  = as.numeric( labkey.url.params$fdrThreshold ),
     FC_thresh   = as.numeric( labkey.url.params$fcThreshold ),
     dichotomize = as.logical( labkey.url.params$dichotomize ),
-    EM_pred     = RJSONIO::fromJSON( labkey.url.params$expressionMatrixPredict )
+    EM_pred     = RJSONIO::fromJSON( labkey.url.params$expressionMatrixPredict ),
+    gene_avg	= FALSE
 )
 ```
 
-### Cases:
-- [ ]dichotomize
-- [x]Multiple training
-- [x]No testing
-- [x]Multiple testing
-- [x]0 probes
-- [x]More features than obs
-- [ ]No gene average
 ```{r param}
 param1 <- list(FDR_thresh = 0.2, FC_thresh = 0, GEA_acc = c("GEA1"),
               EM_acc = c("EXPM0001"), timepoint=7, dichotomize=TRUE, dichValue=4,
@@ -29,31 +44,7 @@ param2 <- list(FDR_thresh = 0.2, FC_thresh = 0, GEA_acc = c("GEA1", "GEA3"),
 param3 <- list(FDR_thresh = 0.2, FC_thresh = 0, GEA_acc = c("GEA1"),
               EM_acc = c("EXPM0001"), timepoint=7, dichotomize=FALSE,
              gene_avg=FALSE)
-param <-  param1
-```
-
-```{r knitr-opts, echo=FALSE}
-opts_chunk$set(fig.align="center", fig.height=5, fig.width=8, dpi=100)
-opts_chunk$set(cache=FALSE, echo=FALSE, cache.path=paste(labkey.file.root, "cache/prediction_module/", sep="/"))
-options(width=80)
-```
-
-```{r hooks, echo=FALSE}
-## Custom hooks to add caption to figures
-knit_hooks$set(hfig.cap = function(before, options, envir) {
-  if(!before & options$hfig.cap) {
-    paste0('<div class="caption">',options$fig.cap,"</div>\n", sep="")
-  }
-})
-
-# Custom hooks to add caption to figures
-knit_hooks$set(htab.cap = function(before, options, envir) {
-   if(before & options$htab.cap){
-      paste0('<div class="caption">',options$fig.cap,"</div>", sep="")
-   } else if(options$htab.cap){
-      paste0("\n\n")
-   }
-      })
+param <-  param
 ```
 
 ```{r libraries, echo=FALSE, message=FALSE}
@@ -129,13 +120,6 @@ get_DEGs <- function(EMs, DEP){
    return(DEG)
 }
 
-#GEIN <- function(EMs, pdata, DEP, timepoint){
-#   common_genes <- Reduce(intersect, lapply(EMs, "[[", "gene_symbol"))
-#   DEG <- lapply(EMs, function(x){
-#      return(x[feature_id %in% DEP & gene_symbol %in% common_genes, gene_symbol])
-#   })
-#   DEG <- na.omit(unique(unlist(DEG, use.names=FALSE)))
-#}
 
    ##R: The unique cohort for TIV creates duplicate rows
    #ifelse(nrow(unique(pdata[, list(subject_accession, biosample_accession_name)])) != length(unique(pdata[, subject_accession])),
@@ -248,9 +232,10 @@ if(nObs <= nFeatures){
    selected_features <- names(topFeatures)
 }
 PRED_selected <- as.data.frame(PRED_selected)
-colnames(PRED_selected) <- paste0("X", gsub(";", "_OR_", colnames(PRED_selected)))
+colnames(PRED_selected) <- paste0("X_", gsub("@", "", gsub(";", "_OR_", gsub("-", "_", colnames(PRED_selected)))))
 form <- as.formula(paste0("outcome~", paste(colnames(PRED_selected), collapse="+")))
 PRED_selected$outcome <- OUT_train
+#print(form)
 if(param$dichotomize){
    relasso <- glm(form, PRED_selected, family="binomial")
 } else{
@@ -266,9 +251,17 @@ predictor_table <- data.table(cbind(selected_features, predictor_table))
 ```
 
 ```{r table, echo=FALSE}
-predictor_table <- predictor_table[, gene_symbol:=paste0(
+if(param$gene_avg){
+  predictor_table <- predictor_table[, gene_symbol:=paste0(
    '<a href="http://www.genenames.org/cgi-bin/quick_search.pl?.cgifields=type&type=equal&num=50&search=',
    selected_features,'&submit=Submit" target="_blank">', selected_features, '</a>')]
+} else{
+  fdata <- rbindlist(lapply(EMs, "[", , c("feature_id", "gene_symbol")))
+  predictor_table <- predictor_table[, gene_symbol:= fdata[match(predictor_table$selected_features, feature_id), gene_symbol]]
+  predictor_table <- predictor_table[, gene_symbol:=paste0(
+   '<a href="http://www.genenames.org/cgi-bin/quick_search.pl?.cgifields=type&type=equal&num=50&search=', 
+   gsub(";","+",predictor_table[,gene_symbol]),'&submit=Submit" target="_blank">', predictor_table[,gene_symbol], '</a>')]
+}
 ```
 
 ```{r kable, echo=FALSE, results='asis', htab.cap=TRUE, fig.cap="Table 1. Table of selected probes by the Elastic Net."}
@@ -288,6 +281,7 @@ annotation <- annotation[order,, drop=FALSE]
 names <- paste(colnames(PRED_selected), 1:nrow(PRED_selected), sep="_")
 colnames(mat) <- names
 rownames(annotation) <- names
+rownames(mat) <- ifelse(nchar(rownames(mat)) > 15, paste0(substr(rownames(mat), 1, 15), "..."), rownames(mat))
 pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
          breaks = seq(-1, 1, length.out = length(mypalette) + 1),
          show_rownames=TRUE, show_colnames=FALSE, scale="none",cluster_method="ward",
@@ -345,6 +339,5 @@ if(length(param$EM_pred) == 0){
    ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme + 
    facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predictor response")
 
-   #print(data)
 }                 
 ```
