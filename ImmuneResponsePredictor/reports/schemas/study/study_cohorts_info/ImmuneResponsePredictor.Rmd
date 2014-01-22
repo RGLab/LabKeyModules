@@ -1,0 +1,346 @@
+```{r knitr-options, echo=FALSE, eval=TRUE, cache=FALSE}
+library(knitr)
+opts_chunk$set(cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, dpi=100, fig.align="center")
+options(width=80)
+
+## Custom hooks to add caption to figures
+knit_hooks$set(hfig.cap = function(before, options, envir) {
+  if(!before & options$hfig.cap) {
+    paste0('<div class="caption">',options$fig.cap,"</div>\n", sep="")
+  }
+})
+
+## Custom hooks to add caption to figures
+knit_hooks$set(htab.cap = function(before, options, envir) {
+  if(before & options$htab.cap) {
+    paste0('<div class="caption">',options$fig.cap,"</div>", sep="")
+ } else if(options$htab.cap) {
+    paste0("\n\n")
+ }
+})
+```
+
+```{r envir-var}
+param <- list(
+    timepoint   = as.numeric( labkey.url.params$timePoint ),
+    tp_display  = labkey.url.params$timePointDisplay, # NEW
+    GEA_acc     = RJSONIO::fromJSON( labkey.url.params$analysisAccession ),
+    EM_acc      = RJSONIO::fromJSON( labkey.url.params$emTraining ),
+    cohortTrain = RJSONIO::fromJSON( labkey.url.params$cohortTraining ), # NEW
+    dichValue   = as.numeric( labkey.url.params$dichotomizeValue ),
+    FDR_thresh  = as.numeric( labkey.url.params$fdrThreshold ),
+    FC_thresh   = as.numeric( labkey.url.params$fcThreshold ),
+    dichotomize = as.logical( labkey.url.params$dichotomize ),
+    EM_pred     = RJSONIO::fromJSON( labkey.url.params$emTesting ),
+    cohortTest  = RJSONIO::fromJSON( labkey.url.params$cohortTesting ), # NEW
+    gene_avg	= labkey.url.params$individualProbesFlag # NEW
+)
+```
+
+```{r param}
+param1 <- list(FDR_thresh = 0.2, FC_thresh = 0, GEA_acc = c("GEA1"),
+              EM_acc = c("EXPM0001"), timepoint=7, dichotomize=TRUE, dichValue=4,
+             gene_avg=FALSE, EM_pred = c("EXPM0002", "EXPM0003"))
+param2 <- list(FDR_thresh = 0.2, FC_thresh = 0, GEA_acc = c("GEA1", "GEA3"),
+              EM_acc = c("EXPM0001", "EXPM0003"), timepoint=7, dichotomize=FALSE,
+             gene_avg=TRUE)
+param3 <- list(FDR_thresh = 0.2, FC_thresh = 0, GEA_acc = c("GEA1"),
+              EM_acc = c("EXPM0001"), timepoint=7, dichotomize=FALSE,
+             gene_avg=FALSE)
+param <-  param
+```
+
+```{r libraries, echo=FALSE, message=FALSE}
+library(Rlabkey)
+library(data.table)
+library(Biobase)
+library(glmnet)
+library(pheatmap)
+library(RColorBrewer)
+library(ggplot2)
+library(RJSONIO)
+```
+
+```{r plots-style, echo=FALSE}
+mypalette <- rev(brewer.pal(name="PiYG", n=11))
+brewer.qual <- "Paired"
+IS_theme <- theme_bw(base_size=14)
+```
+
+
+```{r GEARW, cache=FALSE, dependson="param"}
+GEARW_filter <- makeFilter(c("analysis_accession", "IN", paste(param$GEA_acc, collapse=";")),
+                         c("adj_p_val", "LESS_THAN", param$FDR_thresh))
+GEARW <-data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "lists", queryName = "gene_expression_analysis_result_wide", colNameOpt="rname", colFilter=GEARW_filter))
+GEARW <- GEARW[ abs(log_fc) > param$FC_thresh,]
+DEP <- unique(GEARW$feature_id)
+if(length(DEP)==0){
+  opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
+  stop("There are 0 probes selected. Try lowering the FDR threshold or increasing the absolute log-FoldChange threshold.")
+}
+
+```
+
+```{r pdata, cache=FALSE, echo=FALSE}
+em_filter <- makeFilter(c("expression_matrix_accession", "IN", paste(param$EM_acc, collapse=";")))
+pdata <- data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path,
+                           schemaName = "study", colFilter=em_filter,
+                           queryName = "gene_expression_matrices", colNameOpt = "rname"))
+all_tp <- function(pdata, timepoint){
+  timepoints <- c(0, timepoint)
+  pdata <- pdata[,keep:=(sum(study_time_reported%in%timepoints)==length(timepoints)), by="biosample_accession_name,subject_accession"]
+  pdata <- pdata[keep==TRUE]
+  pdata <- pdata[study_time_reported %in% timepoints]
+  return(pdata)
+}
+```
+
+```{r EMfunction}
+get_EMs <- function(pdata){
+   umat <- unique(pdata[, list(file_info_name, feature_mapping_file)])
+   files <- paste(labkey.file.root, "analysis/exprs_matrices", umat$file_info_name, sep="/")
+   headers <- lapply(files, scan, what="character", nlines=1, sep="\t", quiet=TRUE)
+   EMs <- lapply(files, fread)
+   files <- paste(labkey.file.root, "analysis/features2genes", umat$feature_mapping_file, sep="/")
+   f2gs <- lapply(files, function(x){ data.table(read.table(x, header=TRUE))})
+   for(i in 1:length(headers)){
+      setnames(EMs[[i]], colnames(EMs[[i]]), c("feature_id", headers[[i]]))
+      EMs[[i]] <- EMs[[i]][, gene_symbol := f2gs[[i]][match(EMs[[i]][, feature_id], f2gs[[i]][, feature_id]), gene_symbol]]
+   }
+
+  EMs <- lapply(EMs, function(x){
+     return(x[, colnames(x) %in% c("feature_id", "gene_symbol", pdata$biosample_accession), with=FALSE])
+  })
+  return(EMs)
+}
+
+get_DEGs <- function(EMs, DEP){
+   common_genes <- Reduce(intersect, lapply(EMs, "[[", "gene_symbol"))
+   DEG <- lapply(EMs, function(x){
+      return(x[feature_id %in% DEP & gene_symbol %in% common_genes, gene_symbol])
+   })
+   DEG <- na.omit(unique(unlist(DEG, use.names=FALSE)))
+   return(DEG)
+}
+
+
+   ##R: The unique cohort for TIV creates duplicate rows
+   #ifelse(nrow(unique(pdata[, list(subject_accession, biosample_accession_name)])) != length(unique(pdata[, subject_accession])),
+   #       duplicates <- TRUE, duplicates <- FALSE)
+
+# EMs A list of expression matrices
+# DE A character vector. The differentialy expressed feature_id or gene_symbol.
+# timepoint The timepoints compared to 0
+# gene_avg A boolean. If TRUE average expression of probes matching the same gene.
+GEIN <- function(EMs, pdata, DE, timepoint, gene_avg){
+   lFCs <- lapply(EMs, function(x){
+      if(gene_avg){
+        x <- x[gene_symbol %in% DE, lapply(.SD, mean), by="gene_symbol", .SDcols=2:(ncol(x)-1)]
+      } else{
+         x <- x[feature_id %in% DE]
+      }
+      pd <- pdata[biosample_accession %in% colnames(x)]
+      lFC <- t(x[ , pd[study_time_reported == timepoint, biosample_accession], with=FALSE] -
+             x[ , pd[study_time_reported == 0, biosample_accession], with=FALSE])
+      if(gene_avg){
+         colnames(lFC) <- x$gene_symbol
+      } else{
+         colnames(lFC) <- x$feature_id
+      }
+      rownames(lFC) <- pd[ match(rownames(lFC), pd$biosample_accession), subject_accession]
+      return(lFC)
+      })
+   return(lFCs)
+}
+```
+
+```{r HAI, echo=FALSE}
+process_hai <- function(pdata, dichotomize){
+  HAI_filter <- makeFilter(c("subject_accession", "IN", paste(pdata$subject_accession, collapse=";")))
+  ds_HAI <- labkey.selectRows(baseUrl=labkey.url.base, schemaName="study", folderPath=labkey.url.path, queryName ="hai", colNameOpt="rname", colFilter=HAI_filter)
+  HAI <- data.table(ds_HAI)
+  HAI <- HAI[subject_accession %in% pdata$subject_accession & biosample_accession_name %in% pdata$biosample_accession_name]
+
+  HAI <- HAI[,list(study_time_collected=study_time_collected, response=value_reported/value_reported[study_time_collected==0]),by="virus_strain,biosample_accession_name,subject_accession"]
+  HAI <- HAI[study_time_collected==28]
+  HAI <- HAI[,list(response=log2(max(response))),by="subject_accession"]
+  if(dichotomize){
+    HAI <- HAI[,response:=ifelse(response>=log2(param$dichValue), FALSE,  TRUE)]
+  }
+  return(HAI)
+}
+```
+
+```{r training, echo=FALSE}
+pdata <- all_tp(pdata, param$timepoint)
+EMs <- get_EMs(pdata)
+if(param$gene_avg){
+   DEGs <- get_DEGs(EMs, DEP)
+   lFCs <- GEIN(EMs, pdata, DEGs, param$timepoint, param$gene_avg)
+} else{
+   lFCs <- GEIN(EMs, pdata, DEP, param$timepoint, param$gene_avg)
+}
+PRED_train <- do.call("rbind", lFCs)
+OUT_train <- process_hai(pdata, dichotomize=param$dichotomize)
+OUT_train <- OUT_train[match(rownames(PRED_train), OUT_train$subject_accession), response]
+```
+
+### Probe selection via the Elastic Net
+The model selection is based on `r length(DEP)` selected probes. Optimal parameters for the Elastic Net are selected via cross-validation.
+
+```{r glmnet}
+if(param$dichotomize){
+   fit <- glmnet(PRED_train, as.factor(OUT_train), alpha=0.5, family="binomial")
+} else{
+   fit <- glmnet(PRED_train, OUT_train, alpha=0.5)
+}
+cv_fit <- cv.glmnet(PRED_train, OUT_train)
+coef <- predict(fit, s=cv_fit$lambda.min, type="coefficients")
+```
+
+```{r probes_selection}
+selected_features <- names(which(abs(coef[,1]) > 0))
+selected_features <- selected_features[ grep("Intercept", selected_features, invert=TRUE)]
+#ambiguous_features <- selected_features[grep(";", selected_features)]
+#if(length(ambiguous_features) > 0){
+#   selected_features <- selected_features[grep(";", selected_features, invert=TRUE)]
+#   warning(paste0("Some of the selected features are ambiguous( ", paste0(ambiguous_features, collapse=", "), " ) and were removed from the list of predictors."))
+#}
+```
+
+```{r features_selection, echo=FALSE}
+#If the user selected less variables than observation, no selection is done
+if(ncol(PRED_train) < length(OUT_train)){
+   PRED_selected <- PRED_train
+   selected_features <- colnames(PRED_train)
+} else{
+   PRED_selected <- PRED_train[, selected_features, drop=FALSE]
+}
+
+if(length(selected_features) < 2){
+  opts_chunk$set(eval=FALSE, cache=FALSE)
+  stop("No features were selected as predictive. You may try to change the filtering criteria.")
+}
+```
+
+```{r lasso}
+nFeatures <- ncol(PRED_selected)
+nObs <- length(OUT_train)
+if(nObs <= nFeatures){
+   cat("You selected as many or more features (", nFeatures, ") than observations (", nObs, ").\nThe", nObs-2, "most significant features will be kept.\n")
+   topFeatures <- sort(coef[abs(coef[,1]) >0,], decreasing=TRUE)
+   topFeatures <- topFeatures[grep("Intercept", names(topFeatures), invert=TRUE)]
+   topFeatures <- topFeatures[1:(nObs-2)]
+   PRED_selected <- PRED_train[,names(topFeatures)]
+   selected_features <- names(topFeatures)
+}
+PRED_selected <- as.data.frame(PRED_selected)
+colnames(PRED_selected) <- paste0("X_", gsub("@", "", gsub(";", "_OR_", gsub("-", "_", colnames(PRED_selected)))))
+form <- as.formula(paste0("outcome~", paste(colnames(PRED_selected), collapse="+")))
+PRED_selected$outcome <- OUT_train
+#print(form)
+if(param$dichotomize){
+   relasso <- glm(form, PRED_selected, family="binomial")
+} else{
+   relasso <- lm(form, PRED_selected)
+}
+PRED_selected$outcome <- NULL
+sum_relasso <- summary(relasso)
+sum_relasso_coef <- sum_relasso$coefficients
+pred_cIdx <- grep("value|Pr", colnames(sum_relasso_coef))
+predictor_table <- sum_relasso_coef[,pred_cIdx][-1,]
+colnames(predictor_table) <- c("statistic", "p-value")
+predictor_table <- data.table(cbind(selected_features, predictor_table))
+```
+
+```{r table, echo=FALSE}
+if(param$gene_avg){
+  predictor_table <- predictor_table[, gene_symbol:=paste0(
+   '<a href="http://www.genenames.org/cgi-bin/quick_search.pl?.cgifields=type&type=equal&num=50&search=',
+   selected_features,'&submit=Submit" target="_blank">', selected_features, '</a>')]
+} else{
+  fdata <- rbindlist(lapply(EMs, "[", , c("feature_id", "gene_symbol")))
+  predictor_table <- predictor_table[, gene_symbol:= fdata[match(predictor_table$selected_features, feature_id), gene_symbol]]
+  predictor_table <- predictor_table[, gene_symbol:=paste0(
+   '<a href="http://www.genenames.org/cgi-bin/quick_search.pl?.cgifields=type&type=equal&num=50&search=',
+   gsub(";","+",predictor_table[,gene_symbol]),'&submit=Submit" target="_blank">', predictor_table[,gene_symbol], '</a>')]
+}
+```
+
+```{r kable, echo=FALSE, results='asis', htab.cap=TRUE, fig.cap="Table 1. Table of selected probes by the Elastic Net."}
+kable(predictor_table, digits=2, format="html", row.names=FALSE, table.attr="id=\"res_table\"")
+```
+
+
+</br>
+
+<h3> Heatmap </h3>
+```{r heatmap, echo=FALSE, hfig.cap=TRUE, fig.cap="Figure 1. Heatmap of selected probes with HAI status annotation."}
+#Heatmap
+annotation <- data.frame(hai=as.numeric(OUT_train))
+order <- order(annotation$hai)
+mat <- t(PRED_selected)[,order]
+annotation <- annotation[order,, drop=FALSE]
+names <- paste(colnames(PRED_selected), 1:nrow(PRED_selected), sep="_")
+colnames(mat) <- names
+rownames(annotation) <- names
+rownames(mat) <- ifelse(nchar(rownames(mat)) > 15, paste0(substr(rownames(mat), 1, 15), "..."), rownames(mat))
+pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
+         breaks = seq(-1, 1, length.out = length(mypalette) + 1),
+         show_rownames=TRUE, show_colnames=FALSE, scale="none",cluster_method="ward",
+         cluster_distance="correlation",color=mypalette, annotation=annotation,
+         annotation_colors=list(hai=grey(10:0/10)))
+```
+```{r prints}
+#annotation <- data.frame(hai=as.numeric(OUT_train))
+#order <- order(annotation$hai)
+#mat <- t(PRED_selected)[,order]
+#annotation <- annotation[order,, drop=FALSE]
+#names <- paste(colnames(PRED_selected), 1:nrow(PRED_selected), sep="_")
+#colnames(mat) <- names
+#rownames(annotation) <- names
+#pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
+#         breaks = seq(-1, 1, length.out = length(mypalette) + 1),
+#         show_rownames=TRUE, show_colnames=FALSE, scale="none",cluster_method="ward",
+#         cluster_distance="correlation",color=mypalette, annotation=annotation,
+#         annotation_colors=list(hai=grey(10:0/10)))
+```
+
+```{r testing-cohort}
+if(length(param$EM_pred) > 0){
+   em_filter <- makeFilter(c("expression_matrix_accession", "IN", paste(param$EM_pred, collapse=";")))
+   pdata_test <- data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path,
+                           schemaName = "study", colFilter=em_filter,
+                           queryName = "gene_expression_matrices", colNameOpt = "rname"))
+   pdata_test <- all_tp(pdata_test, param$timepoint)
+   EMs_test <- get_EMs(pdata_test)
+   if(param$gene_avg){
+      lFCs_test <- GEIN(EMs_test, pdata_test, DEGs, param$timepoint, param$gene_avg)
+   } else{
+      lFCs_test <- GEIN(EMs_test, pdata_test, DEP, param$timepoint, param$gene_avg)
+   }
+   PRED_test <- do.call("rbind", lFCs_test)
+   OUT_test <- process_hai(pdata_test, dichotomize=param$dichotomize)
+   OUT_test <- OUT_test[match(rownames(PRED_test), OUT_test$subject_accession), response]
+}
+```
+
+```{r prediction, fig.cap=TRUE, fig.cap="Figure 2. Predicted vs. observed values for the prediction model."}
+#Pred on training set
+if(length(param$EM_pred) == 0){
+   data <- data.frame(observed = OUT_train, fitted=relasso$fitted.values)
+   ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme
+} else{
+   prediction_data <- data.frame(PRED_test)
+   names(prediction_data) <- names(PRED_selected)
+   predicted_val <- predict(relasso, newdata = prediction_data, type="response")
+
+   data <- data.frame(observed = c(OUT_train, OUT_test),
+                      fitted = c(relasso$fitted.values, predicted_val),
+                      cohort = c(rep(paste("a:", param$EM_acc, "(Training)"), sapply(lFCs, nrow)),
+                                 rep(paste("b:", param$EM_pred, "(Testing)"), sapply(lFCs_test, nrow))))
+   ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme +
+   facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predictor response")
+
+}
+```

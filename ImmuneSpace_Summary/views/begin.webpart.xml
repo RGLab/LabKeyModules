@@ -1,0 +1,6 @@
+<webpart xmlns='http://labkey.org/data/xml/webpart' title='ImmuneSpace Summary'>
+    <view name='begin'/>
+    <locations>
+        <location name='right'/>
+    </locations>
+</webpart>

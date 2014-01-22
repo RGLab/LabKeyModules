@@ -1,0 +1,58 @@
+<project name="LabKeyModules" default="build_module" basedir=".">
+
+<property environment="env"/>
+
+<target name='init'>
+
+    <property name="modules.dir" value="${env.MODULES_DIR}"/>
+
+    <property name="moduleDir" location='${basedir}'/>
+
+    <basename property="module.name" file="${moduleDir}" />
+
+    <property name="moduleResourcesDir" value="${moduleDir}/resources"/>
+    <available property="moduleResourcesDirExists" file="${moduleResourcesDir}"/>
+    <condition property='module.src.dir' value='${basedir}/resources'>
+        <isset property='moduleResourcesDirExists'/>
+    </condition>
+    <property name='module.src.dir' value='${basedir}'/>
+
+    <property name="deploy.modules.dir" location="${basedir}/.."/>
+</target>
+
+<target name="module.properties" depends='init'>
+    <mkdir dir="${module.src.dir}/config"/>
+    <tstamp>
+      <format property="buildtime" pattern="MMMM d yyyy, h:mm aa" />
+    </tstamp>
+    <copy tofile="${module.src.dir}/config/module.xml" file="${basedir}/module.template.xml" overwrite="true">
+      <filterset begintoken="@@" endtoken="@@">
+        <filtersfile file="${basedir}/module.properties" />
+        <filter token="RequiredServerVersion" value="${RequiredServerVersion}" />
+        <filter token="ModuleDependencies" value="" />
+        <filter token="BuildTime" value="${buildtime}" />
+        <filter token="BuildOS" value="${os.name}" />
+        <filter token="BuildUser" value="${user.name}" />
+        <filter token="BuildPath" value="${deploy.modules.dir}/${module.name}.module" />
+        <filter token="SourcePath" value="${moduleDir}"/>
+        <filter token="URL" value="Not built from a Subversion source tree" />
+        <filter token="Revision" value="Not built from a Subversion source tree" />
+      </filterset>
+    </copy>
+</target>
+
+<target name="build_module" depends="module.properties">
+  <zip destfile="${deploy.modules.dir}/${module.name}.module">
+    <zipfileset dir="." />
+  </zip>
+
+    <available property='modulesDirExists' file='${modules.dir}'/>
+</target>
+
+<target name="deploy" depends="build_module" if='modulesDirExists'>
+  <echo message="Deploying ${module.name}.module to ${modules.dir}" />
+  <copy file="${deploy.modules.dir}/${module.name}.module" overwrite="true" tofile="${modules.dir}/${module.name}.module" />
+</target>
+
+</project>
+

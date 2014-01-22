@@ -1,0 +1,401 @@
+/*
+    vim: ts=4:sw=4:nu:fdc=4:nospell
+*/
+/*
+    Copyright 2013 Fred Hutchinson Cancer Research Center
+
+    Licensed under the Apache License, Version 2.0 (the 'License');
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an 'AS IS' BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+@charset 'utf-8';
+
+
+.labkey-knitr #fw_container {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.labkey-knitr .caption {
+    font-weight: bold;
+    font-size: 100%;
+    text-align: center;
+}
+
+.labkey-knitr .knitr_table {
+    margin: 0px auto;
+}
+
+.labkey-knitr .knitr_table table {
+    border-collapse: collapse;
+    border-spacing: 0px;
+    margin: 0px;
+}
+.labkey-knitr .knitr_table th {
+    padding: 5px;
+    font-weight: bold;
+    background-color: #ccc;
+}
+.labkey-knitr .knitr_table td {
+    padding: 5px;
+}
+
+.labkey-knitr .knitr_table tr:nth-child(odd) {
+    background-color:#fff;
+}
+
+.labkey-knitr .knitr_table tr:nth-child(even) {
+    background-color:#eee;
+}
+
+.labkey-knitr p {
+    clear: both;
+}
+
+.labkey-knitr body {
+    width: 800px;
+    margin: auto;
+}
+
+.labkey-knitr pre, .labkey-knitr img {
+    max-width: 100%;
+}
+
+.labkey-knitr img {
+    display: block;
+    margin: auto;
+}
+
+/* ************************************************************ */
+.geneExpressionExplorer legend {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+
+
+.geneExpressionExplorer {
+    line-height: 100% !important;
+}
+
+.iconConfigure {
+    background-image: url(../_images/configure.png);
+}
+
+.iconDelete {
+    background-image: url(../_images/delete.png);
+}
+
+.iconExport {
+    background-image: url(../_images/download.png);
+}
+
+.iconImport {
+    background-image: url(../_images/upload.png);
+}
+
+.iconNew {
+    background-image: url(../_images/folder_new.png);
+}
+
+.iconReload {
+    background-image: url(../_images/reload.png);
+}
+
+.iconUpdate {
+    background-image: url(../_images/editprops.png);
+}
+
+
+/* Error code from R */
+pre, .ext-mb-text {
+    white-space: pre-wrap;
+}
+
+/* Class specs */
+
+.right-text {
+    text-align: right;
+}
+
+.left-text {
+    text-align: left;
+}
+
+/* Centered text */
+.centered-text, .bold-centered-text, .sortable-list li, .geneExpressionExplorer .x-grid3-hd-row {
+    text-align: center !important;
+}
+
+/* Bold text */
+.bold-text, .bold-centered-text, .sortable-list li, .infoMask div, .geneExpressionExplorer .mask-loading div, .ux-lovcombo-list-item-all {
+    font-weight: bold !important;
+}
+
+/* Auto margin */
+.centered-table {
+    margin: auto;
+}
+
+.geneExpressionExplorer .x-btn {
+    margin-right: 0px !important;
+}
+
+/* Zero margin */
+.geneExpressionExplorer .x-tab-strip, .sortable-list, .ulList {
+    margin: 0;
+}
+
+/* Zero padding */
+.geneExpressionExplorer .x-tab-panel-header, .sortable-list, .ulList {
+    padding: 0;
+}
+
+/* Hidden class */
+.hidden {
+    display: none;
+    visibility: hidden;
+}
+
+.simple-panel-header {
+    background-color: white;
+    border-bottom-width: 0px !important;
+    font-family: verdana, arial, helvetica, sans-serif;
+    padding-bottom: 3px;
+    padding-left: 0px;
+}
+
+.simpler-panel-header {
+    background-color: white;
+    font-family: verdana, arial, helvetica, sans-serif;
+    padding-bottom: 3px;
+    padding-left: 5px;
+}
+
+.white-background {
+    background-color: white !important;
+}
+
+.geneExpressionExplorer .mask-loading {
+    border-left: 0px;
+    left: 0 !important;
+    margin-left: 0px;
+    padding-left: 0px;
+    width: 100%;
+    z-index: 999;
+}
+
+.geneExpressionExplorer .mask-loading div {
+    background: no-repeat 5px 5px;
+    background-color: white !important;
+    background-image: url(images/loading.gif) !important;
+    background-position: 0% 50%;
+    padding: 5px 10px 5px 25px;
+    text-align: center;
+}
+
+.infoMask {
+    width: 100% !important;
+    z-index: 999;
+}
+
+.infoMask div {
+    background-color: white;
+    cursor: default;
+    text-align: center;
+}
+
+/* Safari fixes not to cut off the radio button */
+.geneExpressionExplorer .x-form-radio {
+    margin-left: 2px !important;
+}
+.geneExpressionExplorer .x-form-check-wrap {
+    margin-bottom: 1px;
+}
+
+.geneExpressionExplorer ul.x-tab-strip-top {
+    padding-top: 0px;
+}
+
+
+/* Ext4 */
+.geneExpressionExplorer .x4-btn-inner {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+
+/* Tweaks for jQuery drag-and-drop in particular and list in general */
+.draggableHandle {
+    cursor: move;
+}
+
+.ui-state-highlight {
+    width: 1em;
+    line-height: 1.2em;
+}
+
+.ui-sortable-helper, .sortable-list, .ulList, .geneExpressionExplorer .x-tree-node, .geneExpressionExplorer .x-tree-node-ct {
+    list-style-type: none;
+}
+
+.sortable-list li, .ulList li {
+    margin: 3px 0px 3px 4px; /* 0.2em 0.3em 0.2em 0.3em */
+    padding: 1px;
+    float: left;
+}
+
+.sortable-list li {
+    font-size: 1em;
+}
+
+/**********************************/
+/* Ext Tree Fixes */
+.geneExpressionExplorer .x-tree-node,
+.geneExpressionExplorer .x-tree-node-ct,
+.geneExpressionExplorer .x-tree-root-ct {
+    padding-left: 0px;
+    -webkit-padding-start: 0px;
+}
+
+.geneExpressionExplorer .x-tree-root-ct {
+    margin: 0;
+    -webkit-margin-before: 0em;
+    -webkit-margin-after: 0em;
+    -moz-padding-start: 0px;
+}
+
+.geneExpressionExplorer .x-tree-selected {
+    background-color: white !important;
+}
+
+.geneExpressionExplorer .x-tree-node-over {
+    background-color: white !important;
+}
+
+/**********************************/
+
+/* Ext TabPanel fixes */
+.geneExpressionExplorer .x-tab-strip {
+    padding-left: 5px;
+}
+
+.geneExpressionExplorer .x-tab-right {
+    border-bottom-width: 0px !important;
+}
+
+/********************************/
+
+/* Ext.Resizable fix */
+.geneExpressionExplorer .xresizable-wrap {
+    margin: 0 auto;
+}
+/********************************/
+
+/* Ext GridPanel fixes */
+
+/* Fix for the column headers to look better: the pull-down arrow link will not overlap with the text */
+.geneExpressionExplorer .x-grid3-hd-inner {
+    padding-right: 15px;
+}
+
+/* Important fix for proper alignment */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+    .geneExpressionExplorer .x-grid3-cell {
+        box-sizing: border-box;
+    }
+}
+
+/* Override not to have the blue default background of numberers and rowSelectionCheckBoxes */
+.geneExpressionExplorer .x-grid3-body .x-grid3-row-selected .x-grid3-td-numberer,
+.geneExpressionExplorer .x-grid3-body .x-grid3-row-selected .x-grid3-td-checker,
+.geneExpressionExplorer .x-grid3-body .x-grid3-row-selected .x-grid3-td-expander {
+    background-image: none;
+}
+
+/* Fix for the numberer background not to look ugly for larger column widths */
+.geneExpressionExplorer .x-grid3-body .x-grid3-td-numberer {
+    background-image: none;
+}
+
+/* Make text selectable */
+.geneExpressionExplorer .x-list-body dt EM,
+.geneExpressionExplorer .x-list-header-inner DIV EM,
+.geneExpressionExplorer .x-grid3-row td,
+.geneExpressionExplorer .x-grid3-summary-row td,
+.geneExpressionExplorer .x-grid3-cell-text,
+.geneExpressionExplorer .x-grid3-hd-text,
+.geneExpressionExplorer .x-grid3-hd,
+.geneExpressionExplorer .x-grid3-row
+{
+    -moz-user-select: inherit !important;
+    -khtml-user-select: text !important;
+    -webkit-user-select: text !important;
+}
+
+/*************************************/
+
+/* Fix so that the buttons on toolbars look normal (not text) */
+.geneExpressionExplorer .x-toolbar .x-btn-tl,
+.geneExpressionExplorer .x-toolbar .x-btn-tr,
+.geneExpressionExplorer .x-toolbar .x-btn-tc,
+.geneExpressionExplorer .x-toolbar .x-btn-ml,
+.geneExpressionExplorer .x-toolbar .x-btn-mr,
+.geneExpressionExplorer .x-toolbar .x-btn-mc,
+.geneExpressionExplorer .x-toolbar .x-btn-bl,
+.geneExpressionExplorer .x-toolbar .x-btn-br,
+.geneExpressionExplorer .x-toolbar .x-btn-bc {
+    background-image:url(../gtheme/img/lkbtn.gif);
+}
+
+.geneExpressionExplorer .x-toolbar .x-btn-tl{
+    background-position: 0 0;
+}
+.geneExpressionExplorer .x-toolbar .x-btn-tr{
+    background-position: -3px 0;
+}
+.geneExpressionExplorer .x-toolbar .x-btn-tc{
+    background-position: 0 -6px;
+}
+
+.geneExpressionExplorer .x-toolbar .x-btn-ml{
+    background-position: 0px -24px;
+}
+.geneExpressionExplorer .x-toolbar .x-btn-mr{
+    background-position: -3px -24px;
+}
+
+.geneExpressionExplorer .x-toolbar .x-btn-mc{
+    background-position: 0 -1096px;
+}
+.geneExpressionExplorer .x-toolbar .x-btn-bl{
+    background-position: 0 -3px;
+}
+.geneExpressionExplorer .x-toolbar .x-btn-br{
+    background-position: -3px -3px;
+}
+.geneExpressionExplorer .x-toolbar .x-btn-bc{
+    background-position: 0 -15px;
+}
+/**********************************/
+
+.extra5pxPadding {
+    padding: 5px !important;
+}
+
+.extra10pxPaddingLeft {
+    padding-left: 10px !important;
+}
+
+#fancybox-buttons ul {
+    width: 73px !important;
+}
