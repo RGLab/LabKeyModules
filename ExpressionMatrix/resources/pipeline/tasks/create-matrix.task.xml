@@ -1,0 +1,12 @@
+<task xmlns="http://labkey.org/pipeline/xml"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:type="ScriptTaskType"
+      name="create-matrix" version="0.0">
+    <description>Create expression matrix</description>
+    <author>keivnk@labkey.com</author>
+    <inputs>
+      <file name="input.CEL" splitFiles="true"/>
+    </inputs>
+    <script file="create-matrix.r"/>
+
+</task>
