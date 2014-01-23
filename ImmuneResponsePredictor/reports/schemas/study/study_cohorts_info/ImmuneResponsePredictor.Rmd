@@ -185,7 +185,7 @@ OUT_train <- process_hai(pdata, dichotomize=param$dichotomize)
 OUT_train <- OUT_train[match(rownames(PRED_train), OUT_train$subject_accession), response]
 ```
 
-### Probe selection via the Elastic Net
+## Probe selection via the Elastic Net
 The model selection is based on `r length(DEP)` selected probes. Optimal parameters for the Elastic Net are selected via cross-validation.
 
 ```{r glmnet}
@@ -251,6 +251,7 @@ pred_cIdx <- grep("value|Pr", colnames(sum_relasso_coef))
 predictor_table <- sum_relasso_coef[,pred_cIdx][-1,]
 colnames(predictor_table) <- c("statistic", "p-value")
 predictor_table <- data.table(cbind(selected_features, predictor_table))
+predictor_table <- predictor_table[, c("statistic", "p-value") := lapply(.SD, function(X){ as.numeric(levels(X)[X])}), .SDcols = c("statistic", "p-value")]
 ```
 
 ```{r table, echo=FALSE}
@@ -274,7 +275,7 @@ kable(predictor_table, digits=2, format="html", row.names=FALSE, table.attr="id=
 
 </br>
 
-<h3> Heatmap </h3>
+<h2> Heatmap </h2>
 ```{r heatmap, echo=FALSE, hfig.cap=TRUE, fig.cap="Figure 1. Heatmap of selected probes with HAI status annotation."}
 #Heatmap
 annotation <- data.frame(hai=as.numeric(OUT_train))
@@ -344,3 +345,4 @@ if(length(param$EM_pred) == 0){
 
 }
 ```
+

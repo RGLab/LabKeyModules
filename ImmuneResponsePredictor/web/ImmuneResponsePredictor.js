@@ -347,16 +347,16 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             items: [
                 {
                     boxLabel: 'Yes',
-                    inputValue: true,
+                    inputValue: false,
                     name: 'ip',
-                    value: true
+                    value: false
                 },
                 {
                     boxLabel: 'No',
                     checked: true,
-                    inputValue: false,
+                    inputValue: true,
                     name: 'ip',
-                    value: false
+                    value: true
                 }
             ]
         });
