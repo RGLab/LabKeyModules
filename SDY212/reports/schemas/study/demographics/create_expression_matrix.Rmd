@@ -35,3 +35,8 @@ mat <- fread(file)
 ```{r print}
 head(mat)
 ```
+
+```{r change-colnames}
+mat <- mat[, c("PROBE_ID", "SYMBOL", colnames(mat)[grep("Signal", colnames(mat))]), with=FALSE]
+cnames <- gsub(".AVG*$", "", colnames(mat))
+print(head(cnames))
