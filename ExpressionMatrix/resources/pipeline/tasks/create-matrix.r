@@ -1,8 +1,42 @@
-# TODO: get input rows and generate matrix
-# for now fake an input: ${input.CEL}
+library(data.table)
+library(Rlabkey)
+library(affy)
+# NOTE: also requires bioc packages: "hthgu133pluspmcdf" and "AnnotationDbi"
 
-# and create a dummy output matrix
-data <- data.frame(ID_REF=c("1007_s_at", "1053_at"), BS586100=c(1.0, 2.0), BS586156=c(3.0, 4.0))
+# read the job info
+jobInfo <- read.table("${pipeline, jobInfo}",
+                      col.names=c("name", "value", "type"),
+                      header=FALSE, check.names=FALSE,
+                      stringsAsFactors=FALSE, sep="\t", quote="",
+                      fill=TRUE, na.strings="")
 
-write.table(data, file = "${output.tsv}", sep = "\t", qmethod = "double", col.names=TRUE, row.names=FALSE)
+# selected input file paths
+inputFiles <- jobInfo$value[jobInfo$name == "inputFile"]
+
+# get sample information based on the input files
+# TODO: Need baseUrl
+#baseUrl <- jobInfo$value[jobInfo$name == "baseUrl"]
+baseUrl <- "http://localhost:8080/labkey"
+containerPath <- jobInfo$value[jobInfo$name == "containerPath"]
+filter <- makeFilter(c("file_info_name", "IN", paste(basename(inputFiles), collapse=";")))
+pdata <- labkey.selectRows(baseUrl=baseUrl,
+                           folderPath=containerPath,
+                           schemaName="study",
+                           queryName="gene_expression_files",
+                           colSelect=c("file_info_name", "biosample_accession"),
+                           colFilter=filter,
+                           colNameOpt="rname")
+
+# Reading
+affybatch <- ReadAffy(filenames = inputFiles)
+
+# Normalisation
+eset <- rma(affybatch)
+ematrix <- exprs(eset)
+
+# Rename columns
+colnames(ematrix) <- pdata[match(colnames(ematrix), pdata$file_info_name), "biosample_accession"]
+
+# BUGBUG: Figure out how to write a column header for the ID_REF column
+write.table(ematrix, file = "${output.tsv}", sep = "\t", quote=FALSE, row.names=FALSE)
 
