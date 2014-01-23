@@ -1,4 +1,4 @@
-ExpressionMatrix module
+HIPCMatrix module
 =======================
 
 Setup
@@ -6,7 +6,7 @@ Setup
 
 1. Build the module and deploy to the server.
 
-2. In the study containing an immport study, enable the ExpressionMatrix module.
+2. In the study containing an immport study, enable the HIPCMatrix module.
 
 3. Create a Sample Set named 'Samples' with single column 'biosample_accession' by pasting in a tsv:
     http://<server>/<folder>/experiment-showUploadMaterials.view

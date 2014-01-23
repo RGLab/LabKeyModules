@@ -5,7 +5,7 @@
     <author>keivnk@labkey.com</author>
     <analyzeURL>/pipelinetest/CreateMatrix.view</analyzeURL>
     <tasks>
-        <taskref ref="ExpressionMatrix:task:create-matrix"/>
+        <taskref ref="HIPCMatrix:task:create-matrix"/>
         <task xsi:type="AssayImportRunTaskType">
             <providerName>ExpressionMatrix</providerName>
         </task>
