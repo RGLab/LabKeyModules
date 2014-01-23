@@ -36,6 +36,7 @@ ematrix <- exprs(eset)
 
 # Rename columns
 colnames(ematrix) <- pdata[match(colnames(ematrix), pdata$file_info_name), "biosample_accession"]
+ematrix <- cbind(rownames(ematrix), ematrix)
 
 # BUGBUG: Figure out how to write a column header for the ID_REF column
 write.table(ematrix, file = "${output.tsv}", sep = "\t", quote=FALSE, row.names=FALSE)

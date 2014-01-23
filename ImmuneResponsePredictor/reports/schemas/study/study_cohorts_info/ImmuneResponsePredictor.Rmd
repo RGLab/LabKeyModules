@@ -274,8 +274,10 @@ kable(predictor_table, digits=2, format="html", row.names=FALSE, table.attr="id=
 
 
 </br>
+</br>
+</br>
 
-<h2> Heatmap </h2>
+<h2>  Heatmap of the selected features </h2>
 ```{r heatmap, echo=FALSE, hfig.cap=TRUE, fig.cap="Figure 1. Heatmap of selected probes with HAI status annotation."}
 #Heatmap
 annotation <- data.frame(hai=as.numeric(OUT_train))
@@ -292,6 +294,8 @@ pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
          cluster_distance="correlation",color=mypalette, annotation=annotation,
          annotation_colors=list(hai=grey(10:0/10)))
 ```
+</br>
+</br>
 ```{r prints}
 #annotation <- data.frame(hai=as.numeric(OUT_train))
 #order <- order(annotation$hai)
@@ -326,7 +330,8 @@ if(length(param$EM_pred) > 0){
 }
 ```
 
-```{r prediction, fig.cap=TRUE, fig.cap="Figure 2. Predicted vs. observed values for the prediction model."}
+<h2>  Prediction </h2>
+```{r prediction, hfig.cap=TRUE, fig.cap="Figure 2. Predicted vs. observed values for the prediction model."}
 #Pred on training set
 if(length(param$EM_pred) == 0){
    data <- data.frame(observed = OUT_train, fitted=relasso$fitted.values)
@@ -336,10 +341,17 @@ if(length(param$EM_pred) == 0){
    names(prediction_data) <- names(PRED_selected)
    predicted_val <- predict(relasso, newdata = prediction_data, type="response")
 
+   n_train <- length(param$cohortTrain)
+   n_test <- length(param$cohortTest)
+   len_train <- sapply(lFCs, nrow)
+   len_test <- sapply(lFCs_test, nrow)
+	cohorts <- c(rep(paste0(letters[1:n_train], ": ", param$cohortTrain, " (Training)"), len_train),
+		     rep(paste0(letters[(n_train+1):(n_train+n_test)], ": ", param$cohortTest, " (Testing)"), len_test))
    data <- data.frame(observed = c(OUT_train, OUT_test),
                       fitted = c(relasso$fitted.values, predicted_val),
-                      cohort = c(rep(paste("a:", param$EM_acc, "(Training)"), sapply(lFCs, nrow)),
-                                 rep(paste("b:", param$EM_pred, "(Testing)"), sapply(lFCs_test, nrow))))
+                      #cohort = c(rep(paste("a:", param$EM_acc, "(Training)"), sapply(lFCs, nrow)),
+                                 #rep(paste("b:", param$EM_pred, "(Testing)"), sapply(lFCs_test, nrow)))
+                      cohort = cohorts)
    ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme +
    facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predictor response")
 
