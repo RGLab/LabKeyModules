@@ -6,7 +6,7 @@ function createMatrixClick(dataRegion)
     var queryName = dataRegion.queryName;
     var selectionKey = dataRegion.selectionKey;
 
-    window.location = LABKEY.ActionURL.buildURL("ExpressionMatrix", "CreateMatrix.view", null, {
+    window.location = LABKEY.ActionURL.buildURL("HIPCMatrix", "CreateMatrix.view", null, {
         schemaName: schemaName,
         queryName: queryName,
         selectionKey: selectionKey,
@@ -55,7 +55,7 @@ function getDataIds(dr, schemaName, queryName, ids)
 
                 // Go to CreateMatrix page
                 // CONSIDER: POST the ids instead of passing them on the URL
-                window.location = LABKEY.ActionURL.buildURL("ExpressionMatrix", "CreateMatrix.view", null, { fileIds: fileIds });
+                window.location = LABKEY.ActionURL.buildURL("HIPCMatrix", "CreateMatrix.view", null, { fileIds: fileIds });
             }
         }
     });
