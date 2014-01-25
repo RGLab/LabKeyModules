@@ -79,10 +79,16 @@ Ext.TabPanel.override({
 
         if(!this.itemTpl){
             var tt = new Ext.Template(
-                    '<li class=\'{cls}\' id=\'{id}\'><a class=\'x-tab-strip-close\'></a>',
-                    '<a class=\'x-tab-right\' href=\'#\'><em class=\'x-tab-left\'>',
-                    '<span style=\'{tabStripInnerStyle}\' class=\'x-tab-strip-inner\'><span class=\'x-tab-strip-text {iconCls}\'>{text}</span></span>',
-                    '</em></a></li>'
+                '<li class=\'{cls}\' id=\'{id}\'>',
+                    '<a class=\'x-tab-strip-close\'></a>',
+                    '<a class=\'x-tab-right\' href=\'#\'>',
+                        '<em class=\'x-tab-left\'>',
+                            '<span style=\'{tabStripInnerStyle}\' class=\'x-tab-strip-inner\'>',
+                                '<span class=\'x-tab-strip-text {iconCls}\'>{text}</span>',
+                            '</span>',
+                        '</em>',
+                    '</a>',
+                '</li>'
             );
             tt.disableFormats = true;
             tt.compile();
@@ -93,11 +99,11 @@ Ext.TabPanel.override({
     },
     initTab : function(item, index){
         var before = this.strip.dom.childNodes[index],
-                p = this.getTemplateArgs(item);
+            p = this.getTemplateArgs(item);
         p.tabStripInnerStyle = this.tabStripInnerStyle;
         var     el = before ?
-                        this.itemTpl.insertBefore(before, p) :
-                        this.itemTpl.append(this.strip, p),
+                    this.itemTpl.insertBefore(before, p) :
+                    this.itemTpl.append(this.strip, p),
                 cls = 'x-tab-strip-over',
                 tabEl = Ext.get(el);
 
@@ -115,19 +121,23 @@ Ext.TabPanel.override({
         item.tabEl = el;
 
 
-        tabEl.select('a').on('click', function(e){
-            if(!e.getPageX()){
-                this.onStripMouseDown(e);
-            }
-        }, this, {preventDefault: true});
-
-        item.on({
+        this.mon( tabEl.select('a'), {
+            click: function(e){
+                if(!e.getPageX()){
+                    this.onStripMouseDown(e);
+                }
+            },
             scope: this,
-            disable: this.onItemDisabled,
-            enable: this.onItemEnabled,
-            titlechange: this.onItemTitleChanged,
-            iconchange: this.onItemIconChanged,
-            beforeshow: this.onBeforeShowItem
+            preventDefault: true
+        });
+
+        this.mon( item, {
+            scope: this,
+            disable:        this.onItemDisabled,
+            enable:         this.onItemEnabled,
+            titlechange:    this.onItemTitleChanged,
+            iconchange:     this.onItemIconChanged,
+            beforeshow:     this.onBeforeShowItem
         });
     }
 
@@ -137,12 +147,29 @@ Ext.TabPanel.override({
 Ext.override(Ext.grid.CheckboxSelectionModel, {
     initEvents : function(){
         Ext.grid.CheckboxSelectionModel.superclass.initEvents.call(this);
-        this.grid.on('render', function(){
-            Ext.fly(this.grid.getView().innerHd).on('mousedown', this.onHdMouseDown, this);
-        }, this);
 
-        this.grid.getView().on('refresh', this.manageCheckAll);
-        this.on('selectionchange', this.manageCheckAll);
+        var g = this.grid;
+
+        g.mon( g, {
+            afterrender: function(){
+                g.mon( Ext.fly(g.getView().innerHd), {
+                    mousedown: this.onHdMouseDown,
+                    scope: this
+                });
+            },
+            scope: this,
+            single: true
+        });
+
+        g.mon( g.getView(), {
+            refresh: this.manageCheckAll,
+            scope: this
+        });
+
+        g.mon( this, {
+            selectionchange: this.manageCheckAll,
+            scope: this
+        });
     },
     manageCheckAll: function(){
         var selectedCount = this.grid.getSelectionModel().getCount();
@@ -188,10 +215,10 @@ Ext.override(Ext.grid.HeaderDropZone, {
         }
 
         var x = Ext.lib.Event.getPageX(e),
-                r = Ext.lib.Dom.getRegion(n.firstChild),
-                px,
-                pt,
-                py = r.top + this.proxyOffsets[1];
+            r = Ext.lib.Dom.getRegion(n.firstChild),
+            px,
+            pt,
+            py = r.top + this.proxyOffsets[1];
         if((r.right - x) <= (r.right-r.left)/2){
             px = r.right+this.view.borderWidth;
             pt = 'after';
@@ -336,25 +363,6 @@ LABKEY.ext.GeneExpressionExplorer_Lib.onFailure = function(errorInfo, options, r
 Ext4.Ajax.timeout = 6 * 60 * 60 * 1000; // override the timeout to be 6 hours; value is in milliseconds
 
 Ext.QuickTips.init();
-
-
-// Empty item in a ComboBox should now appear full heigh with this fix
-/*Ext.override (Ext.form.ComboBox, {
- initList : (function() {
- if (!this.tpl) {
- this.tpl = new Ext.XTemplate(
- '<tpl for="."><div>{',
- this.displayField,
- ':this.blank}</div></tpl>',
- {
- blank : function(value) {
- return value === '' ? '&nbsp'
- : value;
- }
- });
- }
- }).createSequence(Ext.form.ComboBox.prototype.initList)
- });*/
 
 
 //================================//

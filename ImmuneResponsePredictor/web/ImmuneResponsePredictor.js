@@ -35,7 +35,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var checkBtnRunStatus = function(){
             if (
                     cbCohortTraining.getCheckedValue() != '' &&
-                    cbCohortTesting.getCheckedValue() != '' &&
                     cbTimePoint.getValue() != '' &&
                     nfFalseDiscoveryRate.getRawValue() != '' &&
                     nfFoldChange.getRawValue() != '' &&
@@ -512,6 +511,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 btnRun
             ],
             labelWidth: 300,
+            tabTip: 'Parameters',
             title: 'Parameters'
         });
 
@@ -524,6 +524,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             forceLayout: true,
             html: 'Switch to the \'Parameters\' tab, select the parameter values and click the \'RUN\' button to generate the report',
             layout: 'fit',
+            tabTip: 'Report',
             title: 'Report'
         });
 

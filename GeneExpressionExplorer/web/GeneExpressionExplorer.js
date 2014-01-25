@@ -43,6 +43,15 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         //            Stores             //
         ///////////////////////////////////
 
+        var strCohort = new LABKEY.ext.Store({
+            autoLoad: true,
+            listeners: {
+                loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
+            },
+            queryName: 'cohorts',
+            schemaName: 'study'
+        });
+
         var strTimePoint = new LABKEY.ext.Store({
             listeners: {
                 load: function(){
@@ -51,15 +60,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
             },
             queryName: 'timepoints',
-            schemaName: 'study'
-        });
-
-        var strCohort = new LABKEY.ext.Store({
-            autoLoad: true,
-            listeners: {
-                loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
-            },
-            queryName: 'cohorts',
             schemaName: 'study'
         });
 
@@ -114,15 +114,16 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 cleared:    checkBtnPlotStatus,
                 select:     checkBtnPlotStatus
             },
-            store: strTimePoint,
+//            store: strTimePoint,
             valueField: 'timepoint',
             width: fieldWidth
         });
 
+        LABKEY.ext.GeneExpressionExplorer_Lib.captureEvents( cbTimePoint );
+
         var cbGenes = new Ext.ux.form.SuperBoxSelect({
             displayField: 'gene_symbol',
             fieldLabel: 'Genes',
-            lazyInit: false,
             getParams: function(q){
                 var params = {},
                         paramNames = this.store.paramNames;
@@ -151,6 +152,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     }
                 }
             },
+            listWidth: 270,
             mode: 'remote',
             pageSize: 10,
             store: strGene,

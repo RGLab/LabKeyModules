@@ -26,49 +26,67 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
     initComponent: function(){
 
         if ( ! this.tpl ) {
-            this.tpl = this.qtipField == undefined ?
-                '<tpl for="."><div class=\'x-combo-list-item\'>{' + (this.displayField || 'text' )+ ':htmlEncode}</div></tpl>' :
-                '<tpl for="."><div ext:qtip=\'{' + this.qtipField + ':htmlEncode}\' class=\'x-combo-list-item\'>{' + (this.displayField || 'text' )+ ':htmlEncode}</div></tpl>';
+            this.tpl = new Ext.XTemplate(
+                '<tpl for=".">' +
+                    '<div ' + ( ( this.qtipField == undefined ) ? '' : ( 'ext:qtip=\'{' + this.qtipField + ':this.process}\' ' ) ) + 'class=\'x-combo-list-item\'>{' + ( this.displayField || 'text' ) + ':htmlEncode}</div>' +
+                '</tpl>',
+                {
+                    process : function(value) {
+                        return value === '' ? '&nbsp' : Ext.util.Format.htmlEncode( value );
+                    }
+                }
+            );
         }
 
         // Add selected value tool tip
-        this.on('afterrender', function(){
-            new Ext.ToolTip({
-                target: this.getEl(),
-                html: this.getValue(),
-                listeners: {
-                    beforeshow: function(tip) {
-                        var msg = this.getRawValue();
-                        tip.update( Ext.util.Format.htmlEncode( msg ) );
-                        return (msg.length > 0);
+        this.mon( this, {
+            afterrender: function(){
+                new Ext.ToolTip({
+                    target: this.getEl(),
+                    html: this.getValue(),
+                    listeners: {
+                        beforeshow: function(tip) {
+                            var msg = this.getRawValue();
+                            tip.update( Ext.util.Format.htmlEncode( msg ) );
+                            return (msg.length > 0);
+                        },
+                        scope: this
                     },
+                    renderTo: document.body
+                });
+
+                this.resizeToFitContent();
+            },
+            scope: this,
+            single: true
+        });
+
+        if ( this.store ){
+            this.mon(
+                this.store, {
+                    datachanged:  this.resizeToFitContent,
+                    add:          this.resizeToFitContent,
+                    remove:       this.resizeToFitContent,
+                    load:         this.resizeToFitContent,
+                    update:       this.resizeToFitContent,
+                    buffer: 10,
                     scope: this
-                },
-                renderTo: document.body
-            });
-
-            this.store.on({
-                'datachanged':  this.resizeToFitContent,
-                'add':          this.resizeToFitContent,
-                'remove':       this.resizeToFitContent,
-                'load':         this.resizeToFitContent,
-                'update':       this.resizeToFitContent,
-                buffer: 10,
-                scope: this
-            });
-
-            this.resizeToFitContent();
-        }, this );
+                }
+            );
+        }
 
         if ( this.expandOnFocus ){
-            this.on('focus', function(){
-                this.initList();
-                if( this.triggerAction == 'all' ) {
-                    this.doQuery( this.allQuery, true );
-                } else {
-                    this.doQuery( this.getRawValue() );
-                }
-            }, this )
+            this.mon( this, {
+                focus: function(){
+                    this.initList();
+                    if( this.triggerAction == 'all' ) {
+                        this.doQuery( this.allQuery, true );
+                    } else {
+                        this.doQuery( this.getRawValue() );
+                    }
+                },
+                scope: this
+            })
         }
 
         this.addClearItem
@@ -96,10 +114,12 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                 this.elMetrics = Ext.util.TextMetrics.createInstance( el );
             }
             var m = this.elMetrics, width = 0, s = this.getSize();
-            this.store.each(function (r) {
-                var text = r.get(this.displayField);
-                width = Math.max(width, m.getWidth( Ext.util.Format.htmlEncode(text) ));
-            }, this);
+            if ( this.store ){
+                this.store.each(function (r) {
+                    var text = r.get(this.displayField);
+                    width = Math.max(width, m.getWidth( Ext.util.Format.htmlEncode(text) ));
+                }, this);
+            }
             width += el.getBorderWidth('lr');
             width += el.getPadding('lr');
             s.width = width;
@@ -122,7 +142,9 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
     {
         if ( ! this.disabled ){
             this.collapse();
-            this.reset();                       // reset contents of combobox, clear any filters as well
+            if ( this.store ){
+                this.reset();                       // reset contents of combobox, clear any filters as well
+            }
             this.clearValue();
             this.fireEvent('cleared');          // send notification that contents have been cleared
         }

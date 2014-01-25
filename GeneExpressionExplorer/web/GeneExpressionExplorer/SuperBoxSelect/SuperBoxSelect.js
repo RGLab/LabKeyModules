@@ -313,16 +313,20 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                 if (this.mode === 'remote' && this.store) {
                     this.store.on('load', this.onStoreLoad, this);
                 }
+
                 this.on('render', this.resizeToFitContent, this);
-		        this.store.on({
-                    'datachanged':  this.resizeToFitContent,
-                    'add':          this.resizeToFitContent,
-                    'remove':       this.resizeToFitContent,
-                    'load':         this.resizeToFitContent,
-                    'update':       this.resizeToFitContent, // causes the list to lose its scrolling bar
-                    buffer: 10,
-                    scope: this
-                });
+
+                this.mon(
+                    this.store, {
+                        datachanged:  this.resizeToFitContent,
+                        add:          this.resizeToFitContent,
+                        remove:       this.resizeToFitContent,
+                        load:         this.resizeToFitContent,
+                        update:       this.resizeToFitContent,
+                        buffer: 10,
+                        scope: this
+                    }
+                );
             },
             resizeToFitContent: function(){
                 var el = this.getEl();
