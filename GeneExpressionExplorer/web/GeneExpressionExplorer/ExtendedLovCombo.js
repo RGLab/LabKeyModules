@@ -24,15 +24,15 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
     initComponent:function() {
 
         // template with checkbox
-        if( ! this.tpl ) {
-            this.tpl =
+        if ( ! this.tpl ) {
+            this.tpl = new Ext.XTemplate(
                 '<tpl for=".">'
                     + '<tpl if="' + this.displayField + '==\'' + this.selectAllTextField + '\'">'
                         + '<div class=\'x-combo-list-item ux-lovcombo-list-item-all\'>'
                             + '<img src=\'' + Ext.BLANK_IMAGE_URL + '\' '
                             + 'class=\'ux-lovcombo-icon ux-lovcombo-icon-'
                             + '{[values.' + this.checkField + '?\'checked\':\'unchecked\'' + ']}\'>'
-                            + '<div class=\'ux-lovcombo-item-text\'>{' + (this.displayField || 'text' )+ '}</div>'
+                            + '<div class=\'ux-lovcombo-item-text\'>{' + ( this.displayField || 'text' ) + '}</div>'
                         + '</div>'
                     + '</tpl>'
                     + '<tpl if="' + this.displayField + '!=\'' + this.selectAllTextField + '\'">'
@@ -40,58 +40,74 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                             + '<img src=\'' + Ext.BLANK_IMAGE_URL + '\' '
                             + 'class=\'ux-lovcombo-icon ux-lovcombo-icon-'
                             + '{[values.' + this.checkField + '?\'checked\':\'unchecked\'' + ']}\'>'
-                            + '<div class=\'ux-lovcombo-item-text\'>{' + (this.displayField || 'text' )+ ':htmlEncode}</div>'
+                            + '<div class=\'ux-lovcombo-item-text\'>{' + ( this.displayField || 'text' ) + ':this.process}</div>'
                         + '</div>'
                     + '</tpl>'
-                 +'</tpl>'
-            ;
+                 +'</tpl>',
+                {
+                    process : function(value) {
+                        return value === '' ? '&nbsp' : Ext.util.Format.htmlEncode( value );
+                    }
+                }
+            );
         }
 
         // Add selected value tool tip
-        this.on('afterrender', function(){
-            new Ext.ToolTip({
-                target: this.getEl(),
-                html: this.getValue(),
-                listeners: {
-                    beforeshow: function(tip) {
-                        var msg = this.getRawValue();
-                        tip.update( Ext.util.Format.htmlEncode( msg ) );
-                        return (msg.length > 0);
+        this.mon( this, {
+            afterrender: function(){
+                new Ext.ToolTip({
+                    target: this.getEl(),
+                    html: this.getValue(),
+                    listeners: {
+                        beforeshow: function(tip) {
+                            var msg = this.getRawValue();
+                            tip.update( Ext.util.Format.htmlEncode( msg ) );
+                            return (msg.length > 0);
+                        },
+                        scope: this
                     },
+                    renderTo: document.body
+                });
+
+                this.resizeToFitContent();
+            },
+            scope: this,
+            single: true
+        });
+
+        if ( this.store ){
+            this.mon(
+                this.store, {
+                    datachanged:  this.resizeToFitContent,
+                    add:          this.resizeToFitContent,
+                    remove:       this.resizeToFitContent,
+                    load:         this.resizeToFitContent,
+                    update:       this.resizeToFitContent,
+                    buffer: 10,
                     scope: this
-                },
-                renderTo: document.body
-            });
-
-            this.store.on({
-                'datachanged':  this.resizeToFitContent,
-                'add':          this.resizeToFitContent,
-                'remove':       this.resizeToFitContent,
-                'load':         this.resizeToFitContent,
-                'update':       this.resizeToFitContent,
-                buffer: 10,
-                scope: this
-            });
-
-            this.resizeToFitContent();
-        }, this );
-
-        if ( this.expandOnFocus ){
-            this.on('focus', function(){
-                this.initList();
-                if( this.triggerAction == 'all' ) {
-                    this.doQuery( this.allQuery, true );
-                } else {
-                    this.doQuery( this.getRawValue() );
                 }
-            }, this )
+            );
         }
 
-        // install internal event handlers ???
-        this.on({
-            scope:this
-            , beforequery:this.onBeforeQuery
-            , beforeblur:this.beforeBlur
+        if ( this.expandOnFocus ){
+            this.mon( this, {
+                focus: function(){
+                    this.initList();
+                    if( this.triggerAction == 'all' ) {
+                        this.doQuery( this.allQuery, true );
+                    } else {
+                        this.doQuery( this.getRawValue() );
+                    }
+                },
+                scope: this
+            })
+        }
+
+        // install internal event handlers
+        this.mon( this, {
+            beforeblur:     this.beforeBlur,
+            beforequery:    this.onBeforeQuery,
+            scope: this
         });
 
         // remove selection from input field
@@ -103,13 +119,15 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
             }
         });
 
-        this.store.on({
-            'load': function(){
-                this.initSelectAll();
-            },
-            buffer: 10,
-            scope: this
-        });
+        this.mon(
+            this.store, {
+                load: function(){
+                    this.initSelectAll();
+                },
+                buffer: 10,
+                scope: this
+            }
+        );
 
         this.initSelectAll();
 
@@ -280,7 +298,9 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
         if ( ! this.disabled ){
             this.collapse();
             this.allSelected = false;
-            this.reset();                       // reset contents of combobox, clear any filters as well
+            if ( this.store ){
+                this.reset();                       // reset contents of combobox, clear any filters as well
+            }
             this.clearValue();
             this.fireEvent('cleared');          // send notification that contents have been cleared
         }

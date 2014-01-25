@@ -293,6 +293,10 @@ pre, .ext-mb-text {
     border-bottom-width: 0px !important;
 }
 
+.immuneResponsePredictor .x-tab-strip-over {
+    text-decoration: underline;
+}
+
 /********************************/
 
 /* Ext.Resizable fix */
