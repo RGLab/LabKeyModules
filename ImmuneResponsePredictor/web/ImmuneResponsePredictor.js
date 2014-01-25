@@ -305,27 +305,20 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                                 queryName: 'study_cohorts_info',
                                 schemaName: 'study',
                                 success: function(data){
-                                    var count = data.rows.length;
-                                    if ( count >= 1 ) {
-                                        var emTesting = [], cohortTesting = [];
-                                        Ext.each( data.rows, function( row ){
-                                            emTesting.push(
-                                                row.expression_matrix_accession
-                                            );
-                                            cohortTesting.push(
-                                                row.cohort
-                                            );
-                                        });
-                                        cnfReport.inputParams['emTesting'] = Ext.encode( emTesting );
-                                        cnfReport.inputParams['cohortTesting'] = Ext.encode( cohortTesting );
+                                    var emTesting = [], cohortTesting = [];
+                                    Ext.each( data.rows, function( row ){
+                                        emTesting.push(
+                                            row.expression_matrix_accession
+                                        );
+                                        cohortTesting.push(
+                                            row.cohort
+                                        );
+                                    });
+                                    cnfReport.inputParams['emTesting'] = Ext.encode( emTesting );
+                                    cnfReport.inputParams['cohortTesting'] = Ext.encode( cohortTesting );
 
-                                        setReportRunning( true );
-                                        LABKEY.Report.execute( cnfReport );
-                                    } else if ( count < 1 ) {
-                                        LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure({
-                                            exception: 'The selected values result in an empty set of parameters.'
-                                        });
-                                    }
+                                    setReportRunning( true );
+                                    LABKEY.Report.execute( cnfReport );
                                 }
                             });
                         } else if ( count < 1 ) {
