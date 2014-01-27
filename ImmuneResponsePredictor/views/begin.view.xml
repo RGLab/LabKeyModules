@@ -1,0 +1,15 @@
+<view xmlns='http://labkey.org/data/xml/view' title='Immune Response Predictor'>
+    <dependencies>
+        <dependency path='Ext.ux.form.LovCombo.css'/>
+        <dependency path='ImmuneResponsePredictor/ImmuneResponsePredictor.css'/>
+
+        <dependency path='Ext3'/>
+
+        <dependency path='Ext.ux.form.LovCombo.js'/>
+        <dependency path='ImmuneResponsePredictor/ExtendedComboBox.js'/>
+        <dependency path='ImmuneResponsePredictor/ExtendedLovCombo.js'/>
+        <dependency path='ImmuneResponsePredictor/ImmuneResponsePredictor_Lib.js'/>
+
+        <dependency path='ImmuneResponsePredictor.js'/>
+    </dependencies>
+</view>

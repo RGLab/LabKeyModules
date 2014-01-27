@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ReportDescriptor>
+    <hidden>true</hidden>
+    <category>ImmuneResponsePredictor module script</category>
+    <!--<label>show this instead of the file name</label>-->
+    <!--<description>this is a module report</description>-->
+</ReportDescriptor>

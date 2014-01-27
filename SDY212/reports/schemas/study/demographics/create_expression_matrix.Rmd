@@ -1,0 +1,42 @@
+```{r knitr-opts}
+opts_chunk$set(echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, error=TRUE)
+options(width=80)
+```
+
+```{r libraries}
+library(data.table)
+library(Rlabkey)
+library(lumi)
+```
+
+```{r TODOLIST}
+# In this experiment: 1BS / SUB
+#		      SUB used as colnames in Illumina file
+# Get GE_files
+# Read files
+# Normalise
+# Write matrix to disk
+```
+
+```{r load-GE_files}
+#labkey.url.base <- "posey.fhcrc.org"
+#labkey.url.path <- "/Stanford/SDY212/"
+GE_files <- data.table(labkey.selectRows(labkey.url.base, labkey.url.path,
+			"study", "gene_expression_files", colNameOpt="rname"))
+#biosample_filter <- makeFilter(c("biosample_accession", "IN", paste(unique(GE_files$biosample_accession, collapse=";"))))
+```
+
+```{r read-files}
+GE_files <- GE_files[file_info_name=="Whole Blood Microarray.txt"]
+file <- paste(labkey.file.root, "rawdata/gene_expression", unique(GE_files$file_info_name), sep="/")
+mat <- fread(file)
+```
+
+```{r print}
+head(mat)
+```
+
+```{r change-colnames}
+mat <- mat[, c("PROBE_ID", "SYMBOL", colnames(mat)[grep("Signal", colnames(mat))]), with=FALSE]
+cnames <- gsub(".AVG*$", "", colnames(mat))
+print(head(cnames))

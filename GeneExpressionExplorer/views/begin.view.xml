@@ -1,0 +1,17 @@
+<view xmlns='http://labkey.org/data/xml/view' title='Gene Expression Explorer'>
+    <dependencies>
+        <dependency path='Ext.ux.form.LovCombo.css'/>
+        <dependency path='GeneExpressionExplorer/SuperBoxSelect/superboxselect.css'/>
+        <dependency path='GeneExpressionExplorer/GeneExpressionExplorer.css'/>
+
+        <dependency path='Ext3'/>
+
+        <dependency path='Ext.ux.form.LovCombo.js'/>
+        <dependency path='GeneExpressionExplorer/SuperBoxSelect/SuperBoxSelect.js'/>
+        <dependency path='GeneExpressionExplorer/ExtendedComboBox.js'/>
+        <dependency path='GeneExpressionExplorer/ExtendedLovCombo.js'/>
+        <dependency path='GeneExpressionExplorer/GeneExpressionExplorer_Lib.js'/>
+
+        <dependency path='GeneExpressionExplorer.js'/>
+    </dependencies>
+</view>

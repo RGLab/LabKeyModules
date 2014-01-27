@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns='http://www.springframework.org/schema/beans'
+       xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+       xmlns:util='http://www.springframework.org/schema/util'
+       xsi:schemaLocation='http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd'>
+    <bean id='moduleBean' class='@@ModuleClass@@'>
+        <constructor-arg index='0'><value type='java.lang.String'>@@Name@@</value></constructor-arg>
+        <property name='name' value='@@Name@@'/>
+        <property name='version' value='@@Version@@'/>
+        <property name='requiredServerVersion' value='@@RequiredServerVersion@@'/>
+        <property name='moduleDependencies' value='@@ModuleDependencies@@'/>
+        <property name='svnRevision' value='@@Revision@@'/>
+        <property name='svnUrl' value='@@URL@@'/>
+        <property name='buildUser' value='@@BuildUser@@'/>
+        <property name='buildTime' value='@@BuildTime@@'/>
+        <property name='buildOS' value='@@BuildOS@@'/>
+        <property name='buildPath' value='@@BuildPath@@'/>
+        <property name='sourcePath' value='@@SourcePath@@'/>
+    </bean>
+</beans>
