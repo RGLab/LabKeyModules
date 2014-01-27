@@ -314,8 +314,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                                             row.cohort
                                         );
                                     });
-                                    cnfReport.inputParams['emTesting'] = Ext.encode( emTesting );
-                                    cnfReport.inputParams['cohortTesting'] = Ext.encode( cohortTesting );
+                                    cnfReport.inputParams['emTesting']      = Ext.encode( emTesting );
+                                    cnfReport.inputParams['cohortTesting']  = Ext.encode( cohortTesting );
 
                                     setReportRunning( true );
                                     LABKEY.Report.execute( cnfReport );

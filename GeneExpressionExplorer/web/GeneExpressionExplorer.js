@@ -26,13 +26,16 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var
-            me                                  = this,
-            maskReport                          = undefined,
-            fieldWidth                          = 400
+            me          = this,
+            maskPlot    = undefined,
+            fieldWidth  = 400
             ;
 
         var checkBtnPlotStatus = function(){
-            if ( cbTimePoint.getValue() != '' && cbCohorts.getValue() != '' && cbGenes.getValue() != '' ){
+            if (    cbTimePoint.getValue() != '' &&
+                    cbCohorts.getValue() != '' &&
+                    cbGenes.getValue() != ''
+            ){
                 btnPlot.setDisabled( false );
             } else {
                 btnPlot.setDisabled( true );
@@ -114,12 +117,10 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 cleared:    checkBtnPlotStatus,
                 select:     checkBtnPlotStatus
             },
-//            store: strTimePoint,
+            store: strTimePoint,
             valueField: 'timepoint',
             width: fieldWidth
         });
-
-        LABKEY.ext.GeneExpressionExplorer_Lib.captureEvents( cbTimePoint );
 
         var cbGenes = new Ext.ux.form.SuperBoxSelect({
             displayField: 'gene_symbol',
@@ -143,6 +144,9 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 return params;
             },
             listeners: {
+                additem:    checkBtnPlotStatus,
+                clear:      checkBtnPlotStatus,
+                removeItem: checkBtnPlotStatus,
                 focus: function (){
                     this.initList();
                     if( this.triggerAction == 'all' ) {
@@ -152,7 +156,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     }
                 }
             },
-            listWidth: 270,
+            minListWidth: 270,
             mode: 'remote',
             pageSize: 10,
             store: strGene,
@@ -169,7 +173,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var btnPlot = new Ext.Button({
             disabled: true,
             handler: function(){
-                LABKEY.Query.selectRows({
+/*                LABKEY.Query.selectRows({
                     failure: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure,
                     filterArray: [
 //                        LABKEY.Filter.create( 'expression_matrix_accession', cbCohorts.getValue() ),
@@ -179,18 +183,18 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     schemaName: 'study',
                     success: function(data){
                         var count = data.rows.length;
-                        if ( count == 1 ){
-                            cnfReport.inputParams = {
-                                timePoint:                  cbTimePoint.getValue(),
-                                timePointDisplay:           cbTimePoint.getRawValue(),
-                                analysisAccession:          data.rows[0].analysis_accession,
-                                expressionMatrices:         Ext.encode( cbCohorts.getCheckedArray() )
+                        if ( count == 1 ){*/
+                            cnfPlot.inputParams = {
+                                cohorts:            Ext.encode( cbCohorts.getCheckedArray() ),
+                                timePoint:          cbTimePoint.getValue(),
+                                timePointDisplay:   cbTimePoint.getRawValue(),
+                                genes:              Ext.encode( cbGenes.getValuesAsArray() )
                             };
 
-                            setReportRunning( true );
+                            setPlotRunning( true );
 
-                            LABKEY.Report.execute( cnfReport );
-                        } else if ( count > 1 ) {
+                            LABKEY.Report.execute( cnfPlot );
+                        /*} else if ( count > 1 ) {
                             LABKEY.ext.GeneExpressionExplorer_Lib.onFailure({
                                 exception: 'The selected values do not result in a unique set of parameters.'
                             });
@@ -200,7 +204,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             });
                         }
                     }
-                });
+                });*/
             },
             text: 'Plot'
         });
@@ -210,15 +214,15 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         //      Back-end Configuration     //
         /////////////////////////////////////
 
-        var cnfReport = {
+        var cnfPlot = {
             failure: function( errorInfo, options, responseObj ){
-                setReportRunning( false );
+                setPlotRunning( false );
 
                 LABKEY.ext.GeneExpressionExplorer_Lib.onFailure( errorInfo, options, responseObj );
             },
-            reportId: 'module:GeneExpressionExplorer/study/study_cohorts_info/GeneExpressionExplorer.Rmd',
+            reportId: 'module:GeneExpressionExplorer/Plot.R',
             success: function( result ){
-                setReportRunning( false );
+                setPlotRunning( false );
 
                 var errors = result.errors;
                 var outputParams = result.outputParams;
@@ -229,6 +233,12 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     });
                 } else {
                     var p = outputParams[0];
+
+                    if ( p.type == 'image' ){
+                        imgUrl = p.value;
+
+                        cntPlot.update('<img src=\'' + p.value + '\' >');
+                    }
                 }
             }
         };
@@ -289,7 +299,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             labelWidth: 150,
             listeners: {
                 afterrender: function(){
-                    maskReport = new Ext.LoadMask(
+                    maskPlot = new Ext.LoadMask(
                         this.getEl(),
                         {
                             msg: 'Generating the report...',
@@ -305,14 +315,16 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         //             Functions           //
         /////////////////////////////////////
 
-        var setReportRunning = function( bool ){
+        var setPlotRunning = function( bool ){
             if ( bool ){
-                maskReport.show();
+                maskPlot.show();
             } else {
-                maskReport.hide();
+                maskPlot.hide();
             }
             btnPlot.setDisabled( bool );
+            cbCohorts.setDisabled( bool );
             cbTimePoint.setDisabled( bool );
+            cbGenes.setDisabled( bool );
         };
 
 
