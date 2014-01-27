@@ -41,9 +41,40 @@ function renderPanel()
     function onSubmit() {
         var form = panel.getForm();
         if (form.isValid()) {
-            createSamples();
+            //createSamples();
+            checkSamplesExist();
         }
     };
+
+    function checkSamplesExist() {
+        // create filter value from 'biosample_accession' column
+        var filterValue = [];
+        var seen = {};
+        for (var i = 0; i < selectedRows.length; i++)
+        {
+            var biosample = selectedRows[i].biosample_accession;
+            if (seen[biosample])
+                continue;
+            filterValue.push(biosample);
+            seen[biosample] = true;
+        }
+
+        // "Study Specimens" is an auto-generated SampleSet during specimen import
+        var sampleSet = 'Study Specimens';
+        LABKEY.Query.selectRows({
+            schemaName: 'Samples',
+            queryName: sampleSet,
+            filterArray: [ LABKEY.Filter.create("Name", filterValue.join(";"), LABKEY.Filter.Types.IN) ],
+            success: function (data) {
+                // verify the lengths are the same
+                if (data.rows.length != filterValue.length) {
+                    Ext.Msg.alert("Missing samples in '" + sampleSet + "' sample set for selected biosample_accessions");
+                } else {
+                    startAnalysis();
+                }
+            }
+        });
+    }
 
     // ensure exp sample for each biosample_accession from selection
     function createSamples() {
