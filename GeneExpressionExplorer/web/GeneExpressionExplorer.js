@@ -21,14 +21,26 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
     constructor : function(config) {
 
+        ////////////////////////////////////
+        //  Generate necessary HTML divs  //
+        ////////////////////////////////////
+
+        $('#' + config.webPartDivId).append(
+            '<div id=\'wpGraph' + config.webPartDivId + '\' class=\'centered-text\'>' +
+                '<div style=\'height: 20px\'></div>' +
+            '</div>'
+        );
+
+
         /////////////////////////////////////
         //            Variables            //
         /////////////////////////////////////
 
         var
-            me          = this,
-            maskPlot    = undefined,
-            fieldWidth  = 400
+            me              = this,
+            maskPlot        = undefined,
+            fieldWidth      = 400,
+            reportSessionId = undefined
             ;
 
         var checkBtnPlotStatus = function(){
@@ -41,6 +53,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 btnPlot.setDisabled( true );
             }
         };
+
 
         ///////////////////////////////////
         //            Stores             //
@@ -143,6 +156,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
                 return params;
             },
+//            lazyInit: false,
             listeners: {
                 additem:    checkBtnPlotStatus,
                 clear:      checkBtnPlotStatus,
@@ -156,6 +170,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     }
                 }
             },
+            listWidth: 270,
             minListWidth: 270,
             mode: 'remote',
             pageSize: 10,
@@ -184,16 +199,24 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     success: function(data){
                         var count = data.rows.length;
                         if ( count == 1 ){*/
-                            cnfPlot.inputParams = {
+                            /*cnfPlot.inputParams = {
                                 cohorts:            Ext.encode( cbCohorts.getCheckedArray() ),
                                 timePoint:          cbTimePoint.getValue(),
                                 timePointDisplay:   cbTimePoint.getRawValue(),
                                 genes:              Ext.encode( cbGenes.getValuesAsArray() )
-                            };
+                            };*/
+
+                            wpGraphConfig.cohorts           = Ext.encode( cbCohorts.getCheckedArray() ),
+                            wpGraphConfig.genes             = Ext.encode( cbGenes.getValuesAsArray() ),
+                            wpGraphConfig.timePoint         = cbTimePoint.getValue();
+                            wpGraphConfig.timePointDisplay  = cbTimePoint.getValue();
+                            wpGraphConfig.reportSessionId   = reportSessionId;
 
                             setPlotRunning( true );
 
-                            LABKEY.Report.execute( cnfPlot );
+//                            LABKEY.Report.execute( cnfPlot );
+
+                            wpGraph.render();
                         /*} else if ( count > 1 ) {
                             LABKEY.ext.GeneExpressionExplorer_Lib.onFailure({
                                 exception: 'The selected values do not result in a unique set of parameters.'
@@ -234,9 +257,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 } else {
                     var p = outputParams[0];
 
-                    if ( p.type == 'image' ){
-                        imgUrl = p.value;
-
+                    if ( p && p.type == 'image' ){
                         cntPlot.update('<img src=\'' + p.value + '\' >');
                     }
                 }
@@ -249,7 +270,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var cntPlot = new Ext.Container({
-
+            contentEl: 'wpGraph' + config.webPartDivId
         });
 
         var pnlMain = new Ext.form.FormPanel({
@@ -311,6 +332,113 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         });
 
 
+
+        var wpGraphConfig = {
+            reportId: 'module:GeneExpressionExplorer/Plot.R',
+            title: 'Graph'
+        };
+
+        var resizableImage;
+        
+        var wpGraph = new LABKEY.WebPart({
+            failure: function( errorInfo, options, responseObj ){
+                setPlotRunning( false );
+
+                LABKEY.ext.GeneExpressionExplorer_Lib.onFailure(errorInfo, options, responseObj);
+            },
+            frame: 'none',
+            partConfig: wpGraphConfig,
+            partName: 'Report',
+            renderTo: 'wpGraph' + config.webPartDivId,
+            success: function(){
+                setPlotRunning( false );
+                
+                var img = $('#wpGraph' + config.webPartDivId + ' img'), imgId = undefined;
+                if ( img.length > 1 ){
+                    imgId = img[1].id;
+                }
+
+                if ( $('#wpGraph' + config.webPartDivId + ' .labkey-error').length > 0 ){
+                    removeById( imgId );
+
+                    var inputArray = $('#wpGraph' + config.webPartDivId + ' pre')[0].innerHTML;
+                    if ( inputArray.indexOf('The report session is invalid') < 0 ){
+                        if ( inputArray.indexOf('must have only one flow frame per panel') < 0 ){
+                            LABKEY.ext.GeneExpressionExplorer_Lib.onFailure({
+                                exception: inputArray
+                            });
+
+                            cntPlot.getEl().frame("ff0000");
+                        } else {
+                            $('#wpGraph' + config.webPartDivId + ' div *').remove();
+
+                            Ext.Msg.alert('Error', 'The data chosen for plotting is such that rows (excluding the file names column) are not unique and so the plotting engine cannot proceed');
+                        }
+                    } else {
+                        $('#wpGraph' + config.webPartDivId + ' div *').remove();
+                        $('#wpGraph' + config.webPartDivId + ' div').attr( 'style', 'height: 7px');
+
+                        LABKEY.Report.createSession({
+//                            clientContext : 'GeneExpressionExplorer_LibVisualization',
+                            failure: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure,
+                            success: function(data){
+                                reportSessionId = data.reportSessionId;
+
+                                wpGraphConfig.reportSessionId = reportSessionId;
+
+                                setPlotRunning( true );
+                                wpGraph.render();
+                            }
+                        });
+                    }
+
+                } else {
+
+                    var width = cntPlot.getWidth();
+                    var height;
+                    if ( true ){ //! chAspectRatio.getValue() ){
+                        height = width;
+                    } else {
+//                        height = width * spnrVertical.getValue() / spnrHorizontal.getValue();
+                    }
+
+                    resizableImage = new Ext.Resizable( imgId, {
+                        disableTrackOver: true,
+                        dynamic: true,
+                        handles: 's',
+                        height: height,
+                        listeners: {
+                            resize: function(){
+                                var widthToSet = cntPlot.getWidth(), img = this.getEl().dom;
+                                var width = img.offsetWidth, height = img.offsetHeight;
+                                if ( width > widthToSet ){
+                                    resizableImage.resizeTo( widthToSet, height / width * widthToSet );
+                                }
+                            }
+                        },
+                        maxWidth: width,
+                        minHeight: 50,
+                        minWidth: 50,
+                        pinned: true,
+                        preserveRatio: true,
+                        width: width,
+                        wrap: true
+                    });
+
+                    me.resizableImage = resizableImage;
+
+                    // FancyBox plug in usage
+//                    $('#' + imgId).wrap('<a class=\'fancybox\' data-fancybox-type=\'image\' href=\'' + $('#' + imgId)[0].src + '\' />');
+
+                    Ext.QuickTips.register({
+                        target: imgId,
+                        text: 'Click on the generated plot to see it in full screen'
+                    });
+                }
+            }
+        });
+
+
         /////////////////////////////////////
         //             Functions           //
         /////////////////////////////////////
@@ -326,6 +454,29 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             cbTimePoint.setDisabled( bool );
             cbGenes.setDisabled( bool );
         };
+
+
+        // jQuery-related
+
+        jQuery('.fancybox').fancybox({
+            closeBtn: false,
+            helpers: {
+                buttons: {
+                    tpl:
+                        '<div id="fancybox-buttons">' +
+                            '<ul>' +
+                                '<li>' +
+                                    '<a class="btnToggle" title="Toggle size" href="javascript:;"></a>' +
+                                '</li>' +
+                                '<li>' +
+                                    '<a class="btnClose" title="Close" href="javascript:jQuery.fancybox.close();"></a>' +
+                                '</li>' +
+                            '</ul>' +
+                        '</div>'
+                }
+            },
+            type: 'image'
+        });
 
 
         this.border         = false;

@@ -314,7 +314,7 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                     this.store.on('load', this.onStoreLoad, this);
                 }
 
-                this.on('render', this.resizeToFitContent, this);
+                this.mon( this, 'afterrender', this.resizeToFitContent, this );
 
                 this.mon(
                     this.store, {
