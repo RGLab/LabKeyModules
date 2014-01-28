@@ -279,7 +279,7 @@ if(length(param$EM_pred) > 0){
 ```
 
 <h2>  Prediction </h2>
-```{r prediction, hfig.cap=TRUE, fig.cap="Figure 2. Predicted vs. observed values for the prediction model."}
+```{r prediction, hfig.cap=TRUE, fig.cap="Predicted vs. observed values for the prediction model."}
 #Pred on training set
 if(length(param$EM_pred) == 0){
    data <- data.frame(observed = OUT_train, fitted=relasso$fitted.values)
@@ -301,7 +301,7 @@ if(length(param$EM_pred) == 0){
                                  #rep(paste("b:", param$EM_pred, "(Testing)"), sapply(lFCs_test, nrow)))
                       cohort = cohorts)
    ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme +
-   facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predictor response")
+   facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predicted response")
 
 }
 ```
@@ -332,7 +332,7 @@ kable(predictor_table, digits=2, format="html", row.names=FALSE, table.attr="id=
 <br>
 
 <h2>  Heatmap of the selected features </h2>
-```{r heatmap, echo=FALSE, hfig.cap=TRUE, fig.cap="Figure 1. Heatmap of selected probes with HAI status annotation."}
+```{r heatmap, echo=FALSE, hfig.cap=TRUE, fig.cap="Heatmap of selected probes with HAI status annotation."}
 
 rownames(mat) <- ifelse(nchar(rownames(mat)) > 15, paste0(substr(rownames(mat), 1, 15), "..."), rownames(mat))
 if(param$dichotomize){
