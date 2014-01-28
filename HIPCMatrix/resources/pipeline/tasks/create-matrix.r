@@ -15,8 +15,7 @@ inputFiles <- jobInfo$value[jobInfo$name == "inputFile"]
 
 # get sample information based on the input files
 # TODO: Need baseUrl
-#baseUrl <- jobInfo$value[jobInfo$name == "baseUrl"]
-baseUrl <- "http://localhost:8080/labkey"
+baseUrl <- jobInfo$value[jobInfo$name == "baseUrl"]
 containerPath <- jobInfo$value[jobInfo$name == "containerPath"]
 filter <- makeFilter(c("file_info_name", "IN", paste(basename(inputFiles), collapse=";")))
 pdata <- labkey.selectRows(baseUrl=baseUrl,
