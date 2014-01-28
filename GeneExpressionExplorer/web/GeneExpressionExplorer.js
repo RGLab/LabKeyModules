@@ -339,7 +339,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         };
 
         var resizableImage;
-        
+
         var wpGraph = new LABKEY.WebPart({
             failure: function( errorInfo, options, responseObj ){
                 setPlotRunning( false );
@@ -352,7 +352,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             renderTo: 'wpGraph' + config.webPartDivId,
             success: function(){
                 setPlotRunning( false );
-                
+
                 var img = $('#wpGraph' + config.webPartDivId + ' img'), imgId = undefined;
                 if ( img.length > 1 ){
                     imgId = img[1].id;
@@ -379,7 +379,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         $('#wpGraph' + config.webPartDivId + ' div').attr( 'style', 'height: 7px');
 
                         LABKEY.Report.createSession({
-//                            clientContext : 'GeneExpressionExplorer_LibVisualization',
+//                            clientContext : 'GeneExpressionExplorer',
                             failure: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure,
                             success: function(data){
                                 reportSessionId = data.reportSessionId;
@@ -394,13 +394,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
                 } else {
 
-                    var width = cntPlot.getWidth();
-                    var height;
-                    if ( true ){ //! chAspectRatio.getValue() ){
-                        height = width;
-                    } else {
-//                        height = width * spnrVertical.getValue() / spnrHorizontal.getValue();
-                    }
+                    var width = cntPlot.getWidth(), height = width;
 
                     resizableImage = new Ext.Resizable( imgId, {
                         disableTrackOver: true,

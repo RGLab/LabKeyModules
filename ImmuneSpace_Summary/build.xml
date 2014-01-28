@@ -10,11 +10,6 @@
 
     <basename property="module.name" file="${moduleDir}" />
 
-    <property name="moduleResourcesDir" value="${moduleDir}/resources"/>
-    <available property="moduleResourcesDirExists" file="${moduleResourcesDir}"/>
-    <condition property='module.src.dir' value='${basedir}/resources'>
-        <isset property='moduleResourcesDirExists'/>
-    </condition>
     <property name='module.src.dir' value='${basedir}'/>
 
     <property name="deploy.modules.dir" location="${basedir}/.."/>

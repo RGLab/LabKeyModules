@@ -3,7 +3,7 @@
       xsi:type="ScriptTaskType"
       name="create-matrix" version="0.0">
     <description>Create expression matrix</description>
-    <author>keivnk@labkey.com</author>
+    <author>kevink@labkey.com</author>
     <inputs>
       <file name="input.CEL" splitFiles="true"/>
     </inputs>

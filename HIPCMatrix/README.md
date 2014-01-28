@@ -42,7 +42,7 @@ Demo
 5. Generated matrix is a tab-separated file with the header row containing 'ID_REF' and sample names.  Each row contains the probe id in the ID_REF column and the remaining columns are the matrix values.
 
 <table>
-  <tr><td>ID_REF</td><td>&lgt;BioSample01&gt;</td><td>&lt;BioSample02&gt;</td><td>...</td></tr>
+  <tr><td>ID_REF</td><td>&lt;BioSample01&gt;</td><td>&lt;BioSample02&gt;</td><td>...</td></tr>
   <tr><td>&lt;probe01&gt;</td><td>&lt;value&gt;</td><td>&lt;value&gt;</td><td>&nbsp;</td></tr>
   <tr><td>&lt;probe02&gt;</td><td>&lt;value&gt;</td><td>&lt;value&gt;</td><td>&nbsp;</td></tr>
   <tr><td colspan=4>...</td></tr>
