@@ -24,6 +24,10 @@ timePoint           <- as.numeric( labkey.url.params$timePoint );
 timePointDisplay    <- labkey.url.params$timePointDisplay;
 arrayGenes          <- RJSONIO::fromJSON( labkey.url.params$genes );
 
-print( plot( 1:10 ) );
+plot( rnorm(10) );
 
 dev.off();
+
+Sys.sleep(3);
+
+write( RJSONIO::toJSON( x = c( 1, 2 ), asIs = T ), '${jsonout:outArray}' );

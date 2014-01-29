@@ -2,6 +2,8 @@
     <dependencies>
         <dependency path='Ext.ux.form.LovCombo.css'/>
         <dependency path='GeneExpressionExplorer/SuperBoxSelect/superboxselect.css'/>
+        <dependency path='GeneExpressionExplorer/FancyBox/source/jquery.fancybox.css'/>
+        <dependency path='GeneExpressionExplorer/FancyBox/source/helpers/jquery.fancybox-buttons.css'/>
         <dependency path='GeneExpressionExplorer/GeneExpressionExplorer.css'/>
 
         <dependency path='Ext3'/>
