@@ -21,17 +21,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
     constructor : function(config) {
 
-        ////////////////////////////////////
-        //  Generate necessary HTML divs  //
-        ////////////////////////////////////
-
-        $('#' + config.webPartDivId).append(
-            '<div id=\'wpGraph' + config.webPartDivId + '\' class=\'centered-text\'>' +
-                '<div style=\'height: 20px\'></div>' +
-            '</div>'
-        );
-
-
         /////////////////////////////////////
         //            Variables            //
         /////////////////////////////////////
@@ -39,8 +28,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var
             me              = this,
             maskPlot        = undefined,
-            fieldWidth      = 400,
-            reportSessionId = undefined
+            fieldWidth      = 400
             ;
 
         var checkBtnPlotStatus = function(){
@@ -69,10 +57,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         });
 
         var strTimePoint = new LABKEY.ext.Store({
+            autoLoad: true,
             listeners: {
-                load: function(){
-                    cbTimePoint.setDisabled( false );
-                },
                 loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
             },
             queryName: 'timepoints',
@@ -96,25 +82,9 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             displayField: 'cohort',
             fieldLabel: 'Cohorts',
             listeners: {
-                change: function(){
-                    if ( this.getValue() == '' ){
-                        cbTimePoint.clearValue();
-                        btnPlot.setDisabled( true );
-                        cbTimePoint.setDisabled( true );
-                    } else {
-                        cbTimePoint.clearValue();
-                        strTimePoint.load( { params: { 'query.param.COHORT_VALUE': this.getRawValue() } } );
-                    }
-                },
-                cleared: function(){
-                    cbTimePoint.clearValue();
-                    btnPlot.setDisabled( true );
-                    cbTimePoint.setDisabled( true );
-                },
-                select: function(){
-                    cbTimePoint.clearValue();
-                    strTimePoint.load( { params: { 'query.param.COHORT_VALUE': this.getRawValue() } } );
-                }
+                change:     checkBtnPlotStatus,
+                cleared:    checkBtnPlotStatus,
+                select:     checkBtnPlotStatus
             },
             store: strCohort,
             valueField: 'cohort',
@@ -122,7 +92,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         });
 
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
-            disabled: true,
             displayField: 'displayTimepoint',
             fieldLabel: 'Time point',
             listeners: {
@@ -188,46 +157,16 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var btnPlot = new Ext.Button({
             disabled: true,
             handler: function(){
-/*                LABKEY.Query.selectRows({
-                    failure: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure,
-                    filterArray: [
-//                        LABKEY.Filter.create( 'expression_matrix_accession', cbCohorts.getValue() ),
-                        LABKEY.Filter.create( 'timepoint', cbTimePoint.getValue() )
-                    ],
-                    queryName: 'study_cohorts_info',
-                    schemaName: 'study',
-                    success: function(data){
-                        var count = data.rows.length;
-                        if ( count == 1 ){*/
-                            /*cnfPlot.inputParams = {
-                                cohorts:            Ext.encode( cbCohorts.getCheckedArray() ),
-                                timePoint:          cbTimePoint.getValue(),
-                                timePointDisplay:   cbTimePoint.getRawValue(),
-                                genes:              Ext.encode( cbGenes.getValuesAsArray() )
-                            };*/
+                cnfPlot.inputParams = {
+                    cohorts:            Ext.encode( cbCohorts.getCheckedArray() ),
+                    timePoint:          cbTimePoint.getValue(),
+                    timePointDisplay:   cbTimePoint.getRawValue(),
+                    genes:              Ext.encode( cbGenes.getValuesAsArray() )
+                };
 
-                            wpGraphConfig.cohorts           = Ext.encode( cbCohorts.getCheckedArray() ),
-                            wpGraphConfig.genes             = Ext.encode( cbGenes.getValuesAsArray() ),
-                            wpGraphConfig.timePoint         = cbTimePoint.getValue();
-                            wpGraphConfig.timePointDisplay  = cbTimePoint.getValue();
-                            wpGraphConfig.reportSessionId   = reportSessionId;
+                setPlotRunning( true );
 
-                            setPlotRunning( true );
-
-//                            LABKEY.Report.execute( cnfPlot );
-
-                            wpGraph.render();
-                        /*} else if ( count > 1 ) {
-                            LABKEY.ext.GeneExpressionExplorer_Lib.onFailure({
-                                exception: 'The selected values do not result in a unique set of parameters.'
-                            });
-                        } else if ( count < 1 ) {
-                            LABKEY.ext.GeneExpressionExplorer_Lib.onFailure({
-                                exception: 'The selected values result in an empty set of parameters.'
-                            });
-                        }
-                    }
-                });*/
+                LABKEY.Report.execute( cnfPlot );
             },
             text: 'Plot'
         });
@@ -236,6 +175,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //      Back-end Configuration     //
         /////////////////////////////////////
+
+        var resizableImage;
 
         var cnfPlot = {
             failure: function( errorInfo, options, responseObj ){
@@ -258,8 +199,46 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     var p = outputParams[0];
 
                     if ( p && p.type == 'image' ){
-                        cntPlot.update('<img src=\'' + p.value + '\' >');
+                        var imgId = 'img' + config.webPartDivId;
+                        cntPlot.update( '<img id=\'' + imgId + '\' src=\'' + p.value + '\' >' );
+
+                        var width = cntPlot.getWidth(), height = width;
+
+                        resizableImage = new Ext.Resizable( imgId, {
+                            disableTrackOver: true,
+                            dynamic: true,
+                            handles: 's',
+                            height: height,
+                            listeners: {
+                                resize: function(){
+                                    var widthToSet = cntPlot.getWidth(), img = this.getEl().dom;
+                                    var width = img.offsetWidth, height = img.offsetHeight;
+                                    if ( width > widthToSet ){
+                                        resizableImage.resizeTo( widthToSet, height / width * widthToSet );
+                                    }
+                                }
+                            },
+                            maxWidth: width,
+                            minHeight: 50,
+                            minWidth: 50,
+                            pinned: true,
+                            preserveRatio: true,
+                            width: width,
+                            wrap: true
+                        });
+
+                        me.resizableImage = resizableImage;
+
+                        // FancyBox plug in usage
+                        $('#' + imgId).wrap('<a class=\'fancybox\' data-fancybox-type=\'image\' href=\'' + p.value + '\' />');
+
+                        Ext.QuickTips.register({
+                            target: imgId,
+                            text: 'Click on the generated plot to see it in full screen'
+                        });
                     }
+
+                    console.log( outputParams[1].value );
                 }
             }
         };
@@ -269,9 +248,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         //  Panels, Containers, Components //
         /////////////////////////////////////
 
-        var cntPlot = new Ext.Container({
-            contentEl: 'wpGraph' + config.webPartDivId
-        });
+        var cntPlot = new Ext.Container({});
 
         var pnlMain = new Ext.form.FormPanel({
             autoHeight: true,
@@ -331,108 +308,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             }
         });
 
-
-
-        var wpGraphConfig = {
-            reportId: 'module:GeneExpressionExplorer/Plot.R',
-            title: 'Graph'
-        };
-
-        var resizableImage;
-
-        var wpGraph = new LABKEY.WebPart({
-            failure: function( errorInfo, options, responseObj ){
-                setPlotRunning( false );
-
-                LABKEY.ext.GeneExpressionExplorer_Lib.onFailure(errorInfo, options, responseObj);
-            },
-            frame: 'none',
-            partConfig: wpGraphConfig,
-            partName: 'Report',
-            renderTo: 'wpGraph' + config.webPartDivId,
-            success: function(){
-                setPlotRunning( false );
-
-                var img = $('#wpGraph' + config.webPartDivId + ' img'), imgId = undefined;
-                if ( img.length > 1 ){
-                    imgId = img[1].id;
-                }
-
-                if ( $('#wpGraph' + config.webPartDivId + ' .labkey-error').length > 0 ){
-                    removeById( imgId );
-
-                    var inputArray = $('#wpGraph' + config.webPartDivId + ' pre')[0].innerHTML;
-                    if ( inputArray.indexOf('The report session is invalid') < 0 ){
-                        if ( inputArray.indexOf('must have only one flow frame per panel') < 0 ){
-                            LABKEY.ext.GeneExpressionExplorer_Lib.onFailure({
-                                exception: inputArray
-                            });
-
-                            cntPlot.getEl().frame("ff0000");
-                        } else {
-                            $('#wpGraph' + config.webPartDivId + ' div *').remove();
-
-                            Ext.Msg.alert('Error', 'The data chosen for plotting is such that rows (excluding the file names column) are not unique and so the plotting engine cannot proceed');
-                        }
-                    } else {
-                        $('#wpGraph' + config.webPartDivId + ' div *').remove();
-                        $('#wpGraph' + config.webPartDivId + ' div').attr( 'style', 'height: 7px');
-
-                        LABKEY.Report.createSession({
-//                            clientContext : 'GeneExpressionExplorer',
-                            failure: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure,
-                            success: function(data){
-                                reportSessionId = data.reportSessionId;
-
-                                wpGraphConfig.reportSessionId = reportSessionId;
-
-                                setPlotRunning( true );
-                                wpGraph.render();
-                            }
-                        });
-                    }
-
-                } else {
-
-                    var width = cntPlot.getWidth(), height = width;
-
-                    resizableImage = new Ext.Resizable( imgId, {
-                        disableTrackOver: true,
-                        dynamic: true,
-                        handles: 's',
-                        height: height,
-                        listeners: {
-                            resize: function(){
-                                var widthToSet = cntPlot.getWidth(), img = this.getEl().dom;
-                                var width = img.offsetWidth, height = img.offsetHeight;
-                                if ( width > widthToSet ){
-                                    resizableImage.resizeTo( widthToSet, height / width * widthToSet );
-                                }
-                            }
-                        },
-                        maxWidth: width,
-                        minHeight: 50,
-                        minWidth: 50,
-                        pinned: true,
-                        preserveRatio: true,
-                        width: width,
-                        wrap: true
-                    });
-
-                    me.resizableImage = resizableImage;
-
-                    // FancyBox plug in usage
-//                    $('#' + imgId).wrap('<a class=\'fancybox\' data-fancybox-type=\'image\' href=\'' + $('#' + imgId)[0].src + '\' />');
-
-                    Ext.QuickTips.register({
-                        target: imgId,
-                        text: 'Click on the generated plot to see it in full screen'
-                    });
-                }
-            }
-        });
-
-
         /////////////////////////////////////
         //             Functions           //
         /////////////////////////////////////
@@ -483,11 +358,16 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         this.webPartDivId   = config.webPartDivId;
         this.width          = document.getElementById(config.webPartDivId).offsetWidth;
 
+        this.cntPlot = cntPlot;
+
         LABKEY.ext.GeneExpressionExplorer.superclass.constructor.apply(this, arguments);
 
     }, // end constructor
 
-    resize: function(){
-    }
-}); // end GeneExpressionExplorer Panel class
+    resize : function(){
+        if ( typeof this.resizableImage != 'undefined' ){
+            var width = this.cntPlot.getWidth();
+            this.resizableImage.resizeTo( width, width * this.resizableImage.height / this.resizableImage.width );
+        }
+    }}); // end GeneExpressionExplorer Panel class
 
