@@ -4,17 +4,18 @@ library(affy)
 # NOTE: also requires bioc packages: "hthgu133pluspmcdf" and "AnnotationDbi"
 
 # read the job info
-jobInfo <- read.table("${pipeline, jobInfo}",
+#jobInfo <- read.table("${pipeline, jobInfo}",
+jobInfo <- read.table("${pipeline, taskInfo}",
                       col.names=c("name", "value", "type"),
                       header=FALSE, check.names=FALSE,
                       stringsAsFactors=FALSE, sep="\t", quote="",
                       fill=TRUE, na.strings="")
 
 # selected input file paths
-inputFiles <- jobInfo$value[jobInfo$name == "inputFile"]
+#inputFiles <- jobInfo$value[jobInfo$name == "inputFile"]
+inputFiles <- jobInfo$value[jobInfo$name == "input.CEL"]
 
 # get sample information based on the input files
-# TODO: Need baseUrl
 baseUrl <- jobInfo$value[jobInfo$name == "baseUrl"]
 containerPath <- jobInfo$value[jobInfo$name == "containerPath"]
 filter <- makeFilter(c("file_info_name", "IN", paste(basename(inputFiles), collapse=";")))
