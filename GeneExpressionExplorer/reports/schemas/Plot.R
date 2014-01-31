@@ -17,12 +17,14 @@
 suppressMessages( library( Cairo ) );
 suppressMessages( library( RJSONIO ) );
 
-CairoPNG( filename='${imgout:Plot.png}' );
-
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
 timePoint           <- as.numeric( labkey.url.params$timePoint );
 timePointDisplay    <- labkey.url.params$timePointDisplay;
 arrayGenes          <- RJSONIO::fromJSON( labkey.url.params$genes );
+imageWidth  <- as.numeric(labkey.url.params$imageWidth);
+imageHeight <- as.numeric(labkey.url.params$imageHeight);
+
+CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
 
 plot( rnorm(10) );
 
@@ -30,4 +32,4 @@ dev.off();
 
 Sys.sleep(3);
 
-write( RJSONIO::toJSON( x = c( 1, 2 ), asIs = T ), '${jsonout:outArray}' );
+write( RJSONIO::toJSON( x = c( 3, 2 ), asIs = T ), '${jsonout:outArray}' );

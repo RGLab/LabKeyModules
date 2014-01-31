@@ -4,6 +4,7 @@
         <dependency path='GeneExpressionExplorer/SuperBoxSelect/superboxselect.css'/>
         <dependency path='GeneExpressionExplorer/FancyBox/source/jquery.fancybox.css'/>
         <dependency path='GeneExpressionExplorer/FancyBox/source/helpers/jquery.fancybox-buttons.css'/>
+        <dependency path='GeneExpressionExplorer/Spinner/Spinner.css'/>
         <dependency path='GeneExpressionExplorer/GeneExpressionExplorer.css'/>
 
         <dependency path='Ext3'/>
@@ -12,6 +13,8 @@
         <dependency path='GeneExpressionExplorer/SuperBoxSelect/SuperBoxSelect.js'/>
         <dependency path='GeneExpressionExplorer/ExtendedComboBox.js'/>
         <dependency path='GeneExpressionExplorer/ExtendedLovCombo.js'/>
+        <dependency path='GeneExpressionExplorer/Spinner/Spinner.js'/>
+        <dependency path='GeneExpressionExplorer/Spinner/SpinnerField.js'/>
         <dependency path='GeneExpressionExplorer/GeneExpressionExplorer_Lib.js'/>
 
         <dependency path='GeneExpressionExplorer.js'/>
