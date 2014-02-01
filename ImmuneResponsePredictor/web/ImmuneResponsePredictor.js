@@ -96,7 +96,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             listeners: {
                 blur: function(){
                     cbCohortTesting.focus();
-                    cbCohortTesting.expand();
+                    cbCohortTesting.expand(); // .onLoad() better ?
                 },
                 change: function(){
                     if ( ! flagCohortTrainingSelect ) {
