@@ -50,8 +50,7 @@ Ext.namespace('Ext.ux.form');
                 },
                 removeitem: function(){
                 }
-            },
-            resizable: true
+            }
         });
 */
 
@@ -151,6 +150,7 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
             forceSelection: true,
             minChars: 0,
             mode: 'local',
+            resizable: true,
             triggerAction: 'all',
             typeAhead: true,
             /////////////////////////////
@@ -300,7 +300,6 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                     remoteLookup : [],
                     hideTrigger : true,
                     grow : false,
-                    resizable : false,
                     multiSelectMode : false,
                     preRenderValue : null
                 });
@@ -313,8 +312,6 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                 if (this.mode === 'remote' && this.store) {
                     this.store.on('load', this.onStoreLoad, this);
                 }
-
-                this.mon( this, 'afterrender', this.resizeToFitContent, this );
 
                 this.mon(
                     this.store, {
@@ -347,7 +344,14 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                     s.width = width;
                     width += 3 * Ext.getScrollBarWidth() + 60;
                     if ( this.pageSize > 0 && this.pageTb ){
-                        width = Math.max( width, this.pageTb.el.child('table').getWidth() );
+                        var toolbar = this.pageTb.el;
+                        var width = Math.max(
+                            width,
+                            toolbar.child('.x-toolbar-left-row').getWidth() +
+                            toolbar.child('.x-toolbar-left').getFrameWidth('lr') +
+                            toolbar.child('.x-toolbar-right').getFrameWidth('lr') +
+                            toolbar.getFrameWidth('lr')
+                        );
                     }
                     this.listWidth = width;
                     this.minListWidth = width;
@@ -356,9 +360,138 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                         this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
                         this.restrictHeight();
                     }
+
+                    if( this.resizable ){
+                        this.resizer.minWidth = width;
+                    }
                 }
             },
-	        getAllValuesAsArray: function(){
+            initList : function(){
+                if(!this.list){
+                    var cls = 'x-combo-list',
+                            listParent = Ext.getDom(this.getListParent() || Ext.getBody());
+
+                    this.list = new Ext.Layer({
+                        parentEl: listParent,
+                        shadow: this.shadow,
+                        cls: [cls, this.listClass].join(' '),
+                        constrain:false,
+                        zindex: this.getZIndex(listParent)
+                    });
+
+                    var lw = this.listWidth || Math.max(this.wrap.getWidth(), this.minListWidth);
+                    this.list.setSize(lw, 0);
+                    this.list.swallowEvent('mousewheel');
+                    this.assetHeight = 0;
+                    if(this.syncFont !== false){
+                        this.list.setStyle('font-size', this.el.getStyle('font-size'));
+                    }
+                    if(this.title){
+                        this.header = this.list.createChild({cls:cls+'-hd', html: this.title});
+                        this.assetHeight += this.header.getHeight();
+                    }
+
+                    this.innerList = this.list.createChild({cls:cls+'-inner'});
+                    this.mon(this.innerList, 'mouseover', this.onViewOver, this);
+                    this.mon(this.innerList, 'mousemove', this.onViewMove, this);
+                    this.innerList.setWidth(lw - this.list.getFrameWidth('lr'));
+
+                    if(this.pageSize){
+                        this.footer = this.list.createChild({cls:cls+'-ft'});
+                        this.pageTb = new Ext.PagingToolbar({
+                            store: this.store,
+                            pageSize: this.pageSize,
+                            renderTo:this.footer
+                        });
+                        this.assetHeight += this.footer.getHeight();
+                    }
+
+                    if(!this.tpl){
+                        /**
+                         * @cfg {String/Ext.XTemplate} tpl <p>The template string, or {@link Ext.XTemplate} instance to
+                         * use to display each item in the dropdown list. The dropdown list is displayed in a
+                         * DataView. See {@link #view}.</p>
+                         * <p>The default template string is:</p><pre><code>
+                         '&lt;tpl for=".">&lt;div class="x-combo-list-item">{' + this.displayField + '}&lt;/div>&lt;/tpl>'
+                         * </code></pre>
+                         * <p>Override the default value to create custom UI layouts for items in the list.
+                         * For example:</p><pre><code>
+                         '&lt;tpl for=".">&lt;div ext:qtip="{state}. {nick}" class="x-combo-list-item">{state}&lt;/div>&lt;/tpl>'
+                         * </code></pre>
+                         * <p>The template <b>must</b> contain one or more substitution parameters using field
+                         * names from the Combo's</b> {@link #store Store}. In the example above an
+                         * <pre>ext:qtip</pre> attribute is added to display other fields from the Store.</p>
+                         * <p>To preserve the default visual look of list items, add the CSS class name
+                         * <pre>x-combo-list-item</pre> to the template's container element.</p>
+                         * <p>Also see {@link #itemSelector} for additional details.</p>
+                         */
+                        this.tpl = '<tpl for="."><div class="'+cls+'-item">{' + this.displayField + '}</div></tpl>';
+                        /**
+                         * @cfg {String} itemSelector
+                         * <p>A simple CSS selector (e.g. div.some-class or span:first-child) that will be
+                         * used to determine what nodes the {@link #view Ext.DataView} which handles the dropdown
+                         * display will be working with.</p>
+                         * <p><b>Note</b>: this setting is <b>required</b> if a custom XTemplate has been
+                         * specified in {@link #tpl} which assigns a class other than <pre>'x-combo-list-item'</pre>
+                         * to dropdown list items</b>
+                         */
+                    }
+
+                    /**
+                     * The {@link Ext.DataView DataView} used to display the ComboBox's options.
+                     * @type Ext.DataView
+                     */
+                    this.view = new Ext.DataView({
+                        applyTo: this.innerList,
+                        tpl: this.tpl,
+                        singleSelect: true,
+                        selectedClass: this.selectedClass,
+                        itemSelector: this.itemSelector || '.' + cls + '-item',
+                        emptyText: this.listEmptyText,
+                        deferEmptyText: false
+                    });
+
+                    this.mon(this.view, {
+                        containerclick : this.onViewClick,
+                        click : this.onViewClick,
+                        scope :this
+                    });
+
+                    this.bindStore(this.store, true);
+
+                    if ( this.pageSize > 0 && this.pageTb ){
+                        var toolbar = this.pageTb.el;
+                        var width = Math.max(
+                            this.getWidth(),
+                            toolbar.child('.x-toolbar-left-row').getWidth() +
+                            toolbar.child('.x-toolbar-left').getFrameWidth('lr') +
+                            toolbar.child('.x-toolbar-right').getFrameWidth('lr') +
+                            toolbar.getFrameWidth('lr')
+                        );
+                        this.listWidth = width;
+                        this.minListWidth = width;
+                        if ( this.list != undefined && this.innerList != undefined ){
+                            this.list.setSize( width );
+                            this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
+                        }
+                    }
+
+                    if(this.resizable){
+                        this.resizer = new Ext.Resizable(this.list,  {
+                            pinned:true, handles:'se', minWidth: this.minListWidth
+                        });
+                        this.mon(this.resizer, 'resize', function(r, w, h){
+                            this.maxHeight = h-this.handleHeight-this.list.getFrameWidth('tb')-this.assetHeight;
+                            this.listWidth = w;
+                            this.innerList.setWidth(w - this.list.getFrameWidth('lr'));
+                            this.restrictHeight();
+                        }, this);
+
+                        this[this.pageSize?'footer':'innerList'].setStyle('margin-bottom', this.handleHeight+'px');
+                    }
+                }
+            },
+            getAllValuesAsArray: function(){
                 var c = [];
 
                 Ext.each( this.store.data.items, function(r){ c.push( r.data.Value ); } );
@@ -902,8 +1035,7 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                     reduce += (this.buttonWrap.getWidth() + 20);
                     this.wrapEl.setWidth(w - reduce);
                 }
-                Ext.ux.form.SuperBoxSelect.superclass.onResize.call(this, w, h,
-                        rw, rh);
+                Ext.ux.form.SuperBoxSelect.superclass.onResize.call(this, w, h, rw, rh);
                 this.autoSize();
             },
             onEnable : function() {

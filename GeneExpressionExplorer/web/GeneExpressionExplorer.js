@@ -28,6 +28,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var
             me              = this,
             maskPlot        = undefined,
+            reportSessionId = undefined,
             fieldWidth      = 400
             ;
 
@@ -71,6 +72,32 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             },
             queryName: 'gene',
             schemaName: 'lists'
+        });
+
+
+        /////////////////////////////////////
+        //      Session instanciation      //
+        /////////////////////////////////////
+
+        LABKEY.Report.getSessions({
+            success: function( responseObj ){
+                var i, array = responseObj.reportSessions, length = array.length;
+                for ( i = 0; i < length; i ++ ){
+                    if ( array[i].clientContext == 'GeneExpressionExplorer' ){
+                        reportSessionId = array[i].reportSessionId;
+                        i = length;
+                    }
+                }
+                if ( i == length ){
+                    LABKEY.Report.createSession({
+                        clientContext : 'GeneExpressionExplorer',
+                        failure: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure,
+                        success: function(data){
+                            reportSessionId = data.reportSessionId;
+                        }
+                    });
+                }
+            }
         });
 
 
@@ -125,12 +152,21 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
                 return params;
             },
-//            lazyInit: false,
+            lazyInit: false,
             listeners: {
                 additem:    checkBtnPlotStatus,
                 clear:      checkBtnPlotStatus,
                 removeItem: checkBtnPlotStatus,
                 focus: function (){
+                    if (this.disabled) {
+                        return;
+                    }
+                    if (this.isExpanded()) {
+                        this.multiSelectMode = false;
+                    } else if (this.pinList) {
+                        this.multiSelectMode = true;
+                    }
+
                     this.initList();
                     if( this.triggerAction == 'all' ) {
                         this.doQuery( this.allQuery, true );
@@ -139,8 +175,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     }
                 }
             },
-            listWidth: 270,
-            minListWidth: 270,
             mode: 'remote',
             pageSize: 10,
             store: strGene,
@@ -164,13 +198,71 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     genes:              Ext.encode( cbGenes.getValuesAsArray() )
                 };
 
-                setPlotRunning( true );
+                var width = cntPlot.getWidth();
+                cnfPlot.inputParams.imageWidth = width;
+                if ( ! chAspectRatio.getValue() ){
+                    cnfPlot.inputParams.imageHeight = width;
+                } else {
+                    cnfPlot.inputParams.imageHeight = width * spnrVertical.getValue() / spnrHorizontal.getValue();
+                }
 
+                setPlotRunning( true );
+                cnfPlot.reportSessionId = reportSessionId;
                 LABKEY.Report.execute( cnfPlot );
             },
             text: 'Plot'
         });
 
+
+        var spnrHorizontal = new Ext.ux.form.SpinnerField({
+            fieldLabel: 'horizontal',
+            maxValue: 10,
+            minValue: 1,
+            value: 1,
+            width: 40
+        });
+
+        var spnrVertical = new Ext.ux.form.SpinnerField({
+            fieldLabel: 'vertical',
+            maxValue: 10,
+            minValue: 1,
+            value: 1,
+            width: 40
+        });
+
+        var dfHorizontal = new Ext.form.DisplayField({
+//            cls: 'bold-text',
+            value: 'horizontal'
+        });
+
+        var dfVertical = new Ext.form.DisplayField({
+//            cls: 'bold-text',
+            value: 'vertical'
+        });
+
+        var chAspectRatio = new Ext.form.Checkbox({
+            boxLabel: 'Control plot\'s aspect ratio',
+            checked: true,
+//            ctCls: 'bold-text',
+            handler: function(a,b){
+                spnrHorizontal.setDisabled(!b);
+                dfHorizontal.setDisabled(!b)
+                spnrVertical.setDisabled(!b);
+                dfVertical.setDisabled(!b);
+
+                if ( !b ){
+                    lastValueHorizontalAspect   = spnrHorizontal.getValue();
+                    lastValueVerticalAspect     = spnrVertical.getValue();
+                    spnrHorizontal.setValue(1);
+                    spnrVertical.setValue(1);
+                } else {
+                    spnrHorizontal.setValue( lastValueHorizontalAspect );
+                    spnrVertical.setValue( lastValueVerticalAspect );
+                }
+            },
+            margins: { top: 0, right: 0, bottom: 10, left: 4 },
+            width: 236
+        });
 
         /////////////////////////////////////
         //      Back-end Configuration     //
@@ -192,9 +284,24 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 var outputParams = result.outputParams;
 
                 if (errors && errors.length > 0){
-                    LABKEY.ext.GeneExpressionExplorer_Lib.onFailure({
-                        exception: errors.join('\n')
-                    });
+                    if ( errors[0].indexOf('The report session is invalid') < 0 ){
+
+                        LABKEY.ext.GeneExpressionExplorer_Lib.onFailure({
+                            exception: errors.join('\n')
+                        });
+                    } else {
+                        LABKEY.Report.createSession({
+                            clientContext : 'GeneExpressionExplorer',
+                            failure: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure,
+                            success: function(data){
+                                reportSessionId = data.reportSessionId;
+
+                                setPlotRunning( true );
+                                cnfPlot.reportSessionId = reportSessionId;
+                                LABKEY.Report.execute( cnfPlot );
+                            }
+                        });
+                    }
                 } else {
                     var p = outputParams[0];
 
@@ -238,7 +345,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         });
                     }
 
-                    console.log( outputParams[1].value );
+                    console.log( result.outputParams[1] );
                 }
             }
         };
@@ -284,9 +391,37 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     collapsed: true,
                     collapsible: true,
                     items: [
-                        new Ext.form.Checkbox({
-                            checked: false,
-                            fieldLabel: 'Toggle'
+                        new Ext.Panel({
+                            bodyStyle: 'padding: 4px;',
+                            defaults: {
+                                bodyStyle: 'padding: 4px;',
+                                border: false
+                            },
+                            items: [
+                                { items: chAspectRatio },
+                                new Ext.Panel({
+                                    items: [
+                                        dfHorizontal,
+                                        new Ext.Toolbar.Spacer({
+                                            width: 10
+                                        }),
+                                        spnrHorizontal,
+                                        new Ext.Toolbar.Spacer({
+                                            width: 30
+                                        }),
+                                        dfVertical,
+                                        new Ext.Toolbar.Spacer({
+                                            width: 10
+                                        }),
+                                        spnrVertical
+                                    ],
+                                    layout: {
+                                        align: 'middle',
+                                        type: 'hbox'
+                                    }
+                                })
+                            ],
+                            style: 'padding-bottom: 4px;'
                         })
                     ],
                     title: 'Additional parameters'
