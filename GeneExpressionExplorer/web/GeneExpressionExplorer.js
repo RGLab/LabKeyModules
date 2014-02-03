@@ -236,9 +236,9 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 //                valid:      checkBtnPlotStatus,
 //                invalid:    checkBtnPlotStatus
             },
-            maxValue: 20,
+            maxValue: 30,
             minValue: 0,
-            value: 10,
+            value: 15,
             width: 40
         });
 
