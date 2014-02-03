@@ -10,5 +10,4 @@ FROM
 WHERE
  hai.subject_accession = GEM.subject_accession AND
  GEA.expression_matrix_accession = GEM.expression_matrix_accession AND
- GEA.description like CONCAT(CONCAT('%', SUBSTRING(CONVERT(GEM.study_time_reported, VARCHAR), 1, 1)), '%') AND
- GEM.study_time_reported > 0
+ GEA.description like CONCAT(CONCAT('%', SUBSTRING(CONVERT(GEM.study_time_reported, VARCHAR), 1, 1)), '%')

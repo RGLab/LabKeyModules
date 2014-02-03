@@ -53,6 +53,7 @@ arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
 timePoint           <- as.numeric( labkey.url.params$timePoint );
 timePointDisplay    <- labkey.url.params$timePointDisplay;
 arrayGenes          <- RJSONIO::fromJSON( labkey.url.params$genes );
+textSize            <- as.numeric( labkey.url.params$textSize );
 
 if(exists("loadedCohorts") && loadedCohorts == arrayCohorts){
   message("No need to read again")

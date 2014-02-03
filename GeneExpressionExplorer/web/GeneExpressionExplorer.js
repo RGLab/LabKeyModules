@@ -33,8 +33,9 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             ;
 
         var checkBtnPlotStatus = function(){
-            if (    cbTimePoint.getValue() != '' &&
+            if (    cbResponse.getValue() != '' &&
                     cbCohorts.getValue() != '' &&
+                    cbTimePoint.getValue() != '' &&
                     cbGenes.getValue() != ''
             ){
                 btnPlot.setDisabled( false );
@@ -53,7 +54,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             listeners: {
                 loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
             },
-            queryName: 'cohorts',
+            queryName: 'cohorts_gee',
             schemaName: 'study'
         });
 
@@ -62,7 +63,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             listeners: {
                 loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
             },
-            queryName: 'timepoints',
+            queryName: 'timepoints_gee',
             schemaName: 'study'
         });
 
@@ -104,6 +105,17 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //     ComboBoxes / TextFields     //
         /////////////////////////////////////
+
+        var cbResponse = new Ext.ux.form.ExtendedComboBox({
+            displayField: 'name',
+            fieldLabel: 'Response',
+            store: new Ext.data.ArrayStore({
+                data: [ [ 'HAI', 'HAI' ] ],
+                fields: [ 'name', 'name' ]
+            }),
+            valueField: 'name',
+            width: fieldWidth
+        });
 
         var cbCohorts = new Ext.ux.form.ExtendedLovCombo({
             displayField: 'cohort',
@@ -191,20 +203,18 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var btnPlot = new Ext.Button({
             disabled: true,
             handler: function(){
+                var width = Math.min( cntPlot.getWidth(), 400 );
+
                 cnfPlot.inputParams = {
+                    response:           cbResponse.getValue(),
                     cohorts:            Ext.encode( cbCohorts.getCheckedArray() ),
                     timePoint:          cbTimePoint.getValue(),
                     timePointDisplay:   cbTimePoint.getRawValue(),
-                    genes:              Ext.encode( cbGenes.getValuesAsArray() )
+                    genes:              Ext.encode( cbGenes.getValuesAsArray() ),
+                    textSize:           spnrTextSize.getValue(),
+                    imageWidth:         width,
+                    imageHeight:        width
                 };
-
-                var width = cntPlot.getWidth();
-                cnfPlot.inputParams.imageWidth = width;
-                if ( ! chAspectRatio.getValue() ){
-                    cnfPlot.inputParams.imageHeight = width;
-                } else {
-                    cnfPlot.inputParams.imageHeight = width * spnrVertical.getValue() / spnrHorizontal.getValue();
-                }
 
                 setPlotRunning( true );
                 cnfPlot.reportSessionId = reportSessionId;
@@ -214,55 +224,14 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         });
 
 
-        var spnrHorizontal = new Ext.ux.form.SpinnerField({
-            fieldLabel: 'horizontal',
-            maxValue: 10,
-            minValue: 1,
-            value: 1,
+        var spnrTextSize = new Ext.ux.form.SpinnerField({
+            fieldLabel: 'Text size',
+            maxValue: 20,
+            minValue: 0,
+            value: 10,
             width: 40
         });
 
-        var spnrVertical = new Ext.ux.form.SpinnerField({
-            fieldLabel: 'vertical',
-            maxValue: 10,
-            minValue: 1,
-            value: 1,
-            width: 40
-        });
-
-        var dfHorizontal = new Ext.form.DisplayField({
-//            cls: 'bold-text',
-            value: 'horizontal'
-        });
-
-        var dfVertical = new Ext.form.DisplayField({
-//            cls: 'bold-text',
-            value: 'vertical'
-        });
-
-        var chAspectRatio = new Ext.form.Checkbox({
-            boxLabel: 'Control plot\'s aspect ratio',
-            checked: true,
-//            ctCls: 'bold-text',
-            handler: function(a,b){
-                spnrHorizontal.setDisabled(!b);
-                dfHorizontal.setDisabled(!b)
-                spnrVertical.setDisabled(!b);
-                dfVertical.setDisabled(!b);
-
-                if ( !b ){
-                    lastValueHorizontalAspect   = spnrHorizontal.getValue();
-                    lastValueVerticalAspect     = spnrVertical.getValue();
-                    spnrHorizontal.setValue(1);
-                    spnrVertical.setValue(1);
-                } else {
-                    spnrHorizontal.setValue( lastValueHorizontalAspect );
-                    spnrVertical.setValue( lastValueVerticalAspect );
-                }
-            },
-            margins: { top: 0, right: 0, bottom: 10, left: 4 },
-            width: 236
-        });
 
         /////////////////////////////////////
         //      Back-end Configuration     //
@@ -309,19 +278,19 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         var imgId = 'img' + config.webPartDivId;
                         cntPlot.update( '<img id=\'' + imgId + '\' src=\'' + p.value + '\' >' );
 
-                        var width = cntPlot.getWidth(), height = width;
+                        var width = Math.min( cntPlot.getWidth(), 400 );
 
                         resizableImage = new Ext.Resizable( imgId, {
                             disableTrackOver: true,
                             dynamic: true,
                             handles: 's',
-                            height: height,
+                            height: width,
                             listeners: {
                                 resize: function(){
-                                    var widthToSet = cntPlot.getWidth(), img = this.getEl().dom;
-                                    var width = img.offsetWidth, height = img.offsetHeight;
+                                    var widthToSet = Math.min( cntPlot.getWidth(), 400 ), img = this.getEl().dom;
+                                    var width = img.offsetWidth;
                                     if ( width > widthToSet ){
-                                        resizableImage.resizeTo( widthToSet, height / width * widthToSet );
+                                        resizableImage.resizeTo( widthToSet, widthToSet );
                                     }
                                 }
                             },
@@ -369,16 +338,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             deferredRender: false,
             forceLayout: true,
             items: [
-                new Ext.ux.form.ExtendedComboBox({
-                    displayField: 'name',
-                    fieldLabel: 'Response',
-                    store: new Ext.data.ArrayStore({
-                        data: [ [ 'HAI', 'HAI' ] ],
-                        fields: [ 'name', 'name' ]
-                    }),
-                    valueField: 'name',
-                    width: fieldWidth
-                }),
+                cbResponse,
                 new Ext.Spacer({
                     height: 20,
                     html: '&nbsp'
@@ -390,40 +350,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     autoScroll: true,
                     collapsed: true,
                     collapsible: true,
-                    items: [
-                        new Ext.Panel({
-                            bodyStyle: 'padding: 4px;',
-                            defaults: {
-                                bodyStyle: 'padding: 4px;',
-                                border: false
-                            },
-                            items: [
-                                { items: chAspectRatio },
-                                new Ext.Panel({
-                                    items: [
-                                        dfHorizontal,
-                                        new Ext.Toolbar.Spacer({
-                                            width: 10
-                                        }),
-                                        spnrHorizontal,
-                                        new Ext.Toolbar.Spacer({
-                                            width: 30
-                                        }),
-                                        dfVertical,
-                                        new Ext.Toolbar.Spacer({
-                                            width: 10
-                                        }),
-                                        spnrVertical
-                                    ],
-                                    layout: {
-                                        align: 'middle',
-                                        type: 'hbox'
-                                    }
-                                })
-                            ],
-                            style: 'padding-bottom: 4px;'
-                        })
-                    ],
+                    items: spnrTextSize,
                     title: 'Additional parameters'
                 }),
                 btnPlot,
@@ -454,6 +381,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 maskPlot.hide();
             }
             btnPlot.setDisabled( bool );
+            cbResponse.setDisabled( bool );
             cbCohorts.setDisabled( bool );
             cbTimePoint.setDisabled( bool );
             cbGenes.setDisabled( bool );
@@ -501,7 +429,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
     resize : function(){
         if ( typeof this.resizableImage != 'undefined' ){
-            var width = this.cntPlot.getWidth();
+            var width = Math.min( this.cntPlot.getWidth(), 400 );
             this.resizableImage.resizeTo( width, width * this.resizableImage.height / this.resizableImage.width );
         }
     }}); // end GeneExpressionExplorer Panel class
