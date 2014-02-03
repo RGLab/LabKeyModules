@@ -50,6 +50,7 @@ imageHeight <- as.numeric(labkey.url.params$imageHeight);
 CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
 
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
+response            <- as.character( labkey.url.params$response );
 timePoint           <- as.numeric( labkey.url.params$timePoint );
 timePointDisplay    <- labkey.url.params$timePointDisplay;
 arrayGenes          <- RJSONIO::fromJSON( labkey.url.params$genes );
@@ -97,7 +98,7 @@ data <- merge(FC, pd, by="biosample_accession")[, list(biosample_accession, gene
 data <- merge(data, hai, by=c("subject_accession", "biosample_accession_name"))
 
 # Plot
-p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point() + geom_smooth(method="lm") + facet_grid(aes(arm_name, gene)) + ylab("HAI") + xlab(xlab)
+p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point() + geom_smooth(method="lm") + facet_grid(aes(arm_name, gene)) + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
 print(p)
 
 loadedCohorts <- arrayCohorts
