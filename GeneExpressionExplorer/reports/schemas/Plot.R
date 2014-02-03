@@ -49,6 +49,7 @@ imageWidth  <- as.numeric(labkey.url.params$imageWidth);
 imageHeight <- as.numeric(labkey.url.params$imageHeight);
 CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
 
+response            <- labkey.url.params$response;
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
 response            <- as.character( labkey.url.params$response );
 timePoint           <- as.numeric( labkey.url.params$timePoint );

@@ -35,8 +35,9 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var checkBtnPlotStatus = function(){
             if (    cbResponse.getValue() != '' &&
                     cbCohorts.getValue() != '' &&
-                    cbTimePoint.getValue() != '' &&
-                    cbGenes.getValue() != ''
+                    cbTimePoint.getValue() !== '' && // since it's numeric 0 == '' -> true
+                    cbGenes.getValue() != '' // &&
+//                    spnrTextSize.isValid()
             ){
                 btnPlot.setDisabled( false );
             } else {
@@ -109,6 +110,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var cbResponse = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Response',
+            listeners: {
+                change:     checkBtnPlotStatus,
+                cleared:    checkBtnPlotStatus,
+                select:     checkBtnPlotStatus
+            },
             store: new Ext.data.ArrayStore({
                 data: [ [ 'HAI', 'HAI' ] ],
                 fields: [ 'name', 'name' ]
@@ -203,7 +209,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var btnPlot = new Ext.Button({
             disabled: true,
             handler: function(){
-                var width = Math.min( cntPlot.getWidth(), 400 );
+                var width = Math.min( cntPlot.getWidth(), 800 );
 
                 cnfPlot.inputParams = {
                     response:           cbResponse.getValue(),
@@ -226,11 +232,17 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var spnrTextSize = new Ext.ux.form.SpinnerField({
             fieldLabel: 'Text size',
+            listeners: {
+//                valid:      checkBtnPlotStatus,
+//                invalid:    checkBtnPlotStatus
+            },
             maxValue: 20,
             minValue: 0,
             value: 10,
             width: 40
         });
+
+        LABKEY.ext.GeneExpressionExplorer_Lib.captureEvents( spnrTextSize );
 
 
         /////////////////////////////////////
@@ -278,7 +290,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         var imgId = 'img' + config.webPartDivId;
                         cntPlot.update( '<img id=\'' + imgId + '\' src=\'' + p.value + '\' >' );
 
-                        var width = Math.min( cntPlot.getWidth(), 400 );
+                        var width = Math.min( cntPlot.getWidth(), 800 );
 
                         resizableImage = new Ext.Resizable( imgId, {
                             disableTrackOver: true,
@@ -287,7 +299,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             height: width,
                             listeners: {
                                 resize: function(){
-                                    var widthToSet = Math.min( cntPlot.getWidth(), 400 ), img = this.getEl().dom;
+                                    var widthToSet = Math.min( cntPlot.getWidth(), 800 ), img = this.getEl().dom;
                                     var width = img.offsetWidth;
                                     if ( width > widthToSet ){
                                         resizableImage.resizeTo( widthToSet, widthToSet );
@@ -429,7 +441,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
     resize : function(){
         if ( typeof this.resizableImage != 'undefined' ){
-            var width = Math.min( this.cntPlot.getWidth(), 400 );
+            var width = Math.min( this.cntPlot.getWidth(), 800 );
             this.resizableImage.resizeTo( width, width * this.resizableImage.height / this.resizableImage.width );
         }
     }}); // end GeneExpressionExplorer Panel class
