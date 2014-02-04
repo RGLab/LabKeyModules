@@ -49,12 +49,15 @@ imageWidth  <- as.numeric(labkey.url.params$imageWidth);
 imageHeight <- as.numeric(labkey.url.params$imageHeight);
 CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
 
+response            <- labkey.url.params$response;
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
+response            <- as.character( labkey.url.params$response );
 timePoint           <- as.numeric( labkey.url.params$timePoint );
 timePointDisplay    <- labkey.url.params$timePointDisplay;
 arrayGenes          <- RJSONIO::fromJSON( labkey.url.params$genes );
+textSize            <- as.numeric( labkey.url.params$textSize );
 
-if(exists("loadedCohorts") && loadedCohorts == arrayCohorts){
+if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   message("No need to read again")
   #No need to read again
 } else{
@@ -82,9 +85,11 @@ if(exists("loadedCohorts") && loadedCohorts == arrayCohorts){
 ssES <- EM[gene_symbol %in% arrayGenes]
 if(timePoint == 0){
   FC <- ssES[, pd[study_time_reported == 0, biosample_accession], with=FALSE]
+  xlab <- "Log transformed expression at baseline"
 } else{
   FC <- ssES[, pd[study_time_reported == timePoint, biosample_accession], with=FALSE] -
         ssES[, pd[study_time_reported == 0, biosample_accession], with=FALSE]
+  xlab <- paste("log Fold-Change of the expression at ", timePointDisplay, "VS. baseline")
 }
 FC <- FC[, gene:=ssES$gene_symbol]
 FC <- melt(FC, id="gene")
@@ -94,7 +99,7 @@ data <- merge(FC, pd, by="biosample_accession")[, list(biosample_accession, gene
 data <- merge(data, hai, by=c("subject_accession", "biosample_accession_name"))
 
 # Plot
-p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point() + geom_smooth(method="lm") + facet_grid(aes(arm_name, gene))
+p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point() + geom_smooth(method="lm") + facet_grid(aes(arm_name, gene)) + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
 print(p)
 
 loadedCohorts <- arrayCohorts

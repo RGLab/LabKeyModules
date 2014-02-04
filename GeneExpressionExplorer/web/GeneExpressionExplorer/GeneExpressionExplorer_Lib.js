@@ -327,6 +327,9 @@ LABKEY.ext.GeneExpressionExplorer_Lib.captureEvents = function(observable) {
         function(eventName, o) {
             var ot = 'unknown';
             if ( o != undefined ){
+                if ( o.combo != undefined ){
+                    o = o.combo;
+                }
                 if ( o.constructor != undefined && o.constructor.xtype != undefined ){
                     ot = o.constructor.xtype;
                 } else if ( o.id != undefined ){
