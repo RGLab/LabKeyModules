@@ -45,7 +45,13 @@ get_cohort_expression <- function(gem){
 
 
 
+<<<<<<< HEAD
 CairoPNG( filename='${imgout:Plot.png}' );
+=======
+imageWidth  <- as.numeric(labkey.url.params$imageWidth);
+imageHeight <- as.numeric(labkey.url.params$imageHeight);
+CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
+>>>>>>> 2e83571a2bd747c396fe8f451efb64f51b15f73e
 
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
 timePoint           <- as.numeric( labkey.url.params$timePoint );
@@ -53,7 +59,7 @@ timePointDisplay    <- labkey.url.params$timePointDisplay;
 arrayGenes          <- RJSONIO::fromJSON( labkey.url.params$genes );
 
 if(exists("loadedCohorts") && loadedCohorts == arrayCohorts){
-  stop("We have to read at least once")
+  message("No need to read again")
   #No need to read again
 } else{
   cohort_filter <- makeFilter(c("arm_name", "IN", paste(arrayCohorts, collapse=";")))
@@ -72,20 +78,19 @@ if(exists("loadedCohorts") && loadedCohorts == arrayCohorts){
   hai <- hai[, list(subject_accession, study_time_collected, response=value_reported/value_reported[study_time_collected==0]), by="virus_strain,biosample_accession_name,subject_accession"]
   hai <- hai[study_time_collected==28]
   hai <- hai[, list(response=log2(max(response))), by="subject_accession,biosample_accession_name"]
-  # Get FC
   EM <- get_cohort_expression(gem)
   EM <- EM[, c("gene_symbol", colnames(EM)[ colnames(EM) %in% pd$biosample_accession]), with=FALSE]
 }
 
 # Subsets
-EM <- EM[gene_symbol %in% arrayGenes]
+ssES <- EM[gene_symbol %in% arrayGenes]
 if(timePoint == 0){
-  FC <- EM[, pd[study_time_reported == 0, biosample_accession], with=FALSE]
+  FC <- ssES[, pd[study_time_reported == 0, biosample_accession], with=FALSE]
 } else{
-  FC <- EM[, pd[study_time_reported == timePoint, biosample_accession], with=FALSE] -
-        EM[, pd[study_time_reported == 0, biosample_accession], with=FALSE]
+  FC <- ssES[, pd[study_time_reported == timePoint, biosample_accession], with=FALSE] -
+        ssES[, pd[study_time_reported == 0, biosample_accession], with=FALSE]
 }
-FC <- FC[, gene:=EM$gene_symbol]
+FC <- FC[, gene:=ssES$gene_symbol]
 FC <- melt(FC, id="gene")
 FC <- data.table(FC)
 setnames(FC, c("variable", "value"), c("biosample_accession", "logFC"))
@@ -96,29 +101,9 @@ data <- merge(data, hai, by=c("subject_accession", "biosample_accession_name"))
 p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point() + geom_smooth(method="lm") + facet_grid(aes(arm_name, gene))
 print(p)
 
-
-
-
-#gene_symbol %in% arrayGenes
-#FC <- EM[, pd[study_time_reported == timePoint, biosample_accession], with=FALSE] - EM[, pd[study_time_reported == 0, biosample_accession], with=FALSE]
-#FC <- FC[, gene:=EM$gene_symbol]
-#FC <- melt(FC, id="gene")
-#FC <- data.table(FC)
-#setnames(FC, c("variable", "value"), c("biosample_accession", "logFC"))
-#
-#
-## Merge datatypes
-#data <- merge(FC, pd, by="biosample_accession")[, list(biosample_accession, gene, subject_accession, biosample_accession_name, logFC, arm_name)]
-#data <- merge(data, hai, by=c("subject_accession", "biosample_accession_name"))
-#
-## Plot
-#p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point() + geom_smooth(method="lm") + facet_grid(aes(arm_name, gene))
-#print(p)
-#
 loadedCohorts <- arrayCohorts
 dev.off();
 
 Sys.sleep(3);
 
-write( RJSONIO::toJSON( x=colnames(EM), asIs = T ), '${jsonout:outArray}' );
-
+write( RJSONIO::toJSON( x=12, asIs = T ), '${jsonout:outArray}' );
