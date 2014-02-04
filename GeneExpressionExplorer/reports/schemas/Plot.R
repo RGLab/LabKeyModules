@@ -85,11 +85,11 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
 ssES <- EM[gene_symbol %in% arrayGenes]
 if(timePoint == 0){
   FC <- ssES[, pd[study_time_reported == 0, biosample_accession], with=FALSE]
-  xlab <- "Log expression"
+  xlab <- "log expression"
 } else{
   FC <- ssES[, pd[study_time_reported == timePoint, biosample_accession], with=FALSE] -
         ssES[, pd[study_time_reported == 0, biosample_accession], with=FALSE]
-  xlab <- paste("log Fold-Change with respoect to baseline")
+  xlab <- paste("log Fold-Change with respect to baseline")
 }
 FC <- FC[, gene:=ssES$gene_symbol]
 FC <- melt(FC, id="gene")
