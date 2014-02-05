@@ -45,13 +45,9 @@ get_cohort_expression <- function(gem){
 
 
 
-<<<<<<< HEAD
-CairoPNG( filename='${imgout:Plot.png}' );
-=======
 imageWidth  <- as.numeric(labkey.url.params$imageWidth);
 imageHeight <- as.numeric(labkey.url.params$imageHeight);
 CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
->>>>>>> 2e83571a2bd747c396fe8f451efb64f51b15f73e
 
 response            <- labkey.url.params$response;
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
