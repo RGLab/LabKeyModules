@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='Limma_top_table_TIV_0708' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        Results of differential expression analysis for TIV 2007/2008 using limma.
+    </description>
+</query>
