@@ -245,17 +245,30 @@ predictor_table <- data.table(cbind(selected_features, predictor_table))
 predictor_table <- predictor_table[, c("statistic", "p-value") := lapply(.SD, function(X){ as.numeric(levels(X)[X])}), .SDcols = c("statistic", "p-value")]
 ```
 
+```{r print}
+print(paste0(
+    '<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=hipc_flu&gene=',
+     unlist(strsplit(selected_features, split=";")), '" target="_blank">', unlist(strsplit(selected_features, split=";")), '</a>'))
+```
+
 ```{r table, cache=TRUE, dependson="lasso"}
 if(param$gene_avg){
-  predictor_table <- predictor_table[, gene_symbol:=paste0(
-   '<a href="http://www.genenames.org/cgi-bin/quick_search.pl?.cgifields=type&type=equal&num=50&search=',
-   selected_features,'&submit=Submit" target="_blank">', selected_features, '</a>')]
+  #predictor_table <- predictor_table[, gene_symbol:=paste0(
+  # '<a href="http://www.genenames.org/cgi-bin/quick_search.pl?.cgifields=type&type=equal&num=50&search=',
+  # selected_features,'&submit=Submit" target="_blank">', selected_features, '</a>')]
+  predictor_table <- predictor_table[, gene_symbol:=paste0( paste0(
+    '<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=hipc_flu&gene=',
+     unlist(strsplit(as.character(selected_features), split=";")), '" target="_blank">', unlist(strsplit(as.character(selected_features), split=";")), '</a>'), collapse=";")]
 } else{
   fdata <- rbindlist(lapply(EMs, "[", , c("feature_id", "gene_symbol")))
   predictor_table <- predictor_table[, gene_symbol:= fdata[match(predictor_table$selected_features, feature_id), gene_symbol]]
+  #predictor_table <- predictor_table[, gene_symbol:=paste0(
+  # '<a href="http://www.genenames.org/cgi-bin/quick_search.pl?.cgifields=type&type=equal&num=50&search=',
+  # gsub(";","+",predictor_table[,gene_symbol]),'&submit=Submit" target="_blank">', predictor_table[,gene_symbol], '</a>')]
+
   predictor_table <- predictor_table[, gene_symbol:=paste0(
-   '<a href="http://www.genenames.org/cgi-bin/quick_search.pl?.cgifields=type&type=equal&num=50&search=',
-   gsub(";","+",predictor_table[,gene_symbol]),'&submit=Submit" target="_blank">', predictor_table[,gene_symbol], '</a>')]
+   '<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=hipc_flu&gene=',
+   gsub(";","%2C", predictor_table[,gene_symbol]),'" target="_blank">', predictor_table[,gene_symbol], '</a>')]
 }
 ```
 

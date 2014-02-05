@@ -45,13 +45,9 @@ get_cohort_expression <- function(gem){
 
 
 
-<<<<<<< HEAD
-CairoPNG( filename='${imgout:Plot.png}' );
-=======
 imageWidth  <- as.numeric(labkey.url.params$imageWidth);
 imageHeight <- as.numeric(labkey.url.params$imageHeight);
 CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
->>>>>>> 2e83571a2bd747c396fe8f451efb64f51b15f73e
 
 response            <- labkey.url.params$response;
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
@@ -89,11 +85,11 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
 ssES <- EM[gene_symbol %in% arrayGenes]
 if(timePoint == 0){
   FC <- ssES[, pd[study_time_reported == 0, biosample_accession], with=FALSE]
-  xlab <- "Log transformed expression at baseline"
+  xlab <- "log expression"
 } else{
   FC <- ssES[, pd[study_time_reported == timePoint, biosample_accession], with=FALSE] -
         ssES[, pd[study_time_reported == 0, biosample_accession], with=FALSE]
-  xlab <- paste("log Fold-Change of the expression at ", timePointDisplay, "VS. baseline")
+  xlab <- paste("log Fold-Change with respect to baseline")
 }
 FC <- FC[, gene:=ssES$gene_symbol]
 FC <- melt(FC, id="gene")
