@@ -4,7 +4,8 @@
 ```{r knitr-options, echo=FALSE, eval=TRUE, cache=FALSE}
 library(knitr)
 opts_knit$set(progress = TRUE, verbose = TRUE)
-opts_chunk$set(cache=TRUE, echo=FALSE, eval=TRUE, message=FALSE, error=TRUE, dev="png", fig.width=10, fig.height=8, dpi=120, fig.align="center")
+opts_chunk$set(echo=FALSE, eval=TRUE, message=FALSE, error=TRUE, dev="png", fig.width=10, fig.height=8, dpi=120, fig.align="center")
+opts_chunk$set(cache.path=paste(labkey.file.root, "cache/heatmap-TIV0708/", sep="/"), cache=TRUE)
 options(width=80)
 ```
 
