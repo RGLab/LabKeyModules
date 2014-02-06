@@ -4,8 +4,8 @@
 
 ```{r knitr-options, echo=FALSE, cache=FALSE}
 library(knitr)
-opts_knit$set(progress = TRUE, verbose = TRUE)
 opts_chunk$set(echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, error=TRUE)
+opts_chunk$set(cache=FALSE, cache.path=paste(labkey.file.root, "cache/expression_matrix_creation/", sep="/"))
 options(width=80)
 ```
 
@@ -21,11 +21,11 @@ ds_GE_files <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.
 dt_GE_files <- data.table(ds_GE_files)
 biosamples_filter <- paste(unique(dt_GE_files$biosample_accession), collapse=";")
 
-ds_exp_2_bio <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path,  schemaName = "hipcdb", queryName = "biosample_2_expsample", colFilter = makeFilter(c("biosample_accession", "IN", biosamples_filter)), colNameOpt = "rname")
+ds_exp_2_bio <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path,  schemaName = "immport", queryName = "biosample_2_expsample", colFilter = makeFilter(c("biosample_accession", "IN", biosamples_filter)), colNameOpt = "rname")
 dt_exp_2_bio <- data.table(ds_exp_2_bio)
 expsamples_acc_filter <- paste(dt_exp_2_bio$expsample_accession, collapse=";")
 
-ds_expsamples <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "hipcdb", queryName = "expsample", colFilter = makeFilter(c("expsample_accession", "IN", expsamples_acc_filter)), colNameOpt = "rname")
+ds_expsamples <- labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "immport", queryName = "expsample", colFilter = makeFilter(c("expsample_accession", "IN", expsamples_acc_filter)), colNameOpt = "rname")
 dt_expsamples <- data.table(ds_expsamples)
 
 #add biosample to expsample descr
