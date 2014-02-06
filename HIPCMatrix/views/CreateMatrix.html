@@ -59,7 +59,7 @@ function renderPanel()
             seen[biosample] = true;
         }
 
-        // "Study Specimens" is an auto-generated SampleSet during specimen import
+        // "Study Specimens" is an auto-generated SampleSet created during specimen import
         var sampleSet = 'Study Specimens';
         LABKEY.Query.selectRows({
             schemaName: 'Samples',
@@ -68,7 +68,7 @@ function renderPanel()
             success: function (data) {
                 // verify the lengths are the same
                 if (data.rows.length != filterValue.length) {
-                    Ext.Msg.alert("Missing samples in '" + sampleSet + "' sample set for selected biosample_accessions");
+                    Ext.Msg.alert("Missing samples", "Missing samples in '" + sampleSet + "' sample set for selected biosample_accessions");
                 } else {
                     startAnalysis();
                 }
