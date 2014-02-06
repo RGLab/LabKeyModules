@@ -20,22 +20,25 @@ ds_pubmed <- dat[dat$study_accession == study_acc, ]
 
 ```{r get-pubmed-info, dependson="filter", cache.extra=format(Sys.time(),'%Y-%m-%H')}
 # Update every month
-get_reference <- function(id)
-  {
-  x <- entrez_summary(db="pubmed", id=id)
-  reference <- paste(paste(x$AuthorList,collapse=", "), ". ", x$Title, " *", x$Source, "* ", x$Volume, "(", x$Issue, "), ", x$PubDate, ".", sep="")
-  pubmed_link <- paste0("<a href='http://www.ncbi.nlm.nih.gov/pubmed/", id,"' target='_blank'>", "PMID:", id,"</a>")
-  paste(reference, pubmed_link)
-  }
-pubmed_list <- entrez_link(db="all", id=ds_pubmed$pubmed_id, dbfrom="pubmed")
-study_citation <- get_reference(ds_pubmed$pubmed_id)
+get_reference <- function(id){
+   summary <- lapply(id, function(x){ entrez_summary(db="pubmed", id=x) })
+   reference <- lapply(summary, function(x){ paste(paste(x$AuthorList,collapse=", "), ". ", x$Title, " *", x$Source, "* ", x$Volume, "(", x$Issue, "), ", x$PubDate, ".", sep="")})
+   pubmed_link <- paste0("<a href='http://www.ncbi.nlm.nih.gov/pubmed/", id,"' target='_blank'>", "PMID:", id,"</a>")
+   return(paste(reference, pubmed_link))
+}
+
+# Update every month
+id <- ds_pubmed$pubmed_id
+study_citation <- get_reference(id)
+pubmed_list <- entrez_link(db="all", id=id, dbfrom="pubmed")
 url_citedin <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=", ds_pubmed$pubmed_id)
 ```
 The above study is based on the following article(s):
 
 
-
-* `r study_citation`
+<ul><li>
+`r paste(study_citation, collapse="</li><br><li>")`
+</li></ul>
 
 The article has <a href=`r url_citedin` target="_blank">`r length(pubmed_list$pubmed_pubmed_citedin)` citations</a> in pubmed central. 
 
