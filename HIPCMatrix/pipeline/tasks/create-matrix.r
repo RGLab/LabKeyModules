@@ -4,7 +4,6 @@ library(affy)
 # NOTE: also requires bioc packages: "hthgu133pluspmcdf" and "AnnotationDbi"
 
 # read the job info
-#jobInfo <- read.table("${pipeline, jobInfo}",
 jobInfo <- read.table("${pipeline, taskInfo}",
                       col.names=c("name", "value", "type"),
                       header=FALSE, check.names=FALSE,
@@ -12,14 +11,14 @@ jobInfo <- read.table("${pipeline, taskInfo}",
                       fill=TRUE, na.strings="")
 
 # selected input file paths
-#inputFiles <- jobInfo$value[jobInfo$name == "inputFile"]
 inputFiles <- jobInfo$value[jobInfo$name == "input.CEL"]
 
 # get sample information based on the input files
 baseUrl <- jobInfo$value[jobInfo$name == "baseUrl"]
+contextPath <- jobInfo$value[jobInfo$name == "contextPath"]
 containerPath <- jobInfo$value[jobInfo$name == "containerPath"]
 filter <- makeFilter(c("file_info_name", "IN", paste(basename(inputFiles), collapse=";")))
-pdata <- labkey.selectRows(baseUrl=baseUrl,
+pdata <- labkey.selectRows(baseUrl=paste(baseUrl, contextPath, sep=""),
                            folderPath=containerPath,
                            schemaName="study",
                            queryName="gene_expression_files",
