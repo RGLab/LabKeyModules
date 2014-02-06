@@ -121,6 +121,24 @@ function renderPanel()
         var featureSet = values['featureSet'];
         var taskId = values['pipelineId'];
 
+        if (!assayName)
+        {
+            Ext.Msg.alert("Error", "Name required");
+            return;
+        }
+
+        if (!featureSet)
+        {
+            Ext.Msg.alert("Error", "Feature annotation set required");
+            return;
+        }
+
+        if (!taskId)
+        {
+            Ext.Msg.alert("Error", "Pipeline required");
+            return;
+        }
+
         var files = [];
         var seen = {};
         for (var i = 0; i < selectedRows.length; i++)
@@ -189,7 +207,7 @@ function renderPanel()
             allowBlank: true
         },{
             xtype: 'combobox',
-            name: 'featureset',
+            name: 'featureSet',
             fieldLabel: 'Feature Annotation Set',
             allowBlank: false,
             valueField: 'RowId',
