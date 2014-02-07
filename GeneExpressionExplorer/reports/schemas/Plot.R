@@ -100,7 +100,7 @@ data <- merge(FC, pd, by="biosample_accession")[, list(biosample_accession, gene
 data <- merge(data, hai, by=c("subject_accession", "biosample_accession_name"))
 
 # Plot
-if(facet="grid"){
+if(tolower(facet) == "grid"){
   p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point() + geom_smooth(method="lm") + facet_grid(aes(arm_name, gene), scales="free") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
 } else{
   p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point() + geom_smooth(method="lm") + facet_wrap(~arm_name + gene, scales="free") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
@@ -112,4 +112,4 @@ dev.off();
 
 Sys.sleep(3);
 
-write( RJSONIO::toJSON( x=12, asIs = T ), '${jsonout:outArray}' );
+write( RJSONIO::toJSON( x=facet, asIs = T ), '${jsonout:outArray}' );
