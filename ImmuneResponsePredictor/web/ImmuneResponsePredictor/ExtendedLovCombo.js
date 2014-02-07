@@ -20,7 +20,20 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
 
     beforeBlur: Ext.emptyFn,
 
-    //Specificaly css class for selactAll item : ux-lovcombo-list-item-all
+    constructor: function(config) {
+        config = config || {};
+        config.listeners = config.listeners || {};
+
+        Ext.applyIf(config.listeners, {
+            beforequery:    this.onBeforeQuery,
+            blur:           this.onRealBlur,
+            scope: this
+        });
+
+        Ext.ux.form.ExtendedLovCombo.superclass.constructor.call(this, config);
+    }, // eo function constructor
+
+    //css class for selactAll item : ux-lovcombo-list-item-all
     initComponent:function() {
 
         // template with checkbox
@@ -69,6 +82,24 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                     renderTo: document.body
                 });
 
+                if ( this.expandOnFocus ){
+                    this.mon( this.getEl(), {
+                        click: function(){
+                            if ( ! this.isExpanded() ){
+                                this.initList();
+                                if( this.triggerAction == 'all' ) {
+                                    this.doQuery( this.allQuery, true );
+                                } else {
+                                    this.doQuery( this.getRawValue() );
+                                }
+                            } else {
+                                this.collapse();
+                            }
+                        },
+                        scope: this
+                    });
+                }
+
                 this.resizeToFitContent();
             },
             scope: this,
@@ -87,20 +118,6 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                     scope: this
                 }
             );
-        }
-
-        if ( this.expandOnFocus ){
-            this.mon( this, {
-                focus: function(){
-                    this.initList();
-                    if( this.triggerAction == 'all' ) {
-                        this.doQuery( this.allQuery, true );
-                    } else {
-                        this.doQuery( this.getRawValue() );
-                    }
-                },
-                scope: this
-            })
         }
 
         // install internal event handlers
@@ -136,6 +153,25 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
             : Ext.ux.form.ExtendedLovCombo.superclass.initComponent.call(this)
         ;
     },
+
+    onRealBlur:function() {
+        this.list.hide();
+        var rv = this.getRawValue();
+        var rva = rv.split(new RegExp(RegExp.escape(this.separator) + ' *'));
+        var va = [];
+        var snapshot = this.store.snapshot || this.store.data;
+
+        // iterate through raw values and records and check/uncheck items
+        Ext.each(rva, function(v) {
+            snapshot.each(function(r) {
+                if(v === r.get(this.displayField)) {
+                    va.push(r.get(this.valueField));
+                }
+            }, this);
+        }, this);
+        this.setValue(va.join(this.separator));
+        this.store.clearFilter();
+    }, // eo function onRealBlur
 
     // Add the 'Select All' record if appropriate (private)
     initSelectAll : function(){
@@ -271,16 +307,28 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                 this.elMetrics = Ext.util.TextMetrics.createInstance( el );
             }
             var m = this.elMetrics, width = 0, s = this.getSize();
-            this.store.each(function (r) {
-                var text = r.get(this.displayField);
-                width = Math.max(width, m.getWidth( Ext.util.Format.htmlEncode(text) ));
-            }, this);
+            if ( this.store ){
+                this.store.each(function (r) {
+                    var text = r.get(this.displayField);
+                    width = Math.max(width, m.getWidth( Ext.util.Format.htmlEncode(text) ));
+                }, this);
+            }
             width += el.getBorderWidth('lr');
             width += el.getPadding('lr');
+            if (this.trigger) {
+                width += this.trigger.getWidth();
+            }
             s.width = width;
             width += 3 * Ext.getScrollBarWidth() + 60;
             if ( this.pageSize > 0 && this.pageTb ){
-                width = Math.max( width, this.pageTb.el.child('table').getWidth() );
+                var toolbar = this.pageTb.el;
+                width = Math.max(
+                    width,
+                    toolbar.child('.x-toolbar-left-row').getWidth() +
+                    toolbar.child('.x-toolbar-left').getFrameWidth('lr') +
+                    toolbar.child('.x-toolbar-right').getFrameWidth('lr') +
+                    toolbar.getFrameWidth('lr')
+                );
             }
             this.listWidth = width;
             this.minListWidth = width;
@@ -288,6 +336,105 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                 this.list.setSize( width );
                 this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
                 this.restrictHeight();
+            }
+
+            if( this.resizable && this.resizer ){
+                this.resizer.minWidth = width;
+            }
+        }
+    },
+
+    initList : function(){
+        if(!this.list){
+            var cls = 'x-combo-list',
+                listParent = Ext.getDom(this.getListParent() || Ext.getBody());
+
+            this.list = new Ext.Layer({
+                parentEl: listParent,
+                shadow: this.shadow,
+                cls: [cls, this.listClass].join(' '),
+                constrain:false,
+                zindex: this.getZIndex(listParent)
+            });
+
+            var lw = this.listWidth || Math.max(this.wrap.getWidth(), this.minListWidth);
+            this.list.setSize(lw, 0);
+            this.list.swallowEvent('mousewheel');
+            this.assetHeight = 0;
+            if(this.syncFont !== false){
+                this.list.setStyle('font-size', this.el.getStyle('font-size'));
+            }
+            if(this.title){
+                this.header = this.list.createChild({cls:cls+'-hd', html: this.title});
+                this.assetHeight += this.header.getHeight();
+            }
+
+            this.innerList = this.list.createChild({cls:cls+'-inner'});
+            this.mon(this.innerList, 'mouseover', this.onViewOver, this);
+            this.mon(this.innerList, 'mousemove', this.onViewMove, this);
+            this.innerList.setWidth(lw - this.list.getFrameWidth('lr'));
+
+            if(this.pageSize){
+                this.footer = this.list.createChild({cls:cls+'-ft'});
+                this.pageTb = new Ext.PagingToolbar({
+                    store: this.store,
+                    pageSize: this.pageSize,
+                    renderTo:this.footer
+                });
+                this.assetHeight += this.footer.getHeight();
+            }
+
+            if(!this.tpl){
+                this.tpl = '<tpl for="."><div class="'+cls+'-item">{' + this.displayField + '}</div></tpl>';
+            }
+
+            this.view = new Ext.DataView({
+                applyTo: this.innerList,
+                tpl: this.tpl,
+                singleSelect: true,
+                selectedClass: this.selectedClass,
+                itemSelector: this.itemSelector || '.' + cls + '-item',
+                emptyText: this.listEmptyText,
+                deferEmptyText: false
+            });
+
+            this.mon(this.view, {
+                containerclick : this.onViewClick,
+                click : this.onViewClick,
+                scope :this
+            });
+
+            this.bindStore(this.store, true);
+
+            if ( this.pageSize > 0 && this.pageTb ){
+                var toolbar = this.pageTb.el;
+                var width = Math.max(
+                    this.getWidth(),
+                    toolbar.child('.x-toolbar-left-row').getWidth() +
+                    toolbar.child('.x-toolbar-left').getFrameWidth('lr') +
+                    toolbar.child('.x-toolbar-right').getFrameWidth('lr') +
+                    toolbar.getFrameWidth('lr')
+                );
+                this.listWidth = width;
+                this.minListWidth = width;
+                if ( this.list != undefined && this.innerList != undefined ){
+                    this.list.setSize( width );
+                    this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
+                }
+            }
+
+            if(this.resizable){
+                this.resizer = new Ext.Resizable(this.list,  {
+                    pinned:true, handles:'se', minWidth: this.minListWidth
+                });
+                this.mon(this.resizer, 'resize', function(r, w, h){
+                    this.maxHeight = h-this.handleHeight-this.list.getFrameWidth('tb')-this.assetHeight;
+                    this.listWidth = w;
+                    this.innerList.setWidth(w - this.list.getFrameWidth('lr'));
+                    this.restrictHeight();
+                }, this);
+
+                this[this.pageSize?'footer':'innerList'].setStyle('margin-bottom', this.handleHeight+'px');
             }
         }
     },

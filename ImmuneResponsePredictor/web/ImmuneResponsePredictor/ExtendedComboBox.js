@@ -55,6 +55,24 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                     renderTo: document.body
                 });
 
+                if ( this.expandOnFocus ){
+                    this.mon( this.getEl(), {
+                        click: function(){
+                            if ( ! this.isExpanded() ){
+                                this.initList();
+                                if( this.triggerAction == 'all' ) {
+                                    this.doQuery( this.allQuery, true );
+                                } else {
+                                    this.doQuery( this.getRawValue() );
+                                }
+                            } else {
+                                this.collapse();
+                            }
+                        },
+                        scope: this
+                    });
+                }
+
                 this.resizeToFitContent();
             },
             scope: this,
@@ -73,20 +91,6 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                     scope: this
                 }
             );
-        }
-
-        if ( this.expandOnFocus ){
-            this.mon( this, {
-                focus: function(){
-                    this.initList();
-                    if( this.triggerAction == 'all' ) {
-                        this.doQuery( this.allQuery, true );
-                    } else {
-                        this.doQuery( this.getRawValue() );
-                    }
-                },
-                scope: this
-            })
         }
 
         this.addClearItem
@@ -122,10 +126,20 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
             }
             width += el.getBorderWidth('lr');
             width += el.getPadding('lr');
+            if (this.trigger) {
+                width += this.trigger.getWidth();
+            }
             s.width = width;
             width += 3 * Ext.getScrollBarWidth() + 60;
             if ( this.pageSize > 0 && this.pageTb ){
-                width = Math.max( width, this.pageTb.el.child('table').getWidth() );
+                var toolbar = this.pageTb.el;
+                width = Math.max(
+                    width,
+                    toolbar.child('.x-toolbar-left-row').getWidth() +
+                    toolbar.child('.x-toolbar-left').getFrameWidth('lr') +
+                    toolbar.child('.x-toolbar-right').getFrameWidth('lr') +
+                    toolbar.getFrameWidth('lr')
+                );
             }
             this.listWidth = width;
             this.minListWidth = width;
@@ -133,6 +147,103 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                 this.list.setSize( width );
                 this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
                 this.restrictHeight();
+            }
+
+            if( this.resizable && this.resizer ){
+                this.resizer.minWidth = width;
+            }
+        }
+    },
+
+    initList : function(){
+        if(!this.list){
+            var cls = 'x-combo-list',
+                listParent = Ext.getDom(this.getListParent() || Ext.getBody());
+
+            this.list = new Ext.Layer({
+                parentEl: listParent,
+                shadow: this.shadow,
+                cls: [cls, this.listClass].join(' '),
+                constrain:false,
+                zindex: this.getZIndex(listParent)
+            });
+
+            var lw = this.listWidth || Math.max(this.wrap.getWidth(), this.minListWidth);
+            this.list.setSize(lw, 0);
+            this.list.swallowEvent('mousewheel');
+            this.assetHeight = 0;
+            if(this.syncFont !== false){
+                this.list.setStyle('font-size', this.el.getStyle('font-size'));
+            }
+            if(this.title){
+                this.header = this.list.createChild({cls:cls+'-hd', html: this.title});
+                this.assetHeight += this.header.getHeight();
+            }
+
+            this.innerList = this.list.createChild({cls:cls+'-inner'});
+            this.mon(this.innerList, 'mouseover', this.onViewOver, this);
+            this.mon(this.innerList, 'mousemove', this.onViewMove, this);
+            this.innerList.setWidth(lw - this.list.getFrameWidth('lr'));
+
+            if(this.pageSize){
+                this.footer = this.list.createChild({cls:cls+'-ft'});
+                this.pageTb = new Ext.PagingToolbar({
+                    store: this.store,
+                    pageSize: this.pageSize,
+                    renderTo:this.footer
+                });
+                this.assetHeight += this.footer.getHeight();
+            }
+
+            if ( ! this.tpl ){
+                this.tpl = '<tpl for="."><div class="'+cls+'-item">{' + this.displayField + '}</div></tpl>';
+            }
+
+            this.view = new Ext.DataView({
+                applyTo: this.innerList,
+                tpl: this.tpl,
+                singleSelect: true,
+                selectedClass: this.selectedClass,
+                itemSelector: this.itemSelector || '.' + cls + '-item',
+                emptyText: this.listEmptyText,
+                deferEmptyText: false
+            });
+
+            this.mon(this.view, {
+                containerclick : this.onViewClick,
+                click : this.onViewClick,
+                scope :this
+            });
+
+            this.bindStore(this.store, true);
+
+            if ( this.pageSize > 0 && this.pageTb ){
+                var toolbar = this.pageTb.el;
+                var width = Math.max(
+                    this.getWidth(),
+                    toolbar.child('.x-toolbar-left-row').getWidth() +
+                    toolbar.child('.x-toolbar-left').getFrameWidth('lr') +
+                    toolbar.child('.x-toolbar-right').getFrameWidth('lr') +
+                    toolbar.getFrameWidth('lr')
+                );
+                this.listWidth = width;
+                this.minListWidth = width;
+                this.list.setSize( width );
+                this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
+            }
+
+            if(this.resizable){
+                this.resizer = new Ext.Resizable(this.list,  {
+                    pinned:true, handles:'se', minWidth: this.minListWidth
+                });
+                this.mon(this.resizer, 'resize', function(r, w, h){
+                    this.maxHeight = h-this.handleHeight-this.list.getFrameWidth('tb')-this.assetHeight;
+                    this.listWidth = w;
+                    this.innerList.setWidth(w - this.list.getFrameWidth('lr'));
+                    this.restrictHeight();
+                }, this);
+
+                this[this.pageSize?'footer':'innerList'].setStyle('margin-bottom', this.handleHeight+'px');
             }
         }
     },

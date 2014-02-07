@@ -1,9 +1,10 @@
 $(document).ready(function() {
 
+    var errorCode = '<p style=\'margin-left: 30px; color: red;\'>Failed to retrieve the aggregate summary</p>';
     var myMask = new Ext.LoadMask(
         $('#Summary')[0],
         {
-            msg: "Please, wait, while the aggregate<br/> summary table is loading",
+            msg: 'Please, wait, while the aggregate<br/> summary table is loading',
             msgCls: 'mask-loading'
         }
     );
@@ -17,14 +18,14 @@ $(document).ready(function() {
     LABKEY.Query.selectRows({
         failure: function(a, b, c){
             myMask.hide();
-            $('#Summary').append('<p style="margin-left: 30px; color: red;">Failed to retrieve the aggregate summary</p>');
+            $('#Summary').append( errorCode );
         },
         success: function(d){
             var numStudies = d.rows.length, filterString = [];
 
             if ( numStudies == 0 ){
                 myMask.hide();
-                $('#Summary').append('<p style="margin-left: 30px; color: red;">Failed to retrieve the aggregate summary</p>');
+                $('#Summary').append( errorCode );
             } else {
 
                 Ext.each( d.rows, function(row, i){
@@ -58,7 +59,7 @@ $(document).ready(function() {
                 LABKEY.Query.executeSql({
                     failure: function(){
                         myMask.hide();
-                        $('#Summary').append('<p style="margin-left: 30px; color: red;">Failed to retrieve the aggregate summary</p>');
+                        $('#Summary').append( errorCode );
                     },
                     success: function(d){
             
@@ -67,7 +68,7 @@ $(document).ready(function() {
                         LABKEY.Query.executeSql({
                             failure: function(){
                                 myMask.hide();
-                                $('#Summary').append('<p style="margin-left: 30px; color: red;">Failed to retrieve the aggregate summary</p>');
+                                $('#Summary').append( errorCode );
                             },
                             success: function(d){
                             
