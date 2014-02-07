@@ -22,7 +22,7 @@ ds_pubmed <- dat[dat$study_accession == study_acc, ]
 # Update every month
 get_reference <- function(id){
    summary <- lapply(id, function(x){ entrez_summary(db="pubmed", id=x) })
-   reference <- lapply(summary, function(x){ paste(paste(x$AuthorList,collapse=", "), ". ", x$Title, " *", x$Source, "* ", x$Volume, "(", x$Issue, "), ", x$PubDate, ".", sep="")})
+   reference <- lapply(summary, function(x){ paste(paste(x$AuthorList,collapse=", "), ". ", x$Title, " <i>", x$Source, "</i> ", x$Volume, "(", x$Issue, "), ", x$PubDate, ".", sep="")})
    pubmed_link <- paste0("<a href='http://www.ncbi.nlm.nih.gov/pubmed/", id,"' target='_blank'>", "PMID:", id,"</a>")
    return(paste(reference, pubmed_link))
 }
