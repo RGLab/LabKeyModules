@@ -18,7 +18,7 @@ dat <- labkey.data
 ds_pubmed <- dat[dat$study_accession == study_acc, ]
 ```
 
-```{r get-pubmed-info, dependson="filter", cache.extra=format(Sys.time(),'%Y-%m-%H')}
+```{r get-pubmed-info, dependson="filter"}
 # Update every month
 get_reference <- function(id){
    summary <- lapply(id, function(x){ entrez_summary(db="pubmed", id=x) })
