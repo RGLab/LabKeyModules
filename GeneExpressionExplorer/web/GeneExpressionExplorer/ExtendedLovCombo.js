@@ -20,7 +20,20 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
 
     beforeBlur: Ext.emptyFn,
 
-    //Specificaly css class for selactAll item : ux-lovcombo-list-item-all
+    constructor: function(config) {
+        config = config || {};
+        config.listeners = config.listeners || {};
+
+        Ext.applyIf(config.listeners, {
+            beforequery:    this.onBeforeQuery,
+            blur:           this.onRealBlur,
+            scope: this
+        });
+
+        Ext.ux.form.ExtendedLovCombo.superclass.constructor.call(this, config);
+    }, // eo function constructor
+
+    //css class for selactAll item : ux-lovcombo-list-item-all
     initComponent:function() {
 
         // template with checkbox
@@ -69,6 +82,24 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                     renderTo: document.body
                 });
 
+                if ( this.expandOnFocus ){
+                    this.mon( this.getEl(), {
+                        click: function(){
+                            if ( ! this.isExpanded() ){
+                                this.initList();
+                                if( this.triggerAction == 'all' ) {
+                                    this.doQuery( this.allQuery, true );
+                                } else {
+                                    this.doQuery( this.getRawValue() );
+                                }
+                            } else {
+                                this.collapse();
+                            }
+                        },
+                        scope: this
+                    });
+                }
+
                 this.resizeToFitContent();
             },
             scope: this,
@@ -87,20 +118,6 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                     scope: this
                 }
             );
-        }
-
-        if ( this.expandOnFocus ){
-            this.mon( this, {
-                focus: function(){
-                    this.initList();
-                    if( this.triggerAction == 'all' ) {
-                        this.doQuery( this.allQuery, true );
-                    } else {
-                        this.doQuery( this.getRawValue() );
-                    }
-                },
-                scope: this
-            })
         }
 
         // install internal event handlers
@@ -136,6 +153,25 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
             : Ext.ux.form.ExtendedLovCombo.superclass.initComponent.call(this)
         ;
     },
+
+    onRealBlur:function() {
+        this.list.hide();
+        var rv = this.getRawValue();
+        var rva = rv.split(new RegExp(RegExp.escape(this.separator) + ' *'));
+        var va = [];
+        var snapshot = this.store.snapshot || this.store.data;
+
+        // iterate through raw values and records and check/uncheck items
+        Ext.each(rva, function(v) {
+            snapshot.each(function(r) {
+                if(v === r.get(this.displayField)) {
+                    va.push(r.get(this.valueField));
+                }
+            }, this);
+        }, this);
+        this.setValue(va.join(this.separator));
+        this.store.clearFilter();
+    }, // eo function onRealBlur
 
     // Add the 'Select All' record if appropriate (private)
     initSelectAll : function(){
@@ -271,16 +307,28 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                 this.elMetrics = Ext.util.TextMetrics.createInstance( el );
             }
             var m = this.elMetrics, width = 0, s = this.getSize();
-            this.store.each(function (r) {
-                var text = r.get(this.displayField);
-                width = Math.max(width, m.getWidth( Ext.util.Format.htmlEncode(text) ));
-            }, this);
+            if ( this.store ){
+                this.store.each(function (r) {
+                    var text = r.get(this.displayField);
+                    width = Math.max(width, m.getWidth( Ext.util.Format.htmlEncode(text) ));
+                }, this);
+            }
             width += el.getBorderWidth('lr');
             width += el.getPadding('lr');
+            if (this.trigger) {
+                width += this.trigger.getWidth();
+            }
             s.width = width;
             width += 3 * Ext.getScrollBarWidth() + 60;
             if ( this.pageSize > 0 && this.pageTb ){
-                width = Math.max( width, this.pageTb.el.child('table').getWidth() );
+                var toolbar = this.pageTb.el;
+                width = Math.max(
+                    width,
+                    toolbar.child('.x-toolbar-left-row').getWidth() +
+                    toolbar.child('.x-toolbar-left').getFrameWidth('lr') +
+                    toolbar.child('.x-toolbar-right').getFrameWidth('lr') +
+                    toolbar.getFrameWidth('lr')
+                );
             }
             this.listWidth = width;
             this.minListWidth = width;
@@ -289,13 +337,17 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                 this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
                 this.restrictHeight();
             }
+
+            if( this.resizable && this.resizer ){
+                this.resizer.minWidth = width;
+            }
         }
     },
 
     initList : function(){
         if(!this.list){
             var cls = 'x-combo-list',
-                    listParent = Ext.getDom(this.getListParent() || Ext.getBody());
+                listParent = Ext.getDom(this.getListParent() || Ext.getBody());
 
             this.list = new Ext.Layer({
                 parentEl: listParent,
@@ -333,11 +385,8 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
             }
 
             if(!this.tpl){
-
                 this.tpl = '<tpl for="."><div class="'+cls+'-item">{' + this.displayField + '}</div></tpl>';
-
             }
-
 
             this.view = new Ext.DataView({
                 applyTo: this.innerList,

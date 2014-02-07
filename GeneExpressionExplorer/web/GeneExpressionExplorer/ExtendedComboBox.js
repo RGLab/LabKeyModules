@@ -55,6 +55,24 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                     renderTo: document.body
                 });
 
+                if ( this.expandOnFocus ){
+                    this.mon( this.getEl(), {
+                        click: function(){
+                            if ( ! this.isExpanded() ){
+                                this.initList();
+                                if( this.triggerAction == 'all' ) {
+                                    this.doQuery( this.allQuery, true );
+                                } else {
+                                    this.doQuery( this.getRawValue() );
+                                }
+                            } else {
+                                this.collapse();
+                            }
+                        },
+                        scope: this
+                    });
+                }
+
                 this.resizeToFitContent();
             },
             scope: this,
@@ -73,20 +91,6 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                     scope: this
                 }
             );
-        }
-
-        if ( this.expandOnFocus ){
-            this.mon( this, {
-                focus: function(){
-                    this.initList();
-                    if( this.triggerAction == 'all' ) {
-                        this.doQuery( this.allQuery, true );
-                    } else {
-                        this.doQuery( this.getRawValue() );
-                    }
-                },
-                scope: this
-            })
         }
 
         this.addClearItem
@@ -122,10 +126,20 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
             }
             width += el.getBorderWidth('lr');
             width += el.getPadding('lr');
+            if (this.trigger) {
+                width += this.trigger.getWidth();
+            }
             s.width = width;
             width += 3 * Ext.getScrollBarWidth() + 60;
             if ( this.pageSize > 0 && this.pageTb ){
-                width = Math.max( width, this.pageTb.el.child('table').getWidth() );
+                var toolbar = this.pageTb.el;
+                width = Math.max(
+                    width,
+                    toolbar.child('.x-toolbar-left-row').getWidth() +
+                    toolbar.child('.x-toolbar-left').getFrameWidth('lr') +
+                    toolbar.child('.x-toolbar-right').getFrameWidth('lr') +
+                    toolbar.getFrameWidth('lr')
+                );
             }
             this.listWidth = width;
             this.minListWidth = width;
@@ -134,13 +148,17 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                 this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
                 this.restrictHeight();
             }
+
+            if( this.resizable && this.resizer ){
+                this.resizer.minWidth = width;
+            }
         }
     },
 
     initList : function(){
         if(!this.list){
             var cls = 'x-combo-list',
-                    listParent = Ext.getDom(this.getListParent() || Ext.getBody());
+                listParent = Ext.getDom(this.getListParent() || Ext.getBody());
 
             this.list = new Ext.Layer({
                 parentEl: listParent,
@@ -210,10 +228,8 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                 );
                 this.listWidth = width;
                 this.minListWidth = width;
-                if ( this.list != undefined && this.innerList != undefined ){
-                    this.list.setSize( width );
-                    this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
-                }
+                this.list.setSize( width );
+                this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
             }
 
             if(this.resizable){

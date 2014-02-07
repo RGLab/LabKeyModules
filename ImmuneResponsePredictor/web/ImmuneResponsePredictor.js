@@ -34,11 +34,13 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var checkBtnRunStatus = function(){
             if (
-                    cbCohortTraining.getCheckedValue() != '' &&
-                    cbTimePoint.getValue() != '' &&
-                    nfFalseDiscoveryRate.getRawValue() != '' &&
-                    nfFoldChange.getRawValue() != '' &&
-                    ( ( chDichotomize.getValue() && nfDichotomize.getRawValue() != '' ) || ! chDichotomize.getValue() )
+                cbVariable.isValid() &&
+                cbCohortTraining.isValid(true) &&
+                ( nfDichotomize.isValid() || ! chDichotomize.getValue() ) &&
+                cbTimePoint.isValid() &&
+                cbAssay.isValid() &&
+                nfFalseDiscoveryRate.isValid() &&
+                nfFoldChange.isValid()
             ){
                 btnRun.setDisabled( false );
             } else {
@@ -88,7 +90,26 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         //     ComboBoxes / TextFields     //
         /////////////////////////////////////
 
+        var cbVariable = new Ext.ux.form.ExtendedComboBox({
+            allowBlank: false,
+            displayField: 'name',
+            fieldLabel: 'Select a variable',
+            listeners: {
+                change:     checkBtnRunStatus,
+                cleared:    checkBtnRunStatus,
+                select:     checkBtnRunStatus
+            },
+            store: new Ext.data.ArrayStore({
+                data: [ [ 'HAI', 'HAI' ] ],
+                fields: [ 'name', 'name' ]
+            }),
+            value: 'HAI',
+            valueField: 'name',
+            width: fieldWidth
+        });
+
         var cbCohortTraining = new Ext.ux.form.ExtendedLovCombo({
+            allowBlank: false,
             displayField: 'cohort',
             emptyText: 'Click...',
             fieldLabel: 'Training',
@@ -143,6 +164,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         });
 
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
+            allowBlank: false,
             displayField: 'displayTimepoint',
             emptyText: 'Click...',
             fieldLabel: 'Select a time point',
@@ -157,6 +179,44 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             width: fieldWidth
         });
 
+        var cbAssay = new Ext.ux.form.ExtendedComboBox({
+            allowBlank: false,
+            displayField: 'name',
+            fieldLabel: 'Select assay',
+            listeners: {
+                change: function(){
+                    if ( this.getValue() == '' ){
+                        boolGeneExpression = false;
+                        Ext.each( arGeneExpression, function( e ){ e.hide(); } );
+                    } else {
+                        boolGeneExpression = true;
+                        Ext.each( arGeneExpression, function( e ){ e.show(); } )
+                    }
+
+                    checkBtnRunStatus();
+                },
+                cleared: function(){
+                    boolGeneExpression = false;
+                    Ext.each( arGeneExpression, function( e ){ e.hide(); } );
+
+                    checkBtnRunStatus();
+                },
+                select: function(){
+                    boolGeneExpression = true;
+                    Ext.each( arGeneExpression, function( e ){ e.show(); } )
+
+                    checkBtnRunStatus();
+                }
+            },
+            store: new Ext.data.ArrayStore({
+                data: [ [ 'Gene expression', 'Gene expression' ] ],
+                fields: [ 'name', 'name' ]
+            }),
+            value: 'Gene expression',
+            valueField: 'name',
+            width: fieldWidth
+        });
+
         var chDichotomize = new Ext.form.Checkbox({
             checked: false,
             fieldLabel: 'Dichotomize values',
@@ -166,13 +226,40 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 } else {
                     nfDichotomize.hide();
                 }
+                checkBtnRunStatus();
             }
         });
 
         var nfDichotomize = new Ext.form.NumberField({
+            allowBlank: false,
             emptyText: 'Type...',
             enableKeyEvents: true,
             fieldLabel: 'Enter dichotomization threshold',
+            validator: function( value ){
+                var errors = [];
+
+                value = Ext.isDefined(value) ? value : this.processValue(this.getRawValue());
+                value = String(value).replace(this.decimalSeparator, ".");
+
+                if (value.length < 1 || value === this.emptyText) {
+                    if (! this.allowBlank) {
+                        //if value is blank and allowBlank is true, there cannot be any additional errors
+                        errors.push(this.blankText);
+                    }
+                } else {
+                    if( isNaN( value ) ){
+                        errors.push( String.format( this.nanText, value ) );
+                    } else {
+                        var num = this.parseValue( value );
+
+                        if ( num <= 0 ){
+                            errors.push( 'The value for this field must be greater than zero' );
+                        }
+                    }
+                }
+
+                return errors.length == 0 ? true : errors;
+            },
             height: 22,
             hidden: true,
             listeners: {
@@ -187,11 +274,12 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     }
                 }
             },
-            value: 0,
+            value: 4,
             width: fieldWidth
         });
 
         var nfFalseDiscoveryRate = new Ext.form.NumberField({
+            allowBlank: false,
             emptyText: 'Type...',
             enableKeyEvents: true,
             fieldLabel: 'False discovery rate is less than',
@@ -208,11 +296,13 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     }
                 }
             },
+            maxValue: 1,
             value: 0.1,
             width: fieldWidth
         });
 
         var nfFoldChange = new Ext.form.NumberField({
+            allowBlank: false,
             emptyText: 'Type...',
             enableKeyEvents: true,
             fieldLabel: 'Absolute fold change to baseline is greater than',
@@ -229,6 +319,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     }
                 }
             },
+            minValue: 0,
             value: 1,
             width: fieldWidth
         });
@@ -262,18 +353,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         var count = data.rows.length;
                         if ( count >= 1 ) {
                             cnfReport.inputParams = {};
-                            var emTraining = [], analysis = [], cohortTraining = [];
-                            Ext.each( data.rows, function( row ){
-                                emTraining.push(
-                                    row.expression_matrix_accession
-                                );
-                                analysis.push(
-                                    row.analysis_accession
-                                );
-                                cohortTraining.push(
-                                    row.cohort
-                                );
-                            });
+                            var
+                                emTraining      = Ext.pluck( data.rows, 'expression_matrix_accession' ),
+                                analysis        = Ext.pluck( data.rows, 'analysis_accession' ),
+                                cohortTraining  = Ext.pluck( data.rows, 'cohort' );
+
                             cnfReport.inputParams = {
                                 emTraining:             Ext.encode( emTraining ),
                                 cohortTraining:         Ext.encode( cohortTraining ),
@@ -305,15 +389,10 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                                 queryName: 'study_cohorts_info',
                                 schemaName: 'study',
                                 success: function(data){
-                                    var emTesting = [], cohortTesting = [];
-                                    Ext.each( data.rows, function( row ){
-                                        emTesting.push(
-                                            row.expression_matrix_accession
-                                        );
-                                        cohortTesting.push(
-                                            row.cohort
-                                        );
-                                    });
+                                    var
+                                        emTesting       = Ext.pluck( data.rows, 'expression_matrix_accession'),
+                                        cohortTesting   = Ext.pluck( data.rows, 'cohort' );
+
                                     cnfReport.inputParams['emTesting']      = Ext.encode( emTesting );
                                     cnfReport.inputParams['cohortTesting']  = Ext.encode( cohortTesting );
 
@@ -334,8 +413,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
 
         var rgIndividualProbes = new Ext.form.RadioGroup({
-            columns: 1,
-            fieldLabel: 'Should individual probes be used as predictors or averaged for each gene',
+            columns: [ 0.2, 0.2 ],
+            fieldLabel: 'Summarize probes expression values by gene',
             items: [
                 {
                     boxLabel: 'Yes',
@@ -412,7 +491,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             rgIndividualProbes,
             new Ext.form.Label({
                 cls: 'x-form-item',
-                text: '(Note: \'No\' should be the default behavior for a cross-platform analysis)'
+                text: '(Note: \'No\' is the default behavior for a cross-platform analysis)'
             })
         ],
         boolGeneExpression = true;
@@ -430,18 +509,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
-                        new Ext.ux.form.ExtendedComboBox({
-                            disabled: true,
-                            displayField: 'name',
-                            fieldLabel: 'Select a variable',
-                            store: new Ext.data.ArrayStore({
-                                data: [ [ 'HAI', 'HAI' ] ],
-                                fields: [ 'name', 'name' ]
-                            }),
-                            value: 'HAI',
-                            valueField: 'name',
-                            width: fieldWidth
-                        }),
+                        cbVariable,
                         new Ext.Spacer({
                             height: 20
                         }),
@@ -463,43 +531,17 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     autoScroll: true,
                     items: [
                         cbTimePoint,
-                        new Ext.ux.form.ExtendedComboBox({
-                            displayField: 'name',
-                            fieldLabel: 'Select assay',
-                            listeners: {
-                                change: function(){
-                                    if ( this.getValue() == '' ){
-                                        boolGeneExpression = false;
-                                        Ext.each( arGeneExpression, function( e ){ e.hide(); } );
-                                    } else {
-                                        boolGeneExpression = true;
-                                        Ext.each( arGeneExpression, function( e ){ e.show(); } )
-                                    }
-                                },
-                                cleared: function(){
-                                    boolGeneExpression = false;
-                                    Ext.each( arGeneExpression, function( e ){ e.hide(); } );
-                                },
-                                select: function(){
-                                    boolGeneExpression = true;
-                                    Ext.each( arGeneExpression, function( e ){ e.show(); } )
-                                }
-                            },
-                            store: new Ext.data.ArrayStore({
-                                data: [ [ 'Gene expression', 'Gene expression' ] ],
-                                fields: [ 'name', 'name' ]
-                            }),
-                            value: 'Gene expression',
-                            valueField: 'name',
-                            width: fieldWidth
-                        })
+                        cbAssay
                     ],
                     title: 'Step 2: Select Predictors'
                 }),
                 new Ext.form.FieldSet({
                     autoScroll: true,
+                    collapsed: true,
+                    collapsible: true,
                     items: arGeneExpression,
-                    title: 'Step 3: Options'
+                    title: 'Options',
+                    titleCollapse: true
                 }),
                 btnRun
             ],

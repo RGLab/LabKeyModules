@@ -12,7 +12,7 @@
 
     <property name='module.src.dir' value='${basedir}'/>
 
-    <property name="deploy.modules.dir" location="${basedir}/.."/>
+    <property name="build.modules.dir" location="${basedir}/.."/>
 </target>
 
 <target name="module.properties" depends='init'>
@@ -28,7 +28,7 @@
         <filter token="BuildTime" value="${buildtime}" />
         <filter token="BuildOS" value="${os.name}" />
         <filter token="BuildUser" value="${user.name}" />
-        <filter token="BuildPath" value="${deploy.modules.dir}/${module.name}.module" />
+        <filter token="BuildPath" value="${build.modules.dir}/${module.name}.module" />
         <filter token="SourcePath" value="${moduleDir}"/>
         <filter token="URL" value="Not built from a Subversion source tree" />
         <filter token="Revision" value="Not built from a Subversion source tree" />
@@ -37,7 +37,7 @@
 </target>
 
 <target name="build_module" depends="module.properties">
-  <zip destfile="${deploy.modules.dir}/${module.name}.module">
+  <zip destfile="${build.modules.dir}/${module.name}.module">
     <zipfileset dir="." />
   </zip>
 
@@ -46,7 +46,8 @@
 
 <target name="deploy" depends="build_module" if='modulesDirExists'>
   <echo message="Deploying ${module.name}.module to ${modules.dir}" />
-  <copy file="${deploy.modules.dir}/${module.name}.module" overwrite="true" tofile="${modules.dir}/${module.name}.module" />
+  <copy file="${build.modules.dir}/${module.name}.module" overwrite="true" tofile="${modules.dir}/${module.name}.module" />
+  <delete file="${build.modules.dir}/${module.name}.module"/>
 </target>
 
 </project>

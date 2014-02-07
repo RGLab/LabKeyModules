@@ -26,7 +26,7 @@ LABKEY.ext.ImmuneSpace_Summary = Ext.extend( Ext.Panel, {
         ////////////////////////////////////
 
         $('#' + config.webPartDivId).append(
-            '<div id="Summary' + config.webPartDivId + '"></div>'
+            '<div id=\'Summary' + config.webPartDivId + '\'></div>'
         );
 
 
@@ -34,11 +34,11 @@ LABKEY.ext.ImmuneSpace_Summary = Ext.extend( Ext.Panel, {
         //            Variables            //
         /////////////////////////////////////
 
-        var errorCode = '<p style="margin-left: 30px; color: red;">Failed to retrieve the aggregate summary</p>';
+        var errorCode = '<p style=\'margin-left: 30px; color: red;\'>Failed to retrieve the aggregate summary</p>';
         var myMask = new Ext.LoadMask(
             $('#Summary' + config.webPartDivId)[0],
             {
-                msg: "Please, wait, while the aggregate<br/> summary table is loading",
+                msg: 'Please, wait, while the aggregate<br/> summary table is loading',
                 msgCls: 'mask-loading'
             }
         );
@@ -108,33 +108,33 @@ LABKEY.ext.ImmuneSpace_Summary = Ext.extend( Ext.Panel, {
                                 success: function(d){
 
                                     $('#Summary' + config.webPartDivId).append(
-                                        '<table class="labkey-data-region <!--labkey-show-borders--> full-width">' +
+                                        '<table class=\'labkey-data-region <!--labkey-show-borders--> full-width\'>' +
                                             '<tbody>' +
                                                 '<tr>' +
                                                     '<td>Studies</td>' +
-                                                    '<td style="white-space: nowrap;" align="right">' + numStudies + '</td>' +
+                                                    '<td style=\'white-space: nowrap;\' align=\'right\'>' + numStudies + '</td>' +
                                                 '</tr><tr>' +
-                                                    '<td rowspan="1" colspan="2">&nbsp;</td>' +
+                                                    '<td rowspan=\'1\' colspan=\'2\'>&nbsp;</td>' +
                                                 '</tr><tr>' +
-                                                    '<td rowspan="1" colspan="2" align="center">Participants</td>' +
+                                                    '<td rowspan=\'1\' colspan=\'2\' align=\'center\'>Participants</td>' +
                                                 '</tr>'
                                     );
 
                                     Ext.each( d.rows, function(row, i){
                                         $('#Summary' + config.webPartDivId + ' tbody').append(
-                                            '<tr class="' + ( i%2 == 0 ? 'labkey-alternate-row' : 'labkey-row' ) + '">' +
+                                            '<tr class=\'' + ( i%2 == 0 ? 'labkey-alternate-row' : 'labkey-row' ) + '\'>' +
                                                 '<td>' + row.assay_type + '</td>' +
-                                                '<td style="white-space: nowrap;" align="right">' + row.subject_count + '</td>' +
+                                                '<td style=\'white-space: nowrap;\' align=\'right\'>' + row.subject_count + '</td>' +
                                             '</tr>'
                                         );
                                     });
 
                                     $('#Summary' + config.webPartDivId + ' tbody').append(
                                         '<tr>' +
-                                            '<td rowspan="1" colspan="2" style="height: 5px;"></td>' +
+                                            '<td rowspan=\'1\' colspan=\'2\' style=\'height: 5px;\'></td>' +
                                         '</tr><tr>' +
                                             '<td>Total</td>' +
-                                            '<td style="white-space: nowrap;" align="right">' + participantsCount + '</td>' +
+                                            '<td style=\'white-space: nowrap;\' align=\'right\'>' + participantsCount + '</td>' +
                                         '</tr>'
                                     );
 

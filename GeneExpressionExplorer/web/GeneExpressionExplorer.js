@@ -36,8 +36,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             if (    cbResponse.getValue() != '' &&
                     cbCohorts.getValue() != '' &&
                     cbTimePoint.getValue() !== '' && // since it's numeric 0 == '' -> true
-                    cbGenes.getValue() != '' // &&
-//                    spnrTextSize.isValid()
+                    cbGenes.getValue() != '' &&
+                    spnrTextSize.isValid()
             ){
                 btnPlot.setDisabled( false );
             } else {
@@ -108,6 +108,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var cbResponse = new Ext.ux.form.ExtendedComboBox({
+            allowBlank: false,
             displayField: 'name',
             fieldLabel: 'Response',
             listeners: {
@@ -124,6 +125,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         });
 
         var cbCohorts = new Ext.ux.form.ExtendedLovCombo({
+            allowBlank: false,
             displayField: 'cohort',
             fieldLabel: 'Cohorts',
             listeners: {
@@ -137,6 +139,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         });
 
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
+            allowBlank: false,
             displayField: 'displayTimepoint',
             fieldLabel: 'Time point',
             listeners: {
@@ -150,6 +153,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         });
 
         var cbGenes = new Ext.ux.form.SuperBoxSelect({
+            allowBlank: false,
             displayField: 'gene_symbol',
             fieldLabel: 'Genes',
             getParams: function(q){
@@ -176,12 +180,12 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 clear:      checkBtnPlotStatus,
                 removeItem: checkBtnPlotStatus,
                 focus: function (){
-                    if (this.disabled) {
+                    if ( this.disabled ) {
                         return;
                     }
-                    if (this.isExpanded()) {
+                    if ( this.isExpanded() ) {
                         this.multiSelectMode = false;
-                    } else if (this.pinList) {
+                    } else if ( this.pinList ) {
                         this.multiSelectMode = true;
                     }
 
@@ -202,9 +206,9 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         });
 
 
-        /////////////////////////////////////
-        //    Buttons and Radio Groups     //
-        /////////////////////////////////////
+        ///////////////////////////////////////
+        // Buttons, Radio Groups, Checkboxes //
+        ///////////////////////////////////////
 
         var btnPlot = new Ext.Button({
             disabled: true,
@@ -218,6 +222,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     timePointDisplay:   cbTimePoint.getRawValue(),
                     genes:              Ext.encode( cbGenes.getValuesAsArray() ),
                     textSize:           spnrTextSize.getValue(),
+                    facet:              rgFacet.getValue().getGroupValue(),
                     imageWidth:         width,
                     imageHeight:        width
                 };
@@ -231,10 +236,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
 
         var spnrTextSize = new Ext.ux.form.SpinnerField({
+            allowBlank: false,
             fieldLabel: 'Text size',
             listeners: {
-//                valid:      checkBtnPlotStatus,
-//                invalid:    checkBtnPlotStatus
+                invalid:    function(){ btnPlot.setDisabled(true); },
+                valid:      checkBtnPlotStatus
             },
             maxValue: 30,
             minValue: 0,
@@ -242,7 +248,25 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             width: 40
         });
 
-        LABKEY.ext.GeneExpressionExplorer_Lib.captureEvents( spnrTextSize );
+        var rgFacet = new Ext.form.RadioGroup({
+            columns: [ 0.15, 0.15 ],
+            fieldLabel: 'Facet',
+            items: [
+                {
+                    boxLabel: 'Grid',
+                    checked: true,
+                    inputValue: 'Grid',
+                    name: 'facet',
+                    value: 'Grid'
+                },
+                {
+                    boxLabel: 'Wrap',
+                    inputValue: 'Wrap',
+                    name: 'facet',
+                    value: 'Wrap'
+                }
+            ]
+        });
 
 
         /////////////////////////////////////
@@ -362,13 +386,18 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     autoScroll: true,
                     collapsed: true,
                     collapsible: true,
-                    items: spnrTextSize,
-                    title: 'Additional parameters'
+                    items: [
+                        spnrTextSize,
+                        rgFacet
+                    ],
+                    labelWidth: 90,
+                    title: 'Additional parameters',
+                    titleCollapse: true
                 }),
                 btnPlot,
                 cntPlot
             ],
-            labelWidth: 150,
+            labelWidth: 100,
             listeners: {
                 afterrender: function(){
                     maskPlot = new Ext.LoadMask(

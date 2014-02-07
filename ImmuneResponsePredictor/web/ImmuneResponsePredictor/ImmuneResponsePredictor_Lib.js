@@ -325,20 +325,32 @@ LABKEY.ext.ImmuneResponsePredictor_Lib.captureEvents = function(observable) {
     Ext.util.Observable.capture(
         observable,
         function(eventName, o) {
-            var ot = 'unknown';
-            if ( o != undefined ){
-                if ( o.combo != undefined ){
-                    o = o.combo;
+            if ( eventName != 'mouseout' && eventName != 'mouseover' ){
+                var ot = 'unknown';
+                if ( o != undefined ){
+                    if ( o.combo != undefined ){
+                        o = o.combo;
+                    }
+                    if ( o.constructor != undefined ){
+                        if ( o.constructor.xtype != undefined ){
+                            ot = o.constructor.xtype;
+                        } else if (o.constructor.ptype != undefined ){
+                            ot = o.constructor.ptype;
+                        }
+                    } else if ( o.id != undefined ){
+                        ot = o.id.split('-');
+                        ot.pop();
+                        ot = ot.join('-');
+                    } else if ( o.target != undefined && o.target.className != undefined ){
+                        ot = o.target.className.split(' ');
+                        ot = ot[0];
+                        ot = ot.split('-')
+                        ot.shift();
+                        ot = ot.join('-');
+                    }
                 }
-                if ( o.constructor != undefined && o.constructor.xtype != undefined ){
-                    ot = o.constructor.xtype;
-                } else if ( o.id != undefined ){
-                    ot = o.id.split('-');
-                    ot.pop();
-                    ot = ot.join('-');
-                }
+                console.info( ot + ' fired: ' + eventName);
             }
-            console.info( ot + ' fired: ' + eventName);
         },
         this
     );

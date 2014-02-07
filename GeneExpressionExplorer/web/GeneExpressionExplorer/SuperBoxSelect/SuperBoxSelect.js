@@ -345,7 +345,7 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                     width += 3 * Ext.getScrollBarWidth() + 60;
                     if ( this.pageSize > 0 && this.pageTb ){
                         var toolbar = this.pageTb.el;
-                        var width = Math.max(
+                        width = Math.max(
                             width,
                             toolbar.child('.x-toolbar-left-row').getWidth() +
                             toolbar.child('.x-toolbar-left').getFrameWidth('lr') +
@@ -361,7 +361,7 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                         this.restrictHeight();
                     }
 
-                    if( this.resizable ){
+                    if( this.resizable && this.resizer ){
                         this.resizer.minWidth = width;
                     }
                 }
@@ -470,10 +470,8 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                         );
                         this.listWidth = width;
                         this.minListWidth = width;
-                        if ( this.list != undefined && this.innerList != undefined ){
-                            this.list.setSize( width );
-                            this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
-                        }
+                        this.list.setSize( width );
+                        this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
                     }
 
                     if(this.resizable){
