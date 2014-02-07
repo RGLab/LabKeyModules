@@ -340,7 +340,7 @@ if(param$dichotomize){
 	anno_col <- list(response=grey(10:0/10))
 }
 pheatmap(mat, dendrogram="none", cluster_cols=FALSE, cluster_rows=TRUE,
-         breaks = seq(-1, 1, length.out = length(mypalette) + 1),
+         #breaks = seq(-1, 1, length.out = length(mypalette) + 1),
          show_rownames=TRUE, show_colnames=FALSE, scale="none",cluster_method="ward",
          cluster_distance="correlation",color=mypalette, annotation=annotation,
          annotation_colors=anno_col)
