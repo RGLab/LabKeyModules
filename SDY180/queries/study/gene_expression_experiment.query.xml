@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='gene_expression_experiment' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+	Query used for the gene_expression_matrices query snapshot
+    </description>
+</query>
+

@@ -4,7 +4,6 @@
 
 ```{r knitr-options, echo=FALSE, eval=TRUE, cache=FALSE}
 library(knitr)
-opts_knit$set(progress = TRUE, verbose = TRUE)
 opts_chunk$set(echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, error=TRUE, dev="png", fig.width=6, fig.height=5, dpi=100, autodep=FALSE)
 opts_chunk$set(cache.path=paste(labkey.file.root, "cache/expression_matrix_creation/", sep="/"), cache=TRUE)
 options(width=80)
