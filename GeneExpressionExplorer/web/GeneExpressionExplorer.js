@@ -33,11 +33,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             ;
 
         var checkBtnPlotStatus = function(){
-            if (    cbResponse.getValue() != '' &&
-                    cbCohorts.getValue() != '' &&
+            if (    cbResponse.isValid( true ) &&
+                    cbCohorts.isValid( true ) &&
                     cbTimePoint.getValue() !== '' && // since it's numeric 0 == '' -> true
-                    cbGenes.getValue() != '' &&
-                    spnrTextSize.isValid()
+                    cbGenes.isValid( true ) &&
+                    spnrTextSize.isValid( true )
             ){
                 btnPlot.setDisabled( false );
             } else {
@@ -74,6 +74,15 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             },
             queryName: 'gene',
             schemaName: 'lists'
+        });
+
+        var strDemographics = new Ext.data.ArrayStore({
+            data: [
+                [ 'Age', 'Age' ],
+                [ 'Gender', 'Gender' ],
+                [ 'Race', 'Race' ]
+            ],
+            fields: [ 'name', 'name' ]
         });
 
 
@@ -205,6 +214,38 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             width: fieldWidth
         });
 
+        var cbShape = new Ext.ux.form.ExtendedComboBox({
+            displayField: 'name',
+            fieldLabel: 'Shape',
+            store: strDemographics,
+            valueField: 'name',
+            width: fieldWidth
+        });
+
+        var cbColor = new Ext.ux.form.ExtendedComboBox({
+            displayField: 'name',
+            fieldLabel: 'Color',
+            store: strDemographics,
+            valueField: 'name',
+            width: fieldWidth
+        });
+
+        var cbSize = new Ext.ux.form.ExtendedComboBox({
+            displayField: 'name',
+            fieldLabel: 'Size',
+            store: strDemographics,
+            valueField: 'name',
+            width: fieldWidth
+        });
+
+        var cbAlpha = new Ext.ux.form.ExtendedComboBox({
+            displayField: 'name',
+            fieldLabel: 'Alpha',
+            store: strDemographics,
+            valueField: 'name',
+            width: fieldWidth
+        });
+
 
         ///////////////////////////////////////
         // Buttons, Radio Groups, Checkboxes //
@@ -223,6 +264,10 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     genes:              Ext.encode( cbGenes.getValuesAsArray() ),
                     textSize:           spnrTextSize.getValue(),
                     facet:              rgFacet.getValue().getGroupValue(),
+                    shape:              cbShape.getValue(),
+                    color:              cbColor.getValue(),
+                    size:               cbSize.getValue(),
+                    alpha:              cbAlpha.getValue(),
                     imageWidth:         width,
                     imageHeight:        width
                 };
@@ -249,7 +294,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         });
 
         var rgFacet = new Ext.form.RadioGroup({
-            columns: [ 0.15, 0.15 ],
+            columns: [ 100, 100 ],
             fieldLabel: 'Facet',
             items: [
                 {
@@ -388,7 +433,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     collapsible: true,
                     items: [
                         spnrTextSize,
-                        rgFacet
+                        rgFacet,
+                        cbShape,
+                        cbColor,
+                        cbSize,
+                        cbAlpha
                     ],
                     labelWidth: 90,
                     title: 'Additional parameters',

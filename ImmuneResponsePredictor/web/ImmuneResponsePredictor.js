@@ -34,13 +34,13 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var checkBtnRunStatus = function(){
             if (
-                cbVariable.isValid() &&
-                cbCohortTraining.isValid(true) &&
-                ( nfDichotomize.isValid() || ! chDichotomize.getValue() ) &&
-                cbTimePoint.isValid() &&
-                cbAssay.isValid() &&
-                nfFalseDiscoveryRate.isValid() &&
-                nfFoldChange.isValid()
+                cbVariable.isValid( true ) &&
+                cbCohortTraining.isValid( true ) &&
+                ( nfDichotomize.isValid( true ) || ! chDichotomize.getValue() ) &&
+                cbTimePoint.isValid( true ) &&
+                cbAssay.isValid( true ) &&
+                nfFalseDiscoveryRate.isValid( true ) &&
+                nfFoldChange.isValid( true )
             ){
                 btnRun.setDisabled( false );
             } else {
@@ -352,16 +352,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     success: function(data){
                         var count = data.rows.length;
                         if ( count >= 1 ) {
-                            cnfReport.inputParams = {};
-                            var
-                                emTraining      = Ext.pluck( data.rows, 'expression_matrix_accession' ),
-                                analysis        = Ext.pluck( data.rows, 'analysis_accession' ),
-                                cohortTraining  = Ext.pluck( data.rows, 'cohort' );
 
                             cnfReport.inputParams = {
-                                emTraining:             Ext.encode( emTraining ),
-                                cohortTraining:         Ext.encode( cohortTraining ),
-                                analysisAccession:      Ext.encode( analysis ),
+                                emTraining:             Ext.encode( Ext.pluck( data.rows, 'expression_matrix_accession' ) ),
+                                cohortTraining:         Ext.encode( Ext.pluck( data.rows, 'cohort' ) ),
+                                analysisAccession:      Ext.encode( Ext.pluck( data.rows, 'analysis_accession' ) ),
                                 dichotomize:            chDichotomize.getValue(),
                                 dichotomizeValue:       nfDichotomize.getValue(),
                                 timePoint:              cbTimePoint.getValue(),
@@ -413,7 +408,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
 
         var rgIndividualProbes = new Ext.form.RadioGroup({
-            columns: [ 0.2, 0.2 ],
+            columns: [ 100, 100 ],
             fieldLabel: 'Summarize probes expression values by gene',
             items: [
                 {

@@ -57,6 +57,10 @@ timePointDisplay    <- labkey.url.params$timePointDisplay;
 arrayGenes          <- RJSONIO::fromJSON( labkey.url.params$genes );
 textSize            <- as.numeric( labkey.url.params$textSize );
 facet               <- labkey.url.params$facet;
+shape               <- labkey.url.params$shape;
+color               <- labkey.url.params$color;
+size                <- labkey.url.params$size;
+alpha               <- labkey.url.params$alpha;
 
 if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   message("No need to read again")
