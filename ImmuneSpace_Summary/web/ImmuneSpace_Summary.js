@@ -158,7 +158,7 @@ LABKEY.ext.ImmuneSpace_Summary = Ext.extend( Ext.Panel, {
 
         this.border         = false;
         this.cls            = 'immunespace_summary';
-        this.contentEl      = 'Summary' + config.webPartDivId,
+        this.contentEl      = 'Summary' + config.webPartDivId;
         this.frame          = false;
         this.layout         = 'fit';
         this.renderTo       = config.webPartDivId;

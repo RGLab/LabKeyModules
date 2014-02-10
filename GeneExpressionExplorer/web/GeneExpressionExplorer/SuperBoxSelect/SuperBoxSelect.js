@@ -369,7 +369,7 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
             initList : function(){
                 if(!this.list){
                     var cls = 'x-combo-list',
-                            listParent = Ext.getDom(this.getListParent() || Ext.getBody());
+                        listParent = Ext.getDom(this.getListParent() || Ext.getBody());
 
                     this.list = new Ext.Layer({
                         parentEl: listParent,
