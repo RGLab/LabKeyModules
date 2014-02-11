@@ -56,11 +56,11 @@ timePoint           <- as.numeric( labkey.url.params$timePoint );
 timePointDisplay    <- labkey.url.params$timePointDisplay;
 arrayGenes          <- RJSONIO::fromJSON( labkey.url.params$genes );
 textSize            <- as.numeric( labkey.url.params$textSize );
-facet               <- labkey.url.params$facet;
-shape               <- labkey.url.params$shape;
-color               <- labkey.url.params$color;
-size                <- labkey.url.params$size;
-alpha               <- labkey.url.params$alpha;
+facet               <- tolower(labkey.url.params$facet)
+shape               <- tolower(labkey.url.params$shape)
+color               <- tolower(labkey.url.params$color)
+size                <- tolower(labkey.url.params$size)
+alpha               <- tolower(labkey.url.params$alpha)
 
 if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   message("No need to read again")
@@ -70,6 +70,11 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   gem <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
                                       queryName="gene_expression_matrices", colFilter=cohort_filter, 
                                       colNameOpt="rname"))
+  demographics <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
+                                      queryName="demographics", colNameOpt="rname"))
+  demographics <- demographics[, list(subject_accession, age_reported, gender, race)] 
+  setnames(demographics, "age_reported", "age")
+  gem <- merge(gem, demographics, by="subject_accession")
   # Subjects with all timepoints
   utp <- unique(gem$study_time_reported)
   gem <- gem[, keep:=(sum(study_time_reported %in% utp) == length(utp)), by="subject_accession,biosample_accession_name"]
@@ -100,14 +105,19 @@ FC <- FC[, gene:=ssES$gene_symbol]
 FC <- melt(FC, id="gene")
 FC <- data.table(FC)
 setnames(FC, c("variable", "value"), c("biosample_accession", "logFC"))
-data <- merge(FC, pd, by="biosample_accession")[, list(biosample_accession, gene, subject_accession, biosample_accession_name, logFC, arm_name)]
+data <- merge(FC, pd, by="biosample_accession")[, list(biosample_accession, gene, subject_accession, biosample_accession_name, logFC, arm_name, age, race, gender)]
 data <- merge(data, hai, by=c("subject_accession", "biosample_accession_name"))
 
 # Plot
-if(tolower(facet) == "grid"){
-  p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point() + geom_smooth(method="lm") + facet_grid(aes(arm_name, gene), scales="free") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
+if(color=="") color <- NULL
+if(shape=="") shape <- NULL
+if(size=="") size <- NULL
+if(alpha=="") alpha <- NULL
+p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point(aes_string(size=size, color=color, alpha=alpha, shape=shape)) + geom_smooth(method="lm") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
+if(facet == "grid"){
+  p <- p + facet_grid(aes(arm_name, gene), scales="free")
 } else{
-  p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point() + geom_smooth(method="lm") + facet_wrap(~arm_name + gene, scales="free") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
+  p <- p + facet_wrap(~arm_name + gene, scales="free")
 }
 print(p)
 

@@ -85,6 +85,14 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             fields: [ 'name', 'name' ]
         });
 
+        var strShape = new Ext.data.ArrayStore({
+            data: [
+                [ 'Gender', 'Gender' ],
+                [ 'Race', 'Race' ]
+            ],
+            fields: [ 'name', 'name' ]
+        });
+
 
         /////////////////////////////////////
         //      Session instanciation      //
@@ -217,7 +225,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var cbShape = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Shape',
-            store: strDemographics,
+            store: strShape,
             valueField: 'name',
             width: fieldWidth
         });
