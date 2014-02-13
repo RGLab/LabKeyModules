@@ -3,5 +3,5 @@
     <hidden>false</hidden>
     <category>Gene expression preprocessing</category>
     <!--<label>show this instead of the file name</label>-->
-    <!--<description>this is a module report</description>-->
+    <description>This report reads the gene-expression files, writes the expression matrices to the file system and insert rows into the gene_expression_matrices dataset.</description>
 </ReportDescriptor>
