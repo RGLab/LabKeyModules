@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='totalSubjectCount' schemaName='immport' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        Total participants count in the available studies.
+    </description>
+</query>

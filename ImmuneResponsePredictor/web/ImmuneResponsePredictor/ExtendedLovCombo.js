@@ -45,7 +45,7 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                             + '<img src=\'' + Ext.BLANK_IMAGE_URL + '\' '
                             + 'class=\'ux-lovcombo-icon ux-lovcombo-icon-'
                             + '{[values.' + this.checkField + '?\'checked\':\'unchecked\'' + ']}\'>'
-                            + '<div class=\'ux-lovcombo-item-text\'>{' + ( this.displayField || 'text' ) + '}</div>'
+                            + '<div class=\'ux-lovcombo-item-text\'>' + this.selectAllTextField + '</div>'
                         + '</div>'
                     + '</tpl>'
                     + '<tpl if="' + this.displayField + '!=\'' + this.selectAllTextField + '\'">'
@@ -53,7 +53,7 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                             + '<img src=\'' + Ext.BLANK_IMAGE_URL + '\' '
                             + 'class=\'ux-lovcombo-icon ux-lovcombo-icon-'
                             + '{[values.' + this.checkField + '?\'checked\':\'unchecked\'' + ']}\'>'
-                            + '<div class=\'ux-lovcombo-item-text\'>{' + ( this.displayField || 'text' ) + ':this.process}</div>'
+                            + '<div class=\'ux-lovcombo-item-text\'>{' + this.displayField + ':this.process}</div>'
                         + '</div>'
                     + '</tpl>'
                  +'</tpl>',
