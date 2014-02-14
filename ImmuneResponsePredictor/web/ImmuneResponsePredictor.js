@@ -88,6 +88,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                             r.data[field.name] = r.data['timepoint'] +  ' ' + r.data['timepointUnit'];
                         }
                     });
+
+                    cbTimePoint.bindStore( this );
                 },
                 loadexception: LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure
             },
