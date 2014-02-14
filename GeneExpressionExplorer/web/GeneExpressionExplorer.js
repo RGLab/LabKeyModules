@@ -62,6 +62,16 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var strTimePoint = new LABKEY.ext.Store({
             autoLoad: true,
             listeners: {
+                load: function(){
+                    var field = { name: 'displayTimepoint' };
+                    field = new Ext.data.Field(field);
+                    this.recordType.prototype.fields.replace(field);
+                    this.each( function(r){
+                        if ( typeof r.data[field.name] == 'undefined' ){
+                            r.data[field.name] = r.data['timepoint'] +  ' ' + r.data['timepointUnit'];
+                        }
+                    });
+                },
                 loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
             },
             queryName: 'timepoints_gee',
@@ -486,6 +496,24 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         };
 
 
+        $('#' + config.webPartDivId)
+            .parents('tr')
+            .prev()
+            .find('.labkey-wp-title-text')
+            .wrap(
+                '<a href=\'' +
+                LABKEY.ActionURL.buildURL(
+                    'reports',
+                    'runReport',
+                    LABKEY.ActionURL.getContainer(),
+                    {
+                        reportId: 'module:GeneExpressionExplorer/reports/schemas/Plot.R',
+                        tabId: 'Source'
+                    }
+                ) +
+                '\' target=\'_blank\'></a>'
+            );
+
         // jQuery-related
 
         jQuery('.fancybox').fancybox({
@@ -493,13 +521,13 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             helpers: {
                 buttons: {
                     tpl:
-                        '<div id="fancybox-buttons">' +
+                        '<div id=\'fancybox-buttons\'>' +
                             '<ul>' +
                                 '<li>' +
-                                    '<a class="btnToggle" title="Toggle size" href="javascript:;"></a>' +
+                                    '<a class=\'btnToggle\' title=\'Toggle size\' href=\'javascript:;\'></a>' +
                                 '</li>' +
                                 '<li>' +
-                                    '<a class="btnClose" title="Close" href="javascript:jQuery.fancybox.close();"></a>' +
+                                    '<a class=\'btnClose\' title=\'Close\' href=\'javascript:jQuery.fancybox.close();\'></a>' +
                                 '</li>' +
                             '</ul>' +
                         '</div>'

@@ -79,6 +79,16 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var strTimePoint = new LABKEY.ext.Store({
             autoLoad: true,
             listeners: {
+                load: function(){
+                    var field = { name: 'displayTimepoint' };
+                    field = new Ext.data.Field(field);
+                    this.recordType.prototype.fields.replace(field);
+                    this.each( function(r){
+                        if ( typeof r.data[field.name] == 'undefined' ){
+                            r.data[field.name] = r.data['timepoint'] +  ' ' + r.data['timepointUnit'];
+                        }
+                    });
+                },
                 loadexception: LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure
             },
             queryName: 'timepoints',
@@ -629,6 +639,23 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         // jQuery-related
 
+        $('#' + config.webPartDivId)
+            .parents('tr')
+            .prev()
+            .find('.labkey-wp-title-text')
+            .wrap(
+            '<a href=\'' +
+            LABKEY.ActionURL.buildURL(
+                'reports',
+                'runReport',
+                LABKEY.ActionURL.getContainer(),
+                {
+                    reportId: 'module:ImmuneResponsePredictor/reports/schemas/study/study_cohorts_info/ImmuneResponsePredictor.Rmd',
+                    tabId: 'Source'
+                }
+            ) +
+            '\' target=\'_blank\'></a>'
+        );
 
         this.border         = false;
         this.boxMinWidth    = 370;
