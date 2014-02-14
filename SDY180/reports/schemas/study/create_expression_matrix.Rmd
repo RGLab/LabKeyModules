@@ -53,7 +53,7 @@ for(idx in 1:nEM){
   exprs <- exprs[, feature_id := rownames(exprs(eset))]
   write.table(exprs, file=filename, sep="\t", quote=FALSE, row.names=FALSE)
 }
-write.table(f2g, file=file.path(labkey.file.root, "analysis/features2genes", f2g_name), row.names=FALSE)
+write.table(f2g, file=file.path(labkey.file.root, "analysis/features2genes", f2g_name), sep="\t", quote=FALSE, row.names=FALSE)
 ```
 
 ```{r create-GEM, cache=TRUE, dependson="write-files"}
