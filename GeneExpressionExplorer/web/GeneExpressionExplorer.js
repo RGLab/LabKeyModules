@@ -71,6 +71,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             r.data[field.name] = r.data['timepoint'] +  ' ' + r.data['timepointUnit'];
                         }
                     });
+
+                    cbTimePoint.bindStore( this );
                 },
                 loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
             },
@@ -138,6 +140,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             allowBlank: false,
             displayField: 'name',
             fieldLabel: 'Response',
+            lazyInit: false,
             listeners: {
                 change:     checkBtnPlotStatus,
                 cleared:    checkBtnPlotStatus,
@@ -155,6 +158,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             allowBlank: false,
             displayField: 'cohort',
             fieldLabel: 'Cohorts',
+            lazyInit: false,
             listeners: {
                 change:     checkBtnPlotStatus,
                 cleared:    checkBtnPlotStatus,
@@ -169,6 +173,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             allowBlank: false,
             displayField: 'displayTimepoint',
             fieldLabel: 'Time point',
+            lazyInit: false,
             listeners: {
                 change:     checkBtnPlotStatus,
                 cleared:    checkBtnPlotStatus,
@@ -235,6 +240,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var cbShape = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Shape',
+            lazyInit: false,
             store: strShape,
             valueField: 'name',
             width: fieldWidth
@@ -243,6 +249,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var cbColor = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Color',
+            lazyInit: false,
             store: strDemographics,
             valueField: 'name',
             width: fieldWidth
@@ -251,6 +258,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var cbSize = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Size',
+            lazyInit: false,
             store: strDemographics,
             valueField: 'name',
             width: fieldWidth
@@ -259,6 +267,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var cbAlpha = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Alpha',
+            lazyInit: false,
             store: strDemographics,
             valueField: 'name',
             width: fieldWidth
