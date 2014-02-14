@@ -34,6 +34,10 @@ get_cohort_expression <- function(gem){
     em <- fread(em_links[i])
     setnames(em, colnames(em), c("feature_id", header))
     f2g <- read.table(f2g_links[i], sep="\t", header=TRUE)
+stop(paste(
+  paste0(colnames(f2g), collapse="; "),
+  paste0(f2g[1,], collapse="; "), sep="\n"
+))
     em <- em[, gene_symbol:=f2g[match(em$feature_id, f2g$feature_id), "gene_symbol"]]
     em <- em[, lapply(.SD, mean), by="gene_symbol", .SDcols=2:(ncol(em)-1)]
     EM[[i]] <- em
@@ -113,7 +117,10 @@ if(color=="") color <- NULL
 if(shape=="") shape <- NULL
 if(size=="") size <- NULL
 if(alpha=="") alpha <- NULL
-p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point(aes_string(size=size, color=color, alpha=alpha, shape=shape)) + geom_smooth(method="lm") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
+#p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point(aes_string(size=size, color=color, alpha=alpha, shape=shape)) + geom_smooth(method="lm") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
+p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point()#aes_string(size=size, color=color, alpha=alpha, shape=shape)) + geom_smooth(method="lm") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
+stop(paste(colnames(EM), collapse="; "))
+print(p)
 if(facet == "grid"){
   p <- p + facet_grid(aes(arm_name, gene), scales="free")
 } else{
