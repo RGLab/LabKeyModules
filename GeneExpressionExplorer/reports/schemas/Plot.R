@@ -26,6 +26,7 @@ merge_cohorts <- function(x, y){
 
 get_cohort_expression <- function(gem){
   umat <- unique(gem[, list(file_info_name, feature_mapping_file)])
+  stopcheck(umat)
   em_links <- paste(labkey.file.root, "/analysis/exprs_matrices/", umat$file_info_name, sep="/")
   f2g_links <- paste(labkey.file.root, "/analysis/features2genes/", umat$feature_mapping_file, sep="/")
   EM <- vector('list', nrow(umat))
@@ -34,10 +35,6 @@ get_cohort_expression <- function(gem){
     em <- fread(em_links[i])
     setnames(em, colnames(em), c("feature_id", header))
     f2g <- read.table(f2g_links[i], sep="\t", header=TRUE)
-stop(paste(
-  paste0(colnames(f2g), collapse="; "),
-  paste0(f2g[1,], collapse="; "), sep="\n"
-))
     em <- em[, gene_symbol:=f2g[match(em$feature_id, f2g$feature_id), "gene_symbol"]]
     em <- em[, lapply(.SD, mean), by="gene_symbol", .SDcols=2:(ncol(em)-1)]
     EM[[i]] <- em
@@ -51,7 +48,7 @@ stop(paste(
 
 imageWidth  <- as.numeric(labkey.url.params$imageWidth);
 imageHeight <- as.numeric(labkey.url.params$imageHeight);
-CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
+#CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
 
 response            <- labkey.url.params$response;
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
@@ -66,12 +63,16 @@ color               <- tolower(labkey.url.params$color)
 size                <- tolower(labkey.url.params$size)
 alpha               <- tolower(labkey.url.params$alpha)
 
+stopcheck <- function(data){
+    stop(paste(apply(as.matrix(data), 1, function(x){ paste(x, collapse=",")}), collapse="\n"))
+}
+
 if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
-  message("No need to read again")
+  stop(loadedCohorts)
   #No need to read again
 } else{
   cohort_filter <- makeFilter(c("arm_name", "IN", paste(arrayCohorts, collapse=";")))
-  gem <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
+  gem <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study",
                                       queryName="gene_expression_matrices", colFilter=cohort_filter, 
                                       colNameOpt="rname"))
   demographics <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
@@ -83,11 +84,13 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   utp <- unique(gem$study_time_reported)
   gem <- gem[, keep:=(sum(study_time_reported %in% utp) == length(utp)), by="subject_accession,biosample_accession_name"]
   gem <- gem[keep==TRUE]
+  stopcheck(gem)
   pd <- gem[order(subject_accession, biosample_accession_name, study_time_reported)]
   # Get HAI
   hai_filter <- makeFilter(c("subject_accession", "IN", paste(pd$subject_accession, collapse=";")))
   hai <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
                                       queryName="hai", colFilter=hai_filter, colNameOpt="rname"))
+  hai <- hai[is.na(biosample_accession_name), biosample_accession_name := "missing"]
   hai <- hai[, list(subject_accession, study_time_collected, response=value_reported/value_reported[study_time_collected==0]), by="virus_strain,biosample_accession_name,subject_accession"]
   hai <- hai[study_time_collected==28]
   hai <- hai[, list(response=log2(max(response))), by="subject_accession,biosample_accession_name"]
@@ -110,6 +113,7 @@ FC <- melt(FC, id="gene")
 FC <- data.table(FC)
 setnames(FC, c("variable", "value"), c("biosample_accession", "logFC"))
 data <- merge(FC, pd, by="biosample_accession")[, list(biosample_accession, gene, subject_accession, biosample_accession_name, logFC, arm_name, age, race, gender)]
+data <- data[is.na(biosample_accession_name), biosample_accession_name := "missing"]
 data <- merge(data, hai, by=c("subject_accession", "biosample_accession_name"))
 
 # Plot
@@ -117,10 +121,7 @@ if(color=="") color <- NULL
 if(shape=="") shape <- NULL
 if(size=="") size <- NULL
 if(alpha=="") alpha <- NULL
-#p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point(aes_string(size=size, color=color, alpha=alpha, shape=shape)) + geom_smooth(method="lm") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
-p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point()#aes_string(size=size, color=color, alpha=alpha, shape=shape)) + geom_smooth(method="lm") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
-stop(paste(colnames(EM), collapse="; "))
-print(p)
+p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point(aes_string(size=size, color=color, alpha=alpha, shape=shape)) + geom_smooth(method="lm") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
 if(facet == "grid"){
   p <- p + facet_grid(aes(arm_name, gene), scales="free")
 } else{
@@ -133,4 +134,4 @@ dev.off();
 
 Sys.sleep(3);
 
-write( RJSONIO::toJSON( x=facet, asIs = T ), '${jsonout:outArray}' );
+write( RJSONIO::toJSON( x=arrayCohorts, asIs = T ), '${jsonout:outArray}' );
