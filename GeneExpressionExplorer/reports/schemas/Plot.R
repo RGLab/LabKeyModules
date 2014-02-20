@@ -26,7 +26,7 @@ merge_cohorts <- function(x, y){
 
 get_cohort_expression <- function(gem){
   umat <- unique(gem[, list(file_info_name, feature_mapping_file)])
-  stopcheck(umat)
+  #stopcheck(umat)
   em_links <- paste(labkey.file.root, "/analysis/exprs_matrices/", umat$file_info_name, sep="/")
   f2g_links <- paste(labkey.file.root, "/analysis/features2genes/", umat$feature_mapping_file, sep="/")
   EM <- vector('list', nrow(umat))
@@ -48,7 +48,7 @@ get_cohort_expression <- function(gem){
 
 imageWidth  <- as.numeric(labkey.url.params$imageWidth);
 imageHeight <- as.numeric(labkey.url.params$imageHeight);
-#CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
+CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
 
 response            <- labkey.url.params$response;
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
@@ -68,12 +68,12 @@ stopcheck <- function(data){
 }
 
 if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
-  stop(loadedCohorts)
   #No need to read again
 } else{
   cohort_filter <- makeFilter(c("arm_name", "IN", paste(arrayCohorts, collapse=";")))
   gem <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study",
                                       queryName="gene_expression_matrices", colFilter=cohort_filter, 
+                                      viewName = "ImmuneResponsePredictor.gene_expression_matrices",
                                       colNameOpt="rname"))
   demographics <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
                                       queryName="demographics", colNameOpt="rname"))
@@ -84,11 +84,11 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   utp <- unique(gem$study_time_reported)
   gem <- gem[, keep:=(sum(study_time_reported %in% utp) == length(utp)), by="subject_accession,biosample_accession_name"]
   gem <- gem[keep==TRUE]
-  stopcheck(gem)
   pd <- gem[order(subject_accession, biosample_accession_name, study_time_reported)]
   # Get HAI
   hai_filter <- makeFilter(c("subject_accession", "IN", paste(pd$subject_accession, collapse=";")))
   hai <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
+                                      viewName = "ImmuneResponsePredictor.hai",
                                       queryName="hai", colFilter=hai_filter, colNameOpt="rname"))
   hai <- hai[is.na(biosample_accession_name), biosample_accession_name := "missing"]
   hai <- hai[, list(subject_accession, study_time_collected, response=value_reported/value_reported[study_time_collected==0]), by="virus_strain,biosample_accession_name,subject_accession"]

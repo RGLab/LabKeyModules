@@ -29,7 +29,7 @@ exMat <- data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = la
 ### Get the probe mapping file
 ```{r f2g, cache=TRUE, dependson="expression"}
 fdLink <- paste(labkey.file.root, "analysis/features2genes", unique(exMat$feature_mapping_file), sep="/")
-fdata <- read.table(fdLink, header=TRUE)
+fdata <- read.table(fdLink, header=TRUE, sep="\t")
 ```
 ### Create ExpressionSets
 ```{r esets, cache=TRUE, dependson="expression"}
@@ -97,13 +97,12 @@ existing_analysis <- labkey.selectRows(labkey.url.base, labkey.url.path, "lists"
 ```
 
 ### save results in tables
-```{r write-lists, eval=FALSE}
+```{r write-lists, eval=TRUE}
 toImport_GEA <- analysis_list[!(analysis_accession %in% existing_analysis$analysis_accession)]
 if(nrow(toImport_GEA) > 0 ){
    imported_GEA <- labkey.importRows(labkey.url.base, labkey.url.path, "lists", "gene_expression_analysis", toImport = toImport_GEA)
 }
-#toImport <- analysis_res
+toImport <- analysis_res
 write.table(toImport, file = file.path(labkey.file.root, "analysis/gene_expression_analysis/limma", "all_GEA.tsv"), sep="\t", quote=FALSE, row.names=FALSE)
 #imported_GEARW <- labkey.importRows(labkey.url.base, labkey.url.path, "lists", "gene_expression_analysis_result_wide", toImport = toImport)
 ```
-`r nrow(toImport_GEA)` new gene expression analysis saved.
