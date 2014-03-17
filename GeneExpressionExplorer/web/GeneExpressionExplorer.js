@@ -190,7 +190,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             fieldLabel: 'Genes',
             getParams: function(q){
                 var params = {},
-                        paramNames = this.store.paramNames;
+                    paramNames = this.store.paramNames;
                 if(this.pageSize){
                     params[paramNames.start] = 0;
                     params[paramNames.limit] = this.pageSize;
@@ -421,8 +421,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             text: 'Click on the generated plot to see it in full screen'
                         });
                     }
-
-                    console.log( result.outputParams[1] );
                 }
             }
         };
@@ -479,7 +477,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     maskPlot = new Ext.LoadMask(
                         this.getEl(),
                         {
-                            msg: 'Generating the report...',
+                            msg: 'Generating the plot...',
                             msgCls: 'mask-loading'
                         }
                     );

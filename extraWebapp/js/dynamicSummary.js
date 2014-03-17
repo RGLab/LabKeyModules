@@ -1,7 +1,13 @@
 $(document).ready(function() {
+    var me = this;
 
-    var errorCode = '<p style=\'margin-left: 30px; color: red;\'>Failed to retrieve the aggregate summary</p>';
-    var myMask = new Ext.LoadMask(
+    me.onFailure = function(){
+        this.myMask.hide();
+        $('#Summary').append( this.errorCode );
+    };
+
+    me.errorCode = '<p style=\'margin-left: 30px; color: red;\'>Failed to retrieve the aggregate summary</p>';
+    me.myMask = new Ext.LoadMask(
         $('#Summary')[0],
         {
             msg: 'Please, wait, while the aggregate<br/> summary table is loading',
@@ -9,107 +15,68 @@ $(document).ready(function() {
         }
     );
 
-    myMask.show();
+    me.myMask.show();
 
     LABKEY.contextPath = '';
     LABKEY.container = {};
     LABKEY.container.path = '/home';
 
     LABKEY.Query.selectRows({
-        failure: function(a, b, c){
-            myMask.hide();
-            $('#Summary').append( errorCode );
-        },
+        failure: me.onFailure.bind( me ),
+        queryName: 'studies',
+        schemaName: 'study',
         success: function(d){
             var numStudies = d.rows.length, filterString = [];
 
             if ( numStudies == 0 ){
-                myMask.hide();
-                $('#Summary').append( errorCode );
+                me.onFailure.bind( me )();
             } else {
 
-                Ext.each( d.rows, function(row, i){
-                    filterString.push( '\'' + row.Name + '\'' );
-                });
-    
-                filterString = '(' + filterString.join(',') + ')';
-    
-                var sqlAggregateCounts =
-                    'SELECT' +
-                    ' result AS assay_type,' +
-                    ' CAST( SUM(subject_count) AS INTEGER ) AS subject_count ' +
-                    'FROM' +
-                    ' summaryResults ' +
-                    'WHERE' +
-                    ' study_accession IN ' + filterString + ' ' +
-                    'GROUP BY' +
-                    ' result';
-            
-                var sqlParticipantsCount =
-                    'SELECT' +
-                    ' COUNT(*) AS participants_count ' +
-                    'FROM' +
-                    ' subject ' +
-                    'LEFT JOIN arm_2_subject arm2sub ON subject.subject_accession = arm2sub.subject_accession ' +
-                    'LEFT JOIN arm_or_cohort arm ON arm2sub.arm_accession = arm.arm_accession ' +
-                    'WHERE' +
-                    ' study_accession IN ' + filterString + ' ' +
-                    '';
-            
-                LABKEY.Query.executeSql({
-                    failure: function(){
-                        myMask.hide();
-                        $('#Summary').append( errorCode );
-                    },
+                LABKEY.Query.selectRows({
+                    failure: me.onFailure.bind( me ),
+                    queryName: 'totalSubjectCount',
+                    schemaName: 'immport',
                     success: function(d){
-            
-                        var participantsCount = d.rows[0].participants_count;
-            
-                        LABKEY.Query.executeSql({
-                            failure: function(){
-                                myMask.hide();
-                                $('#Summary').append( errorCode );
-                            },
+
+                        var subjectCount = d.rows[0].subject_count;
+
+                        LABKEY.Query.selectRows({
+                            failure: me.onFailure.bind( me ),
+                            queryName: 'aggregateSubjectCount',
+                            schemaName: 'immport',
                             success: function(d){
-                            
-                                $('#Summary').append(
-                                    '<table>' + 
+                                me.myMask.hide();
+
+                                $('.left').append(
+                                    '<table cellpadding=\'2\' cellspacing=\'2\' border=\'0\'>' +
                                         '<tbody>' +
                                             '<tr>' +
                                                 '<td>Studies</td>' +
-                                                '<td style="white-space: nowrap;" align="right">' + numStudies + '</td>' +
+                                                '<td style=\'white-space: nowrap;\' align=\'right\'>' + numStudies + '</td>' +
                                             '</tr><tr>' +
-                                                '<td>Subjects</td>' +
-                                                '<td style="white-space: nowrap;" align="right">' + participantsCount + '</td>' +
+                                                '<td>Participants</td>' +
+                                                '<td style=\'white-space: nowrap;\' align=\'right\'>' + subjectCount + '</td>' +
                                             '</tr><tr>' +
-                                                '<td>&nbsp;</td>' +
-                                                '<td>&nbsp;</td>' +
+                                                '<td class=\'nobg\'>&nbsp;</td>' +
+                                                '<td class=\'nobg\'>&nbsp;</td>' +
                                             '</tr>'
                                             );
                                     
-                                            Ext.each( d.rows, function(row, i){
-                                                $('#Summary tbody').append(
-                                                    '<tr>' +
-                                                        '<td>' + row.assay_type + '</td>' +
-                                                        '<td style="white-space: nowrap;" align="right">' + row.subject_count + '</td>' +
-                                                    '</tr>'
-                                                );
-                                            });
-                        
-                                myMask.hide();
-                            },
-                            sql: sqlAggregateCounts,
-                            schemaName: 'hipcdb'
+                                Ext.each( d.rows, function(row, i){
+                                    $('.left tbody').append(
+                                        '<tr>' +
+                                            '<td>' + row.assay_type + '</td>' +
+                                            '<td class=\'numberColumn\' align=\'right\'>' + row.subject_count + '</td>' +
+                                        '</tr>'
+                                    );
+                                });
+                            }
                         });
-            
-                    },
-                    sql: sqlParticipantsCount,
-                    schemaName: 'hipcdb'
-                }); 
+
+                    }
+                });
             }
-        },
-        containerFilter: LABKEY.Query.containerFilter.allFolders,
-        queryName: 'studies',
-        schemaName: 'study'
+        }/*,
+        viewName: 'customView'*/
     });
 });

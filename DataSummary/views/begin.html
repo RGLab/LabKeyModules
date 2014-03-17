@@ -25,15 +25,15 @@ vim: ts=2:sw=2:nu:fdc=2:spell
 
 <script type='text/javascript'>
 
-    var initImmuneSpace_Summary = function(){
+    var initDataSummary = function(){
         var webPartDiv = <%=webpartContext%>.wrapperDivId;
         var resizeModule;
 
-        var ImmuneSpace_Summary = new LABKEY.ext.ImmuneSpace_Summary({
+        var DataSummary = new LABKEY.ext.DataSummary({
             webPartDivId: webPartDiv
         });
     };
 
-    Ext.onReady( initImmuneSpace_Summary );
+    Ext.onReady( initDataSummary );
 
 </script>

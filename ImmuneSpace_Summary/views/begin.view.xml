@@ -1,9 +1,0 @@
-<view xmlns='http://labkey.org/data/xml/view' title='ImmuneSpace Summary'>
-    <dependencies>
-        <dependency path='ImmuneSpace_Summary/ImmuneSpace_Summary.css'/>
-
-        <dependency path='Ext3'/>
-
-        <dependency path='ImmuneSpace_Summary.js'/>
-    </dependencies>
-</view>

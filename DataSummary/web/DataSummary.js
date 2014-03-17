@@ -17,7 +17,7 @@
 
 Ext.namespace('LABKEY.ext');
 
-LABKEY.ext.ImmuneSpace_Summary = Ext.extend( Ext.Panel, {
+LABKEY.ext.DataSummary = Ext.extend( Ext.Panel, {
 
     onFailure: function(){
         this.myMask.hide();
@@ -54,33 +54,32 @@ LABKEY.ext.ImmuneSpace_Summary = Ext.extend( Ext.Panel, {
 
         me.myMask.show();
 
-        // FOR EXTERNAL USE:
-        /*    LABKEY.contextPath = '';
-         LABKEY.container = {};
-         LABKEY.container.path = '/home';*/
-
         LABKEY.Query.selectRows({
-            containerFilter: LABKEY.Query.containerFilter.allFolders,
-            failure: me.onFailure.createDelegate( me ),
+            failure: me.onFailure.bind( me ),
+            queryName: 'studies',
+            schemaName: 'study',
             success: function(d){
-                var numStudies = d.rows.length, filterString = [];
+                var numStudies = d.rows.length;
 
                 if ( numStudies == 0 ){
-                    me.onFailure.createDelegate( me )();
+                    me.onFailure.bind( me )();
                 } else {
 
                     LABKEY.Query.selectRows({
-                        containerFilter: LABKEY.Query.containerFilter.allFolders,
-                        failure: me.onFailure.createDelegate( me ),
+                        failure: me.onFailure.bind( me ),
+                        queryName: 'totalSubjectCount',
+                        schemaName: 'immport',
                         success: function(d){
 
                             var subjectCount = d.rows[0].subject_count;
 
                             LABKEY.Query.selectRows({
-                                containerFilter: LABKEY.Query.containerFilter.allFolders,
-                                failure: me.onFailure.createDelegate( me ),
+                                failure: me.onFailure.bind( me ),
+                                queryName: 'aggregateSubjectCount',
+                                schemaName: 'immport',
                                 success: function(d){
                                     me.myMask.hide();
+
                                     $('#Summary' + config.webPartDivId + ' .placeholder').remove();
 
                                     $('#Summary' + config.webPartDivId).append(
@@ -113,24 +112,19 @@ LABKEY.ext.ImmuneSpace_Summary = Ext.extend( Ext.Panel, {
                                             '<td style=\'white-space: nowrap;\' align=\'right\'>' + subjectCount + '</td>' +
                                         '</tr>'
                                     );
-                                },
-                                queryName: 'aggregateSubjectCount',
-                                schemaName: 'immport'
+                                }
                             });
 
-                        },
-                        queryName: 'totalSubjectCount',
-                        schemaName: 'immport'
+                        }
                     });
                 }
-            },
-            queryName: 'studies',
-            schemaName: 'study'
+            }/*,
+            viewName: 'customView'*/
         });
 
 
         me.border         = false;
-        me.cls            = 'immunespace_summary';
+        me.cls            = 'data-summary';
         me.contentEl      = 'Summary' + config.webPartDivId;
         me.frame          = false;
         me.layout         = 'fit';
@@ -138,6 +132,6 @@ LABKEY.ext.ImmuneSpace_Summary = Ext.extend( Ext.Panel, {
         me.webPartDivId   = config.webPartDivId;
         me.width          = document.getElementById(config.webPartDivId).offsetWidth;
 
-        LABKEY.ext.ImmuneSpace_Summary.superclass.constructor.apply(this, arguments);
+        LABKEY.ext.DataSummary.superclass.constructor.apply(this, arguments);
     } // end constructor
-}); // end ImmuneSpace_Summary Panel class
+}); // end DataSummary Panel class

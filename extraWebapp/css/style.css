@@ -109,6 +109,13 @@ td.nobg {
 	background: none;
 }
 
+.numberColumn {
+    padding-left: 5px;
+    padding-right: 5px;
+    white-space: nowrap;
+    width: 1px;
+}
+
 .news {
 	width: 260px;
 	margin-right: 35px;
@@ -275,8 +282,8 @@ a.forgotpw:hover {
     
 .mask-loading div {
     background: no-repeat 5px 5px;
-    background-color: white !important;
-    background-image: url(js/ext-3.4.1/resources/images/default/grid/loading.gif) !important;
+    background-color: rgba(255, 255, 255, 0.5);
+    background-image: url(../js/ext-3.4.1/resources/images/default/grid/loading.gif) !important;
     background-position: 0% 50%;
     padding: 5px 10px 5px 25px;
     text-align: center;

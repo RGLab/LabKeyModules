@@ -86,7 +86,7 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                     add:          this.resizeToFitContent,
                     remove:       this.resizeToFitContent,
                     load:         this.resizeToFitContent,
-                    update:       this.resizeToFitContent,
+                    update:       this.resizeToFitContent.createDelegate(this, [true]),
                     buffer: 10,
                     scope: this
                 }
@@ -111,7 +111,7 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
     },
 
     //Size the drop-down list to the contents
-    resizeToFitContent: function(){
+    resizeToFitContent: function( versionLight ){
         var el = this.getEl();
         if ( el != undefined && this.rendered ){
             if ( ! this.elMetrics ){
@@ -146,7 +146,9 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
             if ( this.list != undefined && this.innerList != undefined ){
                 this.list.setSize( width );
                 this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
-                this.restrictHeight();
+                if ( ! versionLight ){
+                    this.restrictHeight();
+                }
             }
 
             if( this.resizable && this.resizer ){

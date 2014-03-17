@@ -646,18 +646,18 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             .prev()
             .find('.labkey-wp-title-text')
             .wrap(
-            '<a href=\'' +
-            LABKEY.ActionURL.buildURL(
-                'reports',
-                'runReport',
-                LABKEY.ActionURL.getContainer(),
-                {
-                    reportId: 'module:ImmuneResponsePredictor/reports/schemas/study/study_cohorts_info/ImmuneResponsePredictor.Rmd',
-                    tabId: 'Source'
-                }
-            ) +
-            '\' target=\'_blank\'></a>'
-        );
+                '<a href=\'' +
+                LABKEY.ActionURL.buildURL(
+                    'reports',
+                    'runReport',
+                    LABKEY.ActionURL.getContainer(),
+                    {
+                        reportId: 'module:ImmuneResponsePredictor/reports/schemas/study/study_cohorts_info/ImmuneResponsePredictor.Rmd',
+                        tabId: 'Source'
+                    }
+                ) +
+                '\' target=\'_blank\'></a>'
+            );
 
         this.border         = false;
         this.boxMinWidth    = 370;

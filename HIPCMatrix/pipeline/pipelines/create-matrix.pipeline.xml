@@ -1,12 +1,13 @@
-<pipeline xmlns="http://labkey.org/pipeline/xml"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          name="create-matrix" version="0.0">
+<?xml version='1.0' encoding='UTF-8'?>
+<pipeline xmlns='http://labkey.org/pipeline/xml'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          name='create-matrix' version='0.0'>
     <description>Create expression matrix</description>
     <author>kevink@labkey.com</author>
     <analyzeURL>/pipelinetest/CreateMatrix.view</analyzeURL>
     <tasks>
-        <taskref ref="HIPCMatrix:task:create-matrix"/>
-        <task xsi:type="AssayImportRunTaskType">
+        <taskref ref='HIPCMatrix:task:create-matrix'/>
+        <task xsi:type='AssayImportRunTaskType'>
             <providerName>ExpressionMatrix</providerName>
         </task>
     </tasks>

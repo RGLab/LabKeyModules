@@ -13,50 +13,25 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
     selectAllValueField: '_all',
 
     //Value of textField for selectAll item
-    selectAllTextField: 'Select all',
+    selectAllDisplayField: 'Select all',
 
     //Toggle selectAll item
     allSelected: false,
 
-    beforeBlur: Ext.emptyFn,
-
-    constructor: function(config) {
-        config = config || {};
-        config.listeners = config.listeners || {};
-
-        Ext.applyIf(config.listeners, {
-            beforequery:    this.onBeforeQuery,
-            blur:           this.onRealBlur,
-            scope: this
-        });
-
-        Ext.ux.form.ExtendedLovCombo.superclass.constructor.call(this, config);
-    }, // eo function constructor
-
     //css class for selactAll item : ux-lovcombo-list-item-all
-    initComponent:function() {
+    initComponent: function() {
 
-        // template with checkbox
+        // template with checkbox and 'Select all' item
         if ( ! this.tpl ) {
             this.tpl = new Ext.XTemplate(
                 '<tpl for=".">'
-                    + '<tpl if="' + this.displayField + '==\'' + this.selectAllTextField + '\'">'
-                        + '<div class=\'x-combo-list-item ux-lovcombo-list-item-all\'>'
-                            + '<img src=\'' + Ext.BLANK_IMAGE_URL + '\' '
-                            + 'class=\'ux-lovcombo-icon ux-lovcombo-icon-'
-                            + '{[values.' + this.checkField + '?\'checked\':\'unchecked\'' + ']}\'>'
-                            + '<div class=\'ux-lovcombo-item-text\'>' + this.selectAllTextField + '</div>'
-                        + '</div>'
-                    + '</tpl>'
-                    + '<tpl if="' + this.displayField + '!=\'' + this.selectAllTextField + '\'">'
-                        + '<div class=\'x-combo-list-item\'>'
-                            + '<img src=\'' + Ext.BLANK_IMAGE_URL + '\' '
-                            + 'class=\'ux-lovcombo-icon ux-lovcombo-icon-'
-                            + '{[values.' + this.checkField + '?\'checked\':\'unchecked\'' + ']}\'>'
-                            + '<div class=\'ux-lovcombo-item-text\'>{' + this.displayField + ':this.process}</div>'
-                        + '</div>'
-                    + '</tpl>'
-                 +'</tpl>',
+                    + '<div class=\'x-combo-list-item\'>'
+                        + '<img src=\'' + Ext.BLANK_IMAGE_URL + '\' '
+                        + 'class=\'ux-lovcombo-icon ux-lovcombo-icon-'
+                        + '{[values.' + this.checkField + '?\'checked\':\'unchecked\'' + ']}\'>'
+                        + '<div class=\'ux-lovcombo-item-text\'>{' + this.displayField + ':this.process}</div>'
+                    + '</div>'
+                +'</tpl>',
                 {
                     process : function(value) {
                         return value === '' ? '&nbsp' : Ext.util.Format.htmlEncode( value );
@@ -109,12 +84,21 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
         if ( this.store ){
             this.mon(
                 this.store, {
-                    datachanged:  this.resizeToFitContent,
+                    datachanged:  function(){
+                        this.resizeToFitContent();
+                        this.manageSelectAllState();
+                    },
                     add:          this.resizeToFitContent,
                     remove:       this.resizeToFitContent,
-                    load:         this.resizeToFitContent,
-                    update:       this.resizeToFitContent,
-                    buffer: 10,
+                    load:         function(){
+                        this.resizeToFitContent();
+                        this.initSelectAll();
+                    },
+                    update:       function(){
+                        this.resizeToFitContent.createDelegate(this, [true]);
+                        this.manageSelectAllState();
+                    },
+                    buffer: 5,
                     scope: this
                 }
             );
@@ -122,7 +106,6 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
 
         // install internal event handlers
         this.mon( this, {
-            beforeblur:     this.beforeBlur,
             beforequery:    this.onBeforeQuery,
             scope: this
         });
@@ -136,16 +119,6 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
             }
         });
 
-        this.mon(
-            this.store, {
-                load: function(){
-                    this.initSelectAll();
-                },
-                buffer: 10,
-                scope: this
-            }
-        );
-
         this.initSelectAll();
 
         this.addClearItem
@@ -154,10 +127,43 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
         ;
     },
 
-    onRealBlur:function() {
+    onBeforeQuery: function(qe) {
+        var ar = this.getRawValue().trim().split( new RegExp( '\\s*' + RegExp.escape( this.separator ) + '\\s*' ) );
+        var token = ar.pop();
+        Ext.each( ar, function(e, i, a){ a[i] = '(?=^(?:(?!' + RegExp.escape( e ) + '$).)*$)'; });
+        var re = '^(?=^' + RegExp.escape( token ) + ')'; // search the list for entries starting with the entered text
+        if ( token.length > 0 ){
+            re += ar.join(''); // filter out the items already entered fully
+        }
+        re += '.*$';
+        qe.query = new RegExp( re );
+        qe.query.length = token.length;
+    },
+
+    onTypeAhead: function(){
+        if ( ! this.store.isFiltered() ){   // very important fix
+            return;                         // to prevent typeAhead on click of trigger or input text field
+        }
+        if( this.store.getCount() > 0 ){
+            var r           = this.store.getAt(0),
+                newValue    = r.data[this.displayField],
+                len         = newValue.length,
+                rv          = this.getRawValue(),
+                token       = rv.trim().split( new RegExp( '\\s*' + RegExp.escape( this.separator ) + '\\s*' ) ).pop(),
+                selStart    = token.length;
+            if ( selStart > 0 && newValue.lastIndexOf( token ) >= 0 ){
+                var i = rv.lastIndexOf( token );
+                if ( i >= 0 ){
+                    this.setRawValue( rv.replace( new RegExp( '^(.*)' + RegExp.escape(token) + '(.*)$' ), '$1'+newValue+'$2' ) );
+                    this.selectText( i + selStart, i + len );
+                }
+            }
+        }
+    },
+
+    assertValue: function() {
         this.list.hide();
-        var rv = this.getRawValue();
-        var rva = rv.split(new RegExp(RegExp.escape(this.separator) + ' *'));
+        var rva = this.getRawValue().trim().split( new RegExp( '\\s*' + RegExp.escape( this.separator ) + '\\s*' ) );
         var va = [];
         var snapshot = this.store.snapshot || this.store.data;
 
@@ -171,138 +177,90 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
         }, this);
         this.setValue(va.join(this.separator));
         this.store.clearFilter();
-    }, // eo function onRealBlur
+    },
+
+    /**
+     * Selects all items
+     */
+    selectAll: function() {
+        this.store.suspendEvents(true);
+        this.store.each(function(record){
+            // toggle checked field
+            record.set(this.checkField, true);
+        }, this);
+        this.store.resumeEvents();
+
+        this.setValue(this.getCheckedValue());
+    },
 
     // Add the 'Select All' record if appropriate (private)
-    initSelectAll : function(){
-        if(this.store && this.addSelectAllItem && this.store.getCount() > 0 ){
-            var RecordType = Ext.data.Record.create([this.valueField, this.displayField]);
-            var data = {};
+    initSelectAll: function(){
+        if ( this.store && this.addSelectAllItem && this.store.getCount() > 0 ){
+            var RecordType = Ext.data.Record.create([this.valueField, this.displayField, this.checkField]), data = {};
             data[this.valueField]   = this.selectAllValueField;
-            data[this.displayField] = this.selectAllTextField;
-            this.store.insert(0, [new RecordType(data)]);
-        }
-        if(this.allSelected){
-            this.selectAll();
-        }
-    },
-
-    //Select correct action for selected record
-    onViewClick : function(doFocus){
-        var index = this.view.getSelectedIndexes()[0];
-        if (this.addSelectAllItem && index == 0) {
-            this.toggleAll();
-            if ( this.addSelectAllItem ){
-                var r = this.store.getAt(0);
-                this.fireEvent('select', this, r, 0);
-            }
-        }else {
-            var r = this.store.getAt(index);
-            if(r){
-                this.onSelect(r, index);
-            }
-            if(doFocus !== false){
-                this.el.focus();
+            data[this.displayField] = this.selectAllDisplayField;
+            data[this.checkField]   = this.allSelected;
+            this.selectAllRecord    = new RecordType(data);
+            if ( this.selectAllRecord.get( this.checkField ) ){
+                this.selectAll();
             }
         }
-    },
-
-    //Escape selectAll item value if it's here
-    getCheckedArray:function(field) {
-        field = field || this.valueField;
-        var c = [];
-
-        // store may be filtered so get all records
-        var snapshot = this.store.snapshot || this.store.data;
-
-        snapshot.each(function(r, index) {
-            if(((this.addSelectAllItem && index > 0) || !this.addSelectAllItem) && r.get(this.checkField)) {
-                c.push(r.get(field));
-            }
-        }, this);
-
-        return c;
     },
 
     //Using allChecked value
-    setValue:function(v) {
-
-        var matchCount = 0;
-        this.store.each(function(r){
-            var checked = !(!v.match('(^|' + this.separator + '\\s?)' + RegExp.escape(r.get(this.valueField))+'(' + this.separator + '|$)')); // ALL 1 Line
-            if(checked) matchCount++;
-        },this);
-        if(v.length > 0 && matchCount < 1)
-        {
-            return;
-        }
-
-
-        if(v) {
+    setValue: function( v ) {
+        if ( v ) {
             v = '' + v;
-            if(this.valueField && this.store.getCount()) {
-                this.store.suspendEvents(true);
+            if ( ! this.store.getCount() ){
                 this.store.clearFilter();
-                this.allSelected = true;
-                this.store.each(function(r, index) {
-                    v = '' + v;
-                    var checked =
-                        ! (
-                            ! v.match(
-                                '(^|' + this.separator + ')' + RegExp.escape( r.get( this.valueField ) )
-                                + '(' + this.separator + '|$)'
-                            )
-                        );
+            }
+            if ( this.valueField ){
+                this.store.suspendEvents(true);
+                this.store.each( function( r ) {
+                    r.set(
+                        this.checkField,
+                        !(
+                            v.search(
+                                '(^|' + this.separator + ')' +
+                                RegExp.escape( r.get( this.valueField ) ) +
+                                '(' + this.separator + '|$)'
+                            ) == -1
+                        )
+                    );
 
-                    r.set(this.checkField, checked);
-
-                    if (this.addSelectAllItem && index > 0) {
-                        this.allSelected = this.allSelected && checked;
-                    }
                 }, this);
-
-                if (this.addSelectAllItem) {
-                    this.store.getAt(0).set(this.checkField, this.allSelected);
-                }
 
                 this.store.resumeEvents();
                 this.value = this.getCheckedValue();
-                this.setRawValue(this.getCheckedDisplay());
-                if(this.hiddenField) {
+                this.setRawValue( this.getCheckedDisplay() );
+                if ( this.hiddenField ){
                     this.hiddenField.value = this.value;
                 }
             }
-            else {
-                this.value = v;
-                this.setRawValue(v);
-                if(this.hiddenField) {
-                    this.hiddenField.value = v;
-                }
-            }
-            if(this.el) {
+            if ( this.el ){
                 this.el.removeClass(this.emptyClass);
             }
         }
         else {
             this.clearValue();
         }
+
+        return this;
     },
 
     //Toggle action for de/selectAll
-    toggleAll:function(){
-        if(this.allSelected){
-            this.allSelected = false;
+    toggleAll: function(){
+        if ( this.selectAllRecord.get( this.checkField ) ){
             this.deselectAll();
-        }else{
-            this.allSelected = true;
+        } else {
             this.selectAll();
         }
     },
 
     //Size the drop-down list to the contents
-    resizeToFitContent: function(){
+    resizeToFitContent: function( versionLight ){
         var el = this.getEl();
-        if ( el != undefined && this.rendered ){
+        if ( el && this.rendered ){
             if ( ! this.elMetrics ){
                 this.elMetrics = Ext.util.TextMetrics.createInstance( el );
             }
@@ -332,10 +290,16 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
             }
             this.listWidth = width;
             this.minListWidth = width;
-            if ( this.list != undefined && this.innerList != undefined ){
+            if ( this.list && this.innerList ){
                 this.list.setSize( width );
                 this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
-                this.restrictHeight();
+                if ( versionLight !== true ){
+                    this.restrictHeight();
+                }
+
+                if ( this.selectAllItem ){
+                    this.selectAllItem.setWidth( width - this.list.getFrameWidth('lr') );
+                }
             }
 
             if( this.resizable && this.resizer ){
@@ -344,7 +308,7 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
         }
     },
 
-    initList : function(){
+    initList: function(){
         if(!this.list){
             var cls = 'x-combo-list',
                 listParent = Ext.getDom(this.getListParent() || Ext.getBody());
@@ -369,9 +333,35 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                 this.assetHeight += this.header.getHeight();
             }
 
+            if ( this.addSelectAllItem ){
+                this.selectAllItem = this.list.createChild({
+                    cls: cls + '-inner',
+                    children: [{
+                        cls: 'x-combo-list-item ux-lovcombo-list-item-all',
+                        children: [
+                            { cls: 'ux-lovcombo-icon ux-lovcombo-icon-unchecked', src: Ext.BLANK_IMAGE_URL, tag: 'img' },
+                            { cls: 'ux-lovcombo-item-text', html: this.selectAllDisplayField }
+                        ]
+                    }]
+                });
+
+                this.selectAllItem.child('.x-combo-list-item').addClassOnOver( this.selectedClass );
+
+                this.selectAllItem.setWidth(lw - this.list.getFrameWidth('lr'));
+
+                this.mon( this.selectAllItem, {
+                    containerclick: this.onViewClick,
+                    click:          this.onViewClick,
+                    scope:          this
+                });
+
+                this.assetHeight += this.selectAllItem.getHeight();
+            }
+
             this.innerList = this.list.createChild({cls:cls+'-inner'});
             this.mon(this.innerList, 'mouseover', this.onViewOver, this);
             this.mon(this.innerList, 'mousemove', this.onViewMove, this);
+            this.mon(this.innerList, 'mouseout', function(){ this.view.select(-1); }, this);
             this.innerList.setWidth(lw - this.list.getFrameWidth('lr'));
 
             if(this.pageSize){
@@ -382,10 +372,6 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                     renderTo:this.footer
                 });
                 this.assetHeight += this.footer.getHeight();
-            }
-
-            if(!this.tpl){
-                this.tpl = '<tpl for="."><div class="'+cls+'-item">{' + this.displayField + '}</div></tpl>';
             }
 
             this.view = new Ext.DataView({
@@ -399,9 +385,9 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
             });
 
             this.mon(this.view, {
-                containerclick : this.onViewClick,
-                click : this.onViewClick,
-                scope :this
+                containerclick: this.onViewClick,
+                click:          this.onViewClick,
+                scope:          this
             });
 
             this.bindStore(this.store, true);
@@ -417,9 +403,12 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                 );
                 this.listWidth = width;
                 this.minListWidth = width;
-                if ( this.list != undefined && this.innerList != undefined ){
+                if ( this.list && this.innerList ){
                     this.list.setSize( width );
                     this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
+                    if ( this.selectAllItem ){
+                        this.selectAllItem.setWidth( w - this.list.getFrameWidth('lr') );
+                    }
                 }
             }
 
@@ -431,6 +420,9 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                     this.maxHeight = h-this.handleHeight-this.list.getFrameWidth('tb')-this.assetHeight;
                     this.listWidth = w;
                     this.innerList.setWidth(w - this.list.getFrameWidth('lr'));
+                    if ( this.selectAllItem ){
+                        this.selectAllItem.setWidth( w - this.list.getFrameWidth('lr') );
+                    }
                     this.restrictHeight();
                 }, this);
 
@@ -439,17 +431,119 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
         }
     },
 
+    selectPrev: function(){
+        var ct = this.store.getCount();
+        if ( ct > 0 ){
+            if ( this.addSelectAllItem ){
+                if ( this.selectedIndex == -1 ){
+                    this.select( ct - 1 );
+                } else if ( this.selectedIndex == -2 ){
+                    this.selectAllItem.child('.x-combo-list-item').removeClass( this.selectedClass );
+                    this.select( -1 );
+                } else if ( this.selectedIndex > 0 ){
+                    this.select( this.selectedIndex - 1 );
+                } else if ( this.selectedIndex == 0 ){
+                    this.select( -1 );
+                    this.selectedIndex = -2;
+                    this.selectAllItem.child('.x-combo-list-item').addClass( this.selectedClass );
+                }
+            } else {
+                Ext.ux.form.ExtendedLovCombo.superclass.selectPrev.call(this);
+            }
+        }
+    },
+
+    selectNext: function(){
+        var ct = this.store.getCount();
+        if ( ct > 0 ){
+            if ( this.addSelectAllItem ){
+                if ( this.selectedIndex == -1 ){
+                    this.selectedIndex = -2;
+                    this.selectAllItem.child('.x-combo-list-item').addClass( this.selectedClass );
+                } else if ( this.selectedIndex == -2 ){
+                    this.selectAllItem.child('.x-combo-list-item').removeClass( this.selectedClass );
+                    this.select( 0 );
+                } else if ( this.selectedIndex < ct - 1 ){
+                    this.select( this.selectedIndex + 1 );
+                } else if ( this.selectedIndex == ct - 1 ){
+                    this.select( -1 );
+                }
+            } else {
+                Ext.ux.form.ExtendedLovCombo.superclass.selectNext.call(this);
+            }
+        }
+    },
+
+    manageSelectAllState: function(){
+        if ( this.selectAllItem && this.selectAllRecord ){
+            var allSelected = true;
+            this.store.each( function( r ) {
+                allSelected = allSelected && r.get( this.checkField );
+            }, this);
+            this.selectAllRecord.set( this.checkField, allSelected );
+
+            var icon = this.selectAllItem.child('.ux-lovcombo-icon');
+            if ( this.selectAllRecord.get( this.checkField ) ){
+                icon.removeClass( 'ux-lovcombo-icon-unchecked' );
+                icon.addClass( 'ux-lovcombo-icon-checked' );
+            } else {
+                icon.removeClass( 'ux-lovcombo-icon-checked' );
+                icon.addClass( 'ux-lovcombo-icon-unchecked' );
+            }
+        }
+    },
+
+    onViewClick: function(doFocus){
+        var index = this.view.getSelectedIndexes()[0],
+                s = this.store,
+                r = s.getAt( index );
+        if ( r ){
+            this.onSelect( r, index );
+        } else {
+            if ( this.addSelectAllItem ){
+                this.selectedIndex = -2;
+
+                this.toggleAll();
+                this.fireEvent( 'select', this, this.selectAllRecord, -1 );
+            } else {
+                this.collapse();
+            }
+        }
+        if ( doFocus !== false ){
+            this.el.focus();
+        }
+    },
+
+    /**
+     * Combo's onSelect override
+     * @private
+     * @param {Ext.data.Record} record record that has been selected in the list
+     * @param {Number} index index of selected (clicked) record
+     */
+    onSelect: function(record, index) {
+        if(this.fireEvent('beforeselect', this, record, index) !== false){
+            // toggle checked field
+            record.set(this.checkField, !record.get(this.checkField));
+
+            // set (update) value and fire event
+            this.setValue(this.getCheckedValue());
+            this.fireEvent('select', this, record, index);
+        }
+    },
+
     onTrigger1Click: Ext.form.ComboBox.prototype.onTriggerClick,
-    onTrigger2Click : function()
+    onTrigger2Click: function()
     {
         if ( ! this.disabled ){
             this.collapse();
-            this.allSelected = false;
+            if ( this.selectAllRecord ){
+                this.selectAllRecord.set( this.checkField, false );
+            }
             if ( this.store ){
-                this.reset();                       // reset contents of combobox, clear any filters as well
+                this.reset();           // reset contents of combobox, clear any filters as well
             }
             this.clearValue();
-            this.fireEvent('cleared');          // send notification that contents have been cleared
+            this.fireEvent('cleared');  // send notification that contents have been cleared
         }
     },
 
@@ -463,14 +557,14 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
         this.addClearItem ? Ext.form.TwinTriggerField.prototype.initTrigger.call(this) : Ext.form.ComboBox.prototype.initTrigger.call(this);
     },
 
-    getCheckedArrayInds:function() {
+    getCheckedArrayInds: function() {
         var c = [];
 
         // store may be filtered so get all records
         var snapshot = this.store.snapshot || this.store.data;
 
         snapshot.each(function(r) {
-            if(((this.addSelectAllItem && index > 0) || !this.addSelectAllItem) && r.get(this.checkField)) {
+            if( r.get(this.checkField) ) {
                 c.push(this.store.indexOf(r));
             }
         }, this);

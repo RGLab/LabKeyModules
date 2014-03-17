@@ -1,7 +1,8 @@
-<view xmlns="http://labkey.org/data/xml/view" title="Create Matrix" frame="none">
+<?xml version='1.0' encoding='UTF-8'?>
+<view xmlns='http://labkey.org/data/xml/view' title='Create Matrix' frame='none'>
     <dependencies>
-        <dependency path="clientapi"/>
-        <dependency path="clientapi/ext4"/>
+        <dependency path='clientapi'/>
+        <dependency path='clientapi/ext4'/>
     </dependencies>
 </view>
 
