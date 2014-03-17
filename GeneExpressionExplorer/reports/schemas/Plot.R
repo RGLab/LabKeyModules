@@ -26,6 +26,7 @@ merge_cohorts <- function(x, y){
 
 get_cohort_expression <- function(gem){
   umat <- unique(gem[, list(file_info_name, feature_mapping_file)])
+  #stopcheck(umat)
   em_links <- paste(labkey.file.root, "/analysis/exprs_matrices/", umat$file_info_name, sep="/")
   f2g_links <- paste(labkey.file.root, "/analysis/features2genes/", umat$feature_mapping_file, sep="/")
   EM <- vector('list', nrow(umat))
@@ -62,13 +63,17 @@ color               <- tolower(labkey.url.params$color)
 size                <- tolower(labkey.url.params$size)
 alpha               <- tolower(labkey.url.params$alpha)
 
+stopcheck <- function(data){
+    stop(paste(apply(as.matrix(data), 1, function(x){ paste(x, collapse=",")}), collapse="\n"))
+}
+
 if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
-  message("No need to read again")
   #No need to read again
 } else{
   cohort_filter <- makeFilter(c("arm_name", "IN", paste(arrayCohorts, collapse=";")))
-  gem <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
+  gem <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study",
                                       queryName="gene_expression_matrices", colFilter=cohort_filter, 
+                                      viewName = "ImmuneResponsePredictor.gene_expression_matrices",
                                       colNameOpt="rname"))
   demographics <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
                                       queryName="demographics", colNameOpt="rname"))
@@ -83,7 +88,9 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   # Get HAI
   hai_filter <- makeFilter(c("subject_accession", "IN", paste(pd$subject_accession, collapse=";")))
   hai <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
+                                      viewName = "ImmuneResponsePredictor.hai",
                                       queryName="hai", colFilter=hai_filter, colNameOpt="rname"))
+  hai <- hai[is.na(biosample_accession_name), biosample_accession_name := "missing"]
   hai <- hai[, list(subject_accession, study_time_collected, response=value_reported/value_reported[study_time_collected==0]), by="virus_strain,biosample_accession_name,subject_accession"]
   hai <- hai[study_time_collected==28]
   hai <- hai[, list(response=log2(max(response))), by="subject_accession,biosample_accession_name"]
@@ -106,6 +113,7 @@ FC <- melt(FC, id="gene")
 FC <- data.table(FC)
 setnames(FC, c("variable", "value"), c("biosample_accession", "logFC"))
 data <- merge(FC, pd, by="biosample_accession")[, list(biosample_accession, gene, subject_accession, biosample_accession_name, logFC, arm_name, age, race, gender)]
+data <- data[is.na(biosample_accession_name), biosample_accession_name := "missing"]
 data <- merge(data, hai, by=c("subject_accession", "biosample_accession_name"))
 
 # Plot
@@ -126,4 +134,4 @@ dev.off();
 
 Sys.sleep(3);
 
-write( RJSONIO::toJSON( x=facet, asIs = T ), '${jsonout:outArray}' );
+write( RJSONIO::toJSON( x=arrayCohorts, asIs = T ), '${jsonout:outArray}' );

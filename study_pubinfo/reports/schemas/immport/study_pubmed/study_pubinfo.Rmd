@@ -22,21 +22,24 @@ loaded <- labkey.selectRows(labkey.url.base, "/Shared/", "lists", "loaded_studie
 
 
 get_reference <- function(id, related=FALSE){
-   summary <- lapply(id, function(x){ entrez_summary(db="pubmed", id=x) })
-   reference <- lapply(summary, function(x){ paste(paste(x$AuthorList,collapse=", "), ". ", x$Title, " <i>", x$Source, "</i> ", x$Volume, "(", x$Issue, "), ", x$PubDate, ".", sep="")})
+   x <- entrez_summary(db="pubmed", id=id)
+   reference <- paste(paste(x$AuthorList,collapse=", "), ". ", x$Title, " <i>", x$Source, "</i> ", x$Volume, "(", x$Issue, "), ", x$PubDate, ".", sep="")
    pubmed_link <- paste0("<a href='http://www.ncbi.nlm.nih.gov/pubmed/", id,"' target='_blank'>", "PMID:", id,"</a>")
    if(related){
     SDY <- as.character(dat[ dat$pubmed_id == id, "study_accession"])
-    folder <- loaded[loaded$study_accession == SDY, "folder"]
-    SDY <- paste0("<a href='https://www.immunespace.org/project/", folder, "/", SDY ,"/begin.view?' target='_blank' title='Study ", SDY, " on ImmuneSpace'><b>  ", SDY, "  </b></a>")
-    pubmed_link <- paste(pubmed_link, SDY)
+    SDY <- SDY[SDY %in% loaded$study_accession]
+    if(length(SDY)>0){
+      folder <- loaded[loaded$study_accession == SDY, "folder"]
+      SDY <- paste0("  [<a href='https://www.immunespace.org/project/", folder, "/", SDY ,"/begin.view?' target='_blank' title='Study ", SDY, " on ImmuneSpace'><b>",SDY,"</b></a>] ")
+      pubmed_link <- paste(pubmed_link, SDY)
+    }
    }
    return(paste(reference, pubmed_link))
 }
 
 # Update every month
 id <- ds_pubmed$pubmed_id
-study_citation <- get_reference(id)
+study_citation <- lapply(id, get_reference)
 pubmed_list <- entrez_link(db="all", id=id, dbfrom="pubmed")
 url_citedin <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=", ds_pubmed$pubmed_id)
 ```

@@ -74,7 +74,9 @@ if(length(DEP)==0){
 em_filter <- makeFilter(c("expression_matrix_accession", "IN", paste(param$EM_acc, collapse=";")))
 pdata <- data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path,
                            schemaName = "study", colFilter=em_filter,
-                           queryName = "gene_expression_matrices", colNameOpt = "rname"))
+                           queryName = "gene_expression_matrices",
+                           viewName = "ImmuneResponsePredictor.gene_expression_matrices",
+                           colNameOpt = "rname"))
 all_tp <- function(pdata, timepoint){
   timepoints <- c(0, timepoint)
   pdata <- pdata[,keep:=(sum(study_time_reported%in%timepoints)==length(timepoints)), by="biosample_accession_name,subject_accession"]
@@ -140,7 +142,7 @@ GEIN <- function(EMs, pdata, DE, timepoint, gene_avg){
 
 process_hai <- function(pdata, dichotomize, dichValue){
   HAI_filter <- makeFilter(c("subject_accession", "IN", paste(pdata$subject_accession, collapse=";")))
-  ds_HAI <- labkey.selectRows(baseUrl=labkey.url.base, schemaName="study", folderPath=labkey.url.path, queryName ="hai", colNameOpt="rname", colFilter=HAI_filter)
+  ds_HAI <- labkey.selectRows(baseUrl=labkey.url.base, schemaName="study", folderPath=labkey.url.path, queryName ="hai", viewName = "ImmuneResponsePredictor.hai", colNameOpt="rname", colFilter=HAI_filter)
   HAI <- data.table(ds_HAI)
   HAI <- HAI[subject_accession %in% pdata$subject_accession & biosample_accession_name %in% pdata$biosample_accession_name]
 
@@ -248,12 +250,12 @@ predictor_table <- predictor_table[, c("statistic", "p-value") := lapply(.SD, fu
 ```{r table, cache=TRUE, dependson="lasso"}
 if(param$gene_avg){
   predictor_table <- predictor_table[, gene_symbol := lapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0(
-      '<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=hipc_flu&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
+      '<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=hipc_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
 } else{
   fdata <- rbindlist(lapply(EMs, "[", , c("feature_id", "gene_symbol")))
   predictor_table <- predictor_table[, gene_symbol:= as.character(fdata[match(predictor_table$selected_features, feature_id), gene_symbol])]
   predictor_table <- predictor_table[, gene_symbol := lapply(strsplit(as.character(gene_symbol), split=";"), function(X){ paste0(
-      '<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=hipc_flu&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
+      '<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=hipc_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
 }
 ```
 
@@ -262,7 +264,9 @@ if(length(param$EM_pred) > 0){
    em_filter <- makeFilter(c("expression_matrix_accession", "IN", paste(param$EM_pred, collapse=";")))
    pdata_test <- data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path,
                            schemaName = "study", colFilter=em_filter,
-                           queryName = "gene_expression_matrices", colNameOpt = "rname"))
+                           queryName = "gene_expression_matrices", 
+                           viewName = "ImmuneResponsePredictor.gene_expression_matrices",
+                           colNameOpt = "rname"))
    pdata_test <- all_tp(pdata_test, param$timepoint)
    EMs_test <- get_EMs(pdata_test)
    if(param$gene_avg){
