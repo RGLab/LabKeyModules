@@ -118,8 +118,7 @@ LABKEY.ext.DataSummary = Ext.extend( Ext.Panel, {
                         }
                     });
                 }
-            }/*,
-            viewName: 'customView'*/
+            }
         });
 
 
