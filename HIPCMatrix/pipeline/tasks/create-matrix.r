@@ -1,7 +1,12 @@
 library(data.table)
 library(Rlabkey)
 library(affy)
-# NOTE: also requires bioc packages: "hthgu133pluspmcdf" and "AnnotationDbi"
+
+# NOTE: Affy will implicitly try to load bioc packages "hthgu133pluspmcdf" and "AnnotationDbi"
+# but that won't work in an RServe enviornment if they haven't been installed yet.
+# So we try to load the library early so they will fail if not installed.
+library(hthgu133pluspmcdf)
+library(AnnotationDbi)
 
 # read the job info
 jobInfo <- read.table("${pipeline, taskInfo}",
@@ -16,9 +21,12 @@ inputFiles <- jobInfo$value[jobInfo$name == "input.CEL"]
 # get sample information based on the input files
 baseUrl <- jobInfo$value[jobInfo$name == "baseUrl"]
 contextPath <- jobInfo$value[jobInfo$name == "contextPath"]
+url <- if(is.na(contextPath)) baseUrl else paste0(baseUrl, contextPath)
+
 containerPath <- jobInfo$value[jobInfo$name == "containerPath"]
 filter <- makeFilter(c("file_info_name", "IN", paste(basename(inputFiles), collapse=";")))
-pdata <- labkey.selectRows(baseUrl=paste(baseUrl, contextPath, sep=""),
+
+pdata <- labkey.selectRows(baseUrl=url,
                            folderPath=containerPath,
                            schemaName="study",
                            queryName="gene_expression_files",
