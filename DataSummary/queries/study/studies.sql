@@ -1,1 +1,1 @@
-SELECT Name FROM lists.Studies
+SELECT DISTINCT Name FROM lists.Studies
