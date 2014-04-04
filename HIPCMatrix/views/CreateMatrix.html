@@ -41,79 +41,11 @@ function renderPanel()
     function onSubmit() {
         var form = panel.getForm();
         if (form.isValid()) {
-            //createSamples();
-            checkSamplesExist();
+            startAnalysis();
         }
     };
 
-    function checkSamplesExist() {
-        // create filter value from 'biosample_accession' column
-        var filterValue = [];
-        var seen = {};
-        for (var i = 0; i < selectedRows.length; i++)
-        {
-            var biosample = selectedRows[i].biosample_accession;
-            if (seen[biosample])
-                continue;
-            filterValue.push(biosample);
-            seen[biosample] = true;
-        }
-
-        // "Study Specimens" is an auto-generated SampleSet created during specimen import
-        var sampleSet = 'Study Specimens';
-        LABKEY.Query.selectRows({
-            schemaName: 'Samples',
-            queryName: sampleSet,
-            filterArray: [ LABKEY.Filter.create("Name", filterValue.join(";"), LABKEY.Filter.Types.IN) ],
-            success: function (data) {
-                // verify the lengths are the same
-                if (data.rows.length != filterValue.length) {
-                    Ext.Msg.alert("Missing samples", "Missing samples in '" + sampleSet + "' sample set for selected biosample_accessions");
-                } else {
-                    startAnalysis();
-                }
-            }
-        });
-    }
-
-    // ensure exp sample for each biosample_accession from selection
-    function createSamples() {
-
-        // create tab-delimited rows of 'Name' and 'biosample_accession' columns
-        // NOTE: a biosample may show up more than once (for .CEL file and .chp.gz files)
-        var data = ["Name\tbiosample_accession"];
-        var seen = {};
-        for (var i = 0; i < selectedRows.length; i++)
-        {
-            var biosample = selectedRows[i].biosample_accession;
-            if (seen[biosample])
-                continue;
-            data.push(biosample + "\t" + biosample);
-            seen[biosample] = true;
-        }
-
-        // HACK: POST directly to the SampleSet html form so we get upsert functionality
-        LABKEY.ExtAdapter.Ajax.request({
-            url: LABKEY.ActionURL.buildURL('experiment', 'showUploadMaterials.view'),
-            method: 'POST',
-            params: {
-                name: 'Samples',
-                importMoreSamples: true,
-                createNewSampleSet: false,
-                nameReadOnly: true,
-                insertUpdateChoice: 'insertOrUpdate',
-                createNewColumnsOnExistingSampleSet: false,
-                data: data.join("\n")
-            },
-            success: function (ret) {
-                // TODO: grep for 'labkey-error' class and display an error message
-                console.log("created samples");
-                startAnalysis();
-            },
-        });
-    }
-
-    // Once samples are inserted, kick off the analysis
+    // Once samples are selected, kick off the analysis
     function startAnalysis() {
         var values = panel.getValues();
         var assayName = values['name'];
@@ -136,6 +68,12 @@ function renderPanel()
         if (!taskId)
         {
             Ext.Msg.alert("Error", "Pipeline required");
+            return;
+        }
+
+        if (selectedRows.length == 0)
+        {
+            Ext4.Msg.alert("No samples selected", "No samples selected");
             return;
         }
 
