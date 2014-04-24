@@ -16,8 +16,8 @@
       </column>
       <column columnName="Biosample">
         <fk>
-          <fkDbSchema>immport</fkDbSchema>
-          <fkTable>biosample</fkTable>
+          <fkDbSchema>study</fkDbSchema>
+          <fkTable>gene_expression_files</fkTable>
           <fkColumnName>biosample_accession</fkColumnName>
         </fk>
       </column>
