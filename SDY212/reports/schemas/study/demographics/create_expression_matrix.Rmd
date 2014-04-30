@@ -4,6 +4,7 @@
 
 ```{r knitr-opts, echo=FALSE}
 opts_chunk$set(echo=TRUE, eval=TRUE, message=FALSE, warning=FALSE, error=TRUE)
+opts_chunk$set(cache.path=paste(labkey.file.root, "cache/create_expression_matrix/", sep="/"), cache=TRUE)
 options(width=80)
 ```
 

@@ -6,10 +6,9 @@
     <description>Create expression matrix</description>
     <author>kevink@labkey.com</author>
     <inputs>
-	<!--This is listing the potential extension for the input files-->
         <file name='input.CEL' splitFiles='true'/>
-        <file name='input.txt' splitFiles='true'/>
         <file name='input.tsv' splitFiles='true'/>
+        <file name='input.txt' splitFiles='true'/>
     </inputs>
     <script file='create-matrix.r'/>
 </task>
