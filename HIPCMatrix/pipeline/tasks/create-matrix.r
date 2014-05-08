@@ -16,6 +16,10 @@ jobInfo <- read.table("${pipeline, taskInfo}",
                       stringsAsFactors=FALSE, sep="\t", quote="",
                       fill=TRUE, na.strings="")
 
+selectedLsids <- "${selected-lsids}"
+selectedSubjects <- "${selected-subjects}"
+selectedBiosamples <- "${selected-biosamples}"
+
 # selected input file paths
 # Test for valid input files:
 inputFiles <- jobInfo$value[ grep("input\\.", jobInfo$name)]
