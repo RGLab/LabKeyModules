@@ -1,0 +1,15 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+    <cv:columns>
+        <cv:column name="Run"/>
+        <cv:column name="Biosample/biosample_accession"/>
+        <cv:column name="Biosample/subject_accession"/>
+        <cv:column name="Biosample/arm_name"/>
+        <cv:column name="Biosample/study_time_collected"/>
+        <cv:column name="Biosample/study_time_collected_unit"/>
+        <cv:column name="Run/featureSet"/>
+        <cv:column name="Run/DataOutputs/viewFileLink"/>
+    </cv:columns>
+    <cv:filters>
+        <cv:filter column="Biosample/biosample_accession" operator="startswith" value="BS"/>
+    </cv:filters>
+</cv:customView>
