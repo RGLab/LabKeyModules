@@ -84,8 +84,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             listeners: {
                 loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
             },
-            queryName: 'gene',
-            schemaName: 'lists'
+            queryName: 'genes',
+            schemaName: 'study'
         });
 
         var strDemographics = new Ext.data.ArrayStore({
