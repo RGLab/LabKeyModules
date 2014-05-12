@@ -1,12 +1,11 @@
 SELECT DISTINCT
- GEM.arm_name AS cohort,
- GEM.SequenceNum AS timepoint,
- LCASE( GEF.study_time_collected_unit ) AS timepointUnit,
- GEM.expression_matrix_accession
+ Biosample.arm_name AS cohort,
+ Biosample.study_time_collected AS timepoint,
+ LCASE( Biosample.study_time_collected_unit ) AS timepointUnit,
+ Run.DataOutputs.Name AS expression_matrix_accession
 FROM
- hai,
- gene_expression_matrices AS GEM,
- gene_expression_files AS GEF
+ study.hai,
+ assay.ExpressionMatrix.matrix.InputSamples
 WHERE
- hai.subject_accession = GEM.subject_accession AND
- GEM.biosample_accession = GEF.biosample_accession
+ hai.SUBJECT_ACCESSION = Biosample.SUBJECT_ACCESSION
+
