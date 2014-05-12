@@ -24,27 +24,6 @@ merge_cohorts <- function(x, y){
   return(merge(x, y, by="gene_symbol"))
 }
 
-#get_cohort_expression <- function(gem){
-#  umat <- unique(gem[, list(file_info_name, feature_mapping_file)])
-#  #stopcheck(umat)
-#  em_links <- paste(labkey.file.root, "/analysis/exprs_matrices/", umat$file_info_name, sep="/")
-#  f2g_links <- paste(labkey.file.root, "/analysis/features2genes/", umat$feature_mapping_file, sep="/")
-#  EM <- vector('list', nrow(umat))
-#  for(i in 1:nrow(umat)){
-#    header <- scan(em_links[i], what="character", nlines=1, sep="\t", quiet=TRUE)
-#    em <- fread(em_links[i])
-#    setnames(em, colnames(em), c("feature_id", header))
-#    f2g <- read.table(f2g_links[i], sep="\t", header=TRUE)
-#    em <- em[, gene_symbol:=f2g[match(em$feature_id, f2g$feature_id), "gene_symbol"]]
-#    em <- em[, lapply(.SD, mean), by="gene_symbol", .SDcols=2:(ncol(em)-1)]
-#    EM[[i]] <- em
-#  }
-#  #common_genes <- Reduce(intersect, lapply(EM, "[[", "gene_symbol"))
-#  EM <- Reduce(f=merge_cohorts, EM)
-#  return(EM)
-#}
-
-#labkey.file.root <- "/shared/silo_researcher/Gottardo_R/immunespace/staging/files/Studies/SDY269/@files/"
 get_cohort_expression <- function(pd){
   umat <- unique(pd[, list(run_dataoutputs_name, run_featureset)])
   files <- file.path(labkey.file.root, "analysis/exprs_matrices/", umat$run_dataoutputs_name)
@@ -59,13 +38,10 @@ get_cohort_expression <- function(pd){
                                                     paste(umat$run_featureset[i], collapse=";"))),
                            colNameOpt = "rname"))
     em <- em[, gene_symbol := f2g[match(em$feature_id, f2g$featureid), genesymbol]]
+    em <- em[, lapply(.SD, mean), by="gene_symbol", .SDcols=2:(ncol(em)-1)]
     EM[[i]] <- em
   }
-  if(length(EM) > 1){
-    EM <- Reduce(f=merge(cohorts, EM))
-  } else{
-    EM <- EM[[1]]
-  }
+  EM <- Reduce(f=merge_cohorts,EM)
   return(EM)
 }
 
