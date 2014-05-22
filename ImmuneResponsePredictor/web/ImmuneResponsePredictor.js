@@ -656,7 +656,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         tabId: 'Source'
                     }
                 ) +
-                '\' target=\'_blank\'></a>'
+                '\' target=\'_blank\' title=\'Click to open the knitr source code in a new window\'></a>'
             );
 
         this.border         = false;

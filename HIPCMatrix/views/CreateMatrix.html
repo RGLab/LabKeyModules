@@ -79,11 +79,23 @@ function renderPanel()
 
         var files = [];
         var seen = {};
+        var selectedLsids = [];
+        var selectedSubjects = [];
+        var selectedBiosamples = [];
         for (var i = 0; i < selectedRows.length; i++)
         {
             var path = selectedRows[i]["file_info_name"];
+            var lsid = selectedRows[i]["lsid"];
+            var subject = selectedRows[i]["SUBJECT_ACCESSION"];
+            var biosample = selectedRows[i]["biosample_accession"];
+
+            selectedLsids.push(lsid);
+            selectedSubjects.push(subject);
+            selectedBiosamples.push(biosample);
+
             if (seen[path])
                 continue;
+
             files.push(path);
             seen[path] = true;
         }
@@ -93,7 +105,7 @@ function renderPanel()
             // NOTE: PipelinePathForm requires all files to come from the same directory
             path: "rawdata/gene_expression",
             files: files,
-            //fileIds: [],
+            fileIds: [],
             protocolName: assayName,
             //protocolDescription: "",
             jsonParameters: {
@@ -104,7 +116,11 @@ function renderPanel()
                 'assay comments': assayComments,
 
                 'assay run property, importValues': false,
-                'assay run property, featureSet': featureSet
+                'assay run property, featureSet': featureSet,
+
+                'selected-lsids': selectedLsids.join(','),
+                'selected-subjects': selectedSubjects.join(','),
+                'selected-biosamples': selectedBiosamples.join(',')
             },
             saveProtocol: false,
             allowNonExistentFiles: true,
