@@ -16,6 +16,7 @@ jobInfo <- read.table("${pipeline, taskInfo}",
                       stringsAsFactors=FALSE, sep="\t", quote="",
                       fill=TRUE, na.strings="")
 
+
 selectedLsids <- "${selected-lsids}"
 selectedSubjects <- "${selected-subjects}"
 selectedBiosamples <- "${selected-biosamples}"
@@ -31,7 +32,8 @@ baseUrl <- jobInfo$value[jobInfo$name == "baseUrl"]
 contextPath <- jobInfo$value[jobInfo$name == "contextPath"]
 url <- if(is.na(contextPath)) baseUrl else paste0(baseUrl, contextPath)
 containerPath <- jobInfo$value[jobInfo$name == "containerPath"]
-filter <- makeFilter(c("file_info_name", "IN", paste(basename(inputFiles), collapse=";")))
+filter <- makeFilter(c("file_info_name", "IN", paste(basename(inputFiles), collapse=";")), c("biosample_accession", "IN", gsub(",", ";", selectedBiosamples)))
+
 pdata <- labkey.selectRows(baseUrl=url,
                            folderPath=containerPath,
                            schemaName="study",
@@ -66,6 +68,8 @@ if(length(ext) > 1){
   eset <- new("ExpressionSet", exprs = norm_exprs)
   eset <- lumiN(eset, method="quantile")
   norm_exprs <- log2(exprs(eset))
+  rownames(norm_exprs) <- feature_id
+  
 
   # Get biosample_accession as column names
   if(length(grep("^SUB", colnames(norm_exprs))) == ncol(norm_exprs)){
@@ -92,40 +96,38 @@ if(length(ext) > 1){
 
   }
 
-  norm_exprs <- cbind(feature_id, norm_exprs)
+  norm_exprs <- norm_exprs[,!is.na(colnames(norm_exprs))]
+  #norm_exprs <- cbind(feature_id, norm_exprs)
 } else{
   stop(paste("The file extension", ext, "is not valid"))
 }
 
-write.table(norm_exprs, file = file.path(jobInfo$value[jobInfo$name == "pipeRoot"], "analysis/exprs_matrices", "${output.tsv}"), sep = "\t", quote=FALSE, row.names=TRUE)
-write.table(norm_exprs, file = "${output.tsv}", sep = "\t", quote=FALSE, row.names=TRUE)
+# Summarize by gene
+FAS_filter <- makeFilter(c("FeatureAnnotationSetId", "IN", "${assay run property, featureSet}"))
+f2g <- data.table(labkey.selectRows(baseUrl=url,
+    folderPath=containerPath,
+    schemaName="Microarray",
+    queryName="FeatureAnnotation",
+    colFilter=FAS_filter,
+    colNameOpt="rname", colSelect = c("featureid", "genesymbol")))
 
-#inputFiles <- jobInfo$value[jobInfo$name == "input.CEL"]
-#
-## get sample information based on the input files
-#baseUrl <- jobInfo$value[jobInfo$name == "baseUrl"]
-#contextPath <- jobInfo$value[jobInfo$name == "contextPath"]
-#url <- if(is.na(contextPath)) baseUrl else paste0(baseUrl, contextPath)
-#containerPath <- jobInfo$value[jobInfo$name == "containerPath"]
-#filter <- makeFilter(c("file_info_name", "IN", paste(basename(inputFiles), collapse=";")))
-#pdata <- labkey.selectRows(baseUrl=url,
-#                           folderPath=containerPath,
-#                           schemaName="study",
-#                           queryName="gene_expression_files",
-#                           colSelect=c("file_info_name", "biosample_accession"),
-#                           colFilter=filter,
-#                           colNameOpt="rname")
-#
-## Reading
-#affybatch <- ReadAffy(filenames = inputFiles)
-#
-## Normalisation
-#eset <- rma(affybatch)
-#ematrix <- exprs(eset)
-#
-## Rename columns
-#colnames(ematrix) <- pdata[match(colnames(ematrix), pdata$file_info_name), "biosample_accession"]
-#ematrix <- cbind(rownames(ematrix), ematrix)
-#
-## BUGBUG: Figure out how to write a column header for the ID_REF column
-#write.table(ematrix, file = "${output.tsv}", sep = "\t", quote=FALSE, row.names=FALSE)
+em <- data.table(norm_exprs)
+em[, featureid := rownames(norm_exprs)]
+em[, gene_symbol := f2g[match(em$featureid, f2g$featureid), genesymbol]]
+
+ssem <- strsplit(em$gene_symbol, " /// ")
+nreps <- sapply(ssem, length)
+em <- em[rep(1:nrow(em), nreps)]
+em <- em[, gene_symbol := unlist(ssem)]
+em <- em[!is.na(gene_symbol)]
+em <- em[, lapply(.SD, mean), by = "gene_symbol", .SDcols = 1:(ncol(em)-2)]
+
+#temp
+norm_exprs <- as.data.frame(norm_exprs)
+norm_exprs <- cbind(feature_id, norm_exprs)
+colnames(norm_exprs)[1] <- " "
+# Write outputs
+write.table(norm_exprs, file = file.path(jobInfo$value[jobInfo$name == "pipeRoot"], "analysis/exprs_matrices", "${output.tsv}"), sep = "\t", quote=FALSE, row.names=FALSE)
+write.table(em, file = file.path(jobInfo$value[jobInfo$name == "pipeRoot"], "analysis/exprs_matrices", paste0("${output.tsv}", ".summary")), sep = "\t", quote=FALSE, row.names=FALSE)
+write.table(norm_exprs, file = "${output.tsv}", sep = "\t", quote=FALSE, row.names=FALSE)
+

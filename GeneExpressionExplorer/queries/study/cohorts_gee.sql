@@ -1,4 +1,6 @@
 SELECT DISTINCT
- cohort
+ cohort,
+ featureSetId
 FROM
  study_cohorts_info_gee
+

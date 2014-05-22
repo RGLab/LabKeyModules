@@ -24,21 +24,34 @@ merge_cohorts <- function(x, y){
   return(merge(x, y, by="gene_symbol"))
 }
 
-get_cohort_expression <- function(pd){
-  umat <- unique(pd[, list(run_dataoutputs_name, run_featureset)])
-  files <- file.path(labkey.file.root, "analysis/exprs_matrices/", umat$run_dataoutputs_name)
+#get_cohort_expression <- function(pd){
+#  umat <- unique(pd[, list(run_dataoutputs_name, run_featureset)])
+#  files <- file.path(labkey.file.root, "analysis/exprs_matrices/", umat$run_dataoutputs_name)
+#  EM <- vector('list', nrow(umat))
+#  for(i in 1:nrow(umat)){
+#    header <- scan(files[i], what = "character", nlines = 1, sep = "\t", quiet = TRUE)
+#    em <- fread(files[i])
+#    setnames(em, colnames(em), c("feature_id", header))
+#    #TODO: get the gene symbols
+#  f2g <- data.table(labkey.selectRows(labkey.url.base, labkey.url.path, "Microarray", "FeatureAnnotation",
+#                           colFilter = makeFilter(c("FeatureAnnotationSetId", "IN", 
+#                                                    paste(umat$run_featureset[i], collapse=";"))),
+#                           colNameOpt = "rname"))
+#    em <- em[, gene_symbol := f2g[match(em$feature_id, f2g$featureid), genesymbol]]
+#    em <- em[, lapply(.SD, mean), by="gene_symbol", .SDcols=2:(ncol(em)-1)]
+#    EM[[i]] <- em
+#  }
+#  EM <- Reduce(f=merge_cohorts,EM)
+#  return(EM)
+#}
+
+
+get_cohort_summary_expression <- function(pd){
+  umat <- unique(pd[, list(EM, run_featureset)])
+  files <- file.path(labkey.file.root, "analysis/exprs_matrices/", paste0(umat$EM, ".summary"))
   EM <- vector('list', nrow(umat))
   for(i in 1:nrow(umat)){
-    header <- scan(files[i], what = "character", nlines = 1, sep = "\t", quiet = TRUE)
     em <- fread(files[i])
-    setnames(em, colnames(em), c("feature_id", header))
-    #TODO: get the gene symbols
-  f2g <- data.table(labkey.selectRows(labkey.url.base, labkey.url.path, "Microarray", "FeatureAnnotation",
-                           colFilter = makeFilter(c("FeatureAnnotationSetId", "IN", 
-                                                    paste(umat$run_featureset[i], collapse=";"))),
-                           colNameOpt = "rname"))
-    em <- em[, gene_symbol := f2g[match(em$feature_id, f2g$featureid), genesymbol]]
-    em <- em[, lapply(.SD, mean), by="gene_symbol", .SDcols=2:(ncol(em)-1)]
     EM[[i]] <- em
   }
   EM <- Reduce(f=merge_cohorts,EM)
@@ -50,7 +63,6 @@ imageWidth  <- as.numeric(labkey.url.params$imageWidth);
 imageHeight <- as.numeric(labkey.url.params$imageHeight);
 CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
 
-response            <- labkey.url.params$response;
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
 response            <- as.character( labkey.url.params$response );
 timePoint           <- as.numeric( labkey.url.params$timePoint );
@@ -64,24 +76,25 @@ size                <- tolower(labkey.url.params$size)
 alpha               <- tolower(labkey.url.params$alpha)
 
 stopcheck <- function(data){
-    stop(paste(apply(as.matrix(data), 1, function(x){ paste(x, collapse=",")}), collapse="\n"))
+    stop(paste0(paste(capture.output(str(data)), collapse="\n"), "\nl.u.b: ",labkey.url.base, "\nl.u.p: ",labkey.url.path))
 }
 
+#stopcheck(labkey.url.params)
 if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   #No need to read again
 } else{
   cohort_filter <- makeFilter(c("biosample_arm_name", "IN", paste(arrayCohorts, collapse=";")))
-  gem <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path,
-                                      schemaName="assay.ExpressionMatrix.matrix",
-                                      queryName = "InputSamples", viewName = "gene_expression_matrices",
-                                      colFilter = cohort_filter, colNameOpt = "rname"))
+  gem <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="assay.ExpressionMatrix.matrix", queryName = "InputSamples", viewName = "gene_expression_matrices", colFilter = cohort_filter, colNameOpt = "rname"))
   setnames(gem, colnames(gem), gsub("^biosample_", "", colnames(gem)))
   gem <- unique(gem[arm_name %in% arrayCohorts])
 
-  #gem <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study",
-  #                                    queryName="gene_expression_matrices", colFilter=cohort_filter, 
-  #                                    viewName = "ImmuneResponsePredictor.gene_expression_matrices",
-  #                                    colNameOpt="rname"))
+  if(length(grep("\"", gem$run_dataoutputs_name)) == nrow(gem)){
+    EMs <- unlist(lapply(gem$run_dataoutputs_name, function(x){ grep(".tsv", eval(parse(text = x)), value=TRUE)} ))
+    gem[, EM := EMs]
+  } else{
+    gem[, EM := gem$run_dataoutputs_name]
+ }
+
   demographics <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
                                       queryName="demographics", colNameOpt="rname"))
   demographics <- demographics[, list(subject_accession, age_reported, gender, race)] 
@@ -95,13 +108,11 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   # Get HAI
   hai_filter <- makeFilter(c("subject_accession", "IN", paste(pd$subject_accession, collapse=";")))
   hai <- data.table(labkey.selectRows(baseUrl=labkey.url.base, folderPath=labkey.url.path, schemaName="study", 
-                                      #viewName = "ImmuneResponsePredictor.hai",
                                       queryName="hai", colFilter=hai_filter, colNameOpt="rname"))
-  #hai <- hai[is.na(biosample_accession_name), biosample_accession_name := "missing"]
   hai <- hai[, list(subject_accession, study_time_collected, response=value_reported/value_reported[study_time_collected==0]), by="virus_strain,subject_accession"]
   hai <- hai[study_time_collected==28]
   hai <- hai[, list(response=log2(max(response))), by="subject_accession"]
-  EM <- get_cohort_expression(pd)
+  EM <- get_cohort_summary_expression(pd)
   EM <- EM[, c("gene_symbol", colnames(EM)[ colnames(EM) %in% pd$biosample_accession]), with=FALSE]
 }
 
@@ -120,7 +131,6 @@ FC <- melt(FC, id="gene")
 FC <- data.table(FC)
 setnames(FC, c("variable", "value"), c("biosample_accession", "logFC"))
 data <- merge(FC, pd, by="biosample_accession")[, list(biosample_accession, gene, subject_accession, logFC, arm_name, age, race, gender)]
-#data <- data[is.na(biosample_accession_name), biosample_accession_name := "missing"]
 data <- merge(data, hai, by=c("subject_accession"))
 
 # Plot
