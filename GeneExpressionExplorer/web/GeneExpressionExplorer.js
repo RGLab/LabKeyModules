@@ -45,6 +45,33 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             }
         };
 
+        var manageCbGenesState = function(){
+            var tempSQL = '',
+                tempArray = cbCohorts.getCheckedArray('featureSetId'),
+                len = tempArray.length
+            ;
+            if ( len >= 1 ){
+                cbGenes.setDisabled( false );
+                tempSQL +=  strngSqlStartGenes +
+                            strngSqlWhereGenes +
+                            tempArray[0];
+                if ( len > 1 ) {
+                    for ( var i = 1; i < len; i ++ ){
+                        tempSQL +=  strngSqlIntersectGenes +
+                                    strngSqlStartGenes +
+                                    strngSqlWhereGenes +
+                                    tempArray[i];
+                    }
+                }
+            } else {
+                cbGenes.clearValue();
+                cbGenes.setDisabled( true );
+            }
+            strGene.setSql( tempSQL );
+
+            checkBtnPlotStatus();
+        };
+
 
         ///////////////////////////////////
         //            Stores             //
@@ -80,12 +107,19 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             schemaName: 'study'
         });
 
+        var strngSqlStartGenes      =   'SELECT' +
+                                        ' DISTINCT GeneSymbol as gene_symbol' +
+                                        ' FROM featureannotation',
+            strngSqlWhereGenes      =   ' WHERE featureannotationsetid = ',
+            strngSqlIntersectGenes  =   ' INTERSECT '
+        ; 
+
         var strGene = new LABKEY.ext.Store({
             listeners: {
                 loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
             },
-            queryName: 'genes',
-            schemaName: 'study'
+            schemaName: 'Microarray',
+            sql: strngSqlStartGenes
         });
 
         var strDemographics = new Ext.data.ArrayStore({
@@ -160,9 +194,9 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             fieldLabel: 'Cohorts',
             lazyInit: false,
             listeners: {
-                change:     checkBtnPlotStatus,
-                cleared:    checkBtnPlotStatus,
-                select:     checkBtnPlotStatus
+                change:     manageCbGenesState,
+                cleared:    manageCbGenesState,
+                select:     manageCbGenesState
             },
             store: strCohort,
             valueField: 'cohort',
@@ -186,6 +220,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var cbGenes = new Ext.ux.form.SuperBoxSelect({
             allowBlank: false,
+            disabled: true,
             displayField: 'gene_symbol',
             fieldLabel: 'Genes',
             getParams: function(q){
@@ -488,7 +523,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //             Functions           //
         /////////////////////////////////////
-
+        
         var setPlotRunning = function( bool ){
             if ( bool ){
                 maskPlot.show();
@@ -518,7 +553,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         tabId: 'Source'
                     }
                 ) +
-                '\' target=\'_blank\'></a>'
+                '\' target=\'_blank\' title=\'Click to open the R source code in a new window\'></a>'
             );
 
         // jQuery-related
