@@ -1,0 +1,13 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+    <cv:columns>
+        <cv:column name="Run"/>
+        <cv:column name="Biosample"/>
+	<cv:column name="Biosample/subject_accession"/>
+	<cv:column name="Biosample/arm_name"/>
+	<cv:column name="Biosample/study_time_collected"/>
+	<cv:column name="Biosample/study_time_collected_unit"/>
+        <cv:column name="Run/featureSet"/>
+	<cv:column name="Run/DataOutputs/viewFileLink"/>
+	<cv:column name="Run/Input/Input.txt/Name"/>
+    </cv:columns>
+</cv:customView>
