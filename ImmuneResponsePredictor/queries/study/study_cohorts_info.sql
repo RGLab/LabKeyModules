@@ -1,17 +1,16 @@
 SELECT DISTINCT
- GEM.arm_name AS cohort,
- GEM.SequenceNum AS timepoint,
- LCASE( GEF.study_time_collected_unit ) AS timepointUnit,
+ Biosample.arm_name AS cohort,
+ Biosample.study_time_collected AS timepoint,
+ LCASE( Biosample.study_time_collected_unit ) AS timepointUnit,
  GEA.analysis_accession,
- GEM.expression_matrix_accession
+ Run.DataOutputs.Name AS expression_matrix_accession
 FROM
- hai,
- study.gene_expression_matrices AS GEM,
- lists.gene_expression_analysis AS GEA,
- gene_expression_files AS GEF
+ study.hai,
+ assay.ExpressionMatrix.matrix.InputSamples AS GEM,
+ lists.gene_expression_analysis AS GEA
 WHERE
- hai.subject_accession = GEM.subject_accession AND
- GEA.expression_matrix_accession = GEM.expression_matrix_accession AND
- GEA.description like CONCAT(CONCAT('%', SUBSTRING(CONVERT(GEM.SequenceNum, VARCHAR), 1, 1)), '%') AND
- GEM.SequenceNum > 0 AND
- GEM.biosample_accession = GEF.biosample_accession
+ hai.SUBJECT_ACCESSION = Biosample.subject_accession AND
+ GEA.expression_matrix = GEM.Run.DataOutputs.Name AND
+ GEA.timepoint = Biosample.study_time_collected AND
+ Biosample.study_time_collected > 0
+
