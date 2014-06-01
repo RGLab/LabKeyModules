@@ -54,6 +54,7 @@ if(length(ext) > 1){
   if(all(file_ext(colnames(norm_exprs)) == "CEL")){ #If filenames used as samplenames
     colnames(norm_exprs) <- pdata[ match(colnames(norm_exprs), pdata$file_info_name), "biosample_accession"]
   }
+  feature_id <- rownames(norm_exprs)
 
   #norm_exprs <- cbind(ID_REF = rownames(norm_exprs), norm_exprs)
   

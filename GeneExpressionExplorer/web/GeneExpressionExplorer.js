@@ -344,6 +344,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var spnrTextSize = new Ext.ux.form.SpinnerField({
             allowBlank: false,
+            allowDecimals: false,
             fieldLabel: 'Text size',
             listeners: {
                 invalid:    function(){ btnPlot.setDisabled(true); },
