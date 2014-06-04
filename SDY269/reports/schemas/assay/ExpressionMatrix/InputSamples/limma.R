@@ -55,6 +55,7 @@ newGEA <- newGEA[!newGEA$analysis_accession %in% existGEA$analysis_accession,]
 if(nrow(newGEA) > 0){
     res <- labkey.importRows(labkey.url.base, labkey.url.path, "lists", "gene_expression_analysis", toImport = newGEA)
 }
+print(newGEA)
 
 newGEAR <- newGEAR[!analysis_accession %in% existGEA$analysis_accession]
 setnames(newGEAR, c("adj.P.Val", "AveExpr", "logFC", "P.Value", "t"), c("adj_p_val", "ave_expr", "log_fc", "p_value", "statistic"))

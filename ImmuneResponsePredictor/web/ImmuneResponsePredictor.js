@@ -244,6 +244,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var nfDichotomize = new Ext.form.NumberField({
             allowBlank: false,
+            decimalPrecision: -1,
             emptyText: 'Type...',
             enableKeyEvents: true,
             fieldLabel: 'Enter dichotomization threshold',
@@ -292,6 +293,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var nfFalseDiscoveryRate = new Ext.form.NumberField({
             allowBlank: false,
+            decimalPrecision: -1,
             emptyText: 'Type...',
             enableKeyEvents: true,
             fieldLabel: 'False discovery rate is less than',
@@ -309,12 +311,14 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 }
             },
             maxValue: 1,
+            minValue: 0,
             value: 0.1,
             width: fieldWidth
         });
 
         var nfFoldChange = new Ext.form.NumberField({
             allowBlank: false,
+            decimalPrecision: -1,
             emptyText: 'Type...',
             enableKeyEvents: true,
             fieldLabel: 'Absolute fold change to baseline is greater than',
@@ -345,7 +349,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             disabled: true,
             handler: function(){
                 LABKEY.Query.selectRows({
-                    columns: [ 'cohort', 'analysis_accession', 'expression_matrix_accession' ],
+                    columns: [ 'analysis_accession' ],
                     failure: LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure,
                     filterArray: [
                         LABKEY.Filter.create(
@@ -366,20 +370,17 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         if ( count >= 1 ) {
 
                             cnfReport.inputParams = {
-                                emTraining:             Ext.encode( Ext.pluck( data.rows, 'expression_matrix_accession' ) ),
-                                cohortTraining:         Ext.encode( Ext.pluck( data.rows, 'cohort' ) ),
                                 analysisAccession:      Ext.encode( Ext.pluck( data.rows, 'analysis_accession' ) ),
                                 dichotomize:            chDichotomize.getValue(),
                                 dichotomizeValue:       nfDichotomize.getValue(),
                                 timePoint:              cbTimePoint.getValue(),
-                                timePointDisplay:       cbTimePoint.getRawValue(),
+                                timePointDisplay:       cbTimePoint.getRawValue(), // TODO: do we still need this?
                                 fdrThreshold:           nfFalseDiscoveryRate.getValue(),
-                                fcThreshold:            nfFoldChange.getValue(),
-                                individualProbesFlag:   rgIndividualProbes.getValue().getGroupValue()
+                                fcThreshold:            nfFoldChange.getValue()
                             };
 
                             LABKEY.Query.selectRows({
-                                columns: [ 'cohort', 'expression_matrix_accession' ],
+                                columns: [ 'expression_matrix_accession' ],
                                 failure: LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure,
                                 filterArray: [
                                     LABKEY.Filter.create(
@@ -396,12 +397,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                                 queryName: 'study_cohorts_info',
                                 schemaName: 'study',
                                 success: function(data){
-                                    var
-                                        emTesting       = Ext.pluck( data.rows, 'expression_matrix_accession'),
-                                        cohortTesting   = Ext.pluck( data.rows, 'cohort' );
-
-                                    cnfReport.inputParams['emTesting']      = Ext.encode( emTesting );
-                                    cnfReport.inputParams['cohortTesting']  = Ext.encode( cohortTesting );
+                                    cnfReport.inputParams['emTesting'] = Ext.encode( Ext.pluck( data.rows, 'expression_matrix_accession') );
 
                                     setReportRunning( true );
                                     LABKEY.Report.execute( cnfReport );
@@ -416,27 +412,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 });
             },
             text: 'Run'
-        });
-
-
-        var rgIndividualProbes = new Ext.form.RadioGroup({
-            columns: [ 100, 100 ],
-            fieldLabel: 'Summarize probes expression values by gene',
-            items: [
-                {
-                    boxLabel: 'Yes',
-                    inputValue: false,
-                    name: 'ip',
-                    value: false
-                },
-                {
-                    boxLabel: 'No',
-                    checked: true,
-                    inputValue: true,
-                    name: 'ip',
-                    value: true
-                }
-            ]
         });
 
 
@@ -494,12 +469,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 height: 7
             }),
             nfFalseDiscoveryRate,
-            nfFoldChange,
-            rgIndividualProbes,
-            new Ext.form.Label({
-                cls: 'x-form-item',
-                text: '(Note: \'No\' is the default behavior for a cross-platform analysis)'
-            })
+            nfFoldChange
         ],
         boolGeneExpression = true;
 
