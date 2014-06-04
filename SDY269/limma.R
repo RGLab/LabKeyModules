@@ -1,3 +1,6 @@
+labkey.url.base <- "posey.fhcrc.org"
+labkey.url.path <- "Studies/SDY269"
+
 library(Rlabkey)
 library(data.table)
 library(limma)
@@ -13,7 +16,7 @@ GEAs <- unique(GEM[GEM$study_time_collected != 0, c("arm_name", "study_time_coll
 nEMs <- length(EMs)
 GEA_count <- 1
 GEA_list <- tt_list <- vector("list", nrow(GEAs))
-for(i in nEMs){
+for(i in 1:nEMs){
   ssGEM <- GEM[ GEM$run_dataoutputs_name == EMs[i], c("biosample_accession", "subject_accession", "run_dataoutputs_name", "arm_name", "study_time_collected")]
   rownames(ssGEM) <- ssGEM$biosample_accession
   ssGEAs <- unique(ssGEM[ssGEM$study_time_collected != 0, c("arm_name", "study_time_collected")])
