@@ -1,5 +1,5 @@
-labkey.url.base <- "posey.fhcrc.org"
-labkey.url.path <- "Studies/SDY269"
+#labkey.url.base <- "posey.fhcrc.org"
+#labkey.url.path <- "Studies/SDY269"
 
 library(Rlabkey)
 library(data.table)
