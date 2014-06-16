@@ -1,0 +1,53 @@
+### Inputs
+- Cohort
+- Signatures
+
+### Display
+- List of enriched pathways
+- Heatmap of pathway vs time
+
+```{r lib, cache = FALSE, message = FALSE}
+library(ImmuneSpaceR)
+library(Biobase)
+library(GSEABase)
+```
+
+```{r get}
+# labkey.url.base <- "https://www.immunespace.org"
+# labkey.url.base <- "www.immunespace.org"
+# labkey.url.path <- "Studies/SDY269"
+# labkey.user.email <- "rsautera at fhcrc.org"
+ cohort <- "LAIV_2008"
+ idxfile = "/home/rsautera/workspace/others/hipcdb/sets_indices_TIV0809.rds"
+con <- CreateConnection("SDY269")
+EM <- con$getGEMatrix(cohort)
+indices <- readRDS( idxfile )
+mm <- model.matrix(~subject_accession + study_time_collected, EM)
+res <- camera(EM, indices, design = mm, sort = FALSE)
+```
+
+```{r kable-LAIV, results='asis'}
+kable(res[res$FDR<.2, ], format='html', row.names=FALSE, table.attr='id="res_table"')
+```
+
+<!--
+cont.matrix <- makeContrast(paste0("study_time_collected", c(3,7)), levels = mm)
+res.dt <- data.table(res)
+res.dt <- res.dt[, Pval := ifelse(Direction == "Up", 10*log10(PValue), -10*log10(PValue))]
+mat <- 
+-->
+
+<script type="text/javascript" charset="utf-8">
+var init = function() {
+  $(document).ready(function() {
+    $('#res_table').dataTable();
+  }); 
+}
+
+LABKEY.requiresScript([
+   'https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.min.js',
+   'https://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js'],
+                      true, init, this, true);
+</script>
+
+
