@@ -18,6 +18,8 @@ library(Rlabkey)
 library(ggplot2)
 library(glmnet)
 library(pheatmap)
+library(RColorBrewer)
+library(RJSONIO)
 ```
 
 ```{r plot-styles, cache = TRUE}
@@ -159,6 +161,7 @@ draw_heatmap <- function(FC_selected, HAI, dichotomize, palette){
   mat <- t(FC_selected)
   mat <- mat[, match(rownames(annotation), colnames(mat))]
   max_FC <- max(abs(mat))
+  rownames(mat) <- ifelse(nchar(rownames(mat)) > 15, paste0(substr(rownames(mat), 1, 15), "..."), rownames(mat))
   pheatmap(mat, dendrogram = "none", cluster_cols = FALSE, cluster_rows = TRUE,
            breaks = seq(-max_FC, max_FC, length.out = length(palette) +1),
            color = palette, show_colnames = FALSE, scale = "none", 
