@@ -10,5 +10,8 @@
         <file name='input.tsv' splitFiles='true'/>
         <file name='input.txt' splitFiles='true'/>
     </inputs>
+    <outputs>
+        <file name='output.tsv' useProtocolNameAsBaseName="true"/>
+    </outputs>
     <script file='create-matrix.r'/>
 </task>
