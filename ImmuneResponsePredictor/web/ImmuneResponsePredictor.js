@@ -123,7 +123,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var cbCohortTraining = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
             displayField: 'cohort',
-            emptyText: 'Click...',
             fieldLabel: 'Training',
             lazyInit: false,
             listeners: {
@@ -162,7 +161,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var cbCohortTesting = new Ext.ux.form.ExtendedLovCombo({
             disabled: true,
             displayField: 'cohort',
-            emptyText: 'Click...',
             fieldLabel: 'Testing',
             lazyInit: false,
             listeners: {
@@ -178,7 +176,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
             displayField: 'displayTimepoint',
-            emptyText: 'Click...',
             fieldLabel: 'Select a time point',
             lazyInit: false,
             listeners: {

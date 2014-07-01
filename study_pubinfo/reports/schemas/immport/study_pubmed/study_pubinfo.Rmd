@@ -29,8 +29,7 @@ get_reference <- function(id, related=FALSE){
     SDY <- as.character(dat[ dat$pubmed_id == id, "study_accession"])
     SDY <- SDY[SDY %in% loaded$study_accession]
     if(length(SDY)>0){
-      folder <- loaded[loaded$study_accession == SDY, "folder"]
-      SDY <- paste0("  [<a href='https://www.immunespace.org/project/", folder, "/", SDY ,"/begin.view?' target='_blank' title='Study ", SDY, " on ImmuneSpace'><b>",SDY,"</b></a>] ")
+      SDY <- paste0("  [<a href='https://www.immunespace.org/project/Studies/", SDY ,"/begin.view?' target='_blank' title='Study ", SDY, " on ImmuneSpace'><b>",SDY,"</b></a>] ")
       pubmed_link <- paste(pubmed_link, SDY)
     }
    }
@@ -39,9 +38,10 @@ get_reference <- function(id, related=FALSE){
 
 # Update every month
 id <- ds_pubmed$pubmed_id
+id <- id[id != "PMC"]
 study_citation <- lapply(id, get_reference)
 pubmed_list <- entrez_link(db="all", id=id, dbfrom="pubmed")
-url_citedin <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=", ds_pubmed$pubmed_id)
+url_citedin <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=", id)
 ```
 The above study is based on the following article(s):
 

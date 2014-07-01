@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<view xmlns='http://labkey.org/data/xml/view' title='Gene Set Enrichment Analysis'>
+    <dependencies>
+        <dependency path='GeneSetEnrichmentAnalysis/GeneSetEnrichmentAnalysis.css'/>
+
+        <dependency path='Ext3'/>
+
+        <dependency path='GeneSetEnrichmentAnalysis/ExtendedComboBox.js'/>
+        <dependency path='GeneSetEnrichmentAnalysis/GeneSetEnrichmentAnalysis_Lib.js'/>
+
+        <dependency path='GeneSetEnrichmentAnalysis.js'/>
+    </dependencies>
+</view>

@@ -24,28 +24,6 @@ merge_cohorts <- function(x, y){
   return(merge(x, y, by="gene_symbol"))
 }
 
-#get_cohort_expression <- function(pd){
-#  umat <- unique(pd[, list(run_dataoutputs_name, run_featureset)])
-#  files <- file.path(labkey.file.root, "analysis/exprs_matrices/", umat$run_dataoutputs_name)
-#  EM <- vector('list', nrow(umat))
-#  for(i in 1:nrow(umat)){
-#    header <- scan(files[i], what = "character", nlines = 1, sep = "\t", quiet = TRUE)
-#    em <- fread(files[i])
-#    setnames(em, colnames(em), c("feature_id", header))
-#    #TODO: get the gene symbols
-#  f2g <- data.table(labkey.selectRows(labkey.url.base, labkey.url.path, "Microarray", "FeatureAnnotation",
-#                           colFilter = makeFilter(c("FeatureAnnotationSetId", "IN", 
-#                                                    paste(umat$run_featureset[i], collapse=";"))),
-#                           colNameOpt = "rname"))
-#    em <- em[, gene_symbol := f2g[match(em$feature_id, f2g$featureid), genesymbol]]
-#    em <- em[, lapply(.SD, mean), by="gene_symbol", .SDcols=2:(ncol(em)-1)]
-#    EM[[i]] <- em
-#  }
-#  EM <- Reduce(f=merge_cohorts,EM)
-#  return(EM)
-#}
-
-
 get_cohort_summary_expression <- function(pd){
   umat <- unique(pd[, list(EM, run_featureset)])
   files <- file.path(labkey.file.root, "analysis/exprs_matrices/", paste0(umat$EM, ".summary"))
@@ -57,6 +35,13 @@ get_cohort_summary_expression <- function(pd){
   EM <- Reduce(f=merge_cohorts,EM)
   return(EM)
 }
+
+add_r2 <- function(data){
+  dt <- data.table(data)
+  dt <- dt[, r2 :=  paste("R^2 ==", round(summary(lm(response ~ logFC))[['r.squared']], 3)), by = "arm_name,gene"]
+  return(data.frame(dt))
+}
+
 
 
 imageWidth  <- as.numeric(labkey.url.params$imageWidth);
@@ -138,7 +123,9 @@ if(color=="") color <- NULL
 if(shape=="") shape <- NULL
 if(size=="") size <- NULL
 if(alpha=="") alpha <- NULL
-p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point(aes_string(size=size, color=color, alpha=alpha, shape=shape)) + geom_smooth(method="lm") + ylab(response) + xlab(xlab) + theme(text=element_text(size=textSize))
+
+data <- add_r2(data)
+p <- ggplot(data=data, aes(x=logFC, y=response)) + geom_point(aes_string(size=size, color=color, alpha=alpha, shape=shape)) + geom_smooth(method="lm") + ylab(response) + xlab(xlab) + geom_text(aes(x=min(data$logFC), y=max(data$response), label = r2), hjust = 0, vjust = 1, data = data, parse = TRUE) + theme(text=element_text(size=textSize)) 
 if(facet == "grid"){
   p <- p + facet_grid(aes(arm_name, gene), scales="free")
 } else{

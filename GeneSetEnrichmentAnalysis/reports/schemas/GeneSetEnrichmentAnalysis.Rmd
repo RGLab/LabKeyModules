@@ -37,17 +37,3 @@ res.dt <- res.dt[, Pval := ifelse(Direction == "Up", 10*log10(PValue), -10*log10
 mat <- 
 -->
 
-<script type="text/javascript" charset="utf-8">
-var init = function() {
-  $(document).ready(function() {
-    $('#res_table').dataTable();
-  }); 
-}
-
-LABKEY.requiresScript([
-   'https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.min.js',
-   'https://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js'],
-                      true, init, this, true);
-</script>
-
-

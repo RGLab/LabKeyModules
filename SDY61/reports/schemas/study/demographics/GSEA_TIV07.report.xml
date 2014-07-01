@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ReportDescriptor>
+    <hidden>false</hidden>
+    <category>Limma analysis</category>
+    <label>Gene Set Enrichment Analysis using MSigDB's immunologic signatures (TIV)</label>
+    <!--<description>this is a module report</description>-->
+</ReportDescriptor>
+

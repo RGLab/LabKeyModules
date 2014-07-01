@@ -58,11 +58,16 @@ if(length(ext) > 1){
 
   #norm_exprs <- cbind(ID_REF = rownames(norm_exprs), norm_exprs)
   
-} else if(ext == "txt"){
+} else if(ext %in% c("tsv", "txt")){
   library(lumi)
   raw_exprs <- fread(inputFiles)
   feature_id <- raw_exprs[, PROBE_ID]
-  raw_exprs <- raw_exprs[, grep("Signal", colnames(raw_exprs), value=TRUE), with=FALSE]
+  sigcols <- grep("Signal", colnames(raw_exprs), value=TRUE)
+  if(length(sigcols) > 0){
+    raw_exprs <- raw_exprs[, grep("Signal", colnames(raw_exprs), value=TRUE), with=FALSE]
+  } else{
+    raw_exprs[, c("PROBE_ID", "SYMBOL") := NULL]
+  }
   setnames(raw_exprs, colnames(raw_exprs), gsub(".AVG.*$", "", colnames(raw_exprs)))
 
   norm_exprs <- as.matrix(raw_exprs)
@@ -75,6 +80,8 @@ if(length(ext) > 1){
   # Get biosample_accession as column names
   if(length(grep("^SUB", colnames(norm_exprs))) == ncol(norm_exprs)){
     colnames(norm_exprs) <- pdata[match(colnames(norm_exprs), pdata$subject_accession), "biosample_accession"]
+  } else if(length(grep("^BS", colnames(norm_exprs))) == ncol(norm_exprs)){
+    # good
   } else{ #Assume it's Illumina samplenames
     biosamples_filter <- paste(unique(pdata$biosample_accession), collapse=";")
     
