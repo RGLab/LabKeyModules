@@ -120,10 +120,9 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             disabled: true,
             handler: function(){
                 cnfReport.inputParams = {
-                    analysisAccession: Ext.encode()
+                    signature:  cbSignature.getValue(),
+                    cohort:     cbCohort.getValue()
                 };
-
-                cnfReport.inputParams['emTesting'] =    Ext.encode();
 
                 setReportRunning( true );
                 LABKEY.Report.execute( cnfReport );

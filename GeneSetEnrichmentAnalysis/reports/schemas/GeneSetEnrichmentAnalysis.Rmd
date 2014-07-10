@@ -1,15 +1,21 @@
-### Inputs
-- Cohort
-- Signatures
+```{r knitr-opts, echo = FALSE}
+library(knitr)
+opts_chunk$set(message = FALSE)
+opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/GeneSetEnrichmentAnalysis/"))
+```
 
 ### Display
 - List of enriched pathways
 - Heatmap of pathway vs time
 
-```{r lib, cache = FALSE, message = FALSE}
+```{r lib, cache = FALSE, message = FALSE, echo = FALSE}
 library(ImmuneSpaceR)
 library(Biobase)
 library(GSEABase)
+```
+
+```{r luparam}
+print(labkey.url.params)
 ```
 
 ```{r get}
