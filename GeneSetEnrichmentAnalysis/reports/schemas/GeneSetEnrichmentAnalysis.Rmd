@@ -1,27 +1,46 @@
-### Inputs
-- Cohort
-- Signatures
-
-### Display
-- List of enriched pathways
-- Heatmap of pathway vs time
+```{r knitr-opts, echo = FALSE}
+library(knitr)
+opts_chunk$set(message = FALSE)
+opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/GeneSetEnrichmentAnalysis/"))
+```
 
 ```{r lib, cache = FALSE, message = FALSE}
 library(ImmuneSpaceR)
 library(Biobase)
 library(GSEABase)
+library(limma)
 ```
 
-```{r get}
-# labkey.url.base <- "https://www.immunespace.org"
-# labkey.url.base <- "www.immunespace.org"
-# labkey.url.path <- "Studies/SDY269"
-# labkey.user.email <- "rsautera at fhcrc.org"
- cohort <- "LAIV_2008"
- idxfile = "/home/rsautera/workspace/others/hipcdb/sets_indices_TIV0809.rds"
-con <- CreateConnection("SDY269")
-EM <- con$getGEMatrix(cohort)
-indices <- readRDS( idxfile )
+```{r funcs, echo = FALSE}
+getRunFromCohort <- function(con, cohort){
+  run <- gsub(".tsv$", "", unique(subset(con$data_cache$GE_inputs, arm_name == cohort)[, "name"]))
+  return(run)
+}
+```
+
+```{r params}
+cohort <- lakey.url.params$cohort
+set <- labkey.url.params$signature
+set_foder <- file.path(labkey.file.root, "analysis/GSEA/")
+study <- basename(labkey.file.path)
+```
+
+```{r read-modules}
+set_file <- switch(set,
+               `MSigDB c7` = "msigdb_immunologic_signatures.rds",
+               `Blood transcript` = "emory_blood_transcript_modules.rds")
+sets <- readRDS( file.path(set_folder, set_file) )
+indices <- symbols2indices(sets, fData(EM)$gene_symbol)
+```
+
+
+```{r EM}
+con <- CreateConnection(study)
+run <-  getRunFromCohort(con, cohort)
+EM <- con$getGEMatrix(run, summary = TRUE)
+```
+
+```{r camera}
 mm <- model.matrix(~subject_accession + study_time_collected, EM)
 res <- camera(EM, indices, design = mm, sort = FALSE)
 ```
