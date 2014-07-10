@@ -4,7 +4,7 @@ opts_chunk$set(message = FALSE)
 opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/GeneSetEnrichmentAnalysis/"))
 ```
 
-```{r lib, cache = FALSE, message = FALSE, echo = FALSE}
+```{r lib, cache = FALSE, message = FALSE, echo = FALSE, warning = FALSE}
 library(ImmuneSpaceR)
 library(Biobase)
 library(GSEABase)
@@ -19,10 +19,10 @@ getRunFromCohort <- function(con, cohort){
 ```
 
 ```{r params}
-cohort <- lakey.url.params$cohort
+cohort <- labkey.url.params$cohort
 set <- labkey.url.params$signature
-set_foder <- file.path(labkey.file.root, "analysis/GSEA/")
-study <- basename(labkey.file.path)
+set_folder <- file.path(labkey.file.root, "analysis/GSEA/")
+study <- basename(labkey.url.path)
 ```
 
 ```{r read-modules}
@@ -30,7 +30,6 @@ set_file <- switch(set,
                `MSigDB c7` = "msigdb_immunologic_signatures.rds",
                `Blood transcript` = "emory_blood_transcript_modules.rds")
 sets <- readRDS( file.path(set_folder, set_file) )
-indices <- symbols2indices(sets, fData(EM)$gene_symbol)
 ```
 
 
@@ -41,12 +40,13 @@ EM <- con$getGEMatrix(run, summary = TRUE)
 ```
 
 ```{r camera}
+indices <- symbols2indices(sets, fData(EM)$gene_symbol)
 mm <- model.matrix(~subject_accession + study_time_collected, EM)
 res <- camera(EM, indices, design = mm, sort = FALSE)
 ```
 
 ```{r kable-LAIV, results='asis'}
-kable(res[res$FDR<.2, ], format='html', row.names=FALSE, table.attr='id="res_table"')
+kable(res[res$FDR<.2, ], format='html', row.names=TRUE, table.attr='id="res_table"')
 ```
 
 <!--
