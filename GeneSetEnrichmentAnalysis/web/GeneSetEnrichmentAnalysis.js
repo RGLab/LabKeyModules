@@ -35,7 +35,8 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         var checkBtnRunStatus = function(){
             if (
                 cbSignature.isValid( true ) &&
-                cbCohort.isValid( true )
+                cbCohort.isValid( true ) &&
+                nfFalseDiscoveryRate.isValid( true )
             ){
                 btnRun.setDisabled( false );
             } else {
@@ -65,7 +66,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         var cbSignature = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
             displayField: 'name',
-            fieldLabel: 'Signature',
+            fieldLabel: 'Modules',
             listeners: {
                 change:     checkBtnRunStatus,
                 cleared:    checkBtnRunStatus,
@@ -111,6 +112,31 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             width: fieldWidth
         });
 
+        var nfFalseDiscoveryRate = new Ext.form.NumberField({
+          allowBlank: false,
+          decimalPrecision: -1,
+          emptyText: 'Type...',
+          enableKeyEvents: true,
+          fieldLabel: 'FDR threshold',
+          height: 22,
+          listeners: {
+            keyup: {
+              buffer: 150,
+              fn: function(field, e) {
+                if( Ext.EventObject.ESC == e.getKey() ){
+                  field.setValue('');
+                }
+                checkBtnRunStatus();
+              }
+            }
+          },
+          maxValue: 1,
+          minValue: 0,
+          value: 0.2,
+          width: fieldWidth
+        });
+
+
 
         /////////////////////////////////////
         //    Buttons and Radio Groups     //
@@ -121,7 +147,8 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             handler: function(){
                 cnfReport.inputParams = {
                     signature:  cbSignature.getValue(),
-                    cohort:     cbCohort.getValue()
+                    cohort:     cbCohort.getValue(),
+                    FDRthresh:  nfFalseDiscoveryRate.getValue()
                 };
 
                 setReportRunning( true );
@@ -183,7 +210,8 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     autoScroll: true,
                     items: [
                         cbCohort,
-                        cbSignature
+                        cbSignature,
+                        nfFalseDiscoveryRate
                     ],
                     title: 'Options'
                 }),
@@ -191,7 +219,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             ],
             labelWidth: 300,
             tabTip: 'Parameters',
-            title: 'Parameters'
+            title: 'Setup'
         });
 
         var pnlReport = new Ext.Panel({

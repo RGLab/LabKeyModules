@@ -1,6 +1,6 @@
 ```{r knitr-opts, echo = FALSE}
 library(knitr)
-opts_chunk$set(message = FALSE)
+opts_chunk$set(message = FALSE, echo = FALSE)
 opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/GeneSetEnrichmentAnalysis/"))
 ```
 
@@ -11,48 +11,67 @@ library(GSEABase)
 library(limma)
 ```
 
-```{r funcs, echo = FALSE}
+```{r param-caching, cache=TRUE, cache.extra=digest::digest(labkey.url.params), echo=FALSE}
+```
+
+```{r funcs, echo = FALSE, cache = TRUE}
 getRunFromCohort <- function(con, cohort){
   run <- gsub(".tsv$", "", unique(subset(con$data_cache$GE_inputs, arm_name == cohort)[, "name"]))
   return(run)
 }
 ```
 
-```{r params}
+```{r params, cache = TRUE, dependson="param-caching"}
 cohort <- labkey.url.params$cohort
 set <- labkey.url.params$signature
+FDRthresh <- labkey.url.params$FDRthresh
 set_folder <- file.path(labkey.file.root, "analysis/GSEA/")
 study <- basename(labkey.url.path)
+print(cohort)
+print(set)
+print(FDRthresh)
 ```
 
-```{r read-modules}
+```{r read-modules, cache = TRUE, dependson="param-caching"}
 set_file <- switch(set,
                `MSigDB c7` = "msigdb_immunologic_signatures.rds",
-               `Blood transcript` = "emory_blood_transcript_modules.rds")
-sets <- readRDS( file.path(set_folder, set_file) )
+               `Blood transcript` = "emory_blood_transcript_modules.rds",
+               `Baylor` = "chaussabel_modules.rds")
+gene_sets <- readRDS( file.path(set_folder, set_file) )
+#switch(set,
+#          `MSigDB c7` = data(msigdb_immunologic_signatures),
+#          `Blood transcript` = data(emory_blood_transcript_modules),
+#          `Baylor` = data(chaussabel_modules.rds))
+## Any of these will load gene_sets in the session
 ```
 
 
-```{r EM}
+```{r EM, cache = TRUE, dependson="params;funcs", echo = FALSE}
 con <- CreateConnection(study)
 run <-  getRunFromCohort(con, cohort)
 EM <- con$getGEMatrix(run, summary = TRUE)
 ```
 
-```{r camera}
-indices <- symbols2indices(sets, fData(EM)$gene_symbol)
+```{r camera, cache = TRUE, dependson="EM", echo = FALSE}
+indices <- symbols2indices(gene_sets, fData(EM)$gene_symbol)
+pData(EM)$study_time_collected <- as.factor(pd$study_time_collected)
 mm <- model.matrix(~subject_accession + study_time_collected, EM)
 res <- camera(EM, indices, design = mm, sort = FALSE)
+sapply(res, class)
 ```
+
+## Gene set enrichment analysis of `r cohort`
 
 ```{r kable-LAIV, results='asis'}
-kable(res[res$FDR<.2, ], format='html', row.names=TRUE, table.attr='id="res_table"')
+kable(res[res$FDR< FDRthresh, ], format='html', row.names=TRUE, table.attr='id="res_table"')
 ```
 
-<!--
+```{r heatmap}
+
 cont.matrix <- makeContrast(paste0("study_time_collected", c(3,7)), levels = mm)
 res.dt <- data.table(res)
+res.dt[, module := rownames(res)]
 res.dt <- res.dt[, Pval := ifelse(Direction == "Up", 10*log10(PValue), -10*log10(PValue))]
 mat <- 
--->
+```
 
