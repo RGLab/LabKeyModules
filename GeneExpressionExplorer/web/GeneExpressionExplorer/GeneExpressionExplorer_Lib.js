@@ -122,17 +122,6 @@ Ext.TabPanel.override({
         }
         item.tabEl = el;
 
-
-        this.mon( tabEl.select('a'), {
-            click: function(e){
-                if(!e.getPageX()){
-                    this.onStripMouseDown(e);
-                }
-            },
-            scope: this,
-            preventDefault: true
-        });
-
         this.mon( item, {
             scope: this,
             disable:        this.onItemDisabled,
@@ -141,8 +130,40 @@ Ext.TabPanel.override({
             iconchange:     this.onItemIconChanged,
             beforeshow:     this.onBeforeShowItem
         });
-    }
+    },  
+    setActiveTab : function(item){
+        item = this.getComponent(item);
+        if(this.fireEvent('beforetabchange', this, item, this.activeTab) === false){
+            return;
+        }   
+        if(!this.rendered){
+            this.activeTab = item;
+            return;
+        }   
+        if(this.activeTab != item){
+            if(this.activeTab){
+                var oldEl = this.getTabEl(this.activeTab);
+                if(oldEl){
+                    Ext.fly(oldEl).removeClass('x-tab-strip-active');
+                }   
+            }   
+            this.activeTab = item;
+            if(item){
+                var el = this.getTabEl(item);
+                Ext.fly(el).addClass('x-tab-strip-active');
+                Ext.fly(el).removeClass('x-tab-strip-over');
+                this.stack.add(item);
 
+                this.layout.setActiveItem(item);
+    
+                this.delegateUpdates();
+                if(this.scrolling){
+                    this.scrollToTab(item, this.animScroll);
+                }   
+            }   
+            this.fireEvent('tabchange', this, item);
+        }   
+    }
 });
 
 // Manage the 'check all' icon state
