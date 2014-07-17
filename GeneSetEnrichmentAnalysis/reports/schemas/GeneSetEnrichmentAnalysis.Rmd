@@ -27,6 +27,7 @@ set <- labkey.url.params$signature
 FDRthresh <- labkey.url.params$FDRthresh
 set_folder <- file.path(labkey.file.root, "analysis/GSEA/")
 study <- basename(labkey.url.path)
+contrast <- "study_time_collected"
 print(cohort)
 print(set)
 print(FDRthresh)

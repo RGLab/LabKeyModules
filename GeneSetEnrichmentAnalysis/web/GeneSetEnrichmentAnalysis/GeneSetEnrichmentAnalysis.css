@@ -294,7 +294,7 @@ pre, .ext-mb-text {
 }
 
 .geneSetEnrichmentAnalysis .x-tab-strip-over {
-    font-weight: normal;
+    text-decoration: underline;
 }
 
 /********************************/

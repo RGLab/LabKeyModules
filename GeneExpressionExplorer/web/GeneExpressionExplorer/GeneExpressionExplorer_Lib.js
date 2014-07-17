@@ -109,7 +109,9 @@ Ext.TabPanel.override({
 
         tabEl.hover(function(){
             if(!item.disabled){
-                tabEl.addClass(cls);
+                if ( ! tabEl.hasClass( 'x-tab-strip-active' ) ){
+                    tabEl.addClass(cls);
+                }
             }
         }, function(){
             tabEl.removeClass(cls);
