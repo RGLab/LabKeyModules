@@ -1,11 +1,12 @@
 ```{r knitr-opts, echo = FALSE}
 library(knitr)
-opts_chunk$set(message = FALSE, echo = FALSE)
+opts_chunk$set(message = FALSE, echo = FALSE, warning=FALSE)
 opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/GeneSetEnrichmentAnalysis/"))
 ```
 
 ```{r lib, cache = FALSE, message = FALSE, echo = FALSE, warning = FALSE}
 library(ImmuneSpaceR)
+library(ImmuneSpaceData)
 library(Biobase)
 library(GSEABase)
 library(limma)
@@ -21,6 +22,23 @@ getRunFromCohort <- function(con, cohort){
   run <- gsub(".tsv$", "", unique(subset(con$data_cache$GE_inputs, arm_name == cohort)[, "name"]))
   return(run)
 }
+
+msig_rnames <- function(rnames){
+  rnames <- paste0('<a href="http://www.broadinstitute.org/gsea/msigdb/cards/',
+                   rnames, '.html" target="_blank">', rnames, '</a>')
+  return(rnames)
+}
+emory_rnames <- function(rnames){
+  modules <- gsub("\\)$", "", gsub("^.*\\(", "", rnames))
+  rnames <- paste0('<a href="http://www.immuneprofiling.org/meni/btm416_annotation/btmdata/',
+                   modules, '.htm" target="_blank">', rnames, '</a>')
+  return(rnames)
+}
+baylor_rnames <- function(rnames){
+  rnames <- paste0('<a href="http://www.biir.net/public_wikis/module_annotation/V2_Trial_8_Modules_',
+                   rnames, '" target="_blank">', rnames, '</a>')
+  return(rnames)
+}
 ```
 
 ```{r params, cache = TRUE, dependson="param-caching"}
@@ -30,22 +48,26 @@ FDRthresh <- labkey.url.params$FDRthresh
 set_folder <- file.path(labkey.file.root, "analysis/GSEA/")
 study <- basename(labkey.url.path)
 contrast <- "study_time_collected"
-print(cohort)
-print(set)
-print(FDRthresh)
 ```
 
-```{r read-modules, cache = TRUE, dependson="param-caching"}
-set_file <- switch(set,
-               `MSigDB c7` = "msigdb_immunologic_signatures.rds",
-               `Blood transcript` = "emory_blood_transcript_modules.rds",
-               `Baylor` = "chaussabel_modules.rds")
-gene_sets <- readRDS( file.path(set_folder, set_file) )
-#switch(set,
-#          `MSigDB c7` = data(msigdb_immunologic_signatures),
-#          `Blood transcript` = data(emory_blood_transcript_modules),
-#          `Baylor` = data(chaussabel_modules.rds))
-## Any of these will load gene_sets in the session
+```{r prints, echo=FALSE}
+#print(cohort)
+#print(set)
+#print(FDRthresh)
+#cat("labkey.file.root <- ",'"', labkey.file.root, '"', sep = "")
+```
+
+```{r modules, cache = TRUE, dependson="param-caching"}
+switch(set,
+          `MSigDB c7` = {data(msigdb_immunologic_signatures);
+                         gene_sets <- msigdb_immunologic_signatures;
+                         func_rnames <- msig_rnames},
+          `Blood transcript` = {data(emory_blood_transcript_modules);
+                                gene_sets <- emory_blood_transcript_modules;
+                                func_rnames <- emory_rnames},
+          `Baylor` = {data(chaussabel_modules);
+                      gene_sets <- chaussabel_modules;
+                      func_rnames <- baylor_rnames})
 ```
 
 
@@ -55,25 +77,24 @@ run <-  getRunFromCohort(con, cohort)
 EM <- con$getGEMatrix(run, summary = TRUE)
 ```
 
-```{r camera, cache = TRUE, dependson="EM", echo = FALSE}
+```{r camera, cache = TRUE, dependson="EM;modules", echo = FALSE}
 indices <- symbols2indices(gene_sets, fData(EM)$gene_symbol)
-pData(EM)$study_time_collected <- as.factor(pd$study_time_collected)
+pData(EM)$study_time_collected <- as.factor(pData(EM)$study_time_collected)
 mm <- model.matrix(~subject_accession + study_time_collected, EM)
 res <- camera(EM, indices, design = mm, sort = FALSE)
-sapply(res, class)
 ```
 
 ## Gene set enrichment analysis of `r cohort`
 
-```{r kable-LAIV, results='asis'}
+```{r kable-LAIV, results='asis', fig.heigth = 4, fig.width = 8}
+rownames(res) <- func_rnames(rownames(res))
 kable(res[res$FDR< FDRthresh, ], format='html', row.names=TRUE, table.attr='id="res_table"')
 ```
 
-```{r byDay, echo = TRUE}
+```{r byDay,  cache = TRUE, dependson="camera", echo = FALSE}
 lev <- levels(pData(EM)$study_time_collected)
 lev <- paste0("study_time_collected", lev[2:length(lev)])
 cam_list <- vector('list', length = length(lev))
-mm2 <- model.matrix(~study_time_collected, EM)
 for(i in 1:length(lev)){
   contrast <- lev[[i]]
   cam_list[[i]] <- camera(EM, index = indices, design = mm, contrast = makeContrasts(contrast, levels=mm))
@@ -82,22 +103,22 @@ PValue <- sapply(cam_list, function(x){ifelse(x$Direction=="Up", -10*log10(x$PVa
 rownames(PValue) <- rownames(cam_list[[1]])
 PValue_max <- rowMax(abs(PValue))
 max <- max(PValue_max)
-PValue_small <- PValue[PValue_max > 20,]
+PValue_small <- PValue[PValue_max > 30,,drop =FALSE]
+colnames(PValue_small) <- lev
 ```
 
-```{r pheatmap}
+```{r pheatmap, echo = FALSE}
 palette <- rev(brewer.pal(name="PiYG", n=11))
-pheatmap(PValue_small, cluster_cols = FALSE,
- breaks = seq(-max, max, length.out = length(palette)+1), color = palette)
+
+mat <- PValue_small
+if(nrow(mat) > 0){
+  rownames(mat) <- ifelse(nchar(rownames(mat))>15, paste(substr(rownames(mat), 1, 8),
+                   substr(rownames(mat), nchar(rownames(mat))-10, nchar(rownames(mat))), sep =" ... "),
+                   rownames(mat))
+  ifelse(nrow(mat) < 2, clust_rows <- FALSE, clust_rows <- TRUE)
+  pheatmap(mat, cluster_cols = FALSE, cluster_rows = clust_rows,
+    breaks = seq(-max, max, length.out = length(palette)+1), color = palette)
+}
 ```
 
-
-```{r heatmap}
-
-#cont.matrix <- makeContrast(paste0("study_time_collected", c(3,7)), levels = mm)
-#res.dt <- data.table(res)
-#res.dt[, module := rownames(res)]
-#res.dt <- res.dt[, Pval := ifelse(Direction == "Up", 10*log10(PValue), -10*log10(PValue))]
-#mat <- 
-```
 

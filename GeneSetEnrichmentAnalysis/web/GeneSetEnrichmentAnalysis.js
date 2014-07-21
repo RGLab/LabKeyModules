@@ -132,7 +132,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
           },
           maxValue: 1,
           minValue: 0,
-          value: 0.2,
+          value: 1,
           width: fieldWidth
         });
 
