@@ -127,7 +127,7 @@ ssem <- strsplit(em$gene_symbol, " /// ")
 nreps <- sapply(ssem, length)
 em <- em[rep(1:nrow(em), nreps)]
 em <- em[, gene_symbol := unlist(ssem)]
-em <- em[!is.na(gene_symbol)]
+em <- em[!is.na(gene_symbol) & gene_symbol != "NA"]
 em <- em[, lapply(.SD, mean), by = "gene_symbol", .SDcols = 1:(ncol(em)-2)]
 
 #temp
