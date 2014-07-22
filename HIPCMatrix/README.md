@@ -1,6 +1,8 @@
 HIPCMatrix module
 =======================
 
+Normalize ImmuneSpace's raw gene expression data into expression matrices
+
 Setup
 -----
 

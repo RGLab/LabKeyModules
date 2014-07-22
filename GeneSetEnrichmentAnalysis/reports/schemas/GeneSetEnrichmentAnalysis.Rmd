@@ -7,7 +7,6 @@ opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Ge
 ```{r lib, cache = FALSE, message = FALSE, echo = FALSE, warning = FALSE}
 library(ImmuneSpaceR)
 library(ImmuneSpaceData)
-library(Biobase)
 library(GSEABase)
 library(limma)
 library(pheatmap)
@@ -44,17 +43,16 @@ baylor_rnames <- function(rnames){
 ```{r params, cache = TRUE, dependson="param-caching"}
 cohort <- labkey.url.params$cohort
 set <- labkey.url.params$signature
-FDRthresh <- labkey.url.params$FDRthresh
+#FDRthresh <- labkey.url.params$FDRthresh
 set_folder <- file.path(labkey.file.root, "analysis/GSEA/")
 study <- basename(labkey.url.path)
 contrast <- "study_time_collected"
 ```
 
 ```{r prints, echo=FALSE}
-#print(cohort)
-#print(set)
-#print(FDRthresh)
-#cat("labkey.file.root <- ",'"', labkey.file.root, '"', sep = "")
+print(cohort)
+print(set)
+cat("labkey.file.root <- ",'"', labkey.file.root, '"', sep = "")
 ```
 
 ```{r modules, cache = TRUE, dependson="param-caching"}
@@ -88,7 +86,8 @@ res <- camera(EM, indices, design = mm, sort = FALSE)
 
 ```{r kable-LAIV, results='asis', fig.heigth = 4, fig.width = 8}
 rownames(res) <- func_rnames(rownames(res))
-kable(res[res$FDR< FDRthresh, ], format='html', row.names=TRUE, table.attr='id="res_table"')
+#kable(res[res$FDR< FDRthresh, ], format='html', row.names=TRUE, table.attr='id="res_table"')
+kable(res, format='html', row.names=TRUE, table.attr='id="res_table"')
 ```
 
 ```{r byDay,  cache = TRUE, dependson="camera", echo = FALSE}
@@ -107,7 +106,7 @@ PValue_small <- PValue[PValue_max > 30,,drop =FALSE]
 colnames(PValue_small) <- lev
 ```
 
-```{r pheatmap, echo = FALSE}
+```{r pheatmap, cache=TRUE, dependson="byDay", echo = FALSE}
 palette <- rev(brewer.pal(name="PiYG", n=11))
 
 mat <- PValue_small

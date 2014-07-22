@@ -35,8 +35,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         var checkBtnRunStatus = function(){
             if (
                 cbSignature.isValid( true ) &&
-                cbCohort.isValid( true ) &&
-                nfFalseDiscoveryRate.isValid( true )
+                cbCohort.isValid( true )
             ){
                 btnRun.setDisabled( false );
             } else {
@@ -112,31 +111,6 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             width: fieldWidth
         });
 
-        var nfFalseDiscoveryRate = new Ext.form.NumberField({
-          allowBlank: false,
-          decimalPrecision: -1,
-          emptyText: 'Type...',
-          enableKeyEvents: true,
-          fieldLabel: 'FDR threshold',
-          height: 22,
-          listeners: {
-            keyup: {
-              buffer: 150,
-              fn: function(field, e) {
-                if( Ext.EventObject.ESC == e.getKey() ){
-                  field.setValue('');
-                }
-                checkBtnRunStatus();
-              }
-            }
-          },
-          maxValue: 1,
-          minValue: 0,
-          value: 1,
-          width: fieldWidth
-        });
-
-
 
         /////////////////////////////////////
         //    Buttons and Radio Groups     //
@@ -147,8 +121,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             handler: function(){
                 cnfReport.inputParams = {
                     signature:  cbSignature.getValue(),
-                    cohort:     cbCohort.getValue(),
-                    FDRthresh:  nfFalseDiscoveryRate.getValue()
+                    cohort:     cbCohort.getValue()
                 };
 
                 setReportRunning( true );
@@ -210,8 +183,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     autoScroll: true,
                     items: [
                         cbCohort,
-                        cbSignature,
-                        nfFalseDiscoveryRate
+                        cbSignature
                     ],
                     title: 'Options'
                 }),
