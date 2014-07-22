@@ -20,12 +20,12 @@ It uses penalized linear or logistic multivariate regression as implemented in t
 ### DifferentialGeneExpression 
 **Title:** Differential Gene Expression Analysis
 
-**Summary:** This module can be used to test for differential gene expression across time (or across a pre-specified contrast) within a specified cohort. More details can be found by exploring manual or the source code.
+**Summary:** This module can be used to test for differential gene expression across time (or across a pre-specified contrast) within a specified cohort. It uses the [Limma](http://www.bioconductor.org/packages/release/bioc/html/limma.html) R package for performing differential expression analysis. More details can be found by exploring manual or the source code. 
 
 ### Gene Set Enrichment Analysis
 **Title:** Gene Set Enrichment Analysis
 
-**Summary:** This module can be used to perform a gene set enrichment analysis across time (or across a prespecified contrast) within a specified cohort. More details can be found by exploring manual or the source code.
+**Summary:** This module can be used to perform a gene set enrichment analysis across time (or across a prespecified contrast) within a specified cohort. It uses the the CAMERA method of the [Limma](http://www.bioconductor.org/packages/release/bioc/html/limma.html) R package for performing gene set enrichment analysis. More details can be found by exploring manual or the source code.
 
 ###HIPCMatrix
 Create expression matrix using an R pipeline job and import assay into LabKey's microarray ExpressionMatrix assay
