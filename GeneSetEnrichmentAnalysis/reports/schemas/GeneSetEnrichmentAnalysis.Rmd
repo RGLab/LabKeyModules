@@ -7,10 +7,10 @@ opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Ge
 ```{r lib, cache = FALSE, message = FALSE, echo = FALSE, warning = FALSE}
 library(ImmuneSpaceR)
 library(ImmuneSpaceData)
-library(GSEABase)
 library(limma)
 library(pheatmap)
 library(RColorBrewer)
+library(reshape2)
 ```
 
 ```{r param-caching, cache=TRUE, cache.extra=digest::digest(labkey.url.params), echo=FALSE}
@@ -44,14 +44,15 @@ baylor_rnames <- function(rnames){
 cohort <- labkey.url.params$cohort
 set <- labkey.url.params$signature
 #FDRthresh <- labkey.url.params$FDRthresh
-set_folder <- file.path(labkey.file.root, "analysis/GSEA/")
 study <- basename(labkey.url.path)
 contrast <- "study_time_collected"
 ```
 
-```{r prints, echo=FALSE}
+```{r prints, eval = FALSE}
 print(cohort)
 print(set)
+print(labkey.url.base)
+print(labkey.url.path)
 cat("labkey.file.root <- ",'"', labkey.file.root, '"', sep = "")
 ```
 
@@ -69,47 +70,55 @@ switch(set,
 ```
 
 
-```{r EM, cache = TRUE, dependson="params;funcs", echo = FALSE}
+```{r EM, cache = TRUE, dependson="params;funcs"}
 con <- CreateConnection(study)
 run <-  getRunFromCohort(con, cohort)
 EM <- con$getGEMatrix(run, summary = TRUE)
 ```
 
-```{r camera, cache = TRUE, dependson="EM;modules", echo = FALSE}
+```{r camera, cache = TRUE, dependson="EM;modules"}
 indices <- symbols2indices(gene_sets, fData(EM)$gene_symbol)
 pData(EM)$study_time_collected <- as.factor(pData(EM)$study_time_collected)
 mm <- model.matrix(~subject_accession + study_time_collected, EM)
-res <- camera(EM, indices, design = mm, sort = FALSE)
+#res <- camera(EM, indices, design = mm, sort = FALSE)
 ```
 
 ## Gene set enrichment analysis of `r cohort`
 
-```{r kable-LAIV, results='asis', fig.heigth = 4, fig.width = 8}
-rownames(res) <- func_rnames(rownames(res))
-#kable(res[res$FDR< FDRthresh, ], format='html', row.names=TRUE, table.attr='id="res_table"')
-kable(res, format='html', row.names=TRUE, table.attr='id="res_table"')
-```
-
-```{r byDay,  cache = TRUE, dependson="camera", echo = FALSE}
+```{r byDay,  cache = TRUE, dependson="camera"}
 lev <- levels(pData(EM)$study_time_collected)
 lev <- paste0("study_time_collected", lev[2:length(lev)])
 cam_list <- vector('list', length = length(lev))
 for(i in 1:length(lev)){
   contrast <- lev[[i]]
-  cam_list[[i]] <- camera(EM, index = indices, design = mm, contrast = makeContrasts(contrast, levels=mm))
+  res <- camera(EM, index = indices, design = mm, contrast = makeContrasts(contrast, levels=mm))
+  dt <- data.table(res) 
+  dt[, Module := rownames(res)]
+  dt[, Contrast := lev[[i]]]
+  dt[, PValue := ifelse(Direction=="Up", -10*log10(PValue), 10*log10(PValue))]
+  cam_list[[i]] <- dt
 }
-PValue <- sapply(cam_list, function(x){ifelse(x$Direction=="Up", -10*log10(x$PValue), 10*log10(x$PValue))})
-rownames(PValue) <- rownames(cam_list[[1]])
-PValue_max <- rowMax(abs(PValue))
-max <- max(PValue_max)
-PValue_small <- PValue[PValue_max > 30,,drop =FALSE]
-colnames(PValue_small) <- lev
+table <- rbindlist(cam_list)
+setcolorder(table, c("Module", "Contrast", "NGenes", "Correlation", "Direction", "PValue", "FDR"))
+table <- table[order(abs(PValue), decreasing = TRUE)]
 ```
 
-```{r pheatmap, cache=TRUE, dependson="byDay", echo = FALSE}
+```{r heatmap-matrix, cache = TRUE, dependson="byDay"}
 palette <- rev(brewer.pal(name="PiYG", n=11))
+DEM <- unique(table[abs(PValue)>30, Module])
+DEM <- table[Module %in% DEM, list(Module, Contrast, PValue)]
+DEM <- dcast(DEM, formula = Module ~ Contrast, value.var = "PValue")
+mat <- as.matrix(DEM[, -1])
+rownames(mat) <- DEM$Module
+```
 
-mat <- PValue_small
+```{r kable, cache = TRUE, dependson="byDay", results='asis', fig.heigth = 4, fig.width = 8}
+table <- table[, Module := func_rnames(Module)]
+kable(table, format='html', row.names=TRUE, table.attr='id="res_table"')
+```
+
+```{r pheatmap, cache=TRUE, dependson="heatmap-matrix"}
+max <- max(abs(mat))
 if(nrow(mat) > 0){
   rownames(mat) <- ifelse(nchar(rownames(mat))>15, paste(substr(rownames(mat), 1, 8),
                    substr(rownames(mat), nchar(rownames(mat))-10, nchar(rownames(mat))), sep =" ... "),

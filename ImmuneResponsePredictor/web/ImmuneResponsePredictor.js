@@ -436,7 +436,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 } else {
                     var p = outputParams[0];
 
-                    pnlReport.update(p.value);
+                    pnlView.update(p.value);
 
                     $('#res_table').dataTable();
 
@@ -470,7 +470,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         ],
         boolGeneExpression = true;
 
-        var pnlParameters = new Ext.form.FormPanel({
+        var pnlInput = new Ext.form.FormPanel({
             bodyStyle: { paddingTop: '1px' },
             defaults: {
                 autoHeight: true,
@@ -520,11 +520,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 btnRun
             ],
             labelWidth: 300,
-            tabTip: 'Parameters',
-            title: 'Parameters'
+            tabTip: 'Input',
+            title: 'Input'
         });
 
-        var pnlReport = new Ext.Panel({
+        var pnlView = new Ext.Panel({
             bodyStyle: 'padding: 1px;',
             defaults: {
                 autoHeight: true,
@@ -533,8 +533,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             forceLayout: true,
             html: 'Switch to the \'Parameters\' tab, select the parameter values and click the \'RUN\' button to generate the report',
             layout: 'fit',
-            tabTip: 'Report',
-            title: 'Report'
+            tabTip: 'View',
+            title: 'View'
         });
 
         var pnlTabs = new Ext.TabPanel({
@@ -549,8 +549,32 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             deferredRender: false,
             forceLayout: true,
             items: [
-                pnlParameters,
-                pnlReport
+                pnlInput,
+                pnlView,
+                new Ext.Panel({
+                    bodyStyle: 'padding: 1px;',
+                    defaults: {
+                        autoHeight: true,
+                        hideMode: 'offsets'
+                    },
+                    forceLayout: true,
+                    html: 'This module can be used to automatically select a group of genes whose expression at a given time point (e.g. gene expression levels at day 0) best predicts a given immunological response at a later time point (e.g. HAI at day 28). It uses penalized linear or logistic multivariate regression as implemented in the <a href="http://cran.r-project.org/web/packages/glmnet/index.html" target="_blank">glmnet</a> R package. The gene selection part is done by cross validation.',
+                    layout: 'fit',
+                    tabTip: 'About',
+                    title: 'About'
+                }),
+                new Ext.Panel({
+                    bodyStyle: 'padding: 1px;',
+                    defaults: {
+                        autoHeight: true,
+                        hideMode: 'offsets'
+                    },
+                    forceLayout: true,
+                    html: 'Help with parameters explanation here',
+                    layout: 'fit',
+                    tabTip: 'Help',
+                    title: 'Help'
+                })
             ],
             layoutOnTabChange: true,
             listeners: {
