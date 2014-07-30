@@ -1,0 +1,93 @@
+```{r knitr_opts, echo = FALSE, cache = FALSE}
+opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/limma/"))
+opts_chunk$set(echo = FALSE, message = FALSE)
+```
+# TODO: 
+- Test on SDY212
+- Add lists definitions to template
+- Check descriptions and ID before doing the analysis (Then increment GEAi)
+- Adapt description for non time contrasts
+
+# Tests:
+- Multiple cohorts (SDY269)
+- Empty lists (Add all)
+- Full lists (Nothing to add)
+
+```{r libraries, message = FALSE}
+library(Rlabkey)
+library(ImmuneSpaceR)
+library(limma)
+library(Biobase)
+library(data.table)
+```
+
+```{r parameters}
+contrast <- "study_time_collected"
+study <- "SDY61"
+study <- basename(labkey.url.path)
+i <- 1 #analysis accession key
+```
+
+```{r getData}
+con <- CreateConnection(study)
+nCoefs <- unique(con$data_cache[["GE_inputs"]][, c("arm_name", contrast, "name")])
+nCoefs$coefficient <- paste0(contrast, nCoefs[, contrast])
+existGEA <- labkey.selectRows(labkey.url.base, labkey.url.path, "lists", 
+                              "gene_expression_analysis", colNameOpt = "rname")
+if(nrow(existGEA) > 0){
+  q1 <- quote(arm_name)
+  q2 <- quote(coefficient)
+  exist <- data.table(existGEA)[, key := paste0(eval(q1), eval(q2))]
+  n_dt <- data.table(nCoefs[, cnames])[, key := paste0(eval(q1), eval(q2))]
+  n_dt <- n_dt[!key %in% exist$key]
+  #Si il reste autant de coh que de coeffs, then y a rien a faire
+  arm_todo <- n_dt[, .N, by = arm_name][N > 1, arm_name]
+  i <- max(as.numeric(gsub("^GEA", "", exist$analysis_accession))) + 1
+}
+nCoefs <- nCoefs[ nCoefs$arm_name %in% arm_todo,]
+runs <- gsub(".tsv$", "", unique(nCoefs[, "name"]))
+nCoefs <- nrow(nCoefs) - length(unique(nCoefs[, "arm_name"]))
+```
+
+```{r analysis}
+
+GEA_list <- vector("list", nCoefs)
+GEAR_list <- vector("list", nCoefs)
+for(run in runs){
+  EM <- con$getGEMatrix(run)
+  pData(EM)[, contrast] <- factor(pData(EM)[, contrast])
+  mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
+  fit <- lmFit(EM, mm)
+  fit <- eBayes(fit)
+  
+  coefs <- grep(contrast, colnames(mm), value = TRUE)
+  for(coef in coefs){
+    # analysis_accession, expression_matrix, coefficient, description 
+    # analysis_accession, feature_id, adj_p_val, ave_expr, log_fc, p_value, statistic
+    analysis_accession <- paste0("GEA", i)
+    day <- gsub(contrast, "", coef)
+    arm_name <- unique(pData(EM)$arm_name)
+    description <- paste0("Differential expression in ", run, ", Day ", day, " vs. Day 0")
+    # GEA
+    GEA_list[[i]] <- data.table(analysis_accession = analysis_accession, 
+                      expression_matrix = run, arm_name = arm_name, 
+                      coefficient = coef, description = description)
+    tt <- data.table(topTable(fit, coef = coef, number = Inf))
+    tt <- tt[adj.P.Val < 0.02]
+    tt[, c("analysis_accession", "coefficient") := list(analysis_accession, coef)]
+    GEAR_list[[i]] <- data.table(tt)
+    i <- i + 1
+  }
+}
+GEA <- rbindlist(GEA_list)
+GEAR <- rbindlist(GEAR_list)
+setnames(GEAR, c("FeatureId", "GeneSymbol", "adj.P.Val", "AveExpr", "logFC", "P.Value", "t"), c("feature_id", "gene_symbol", "adj_p_val", "ave_expr", "log_fc", "p_value", "statistic"))
+```
+
+```{r write}
+res_GEA <- labkey.importRows(labkey.url.base, labkey.url.path, "lists", 
+                         "gene_expression_analysis", toImport = GEA)
+res_GEAR <- labkey.importRows(labkey.url.base, labkey.url.path, "lists",
+                              "gene_expression_analysis_results", toImport = GEAR)
+```
+
