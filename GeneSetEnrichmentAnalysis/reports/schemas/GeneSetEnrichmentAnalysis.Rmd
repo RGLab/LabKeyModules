@@ -38,6 +38,23 @@ baylor_rnames <- function(rnames){
                    rnames, '" target="_blank">', rnames, '</a>')
   return(rnames)
 }
+format_table <- function(x, ...)
+  {
+  require(knitr)
+  require(data.table)
+  if(!is(x,"data.table"))
+    {
+    # This is to make sure that we don't have issues with row names in data.frames
+    stop("This function only works on data.tables")
+    }
+  out <- kable(x, "html", table.attr = 'id="table"', output = FALSE, ...)
+  footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
+  out_new <- gsub("</thead>",footer,out)
+  cat(out_new)
+  
+  cat("\n<script type='text/javascript' charset='utf-8'>\n$(document).ready(function() {\n $('#table').dataTable();\n} );\n</script>\n")
+  #cat("\n<script type='text/javascript' charset='utf-8'>\n $('#table').dataTable();\n </script>\n")
+  }
 ```
 
 ```{r params, cache = TRUE, dependson="param-caching"}
@@ -49,6 +66,7 @@ contrast <- "study_time_collected"
 ```
 
 ```{r prints, eval = FALSE}
+print(labkey.url.params)
 print(cohort)
 print(set)
 print(labkey.url.base)
@@ -94,27 +112,28 @@ for(i in 1:length(lev)){
   res <- camera(EM, index = indices, design = mm, contrast = makeContrasts(contrast, levels=mm))
   dt <- data.table(res) 
   dt[, Module := rownames(res)]
-  dt[, Contrast := lev[[i]]]
+  dt[, Coefficient := lev[[i]]]
   dt[, PValue := ifelse(Direction=="Up", -10*log10(PValue), 10*log10(PValue))]
   cam_list[[i]] <- dt
 }
 table <- rbindlist(cam_list)
-setcolorder(table, c("Module", "Contrast", "NGenes", "Correlation", "Direction", "PValue", "FDR"))
+setcolorder(table, c("Module", "Coefficient", "NGenes", "Correlation", "Direction", "PValue", "FDR"))
 table <- table[order(abs(PValue), decreasing = TRUE)]
 ```
 
 ```{r heatmap-matrix, cache = TRUE, dependson="byDay"}
 palette <- rev(brewer.pal(name="PiYG", n=11))
 DEM <- unique(table[abs(PValue)>30, Module])
-DEM <- table[Module %in% DEM, list(Module, Contrast, PValue)]
-DEM <- dcast(DEM, formula = Module ~ Contrast, value.var = "PValue")
+DEM <- table[Module %in% DEM, list(Module, Coefficient, PValue)]
+DEM <- dcast(DEM, formula = Module ~ Coefficient, value.var = "PValue")
 mat <- as.matrix(DEM[, -1])
 rownames(mat) <- DEM$Module
+#format_table(table)
 ```
 
 ```{r kable, cache = TRUE, dependson="byDay", results='asis', fig.heigth = 4, fig.width = 8}
 table <- table[, Module := func_rnames(Module)]
-kable(table, format='html', row.names=TRUE, table.attr='id="res_table"')
+kable(table, format='html', row.names=TRUE, table.attr='class="display" id="res_table"')
 ```
 
 ```{r pheatmap, cache=TRUE, dependson="heatmap-matrix"}

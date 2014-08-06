@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns:tables xmlns:ns='http://labkey.org/data/xml'>
+    <ns:table tableName='gene_expression_analysis' tableDbType='TABLE'>
+        <ns:description>
+            The 'gene_expression_analysis_table' stores runs of the DifferentialExpressionAnalysis module.
+        </ns:description>
+        <ns:columns>
+            <ns:column columnName='key'>
+                <ns:isHidden>true</ns:isHidden>
+                <ns:isKeyField>true</ns:isKeyField>
+            </ns:column>
+            <ns:column columnName='container'>
+                <ns:isHidden>true</ns:isHidden>
+            </ns:column>
+            <ns:column columnName='analysis_accession'>
+                <ns:columnTitle>Analysis accession</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='expression_matrix'>
+                <ns:columnTitle>Expression matrix</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='arm_name'>
+                <ns:columnTitle>Arm name</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='coefficient'>
+                <ns:columnTitle>Coefficient</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='description'>
+                <ns:columnTitle>Description</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='created'>
+                <ns:isHidden>true</ns:isHidden>
+                <ns:columnTitle>Created</ns:columnTitle>
+                <ns:formatString>yyyy-MM-dd HH:mm:ss</ns:formatString>
+            </ns:column>
+        </ns:columns>
+    </ns:table>
+
+    <ns:table tableName='gene_expression_analysis_results' tableDbType='TABLE'>
+        <ns:description>
+            The 'gene_expression_analysis_table_results' stores the results of the DifferentialExpressionAnalysis.
+        </ns:description>
+        <ns:columns>
+            <ns:column columnName='container'>
+                <ns:isHidden>true</ns:isHidden>
+            </ns:column>
+            <ns:column columnName='key'>
+                <ns:isHidden>true</ns:isHidden>
+                <ns:isKeyField>true</ns:isKeyField>
+            </ns:column>
+            <ns:column columnName='analysis_accession'>
+                <ns:columnTitle>Analysis accession</ns:columnTitle>
+                <ns:fk>
+                    <ns:fkDbSchema>gene_expression</ns:fkDbSchema>
+                    <ns:fkTable>gene_expression_analysis</ns:fkTable>
+                    <ns:fkColumnName>analysis_accession</ns:fkColumnName>
+                </ns:fk>
+            </ns:column>
+            <ns:column columnName='feature_id'>
+                <ns:columnTitle>Feature ID</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='gene_symbol'>
+                <ns:columnTitle>Gene symbol</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='adj_p_val'>
+                <ns:columnTitle>Adjusted P-value</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='ave_expr'>
+                <ns:columnTitle>Average expression</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='log_fc'>
+                <ns:columnTitle>Log fold-change</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='p_value'>
+                <ns:columnTitle>P-value</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='statistic'>
+                <ns:columnTitle>Statistic</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='created'>
+                <ns:isHidden>true</ns:isHidden>
+                <ns:columnTitle>Created</ns:columnTitle>
+                <ns:formatString>yyyy-MM-dd HH:mm:ss</ns:formatString>
+            </ns:column>
+        </ns:columns>
+    </ns:table>
+</ns:tables>
+

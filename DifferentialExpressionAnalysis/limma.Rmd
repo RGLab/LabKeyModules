@@ -32,7 +32,7 @@ i <- 1 #analysis accession key
 con <- CreateConnection(study)
 nCoefs <- unique(con$data_cache[["GE_inputs"]][, c("arm_name", contrast, "name")])
 nCoefs$coefficient <- paste0(contrast, nCoefs[, contrast])
-existGEA <- labkey.selectRows(labkey.url.base, labkey.url.path, "lists", 
+existGEA <- labkey.selectRows(labkey.url.base, labkey.url.path, "gene_expression", 
                               "gene_expression_analysis", colNameOpt = "rname")
 if(nrow(existGEA) > 0){
   q1 <- quote(arm_name)
@@ -85,9 +85,9 @@ setnames(GEAR, c("FeatureId", "GeneSymbol", "adj.P.Val", "AveExpr", "logFC", "P.
 ```
 
 ```{r write}
-res_GEA <- labkey.importRows(labkey.url.base, labkey.url.path, "lists", 
+res_GEA <- labkey.importRows(labkey.url.base, labkey.url.path, "gene_expression", 
                          "gene_expression_analysis", toImport = GEA)
-res_GEAR <- labkey.importRows(labkey.url.base, labkey.url.path, "lists",
+res_GEAR <- labkey.importRows(labkey.url.base, labkey.url.path, "gene_expression",
                               "gene_expression_analysis_results", toImport = GEAR)
 ```
 

@@ -25,11 +25,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         //            Variables            //
         /////////////////////////////////////
 
-        var
-            me                                  = this,
-            maskReport                          = undefined,
-            fieldWidth                          = 240,
-            flagCohortTrainingSelect            = undefined
+        var description                 = '<br>This module can be used to automatically select a group of genes whose expression at a given time point (e.g. gene expression levels at day 0) best predicts a given immunological response at a later time point (e.g. HAI at day 28). It uses penalized linear or logistic multivariate regression as implemented in the <a href="http://cran.r-project.org/web/packages/glmnet/index.html" target="_blank">glmnet</a> R package. The gene selection part is done by cross validation.<br><br>',
+            me                          = this,
+            maskReport                  = undefined,
+            fieldWidth                  = 240,
+            flagCohortTrainingSelect    = undefined
             ;
 
         var checkBtnRunStatus = function(){
@@ -478,7 +478,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 hideMode: 'offsets'
             },
             deferredRender: false,
-            forceLayout: true,
             items: [
                 new Ext.form.FieldSet({
                     autoScroll: true,
@@ -514,7 +513,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     collapsed: true,
                     collapsible: true,
                     items: arGeneExpression,
-                    title: 'Options',
+                    title: 'Additional options',
                     titleCollapse: true
                 }),
                 btnRun
@@ -530,8 +529,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 autoHeight: true,
                 hideMode: 'offsets'
             },
-            forceLayout: true,
-            html: 'Switch to the \'Parameters\' tab, select the parameter values and click the \'RUN\' button to generate the report',
+            html: 'Switch to the \'Input\' tab, select the parameter values and click the \'RUN\' button to generate the report',
             layout: 'fit',
             tabTip: 'View',
             title: 'View'
@@ -543,6 +541,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             defaults: {
                 autoHeight: true,
                 border: false,
+                forceLayout: true,
                 hideMode: 'offsets',
                 style: 'padding-bottom: 4px; padding-right: 4px; padding-left: 4px;'
             },
@@ -557,8 +556,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         autoHeight: true,
                         hideMode: 'offsets'
                     },
-                    forceLayout: true,
-                    html: 'This module can be used to automatically select a group of genes whose expression at a given time point (e.g. gene expression levels at day 0) best predicts a given immunological response at a later time point (e.g. HAI at day 28). It uses penalized linear or logistic multivariate regression as implemented in the <a href="http://cran.r-project.org/web/packages/glmnet/index.html" target="_blank">glmnet</a> R package. The gene selection part is done by cross validation.',
+                    html: description, 
                     layout: 'fit',
                     tabTip: 'About',
                     title: 'About'
@@ -569,8 +567,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         autoHeight: true,
                         hideMode: 'offsets'
                     },
-                    forceLayout: true,
-                    html: 'Help with parameters explanation here',
+                    html: '<h3>Response</h3><br><b>Variable:</b> The predicted response (Currently, only HAI is available)<br><br><b>Training:</b> The cohort used to train the model<br><br><b>Testing:</b> The cohort used to test the model<br><br><b>Dichotomize values:</b> Check it to have the predicted response expressed as a boolean<br><br><b>Dichotomization threshold:</b> The threshold for dichotomization, every subject with a value above the selected threshold will be considered a responder<br><br><h3>Predictor</h3><h3>Example</h3>Variable: HAI<br>Training: Cohort1<br> Testing: Cohort2<br>Dichotomize: unchecked<br>Time point: Day 7<br> Assay: Gene expression<br><br>',
                     layout: 'fit',
                     tabTip: 'Help',
                     title: 'Help'
@@ -586,10 +583,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                             msgCls: 'mask-loading'
                         }
                     );
-                },
-                tabchange: function(tabPanel, tab){
-                    if ( tab.title == 'Create' ){
-                    }
                 }
             },
             minTabWidth: 100,

@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='expression_matrices_cohorts' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        List all cohorts that have gene expression matrices. To be used in GSEA.
+    </description>
+</query>

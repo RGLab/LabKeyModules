@@ -25,7 +25,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         //            Variables            //
         /////////////////////////////////////
 
-        var
+        var description         = '<br>This module can be used to perform a gene set enrichment analysis across time (or across a prespecified contrast) within a specified cohort. It uses the CAMERA method of the <a href="http://www.bioconductor.org/packages/release/bioc/html/limma.html" target="_blank">Limma</a> R package for performing gene set enrichment analysis.<br><br>'
             me                  = this,
             maskReport          = undefined,
             fieldWidth          = 240,
@@ -53,7 +53,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             listeners: {
                 loadexception: LABKEY.ext.GeneSetEnrichmentAnalysis_Lib.onFailure
             },
-            queryName: 'cohorts_gsea',
+            queryName: 'expression_matrices_cohorts',
             schemaName: 'study'
         });
 
@@ -155,7 +155,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 } else {
                     var p = outputParams[0];
 
-                    pnlReport.update(p.value);
+                    pnlView.update(p.value);
 
                     $('#res_table').dataTable();
 
@@ -169,7 +169,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         //  Panels, Containers, Components //
         /////////////////////////////////////
 
-        var pnlParameters = new Ext.form.FormPanel({
+        var pnlInput = new Ext.form.FormPanel({
             bodyStyle: { paddingTop: '1px' },
             defaults: {
                 autoHeight: true,
@@ -177,7 +177,6 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 hideMode: 'offsets'
             },
             deferredRender: false,
-            forceLayout: true,
             items: [
                 new Ext.form.FieldSet({
                     autoScroll: true,
@@ -185,26 +184,25 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                         cbCohort,
                         cbSignature
                     ],
-                    title: 'Options'
+                    title: 'Parameters'
                 }),
                 btnRun
             ],
-            labelWidth: 300,
-            tabTip: 'Parameters',
-            title: 'Setup'
+            labelWidth: 100,
+            tabTip: 'Input',
+            title: 'Input'
         });
 
-        var pnlReport = new Ext.Panel({
+        var pnlView = new Ext.Panel({
             bodyStyle: 'padding: 1px;',
             defaults: {
                 autoHeight: true,
                 hideMode: 'offsets'
             },
-            forceLayout: true,
-            html: 'Switch to the \'Parameters\' tab, select the parameter values and click the \'RUN\' button to generate the report',
+            html: 'Switch to the \'Input\' tab, select the parameter values and click the \'RUN\' button to generate the report',
             layout: 'fit',
-            tabTip: 'Report',
-            title: 'Report'
+            tabTip: 'View',
+            title: 'View'
         });
 
         var pnlTabs = new Ext.TabPanel({
@@ -213,14 +211,38 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             defaults: {
                 autoHeight: true,
                 border: false,
+                forceLayout: true,
                 hideMode: 'offsets',
                 style: 'padding-bottom: 4px; padding-right: 4px; padding-left: 4px;'
             },
             deferredRender: false,
             forceLayout: true,
             items: [
-                pnlParameters,
-                pnlReport
+                pnlInput,
+                pnlView,
+                new Ext.Panel({
+                    bodyStyle: 'padding: 1px;',
+                    defaults: {
+                        autoHeight: true,
+                        hideMode: 'offsets'
+                    },
+                    html: description,
+                    layout: 'fit',
+                    tabTip: 'About',
+                    title: 'About'
+                }),
+                new Ext.Panel({
+                    bodyStyle: 'padding: 1px;',
+                    defaults: {
+                        autoHeight: true,
+                        hideMode: 'offsets'
+                    },
+                    html: '<br><b>Cohort:</b> The cohort with the subjects of interest<br><br><b>Module:</b> The gene sets to be used for the analysis<br><br>',
+                    layout: 'fit',
+                    tabTip: 'Help',
+                    title: 'Help'
+                })
+
             ],
             layoutOnTabChange: true,
             listeners: {

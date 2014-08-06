@@ -26,6 +26,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var
+            description     = 'This module can be used to quickly plot the expression level of one or more genes against a selected immunological response variable (e.g. HAI) in one or more cohorts. Visualization is achieve using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
             me              = this,
             maskPlot        = undefined,
             reportSessionId = undefined,
@@ -468,8 +469,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var cntPlot = new Ext.Container({});
 
-        var pnlMain = new Ext.form.FormPanel({
-            autoHeight: true,
+        var pnlView = new Ext.form.FormPanel({
             autoScroll: true,
             bodyStyle: 'padding: 4px;',
             defaults: {
@@ -478,16 +478,22 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 hideMode: 'offsets'
             },
             deferredRender: false,
-            forceLayout: true,
             items: [
-                cbResponse,
-                new Ext.Spacer({
-                    height: 20,
-                    html: '&nbsp'
+                new Ext.form.FieldSet({
+                    autoScroll: true,
+                    items: [
+                        cbResponse,
+                        new Ext.Spacer({
+                            height: 20,
+                            html: '&nbsp'
+                        }),
+                        cbCohorts,
+                        cbTimePoint,
+                        cbGenes
+                    ],
+                    labelWidth: 90,
+                    title: 'Parameters'
                 }),
-                cbCohorts,
-                cbTimePoint,
-                cbGenes,
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     collapsed: true,
@@ -501,13 +507,54 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         cbAlpha
                     ],
                     labelWidth: 90,
-                    title: 'Additional parameters',
+                    title: 'Additional options',
                     titleCollapse: true
                 }),
                 btnPlot,
                 cntPlot
             ],
-            labelWidth: 100,
+            tabTip: 'View',
+            title: 'View'
+        });
+
+        var pnlTabs = new Ext.TabPanel({
+            activeTab: 0,
+            autoHeight: true,
+            defaults: {
+                autoHeight: true,
+                border: false,
+                forceLayout: true,
+                hideMode: 'offsets',
+                style: 'padding-bottom: 4px; padding-right: 4px; padding-left: 4px;'
+            },
+            deferredRender: false,
+            forceLayout: true,
+            items: [
+                pnlView,
+                new Ext.Panel({
+                    bodyStyle: 'padding: 1px;',
+                    defaults: {
+                        autoHeight: true,
+                        hideMode: 'offsets'
+                    },
+                    html: description,
+                    layout: 'fit',
+                    tabTip: 'About',
+                    title: 'About'
+                }),
+                new Ext.Panel({
+                    bodyStyle: 'padding: 1px;',
+                    defaults: {
+                        autoHeight: true,
+                        hideMode: 'offsets'
+                    },
+                    html: 'Help with parameters explanation here',
+                    layout: 'fit',
+                    tabTip: 'Help',
+                    title: 'Help'
+                })
+            ],
+            layoutOnTabChange: true,
             listeners: {
                 afterrender: function(){
                     maskPlot = new Ext.LoadMask(
@@ -518,8 +565,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         }
                     );
                 }
-            }
+            },
+            minTabWidth: 100,
+            resizeTabs: true
         });
+
 
         /////////////////////////////////////
         //             Functions           //
@@ -584,7 +634,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         this.boxMinWidth    = 370;
         this.cls            = 'geneExpressionExplorer';
         this.frame          = false;
-        this.items          = pnlMain;
+        this.items          = pnlTabs;
         this.layout         = 'fit';
         this.renderTo       = config.webPartDivId;
         this.webPartDivId   = config.webPartDivId;

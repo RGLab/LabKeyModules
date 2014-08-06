@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ReportDescriptor>
+    <hidden>false</hidden>
+    <category>Limma analysis</category>
+    <label>Differential Expression Analysis</label>
+    <description>Identify genes whose expression level changed over time.</description>
+</ReportDescriptor>

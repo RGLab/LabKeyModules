@@ -1,0 +1,14 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+    <cv:columns>
+        <cv:column name="analysis_accession"/>
+        <cv:column name="analysis_accession/arm_name"/>
+        <cv:column name="analysis_accession/coefficient"/>
+        <cv:column name="feature_id"/>
+        <cv:column name="gene_symbol"/>
+        <cv:column name="adj_p_val"/>
+        <cv:column name="ave_expr"/>
+        <cv:column name="log_fc"/>
+        <cv:column name="p_value"/>
+        <cv:column name="statistic"/>
+    </cv:columns>
+</cv:customView>

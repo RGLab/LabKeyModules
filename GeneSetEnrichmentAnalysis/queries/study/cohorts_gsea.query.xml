@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<query name='cohorts_gsea' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
-    <description>
-        List unique cohorts and the corresponding expression matrices.
-    </description>
-</query>

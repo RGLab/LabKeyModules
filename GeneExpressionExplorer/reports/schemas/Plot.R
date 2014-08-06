@@ -139,3 +139,4 @@ dev.off();
 Sys.sleep(3);
 
 write( RJSONIO::toJSON( x=arrayCohorts, asIs = T ), '${jsonout:outArray}' );
+
