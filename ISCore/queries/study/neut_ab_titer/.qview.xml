@@ -1,0 +1,11 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+    <cv:columns>
+        <cv:column name="SUBJECT_ACCESSION"/>
+        <cv:column name="arm_accession/name"/>
+        <cv:column name="study_time_collected"/>
+        <cv:column name="study_time_collected_unit"/>
+        <cv:column name="virus_strain"/>
+        <cv:column name="value_reported"/>
+        <cv:column name="unit_reported"/>
+    </cv:columns>
+</cv:customView>

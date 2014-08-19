@@ -1,0 +1,8 @@
+<libraries xmlns='http://labkey.org/clientLibrary/xml/'>                                                                                   
+    <library compileInProductionMode='true'>
+        <script path='ISCore/Spinner/Spinner.css'/>
+        <script path='ISCore/Spinner/Spinner.js'/>
+        <script path='ISCore/Spinner/SpinnerField.js'/>
+    </library>
+</libraries>
+

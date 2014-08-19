@@ -1,0 +1,14 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+    <cv:columns>
+        <cv:column name="SUBJECT_ACCESSION"/>
+        <cv:column name="analyte_name"/>
+        <cv:column name="arm_accession/name"/>
+        <cv:column name="comments"/>
+        <cv:column name="concentration_value"/>
+        <cv:column name="concentration_unit"/>
+        <cv:column name="mfi"/>
+        <cv:column name="mfi_coordinate"/>
+        <cv:column name="study_time_collected"/>
+        <cv:column name="study_time_collected_unit"/>
+    </cv:columns>
+</cv:customView>

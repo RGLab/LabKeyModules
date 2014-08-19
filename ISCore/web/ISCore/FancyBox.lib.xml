@@ -1,0 +1,10 @@
+<libraries xmlns='http://labkey.org/clientLibrary/xml/'>                                                                                   
+    <library compileInProductionMode='true'>
+        <script path='ISCore/FancyBox/source/jquery.fancybox.css'/>
+        <script path='ISCore/FancyBox/source/helpers/jquery.fancybox-buttons.css'/>
+        <script path='ISCore/FancyBox/lib/jquery.mousewheel-3.0.6.pack.js'/>
+        <script path='ISCore/FancyBox/source/jquery.fancybox.pack.js'/>
+        <script path='ISCore/FancyBox/source/helpers/jquery.fancybox-buttons.js'/>
+    </library>
+</libraries>
+

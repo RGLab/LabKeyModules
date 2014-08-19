@@ -1,22 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <view xmlns='http://labkey.org/data/xml/view' title='Gene Expression Explorer'>
     <dependencies>
-        <dependency path='Ext.ux.form.LovCombo.css'/>
-        <dependency path='GeneExpressionExplorer/SuperBoxSelect/superboxselect.css'/>
-        <dependency path='GeneExpressionExplorer/FancyBox/source/jquery.fancybox.css'/>
-        <dependency path='GeneExpressionExplorer/FancyBox/source/helpers/jquery.fancybox-buttons.css'/>
-        <dependency path='GeneExpressionExplorer/Spinner/Spinner.css'/>
-        <dependency path='GeneExpressionExplorer/GeneExpressionExplorer.css'/>
+        <dependency path='ISCore/ISCore'/>
 
-        <dependency path='Ext3'/>
-
-        <dependency path='Ext.ux.form.LovCombo.js'/>
-        <dependency path='GeneExpressionExplorer/SuperBoxSelect/SuperBoxSelect.js'/>
-        <dependency path='GeneExpressionExplorer/ExtendedComboBox.js'/>
-        <dependency path='GeneExpressionExplorer/ExtendedLovCombo.js'/>
-        <dependency path='GeneExpressionExplorer/Spinner/Spinner.js'/>
-        <dependency path='GeneExpressionExplorer/Spinner/SpinnerField.js'/>
-        <dependency path='GeneExpressionExplorer/GeneExpressionExplorer_Lib.js'/>
+        <dependency path='ISCore/ExtendedLovCombo'/>
+        <dependency path='ISCore/FancyBox'/>
+        <dependency path='ISCore/Spinner'/>
+        <dependency path='ISCore/SuperBoxSelect'/>
 
         <dependency path='GeneExpressionExplorer.js'/>
     </dependencies>

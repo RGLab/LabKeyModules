@@ -96,16 +96,16 @@ EM <- con$getGEMatrix(run, summary = TRUE)
 
 ```{r camera, cache = TRUE, dependson="EM;modules"}
 indices <- symbols2indices(gene_sets, fData(EM)$gene_symbol)
-pData(EM)$study_time_collected <- as.factor(pData(EM)$study_time_collected)
-mm <- model.matrix(~subject_accession + study_time_collected, EM)
+pData(EM)[, contrast] <- as.factor(pData(EM)[, contrast])
+mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
 #res <- camera(EM, indices, design = mm, sort = FALSE)
 ```
 
 ## Gene set enrichment analysis of `r cohort`
 
 ```{r byDay,  cache = TRUE, dependson="camera"}
-lev <- levels(pData(EM)$study_time_collected)
-lev <- paste0("study_time_collected", lev[2:length(lev)])
+lev <- levels(pData(EM)[, contrast])
+lev <- paste0(contrast, lev[2:length(lev)])
 cam_list <- vector('list', length = length(lev))
 for(i in 1:length(lev)){
   contrast <- lev[[i]]
@@ -142,7 +142,7 @@ if(nrow(mat) > 0){
   rownames(mat) <- ifelse(nchar(rownames(mat))>15, paste(substr(rownames(mat), 1, 8),
                    substr(rownames(mat), nchar(rownames(mat))-10, nchar(rownames(mat))), sep =" ... "),
                    rownames(mat))
-  ifelse(nrow(mat) < 2, clust_rows <- FALSE, clust_rows <- TRUE)
+  clust_rows <- ifelse(nrow(mat) < 2, FALSE, TRUE)
   pheatmap(mat, cluster_cols = FALSE, cluster_rows = clust_rows,
     breaks = seq(-max, max, length.out = length(palette)+1), color = palette)
 }

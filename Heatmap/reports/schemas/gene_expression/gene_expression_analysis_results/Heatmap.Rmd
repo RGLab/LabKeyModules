@@ -1,0 +1,99 @@
+```{r knitr-opts, echo = FALSE, message = FALSE}
+opts_chunk$set(echo = FALSE, message = FALSE)
+```
+
+```{r libraries, echo = FALSE, message = FALSE}
+library(pheatmap)
+library(data.table)
+library(ImmuneSpaceR)
+library(limma)
+library(reshape2)
+library(RColorBrewer)
+```
+
+```{r functions, echo = FALSE}
+getRunFromCohort <- function(con, cohort){
+  run <- gsub(".tsv$", "", unique(subset(con$data_cache$GE_inputs, arm_name == cohort)[, "name"]))
+  return(run)
+}
+```
+
+```{r read-Data}
+data <- data.table(labkey.data)
+ugenes <- unique(data$gene_symbol)
+uarm <- unique(data$analysis_accession_arm_name)
+contrast <- "study_time_collected"
+```
+
+```{r checks}
+errorString <- ""
+if(nrow(data) ==0){
+  errorString <- "ERROR: No genes have been selected. Try using different filtering criteria."
+}
+```
+`r errorString`
+
+```{r stop}
+if(errorString != ""){
+  opts_chunk$set(eval = FALSE, echo = FALSE)
+}
+```
+
+
+```{r read-EM}
+con <- CreateConnection()
+runs <- getRunFromCohort(con, uarm)
+gea <- labkey.selectRows(labkey.url.base, labkey.url.path, "gene_expression", "gene_expression_analysis", colNameOpt = "rname")
+gea <- gea[ gea$expression_matrix %in% runs,]
+nCols <- nrow(gea)
+```
+```{r prints, eval = FALSE}
+runs
+nCols
+```
+
+```{r get-contrasts}
+i <- 1
+tt_list <- vector("list", nCols)
+for(run in runs){
+  EM <- con$getGEMatrix(run, summary = TRUE)
+  arm <- unique(gea[ gea$expression_matrix == run, "arm_name"])
+  coefs <- gea[ gea$expression_matrix == run, "coefficient"]
+  ## Here I need a way to find the contrast (based on GEA prolly)
+  pData(EM)[, contrast] <- factor(pData(EM)[, contrast])
+  mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
+  fit <- lmFit(EM, mm)
+  fit <- eBayes(fit)
+  for(coef in coefs){
+    tt <- data.table(topTable(fit, coef = coef, number = Inf))
+    tt <- tt[gene_symbol %in% ugenes]
+    tt[, c("arm_name", "coef")  := list(arm, coef)]
+    tt_list[[i]] <- tt
+    i <- i+1
+  }
+}
+DEA <- rbindlist(tt_list)
+DEA <- DEA[, list(gene_symbol, logFC, coef, arm_name)]
+anno <- data.frame(unique(DEA[, list(arm_name, coef)]))
+rownames(anno) <- paste(anno$arm_name, anno$coef, sep ="_")
+anno$coef <- gsub(contrast, "", anno$coef)
+colnames(anno) <- c("Arm name", gsub("_", " ", gsub("^.", toupper(substr(contrast, 1, 1)), contrast)))
+DEA <- dcast(DEA, gene_symbol ~ arm_name + coef, value.var="logFC")
+```
+
+```{r pheatmap, fig.align = "center", fig.height = 8, fig.width = 16}
+palette <- rev(brewer.pal(name="PiYG", n=11))
+matrix <- as.matrix(DEA[,2:ncol(DEA)])
+max <- max(matrix)
+rownames(matrix) <- DEA$gene_symbol
+show_rnames <- ifelse(nrow(matrix) > 40, FALSE, TRUE)
+clust_rows <- ifelse(nrow(matrix) < 2, FALSE, TRUE)
+# Add legend for arm and coef
+pheatmap(matrix, cluster_cols = FALSE, cluster_rows = clust_rows, show_rownames = show_rnames, show_colnames = FALSE,
+    breaks = seq(-max, max, length.out = length(palette)+1), color = palette, annotation = anno, fontsize = 12)
+```
+
+### Test cases
+- Multiple arms  OK
+- Empty  OK
+- contrast != time  NO

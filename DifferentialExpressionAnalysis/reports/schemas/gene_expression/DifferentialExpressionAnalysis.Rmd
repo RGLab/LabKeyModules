@@ -1,6 +1,6 @@
 ```{r knitr_opts, echo = FALSE, cache = FALSE}
 opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/DifferentialExpressionAnalysis/"))
-opts_chunk$set(echo = TRUE, message = FALSE)
+opts_chunk$set(echo = FALSE, message = FALSE)
 ```
 
 ```{r libraries, message = FALSE, echo = FALSE}
@@ -28,7 +28,6 @@ nCoefs <- unique(con$data_cache[["GE_inputs"]][, c("arm_name", contrast, "name")
 nCoefs$coefficient <- paste0(contrast, nCoefs[, contrast])
 existGEA <- labkey.selectRows(labkey.url.base, labkey.url.path, "gene_expression", 
                               "gene_expression_analysis", colNameOpt = "rname")
-existGEA
 if(nrow(existGEA) > 0){
   q1 <- quote(arm_name)
   q2 <- quote(coefficient)
@@ -85,14 +84,16 @@ for(run in runs){
 GEA <- rbindlist(GEA_list)
 GEAR <- rbindlist(GEAR_list)
 setnames(GEAR, c("FeatureId", "GeneSymbol", "adj.P.Val", "AveExpr", "logFC", "P.Value", "t"), c("feature_id", "gene_symbol", "adj_p_val", "ave_expr", "log_fc", "p_value", "statistic"))
-print(GEA)
-print(GEAR)
 ```
 
 ```{r write}
-sessionInfo()
 res_GEA <- labkey.importRows(labkey.url.base, labkey.url.path, "gene_expression", 
                          "gene_expression_analysis", toImport = GEA)
 res_GEAR <- labkey.importRows(labkey.url.base, labkey.url.path, "gene_expression",
                               "gene_expression_analysis_results", toImport = GEAR)
+```
+
+
+```{r new-analysis, results='asis'}
+kable(GEA, format='html', row.names=TRUE, table.attr='class="display" id="res_table"')
 ```

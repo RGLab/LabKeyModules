@@ -81,7 +81,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var strCohort = new LABKEY.ext.Store({
             autoLoad: true,
             listeners: {
-                loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
+                loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'cohorts_gee',
             schemaName: 'study'
@@ -102,7 +102,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
                     cbTimePoint.bindStore( this );
                 },
-                loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
+                loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'timepoints_gee',
             schemaName: 'study'
@@ -117,7 +117,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var strGene = new LABKEY.ext.Store({
             listeners: {
-                loadexception: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure
+                loadexception: LABKEY.ext.ISCore.onFailure
             },
             schemaName: 'Microarray',
             sql: strngSqlStartGenes
@@ -157,7 +157,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 if ( i == length ){
                     LABKEY.Report.createSession({
                         clientContext : 'GeneExpressionExplorer',
-                        failure: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure,
+                        failure: LABKEY.ext.ISCore.onFailure,
                         success: function(data){
                             reportSessionId = data.reportSessionId;
                         }
@@ -388,7 +388,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             failure: function( errorInfo, options, responseObj ){
                 setPlotRunning( false );
 
-                LABKEY.ext.GeneExpressionExplorer_Lib.onFailure( errorInfo, options, responseObj );
+                LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
             },
             reportId: 'module:GeneExpressionExplorer/Plot.R',
             success: function( result ){
@@ -400,13 +400,13 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 if (errors && errors.length > 0){
                     if ( errors[0].indexOf('The report session is invalid') < 0 ){
 
-                        LABKEY.ext.GeneExpressionExplorer_Lib.onFailure({
+                        LABKEY.ext.ISCore.onFailure({
                             exception: errors.join('\n')
                         });
                     } else {
                         LABKEY.Report.createSession({
                             clientContext : 'GeneExpressionExplorer',
-                            failure: LABKEY.ext.GeneExpressionExplorer_Lib.onFailure,
+                            failure: LABKEY.ext.ISCore.onFailure,
                             success: function(data){
                                 reportSessionId = data.reportSessionId;
 
@@ -632,7 +632,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         this.border         = false;
         this.boxMinWidth    = 370;
-        this.cls            = 'geneExpressionExplorer';
+        this.cls            = 'ISCore';
         this.frame          = false;
         this.items          = pnlTabs;
         this.layout         = 'fit';

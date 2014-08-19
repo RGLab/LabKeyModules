@@ -123,7 +123,7 @@ LABKEY.ext.DataSummary = Ext.extend( Ext.Panel, {
 
 
         me.border         = false;
-        me.cls            = 'data-summary';
+        me.cls            = 'ISCore';
         me.contentEl      = 'Summary' + config.webPartDivId;
         me.frame          = false;
         me.layout         = 'fit';

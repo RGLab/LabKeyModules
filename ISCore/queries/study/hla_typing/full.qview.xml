@@ -1,0 +1,16 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+    <cv:columns>
+        <cv:column name="SUBJECT_ACCESSION"/>
+        <cv:column name="arm_accession"/>
+        <cv:column name="biosample_accession"/>
+        <cv:column name="expsample_accesssion"/>
+        <cv:column name="experiment_accession"/>
+        <cv:column name="study_accession"/>
+        <cv:column name="allele_1"/>
+        <cv:column name="allele_2"/>
+        <cv:column name="locus_name"/>
+        <cv:column name="pop_area_name"/>
+        <cv:column name="study_time_collected"/>
+        <cv:column name="study_time_collected_unit"/>
+    </cv:columns>
+</cv:customView>

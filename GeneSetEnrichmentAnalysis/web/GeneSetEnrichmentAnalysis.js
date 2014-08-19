@@ -51,7 +51,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         var strCohortTraining = new LABKEY.ext.Store({
             autoLoad: true,
             listeners: {
-                loadexception: LABKEY.ext.GeneSetEnrichmentAnalysis_Lib.onFailure
+                loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'expression_matrices_cohorts',
             schemaName: 'study'
@@ -139,7 +139,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             failure: function( errorInfo, options, responseObj ){
                 setReportRunning( false );
 
-                LABKEY.ext.GeneSetEnrichmentAnalysis_Lib.onFailure( errorInfo, options, responseObj );
+                LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
             },
             reportId: 'module:GeneSetEnrichmentAnalysis/GeneSetEnrichmentAnalysis.Rmd',
             success: function( result ){
@@ -149,7 +149,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 var outputParams = result.outputParams;
 
                 if (errors && errors.length > 0){
-                    LABKEY.ext.GeneSetEnrichmentAnalysis_Lib.onFailure({
+                    LABKEY.ext.ISCore.onFailure({
                         exception: errors.join('\n')
                     });
                 } else {
@@ -307,7 +307,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
 
         this.border         = false;
         this.boxMinWidth    = 370;
-        this.cls            = 'geneSetEnrichmentAnalysis';
+        this.cls            = 'ISCore';
         this.frame          = false;
         this.items          = pnlTabs;
         this.layout         = 'fit';

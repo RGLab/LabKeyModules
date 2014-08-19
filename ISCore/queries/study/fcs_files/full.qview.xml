@@ -1,0 +1,18 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+    <cv:columns>
+        <cv:column name="SUBJECT_ACCESSION"/>
+        <cv:column name="arm_accession"/>
+        <cv:column name="biosample_accession"/>
+        <cv:column name="study_accession"/>
+        <cv:column name="study_time_collected"/>
+        <cv:column name="study_time_collected_unit"/>
+        <cv:column name="file_info_name"/>
+        <cv:column name="file_info_purpose"/>
+        <cv:column name="description"/>
+        <cv:column name="biosampling_accession"/>
+        <cv:column name="type"/>
+        <cv:column name="subtype"/>
+        <cv:column name="study_time_t0_event"/>
+        <cv:column name="arm_name"/>
+    </cv:columns>
+</cv:customView>

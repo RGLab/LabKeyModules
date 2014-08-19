@@ -55,7 +55,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var strCohortTraining = new LABKEY.ext.Store({
             autoLoad: true,
             listeners: {
-                loadexception: LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure
+                loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'cohorts',
             schemaName: 'study'
@@ -70,7 +70,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         cbCohortTesting.setDisabled( true );
                     }
                 },
-                loadexception: LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure
+                loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'cohorts',
             schemaName: 'study'
@@ -91,7 +91,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
                     cbTimePoint.bindStore( this );
                 },
-                loadexception: LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure
+                loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'timepoints',
             schemaName: 'study'
@@ -347,7 +347,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             handler: function(){
                 LABKEY.Query.selectRows({
                     columns: [ 'analysis_accession' ],
-                    failure: LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure,
+                    failure: LABKEY.ext.ISCore.onFailure,
                     filterArray: [
                         LABKEY.Filter.create(
                             'cohort',
@@ -378,7 +378,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
                             LABKEY.Query.selectRows({
                                 columns: [ 'expression_matrix_accession' ],
-                                failure: LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure,
+                                failure: LABKEY.ext.ISCore.onFailure,
                                 filterArray: [
                                     LABKEY.Filter.create(
                                         'cohort',
@@ -401,7 +401,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                                 }
                             });
                         } else if ( count < 1 ) {
-                            LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure({
+                            LABKEY.ext.ISCore.onFailure({
                                 exception: 'The selected values result in an empty set of parameters.'
                             });
                         }
@@ -420,7 +420,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             failure: function( errorInfo, options, responseObj ){
                 setReportRunning( false );
 
-                LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure( errorInfo, options, responseObj );
+                LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
             },
             reportId: 'module:ImmuneResponsePredictor/study/study_cohorts_info/ImmuneResponsePredictor.Rmd',
             success: function( result ){
@@ -430,7 +430,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 var outputParams = result.outputParams;
 
                 if (errors && errors.length > 0){
-                    LABKEY.ext.ImmuneResponsePredictor_Lib.onFailure({
+                    LABKEY.ext.ISCore.onFailure({
                         exception: errors.join('\n')
                     });
                 } else {
@@ -645,7 +645,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         this.border         = false;
         this.boxMinWidth    = 370;
-        this.cls            = 'immuneResponsePredictor';
+        this.cls            = 'ISCore';
         this.frame          = false;
         this.items          = pnlTabs;
         this.layout         = 'fit';

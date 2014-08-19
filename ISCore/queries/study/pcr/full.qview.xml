@@ -1,0 +1,21 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+    <cv:columns>
+        <cv:column name="SUBJECT_ACCESSION"/>
+        <cv:column name="arm_accession"/>
+        <cv:column name="biosample_accession"/>
+        <cv:column name="expsample_accession"/>
+        <cv:column name="experiment_accession"/>
+        <cv:column name="entrez_gene_id"/>
+        <cv:column name="gene_name"/>
+        <cv:column name="gene_symbol"/>
+        <cv:column name="other_gene_accession"/>
+        <cv:column name="study_accession"/>
+        <cv:column name="study_time_collected"/>
+        <cv:column name="study_time_collected_unit"/>
+        <cv:column name="threshold_cycles"/>
+        <cv:column name="value_reported"/>
+        <cv:column name="unit_reported"/>
+        <cv:column name="value_preferred"/>
+        <cv:column name="unit_preferred"/>
+    </cv:columns>
+</cv:customView>
