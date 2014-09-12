@@ -1,4 +1,5 @@
 ```{r knitr_opts, echo = FALSE, cache = FALSE}
+library(knitr)
 opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/DifferentialExpressionAnalysis/"))
 opts_chunk$set(echo = FALSE, message = FALSE)
 ```
@@ -22,25 +23,29 @@ i <- 1 #analysis accession key
 study: `r study`  
 contrast: `r contrast`
 
-```{r getData}
+```{r getData, warning = FALSE}
 con <- CreateConnection(study)
-nCoefs <- unique(con$data_cache[["GE_inputs"]][, c("arm_name", contrast, "name")])
-nCoefs$coefficient <- paste0(contrast, nCoefs[, contrast])
-existGEA <- labkey.selectRows(labkey.url.base, labkey.url.path, "gene_expression", 
-                              "gene_expression_analysis", colNameOpt = "rname")
-if(nrow(existGEA) > 0){
-  q1 <- quote(arm_name)
-  q2 <- quote(coefficient)
-  exist <- data.table(existGEA)[, key := paste0(eval(q1), eval(q2))]
-  n_dt <- data.table(nCoefs[, c("arm_name", "coefficient")])[, key := paste0(eval(q1), eval(q2))]
-  n_dt <- n_dt[!key %in% exist$key]
-  #Si il reste autant de coh que de coeffs, then y a rien a faire
-  arm_todo <- n_dt[, .N, by = arm_name][N > 1, arm_name]
-  i <- max(as.numeric(gsub("^GEA", "", exist$analysis_accession))) + 1
-   nCoefs <- nCoefs[ nCoefs$arm_name %in% arm_todo,]
+if(is.null(con$data_cache[["GE_inputs"]])){
+  nCoefs <- 0
+  stop("There is no HIPCMatrix run in this study")
+} else{
+  nCoefs <- unique(con$data_cache[["GE_inputs"]][, c("arm_name", contrast, "name")])
+  nCoefs$coefficient <- paste0(contrast, nCoefs[, contrast])
+  existGEA <- labkey.selectRows(labkey.url.base, labkey.url.path, "gene_expression", 
+                                "gene_expression_analysis", colNameOpt = "rname")
+  if(nrow(existGEA) > 0){
+    q1 <- quote(arm_name)
+    q2 <- quote(coefficient)
+    exist <- data.table(existGEA)[, key := paste0(eval(q1), eval(q2))]
+    n_dt <- data.table(nCoefs[, c("arm_name", "coefficient")])[, key := paste0(eval(q1), eval(q2))]
+    n_dt <- n_dt[!key %in% exist$key]
+    arm_todo <- n_dt[, .N, by = arm_name][N > 1, arm_name]
+    i <- max(as.numeric(gsub("^GEA", "", exist$analysis_accession))) + 1
+     nCoefs <- nCoefs[ nCoefs$arm_name %in% arm_todo,]
+  }
+  runs <- gsub(".tsv$", "", unique(nCoefs[, "name"]))
+  nCoefs <- nrow(nCoefs) - length(unique(nCoefs[, "arm_name"]))
 }
-runs <- gsub(".tsv$", "", unique(nCoefs[, "name"]))
-nCoefs <- nrow(nCoefs) - length(unique(nCoefs[, "arm_name"]))
 ```
 
 There will be `r nCoefs` new differential expression analysis.
@@ -93,7 +98,29 @@ res_GEAR <- labkey.importRows(labkey.url.base, labkey.url.path, "gene_expression
                               "gene_expression_analysis_results", toImport = GEAR)
 ```
 
+```{r functions, echo = FALSE}
+format_table <- function(x, ...){
+  require(knitr)
+  require(data.table)
+  if(!is(x,"data.table"))
+  {   
+    # This is to make sure that we don't have issues with row names in data.frames
+    stop("This function only works on data.tables")
+  }   
+  out <- kable(x, "html", table.attr = 'class="display" id="res_table"', output = FALSE, ...)
+  footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")                    
+  out_new <- gsub("</thead>",footer,out)
+  cat(out_new)
+  
+  #cat("\n<script type='text/javascript' charset='utf-8'>\n$(document).ready(function() {\n $('#res_table').dataTable();\n} );\n</script>\n")
+}
+```
 
 ```{r new-analysis, results='asis'}
-kable(GEA, format='html', row.names=TRUE, table.attr='class="display" id="res_table"')
+format_table(data.table(GEA))
 ```
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function() {
+        $('#res_table').dataTable();
+    } );
+</script>

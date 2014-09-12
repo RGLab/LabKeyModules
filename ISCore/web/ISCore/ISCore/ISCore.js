@@ -50,6 +50,7 @@ LABKEY.ext.ISCore.initTableQuickTips = function( o ){
 
 /*
  * Set Tab titles centered (should be able to do any other customizations by setting the tabStripInnerStyle config)
+ * Custom class added for inactive-tab-on-hover behavior
  */
 Ext.TabPanel.override({
     tabStripInnerStyle : 'text-align: center;',
@@ -197,10 +198,9 @@ Ext.override(Ext.grid.CheckboxSelectionModel, {
     manageCheckAll: function(){
         var selectedCount = this.grid.getSelectionModel().getCount();
 
-        // Manage the 'check all' icon state
         var hd = Ext.fly(this.grid.getView().innerHd).child('.x-grid3-hd-checker');
 
-        if ( hd != null ){
+        if ( hd ){
             var isChecked = hd.hasClass('x-grid3-hd-checker-on');
             var totalCount = this.grid.getStore().getCount();
 
@@ -378,6 +378,14 @@ LABKEY.ext.ISCore.captureEvents = function(observable) {
     );
 };
 
+LABKEY.ext.ISCore.Contributors =
+    'The ImmuneSpace development team. For bug or feature requests please use the <a href="' +
+    LABKEY.ActionURL.buildURL(
+      'project',
+      'begin',
+      '/home/support'
+    ) + '">support board</a>.'; 
+
 LABKEY.ext.ISCore.onFailure = function(errorInfo, options, responseObj){
     var strngErrorContact = '\nPlease, contact support, if you have questions.', text = 'Failure: ';
 
@@ -406,11 +414,11 @@ Ext.QuickTips.init();
 // Generic utility functionality: //
 //================================//
 
-function removeById(elId) {
+removeById = function( elId ) {
     $( '#' + elId ).remove();
 };
 
-function removeByClass(className) {
+removeByClass = function( className ) {
     $( '.' + className ).remove();
 };
 

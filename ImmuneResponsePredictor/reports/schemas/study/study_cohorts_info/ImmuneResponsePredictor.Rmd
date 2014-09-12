@@ -20,14 +20,17 @@ library(glmnet)
 library(pheatmap)
 library(RColorBrewer)
 library(RJSONIO)
+library(ggthemr)
+library(gplots)
 ```
 
-```{r plot-styles, cache = TRUE}
-IS_theme <- theme_bw(base_size=14)
-palette <- rev(brewer.pal(name="PiYG", n=11))
+```{r plot-styles, echo = FALSE, cache = TRUE}
+#IS_theme <- theme_bw(base_size=14)
+#palette <- rev(brewer.pal(name="PiYG", n=11))
+palette <- colorpanel(20, low = "#dc322f", mid = "#fdf6e3", high = "#268bd2")
 ```
 
-```{r envir-var, cache=FALSE}
+```{r envir-var, echo = FALSE, cache=FALSE}
 param <-    list(
                 timepoint   = as.numeric( labkey.url.params$timePoint ),
                 GEA_acc     = RJSONIO::fromJSON( labkey.url.params$analysisAccession ),
@@ -47,20 +50,19 @@ get_GEAR <- function(GEA_acc, FC_thresh, FDR_thresh){
   GEAR_filter <- makeFilter(c("analysis_accession", "IN", paste(GEA_acc, collapse=";")),
                             c("adj_p_val", "LESS_THAN", FDR_thresh),
                             c("log_fc", "NOT_BETWEEN", paste(-FC_thresh, FC_thresh, sep=",")))
-  GEAR <-data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "lists", queryName = "gene_expression_analysis_results", colNameOpt="rname", colFilter=GEAR_filter))
+  GEAR <-data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "gene_expression", queryName = "gene_expression_analysis_results", colNameOpt="rname", colFilter=GEAR_filter))
   if(nrow(GEAR)==0){
     opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
     stop("There are 0 probes selected. Try lowering the FDR threshold or the absolute log-FoldChange threshold.")
   }
   GEA_filter <- makeFilter(c("analysis_accession", "IN", paste(unique(GEAR$analysis_accession), collapse = ";")))
-  GEA <- data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "lists", queryName = "gene_expression_analysis", colNameOpt = "rname", colFilter = GEA_filter))
+  GEA <- data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "gene_expression", queryName = "gene_expression_analysis", colNameOpt = "rname", colFilter = GEA_filter))
   GEAR <- merge(GEAR, GEA, by = "analysis_accession")
   return(GEAR)
 }
 
 get_pdata <- function(EM_acc, timepoint){
   timepoints <- c(0, timepoint)
-  #pdata_filter <- makeFilter(c("run_dataoutputs_name", "IN", paste(EM_acc, collapse=";")))
   pdata_filter <- makeFilter(c("Run/DataOutputs/Name", "IN", paste(EM_acc, collapse=";")))
   pdata <- unique(data.table(labkey.selectRows(labkey.url.base, labkey.url.path, 
 		  "assay.ExpressionMatrix.matrix", "InputSamples", "gene_expression_matrices", 
@@ -106,7 +108,7 @@ get_FC <- function(EM, pdata, timepoint){ ## TODO: maybe I should include it in 
 
 get_HAI <- function(pdata, dichotomize, di_value){
   HAI_filter <- makeFilter(c("subject_accession", "IN", paste(pdata$subject_accession, collapse=";")))
-  HAI <- data.table(labkey.selectRows(baseUrl=labkey.url.base, schemaName="study", folderPath=labkey.url.path, queryName ="hai", viewName = "", colNameOpt="rname", colFilter=HAI_filter))
+  HAI <- data.table(labkey.selectRows(baseUrl=labkey.url.base, schemaName="study", folderPath=labkey.url.path, queryName ="hai", viewName = "full", colNameOpt="rname", colFilter=HAI_filter))
   HAI <- HAI[subject_accession %in% pdata$subject_accession]
   HAI <- HAI[,list(arm_accession, study_time_collected=study_time_collected, response=value_reported/value_reported[study_time_collected==0]),by="virus_strain,subject_accession"]
   HAI <- HAI[study_time_collected==28]
@@ -148,12 +150,12 @@ select_features <- function(FC, response, dichotomize){
 
 # Heatmap #FC_selected, HAI, palette, dichotomize
 draw_heatmap <- function(FC_selected, HAI, dichotomize, palette){
-  annotation <- HAI[, list(subject_accession, arm_name, response)]
-  annotation <- data.frame(annotation[order(response, arm_name, subject_accession)])
+  annotation <- HAI[, list(subject_accession, response, arm_name)]
+  annotation <- data.frame(annotation[order( response, arm_name, subject_accession)])
   rownames(annotation) <- annotation$subject_accession
   annotation$subject_accession <- NULL
   if(dichotomize){
-    annotation$response <- as.numeric(annotation$response)
+    annotation$response <- as.factor(annotation$response)
     anno_col <- list(response=c(`FALSE`="white", `TRUE`="black"))
   } else{
     anno_col <- list(response=grey(10:0/10))
@@ -168,12 +170,25 @@ draw_heatmap <- function(FC_selected, HAI, dichotomize, palette){
            cluster_distance="correlation", cluster_method = "ward",
            annotation = annotation, annotation_colors = anno_col)
 }
+
+format_table <- function(x, ...){
+  require(knitr)
+  require(data.table)
+  if(!is(x,"data.table")){
+    #This is to make sure that we don't have issues with row names in data.frames
+    stop("This function only works on data.tables")
+  }
+  out <- kable(x, "html", table.attr = 'class="display" id="res_table"', output = FALSE, ...)
+  footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
+  out_new <- gsub("</thead>",footer,out)
+  cat(out_new)
+}
 ```
 
 
-```{r main, echo = FALSE, cache = FALSE}
+```{r main, cache = FALSE}
 GEAR <- get_GEAR(param$GEA_acc, param$FC_thresh, param$FDR_thresh)
-pdata <- get_pdata(unique(GEAR$expression_matrix), param$timepoint)
+pdata <- get_pdata(paste0(unique(GEAR$expression_matrix), ".tsv"), param$timepoint)
 DEG <- get_DEG(GEAR, pdata)
 EM <- get_EM(pdata, DEG)
 FC <- get_FC(EM, pdata, param$timepoint)
@@ -201,7 +216,7 @@ predictor_table <- sum_relasso_coef[,pred_cIdx][-1,]
 colnames(predictor_table) <- c("statistic", "p-value")
 predictor_table <- data.table(cbind(selected_features, predictor_table))
 predictor_table <- predictor_table[, c("statistic", "p-value") := lapply(.SD, function(X){ as.numeric(levels(X)[X])}), .SDcols = c("statistic", "p-value")]
-predictor_table <- predictor_table[, gene_symbol := lapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0('<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=hipc_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
+predictor_table <- predictor_table[, gene_symbol := sapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0('<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=immune_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
 ```
 
 ```{r pred-cohort, echo = FALSE}
@@ -218,22 +233,25 @@ if(length(param$EM_pred) > 0){
 # Prediction
 if(length(param$EM_pred) == 0){
      data <- data.frame(observed = response, fitted=relasso$fitted.values)
-   ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme
+   p<- ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm")# + IS_theme
 } else{
   prediction_data <- data.frame(FC_pred)
   predicted_val <- predict(relasso, newdata = prediction_data, type = "response")
   data <- data.frame(observed = c(HAI$response, HAI_pred$response),
                      fitted = c(relasso$fitted.values, predicted_val),
                      cohort = c(paste("a:", HAI$arm_name, "(Training)"), paste("b:", HAI_pred$arm_name, "(Testing)")))
-  ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") + IS_theme +
+  p<- ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") +# IS_theme +
     facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predicted response")
 }
+  ggthemr('solarized')
+  plot(p)
+  
 ```
 <br><br>
 
 ## Table of probes selected by the Elastic Net
 ```{r kable, results = 'asis'}
-kable(predictor_table, digits=2, format="html", row.names=FALSE, table.attr="id=\"res_table\"")
+format_table(predictor_table)
 ```
 <br><br>
 

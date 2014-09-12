@@ -136,8 +136,13 @@ pre, .ext-mb-text {
     text-align: center !important;
 }
 
+/* Normal text */
+.normal-text {
+    font-weight: normal !important;
+}
+
 /* Bold text */
-.bold-text, .bold-centered-text, .sortable-list li, .infoMask div, .ISCore .mask-loading div, .ux-lovcombo-list-item-all {
+.bold-text, .bold-centered-text, .sortable-list li, .mask-loading div, .infoMask div, .ux-lovcombo-list-item-all {
     font-weight: bold !important;
 }
 

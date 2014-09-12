@@ -4,14 +4,16 @@ CREATE SCHEMA gene_expression;
 CREATE TABLE gene_expression.gene_expression_analysis
 (
     Container           ENTITYID    NOT NULL,
+    key                 SERIAL      NOT NULL,
     analysis_accession  TEXT        NOT NULL,
     expression_matrix   TEXT        NOT NULL,
     arm_name            TEXT        NOT NULL,
     coefficient         TEXT        NOT NULL,
-    description         TEXT,
+    description         TEXT        NOT NULL,
     created     TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 
-    CONSTRAINT PK_gene_expression_analysis PRIMARY KEY (analysis_accession)
+    CONSTRAINT PK_gene_expression_analysis PRIMARY KEY (key),
+    CONSTRAINT UQ_gene_expression_analysis UNIQUE (analysis_accession, Container)
 );
 
 CREATE TABLE gene_expression.gene_expression_analysis_results
@@ -29,7 +31,7 @@ CREATE TABLE gene_expression.gene_expression_analysis_results
     created     TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 
     CONSTRAINT PK_gene_expression_analysis_results PRIMARY KEY (key),
-    CONSTRAINT FK_gene_expression_analysis_results_gene_expression_analysis FOREIGN KEY (analysis_accession)
-        REFERENCES gene_expression.gene_expression_analysis (analysis_accession)
+    CONSTRAINT FK_gene_expression_analysis_results_gene_expression_analysis FOREIGN KEY (analysis_accession, Container)
+        REFERENCES gene_expression.gene_expression_analysis (analysis_accession, Container)
         ON DELETE CASCADE
 );

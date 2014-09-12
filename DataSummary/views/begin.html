@@ -17,18 +17,19 @@ vim: ts=2:sw=2:nu:fdc=2:spell
     limitations under the License.
 -->
 
-<!--<script type='text/javascript'>	LABKEY.requiresExt4ClientAPI(); </script>-->
 <script type='text/javascript'>
 
     var initDataSummary = function(){
-        var webPartDiv = <%=webpartContext%>.wrapperDivId;
-        var resizeModule;
+        var
+            webPartDiv = <%=webpartContext%>.wrapperDivId,
 
-        var DataSummary = new LABKEY.ext.DataSummary({
-            webPartDivId: webPartDiv
-        });
+            DataSummary = new LABKEY.ext.DataSummary({
+                webPartDivId: webPartDiv
+            })
+        ;
     };
 
     Ext.onReady( initDataSummary );
 
 </script>
+

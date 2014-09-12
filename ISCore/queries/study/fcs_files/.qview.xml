@@ -1,6 +1,13 @@
 <cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
     <cv:columns>
-        <cv:column name="SUBJECT_ACCESSION"/>
+        <cv:column name="SUBJECT_ACCESSION">
+          <cv:properties>
+            <cv:property name="columnTitle" value="Subject Accession"/>
+          </cv:properties>
+        </cv:column>
+        <cv:column name="biosample_accession/subject_accession/age_reported"/>
+        <cv:column name="biosample_accession/subject_accession/gender"/> 
+        <cv:column name="biosample_accession/subject_accession/race"/>
         <cv:column name="study_time_collected"/>
         <cv:column name="study_time_collected_unit"/>
         <cv:column name="file_info_name"/>

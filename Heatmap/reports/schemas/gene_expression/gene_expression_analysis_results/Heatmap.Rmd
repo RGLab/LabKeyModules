@@ -1,13 +1,12 @@
 ```{r knitr-opts, echo = FALSE, message = FALSE}
 opts_chunk$set(echo = FALSE, message = FALSE)
+opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Heatmap/"))
 ```
 
 ```{r libraries, echo = FALSE, message = FALSE}
 library(pheatmap)
 library(data.table)
 library(ImmuneSpaceR)
-library(limma)
-library(reshape2)
 library(RColorBrewer)
 ```
 
@@ -16,11 +15,21 @@ getRunFromCohort <- function(con, cohort){
   run <- gsub(".tsv$", "", unique(subset(con$data_cache$GE_inputs, arm_name == cohort)[, "name"]))
   return(run)
 }
+getUniqueGenes <- function(data){
+   ugenes <- as.character(unique(data[!is.na(gene_symbol) & gene_symbol != "NA", gene_symbol]))
+   ugenes <- unique(sapply(strsplit(ugenes, " /// "), "[[", 1)) # This is needed until we standardize the gene_names
+}
 ```
 
 ```{r read-Data}
 data <- data.table(labkey.data)
-ugenes <- unique(data$gene_symbol)
+print(paste("Dimension of labkey.data:", paste(dim(data), collapse=" ")))
+ugenes <- getUniqueGenes(data)
+if(length(ugenes) > 50){
+  data <- data[order(p_value)][1:50]
+  ugenes <- getUniqueGenes(data)
+  warning("You have selected more than 50 unique genes. The heatmap will only show the top 50 selected genes with the lowest p_value. Try adding filters in the data tab to decrease the number of selected genes.")
+}
 uarm <- unique(data$analysis_accession_arm_name)
 contrast <- "study_time_collected"
 ```
@@ -43,57 +52,52 @@ if(errorString != ""){
 ```{r read-EM}
 con <- CreateConnection()
 runs <- getRunFromCohort(con, uarm)
-gea <- labkey.selectRows(labkey.url.base, labkey.url.path, "gene_expression", "gene_expression_analysis", colNameOpt = "rname")
-gea <- gea[ gea$expression_matrix %in% runs,]
-nCols <- nrow(gea)
 ```
 ```{r prints, eval = FALSE}
+con
 runs
-nCols
 ```
 
-```{r get-contrasts}
-i <- 1
-tt_list <- vector("list", nCols)
-for(run in runs){
-  EM <- con$getGEMatrix(run, summary = TRUE)
-  arm <- unique(gea[ gea$expression_matrix == run, "arm_name"])
-  coefs <- gea[ gea$expression_matrix == run, "coefficient"]
-  ## Here I need a way to find the contrast (based on GEA prolly)
-  pData(EM)[, contrast] <- factor(pData(EM)[, contrast])
-  mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
-  fit <- lmFit(EM, mm)
-  fit <- eBayes(fit)
-  for(coef in coefs){
-    tt <- data.table(topTable(fit, coef = coef, number = Inf))
-    tt <- tt[gene_symbol %in% ugenes]
-    tt[, c("arm_name", "coef")  := list(arm, coef)]
-    tt_list[[i]] <- tt
-    i <- i+1
-  }
+```{r runs}
+anno_list <- mat_list <- vector("list", length(runs))
+for(runIdx in 1:length(runs)){
+   EM <- con$getGEMatrix(runs[runIdx], summary = TRUE)
+   pd <- data.table(pData(EM))
+   pd <- pd[order(get(contrast), subject_accession)]
+   coefs <- unique(pd[, get(contrast)])
+   subs <- pd[, .N, by = subject_accession][N == length(coefs), subject_accession]
+   pd <- pd[ subject_accession %in% subs]
+   
+   anno <- data.frame(pd[, c(contrast, "arm_name"), with = FALSE])
+   rownames(anno) <- pd[, biosample_accession]
+
+   exprs <- exprs(EM[ugenes, pd$biosample_accession])
+   mat <- exprs
+   #mat <- matrix(0, nrow = nrow(exprs), ncol = length(coefs), dimnames = list(rownames(exprs), rownames(anno)))
+   #for(i in 1:length(coefs)){
+   #  mat[, i] <- rowMeans( exprs[, pd[ get(contrast) == coefs[i], biosample_accession]])   
+   #}
+   mat_list[[runIdx]] <- mat
+   anno_list[[runIdx]] <- anno
 }
-DEA <- rbindlist(tt_list)
-DEA <- DEA[, list(gene_symbol, logFC, coef, arm_name)]
-anno <- data.frame(unique(DEA[, list(arm_name, coef)]))
-rownames(anno) <- paste(anno$arm_name, anno$coef, sep ="_")
-anno$coef <- gsub(contrast, "", anno$coef)
-colnames(anno) <- c("Arm name", gsub("_", " ", gsub("^.", toupper(substr(contrast, 1, 1)), contrast)))
-DEA <- dcast(DEA, gene_symbol ~ arm_name + coef, value.var="logFC")
+matrix <- do.call("cbind", mat_list)
+anno <- do.call("rbind", anno_list)
+anno[, contrast] <- as.factor(anno[, contrast])
 ```
 
-```{r pheatmap, fig.align = "center", fig.height = 8, fig.width = 16}
-palette <- rev(brewer.pal(name="PiYG", n=11))
-matrix <- as.matrix(DEA[,2:ncol(DEA)])
-max <- max(matrix)
-rownames(matrix) <- DEA$gene_symbol
+
+```{r pheatmap, fig.align = "center", fig.height = 6, fig.width = 12}
+#palette <- rev(brewer.pal(name="PiYG", n=11))
+palette <- ISpalette(20)
+coefs_palette <- brewer.pal(name = "Greys", n = length(coefs))
+# Colors
+anno_color <- list(coefs_palette)
+names(anno_color)[[1]] <- contrast
+names(anno_color[[1]]) <- coefs
+#max <- max(matrix)
 show_rnames <- ifelse(nrow(matrix) > 40, FALSE, TRUE)
 clust_rows <- ifelse(nrow(matrix) < 2, FALSE, TRUE)
-# Add legend for arm and coef
-pheatmap(matrix, cluster_cols = FALSE, cluster_rows = clust_rows, show_rownames = show_rnames, show_colnames = FALSE,
-    breaks = seq(-max, max, length.out = length(palette)+1), color = palette, annotation = anno, fontsize = 12)
+pheatmap(matrix, cluster_cols = FALSE, cluster_rows = clust_rows, scale = "row", 
+         show_rownames = show_rnames, show_colnames = FALSE, 
+         color = palette, annotation = anno, fontsize = 12, annotation_color = anno_color)
 ```
-
-### Test cases
-- Multiple arms  OK
-- Empty  OK
-- contrast != time  NO

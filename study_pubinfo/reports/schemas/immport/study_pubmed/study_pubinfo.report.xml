@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <ReportDescriptor>
-    <hidden>false</hidden>
+    <hidden>true</hidden>
     <category>study_pubinfo module script</category>
     <!--<label>show this instead of the file name</label>-->
     <!--<description>this is a module report</description>-->

@@ -17,8 +17,6 @@ vim: ts=2:sw=2:nu:fdc=2:spell
     limitations under the License.
 -->
 
-<!--<script type='text/javascript'>	LABKEY.requiresExt4ClientAPI(); </script>-->
-
 <!-- Might need to download these resources and add them to the project - had some temporary issues with them loading -->
 <link href="https://cdn.datatables.net/1.10.1/css/jquery.dataTables.css" type="text/css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-1.11.1.min.js" type="text/javascript"></script>
@@ -27,24 +25,94 @@ vim: ts=2:sw=2:nu:fdc=2:spell
 <script type='text/javascript'>
 
     var initImmuneResponsePredictor = function(){
-        var webPartDiv = <%=webpartContext%>.wrapperDivId;
+        var
+            webPartDiv = <%=webpartContext%>.wrapperDivId,
+            resizeModule,
+            renderTempPnl = function( dataSetId ){
+                var
+                    maskMsg =
+                        'Gene expression data is required, but none was found in this study.' +
+                        ( dataSetId ?
+                        ' Navigate <a href="' +
+                        LABKEY.ActionURL.buildURL(
+                            'study',
+                            'dataset',
+                            null,
+                            {
+                                datasetId: dataSetId
+                            }
+                        ) + '">here</a> to generate expression matrices.' :
+                        ' Expression matrices need to be generated first.' ) +
+                        '</br>If you are unsure on what to do, please, contact us and fill out an issue on the <a href="' +
+                        LABKEY.ActionURL.buildURL(
+                            'project',
+                            'begin',
+                            '/home/support'
+                        ) + '">support board</a>.',
 
-        var resizeModule;
+                    temp = new Ext.Panel({
+                        border: false,
+                        cls: 'opencyto',
+                        frame: false,
+                        height: 100,
+                        layout: 'fit',
+                        listeners: {
+                            afterrender: function(){
+                                this.getEl().mask( maskMsg, 'infoMask' );
+                            }
+                        },
+                        renderTo: webPartDiv
+                    })
+                ;
 
-        var ImmuneResponsePredictor = new LABKEY.ext.ImmuneResponsePredictor({
-            webPartDivId: webPartDiv
+                resizeModule = function(){
+                    temp.getEl().mask( maskMsg, 'infoMask' );
+                };
+
+                Ext.EventManager.onWindowResize( resizeModule );
+            },
+
+            createTempPnl = function(){
+                LABKEY.Query.executeSql({
+                    failure: function(){
+                        renderTempPnl( null );
+                    },
+                    schemaName: 'study',
+                    sql: 'SELECT DataSetId FROM DataSets WHERE Name = \'gene_expression_files\'',
+                    success: function( d ){
+                        if ( d.rows.length > 0 ){
+                            renderTempPnl( d.rows[0].DataSetId );
+                        } else {
+                            renderTempPnl( null );
+                        }
+                    }
+                });
+            }
+        ;
+
+        LABKEY.Query.getSchemas({
+            apiVersion: '9.3',
+            failure: createTempPnl,
+            schemaName: 'assay.ExpressionMatrix',
+            success: function(d){
+                if ( d.matrix ){
+                    var ImmuneResponsePredictor = new LABKEY.ext.ImmuneResponsePredictor({
+                        webPartDivId: webPartDiv
+                    }),
+
+                    resizeModule = function(w, h){
+                        LABKEY.ext.Utils.resizeToViewport( ImmuneResponsePredictor, w, -1, null, null, -5 );
+                        ImmuneResponsePredictor.resize();
+                    }
+
+                    Ext.EventManager.onWindowResize( resizeModule );
+                } else {
+                    createTempPnl();
+                }
+            }
         });
 
-        resizeModule = function(w, h){
-
-            LABKEY.ext.Utils.resizeToViewport( ImmuneResponsePredictor, w, -1, null, null, -5 );
-
-            ImmuneResponsePredictor.resize();
-        };
-
-        Ext.EventManager.onWindowResize( resizeModule );
         Ext.EventManager.fireWindowResize();
-
     };
 
     Ext.onReady( initImmuneResponsePredictor );

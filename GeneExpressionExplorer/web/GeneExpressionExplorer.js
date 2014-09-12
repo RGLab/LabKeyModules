@@ -1,4 +1,4 @@
-// vim: sw=4:ts=4:nu:nospell:fdc=4
+// vim: sw=4:ts=4:nu:nospell:
 /*
  Copyright 2013 Fred Hutchinson Cancer Research Center
 
@@ -26,17 +26,19 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var
-            description     = 'This module can be used to quickly plot the expression level of one or more genes against a selected immunological response variable (e.g. HAI) in one or more cohorts. Visualization is achieve using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
             me              = this,
             maskPlot        = undefined,
             reportSessionId = undefined,
-            fieldWidth      = 400
+            fieldWidth      = 400,
+            labelWidth      = 130
             ;
 
         var checkBtnPlotStatus = function(){
+            chNormalize.setDisabled( cbTimePoint.getValue() === 0 );
+
             if (    cbResponse.isValid( true ) &&
                     cbCohorts.isValid( true ) &&
-                    cbTimePoint.getValue() !== '' && // since it's numeric 0 == '' -> true
+                    cbTimePoint.isValid( true ) &&
                     cbGenes.isValid( true ) &&
                     spnrTextSize.isValid( true )
             ){
@@ -95,7 +97,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     field = new Ext.data.Field(field);
                     this.recordType.prototype.fields.replace(field);
                     this.each( function(r){
-                        if ( typeof r.data[field.name] == 'undefined' ){
+                        if ( ! r.data[field.name] ){
                             r.data[field.name] = r.data['timepoint'] +  ' ' + r.data['timepointUnit'];
                         }
                     });
@@ -278,6 +280,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             fieldLabel: 'Shape',
             lazyInit: false,
             store: strShape,
+            value: 'Gender',
             valueField: 'name',
             width: fieldWidth
         });
@@ -287,6 +290,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             fieldLabel: 'Color',
             lazyInit: false,
             store: strDemographics,
+            value: 'Age',
             valueField: 'name',
             width: fieldWidth
         });
@@ -314,6 +318,10 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         // Buttons, Radio Groups, Checkboxes //
         ///////////////////////////////////////
 
+        var chNormalize = new Ext.form.Checkbox({
+            fieldLabel: 'Normalize to baseline'
+        });
+
         var btnPlot = new Ext.Button({
             disabled: true,
             handler: function(){
@@ -324,6 +332,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     cohorts:            Ext.encode( cbCohorts.getCheckedArray() ),
                     timePoint:          cbTimePoint.getValue(),
                     timePointDisplay:   cbTimePoint.getRawValue(),
+                    normalize:          chNormalize.getValue(),
                     genes:              Ext.encode( cbGenes.getValuesAsArray() ),
                     textSize:           spnrTextSize.getValue(),
                     facet:              rgFacet.getValue().getGroupValue(),
@@ -353,7 +362,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             },
             maxValue: 30,
             minValue: 0,
-            value: 15,
+            value: 18,
             width: 40
         });
 
@@ -469,9 +478,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var cntPlot = new Ext.Container({});
 
-        var pnlView = new Ext.form.FormPanel({
+        var pnlInputView = new Ext.form.FormPanel({
             autoScroll: true,
-            bodyStyle: 'padding: 4px;',
             defaults: {
                 autoHeight: true,
                 forceLayout: true,
@@ -489,9 +497,10 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         }),
                         cbCohorts,
                         cbTimePoint,
+                        chNormalize,
                         cbGenes
                     ],
-                    labelWidth: 90,
+                    labelWidth: labelWidth,
                     title: 'Parameters'
                 }),
                 new Ext.form.FieldSet({
@@ -506,15 +515,15 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         cbSize,
                         cbAlpha
                     ],
-                    labelWidth: 90,
+                    labelWidth: labelWidth,
                     title: 'Additional options',
                     titleCollapse: true
                 }),
                 btnPlot,
                 cntPlot
             ],
-            tabTip: 'View',
-            title: 'View'
+            tabTip: 'Input / View',
+            title: 'Input / View'
         });
 
         var pnlTabs = new Ext.TabPanel({
@@ -522,6 +531,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             autoHeight: true,
             defaults: {
                 autoHeight: true,
+                bodyStyle: 'padding: 4px;',
                 border: false,
                 forceLayout: true,
                 hideMode: 'offsets',
@@ -530,25 +540,59 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             deferredRender: false,
             forceLayout: true,
             items: [
-                pnlView,
+                pnlInputView,
                 new Ext.Panel({
-                    bodyStyle: 'padding: 1px;',
                     defaults: {
                         autoHeight: true,
+                        bodyStyle: 'padding-bottom: 1px;',
                         hideMode: 'offsets'
                     },
-                    html: description,
+                    items: [
+                        new Ext.form.Label(),
+                        new Ext.form.FieldSet({
+                            html: 'This module can be used to quickly plot the expression level of one or more genes against a selected immunological response variable (e.g. HAI) in one or more cohorts.</br>Visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
+                            style: 'margin-top: 5px;',
+                            title: 'Description'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: '',
+                            style: 'margin-top: 5px;',
+                            title: 'Details'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: LABKEY.ext.ISCore.Contributors,
+                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            title: 'Contributors'
+                        })
+                    ],
                     layout: 'fit',
                     tabTip: 'About',
                     title: 'About'
                 }),
                 new Ext.Panel({
-                    bodyStyle: 'padding: 1px;',
                     defaults: {
                         autoHeight: true,
+                        bodyStyle: 'padding-bottom: 1px;',
                         hideMode: 'offsets'
                     },
-                    html: 'Help with parameters explanation here',
+                    items: [
+                        new Ext.form.Label({
+                            text: 'The following parameters are required to generate the plot'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: '<b>Response:</b> The variable to plot against the expression of selected genes<br><br><b>Cohorts:</b> The cohorts with subjects of interest<br><br><b>Time point:</b> The time point to plot<br><br><b>Normalize to baseline:</b> Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data<br><br><b>Genes:</b> The genes to plot',
+                            style: 'margin-top: 5px;',
+                            title: 'Parameters'
+                        }),
+                        new Ext.form.Label({
+                            text: 'Parameters in the "Additional options" section can be used to customize the plot and modify it based on the demographics. Available choices are Age, Gender, and Race.'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: '<b>Text size:</b> The size of all text elements on the plot (Including axis, legend and labels)<br><br><b>Facet:</b> The plot will facet by cohorts on the y axis and genes on the x axis. In Grid mode, the scales are consistent for a gene and for a cohort. In wrap mode, the scales are free. Use wrap if you observe empty spaces in the plots<br><br><b>Shape:</b> The shape of the data points (Gender is selected by default)<br><br><b>Color:</b> The color of the data points (Age is selected by default)<br><br><b>Size:</b> The size of the data points<br><br><b>Alpha:</b> The transparency of the data points',
+                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            title: 'Additional options'
+                        })
+                    ],
                     layout: 'fit',
                     tabTip: 'Help',
                     title: 'Help'
@@ -598,7 +642,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 LABKEY.ActionURL.buildURL(
                     'reports',
                     'runReport',
-                    LABKEY.ActionURL.getContainer(),
+                    null,
                     {
                         reportId: 'module:GeneExpressionExplorer/reports/schemas/Plot.R',
                         tabId: 'Source'
@@ -647,7 +691,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
     }, // end constructor
 
     resize : function(){
-        if ( typeof this.resizableImage != 'undefined' ){
+        if ( this.resizableImage != undefined ){
             var width = Math.min( this.cntPlot.getWidth(), 800 );
             this.resizableImage.resizeTo( width, width * this.resizableImage.height / this.resizableImage.width );
         }

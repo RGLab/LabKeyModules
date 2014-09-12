@@ -1,4 +1,4 @@
-// vim: sw=4:ts=4:nu:nospell:fdc=4
+// vim: sw=4:ts=4:nu:nospell
 /*
  Copyright 2013 Fred Hutchinson Cancer Research Center
 
@@ -25,7 +25,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         //            Variables            //
         /////////////////////////////////////
 
-        var description                 = '<br>This module can be used to automatically select a group of genes whose expression at a given time point (e.g. gene expression levels at day 0) best predicts a given immunological response at a later time point (e.g. HAI at day 28). It uses penalized linear or logistic multivariate regression as implemented in the <a href="http://cran.r-project.org/web/packages/glmnet/index.html" target="_blank">glmnet</a> R package. The gene selection part is done by cross validation.<br><br>',
+        var
             me                          = this,
             maskReport                  = undefined,
             fieldWidth                  = 240,
@@ -84,7 +84,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     field = new Ext.data.Field(field);
                     this.recordType.prototype.fields.replace(field);
                     this.each( function(r){
-                        if ( typeof r.data[field.name] == 'undefined' ){
+                        if ( r.data[field.name] == undefined ){
                             r.data[field.name] = r.data['timepoint'] +  ' ' + r.data['timepointUnit'];
                         }
                     });
@@ -345,9 +345,15 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var btnRun = new Ext.Button({
             disabled: true,
             handler: function(){
+                setReportRunning( true );
+
                 LABKEY.Query.selectRows({
                     columns: [ 'analysis_accession' ],
-                    failure: LABKEY.ext.ISCore.onFailure,
+                    failure: function( errorInfo, options, responseObj ){
+                        setReportRunning( false );
+
+                        LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
+                    },
                     filterArray: [
                         LABKEY.Filter.create(
                             'cohort',
@@ -378,7 +384,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
                             LABKEY.Query.selectRows({
                                 columns: [ 'expression_matrix_accession' ],
-                                failure: LABKEY.ext.ISCore.onFailure,
+                                failure: function( errorInfo, options, responseObj ){
+                                    setReportRunning( false );
+
+                                    LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
+                                },
                                 filterArray: [
                                     LABKEY.Filter.create(
                                         'cohort',
@@ -396,7 +406,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                                 success: function(data){
                                     cnfReport.inputParams['emTesting'] = Ext.encode( Ext.pluck( data.rows, 'expression_matrix_accession') );
 
-                                    setReportRunning( true );
                                     LABKEY.Report.execute( cnfReport );
                                 }
                             });
@@ -540,6 +549,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             autoHeight: true,
             defaults: {
                 autoHeight: true,
+                bodyStyle: 'padding: 4px;',
                 border: false,
                 forceLayout: true,
                 hideMode: 'offsets',
@@ -551,23 +561,52 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 pnlInput,
                 pnlView,
                 new Ext.Panel({
-                    bodyStyle: 'padding: 1px;',
                     defaults: {
                         autoHeight: true,
+                        bodyStyle: 'padding-bottom: 1px;',
                         hideMode: 'offsets'
                     },
-                    html: description, 
+                    items: [
+                        new Ext.form.Label(),
+                        new Ext.form.FieldSet({
+                            html: 'This module can be used to automatically select a group of genes whose expression at a given time point (e.g. gene expression levels at day 0) best predicts a given immunological response at a later time point (e.g. HAI at day 28). It uses penalized linear or logistic multivariate regression as implemented in the <a href="http://cran.r-project.org/web/packages/glmnet/index.html" target="_blank">glmnet</a> R package. The gene selection part is done by cross validation.',
+                            style: 'margin-top: 5px;',
+                            title: 'Description'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: '',
+                            style: 'margin-top: 5px;',
+                            title: 'Details'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: LABKEY.ext.ISCore.Contributors,
+                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            title: 'Contributors'
+                        })
+                    ],
                     layout: 'fit',
                     tabTip: 'About',
                     title: 'About'
                 }),
                 new Ext.Panel({
-                    bodyStyle: 'padding: 1px;',
                     defaults: {
                         autoHeight: true,
+                        bodyStyle: 'padding-bottom: 1px;',
                         hideMode: 'offsets'
                     },
-                    html: '<h3>Response</h3><br><b>Variable:</b> The predicted response (Currently, only HAI is available)<br><br><b>Training:</b> The cohort used to train the model<br><br><b>Testing:</b> The cohort used to test the model<br><br><b>Dichotomize values:</b> Check it to have the predicted response expressed as a boolean<br><br><b>Dichotomization threshold:</b> The threshold for dichotomization, every subject with a value above the selected threshold will be considered a responder<br><br><h3>Predictor</h3><h3>Example</h3>Variable: HAI<br>Training: Cohort1<br> Testing: Cohort2<br>Dichotomize: unchecked<br>Time point: Day 7<br> Assay: Gene expression<br><br>',
+                    items: [
+                        new Ext.form.Label(),
+                        new Ext.form.FieldSet({
+                            html: '<b>Variable:</b> The predicted response (Currently, only HAI is available)<br><br><b>Training:</b> The cohort used to train the model<br><br><b>Testing:</b> The cohort used to test the model<br><br><b>Dichotomize values:</b> If checked, the predicted response is expressed as a boolean<br><br><b>Dichotomization threshold:</b> The threshold for dichotomization, every subject with a value above the selected threshold will be considered a responder',
+                            style: 'margin-top: 5px;',
+                            title: 'Response'    
+                        }),
+                        new Ext.form.FieldSet({
+                            html: '',
+                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            title: 'Predictors'
+                        })
+                    ],
                     layout: 'fit',
                     tabTip: 'Help',
                     title: 'Help'
@@ -600,9 +639,12 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             } else {
                 maskReport.hide();
             }
-            btnRun.setDisabled( bool );
+            cbVariable.setDisabled( bool );
             cbCohortTraining.setDisabled( bool );
+            cbCohortTesting.setDisabled( bool );
             cbTimePoint.setDisabled( bool );
+            cbAssay.setDisabled( bool );
+            btnRun.setDisabled( bool );
         };
 
         var handleCohortTrainingSelection = function(){
@@ -634,7 +676,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 LABKEY.ActionURL.buildURL(
                     'reports',
                     'runReport',
-                    LABKEY.ActionURL.getContainer(),
+                    null,
                     {
                         reportId: 'module:ImmuneResponsePredictor/reports/schemas/study/study_cohorts_info/ImmuneResponsePredictor.Rmd',
                         tabId: 'Source'

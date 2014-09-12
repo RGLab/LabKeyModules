@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<view xmlns='http://labkey.org/data/xml/view' title='Active Modules'>
+    <dependencies>
+        <dependency path='ISCore/ISCore'/>
+
+        <dependency path='ActiveModules.js'/>
+    </dependencies>
+</view>

@@ -11,6 +11,7 @@ library(limma)
 library(pheatmap)
 library(RColorBrewer)
 library(reshape2)
+library(gplots)
 ```
 
 ```{r param-caching, cache=TRUE, cache.extra=digest::digest(labkey.url.params), echo=FALSE}
@@ -38,8 +39,7 @@ baylor_rnames <- function(rnames){
                    rnames, '" target="_blank">', rnames, '</a>')
   return(rnames)
 }
-format_table <- function(x, ...)
-  {
+format_table <- function(x, ...){
   require(knitr)
   require(data.table)
   if(!is(x,"data.table"))
@@ -47,14 +47,11 @@ format_table <- function(x, ...)
     # This is to make sure that we don't have issues with row names in data.frames
     stop("This function only works on data.tables")
     }
-  out <- kable(x, "html", table.attr = 'id="table"', output = FALSE, ...)
+  out <- kable(x, "html", table.attr = 'class="display" id="res_table"', output = FALSE, ...)
   footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
   out_new <- gsub("</thead>",footer,out)
   cat(out_new)
-  
-  cat("\n<script type='text/javascript' charset='utf-8'>\n$(document).ready(function() {\n $('#table').dataTable();\n} );\n</script>\n")
-  #cat("\n<script type='text/javascript' charset='utf-8'>\n $('#table').dataTable();\n </script>\n")
-  }
+}
 ```
 
 ```{r params, cache = TRUE, dependson="param-caching"}
@@ -79,10 +76,10 @@ switch(set,
           `MSigDB c7` = {data(msigdb_immunologic_signatures);
                          gene_sets <- msigdb_immunologic_signatures;
                          func_rnames <- msig_rnames},
-          `Blood transcript` = {data(emory_blood_transcript_modules);
+          `Blood transcription` = {data(emory_blood_transcript_modules);
                                 gene_sets <- emory_blood_transcript_modules;
                                 func_rnames <- emory_rnames},
-          `Baylor` = {data(chaussabel_modules);
+          `G2 (Trial 8) Modules` = {data(chaussabel_modules);
                       gene_sets <- chaussabel_modules;
                       func_rnames <- baylor_rnames})
 ```
@@ -108,32 +105,39 @@ lev <- levels(pData(EM)[, contrast])
 lev <- paste0(contrast, lev[2:length(lev)])
 cam_list <- vector('list', length = length(lev))
 for(i in 1:length(lev)){
-  contrast <- lev[[i]]
-  res <- camera(EM, index = indices, design = mm, contrast = makeContrasts(contrast, levels=mm))
+  contrasti <- lev[[i]]
+  res <- camera(EM, index = indices, design = mm, contrast = makeContrasts(contrasti, levels=mm))
   dt <- data.table(res) 
   dt[, Module := rownames(res)]
   dt[, Coefficient := lev[[i]]]
+  #dt[, PValue := 10*log10(PValue)]
   dt[, PValue := ifelse(Direction=="Up", -10*log10(PValue), 10*log10(PValue))]
   cam_list[[i]] <- dt
 }
 table <- rbindlist(cam_list)
 setcolorder(table, c("Module", "Coefficient", "NGenes", "Correlation", "Direction", "PValue", "FDR"))
 table <- table[order(abs(PValue), decreasing = TRUE)]
+if(contrast == "study_time_collected"){
+ table <-  table[, Coefficient := gsub(contrast, "Day ", table[, Coefficient])]
+}
 ```
 
 ```{r heatmap-matrix, cache = TRUE, dependson="byDay"}
-palette <- rev(brewer.pal(name="PiYG", n=11))
+#palette <- rev(brewer.pal(name="PiYG", n=11))
+#palette <- rev(brewer.pal(name="RdPu", n=11))
+palette <- colorpanel(20, low = "#dc322f", mid = "#fdf6e3", high = "#268bd2")
 DEM <- unique(table[abs(PValue)>30, Module])
 DEM <- table[Module %in% DEM, list(Module, Coefficient, PValue)]
 DEM <- dcast(DEM, formula = Module ~ Coefficient, value.var = "PValue")
 mat <- as.matrix(DEM[, -1])
 rownames(mat) <- DEM$Module
-#format_table(table)
 ```
 
 ```{r kable, cache = TRUE, dependson="byDay", results='asis', fig.heigth = 4, fig.width = 8}
 table <- table[, Module := func_rnames(Module)]
-kable(table, format='html', row.names=TRUE, table.attr='class="display" id="res_table"')
+table <- table[, PValue := abs(PValue)]
+setnames(table, "PValue", "10log10(p)")
+format_table(table)
 ```
 
 ```{r pheatmap, cache=TRUE, dependson="heatmap-matrix"}

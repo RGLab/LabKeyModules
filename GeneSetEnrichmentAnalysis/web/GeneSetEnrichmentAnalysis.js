@@ -1,4 +1,4 @@
-// vim: sw=4:ts=4:nu:nospell:fdc=4
+// vim: sw=4:ts=4:nu:nospell
 /*
  Copyright 2013 Fred Hutchinson Cancer Research Center
 
@@ -25,7 +25,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         //            Variables            //
         /////////////////////////////////////
 
-        var description         = '<br>This module can be used to perform a gene set enrichment analysis across time (or across a prespecified contrast) within a specified cohort. It uses the CAMERA method of the <a href="http://www.bioconductor.org/packages/release/bioc/html/limma.html" target="_blank">Limma</a> R package for performing gene set enrichment analysis.<br><br>'
+        var
             me                  = this,
             maskReport          = undefined,
             fieldWidth          = 240,
@@ -74,8 +74,8 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             store: new Ext.data.ArrayStore({
                 data: [
                     [ 'MSigDB c7', 'MSigDB c7' ],
-                    [ 'Blood transcript', 'Blood transcript' ],
-                    [ 'Baylor', 'Baylor' ]
+                    [ 'Blood transcription', 'Blood transcription' ],
+                    [ 'G2 (Trial 8) Modules', 'G2 (Trial 8) Modules' ]
                 ],
                 fields: [ 'name', 'name' ]
             }),
@@ -210,6 +210,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             autoHeight: true,
             defaults: {
                 autoHeight: true,
+                bodyStyle: 'padding: 4px;',
                 border: false,
                 forceLayout: true,
                 hideMode: 'offsets',
@@ -221,23 +222,47 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 pnlInput,
                 pnlView,
                 new Ext.Panel({
-                    bodyStyle: 'padding: 1px;',
                     defaults: {
                         autoHeight: true,
+                        bodyStyle: 'padding-bottom: 1px;',
                         hideMode: 'offsets'
                     },
-                    html: description,
+                    items: [
+                        new Ext.form.Label(),
+                        new Ext.form.FieldSet({
+                            html: 'This module can be used to perform a gene set enrichment analysis across time (or across a prespecified contrast) within a specified cohort. It uses the CAMERA method of the <a href="http://www.bioconductor.org/packages/release/bioc/html/limma.html" target="_blank">Limma</a> R package for performing gene set enrichment analysis.',
+                            style: 'margin-top: 5px;',
+                            title: 'Description'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: '',
+                            style: 'margin-top: 5px;',
+                            title: 'Details'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: LABKEY.ext.ISCore.Contributors,
+                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            title: 'Contributors'
+                        })
+                    ],
                     layout: 'fit',
                     tabTip: 'About',
                     title: 'About'
                 }),
                 new Ext.Panel({
-                    bodyStyle: 'padding: 1px;',
                     defaults: {
                         autoHeight: true,
+                        bodyStyle: 'padding-bottom: 1px;',
                         hideMode: 'offsets'
                     },
-                    html: '<br><b>Cohort:</b> The cohort with the subjects of interest<br><br><b>Module:</b> The gene sets to be used for the analysis<br><br>',
+                    items: [
+                        new Ext.form.Label(),
+                        new Ext.form.FieldSet({
+                            html: '<b>Cohort:</b> The cohorts with subjects of interest<br><br><b>Modules:</b> The modules used for clustering genes<br><ul><li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp">MSigDB c7</a>: Gene sets that represent cell states and perturbations within the immune system.</li><li><a href="http://www.immuneprofiling.org/meni/meni-paper/btm-landing.gsp">Blood transcription</a>: Set of transcription modules in blood.</li><li><a href="http://www.biir.net/public_wikis/module_annotation/G2_Trial_8_Modules">G2 (Trial 8) Modules</a>: Repertoire of co-clustering genes.</li></ul>',
+                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            title: 'Parameters'
+                        })
+                    ],
                     layout: 'fit',
                     tabTip: 'Help',
                     title: 'Help'
@@ -296,7 +321,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 LABKEY.ActionURL.buildURL(
                     'reports',
                     'runReport',
-                    LABKEY.ActionURL.getContainer(),
+                    null,
                     {
                         reportId: 'module:GeneSetEnrichmentAnalysis/reports/schemas/GeneSetEnrichmentAnalysis.Rmd',
                         tabId: 'Source'

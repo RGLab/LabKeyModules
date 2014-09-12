@@ -1,4 +1,4 @@
-// vim: sw=4:ts=4:nu:nospell:fdc=4
+// vim: sw=4:ts=4:nu:nospell
 /*
  Copyright 2013 Fred Hutchinson Cancer Research Center
 
@@ -26,25 +26,24 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var
-            description     = '',
             me              = this,
             maskPlot        = undefined,
             reportSessionId = undefined,
             fieldWidth      = 400,
-            labelWidth      = 130
+            labelWidth      = 130,
+            aspectRatio     = 0.5
             ;
 
         var checkBtnPlotStatus = function(){
             var dataset = cbDataset.getValue();
-            if (    dataset !== '' && // since it's numeric 0 == '' -> true
+            if (    dataset !== '' &&
                     spnrTextSize.isValid( true )
             ){
                 if ( qwpDataset == undefined ){
+
                     qwpDataset = new LABKEY.QueryWebPart({
                         buttonBar: {
                             items:[
-                                //LABKEY.QueryWebPart.standardButtons.filter,
-                                //LABKEY.QueryWebPart.standardButtons.subjectGroups,
                                 LABKEY.QueryWebPart.standardButtons.exportRows,
                                 LABKEY.QueryWebPart.standardButtons.pageSize
                             ],
@@ -54,8 +53,9 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         frame: 'none',
                         queryName: dataset,
                         renderTo: pnlData.getEl(),
-                        schemaName: 'study' 
+                        schemaName: 'study'
                     });
+
                 } else if ( qwpDataset.queryName != dataset ) {
                     qwpDataset.queryName = dataset;
                     qwpDataset.render();
@@ -64,9 +64,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 btnPlot.setDisabled( false );
             } else {
                 qwpDataset = undefined;
-                pnlData.getEl().update('');
-
+                pnlData.getEl().update('Please, go to the "Input / View" tab to select a dataset to display below. You will then be able to filter this data here before plotting.'),
                 btnPlot.setDisabled( true );
+                cntPlot.update( '<div style=\'height: 10px\'></div>' );
+                btnSaveAsPdf.setDisabled( true );
             }
         };
 
@@ -123,20 +124,12 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
         var strPlotType = new Ext.data.ArrayStore({
             data: [
-                [ 'Auto', 'Auto' ],
-                [ 'Boxplot', 'Boxplot' ],
-                [ 'Heatmap', 'Heatmap' ],
-                [ 'Lineplot', 'Lineplot' ]
+                [ 'Auto', 'auto' ],
+                [ 'Boxplot', 'boxplot' ],
+                [ 'Heatmap', 'heatmap' ],
+                [ 'Lineplot', 'line' ]
             ],
-            fields: [ 'name', 'name' ]
-        });
-
-        var strVariable = new Ext.data.ArrayStore({
-            data: [
-                [ 'Gender', 'Gender' ],
-                [ 'Race', 'Race' ]
-            ],
-            fields: [ 'name', 'name' ]
+            fields: [ 'display', 'value' ]
         });
 
         var strShape = new Ext.data.ArrayStore({
@@ -144,7 +137,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 [ 'Gender', 'Gender' ],
                 [ 'Race', 'Race' ]
             ],
-            fields: [ 'name', 'name' ]
+            fields: [ 'name', 'value' ]
         });
 
         var strDemographics = new Ext.data.ArrayStore({
@@ -153,7 +146,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 [ 'Gender', 'Gender' ],
                 [ 'Race', 'Race' ]
             ],
-            fields: [ 'name', 'name' ]
+            fields: [ 'name', 'value' ]
         });
 
 
@@ -203,57 +196,55 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         });
 
         var cbPlotType = new Ext.ux.form.ExtendedComboBox({
-            displayField: 'name',
+            allowBlank: false,
+            displayField: 'display',
             fieldLabel: 'Plot type',
             lazyInit: false,
             store: strPlotType,
-            valueField: 'name',
-            width: fieldWidth
-        });
-
-        var cbVariable = new Ext.ux.form.ExtendedComboBox({
-            disabled: true,
-            displayField: 'name',
-            fieldLabel: 'Variable',
-            lazyInit: false,
-            store: strVariable,
-            valueField: 'name',
-            width: fieldWidth
-        });
-
-        var cbShape = new Ext.ux.form.ExtendedComboBox({
-            displayField: 'name',
-            fieldLabel: 'Shape',
-            lazyInit: false,
-            store: strShape,
-            valueField: 'name',
+            value: 'auto',
+            valueField: 'value',
             width: fieldWidth
         });
 
         var cbColor = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Color',
+            hidden: true,
             lazyInit: false,
             store: strDemographics,
-            valueField: 'name',
+            value: 'Age',
+            valueField: 'value',
+            width: fieldWidth
+        });
+
+       var cbShape = new Ext.ux.form.ExtendedComboBox({
+            displayField: 'name',
+            fieldLabel: 'Shape',
+            hidden: true,
+            lazyInit: false,
+            store: strShape,
+            value: 'Gender',
+            valueField: 'value',
             width: fieldWidth
         });
 
         var cbSize = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Size',
+            hidden: true,
             lazyInit: false,
             store: strDemographics,
-            valueField: 'name',
+            valueField: 'value',
             width: fieldWidth
         });
 
         var cbAlpha = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Alpha',
+            hidden: true,
             lazyInit: false,
             store: strDemographics,
-            valueField: 'name',
+            valueField: 'value',
             width: fieldWidth
         });
 
@@ -263,10 +254,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         ///////////////////////////////////////
 
         var chNormalize = new Ext.form.Checkbox({
-            fieldLabel: 'Normalize to baseline',
-            handler: function( cb, s ){
-                
-            }
+            fieldLabel: 'Normalize to baseline'
         });
 
         var spnrTextSize = new Ext.ux.form.SpinnerField({
@@ -274,18 +262,23 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             allowDecimals: false,
             fieldLabel: 'Text size',
             listeners: {
-                invalid:    function(){ btnPlot.setDisabled(true); },
+                invalid:
+                    function(){
+                        btnPlot.setDisabled( true );
+                        btnSaveAsPdf.setDisabled( true );
+                    },
                 valid:      checkBtnPlotStatus
             },
             maxValue: 30,
             minValue: 0,
-            value: 15,
+            value: 18,
             width: 40
         });
 
         var rgFacet = new Ext.form.RadioGroup({
             columns: [ 100, 100 ],
             fieldLabel: 'Facet',
+            hidden: true,
             items: [
                 {
                     boxLabel: 'Grid',
@@ -306,21 +299,25 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         var btnPlot = new Ext.Button({
             disabled: true,
             handler: function(){
-                var width = Math.min( cntPlot.getWidth(), 800 );
+                var
+                    width   = Math.min( cntPlot.getWidth(), 800 ),
+                    height  = width * aspectRatio
+                ;
 
                 cnfPlot.inputParams = {
-                    dataset:            cbDataset.getValue(),
+                    datasetName:        cbDataset.getValue(),
                     datasetDisplay:     cbDataset.getRawValue(),
                     plotType:           cbPlotType.getValue(),
                     normalize:          chNormalize.getValue(),
+                    filters:            Ext.encode( qwpDataset.getDataRegion().getUserFilter() ),
                     textSize:           spnrTextSize.getValue(),
                     facet:              rgFacet.getValue().getGroupValue(),
                     shape:              cbShape.getValue(),
                     color:              cbColor.getValue(),
                     size:               cbSize.getValue(),
                     alpha:              cbAlpha.getValue(),
-                    imageWidth:         width,
-                    imageHeight:        width
+                    imageWidth:         1.5 * width,
+                    imageHeight:        1.5 * height
                 };
 
                 setPlotRunning( true );
@@ -384,19 +381,22 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         var imgId = 'img' + config.webPartDivId;
                         cntPlot.update( '<img id=\'' + imgId + '\' src=\'' + p.value + '\' >' );
 
-                        var width = Math.min( cntPlot.getWidth(), 800 );
+                        var
+                            width   = Math.min( cntPlot.getWidth(), 800 )
+                            height  = width * aspectRatio
+                        ;
 
                         resizableImage = new Ext.Resizable( imgId, {
                             disableTrackOver: true,
                             dynamic: true,
                             handles: 's',
-                            height: width,
+                            height: height,
                             listeners: {
                                 resize: function(){
                                     var widthToSet = Math.min( cntPlot.getWidth(), 800 ), img = this.getEl().dom;
-                                    var width = img.offsetWidth;
+                                    var width = img.offsetWidth, height = img.offsetHeight;
                                     if ( width > widthToSet ){
-                                        resizableImage.resizeTo( widthToSet, widthToSet );
+                                        resizableImage.resizeTo( widthToSet, height / width * widthToSet );
                                     }
                                 }
                             },
@@ -418,6 +418,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             target: imgId,
                             text: 'Click on the generated plot to see it in full screen'
                         });
+
+                        btnSaveAsPdf.setDisabled( false );
                     }
                 }
             }
@@ -432,7 +434,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             html: '<div style=\'height: 10px\'></div>'
         });
 
-        var pnlInput = new Ext.form.FormPanel({
+        var pnlInputView = new Ext.form.FormPanel({
             autoScroll: true,
             bodyStyle: 'padding: 4px;',
             defaults: {
@@ -451,8 +453,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         }),
                         cbDataset,
                         cbPlotType,
-                        chNormalize,
-                        cbVariable
+                        chNormalize
                     ],
                     labelWidth: labelWidth,
                     title: 'Parameters'
@@ -464,8 +465,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         spnrTextSize,
                         rgFacet,
-                        cbShape,
                         cbColor,
+                        cbShape,
                         cbSize,
                         cbAlpha
                     ],
@@ -477,20 +478,20 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 cntPlot,
                 btnSaveAsPdf
             ],
-            tabTip: 'Input',
-            title: 'Input'
+            tabTip: 'Input / View',
+            title: 'Input / View'
         });
 
-        //var qwpDataSet = undefined;
-        qwpDataset = undefined;
+        var qwpDataSet = undefined;
 
-         pnlData = new Ext.Panel({
+        var pnlData = new Ext.Panel({
             autoScroll: true,
             bodyStyle: 'padding: 1px;',
             defaults: {
                 autoHeight: true,
                 hideMode: 'offsets'
             },
+            html: 'Please, go to the "Input / View" tab to select a dataset to display below. You will then be able to filter this data here before plotting.',
             layout: 'fit',
             tabTip: 'Data',
             title: 'Data'
@@ -501,6 +502,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             autoHeight: true,
             defaults: {
                 autoHeight: true,
+                bodyStyle: 'padding: 4px;',
                 border: false,
                 forceLayout: true,
                 hideMode: 'offsets',
@@ -509,26 +511,58 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             deferredRender: false,
             forceLayout: true,
             items: [
-                pnlInput,
+                pnlInputView,
                 pnlData,
                 new Ext.Panel({
-                    bodyStyle: 'padding: 1px;',
                     defaults: {
                         autoHeight: true,
+                        bodyStyle: 'padding-bottom: 1px;',
                         hideMode: 'offsets'
                     },
-                    html: 'About info here',
+                    items: [
+                        new Ext.form.Label(),
+                        new Ext.form.FieldSet({
+                            html: 'This module can be used to quickly plot a selected immunological response variable (e.g. HAI) in one or more cohorts across multiple analytes (when applicable). Visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package, and several graphical options are made available including lines, boxplots and heatmaps. Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
+                            style: 'margin-top: 5px;',
+                            title: 'Description'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: '',
+                            style: 'margin-top: 5px;',
+                            title: 'Details'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: LABKEY.ext.ISCore.Contributors,
+                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            title: 'Contributors'
+                        })
+                    ],
                     layout: 'fit',
                     tabTip: 'About',
                     title: 'About'
                 }),
                 new Ext.Panel({
-                    bodyStyle: 'padding: 1px;',
                     defaults: {
                         autoHeight: true,
+                        bodyStyle: 'padding-bottom: 1px;',
                         hideMode: 'offsets'
                     },
-                    html: 'Help with parameters explanation here',
+                    items: [
+                        new Ext.form.Label(),
+                        new Ext.form.FieldSet({
+                            html: '<b>Choose a dataset</b>: Select an assay type to visualize. The selected data can be filtered using the grid view under the data tab.</br></br><b>Plot type</b>: 4 different types are available: "Boxplot", "Lines", "Heatmap", and "Auto". By default, the "Auto" option is selected, in which case the module will try to figure out the best plot type for your data.</br></br><b>Normalize to baseline</b>: Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.',
+                            style: 'margin-top: 5px;',
+                            title: 'Predictors'
+                        }),
+                        new Ext.form.Label({
+                            text: 'Parameters in the "Additional options" section can be used to customize the plot and modify it based on the demographics. Available choices are Age, Gender, and Race.'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: '<b>Text size:</b> The size of all text elements on the plot (Including axis, legend and labels)<br><br><b>Facet:</b> The plot will facet by cohorts on the y axis and genes on the x axis. In Grid mode, the scales are consistent for a gene and for a cohort. In wrap mode, the scales are free. Use wrap if you observe empty spaces in the plots<br><br><b>Shape:</b> The shape of the data points (Gender is selected by default)<br><br><b>Color:</b> The color of the data points (Age is selected by default)<br><br><b>Size:</b> The size of the data points<br><br><b>Alpha:</b> The transparency of the data points',
+                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            title: 'Additional options'
+                        })
+                    ],
                     layout: 'fit',
                     tabTip: 'Help',
                     title: 'Help'
@@ -563,6 +597,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             }
             btnPlot.setDisabled( bool );
             cbDataset.setDisabled( bool );
+            cbPlotType.setDisabled( bool );
         };
 
 
@@ -575,7 +610,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 LABKEY.ActionURL.buildURL(
                     'reports',
                     'runReport',
-                    LABKEY.ActionURL.getContainer(),
+                    null,
                     {
                         reportId: 'module:DataExplorer/reports/schemas/Plot.R',
                         tabId: 'Source'
@@ -624,7 +659,11 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
     }, // end constructor
 
     resize : function(){
-        if ( typeof this.resizableImage != 'undefined' ){
+        if ( qwpDataset != undefined ){
+            qwpDataset.render();
+        }
+
+        if ( this.resizableImage != undefined ){
             var width = Math.min( this.cntPlot.getWidth(), 800 );
             this.resizableImage.resizeTo( width, width * this.resizableImage.height / this.resizableImage.width );
         }
