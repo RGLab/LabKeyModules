@@ -39,12 +39,7 @@ vim: ts=2:sw=2:nu:fdc=2:spell
                             }
                         ) + '">here</a> to generate expression matrices.' :
                         ' Expression matrices need to be generated first.' ) +
-                        '</br>If you are unsure on what to do, please, contact us and fill out an issue on the <a href="' +
-                        LABKEY.ActionURL.buildURL(
-                            'project',
-                            'begin',
-                            '/home/support'
-                        ) + '">support board</a>.',
+                        '</br>If you are unsure on what to do, please, contact us and fill out an issue on ' + LABKEY.ext.ISCore.SupportBoardLink,
 
                     temp = new Ext.Panel({
                         border: false,

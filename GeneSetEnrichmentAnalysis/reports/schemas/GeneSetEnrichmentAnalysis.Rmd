@@ -118,17 +118,18 @@ table <- rbindlist(cam_list)
 setcolorder(table, c("Module", "Coefficient", "NGenes", "Correlation", "Direction", "PValue", "FDR"))
 table <- table[order(abs(PValue), decreasing = TRUE)]
 if(contrast == "study_time_collected"){
- table <-  table[, Coefficient := gsub(contrast, "Day ", table[, Coefficient])]
+ table <- table[, Coefficient := gsub(contrast, "Day ", table[, Coefficient])]
+ table <- table[mixedorder(Coefficient)]
 }
 ```
 
 ```{r heatmap-matrix, cache = TRUE, dependson="byDay"}
 #palette <- rev(brewer.pal(name="PiYG", n=11))
 #palette <- rev(brewer.pal(name="RdPu", n=11))
-palette <- colorpanel(20, low = "#dc322f", mid = "#fdf6e3", high = "#268bd2")
+palette <- colorpanel(20, low = "#268bd2", mid = "#fdf6e3", high = "#dc322f")
 DEM <- unique(table[abs(PValue)>30, Module])
 DEM <- table[Module %in% DEM, list(Module, Coefficient, PValue)]
-DEM <- dcast(DEM, formula = Module ~ Coefficient, value.var = "PValue")
+DEM <- dcast(DEM, formula = Module ~ Coefficient, value.var = "PValue")[, c("Module", mixedsort(unique(table$Coefficient)))]
 mat <- as.matrix(DEM[, -1])
 rownames(mat) <- DEM$Module
 ```

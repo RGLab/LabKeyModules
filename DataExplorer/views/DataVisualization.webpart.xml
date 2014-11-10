@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<webpart title='Data Visualization' xmlns='http://labkey.org/data/xml/webpart'>
+	<view name='DataVisualization'/>
+    <locations>
+        <location name='right'/>
+    </locations>
+</webpart>
+

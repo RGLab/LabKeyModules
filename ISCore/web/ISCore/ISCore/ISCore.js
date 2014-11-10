@@ -378,13 +378,17 @@ LABKEY.ext.ISCore.captureEvents = function(observable) {
     );
 };
 
-LABKEY.ext.ISCore.Contributors =
-    'The ImmuneSpace development team. For bug or feature requests please use the <a href="' +
+LABKEY.ext.ISCore.SupportBoardLink =
+    'the <a href="' +
     LABKEY.ActionURL.buildURL(
       'project',
       'begin',
       '/home/support'
-    ) + '">support board</a>.'; 
+    ) + '">support board</a>.';
+
+LABKEY.ext.ISCore.Contributors =
+    'The ImmuneSpace development team. For bug or feature requests please use ' +
+    LABKEY.ext.ISCore.SupportBoardLink; 
 
 LABKEY.ext.ISCore.onFailure = function(errorInfo, options, responseObj){
     var strngErrorContact = '\nPlease, contact support, if you have questions.', text = 'Failure: ';

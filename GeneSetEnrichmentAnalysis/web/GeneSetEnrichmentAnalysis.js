@@ -169,6 +169,17 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         //  Panels, Containers, Components //
         /////////////////////////////////////
 
+        var tlbrRun = new Ext.Toolbar({
+            border: true,
+            defaults: {
+                style: 'padding-top: 1px; padding-bottom: 1px;'
+            },
+            disabled: true,
+            enableOverflow: true,
+            items: [ btnRun ],
+            style: 'padding-right: 2px; padding-left: 2px;'
+        });
+
         var pnlInput = new Ext.form.FormPanel({
             bodyStyle: { paddingTop: '1px' },
             defaults: {
@@ -186,7 +197,13 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     ],
                     title: 'Parameters'
                 }),
-                btnRun
+                new Ext.Panel({
+                    border: true,
+                    items: [
+                        tlbrRun
+                    ],
+                    style: 'padding-right: 2px; padding-left: 2px;'
+                })
             ],
             labelWidth: 100,
             tabTip: 'Input',
@@ -230,12 +247,12 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to perform a gene set enrichment analysis across time (or across a prespecified contrast) within a specified cohort. It uses the CAMERA method of the <a href="http://www.bioconductor.org/packages/release/bioc/html/limma.html" target="_blank">Limma</a> R package for performing gene set enrichment analysis.',
+                            html: 'This module can be used to perform a gene set enrichment analysis across time (or across a prespecified contrast) within a specified cohort. ',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: '',
+                            html: 'The gene set enrichment analysis is performed using the CAMERA method of the <a href="http://www.bioconductor.org/packages/release/bioc/html/limma.html" target="_blank">Limma</a> R package.',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),
@@ -258,7 +275,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: '<b>Cohort:</b> The cohorts with subjects of interest<br><br><b>Modules:</b> The modules used for clustering genes<br><ul><li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp">MSigDB c7</a>: Gene sets that represent cell states and perturbations within the immune system.</li><li><a href="http://www.immuneprofiling.org/meni/meni-paper/btm-landing.gsp">Blood transcription</a>: Set of transcription modules in blood.</li><li><a href="http://www.biir.net/public_wikis/module_annotation/G2_Trial_8_Modules">G2 (Trial 8) Modules</a>: Repertoire of co-clustering genes.</li></ul>',
+                            html: '<b>Cohort:</b> The cohorts with subjects of interest<br><br><b>Modules:</b> The modules used for clustering genes<br><ul><li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp" target="_blank">MSigDB c7</a>: Gene sets that represent cell states and perturbations within the immune system.</li><li><a href="http://www.immuneprofiling.org/meni/meni-paper/btm-landing.gsp" target="_blank">Blood transcription</a>: Set of transcription modules in blood.</li><li><a href="http://www.biir.net/public_wikis/module_annotation/G2_Trial_8_Modules" target="_blank">G2 (Trial 8) Modules</a>: Repertoire of co-clustering genes.</li></ul>',
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Parameters'
                         })
@@ -271,14 +288,17 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             ],
             layoutOnTabChange: true,
             listeners: {
-                afterrender: function(){
-                    maskReport = new Ext.LoadMask(
-                        this.getEl(),
-                        {
-                            msg: 'Generating the report...',
-                            msgCls: 'mask-loading'
-                        }
-                    );
+                afterrender: {
+                    fn: function(){
+                        maskReport = new Ext.LoadMask(
+                            this.getEl(),
+                            {
+                                msg: 'Generating the plot...',
+                                msgCls: 'mask-loading'
+                            }
+                        );
+                    },   
+                    single: true 
                 },
                 tabchange: function(tabPanel, tab){
                     if ( tab.title == 'Create' ){

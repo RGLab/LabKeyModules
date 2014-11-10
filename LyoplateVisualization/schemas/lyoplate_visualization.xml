@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns:tables xmlns:ns='http://labkey.org/data/xml'>
+    <ns:table tableName='gstbl' tableDbType='TABLE'>
+        <ns:description>
+            The 'gsTbl' table contains information about generated gating sets.
+        </ns:description>
+        <ns:columns>
+            <ns:column columnName='container'/>
+            <ns:column columnName='gsid'>
+                <ns:columnTitle>gsId</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='gsname'>
+                <ns:columnTitle>gsName</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='gspath'>
+                <ns:columnTitle>gsPath</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='gsdescription'>
+                <ns:columnTitle>gsDescription</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='xmlpaths'>
+                <ns:columnTitle>xmlPaths</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='samplegroups'>
+                <ns:columnTitle>sampleGroups</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='created'>
+                <ns:columnTitle>Created</ns:columnTitle>
+                <ns:formatString>yyyy-MM-dd HH:mm:ss</ns:formatString>
+            </ns:column>
+        </ns:columns>
+    </ns:table>
+    <ns:table tableName='projections' tableDbType='TABLE'>
+        <ns:description>
+            The 'projections' table contains the projections information associated with gating sets.
+        </ns:description>
+        <ns:columns>
+            <ns:column columnName='container'/>
+            <ns:column columnName='index'>
+                <ns:columnTitle>Index</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='path'>
+                <ns:columnTitle>Path</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='x_axis'>
+                <ns:columnTitle>X Marker and Channel Name</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='y_axis'>
+                <ns:columnTitle>Y Marker and Channel Name</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='x_key'>
+                <ns:columnTitle>X Channel Name</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='y_key'>
+                <ns:columnTitle>Y Channel Name</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='gsid'>
+                <ns:columnTitle>gsId</ns:columnTitle>
+            </ns:column>
+        </ns:columns>
+    </ns:table>
+    <ns:table tableName='study_vars' tableDbType='TABLE'>
+        <ns:description>
+            The 'study_vars' table contains the sets of study variables associated with each of the generated gating sets.
+        </ns:description>
+        <ns:columns>
+            <ns:column columnName='container'/>
+            <ns:column columnName='svid'>
+                <ns:columnTitle>Study Variable Id</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='svname'>
+                <ns:columnTitle>Study Variable Name</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='gsid'>
+                <ns:columnTitle>gsId</ns:columnTitle>
+            </ns:column>
+        </ns:columns>
+    </ns:table>
+    <ns:table tableName='files' tableDbType='TABLE'>
+        <ns:description>
+            The 'files' table contains the sets of files chosen for each of the generated gating sets.
+        </ns:description>
+        <ns:columns>
+            <ns:column columnName='container'/>
+            <ns:column columnName='fileId'>
+                <ns:columnTitle>File Id</ns:columnTitle>
+                <ns:fk>
+                    <ns:fkDbSchema>flow</ns:fkDbSchema>
+                    <ns:fkTable>FCSFiles</ns:fkTable>
+                    <ns:fkColumnName>RowId</ns:fkColumnName>
+                </ns:fk>
+            </ns:column>
+            <ns:column columnName='gsid'>
+                <ns:columnTitle>gsId</ns:columnTitle>
+            </ns:column>
+        </ns:columns>
+    </ns:table>
+</ns:tables>

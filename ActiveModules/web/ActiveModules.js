@@ -19,106 +19,126 @@ Ext.namespace('LABKEY.ext');
 
 LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
 
-    onFailure: function( a, b, c ){
-        this.myMask.hide();
-        $('#ActiveModules' + this.config.webPartDivId + ' .placeholder').remove();
-        LABKEY.ext.ISCore.onFailure( a, b, c);
-    },
-
     constructor : function(config) {
-        var me = this;
-        me.config = config;
 
-        ////////////////////////////////////
-        //  Generate necessary HTML divs  //
-        ////////////////////////////////////
-
-        $('#' + config.webPartDivId).append(
-            '<div id=\'ActiveModules' + config.webPartDivId + '\'>' +
-                '<div class=\'placeholder\' style=\'height: 40px;\'></div>' +
-            '</div>'
-        );
-
-
-        /////////////////////////////////////
-        //            Variables            //
-        /////////////////////////////////////
-
-        me.myMask = new Ext.LoadMask(
-            $('#ActiveModules' + config.webPartDivId)[0],
-            {
-                msg: 'Please, wait, while the list of active modules is loading',
-                msgCls: 'mask-loading'
-            }
-        );
-
-        me.myMask.show();
-
-        var activeModulesFilterArray = [
-            LABKEY.Filter.create(
-                'Name',
-                LABKEY.container.activeModules.join(';'),
-                LABKEY.Filter.Types.IN
-            )
-        ];
-
-        LABKEY.Query.selectDistinctRows({
-            column: 'Category',
-            failure: me.onFailure.bind( me ),
-            filterArray: activeModulesFilterArray,
-            queryName: 'modules',
-            schemaName: 'lists',
-            success: function( d ){
-                $('#ActiveModules' + config.webPartDivId + ' .placeholder').remove();
-
-                Ext.each(
-                    d.values,
-                    function( e ){
-                        $('#ActiveModules' + config.webPartDivId).append(
-                            '<h3 id=\'category' + e + config.webPartDivId  + '\' class=\'bold-text\'>' + e + '</h3>'
-                        );
-                    } 
-                );
-
-                LABKEY.Query.selectRows({
-                    columns: ['Category', 'Name', 'Title', 'Description'],
-                    failure: me.onFailure.bind( me ),
-                    filterArray: activeModulesFilterArray,
-                    queryName: 'modules',
-                    schemaName: 'lists',
-                    success: function( d ){
-                        me.myMask.hide();
-                        Ext.each(
-                            d.rows,
-                            function( e ){
-                                $('#category' + e.Category + config.webPartDivId).append(
-                                    '<ul>' +
-                                        '<div><a href=\'' +
-                                            LABKEY.ActionURL.buildURL( e.Name, 'begin' ) +
-                                        '\'>' + e.Title + '</a></div>' +
-                                        (
-                                            e.Description == null ?
-                                            '' :
-                                            '<div class=\'normal-text extra5pxPadding\'>' + e.Description + '</div>'
-                                        ) +
-                                    '</ul>'
-                                );
+        var cntMain = new Ext.Container({
+            autoHeight: true,
+            html: '<div class=\'placeholder\' style=\'height: 40px;\'></div>',
+            layout: 'form',
+            listeners: {
+                afterrender: {
+                    fn: function(){
+                         var myMask = new Ext.LoadMask(
+                            cntMain.getEl(),
+                            {
+                                msg: 'Please, wait, while the list of active modules is loading',
+                                msgCls: 'mask-loading'
                             }
-                        )
-                    }
-                });               
-            } 
+                        );
+
+                        myMask.show();
+
+                        var activeModulesFilterArray = [
+                            LABKEY.Filter.create(
+                                'Name',
+                                LABKEY.container.activeModules.join(';'),
+                                LABKEY.Filter.Types.IN
+                            )
+                        ];
+
+                        var onFailure = function( a, b, c ){
+                            myMask.hide();
+                            LABKEY.ext.ISCore.onFailure( a, b, c);
+                        };
+
+                        LABKEY.Query.selectDistinctRows({
+                            column: 'Category',
+                            failure: onFailure,
+                            filterArray: activeModulesFilterArray,
+                            queryName: 'modules',
+                            schemaName: 'lists',
+                            success: function( d ){
+                                var categories = d.values;
+
+                                LABKEY.Query.selectRows({
+                                    columns: ['Category', 'Name', 'Title', 'Description'],
+                                    failure: onFailure,
+                                    filterArray: activeModulesFilterArray,
+                                    queryName: 'modules',
+                                    schemaName: 'lists',
+                                    success: function( d ){
+                                        myMask.hide();
+
+                                        if ( categories.length == 0 ){
+                                            cntMain.getEl().mask(
+                                                'There are no active modules enabled in this study.', 'infoMask'
+                                            );
+                                        } else {
+                                            cntMain.update('');
+
+                                            var objects = [];
+                                            Ext.each(
+                                                categories,
+                                                function( e ){
+                                                    objects.push(
+                                                        new Ext.form.FieldSet({
+                                                            autoScroll: true,
+                                                            id: 'category' + e + config.webPartDivId,
+                                                            style: 'margin-bottom: 0px; margin-top: 5px; margin-left: 0px; margin-right: 0px;',
+                                                            title: e
+                                                        })
+                                                    );
+                                                } 
+                                            );
+                                            cntMain.add( objects );
+
+                                            Ext.each(
+                                                d.rows,
+                                                function( e ){
+                                                    var category = Ext.getCmp( 'category' + e.Category + config.webPartDivId );
+                                                    category.add(
+                                                        new Ext.Container({
+                                                            html:
+                                                                '<div>' +
+                                                                    '<div class=\'bold-text\'><a href=\"' +
+                                                                        LABKEY.ActionURL.buildURL( e.Name, 'begin' ) +
+                                                                    '\">' + e.Title + '</a></div>' +
+                                                                    (
+                                                                        e.Description == null ?
+                                                                        '' :
+                                                                        '<div class=\'extra5pxPadding\'>' + e.Description + '</div>'
+                                                                    ) +
+                                                                '</div>',
+                                                            style: 'padding-bottom: 4px; padding-top: 4px;'
+                                                        })
+                                                    );
+                                                }
+                                            );
+
+                                            cntMain.doLayout();
+                                        }
+                                    }
+                                });               
+                            } 
+                        });                       
+                    },
+                    single: true
+                }
+            }
         });
 
 
-        me.border         = false;
-        me.cls            = 'ISCore';
-        me.contentEl      = 'ActiveModules' + config.webPartDivId;
-        me.frame          = false;
-        me.layout         = 'fit';
-        me.renderTo       = config.webPartDivId;
-        me.webPartDivId   = config.webPartDivId;
-        me.width          = document.getElementById(config.webPartDivId).offsetWidth;
+
+
+        this.border         = false;
+        this.boxMinWidth    = 370;
+        this.cls            = 'ISCore';
+        this.frame          = false;
+        this.items          = cntMain,
+        this.layout         = 'fit';
+        this.renderTo       = config.webPartDivId;
+        this.webPartDivId   = config.webPartDivId;
+        this.width          = document.getElementById(config.webPartDivId).offsetWidth;
 
         LABKEY.ext.ActiveModules.superclass.constructor.apply(this, arguments);
     } // end constructor

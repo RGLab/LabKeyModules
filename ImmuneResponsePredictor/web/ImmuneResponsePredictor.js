@@ -478,6 +478,17 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             nfFoldChange
         ],
         boolGeneExpression = true;
+ 
+        var tlbrRun = new Ext.Toolbar({
+            border: true,
+            defaults: {
+                style: 'padding-top: 1px; padding-bottom: 1px;'
+            },
+            disabled: true,
+            enableOverflow: true,
+            items: [ btnRun ],
+            style: 'padding-right: 2px; padding-left: 2px;'
+        });
 
         var pnlInput = new Ext.form.FormPanel({
             bodyStyle: { paddingTop: '1px' },
@@ -525,7 +536,13 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     title: 'Additional options',
                     titleCollapse: true
                 }),
-                btnRun
+                new Ext.Panel({
+                    border: true,
+                    items: [
+                        tlbrRun
+                    ],
+                    style: 'padding-right: 2px; padding-left: 2px;'
+                })
             ],
             labelWidth: 300,
             tabTip: 'Input',
@@ -569,12 +586,12 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to automatically select a group of genes whose expression at a given time point (e.g. gene expression levels at day 0) best predicts a given immunological response at a later time point (e.g. HAI at day 28). It uses penalized linear or logistic multivariate regression as implemented in the <a href="http://cran.r-project.org/web/packages/glmnet/index.html" target="_blank">glmnet</a> R package. The gene selection part is done by cross validation.',
+                            html: 'This module can be used to automatically select a group of genes whose expression at a given time point (e.g. gene expression levels at day 0) best predicts a given immunological response at a later time point (e.g. HAI at day 28). ',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: '',
+                            html: 'It uses penalized linear or logistic multivariate regression as implemented in the <a href="http://cran.r-project.org/web/packages/glmnet/index.html" target="_blank">glmnet</a> R package. The gene selection part is done by cross validation in the training cohort. The test cohort (if available) is used to assess the predictive ability of the inferred model.',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),
@@ -596,15 +613,29 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     },
                     items: [
                         new Ext.form.Label(),
+                        new Ext.form.Label({
+                            text: 'The first step is to select the predicted variable and the cohorts used to train and test the model'
+                        }),
                         new Ext.form.FieldSet({
                             html: '<b>Variable:</b> The predicted response (Currently, only HAI is available)<br><br><b>Training:</b> The cohort used to train the model<br><br><b>Testing:</b> The cohort used to test the model<br><br><b>Dichotomize values:</b> If checked, the predicted response is expressed as a boolean<br><br><b>Dichotomization threshold:</b> The threshold for dichotomization, every subject with a value above the selected threshold will be considered a responder',
                             style: 'margin-top: 5px;',
-                            title: 'Response'    
+                            title: 'Response'
+                        }),
+                        new Ext.form.Label({
+                            text: 'This section is used to select the predicting variable'
                         }),
                         new Ext.form.FieldSet({
-                            html: '',
-                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            html: '<b>Time point:</b> The time point in the predicting assay to be used.<br><br>Assay:</b> The predicting assay (Currently, only gene expression is available).',
+                            style: 'margin-top: 5px;',
                             title: 'Predictors'
+                        }),
+                        new Ext.form.Label({
+                            text: 'The additional options are used for filtering of the predicting features'
+                        }),
+                        new Ext.form.FieldSet({
+                            html: '<b>False Discovery Rate:</b> Features with an FDR <u>higher</u> than this threshold will be excluded<br><br><b>Absolute fold-change:</b> Features with an absolute fold change to baseline <u>lower</u> than threshold will be excluded.',
+                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            title: 'Additional options'
                         })
                     ],
                     layout: 'fit',
@@ -614,14 +645,17 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             ],
             layoutOnTabChange: true,
             listeners: {
-                afterrender: function(){
-                    maskReport = new Ext.LoadMask(
-                        this.getEl(),
-                        {
-                            msg: 'Generating the report...',
-                            msgCls: 'mask-loading'
-                        }
-                    );
+                afterrender: {
+                    fn: function(){
+                        maskPlot = new Ext.LoadMask(
+                            this.getEl(),
+                            {
+                                msg: 'Generating the report...',
+                                msgCls: 'mask-loading'
+                            }
+                        );
+                    },   
+                    single: true 
                 }
             },
             minTabWidth: 100,

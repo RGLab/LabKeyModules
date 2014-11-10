@@ -59,11 +59,11 @@ function renderPanel()
             return;
         }
 
-        if (!featureSet)
-        {
-            Ext.Msg.alert("Error", "Feature annotation set required");
-            return;
-        }
+        //if (!featureSet)
+        //{
+        //    Ext.Msg.alert("Error", "Feature annotation set required");
+        //    return;
+        //}
 
         if (!taskId)
         {
@@ -155,6 +155,11 @@ function renderPanel()
             fieldLabel: 'Name',
             allowBlank: false
         },{
+            xtype: 'label',
+            forId: 'nsamples',
+            text: '10 samples',
+            margins: '0 0 0 10'
+        },{
             xtype: 'textfield',
             name: 'comments',
             fieldLabel: 'Comments',
@@ -163,7 +168,8 @@ function renderPanel()
             xtype: 'combobox',
             name: 'featureSet',
             fieldLabel: 'Feature Annotation Set',
-            allowBlank: false,
+            //allowBlank: false,
+            allowBlank: true,
             valueField: 'RowId',
             displayField: 'Name',
             store: Ext4.create('LABKEY.ext4.data.Store', {
@@ -205,4 +211,3 @@ Ext4.onReady(function () {
 });
 
 </script>
-

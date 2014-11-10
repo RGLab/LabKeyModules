@@ -23,11 +23,11 @@ getUniqueGenes <- function(data){
 
 ```{r read-Data}
 data <- data.table(labkey.data)
-print(paste("Dimension of labkey.data:", paste(dim(data), collapse=" ")))
 ugenes <- getUniqueGenes(data)
 if(length(ugenes) > 50){
-  data <- data[order(p_value)][1:50]
-  ugenes <- getUniqueGenes(data)
+  data_ss <- data[order(p_value)][1:50]
+  ugenes <- getUniqueGenes(data_ss)
+  data <- data[gene_symbol %in% ugenes]
   warning("You have selected more than 50 unique genes. The heatmap will only show the top 50 selected genes with the lowest p_value. Try adding filters in the data tab to decrease the number of selected genes.")
 }
 uarm <- unique(data$analysis_accession_arm_name)

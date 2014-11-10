@@ -1,0 +1,106 @@
+<!--
+vim: ts=2:sw=2:nu:fdc=2:spell
+-->
+<!--
+    Copyright 2012 Fred Hutchinson Cancer Research Center
+
+    Licensed under the Apache License, Version 2.0 (the 'License');
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an 'AS IS' BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<!--<script type='text/javascript'>	LABKEY.requiresExt4ClientAPI(); </script>-->
+<script type='text/javascript'>
+    if ( window.jQuery == undefined )
+        document.write( decodeURI("%3Cscript src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js' type='text/javascript'%3E%3C/script%3E") );
+</script>
+
+<script type='text/javascript' src='<%=contextPath%>/Lyoplate/FancyBox/lib/jquery.mousewheel-3.0.6.pack.js'></script>
+<script type='text/javascript' src='<%=contextPath%>/Lyoplate/FancyBox/source/jquery.fancybox.pack.js'></script>
+<script type='text/javascript' src='<%=contextPath%>/Lyoplate/FancyBox/source/helpers/jquery.fancybox-buttons.js'></script>
+
+<script type='text/javascript'>
+
+    var initLyoplateVisualization = function(){
+        var webPartDiv = <%=webpartContext%>.wrapperDivId;
+
+        var resizeModule;
+// REMOVE once the issue with a web part rendering even though a module is disabled is taken care of
+
+var createTempPnl = function( moduleName ){
+    var
+        maskMsg =
+            'Seems like you have not enabled the ' + moduleName + ' module, click <a href="' +
+            LABKEY.ActionURL.buildURL('admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
+            '">here</a> to do so.',
+
+        temp = new Ext.Panel({
+            border: false,
+            cls: 'lyoplate',
+            frame: false,
+            height: 100,
+            layout: 'fit',
+            listeners: {
+                afterrender: function(){
+                    this.getEl().mask( maskMsg, 'infoMask' );
+                }
+            },
+            renderTo: webPartDiv
+        });
+
+    resizeModule = function(){
+        temp.getEl().mask( maskMsg, 'infoMask' );
+    };
+
+    Ext.EventManager.onWindowResize( resizeModule );
+};
+
+LABKEY.Query.getSchemas({
+    apiVersion: '9.3',
+    failure: LABKEY.ext.Lyoplate.onFailure,
+    success: function( schemasInfo ){
+        if ( schemasInfo.opencyto_preprocessing ) {
+            LABKEY.Query.getQueryDetails({
+                failure: function(){ createTempPnl( 'LyoplateVisualization' ); },
+                queryName: 'StudyVars',
+                schemaName: 'opencyto_preprocessing',
+                success: function(){
+// END REMOVE
+
+        var LyoplateVisualization = new LABKEY.ext.LyoplateVisualization({
+            webPartDivId: webPartDiv
+        });
+
+        resizeModule = function(w, h){
+
+            LABKEY.ext.Utils.resizeToViewport( LyoplateVisualization, w, -1, null, null, -5 );
+
+            LyoplateVisualization.resize();
+        };
+
+        Ext.EventManager.onWindowResize( resizeModule );
+
+// REMOVE once the issue with a web part rendering even though a module is disabled is taken care of
+                }
+            });
+        } else {
+            createTempPnl( 'LyoplatePreprocessing' );
+        }
+    }
+});
+// END REMOVE
+
+        Ext.EventManager.fireWindowResize();
+    };
+
+    Ext.onReady( initLyoplateVisualization );
+
+</script>

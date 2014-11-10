@@ -476,7 +476,21 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         //  Panels, Containers, Components //
         /////////////////////////////////////
 
-        var cntPlot = new Ext.Container({});
+        var cntPlot = new Ext.Container({
+            border: false,
+            html: '<div style=\'height: 10px\'></div>'
+        });
+
+        var tlbrPlot = new Ext.Toolbar({
+            border: true,
+            defaults: {
+                style: 'padding-top: 1px; padding-bottom: 1px;'
+            },
+            disabled: true,
+            enableOverflow: true,
+            items: [ btnPlot ],
+            style: 'padding-right: 2px; padding-left: 2px;'
+        });
 
         var pnlInputView = new Ext.form.FormPanel({
             autoScroll: true,
@@ -519,8 +533,14 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     title: 'Additional options',
                     titleCollapse: true
                 }),
-                btnPlot,
-                cntPlot
+                new Ext.Panel({
+                    border: true,
+                    items: [
+                        tlbrPlot,
+                        cntPlot
+                    ],
+                    style: 'padding-right: 2px; padding-left: 2px;'
+                })
             ],
             tabTip: 'Input / View',
             title: 'Input / View'
@@ -550,12 +570,12 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to quickly plot the expression level of one or more genes against a selected immunological response variable (e.g. HAI) in one or more cohorts.</br>Visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
+                            html: 'This module can be used to quickly plot the expression level of one or more genes against a selected immunological response variable (e.g. HAI) in one or more cohorts.</br>Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: '',
+                            html: 'Visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),
@@ -600,14 +620,17 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             ],
             layoutOnTabChange: true,
             listeners: {
-                afterrender: function(){
-                    maskPlot = new Ext.LoadMask(
-                        this.getEl(),
-                        {
-                            msg: 'Generating the plot...',
-                            msgCls: 'mask-loading'
-                        }
-                    );
+                afterrender: {
+                    fn: function(){
+                        maskPlot = new Ext.LoadMask(
+                            this.getEl(),
+                            {
+                                msg: 'Generating the plot...',
+                                msgCls: 'mask-loading'
+                            }
+                        );
+                    },   
+                    single: true 
                 }
             },
             minTabWidth: 100,

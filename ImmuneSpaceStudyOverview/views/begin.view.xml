@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<view xmlns='http://labkey.org/data/xml/view' title='Study Overview'>
+    <dependencies>
+        <dependency path='ISCore/ISCore'/>
+
+        <dependency path='ImmuneSpaceStudyOverview.js'/>
+    </dependencies>
+</view>
+

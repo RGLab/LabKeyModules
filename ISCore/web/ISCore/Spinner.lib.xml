@@ -1,5 +1,5 @@
-<libraries xmlns='http://labkey.org/clientLibrary/xml/'>                                                                                   
-    <library compileInProductionMode='true'>
+<libraries xmlns='http://labkey.org/clientLibrary/xml/'>
+    <library compileInProductionMode='false'>
         <script path='ISCore/Spinner/Spinner.css'/>
         <script path='ISCore/Spinner/Spinner.js'/>
         <script path='ISCore/Spinner/SpinnerField.js'/>

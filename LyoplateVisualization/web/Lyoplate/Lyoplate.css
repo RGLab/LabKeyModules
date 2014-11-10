@@ -1,0 +1,376 @@
+/*
+    vim: ts=4:sw=4:nu:fdc=4:nospell
+*/
+/*
+    Copyright 2012 Fred Hutchinson Cancer Research Center
+
+    Licensed under the Apache License, Version 2.0 (the 'License');
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an 'AS IS' BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+@charset 'utf-8';
+
+.lyoplate {
+    line-height: 100% !important;
+}
+
+.lyoplate .iconArrowLeft {
+    background-image: url(images/arrow-left.gif);
+}
+
+.lyoplate .iconArrowRight {
+    background-image: url(images/arrow-right.gif);
+}
+
+.lyoplate .iconPlot {
+    background-image: url(images/scatter_plot.gif);
+}
+
+.lyoplate .iconReset {
+    background-image: url(images/reset.png);
+}
+
+
+.lyoplate .iconConfigure {
+    background-image: url(../_images/configure.png);
+}
+
+.lyoplate .iconDelete {
+    background-image: url(../_images/delete.png);
+}
+
+.lyoplate .iconExport {
+    background-image: url(../_images/download.png);
+}
+
+.lyoplate .iconImport {
+    background-image: url(../_images/upload.png);
+}
+
+.lyoplate .iconNew {
+    background-image: url(../_images/folder_new.png);
+}
+
+.lyoplate .iconReload {
+    background-image: url(../_images/reload.png);
+}
+
+.lyoplate .iconUpdate {
+    background-image: url(../_images/editprops.png);
+}
+
+
+/* Error code from R */
+pre,
+.ext-mb-text {
+    white-space: pre-wrap;
+}
+
+/* Class specs */
+
+.lyoplate .right-text {
+    text-align: right;
+}
+
+.lyoplate .left-text {
+    text-align: left;
+}
+
+/* Centered text */
+.centered-text,
+.bold-centered-text,
+.lyoplate .sortable-list li,
+.lyoplate .x-grid3-hd-row {
+    text-align: center !important;
+}
+
+/* Bold text */
+.bold-text,
+.bold-centered-text,
+.lyoplate .sortable-list li,
+.lyoplate .infoMask div,
+.lyoplate .mask-loading div,
+.ux-lovcombo-list-item-all {
+    font-weight: bold !important;
+}
+
+/* Auto margin */
+.lyoplate .centered-table {
+    margin: auto;
+}
+
+.lyoplate .x-btn {
+    margin-right: 0px !important;
+}
+
+/* Zero margin */
+.lyoplate .x-tab-strip,
+.lyoplate .sortable-list,
+.lyoplate .ulList {
+    margin: 0;
+}
+
+/* Zero padding */
+.lyoplate .x-tab-panel-header,
+.lyoplate .sortable-list,
+.lyoplate .ulList {
+    padding: 0;
+}
+
+/* Hidden class */
+.lyoplate .hidden {
+    display: none;
+    visibility: hidden;
+}
+
+.lyoplate .simple-panel-header {
+    background-color: white;
+    border-bottom-width: 0px !important;
+    font-family: verdana, arial, helvetica, sans-serif;
+    padding-bottom: 3px;
+    padding-left: 0px;
+}
+
+.lyoplate .simpler-panel-header {
+    background-color: white;
+    font-family: verdana, arial, helvetica, sans-serif;
+    padding-bottom: 3px;
+    padding-left: 5px;
+}
+
+.lyoplate .white-background {
+    background-color: white !important;
+}
+
+.lyoplate .mask-loading {
+    border-left: 0px;
+    left: 0 !important;
+    margin-left: 0px;
+    padding-left: 0px;
+    width: 100%;
+    z-index: 999;
+}
+
+.lyoplate .mask-loading div {
+    background: no-repeat 5px 5px;
+    background-color: white !important;
+    background-image: url(images/loading.gif) !important;
+    background-position: 0% 50%;
+    padding: 5px 10px 5px 25px;
+    text-align: center;
+}
+
+.lyoplate .infoMask {
+    width: 100% !important;
+    z-index: 999;
+}
+
+.lyoplate .infoMask div {
+    background-color: white;
+    cursor: default;
+    text-align: center;
+}
+
+/* Safari fixes not to cut off the radio button */
+.lyoplate .x-form-radio {
+    margin-left: 2px !important;
+}
+.lyoplate .x-form-check-wrap {
+    margin-bottom: 1px;
+}
+
+.lyoplate ul.x-tab-strip-top {
+    padding-top: 0px;
+}
+
+
+/* Ext4 */
+.lyoplate .x4-btn-inner {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+
+/* Tweaks for jQuery drag-and-drop in particular and list in general */
+.lyoplate .draggableHandle {
+    cursor: move;
+}
+
+.lyoplate .ui-state-highlight {
+    width: 1em;
+    line-height: 1.2em;
+}
+
+.lyoplate .ui-sortable-helper,
+.lyoplate .sortable-list,
+.lyoplate .ulList,
+.lyoplate .x-tree-node,
+.lyoplate .x-tree-node-ct {
+    list-style-type: none;
+}
+
+.lyoplate .sortable-list li,
+.lyoplate .ulList li {
+    margin: 3px 0px 3px 4px; /* 0.2em 0.3em 0.2em 0.3em */
+    padding: 1px;
+    float: left;
+}
+
+.lyoplate .sortable-list li {
+    font-size: 1em;
+}
+
+/**********************************/
+/* Ext Tree Fixes */
+.lyoplate .x-tree-node,
+.lyoplate .x-tree-node-ct,
+.lyoplate .x-tree-root-ct {
+    padding-left: 0px;
+    -webkit-padding-start: 0px;
+}
+
+.lyoplate .x-tree-root-ct {
+    margin: 0;
+    -webkit-margin-before: 0em;
+    -webkit-margin-after: 0em;
+    -moz-padding-start: 0px;
+}
+
+.lyoplate .x-tree-selected {
+    background-color: white !important;
+}
+
+.lyoplate .x-tree-node-over {
+    background-color: white !important;
+}
+
+/**********************************/
+
+/* Ext TabPanel fixes */
+.lyoplate .x-tab-strip {
+    padding-left: 5px;
+}
+
+.lyoplate .x-tab-right {
+    border-bottom-width: 0px !important;
+}
+
+.lyoplate .x-tab-strip-over {
+    text-decoration: underline;
+}
+
+/********************************/
+
+/* Ext.Resizable fix */
+.lyoplate .xresizable-wrap {
+    margin: 0 auto;
+}
+/********************************/
+
+/* Ext GridPanel fixes */
+
+/* Fix for the column headers to look better: the pull-down arrow link will not overlap with the text */
+.lyoplate .x-grid3-hd-inner {
+    padding-right: 15px;
+}
+
+/* Important fix for proper alignment */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+    .lyoplate .x-grid3-cell {
+        box-sizing: border-box;
+    }
+}
+
+/* Override not to have the blue default background of numberers and rowSelectionCheckBoxes */
+.lyoplate .x-grid3-body .x-grid3-row-selected .x-grid3-td-numberer,
+.lyoplate .x-grid3-body .x-grid3-row-selected .x-grid3-td-checker,
+.lyoplate .x-grid3-body .x-grid3-row-selected .x-grid3-td-expander {
+    background-image: none;
+}
+
+/* Fix for the numberer background not to look ugly for larger column widths */
+.lyoplate .x-grid3-body .x-grid3-td-numberer {
+    background-image: none;
+}
+
+/* Make text selectable */
+.lyoplate .x-list-body dt EM,
+.lyoplate .x-list-header-inner DIV EM,
+.lyoplate .x-grid3-row td,
+.lyoplate .x-grid3-summary-row td,
+.lyoplate .x-grid3-cell-text,
+.lyoplate .x-grid3-hd-text,
+.lyoplate .x-grid3-hd,
+.lyoplate .x-grid3-row
+{
+    -moz-user-select: inherit !important;
+    -khtml-user-select: text !important;
+    -webkit-user-select: text !important;
+}
+
+/*************************************/
+
+/* Fix so that the buttons on toolbars look normal (not text) */
+.lyoplate .x-toolbar .x-btn-tl,
+.lyoplate .x-toolbar .x-btn-tr,
+.lyoplate .x-toolbar .x-btn-tc,
+.lyoplate .x-toolbar .x-btn-ml,
+.lyoplate .x-toolbar .x-btn-mr,
+.lyoplate .x-toolbar .x-btn-mc,
+.lyoplate .x-toolbar .x-btn-bl,
+.lyoplate .x-toolbar .x-btn-br,
+.lyoplate .x-toolbar .x-btn-bc {
+    background-image:url(../gtheme/img/lkbtn.gif);
+}
+
+.lyoplate .x-toolbar .x-btn-tl{
+    background-position: 0 0;
+}
+.lyoplate .x-toolbar .x-btn-tr{
+    background-position: -3px 0;
+}
+.lyoplate .x-toolbar .x-btn-tc{
+    background-position: 0 -6px;
+}
+
+.lyoplate .x-toolbar .x-btn-ml{
+    background-position: 0px -24px;
+}
+.lyoplate .x-toolbar .x-btn-mr{
+    background-position: -3px -24px;
+}
+
+.lyoplate .x-toolbar .x-btn-mc{
+    background-position: 0 -1096px;
+}
+.lyoplate .x-toolbar .x-btn-bl{
+    background-position: 0 -3px;
+}
+.lyoplate .x-toolbar .x-btn-br{
+    background-position: -3px -3px;
+}
+.lyoplate .x-toolbar .x-btn-bc{
+    background-position: 0 -15px;
+}
+/**********************************/
+
+.lyoplate .extra5pxPadding {
+    padding: 5px !important;
+}
+
+.lyoplate .extra10pxPaddingLeft {
+    padding-left: 10px !important;
+}
+
+#fancybox-buttons ul {
+    width: 74px !important;
+}

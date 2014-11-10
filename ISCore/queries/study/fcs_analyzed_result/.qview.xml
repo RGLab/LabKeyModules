@@ -17,7 +17,9 @@
         <cv:column name="base_parent_population"/>
         <cv:column name="gating_combination"/>
         <cv:column name="gating_parameter_statistics"/>
+        <cv:column name="other_population_statistics"/>
         <cv:column name="population_cell_number"/>
+        <cv:column name="population_cell_number_unit"/>
         <cv:column name="population_description"/>
         <cv:column name="population_percent"/>
         <cv:column name="study_time_collected"/>

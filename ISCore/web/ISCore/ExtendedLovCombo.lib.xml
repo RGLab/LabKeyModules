@@ -1,5 +1,5 @@
-<libraries xmlns='http://labkey.org/clientLibrary/xml/'>                                                                                   
-    <library compileInProductionMode='true'>
+<libraries xmlns='http://labkey.org/clientLibrary/xml/'> 
+    <library compileInProductionMode='false'>
         <script path='Ext.ux.form.LovCombo.css'/>
         <script path='Ext.ux.form.LovCombo.js'/>
         <script path='ISCore/ExtendedLovCombo.js'/>

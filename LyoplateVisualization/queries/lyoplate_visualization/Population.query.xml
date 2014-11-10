@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='Population' schemaName='opencyto_preprocessing' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        Contains the populations associated with each of the generated analysis.
+    </description>
+</query>

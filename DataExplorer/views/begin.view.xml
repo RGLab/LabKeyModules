@@ -3,6 +3,7 @@
     <dependencies>
         <dependency path='ISCore/ISCore'/>
 
+        <dependency path='ISCore/ExtendedLovCombo'/>
         <dependency path='ISCore/FancyBox'/>
         <dependency path='ISCore/Spinner'/>
 

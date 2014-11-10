@@ -16,16 +16,14 @@
 suppressMessages( library( Cairo ) );
 suppressMessages( library( RJSONIO ) );
 suppressMessages( library( ImmuneSpaceR ) );
-library(ImmuneSpaceR)
 
 stopcheck <- function(data){
     stop(paste0(paste(capture.output(str(data)), collapse='\n'), '\nl.u.b: ',labkey.url.base, '\nl.u.p: ',labkey.url.path))
-}
+};
 
-imageWidth  <- as.numeric(labkey.url.params$imageWidth);
-imageHeight <- as.numeric(labkey.url.params$imageHeight);
-#CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
-png( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
+imageWidth  <- as.numeric(labkey.url.params$imageWidth)
+imageHeight <- as.numeric(labkey.url.params$imageHeight)
+CairoPNG(filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight )
 
 dataset             <- labkey.url.params$datasetName;
 datasetDisplay      <- labkey.url.params$datasetLabel;
@@ -34,29 +32,48 @@ normalize           <- as.logical( labkey.url.params$normalize );
 filters             <- RJSONIO::fromJSON( labkey.url.params$filters );
 textSize            <- as.numeric( labkey.url.params$textSize );
 facet               <- tolower(labkey.url.params$facet);
-shape               <- labkey.url.params$shape;
+legend              <- labkey.url.params$legend;
 color               <- labkey.url.params$color;
+shape               <- labkey.url.params$shape;
 size                <- labkey.url.params$size;
 alpha               <- labkey.url.params$alpha;
 
-#stopcheck(labkey.url.params)
 
 filter <- as.matrix( lapply( filters, function( e ){
-    #return( paste0( curlEscape( e['fieldKey'] ), '~', e['op'], '=', curlEscape( e['value'] ) ) )
-    return( paste0(e['fieldKey'], '~', e['op'], '=', curlEscape(e['value'])) )
+    return( paste0( curlEscape( e['fieldKey'] ), '~', e['op'], '=', curlEscape( e['value'] ) ) );
+#    return( paste0( e['fieldKey'], '~', e['op'], '=', curlEscape( e['value'] ) ) );
 }) );
-if ( nrow( filter ) == 0 ){ filter <- NULL; }
+if ( nrow( filter ) == 0 ){
+  filter <- NULL;
+}
 
-if(color=="") color <- NULL
-if(shape=="") shape <- NULL
-if(size=="") size <- NULL
-if(alpha=="") alpha <- NULL
+if( color == '' )  color   <- NULL;
+if( shape == '' )  shape   <- NULL;
+if( size == '' )   size    <- NULL;
+if( alpha == '' )  alpha   <- NULL;
+if(legend == ""){
+  legend <- NULL
+} else{
+  legend <- unlist(strsplit(legend, ","))
+}
 
+
+message <- 'Default message'; # default value needed
 rm(con)
 con <- CreateConnection()
-p <- con$quick_plot(dataset, normalize_to_baseline = normalize, type = plotType, filter = filter,
-     facet = facet, text_size = textSize, color = color, size = size, shape = shape, alpha = alpha)
-
+m_out <- con$quick_plot(
+    dataset,
+    normalize_to_baseline   = normalize,
+    type                    = plotType,
+    filter                  = filter,
+    facet                   = facet,
+    text_size               = textSize,
+    color                   = color,
+    size                    = size,
+    shape                   = shape,
+    alpha                   = alpha,
+    legend                  = legend
+)
 dev.off();
 
-Sys.sleep(3);
+write( message, file='${txtout:textOutput}' );

@@ -26,13 +26,58 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var
-            me              = this,
-            maskPlot        = undefined,
+            me              = this;
+            qwpDataset      = undefined;
+      var      maskPlot        = undefined,
             reportSessionId = undefined,
-            fieldWidth      = 400,
+            fieldWidth      = 330,
             labelWidth      = 130,
             aspectRatio     = 0.5
             ;
+
+        var manageAdditionalOptions = function(){
+            var plotType = cbPlotType.getValue();
+            if ( plotType == '' ){
+                spnrTextSize.setVisible( false );
+                cbAnnotation.setVisible( false );
+                cbColor.setVisible( false );
+                cbShape.setVisible( false );
+                cbSize.setVisible( false );
+                cbAlpha.setVisible( false );
+                rgFacet.setVisible( false );
+            } else if ( plotType == 'auto' ){
+                spnrTextSize.setVisible( true );
+                cbAnnotation.setVisible( false );
+                cbColor.setVisible( false );
+                cbShape.setVisible( false );
+                cbAlpha.setVisible( false );
+                cbAlpha.setValue( '' );
+                rgFacet.setVisible( false );
+
+                cbAnnotation.setValue( [ 'Age', 'Gender' ].join( this.separator ) );
+                cbColor.setValue( 'Age' );
+                cbShape.setValue( 'Gender' );
+                cbSize.setVisible( false );
+                cbSize.setValue( '' );
+            } else if ( plotType == 'heatmap' ){
+                spnrTextSize.setVisible( true );
+                cbAnnotation.setVisible( true );
+                cbColor.setVisible( false );
+                cbShape.setVisible( false );
+                cbSize.setVisible( false );
+                cbAlpha.setVisible( false );
+                rgFacet.setVisible( false );
+            } else {
+                spnrTextSize.setVisible( true );
+                cbAnnotation.setVisible( false );
+                cbColor.setVisible( true );
+                cbShape.setVisible( true );
+                cbSize.setVisible( true );
+                cbAlpha.setVisible( true );
+                rgFacet.setVisible( true );
+                fsAdditionalOptions.doLayout();
+            }
+        };
 
         var checkBtnPlotStatus = function(){
             var dataset = cbDataset.getValue();
@@ -53,21 +98,28 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         frame: 'none',
                         queryName: dataset,
                         renderTo: pnlData.getEl(),
-                        schemaName: 'study'
+                        schemaName: 'study',
+                        success: function(){
+                            var numRows = qwpDataset.getDataRegion().totalRows;
+                            cmpStatus.update( numRows + ' data point' + ( numRows == '1' ? ' is ' : 's are ' ) + 'selected' );
+                        }
                     });
 
                 } else if ( qwpDataset.queryName != dataset ) {
                     qwpDataset.queryName = dataset;
+                    qwpDataset.getDataRegion().clearAllFilters(),
                     qwpDataset.render();
+                    var numRows = qwpDataset.getDataRegion().totalRows;
+                    cmpStatus.update( numRows + ' data point' + ( numRows == '1' ? ' is ' : 's are ' ) + 'selected' );
                 }
 
-                btnPlot.setDisabled( false );
+                tlbrPlot.setDisabled( false );
             } else {
                 qwpDataset = undefined;
+                cmpStatus.update( '' );
                 pnlData.getEl().update('Please, go to the "Input / View" tab to select a dataset to display below. You will then be able to filter this data here before plotting.'),
-                btnPlot.setDisabled( true );
+                tlbrPlot.setDisabled( true );
                 cntPlot.update( '<div style=\'height: 10px\'></div>' );
-                btnSaveAsPdf.setDisabled( true );
             }
         };
 
@@ -118,6 +170,16 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
         var strDataset = new LABKEY.ext.Store({
             autoLoad: true,
+            listeners: {
+                load: function( s ){
+                    if ( s.getCount() == 0 ){
+                        componentsSetDisabled( true );
+                        pnlTabs.getEl().mask(
+                            'No immunological datasets are available for exploration in this study.</br>If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.SupportBoardLink, 'infoMask'
+                        );
+                    }
+                }
+            },
             queryName: 'data_sets',
             schemaName: 'study'
         });
@@ -200,8 +262,24 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             displayField: 'display',
             fieldLabel: 'Plot type',
             lazyInit: false,
+            listeners: {
+                change:     manageAdditionalOptions,
+                cleared:    manageAdditionalOptions,
+                select:     manageAdditionalOptions
+            },
             store: strPlotType,
             value: 'auto',
+            valueField: 'value',
+            width: fieldWidth
+        });
+
+        var cbAnnotation = new Ext.ux.form.ExtendedLovCombo({
+            displayField: 'name',
+            fieldLabel: 'Annotation',
+            hidden: true,
+            lazyInit: false,
+            store: strDemographics,
+            value: [ 'Age', 'Gender' ].join( this.separator ),
             valueField: 'value',
             width: fieldWidth
         });
@@ -215,7 +293,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             value: 'Age',
             valueField: 'value',
             width: fieldWidth
-        });
+       });
 
        var cbShape = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
@@ -264,8 +342,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             listeners: {
                 invalid:
                     function(){
-                        btnPlot.setDisabled( true );
-                        btnSaveAsPdf.setDisabled( true );
+                        tlbrPlot.setDisabled( true );
                     },
                 valid:      checkBtnPlotStatus
             },
@@ -293,7 +370,12 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     name: 'facet',
                     value: 'Wrap'
                 }
-            ]
+            ],
+            listeners: {
+                show: function(){
+                    fsAdditionalOptions.doLayout();
+                }
+            }
         });
 
         var btnPlot = new Ext.Button({
@@ -303,6 +385,9 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     width   = Math.min( cntPlot.getWidth(), 800 ),
                     height  = width * aspectRatio
                 ;
+
+                cntPlotMessage.update('');
+                cntPlot.update('<div style=\'height: 10px\'></div>'); 
 
                 cnfPlot.inputParams = {
                     datasetName:        cbDataset.getValue(),
@@ -314,6 +399,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     facet:              rgFacet.getValue().getGroupValue(),
                     shape:              cbShape.getValue(),
                     color:              cbColor.getValue(),
+                    legend:             cbAnnotation.getValue(),
                     size:               cbSize.getValue(),
                     alpha:              cbAlpha.getValue(),
                     imageWidth:         1.5 * width,
@@ -327,15 +413,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             text: 'Plot'
         });
 
-        var btnSaveAsPdf = new Ext.Button({
-            disabled: true,
-            handler: function(){
-                
-            },
-            text: 'Save as pdf'
-        });
 
-        
         /////////////////////////////////////
         //      Back-end Configuration     //
         /////////////////////////////////////
@@ -350,6 +428,9 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             },
             reportId: 'module:DataExplorer/Plot.R',
             success: function( result ){
+
+console.log( result.outputParams.length );
+
                 setPlotRunning( false );
 
                 var errors = result.errors;
@@ -418,8 +499,12 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             target: imgId,
                             text: 'Click on the generated plot to see it in full screen'
                         });
+                    }
 
-                        btnSaveAsPdf.setDisabled( false );
+                    p = outputParams[1];
+
+                    if ( p && p.type == 'text'){
+                        cntPlotMessage.update( '<div class=\'centered-text extra5pxPadding\'>' + p.value + '</div>' );
                     }
                 }
             }
@@ -431,7 +516,46 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var cntPlot = new Ext.Container({
+            border: false,
             html: '<div style=\'height: 10px\'></div>'
+        });
+
+        var cntPlotMessage = new Ext.Container();
+        
+        var cmpStatus = new Ext.Component({
+            cls: 'extra10pxPaddingLeft'
+        });
+
+        var fsAdditionalOptions = new Ext.form.FieldSet({
+            autoScroll: true,
+            collapsed: true,
+            collapsible: true,
+            items: [
+                spnrTextSize,
+                cbAnnotation,
+                rgFacet,
+                cbColor,
+                cbShape,
+                cbSize,
+                cbAlpha
+            ],
+            labelWidth: labelWidth,
+            title: 'Additional options',
+            titleCollapse: true
+        });
+
+        var tlbrPlot = new Ext.Toolbar({
+            border: true,
+            defaults: {
+                style: 'padding-top: 1px; padding-bottom: 1px;'
+            },
+            disabled: true,
+            enableOverflow: true,
+            items: [
+                btnPlot,
+                cmpStatus
+            ],
+            style: 'padding-right: 2px; padding-left: 2px;'
         });
 
         var pnlInputView = new Ext.form.FormPanel({
@@ -458,31 +582,20 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     labelWidth: labelWidth,
                     title: 'Parameters'
                 }),
-                new Ext.form.FieldSet({
-                    autoScroll: true,
-                    collapsed: true,
-                    collapsible: true,
+                fsAdditionalOptions,
+                new Ext.Panel({
+                    border: true,
                     items: [
-                        spnrTextSize,
-                        rgFacet,
-                        cbColor,
-                        cbShape,
-                        cbSize,
-                        cbAlpha
+                        tlbrPlot,
+                        cntPlotMessage,
+                        cntPlot
                     ],
-                    labelWidth: labelWidth,
-                    title: 'Additional options',
-                    titleCollapse: true
-                }),
-                btnPlot,
-                cntPlot,
-                btnSaveAsPdf
+                    style: 'padding-right: 2px; padding-left: 2px;'
+                })
             ],
             tabTip: 'Input / View',
             title: 'Input / View'
         });
-
-        var qwpDataSet = undefined;
 
         var pnlData = new Ext.Panel({
             autoScroll: true,
@@ -522,12 +635,12 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to quickly plot a selected immunological response variable (e.g. HAI) in one or more cohorts across multiple analytes (when applicable). Visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package, and several graphical options are made available including lines, boxplots and heatmaps. Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
+                            html: 'This module can be used to quickly plot a selected immunological response variable (e.g. HAI) in one or more cohorts across multiple analytes (when applicable). Several graphical options are made available including lines, boxplots and heatmaps. Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: '',
+                            html: 'For boxplots and lines, the visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. The heatmap are drawn using the <a href="http://cran.r-project.org/web/packages/pheatmap/index.html" targe="_blank">pheatmap</a> package.',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),
@@ -550,7 +663,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: '<b>Choose a dataset</b>: Select an assay type to visualize. The selected data can be filtered using the grid view under the data tab.</br></br><b>Plot type</b>: 4 different types are available: "Boxplot", "Lines", "Heatmap", and "Auto". By default, the "Auto" option is selected, in which case the module will try to figure out the best plot type for your data.</br></br><b>Normalize to baseline</b>: Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.',
+                            html: '<b>Choose a dataset</b>: Select an assay type to visualize. The selected data can be filtered using the grid view under the "Data" tab.</br></br><b>Plot type</b>: Four different types are available: "Boxplot", "Lines", "Heatmap", and "Auto". "Auto" is the default option, in which case the module\'s logic determines the best plot type for your data.</br></br><b>Normalize to baseline</b>: Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.',
                             style: 'margin-top: 5px;',
                             title: 'Predictors'
                         }),
@@ -558,7 +671,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             text: 'Parameters in the "Additional options" section can be used to customize the plot and modify it based on the demographics. Available choices are Age, Gender, and Race.'
                         }),
                         new Ext.form.FieldSet({
-                            html: '<b>Text size:</b> The size of all text elements on the plot (Including axis, legend and labels)<br><br><b>Facet:</b> The plot will facet by cohorts on the y axis and genes on the x axis. In Grid mode, the scales are consistent for a gene and for a cohort. In wrap mode, the scales are free. Use wrap if you observe empty spaces in the plots<br><br><b>Shape:</b> The shape of the data points (Gender is selected by default)<br><br><b>Color:</b> The color of the data points (Age is selected by default)<br><br><b>Size:</b> The size of the data points<br><br><b>Alpha:</b> The transparency of the data points',
+                            html: '<b>Text size:</b> The size of all the text elements in the plot (including axes, legend and labels).</br></br><b>Annotation:</b> Applicable to the "Heatmap" plot type only, which does not have the other options.</br></br><b>Facet:</b> The plot will facet by cohorts on the y axis and genes on the x axis. "Grid" mode - the scales are consistent for a selected response and a cohort. "Wrap" mode - the scales are free. Use "Wrap" if you observe empty spaces in the plots.</br></br><b>Shape:</b> The shape of the data points ("Gender" is selected by default).</br></br><b>Color:</b> The color of the data points ("Age" is selected by default).</br></br><b>Size:</b> The size of the data points.</br></br><b>Alpha:</b> The transparency of the data points.',
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Additional options'
                         })
@@ -570,14 +683,17 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             ],
             layoutOnTabChange: true,
             listeners: {
-                afterrender: function(){
-                    maskPlot = new Ext.LoadMask(
-                        this.getEl(),
-                        {
-                            msg: 'Generating the plot...',
-                            msgCls: 'mask-loading'
-                        }
-                    );
+                afterrender: {
+                    fn: function(){
+                        maskPlot = new Ext.LoadMask(
+                            this.getEl(),
+                            {
+                                msg: 'Generating the plot...',
+                                msgCls: 'mask-loading'
+                            }
+                        );
+                    },   
+                    single: true 
                 }
             },
             minTabWidth: 100,
@@ -595,11 +711,22 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             } else {
                 maskPlot.hide();
             }
-            btnPlot.setDisabled( bool );
-            cbDataset.setDisabled( bool );
-            cbPlotType.setDisabled( bool );
+            componentsSetDisabled( bool );
         };
 
+        var componentsSetDisabled = function( bool ){
+            tlbrPlot.setDisabled( bool );
+            cbDataset.setDisabled( bool );
+            cbPlotType.setDisabled( bool );
+            chNormalize.setDisabled( bool );
+            spnrTextSize.setDisabled( bool );
+            cbAnnotation.setDisabled( bool );
+            rgFacet.setDisabled( bool );
+            cbColor.setDisabled( bool );
+            cbShape.setDisabled( bool );
+            cbSize.setDisabled( bool );
+            cbAlpha.setDisabled( bool );
+        };
 
         $('#' + config.webPartDivId)
             .parents('tr')
@@ -653,19 +780,21 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         this.width          = document.getElementById(config.webPartDivId).offsetWidth;
 
         this.cntPlot = cntPlot;
+        this.qwpDataset = qwpDataset;
 
         LABKEY.ext.DataExplorer.superclass.constructor.apply(this, arguments);
 
     }, // end constructor
 
     resize : function(){
-        if ( qwpDataset != undefined ){
-            qwpDataset.render();
+        if ( this.qwpDataset ){
+            this.qwpDataset.render();
         }
 
         if ( this.resizableImage != undefined ){
             var width = Math.min( this.cntPlot.getWidth(), 800 );
             this.resizableImage.resizeTo( width, width * this.resizableImage.height / this.resizableImage.width );
         }
-    }}); // end DataExplorer Panel class
+    }
+}); // end DataExplorer Panel class
 

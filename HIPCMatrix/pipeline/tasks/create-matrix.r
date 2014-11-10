@@ -34,6 +34,7 @@ url <- if(is.na(contextPath)) baseUrl else paste0(baseUrl, contextPath)
 containerPath <- jobInfo$value[jobInfo$name == "containerPath"]
 filter <- makeFilter(c("file_info_name", "IN", paste(basename(inputFiles), collapse=";")), c("biosample_accession", "IN", gsub(",", ";", selectedBiosamples)))
 
+
 pdata <- labkey.selectRows(baseUrl=url,
                            folderPath=containerPath,
                            schemaName="study",
@@ -81,7 +82,8 @@ if(length(ext) > 1){
   if(length(grep("^SUB", colnames(norm_exprs))) == ncol(norm_exprs)){
     colnames(norm_exprs) <- pdata[match(colnames(norm_exprs), pdata$subject_accession), "biosample_accession"]
   } else if(length(grep("^BS", colnames(norm_exprs))) == ncol(norm_exprs)){
-    # good
+    # Most likely produced by Renan: simply subset the expression matrix
+    norm_exprs <- norm_exprs[, colnames(norm_exprs) %in% pdata$biosample_accession]
   } else{ #Assume it's Illumina samplenames
     biosamples_filter <- paste(unique(pdata$biosample_accession), collapse=";")
     
@@ -138,4 +140,3 @@ colnames(norm_exprs)[1] <- " "
 write.table(norm_exprs, file = file.path(jobInfo$value[jobInfo$name == "pipeRoot"], "analysis/exprs_matrices", "${output.tsv}"), sep = "\t", quote=FALSE, row.names=FALSE)
 write.table(em, file = file.path(jobInfo$value[jobInfo$name == "pipeRoot"], "analysis/exprs_matrices", paste0("${output.tsv}", ".summary")), sep = "\t", quote=FALSE, row.names=FALSE)
 write.table(norm_exprs, file = "${output.tsv}", sep = "\t", quote=FALSE, row.names=FALSE)
-

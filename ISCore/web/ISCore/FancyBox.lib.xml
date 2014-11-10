@@ -1,5 +1,5 @@
-<libraries xmlns='http://labkey.org/clientLibrary/xml/'>                                                                                   
-    <library compileInProductionMode='true'>
+<libraries xmlns='http://labkey.org/clientLibrary/xml/'> 
+    <library compileInProductionMode='false'>
         <script path='ISCore/FancyBox/source/jquery.fancybox.css'/>
         <script path='ISCore/FancyBox/source/helpers/jquery.fancybox-buttons.css'/>
         <script path='ISCore/FancyBox/lib/jquery.mousewheel-3.0.6.pack.js'/>

@@ -12,7 +12,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
 suppressMessages( library( Cairo ) );
 suppressMessages( library( RJSONIO ) );
 library(ggplot2)
@@ -42,7 +41,8 @@ add_r2 <- function(data){
 
 imageWidth  <- as.numeric(labkey.url.params$imageWidth);
 imageHeight <- as.numeric(labkey.url.params$imageHeight);
-CairoPNG( filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight );
+imgfile <- '${imgout:Plot.png}'
+CairoPNG( filename=imgfile, width = imageWidth, height = imageHeight );
 
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
 response            <- as.character( labkey.url.params$response );
@@ -114,7 +114,5 @@ print(p)
 loadedCohorts <- arrayCohorts
 dev.off();
 
-Sys.sleep(3);
-
-write( RJSONIO::toJSON( x=arrayCohorts, asIs = T ), '${jsonout:outArray}' );
+#write( RJSONIO::toJSON( x=arrayCohorts, asIs = T ), '${jsonout:outArray}' );
 

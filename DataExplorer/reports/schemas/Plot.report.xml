@@ -4,4 +4,9 @@
     <category>QuickPlot module script</category>
     <!--<label>show this instead of the file name</label>-->
     <!--<description>this is a module report</description>-->
+    <reportType>
+        <R> 
+            <scriptEngine remote='true'/>
+        </R>
+    </reportType>
 </ReportDescriptor>

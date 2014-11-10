@@ -2,7 +2,7 @@
 <ns:tables xmlns:ns='http://labkey.org/data/xml'>
     <ns:table tableName='gene_expression_analysis' tableDbType='TABLE'>
         <ns:description>
-            The 'gene_expression_analysis_table' stores runs of the DifferentialExpressionAnalysis module.
+            The 'gene_expression_analysis' table stores runs of the DifferentialExpressionAnalysis module.
         </ns:description>
         <ns:columns>
             <ns:column columnName='key'>
@@ -37,7 +37,7 @@
 
     <ns:table tableName='gene_expression_analysis_results' tableDbType='TABLE'>
         <ns:description>
-            The 'gene_expression_analysis_table_results' stores the results of the DifferentialExpressionAnalysis.
+            The 'gene_expression_analysis_results' table stores the results of the DifferentialExpressionAnalysis.
         </ns:description>
         <ns:columns>
             <ns:column columnName='container'>

@@ -16,6 +16,7 @@ library(data.table)
 contrast <- "study_time_collected"
 study <- basename(labkey.url.path)
 i <- 1 #analysis accession key
+infostring <- ""
 ```
 
 ## Differential expression analysis
@@ -26,8 +27,8 @@ contrast: `r contrast`
 ```{r getData, warning = FALSE}
 con <- CreateConnection(study)
 if(is.null(con$data_cache[["GE_inputs"]])){
-  nCoefs <- 0
-  stop("There is no HIPCMatrix run in this study")
+  nCoefs <- -1
+  infostring <- "There is no HIPCMatrix run in this study"
 } else{
   nCoefs <- unique(con$data_cache[["GE_inputs"]][, c("arm_name", contrast, "name")])
   nCoefs$coefficient <- paste0(contrast, nCoefs[, contrast])
@@ -48,7 +49,15 @@ if(is.null(con$data_cache[["GE_inputs"]])){
 }
 ```
 
-There will be `r nCoefs` new differential expression analysis.
+```{r infostring-set, echo = FALSE}
+if(nCoefs == 0){
+  infostring <- "This analysis has already been run. You can visualize the results using the Heatmap report."
+} else if(nCoefs > 0){
+  infostring <- paste("There will be", nCoefs, "new differential expression analysis.")
+}
+```
+
+`r infostring`
 ```{r stop, echo = FALSE}
 if(nCoefs == 0){
   opts_chunk$set(eval = FALSE, echo = FALSE)
