@@ -106,7 +106,12 @@ lev <- paste0(contrast, lev[2:length(lev)])
 cam_list <- vector('list', length = length(lev))
 for(i in 1:length(lev)){
   contrasti <- lev[[i]]
-  res <- camera(EM, index = indices, design = mm, contrast = makeContrasts(contrasti, levels=mm))
+    # Check if it's RNA-seq or microarrays
+  if(max(exprs(EM))>100)
+    res <- camera(voom(EM), index = indices, design = mm, contrast = makeContrasts(contrasti, levels=mm))
+  else
+    res <- camera(EM, index = indices, design = mm, contrast = makeContrasts(contrasti, levels=mm))
+
   dt <- data.table(res) 
   dt[, Module := rownames(res)]
   dt[, Coefficient := lev[[i]]]

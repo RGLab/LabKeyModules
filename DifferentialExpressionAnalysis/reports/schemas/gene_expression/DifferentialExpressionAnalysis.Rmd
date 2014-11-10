@@ -72,7 +72,13 @@ for(run in runs){
   EM <- con$getGEMatrix(run)
   pData(EM)[, contrast] <- factor(pData(EM)[, contrast])
   mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
-  fit <- lmFit(EM, mm)
+
+  # Check if it's RNA-seq or microarrays
+  if(max(exprs(EM))>100)
+    fit <- lmFit(voom(EM), mm)
+  else
+    fit <- lmFit(EM, mm)
+  
   fit <- eBayes(fit)
    
   coefs <- grep(contrast, colnames(mm), value = TRUE)
