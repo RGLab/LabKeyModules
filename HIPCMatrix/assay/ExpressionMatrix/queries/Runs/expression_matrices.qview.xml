@@ -1,8 +1,0 @@
-<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" label="Expression_Matrices" category="Assays" showInDataViews="true">
-    <cv:columns>
-        <cv:column name="Name"/>
-        <cv:column name="Comments"/>
-        <cv:column name="featureSet"/>
-        <cv:column name="DataOutputs/DownloadLink"/>
-    </cv:columns>
-</cv:customView>

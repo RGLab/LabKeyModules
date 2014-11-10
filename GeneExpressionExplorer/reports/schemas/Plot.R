@@ -69,7 +69,11 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   runs <- getRunFromCohort(con, arrayCohorts)
   EM_list <- lapply(runs, con$getGEMatrix, summary = TRUE)
   PD <- rbindlist(lapply(EM_list, pData))
-  EM <- Reduce(f = merge_cohorts, lapply(EM_list, function(x){dt <- data.table(exprs(x)); dt[, gene_symbol:=rownames(exprs(x))]}))
+  if(exprs(EM_list[[1]])>100)
+    EM <- Reduce(f = merge_cohorts, lapply(EM_list, function(x){dt <- data.table(voom(x)$E); dt[, gene_symbol:=rownames(exprs(x))]}))
+  else
+    EM <- Reduce(f = merge_cohorts, lapply(EM_list, function(x){dt <- data.table(exprs(x)); dt[, gene_symbol:=rownames(exprs(x))]}))
+  
   EM <- melt(EM, id="gene_symbol", variable.name = "biosample_accession")
   HAI <- con$getDataset("hai", original_view = TRUE)
   HAI <- HAI[, list(subject_accession, study_time_collected, response=value_reported/value_reported[study_time_collected==0]), by="virus_strain,subject_accession"]
