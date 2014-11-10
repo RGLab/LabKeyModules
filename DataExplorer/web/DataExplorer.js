@@ -635,7 +635,7 @@ console.log( result.outputParams.length );
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to quickly plot a selected immunological response variable (e.g. HAI) in one or more cohorts across multiple analytes (when applicable). Several graphical options are made available including lines, boxplots and heatmaps. Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
+                            html: 'This module can be used to quickly plot a selected immunological response variable (e.g. HAI) in one or more cohorts across multiple analytes (when applicable). Several graphical options are made available including lines, boxplots, violin plots and heatmaps. Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
@@ -663,7 +663,7 @@ console.log( result.outputParams.length );
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: '<b>Choose a dataset</b>: Select an assay type to visualize. The selected data can be filtered using the grid view under the "Data" tab.</br></br><b>Plot type</b>: Four different types are available: "Boxplot", "Lines", "Heatmap", and "Auto". "Auto" is the default option, in which case the module\'s logic determines the best plot type for your data.</br></br><b>Normalize to baseline</b>: Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.',
+                            html: '<b>Choose a dataset</b>: Select an assay type to visualize. The selected data can be filtered using the grid view under the "Data" tab.</br></br><b>Plot type</b>: Five different types are available: "Boxplot", "Violin plots", "Lines", "Heatmap", and "Auto". "Auto" is the default, in which case the module\'s logic determines the best plot type for your data.</br></br><b>Normalize to baseline</b>: Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.',
                             style: 'margin-top: 5px;',
                             title: 'Predictors'
                         }),

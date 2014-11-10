@@ -570,12 +570,12 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to quickly plot the expression level of one or more genes against a selected immunological response variable (e.g. HAI) in one or more cohorts.</br>Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
+                            html: 'This module can be used to quickly plot the expression level of one or more genes against a selected immunological response variable (currently limited to HAI) in one or more cohorts.</br>Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape, etc.',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: 'Visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package',
+                            html: 'Visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package.',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),
@@ -605,10 +605,10 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             title: 'Parameters'
                         }),
                         new Ext.form.Label({
-                            text: 'Parameters in the "Additional options" section can be used to customize the plot and modify it based on the demographics. Available choices are Age, Gender, and Race.'
+                            text: 'Parameters in the "Additional options" section can be used to customize the plot and modify it based on the demographic data. Available choices are Age, Gender, and Race.'
                         }),
                         new Ext.form.FieldSet({
-                            html: '<b>Text size:</b> The size of all text elements on the plot (Including axis, legend and labels)<br><br><b>Facet:</b> The plot will facet by cohorts on the y axis and genes on the x axis. In Grid mode, the scales are consistent for a gene and for a cohort. In wrap mode, the scales are free. Use wrap if you observe empty spaces in the plots<br><br><b>Shape:</b> The shape of the data points (Gender is selected by default)<br><br><b>Color:</b> The color of the data points (Age is selected by default)<br><br><b>Size:</b> The size of the data points<br><br><b>Alpha:</b> The transparency of the data points',
+                            html: '<b>Text size:</b> The size of all text elements on the plot (Including axis, legend and labels)<br><br><b>Facet:</b> The plot will facet by cohorts on the y axis and genes on the x axis. In `grid` mode, the scales are consistent for a gene and for a cohort. In `wrap` mode, the scales are free. Use wrap if you observe empty spaces in the plots<br><br><b>Shape:</b> The shape of the data points (Gender is selected by default)<br><br><b>Color:</b> The color of the data points (Age is selected by default)<br><br><b>Size:</b> The size of the data points<br><br><b>Alpha:</b> The transparency of the data points',
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Additional options'
                         })
