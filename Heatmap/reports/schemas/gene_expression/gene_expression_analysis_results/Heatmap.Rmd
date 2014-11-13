@@ -72,6 +72,11 @@ for(runIdx in 1:length(runs)){
    rownames(anno) <- pd[, biosample_accession]
 
    exprs <- exprs(EM[ugenes, pd$biosample_accession])
+
+   # If RNA-seq, let's transform the data via voom
+   if(max(exprs)>100)
+     exprs <- voom(EM[ugenes, pd$biosample_accession])$E
+   
    mat <- exprs
    #mat <- matrix(0, nrow = nrow(exprs), ncol = length(coefs), dimnames = list(rownames(exprs), rownames(anno)))
    #for(i in 1:length(coefs)){
