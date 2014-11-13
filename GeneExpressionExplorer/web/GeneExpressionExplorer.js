@@ -435,23 +435,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         var width = Math.min( cntPlot.getWidth(), 800 );
 
                         resizableImage = new Ext.Resizable( imgId, {
-                            disableTrackOver: true,
-                            dynamic: true,
-                            handles: 's',
+                            handles: ' ',
                             height: width,
-                            listeners: {
-                                resize: function(){
-                                    var widthToSet = Math.min( cntPlot.getWidth(), 800 ), img = this.getEl().dom;
-                                    var width = img.offsetWidth;
-                                    if ( width > widthToSet ){
-                                        resizableImage.resizeTo( widthToSet, widthToSet );
-                                    }
-                                }
-                            },
-                            maxWidth: width,
-                            minHeight: 50,
-                            minWidth: 50,
-                            pinned: true,
                             preserveRatio: true,
                             width: width,
                             wrap: true

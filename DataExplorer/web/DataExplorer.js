@@ -468,23 +468,8 @@ console.log( result.outputParams.length );
                         ;
 
                         resizableImage = new Ext.Resizable( imgId, {
-                            disableTrackOver: true,
-                            dynamic: true,
-                            handles: 's',
+                            handles: ' ',
                             height: height,
-                            listeners: {
-                                resize: function(){
-                                    var widthToSet = Math.min( cntPlot.getWidth(), 800 ), img = this.getEl().dom;
-                                    var width = img.offsetWidth, height = img.offsetHeight;
-                                    if ( width > widthToSet ){
-                                        resizableImage.resizeTo( widthToSet, height / width * widthToSet );
-                                    }
-                                }
-                            },
-                            maxWidth: width,
-                            minHeight: 50,
-                            minWidth: 50,
-                            pinned: true,
                             preserveRatio: true,
                             width: width,
                             wrap: true

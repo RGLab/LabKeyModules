@@ -647,7 +647,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             listeners: {
                 afterrender: {
                     fn: function(){
-                        maskPlot = new Ext.LoadMask(
+                        maskReport = new Ext.LoadMask(
                             this.getEl(),
                             {
                                 msg: 'Generating the report...',
