@@ -4,6 +4,7 @@
 config/module.xml
 module.xml
 config
+**/enlistment.properties
 
 # OS generated files #
 ######################
