@@ -15,6 +15,7 @@ opts_chunk$set(cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE,
 ```{r libraries, echo = FALSE, message = FALSE, cache = FALSE}
 library(data.table)
 library(Rlabkey)
+co <- labkey.setCurlOptions(sslversion = 1, ssl.verifyhost = 2)
 library(ggplot2)
 library(glmnet)
 library(pheatmap)

@@ -15,6 +15,7 @@
 suppressMessages( library( Cairo ) );
 suppressMessages( library( RJSONIO ) );
 library(ggplot2)
+library(Biobase)
 library(data.table)
 library(ImmuneSpaceR)
 library(reshape2)
@@ -80,7 +81,9 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   HAI <- con$getDataset("hai", original_view = TRUE)
   HAI <- HAI[, list(subject_accession, study_time_collected, response=value_reported/value_reported[study_time_collected==0]), by="virus_strain,subject_accession"]
   #we predict the response at peak immunogenicity
-  immuno_peak <- HAI[, mean(response), by = "study_time_collected"][V1 == max(V1), study_time_collected] 
+  #immuno_peak <- HAI[, mean(response), by = "study_time_collected"][V1 == max(V1), study_time_collected] 
+  HAI <-  HAI[, mr := mean(response), by = "study_time_collected"]
+  immuno_peak <- HAI[HAI[, mr == max(mr)], study_time_collected]
 
   HAI <- HAI[study_time_collected==immuno_peak]
   HAI <- HAI[, list(response=log2(max(response))), by="subject_accession"]

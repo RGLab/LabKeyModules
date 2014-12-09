@@ -16,5 +16,6 @@
         <property name='buildOS' value='@@BuildOS@@'/>
         <property name='buildPath' value='@@BuildPath@@'/>
         <property name='sourcePath' value='@@SourcePath@@'/>
+        <property name="enlistmentId" value="@@EnlistmentId@@"/>
     </bean>
 </beans>

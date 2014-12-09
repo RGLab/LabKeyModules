@@ -15,7 +15,6 @@
     <target name='module.properties' depends='init'>
         <ant antfile="../build_common.xml" target="ensure_enlistment_id" />
         <property file="enlistment.properties"/>
-
         <mkdir dir='${module.src.dir}/config'/>
         <tstamp>
             <format property='buildtime' pattern='MMMM d yyyy, h:mm aa'/>

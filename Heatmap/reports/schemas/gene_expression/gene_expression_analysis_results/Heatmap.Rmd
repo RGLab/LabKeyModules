@@ -5,6 +5,7 @@ opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/He
 
 ```{r libraries, echo = FALSE, message = FALSE}
 library(pheatmap)
+library(Biobase)
 library(gplots)
 library(data.table)
 library(ImmuneSpaceR)
