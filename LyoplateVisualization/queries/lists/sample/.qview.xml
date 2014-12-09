@@ -1,0 +1,24 @@
+<cv:customView xmlns:cv='http://labkey.org/data/xml/queryCustomView'>
+    <cv:columns>
+        <cv:column name='name'>
+          <cv:properties>
+            <cv:property name='columnTitle' value='Name'/>
+          </cv:properties>
+        </cv:column>
+        <cv:column name='Sample'/>
+        <cv:column name='Replicate'/>
+        <cv:column name='Panel'/>
+        <cv:column name='Center'/>
+        <cv:column name='Center/Institution'>
+          <cv:properties>
+            <cv:property name='columnTitle' value='Institution'/>
+          </cv:properties>
+        </cv:column>
+        <cv:column name='Center/flowJoWorkSpace'>
+          <cv:properties>
+            <cv:property name='columnTitle' value='Flow Jo Workspace'/>
+          </cv:properties>
+        </cv:column>
+    </cv:columns>
+</cv:customView>
+

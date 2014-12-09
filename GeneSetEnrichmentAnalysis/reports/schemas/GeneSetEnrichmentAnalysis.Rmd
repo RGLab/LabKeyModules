@@ -129,15 +129,24 @@ if(contrast == "study_time_collected"){
 ```
 
 ```{r heatmap-matrix, cache = TRUE, dependson="byDay"}
+PValThresh <- 30
 #palette <- rev(brewer.pal(name="PiYG", n=11))
 #palette <- rev(brewer.pal(name="RdPu", n=11))
 palette <- colorpanel(20, low = "#268bd2", mid = "#fdf6e3", high = "#dc322f")
-DEM <- unique(table[abs(PValue)>30, Module])
-DEM <- table[Module %in% DEM, list(Module, Coefficient, PValue)]
-DEM <- dcast(DEM, formula = Module ~ Coefficient, value.var = "PValue")[, c("Module", mixedsort(unique(table$Coefficient)))]
-mat <- as.matrix(DEM[, -1])
-rownames(mat) <- DEM$Module
+DEM <- unique(table[abs(PValue)>PValThresh, Module])
+draw_heatmap <- FALSE
+infostring <- ""
+if(length(DEM) > 0){
+  DEM <- table[Module %in% DEM, list(Module, Coefficient, PValue)]
+  DEM <- dcast(DEM, formula = Module ~ Coefficient, value.var = "PValue")[, c("Module", mixedsort(unique(table$Coefficient)))]
+  mat <- as.matrix(DEM[, -1])
+  rownames(mat) <- DEM$Module
+  draw_heatmap <- TRUE
+} else{
+  infostring <- "No gene set were found to be enriched."
+}
 ```
+
 
 ```{r kable, cache = TRUE, dependson="byDay", results='asis', fig.heigth = 4, fig.width = 8}
 table <- table[, Module := func_rnames(Module)]
@@ -147,15 +156,18 @@ format_table(table)
 ```
 
 ```{r pheatmap, cache=TRUE, dependson="heatmap-matrix"}
-max <- max(abs(mat))
-if(nrow(mat) > 0){
-  rownames(mat) <- ifelse(nchar(rownames(mat))>15, paste(substr(rownames(mat), 1, 8),
-                   substr(rownames(mat), nchar(rownames(mat))-10, nchar(rownames(mat))), sep =" ... "),
-                   rownames(mat))
-  clust_rows <- ifelse(nrow(mat) < 2, FALSE, TRUE)
-  pheatmap(mat, cluster_cols = FALSE, cluster_rows = clust_rows,
-    breaks = seq(-max, max, length.out = length(palette)+1), color = palette)
+if(draw_heatmap){
+  max <- max(abs(mat))
+  if(nrow(mat) > 0){
+    rownames(mat) <- ifelse(nchar(rownames(mat))>15, paste(substr(rownames(mat), 1, 8),
+                     substr(rownames(mat), nchar(rownames(mat))-10, nchar(rownames(mat))), sep =" ... "),
+                     rownames(mat))
+    clust_rows <- ifelse(nrow(mat) < 2, FALSE, TRUE)
+    pheatmap(mat, cluster_cols = FALSE, cluster_rows = clust_rows,
+      breaks = seq(-max, max, length.out = length(palette)+1), color = palette)
+  }
 }
 ```
 
 
+`r infostring`

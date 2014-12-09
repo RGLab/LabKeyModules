@@ -377,7 +377,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                                 dichotomize:            chDichotomize.getValue(),
                                 dichotomizeValue:       nfDichotomize.getValue(),
                                 timePoint:              cbTimePoint.getValue(),
-                                timePointDisplay:       cbTimePoint.getRawValue(), // TODO: do we still need this?
+                                timePointUnit:          cbTimePoint.getSelectedField('timepointUnit'),
                                 fdrThreshold:           nfFalseDiscoveryRate.getValue(),
                                 fcThreshold:            nfFoldChange.getValue()
                             };
@@ -410,6 +410,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                                 }
                             });
                         } else if ( count < 1 ) {
+                            setReportRunning( false );
+
                             LABKEY.ext.ISCore.onFailure({
                                 exception: 'The selected values result in an empty set of parameters.'
                             });

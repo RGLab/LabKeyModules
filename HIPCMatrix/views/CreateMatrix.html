@@ -31,6 +31,7 @@ function renderPanel()
                 {
                     Ext4.Msg.alert("No samples selected", "No samples selected");
                 }
+                panel.setTitle( 'Number of rows selected: ' + selectedRows.length );
             }
         });
     }
@@ -138,8 +139,8 @@ function renderPanel()
         window.location = url;
     };
 
-
-    panel = Ext4.create('Ext.form.Panel', {
+    var panel = Ext4.create('Ext.form.Panel', {
+        title: '',
         renderTo: 'analysisForm',
         border: false,
         bodyStyle: 'background-color: transparent;',
@@ -154,11 +155,6 @@ function renderPanel()
             name: 'name',
             fieldLabel: 'Name',
             allowBlank: false
-        },{
-            xtype: 'label',
-            forId: 'nsamples',
-            text: '10 samples',
-            margins: '0 0 0 10'
         },{
             xtype: 'textfield',
             name: 'comments',

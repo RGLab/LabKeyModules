@@ -188,6 +188,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             data: [
                 [ 'Auto', 'auto' ],
                 [ 'Boxplot', 'boxplot' ],
+                [ 'Violin plot', 'violin' ],
                 [ 'Heatmap', 'heatmap' ],
                 [ 'Lineplot', 'line' ]
             ],

@@ -24,11 +24,17 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //            Variables            //
         /////////////////////////////////////
+
         var
             me                          = this,
 
             reportSessionId             = undefined,
+
+            maskDelete                  = undefined
             selectedAnalysisPath        = undefined,
+            selectedFilesNames          = undefined,
+            selectedStudyVars           = undefined,
+            selectedParentPopulation    = undefined,
             lastValueHorizontalAspect   = undefined,
             lastValueVerticalAspect     = undefined,
             listStudyVars               = [],
@@ -50,12 +56,14 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //             Strings             //
         /////////////////////////////////////
+
         var strngErrorContactWithLink = ' Please, contact support, if you have questions.'
 
 
         ///////////////////////////////////
         //            Stores             //
         ///////////////////////////////////
+
         var strngSqlStartTable =    'SELECT' +
                                     ' DISTINCT FCSFiles.Name AS name,' +
                                     ' FCSFiles.RowId AS FileIdLink',
@@ -67,15 +75,18 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             listeners: {
                 load: onStrFilteredTableLoad,
                 loadexception: function(p, o, r){
+                    selectedFilesNames  = undefined;
+                    selectedStudyVars   = undefined;
+
                     flagAnalysisLoadedFromDB = false;
                     onNoAnalysis();
 
                     if ( r.responseText.indexOf('Unknown field FCSFiles.Sample.') >= 0 ){
-                        LABKEY.ext.Lyoplate.onFailure({
+                        LABKEY.ext.ISCore.onFailure({
                             exception: 'Seems like the external metadata from the Sample Set associated with this folder\'s FCS files and this analysis has been removed, cannot proceed. </br>'
                         });
                     } else {
-                        LABKEY.ext.Lyoplate.onFailure({
+                        LABKEY.ext.ISCore.onFailure({
                             exception: r.responseText
                         });
                     }
@@ -94,7 +105,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             sql: strngSqlStartTable + strngSqlEndTable
         });
 
-        var strGatingSet = new LABKEY.ext.Store({
+        var strGatingSetList = new LABKEY.ext.Store({
             autoLoad: true,
             listeners: {
                 load: function(){
@@ -104,7 +115,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
                     if ( this.getCount() < 1 ){
                         // disable all
-                        pnlTabs.getEl().mask('Seems like there are no analyses to visualize, you need to import or create one.' + strngErrorContactWithLink, 'infoMask');
+                        pnlTabs.getEl().mask('Seems like there are no analyses to visualize, you need to create and import one.' + strngErrorContactWithLink, 'infoMask');
                         cbAnalysis.setDisabled( true );
                         pnlAnalysis.setDisabledViaClass( true );
                     } else {
@@ -113,19 +124,20 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                         pnlAnalysis.setDisabledViaClass( false );
                     }
                 },
-                loadexception: LABKEY.ext.Lyoplate.onFailure
+                loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'GatingSet',
-            schemaName: 'opencyto_preprocessing'
+            schemaName: 'lyoplate_visualization'
         });
 
         var strParentPopulation = new LABKEY.ext.Store({
             listeners: {
-                loadexception: LABKEY.ext.Lyoplate.onFailure
+                load: manageCbParentPopulation,
+                loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'ParentPopulation',
             remoteSort: false,
-            schemaName: 'opencyto_preprocessing',
+            schemaName: 'lyoplate_visualization',
             sortInfo: {
                 field: 'Index',
                 direction: 'ASC'
@@ -152,17 +164,18 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
                             manageTlbrGraph();
 
-                            if ( ! cbProjection.isExpanded() ){
+                            cbProjection.clearValue();
+                            if ( ! cbProjection.isExpanded() && ! cbAnalysis.isExpanded() ){
                                 cbProjection.expand();
                             }
                         }
                     }
                 },
-                loadexception: LABKEY.ext.Lyoplate.onFailure
+                loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'Projection',
             remoteSort: false,
-            schemaName: 'opencyto_preprocessing',
+            schemaName: 'lyoplate_visualization',
             sortInfo: {
                 field: 'Projection',
                 direction: 'ASC'
@@ -179,21 +192,95 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             fields: ['YChannel', 'YInclMarker']
         });
 
-        var strOverlay = new LABKEY.ext.Store({
+        var strGatingSet = new LABKEY.ext.Store({
             listeners: {
-                loadexception: LABKEY.ext.Lyoplate.onFailure
+                commitcomplete: function(){
+                    strGatingSetList.reload();
+                    onNoAnalysis();
+                },
+                commitexception: function(e){
+                    this.rejectChanges();
+
+                    if ( e.indexOf( 'duplicate key value violates unique constraint "uq_gstbl"' ) >= 0 ){
+                        LABKEY.ext.ISCore.onFailure({
+                            exception: 'There is already an analysis with the same name, <br/>delete it first, or use a different name.<br/>'
+                        })
+                    } else if ( e.indexOf( 'null value in column "gsname" violates non-null constraint' ) >= 0 ){
+                        LABKEY.ext.ISCore.onFailure({
+                            exception: 'Blank analysis name is not allowed.<br/>'
+                        })
+                    }
+
+                    return false;
+                },
+                load: function(){
+                    pnlTableAnalyses.autoExpandColumn = 'Description';
+
+                    pnlTableAnalyses.reconfigure(
+                        strGatingSet,
+                        new Ext.grid.CustomColumnModel({
+                            columns: [
+                                LABKEY.ext.ISCore.factoryRowNumberer( strGatingSet ),
+                                smCheckBoxAnalyses,
+                                {
+                                    dataIndex: 'gsname',
+                                    editor: new Ext.form.TextField(),
+                                    header: 'Name',
+                                    hideable: false,
+                                    renderer: function( value, metaData, record, rowIndex, colIndex, store ){
+                                        metaData.attr = 'ext:qtip="' + value + '"';
+                                        return value;
+                                    },
+                                    tooltip: 'Name',
+                                    width: 160
+                                },
+                                {
+                                    dataIndex: 'created',
+                                    header: 'Creation Time',
+                                    renderer: function( value, metaData, record, rowIndex, colIndex, store ){
+                                        value = Ext.util.Format.date( value, 'Y-m-d H:i:s' );
+                                        metaData.attr = 'ext:qtip="' + value + '"';
+                                        return value;
+                                    },
+                                    tooltip: 'Creation Time',
+                                    width: 160
+                                },
+                                {
+                                    dataIndex: 'gsdescription',
+                                    editor: new Ext.form.TextField(),
+                                    header: 'Description',
+                                    id: 'Description',
+                                    renderer: function( value, metaData, record, rowIndex, colIndex, store ){
+                                        if ( Ext.util.Format.undef(value) != '' && value != null ){
+                                            metaData.attr = 'ext:qtip="' + value + '"';
+                                        }
+                                        return value;
+                                    },
+                                    tooltip: 'Description'
+                                }
+                            ],
+                            defaults: {
+                                filterable: true,
+                                resizable: true,
+                                sortable: true
+                            },
+                            disallowMoveBefore: 1
+                        })
+                    );
+
+                    smCheckBoxAnalyses.clearSelections();
+                },
+                loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'Population',
-            schemaName: 'opencyto_preprocessing',
-            sortInfo: {
-                field: 'Index',
-                direction: 'ASC'
-            }
+            queryName: 'gstbl',
+            schemaName: 'lyoplate_visualization'
         });
+
 
         /////////////////////////////////////
         //      Session instanciation      //
         /////////////////////////////////////
+
         LABKEY.Report.getSessions({
             success: function( responseObj ){
                 var i, array = responseObj.reportSessions, length = array.length;
@@ -206,7 +293,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 if ( i == length ){
                     LABKEY.Report.createSession({
                         clientContext : 'LyoplateVisualization',
-                        failure: LABKEY.ext.Lyoplate.onFailure,
+                        failure: LABKEY.ext.ISCore.onFailure,
                         success: function(data){
                             reportSessionId = data.reportSessionId;
                         }
@@ -215,20 +302,15 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             }
         });
 
+
         /////////////////////////////////////
         //          CheckBoxes             //
         /////////////////////////////////////
+
         var chEnableBinning = new Ext.form.Checkbox({
             boxLabel: 'Enable binning',
             checked: true,
             ctCls: 'bold-text',
-            handler: function(a,b) {
-                if ( !b ){
-                    pnlBin.hide();
-                } else {
-                    pnlBin.show();
-                }
-            },
             margins: { top: 0, right: 0, bottom: 10, left: 4 },
             width: 136
         });
@@ -301,46 +383,18 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //     Slider/Radio-s/Spinners     //
         /////////////////////////////////////
-        var tip = new Ext.slider.Tip({
-            getText: function(thumb){
-                return String.format('<b>hexbin parameter: {0}</b>', Math.pow(2, thumb.value + 5 ) );
-            }
-        });
 
-        var sldrBin = new Ext.Slider({
-            flex: 1,
-            increment: 1,
-            margins: { top: 0, right: 5, bottom: 0, left: 5 },
-            minValue: 0,
-            maxValue: 4,
-            plugins: tip,
-            value: 0
-        });
-
-        var factoryRadioCnf = function( i ){
-            var val = Math.pow(2, i);
-            return {
-                boxLabel: String( val ),
-                inputValue: val,
-                name: 'bin',
-                value: val,
-                xtype: 'radio'
-            };
-        };
-
-        var pnlBin = new Ext.Panel({
-            defaults: {
-                border: false,
-                style: 'padding-right: 20px;'
+        var spnrFontSize = new Ext.ux.form.SpinnerField({
+            allowBlank: false,
+            fieldLabel: 'Font size',
+            listeners: {
+                invalid: function(){ tlbrGraph.setDisabled( true ); },
+                valid: manageTlbrGraph
             },
-            items: [
-                { items: Ext.apply( factoryRadioCnf(5), { checked: true } ) },
-                { items: factoryRadioCnf(6) },
-                { items: factoryRadioCnf(7) },
-                { items: factoryRadioCnf(8) },
-                { items: factoryRadioCnf(9) }
-            ],
-            layout: 'hbox'
+            maxValue: 20,
+            minValue: 5,
+            value: 10,
+            width: 45
         });
 
         var spnrHorizontal = new Ext.ux.form.SpinnerField({
@@ -405,13 +459,14 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 }
             },
             qtipField: 'Description',
-            store: strGatingSet,
+            store: strGatingSetList,
             valueField: 'Id'
         });
 
         var cbParentPopulation = new Ext.ux.form.ExtendedComboBox({
             disabled: true,
             displayField: 'Path',
+            lazyInit: false,
             listeners: {
                 blur: function(){
                     manageTlbrGraph();
@@ -422,7 +477,6 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                         setDisabledControls( false );
 
                         if( ! flagProjectionSelect ){
-                            filterOverlay();
                             filterProjection();
                         }
                     }
@@ -432,11 +486,13 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
                     if ( this.getValue() == '' ){
                         setDisabledControls( true );
+
+                        selectedParentPopulation = undefined;
                     } else {
                         setDisabledControls( false );
 
                         if( ! flagProjectionSelect ){
-                            filterOverlay();
+                            selectedParentPopulation = this.getValue();
                             filterProjection();
                         }
                     }
@@ -445,6 +501,8 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                     manageTlbrGraph();
 
                     setDisabledControls( true );
+
+                    selectedParentPopulation = undefined;
                 },
                 focus: function(){
                     flagProjectionSelect = false;
@@ -454,7 +512,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
                     setDisabledControls( false );
 
-                    filterOverlay();
+                    selectedParentPopulation = this.getValue();
                     filterProjection();
 
                     flagProjectionSelect = true;
@@ -467,13 +525,17 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
         var cbProjection = new Ext.ux.form.ExtendedComboBox({
             disabled: true,
             displayField: 'Projection',
+            lazyInit: false,
             listeners: {
                 change: setAxes,
+                cleared: function(){
+                    cbXAxis.clearValue();
+                    cbYAxis.clearValue();
+                },
                 select: setAxes
             },
             store: strProjection,
             triggerAction: 'all',
-            typeAhead: false,
             valueField: 'Projection'
         });
 
@@ -511,28 +573,11 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             valueField: 'YChannel'
         });
 
-        var cbOverlay = new Ext.ux.form.ExtendedComboBox({
-            disabled: true,
-            displayField: 'Path',
-            lastQuery: '',
-            listeners:{
-                beforequery: function(qe){
-                    qe.combo.onLoad();
-                    return false;
-                }
-            },
-            onTrigger2Click : function(){
-                this.collapse();
-                this.clearValue();          // clear contents of combobox BUT DON'T REMOVE THE FILTER !
-                this.fireEvent('cleared');  // send notification that contents have been cleared
-            },
-            store: strOverlay,
-            valueField: 'Path'
-        });
 
         /////////////////////////////////////
         //             Buttons             //
         /////////////////////////////////////
+
         var btnReset = new Ext.Button({
             disabled: true,
             handler: function(){
@@ -591,9 +636,35 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             tooltip: 'Swap the axes values'
         });
 
+        var btnDelete = new Ext.Button({
+            disabled: true,
+            handler: function(){
+
+                var sels = smCheckBoxAnalyses.getSelections(), gsids = [], gspaths = [];
+                Ext.each( sels, function( s ){ gsids.push( s.get('gsid') ) });
+                Ext.each( sels, function( s ){ gspaths.push( s.get('gspath') ) });
+
+                cnfDeleteAnalysis.inputParams = {
+                    gsids:          Ext.encode( gsids ),
+                    gspaths:        Ext.encode( gspaths ),
+                    container:      sels[0].get('container')
+                };
+
+                btnDelete.setDisabled(true);
+
+                maskDelete.show();
+
+                LABKEY.Report.execute( cnfDeleteAnalysis );
+            },
+            text: 'Delete',
+            tooltip: 'Delete an analysis'
+        });
+
+
         /////////////////////////////////////
         //             Web parts           //
         /////////////////////////////////////
+
         var cnfLoad = {
             failure: function( errorInfo, options, responseObj ){
                 cbAnalysis.setDisabled(false);
@@ -604,7 +675,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 flagAnalysisLoadedFromDisk = false;
                 onNoAnalysis();
 
-                LABKEY.ext.Lyoplate.onFailure(errorInfo, options, responseObj);
+                LABKEY.ext.ISCore.onFailure(errorInfo, options, responseObj);
             },
             reportId: 'module:LyoplateVisualization/Load.R',
             success: function( result ){
@@ -625,13 +696,13 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                         flagAnalysisLoadedFromDisk = false;
                         onNoAnalysis();
 
-                        LABKEY.ext.Lyoplate.onFailure({
+                        LABKEY.ext.ISCore.onFailure({
                             exception: errors[0]
                         });
                     } else {
                         LABKEY.Report.createSession({
                             clientContext : 'LyoplateVisualization',
-                            failure: LABKEY.ext.Lyoplate.onFailure,
+                            failure: LABKEY.ext.ISCore.onFailure,
                             success: function(data){
                                 reportSessionId = data.reportSessionId;
 
@@ -647,11 +718,6 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
                     if ( flagAnalysisLoadedFromDB ){
                         selectedAnalysisPath = cbAnalysis.getSelectedField( 'Path' );
-
-                        cbAnalysis.triggerBlur();
-                        cbParentPopulation.focus();
-                        cbParentPopulation.expand();
-                        cbParentPopulation.restrictHeight();
                     }
                 }
             }
@@ -665,7 +731,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 manageTlbrGraph();
                 maskGraph.hide();
 
-                LABKEY.ext.Lyoplate.onFailure(errorInfo, options, responseObj);
+                LABKEY.ext.ISCore.onFailure(errorInfo, options, responseObj);
             },
             inputParams: {},
             reportId: 'module:LyoplateVisualization/Plot.R',
@@ -679,7 +745,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 if (errors && errors.length > 0){
                     if ( errors[0].indexOf('The report session is invalid') < 0 ){
                         if ( errors[0].indexOf('must have only one flow frame per panel') < 0 ){
-                            LABKEY.ext.Lyoplate.onFailure({
+                            LABKEY.ext.ISCore.onFailure({
                                 exception: errors.join('\n')
                             });
 
@@ -690,7 +756,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                     } else {
                         LABKEY.Report.createSession({
                             clientContext : 'LyoplateVisualization',
-                            failure: LABKEY.ext.Lyoplate.onFailure,
+                            failure: LABKEY.ext.ISCore.onFailure,
                             success: function(data){
                                 reportSessionId = data.reportSessionId;
 
@@ -718,23 +784,8 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                         }
 
                         resizableImage = new Ext.Resizable( imgId, {
-                            disableTrackOver: true,
-                            dynamic: true,
-                            handles: 's',
+                            handles: ' ',
                             height: height,
-                            listeners: {
-                                resize: function(){
-                                    var widthToSet = pnlTopContainer.getWidth(), img = this.getEl().dom;
-                                    var width = img.offsetWidth, height = img.offsetHeight;
-                                    if ( width > widthToSet ){
-                                        resizableImage.resizeTo( widthToSet, height / width * widthToSet );
-                                    }
-                                }
-                            },
-                            maxWidth: width,
-                            minHeight: 50,
-                            minWidth: 50,
-                            pinned: true,
                             preserveRatio: true,
                             width: width,
                             wrap: true
@@ -754,88 +805,45 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             }
         };
 
+        var cnfDeleteAnalysis = {
+            failure: function( errorInfo, options, responseObj ) {
+                maskDelete.hide();
+
+                smCheckBoxAnalyses.clearSelections();
+
+                LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
+            },
+            reportId: 'module:LyoplateVisualization/Delete.R',
+            success: function( result ) {
+                maskDelete.hide();
+
+                var errors = result.errors;
+                var outputParams = result.outputParams;
+
+                if (errors && errors.length > 0){
+                    smCheckBoxAnalyses.clearSelections();
+
+                    LABKEY.ext.ISCore.onFailure({
+                        exception: errors[0]
+                    });
+                } else {
+                    var p = outputParams[0];
+
+                    Ext.Msg.alert( 'Info', p.value );
+                }
+
+                strGatingSet.reload();
+                strGatingSetList.reload();
+                onNoAnalysis();
+            }
+        };
 
         var resizableImage;
+
 
         /////////////////////////////////////
         //  Panels, Containers, Components //
         /////////////////////////////////////
-        var dfHorizontal = new Ext.form.DisplayField({
-            cls: 'bold-text',
-            value: 'horizontal'
-        });
-
-        var dfVertical = new Ext.form.DisplayField({
-            cls: 'bold-text',
-            value: 'vertical'
-        });
-
-        var pnlOptions = new Ext.Panel({
-            items:
-                new Ext.Panel({
-                    autoHeight: true,
-                    border: false,
-                    defaults: {
-                        autoHeight: true,
-                        columnWidth: 1,
-                        hideMode: 'offsets'
-                    },
-                    items: [
-                        new Ext.Panel({
-                            bodyStyle: 'padding: 4px;',
-                            defaults: {
-                                bodyStyle: 'padding: 4px;',
-                                border: false
-                            },
-                            items: [
-                                { items: chEnableBinning },
-                                pnlBin
-                            ],
-                            style: 'padding-bottom: 4px; padding-top: 4px;'
-                        }),
-                        new Ext.Panel({
-                            bodyStyle: 'padding: 4px;',
-                            defaults: {
-                                bodyStyle: 'padding: 4px;',
-                                border: false
-                            },
-                            items: [
-                                { items: chAspectRatio },
-                                new Ext.Panel({
-                                    items: [
-                                        dfHorizontal,
-                                        new Ext.Toolbar.Spacer({
-                                            width: 10
-                                        }),
-                                        spnrHorizontal,
-                                        new Ext.Toolbar.Spacer({
-                                            width: 30
-                                        }),
-                                        dfVertical,
-                                        new Ext.Toolbar.Spacer({
-                                            width: 10
-                                        }),
-                                        spnrVertical
-                                    ],
-                                    layout: {
-                                        align: 'middle',
-                                        type: 'hbox'
-                                    }
-                                })
-                            ],
-                            style: 'padding-bottom: 4px;'
-                        })
-                    ],
-                    layout: 'column',
-                    style: 'padding-right: 4px; padding-left: 4px;',
-                    title: 'Plot options:'
-                }),
-            layout: 'fit',
-            tabTip: 'Options',
-            title: 'Options'
-        });
-
-/////////////////////////////////////
 
         var tlbrGraph = new Ext.Toolbar({
             cls: 'white-background',
@@ -957,24 +965,6 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             }
         }, cnfSetDisabledViaClass) );
 
-        var pnlOverlay = new Ext.Panel( Ext.apply({
-            cls: 'x-item-disabled',
-            items: {
-                border: false,
-                headerCssClass: 'simple-panel-header',
-                headerStyle: 'padding-top: 0px;',
-                items: cbOverlay,
-                layout: 'fit',
-                style: 'padding-right: 4px; padding-left: 4px;',
-                title: 'Overlay set'
-            },
-            layout: {
-                type: 'vbox',
-                align: 'stretch',
-                pack: 'end'
-            }
-        }, cnfSetDisabledViaClass) );
-
         var pnlPlotControls = new Ext.Panel({
             bbar: tlbrGraph,
             border: true,
@@ -1005,8 +995,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                     }
                 },
                 pnlProjection,
-                pnlAxes,
-                pnlOverlay
+                pnlAxes
             ],
             listeners: {
                 afterlayout: function(){
@@ -1014,21 +1003,9 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 }
             },
             minWidth: 186,
-            plugins: [ new Ext.ux.MsgBus() ],
             region: 'center',
             title: 'Select analysis and gates'
         });
-
-        pnlPlotControls.subscribe(
-            'analysesReload',
-            {
-                fn:function(){
-                    strGatingSet.reload();
-                    onNoAnalysis();
-                }
-            }
-        );
-
 
         var cmpTableStatus = new Ext.Component({
             cls: 'bold-text',
@@ -1089,7 +1066,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             },
             listeners: {
                 render: function(){
-                    LABKEY.ext.Lyoplate.initTableQuickTips( this );
+                    LABKEY.ext.ISCore.initTableQuickTips( this );
                     pnlTable.getView().el.hide();
                 }
             },
@@ -1152,7 +1129,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             defaults: {
                 autoScroll: true
             },
-            height: 325,
+            height: 260,
             items: [
                 pnlPlotControls,
                 pnlTable
@@ -1174,6 +1151,226 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             title: 'Visualize'
         });
 
+        /////////////////////////////////////
+
+        var dfHorizontal = new Ext.form.DisplayField({
+            cls: 'bold-text',
+            value: 'horizontal'
+        });
+
+        var dfVertical = new Ext.form.DisplayField({
+            cls: 'bold-text',
+            value: 'vertical'
+        });
+
+        var pnlOptions = new Ext.Panel({
+            items:
+                new Ext.Panel({
+                    autoHeight: true,
+                    border: false,
+                    defaults: {
+                        autoHeight: true,
+                        bodyStyle: 'padding: 4px;',
+                        columnWidth: 1,
+                        hideMode: 'offsets'
+                    },
+                    items: [
+                        new Ext.Panel({
+                            defaults: {
+                                bodyStyle: 'padding: 4px;',
+                                border: false
+                            },
+                            items: [{
+                                items: [
+                                    new Ext.form.DisplayField({
+                                        cls: 'bold-text',
+                                        value: 'Font size'
+                                    }),
+                                    new Ext.Toolbar.Spacer({
+                                        width: 10
+                                    }),
+                                    spnrFontSize
+                                ],
+                                layout: {
+                                    align: 'middle',
+                                    type: 'hbox'
+                                }
+                            }],
+                            style: 'padding-bottom: 4px; padding-top: 4px;'
+                        }),
+                        new Ext.Panel({
+                            defaults: {
+                                bodyStyle: 'padding: 4px;',
+                                border: false
+                            },
+                            items: [{ items: chEnableBinning }],
+                            style: 'padding-bottom: 4px; padding-top: 4px;'
+                        }),
+                        new Ext.Panel({
+                            defaults: {
+                                bodyStyle: 'padding: 4px;',
+                                border: false
+                            },
+                            items: [
+                                { items: chAspectRatio },
+                                new Ext.Panel({
+                                    items: [
+                                        dfHorizontal,
+                                        new Ext.Toolbar.Spacer({
+                                            width: 10
+                                        }),
+                                        spnrHorizontal,
+                                        new Ext.Toolbar.Spacer({
+                                            width: 30
+                                        }),
+                                        dfVertical,
+                                        new Ext.Toolbar.Spacer({
+                                            width: 10
+                                        }),
+                                        spnrVertical
+                                    ],
+                                    layout: {
+                                        align: 'middle',
+                                        type: 'hbox'
+                                    }
+                                })
+                            ],
+                            style: 'padding-bottom: 4px;'
+                        })
+                    ],
+                    layout: 'column',
+                    style: 'padding-right: 4px; padding-left: 4px;',
+                    title: 'Plot options:'
+                }),
+            layout: 'fit',
+            tabTip: 'Options',
+            title: 'Options'
+        });
+
+        /////////////////////////////////////
+
+        var smCheckBoxAnalyses = new Ext.grid.CheckboxSelectionModel({
+            checkOnly: true,
+            filterable: false,
+            listeners: {
+                selectionchange: function(){
+                    if ( smCheckBoxAnalyses.getCount() > 0 ){
+                        btnDelete.setDisabled(false);
+                    } else {
+                        btnDelete.setDisabled(true);
+                    }
+                }
+            },
+            moveEditorOnEnter: false,
+            sortable: true,
+            width: 23
+        });
+
+
+        var pnlTableAnalyses = new Ext.grid.EditorGridPanel({
+            autoScroll: true,
+            columnLines: true,
+            columns: [],
+            forceLayout: true,
+            height: 200,
+            loadMask: { msg: 'Loading generated analyses, please, wait...', msgCls: 'mask-loading' },
+            listeners: {
+                afteredit: function(e){
+                    if ( e.field == 'gsname' && e.value == '' ){
+                        strGatingSet.rejectChanges();
+
+                        LABKEY.ext.ISCore.onFailure({
+                            exception: 'Blank analysis name is not allowed.<br/>'
+                        })
+                    } else {
+                        strGatingSet.commitChanges();
+                    }
+                },
+                reconfigure: function(){
+                    smCheckBoxAnalyses.clearSelections();
+                },
+                render: function(){
+                    LABKEY.ext.ISCore.initTableQuickTips( this );
+                }
+            },
+            plugins: [
+                new Ext.ux.grid.AutoSizeColumns(),
+                new Ext.ux.plugins.CheckBoxMemory({ idProperty: 'gsname' }),
+                new Ext.ux.grid.GridFilters({
+                    encode: false,
+                    local: true,
+                    filters: [
+                        {
+                            dataIndex: 'gsname',
+                            type: 'string'
+                        },
+                        {
+                            dataIndex: 'gsdescription',
+                            type: 'string'
+                        },
+                        {
+                            dataIndex: 'created',
+                            dateFormat: 'Y-m-d H:i:s',
+                            type: 'date'
+                        }
+                    ]
+                })
+            ],
+            selModel: smCheckBoxAnalyses,
+            store: strGatingSet,
+            stripeRows: true,
+            tbar: new Ext.Toolbar({
+                cls: 'white-background',
+                items: btnDelete
+            }),
+            title: 'Select the analysis to edit',
+            viewConfig: {
+                deferEmptyText: false,
+                emptyText: 'No rows to display',
+                splitHandleWidth: 10
+            }
+        });
+
+
+        var pnlEdit = {
+            border: false,
+            defaults: {
+                autoHeight: true,
+                hideMode: 'offsets'
+            },
+            forceLayout: true,
+            items: {
+                border: false,
+                defaults: {
+                    hideMode: 'offsets'
+                },
+                items: pnlTableAnalyses,
+                layout: 'fit'
+            },
+            layout: 'fit',
+            listeners: {
+                afterrender: {
+                    fn: function(){
+                        maskDelete = new Ext.LoadMask(
+                            me.getEl(),
+                            {
+                                msg: 'Deleting the selected analysis and its associated data...',
+                                msgCls: 'mask-loading'
+                            }
+                        );
+
+                        strGatingSet.load();
+                    },
+                    single: true
+                }
+            },
+            title: 'Edit'
+        };
+
+        var itemsTabs = LABKEY.user.isAdmin ?
+                        [ pnlVisualize, pnlOptions, pnlEdit ] : 
+                        [ pnlVisualize, pnlOptions ];
+
         var pnlTabs = new Ext.TabPanel({
             activeTab: 0,
             autoHeight: true,
@@ -1181,7 +1378,8 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 autoHeight: true,
                 hideMode: 'offsets'
             },
-            items: [ pnlVisualize, pnlOptions ],
+            forceLayout: true,
+            items: itemsTabs,
             layoutOnTabChange: true,
             listeners: {
                 tabchange: function( tabPanel, tab ){
@@ -1209,6 +1407,23 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
         //             Functions           //
         /////////////////////////////////////
 
+        function manageCbParentPopulation(){
+            cbAnalysis.triggerBlur();
+
+            var r = cbParentPopulation.findRecord( cbParentPopulation.valueField, selectedParentPopulation );
+            if ( ! r ){
+                cbParentPopulation.reset();
+                cbParentPopulation.focus();
+                cbParentPopulation.expand();
+                if ( cbParentPopulation.list ){
+                    cbParentPopulation.restrictHeight();
+                }
+                cbProjection.onTrigger2Click();
+            } else {
+                filterProjection();
+            }
+        };
+
         function loadDataFromDisk(){
             flagAnalysisLoadedFromDisk = undefined;
             flagGraphLoading = true;
@@ -1231,7 +1446,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             var curValue, newColumns;
 
             newColumns = [
-                LABKEY.ext.Lyoplate.factoryRowNumberer( strFilteredTable ),
+                LABKEY.ext.ISCore.factoryRowNumberer( strFilteredTable ),
                 smCheckBox,
                 {
                     dataIndex: 'name',
@@ -1320,11 +1535,6 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
             if ( flagAnalysisLoadedFromDisk ){
                 selectedAnalysisPath = cbAnalysis.getSelectedField( 'Path' );
-
-                cbAnalysis.triggerBlur();
-                cbParentPopulation.focus();
-                cbParentPopulation.expand();
-                cbParentPopulation.restrictHeight();
             }
         };
 
@@ -1351,26 +1561,6 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             manageTlbrGraph();
         };
 
-        function filterOverlay(){
-            var v = cbParentPopulation.getValue() + '/';
-
-            cbOverlay.clearValue();
-
-            strOverlay.filterBy(
-                function(record){
-                    if ( v == 'root/' ){
-                        return record.get('Path') != 'root';
-                    } else {
-                        if ( record.get('Path').indexOf(v) < 0 ){
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    }
-                }
-            );
-        };
-
         function filterProjection(){
 
             strProjection.setUserFilters([
@@ -1392,7 +1582,6 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 cbProjection.clearValue();
                 cbXAxis.clearValue();
                 cbYAxis.clearValue();
-                cbOverlay.clearValue();
             }
 
             pnlProjection.setDisabledViaClass(bool);
@@ -1402,14 +1591,13 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             cbXAxis.setDisabled(bool);
             cbYAxis.setDisabled(bool);
             btnSwap.setDisabled(bool);
-
-            pnlOverlay.setDisabledViaClass(bool);
-            cbOverlay.setDisabled(bool);
         };
 
         function loadData(){
             var AnalysisPath    = cbAnalysis.getSelectedField( 'Path'),
                 AnalysisId      = cbAnalysis.getValue();
+
+            flagAnalysisLoadedFromDB = undefined;
 
             if ( AnalysisPath != selectedAnalysisPath ){
 
@@ -1424,8 +1612,6 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 /////////////////////////////////////
 
 
-                flagAnalysisLoadedFromDB = undefined;
-
                 // Filter populations by analysis id
                 strParentPopulation.setUserFilters([
                     LABKEY.Filter.create(
@@ -1433,15 +1619,8 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                         AnalysisId
                     )
                 ]);
+                delete cbParentPopulation.lastQuery;
                 strParentPopulation.load();
-
-                strOverlay.setUserFilters([
-                    LABKEY.Filter.create(
-                        'AnalysisId',
-                        AnalysisId
-                    )
-                ]);
-                strOverlay.load();
 
 
                 // Filter axes by analysis id
@@ -1453,13 +1632,13 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                         flagAnalysisLoadedFromDB = false;
                         onNoAnalysis();
 
-                        LABKEY.ext.Lyoplate.onFailure(e, r, o);
+                        LABKEY.ext.ISCore.onFailure(e, r, o);
                     },
                     filterArray: [
                         LABKEY.Filter.create( 'AnalysisId', AnalysisId )
                     ],
                     queryName: 'Axes',
-                    schemaName: 'opencyto_preprocessing',
+                    schemaName: 'lyoplate_visualization',
                     success: function(data){
                         Ext.each(
                             data.rows,
@@ -1483,20 +1662,18 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                                 flagAnalysisLoadedFromDB = false;
                                 onNoAnalysis();
 
-                                LABKEY.ext.Lyoplate.onFailure(e, r, o);
+                                LABKEY.ext.ISCore.onFailure(e, r, o);
                             },
                             filterArray: [
                                 LABKEY.Filter.create( 'AnalysisId', AnalysisId )
                             ],
                             queryName: 'AnalysisFiles',
-                            schemaName: 'opencyto_preprocessing',
+                            schemaName: 'lyoplate_visualization',
                             success: function(data){
-                                var tempArray = [];
-                                Ext.each( data.rows, function(r){ tempArray.push( r.name ); } );
                                 fileNameFilter =
                                     LABKEY.Filter.create(
                                         'name',
-                                        tempArray.join(';'),
+                                        Ext.pluck( data.rows, 'name' ).join(';'),
                                         LABKEY.Filter.Types.IN
                                     );
 
@@ -1519,13 +1696,13 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                     flagAnalysisLoadedFromDB = false;
                     onNoAnalysis();
 
-                    LABKEY.ext.Lyoplate.onFailure(e, r, o);
+                    LABKEY.ext.ISCore.onFailure(e, r, o);
                 },
                 filterArray: [
                     LABKEY.Filter.create( 'AnalysisId', AnalysisId )
                 ],
                 queryName: 'StudyVars',
-                schemaName: 'opencyto_preprocessing',
+                schemaName: 'lyoplate_visualization',
                 success: function(data){
                     var toAdd, curVal;
 
@@ -1533,25 +1710,16 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
                     Ext.each( data.rows, function(r){
                         curVal = r.StudyVarName;
-                        if ( curVal.slice(0,1) == 'R' ){ // Keyword study variable, starts with 'Row'
-                            toAdd = curVal.slice(14);
-                            curVal = LABKEY.QueryKey.encodePart( curVal ); // need to encode for Labkey to consume
-                            listStudyVars.push([
-                                toAdd + ' (Keyword)',
-                                curVal,
-                                'CAST( FCSFiles.Keyword."' + toAdd + '" AS VARCHAR ) AS "' + curVal + '"'
-                            ]);
-                        } else if ( curVal.slice(0,1) == 'S' ){ // External study variable, starts with 'Sample'
+                        if ( curVal.slice(0,1) == 'S' ){ // Study variables should start with 'Sample'
                             toAdd = curVal.slice(7);
                             curVal = LABKEY.QueryKey.encodePart( curVal ); // need to encode for Labkey to consume
                             listStudyVars.push([
-                                toAdd + ' (External)',
+                                toAdd,
                                 curVal,
                                 'CAST( FCSFiles.Sample."' + toAdd + '" AS VARCHAR ) AS "' + curVal + '"'
                             ]);
-                        }
-                        else {
-                            LABKEY.ext.Lyoplate.onFailure({
+                        } else {
+                            LABKEY.ext.ISCore.onFailure({
                                 exception: 'there was an error while executing this command: data format mismatch.'
                             });
                         }
@@ -1565,9 +1733,27 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
                     tempSQL += strngSqlEndTable;
 
-                    strFilteredTable.setSql( tempSQL );
-                    strFilteredTable.setUserFilters( [ fileNameFilter ] );
-                    strFilteredTable.load();
+                    if ( !( tempSQL == selectedStudyVars && fileNameFilter.getValue() == selectedFilesNames ) ){
+                        strFilteredTable.setSql( tempSQL );
+                        strFilteredTable.setUserFilters( [ fileNameFilter ] );
+                        selectedStudyVars   = tempSQL;
+                        selectedFilesNames  = fileNameFilter.getValue();
+
+                        strFilteredTable.load();
+                    } else {
+                        pnlTable.getView().el.show();
+                        btnReset.setDisabled(false);
+
+                        tlbrTable.add( cmpTableStatus );
+                        cmpTableStatus.show();
+                        tlbrTable.doLayout();
+
+                        flagAnalysisLoadedFromDB = true;
+
+                        if ( flagAnalysisLoadedFromDisk ){
+                            selectedAnalysisPath = cbAnalysis.getSelectedField( 'Path' );
+                        }
+                    }
                 }
             });
         };
@@ -1605,22 +1791,13 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
         };
 
         function manageTlbrGraph(){
-            // Overlay combo control logic
             var tlbrGraphLayout = tlbrGraph.getLayout();
-
-            var bool = false;
-            if ( cbYAxis.getValue() == '' || cbXAxis.getValue() == '' ){
-                bool = true;
-            }
-            if ( bool ){
-                cbOverlay.clearValue();
-            }
-            pnlOverlay.setDisabledViaClass( bool );
-            cbOverlay.setDisabled( bool );
 
             // Logic to enable or disable the graphing controls
             if (
-                ! flagGraphLoading && cbAnalysis.getValue() != '' && cbParentPopulation.getValue() != '' &&
+                ! flagGraphLoading &&
+                cbAnalysis.getValue() != '' &&
+                cbParentPopulation.getValue() != '' &&
                 (
                     ( cbXAxis.getValue() != '' && cbXAxis.getValue() != 'Time' ) ||
                     ( cbXAxis.getValue() == 'Time' && cbYAxis.getValue() != '' )
@@ -1739,14 +1916,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             cnfGraph.inputParams.groupingSeparator = chEnableGrouping.getValue() ? '+' : ':';
 
             if ( chEnableBinning.getValue() ){
-                var loopVar;
-                for ( var i = 0; i < pnlBin.items.length; i ++ ){
-                    loopVar = pnlBin.items.items[i].items.items[0];
-                    if ( loopVar.checked ){
-                        cnfGraph.inputParams.xbin = loopVar.inputValue;
-                        i = pnlBin.items.length - 1;
-                    }
-                }
+                cnfGraph.inputParams.xbin = 32;
             } else {
                 cnfGraph.inputParams.xbin = 0;
             }
@@ -1769,11 +1939,11 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 studyVars:  Ext.encode( studyVarsArray ),
                 filesNames: Ext.encode( filesNames ),
                 population: cbParentPopulation.getValue(),
-                overlay:    cbOverlay.getValue(),
                 xAxis:      cbXAxis.getValue(),
                 yAxis:      cbYAxis.getValue(),
                 xLab:       cbXAxis.getRawValue(),
                 yLab:       cbYAxis.getRawValue(),
+                scale:      spnrFontSize.getValue() / 10,
                 gsPath:     cbAnalysis.getSelectedField( 'Path' )
             });
 
@@ -1851,7 +2021,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
         this.border         = false;
         this.boxMinWidth    = 370;
-        this.cls            = 'lyoplate';
+        this.cls            = 'ISCore';
         this.frame          = false;
         this.items          = pnlTabs;
         this.layout         = 'fit';

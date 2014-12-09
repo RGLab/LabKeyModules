@@ -37,6 +37,7 @@ color               <- labkey.url.params$color;
 shape               <- labkey.url.params$shape;
 size                <- labkey.url.params$size;
 alpha               <- labkey.url.params$alpha;
+#stopcheck(labkey.url.params)
 
 
 filter <- as.matrix( lapply( filters, function( e ){
@@ -58,7 +59,7 @@ if(legend == ""){
 }
 
 
-message <- 'Default message'; # default value needed
+message <- ''; # default value needed
 rm(con)
 con <- CreateConnection()
 m_out <- con$quick_plot(
@@ -76,4 +77,5 @@ m_out <- con$quick_plot(
 )
 dev.off();
 
+Sys.sleep(5)
 write( message, file='${txtout:textOutput}' );

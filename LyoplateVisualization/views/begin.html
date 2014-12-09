@@ -19,15 +19,6 @@ vim: ts=2:sw=2:nu:fdc=2:spell
 
 <!--<script type='text/javascript'>	LABKEY.requiresExt4ClientAPI(); </script>-->
 <script type='text/javascript'>
-    if ( window.jQuery == undefined )
-        document.write( decodeURI("%3Cscript src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js' type='text/javascript'%3E%3C/script%3E") );
-</script>
-
-<script type='text/javascript' src='<%=contextPath%>/Lyoplate/FancyBox/lib/jquery.mousewheel-3.0.6.pack.js'></script>
-<script type='text/javascript' src='<%=contextPath%>/Lyoplate/FancyBox/source/jquery.fancybox.pack.js'></script>
-<script type='text/javascript' src='<%=contextPath%>/Lyoplate/FancyBox/source/helpers/jquery.fancybox-buttons.js'></script>
-
-<script type='text/javascript'>
 
     var initLyoplateVisualization = function(){
         var webPartDiv = <%=webpartContext%>.wrapperDivId;
@@ -44,7 +35,7 @@ var createTempPnl = function( moduleName ){
 
         temp = new Ext.Panel({
             border: false,
-            cls: 'lyoplate',
+            cls: 'ISCore',
             frame: false,
             height: 100,
             layout: 'fit',
@@ -65,14 +56,9 @@ var createTempPnl = function( moduleName ){
 
 LABKEY.Query.getSchemas({
     apiVersion: '9.3',
-    failure: LABKEY.ext.Lyoplate.onFailure,
+    failure: LABKEY.ext.ISCore.onFailure,
     success: function( schemasInfo ){
-        if ( schemasInfo.opencyto_preprocessing ) {
-            LABKEY.Query.getQueryDetails({
-                failure: function(){ createTempPnl( 'LyoplateVisualization' ); },
-                queryName: 'StudyVars',
-                schemaName: 'opencyto_preprocessing',
-                success: function(){
+        if ( schemasInfo.lyoplate_visualization ) {
 // END REMOVE
 
         var LyoplateVisualization = new LABKEY.ext.LyoplateVisualization({
@@ -89,10 +75,8 @@ LABKEY.Query.getSchemas({
         Ext.EventManager.onWindowResize( resizeModule );
 
 // REMOVE once the issue with a web part rendering even though a module is disabled is taken care of
-                }
-            });
         } else {
-            createTempPnl( 'LyoplatePreprocessing' );
+            createTempPnl( 'LyoplateVisualization' );
         }
     }
 });

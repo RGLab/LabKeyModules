@@ -32,13 +32,14 @@ palette <- colorpanel(20, low = "#dc322f", mid = "#fdf6e3", high = "#268bd2")
 
 ```{r envir-var, echo = FALSE, cache=FALSE}
 param <-    list(
-                timepoint   = as.numeric( labkey.url.params$timePoint ),
-                GEA_acc     = RJSONIO::fromJSON( labkey.url.params$analysisAccession ),
-                dichValue   = as.numeric( labkey.url.params$dichotomizeValue ),
-                FDR_thresh  = as.numeric( labkey.url.params$fdrThreshold ),
-                FC_thresh   = as.numeric( labkey.url.params$fcThreshold ),
-                dichotomize = as.logical( labkey.url.params$dichotomize ),
-                EM_pred     = unlist( RJSONIO::fromJSON( labkey.url.params$emTesting ) )
+                timepoint       = as.numeric( labkey.url.params$timePoint ),
+                timepointUnit   = labkey.url.params$timePointUnit,
+                GEA_acc         = RJSONIO::fromJSON( labkey.url.params$analysisAccession ),
+                dichValue       = as.numeric( labkey.url.params$dichotomizeValue ),
+                FDR_thresh      = as.numeric( labkey.url.params$fdrThreshold ),
+                FC_thresh       = as.numeric( labkey.url.params$fcThreshold ),
+                dichotomize     = as.logical( labkey.url.params$dichotomize ),
+                EM_pred         = unlist( RJSONIO::fromJSON( labkey.url.params$emTesting ) )
             )
 ```
 
@@ -92,7 +93,7 @@ get_EM <- function(pdata, DEG){
   headers <- lapply(files, scan, what="character", nlines=1, sep="\t", quiet=TRUE)
   EMs <- lapply(files, fread)
   common_genes <- Reduce(intersect, lapply(EMs, "[",, "gene_symbol", with=FALSE))
-  DEG <- DEG[DEG %in% common_genes]
+  DEG <- DEG[DEG %in% common_genes$gene_symbol]
   EMs <- lapply(EMs, function(x){x[na.omit(match(DEG, x$gene_symbol))]})
   EMs <- lapply(EMs, function(x){t(x[ ,gene_symbol := NULL])})
   EM <- do.call("rbind", EMs)

@@ -2,6 +2,7 @@
 <view xmlns='http://labkey.org/data/xml/view' title='Study Overview'>
     <dependencies>
         <dependency path='ISCore/ISCore'/>
+        <dependency path='ISCore/Web/ISTour.js'/>
 
         <dependency path='ImmuneSpaceStudyOverview.js'/>
     </dependencies>

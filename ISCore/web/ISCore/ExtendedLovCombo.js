@@ -60,15 +60,17 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                 if ( this.expandOnFocus ){
                     this.mon( this.getEl(), {
                         click: function(){
-                            if ( ! this.isExpanded() ){
-                                this.initList();
-                                if( this.triggerAction == 'all' ) {
-                                    this.doQuery( this.allQuery, true );
-                                } else {
-                                    this.doQuery( this.getRawValue() );
-                                }
-                            } else {
+                            if ( this.isExpanded() ){
                                 this.collapse();
+                                this.el.focus();
+                            } else {
+                                this.onFocus({});
+                                if(this.triggerAction == 'all') {
+                                    this.doQuery(this.allQuery, true);
+                                } else {
+                                    this.doQuery(this.getRawValue());
+                                }
+                                this.el.focus();
                             }
                         },
                         scope: this
@@ -407,7 +409,7 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                     this.list.setSize( width );
                     this.innerList.setWidth( width - this.list.getFrameWidth('lr') );
                     if ( this.selectAllItem ){
-                        this.selectAllItem.setWidth( w - this.list.getFrameWidth('lr') );
+                        this.selectAllItem.setWidth( width - this.list.getFrameWidth('lr') );
                     }
                 }
             }
@@ -417,9 +419,9 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                     pinned:true, handles:'se', minWidth: this.minListWidth
                 });
                 this.mon(this.resizer, 'resize', function(r, w, h){
-                    this.maxHeight = h-this.handleHeight-this.list.getFrameWidth('tb')-this.assetHeight;
+                    this.maxHeight = h - this.handleHeight - this.list.getFrameWidth('tb') - this.assetHeight;
                     this.listWidth = w;
-                    this.innerList.setWidth(w - this.list.getFrameWidth('lr'));
+                    this.innerList.setWidth( w - this.list.getFrameWidth('lr') );
                     if ( this.selectAllItem ){
                         this.selectAllItem.setWidth( w - this.list.getFrameWidth('lr') );
                     }

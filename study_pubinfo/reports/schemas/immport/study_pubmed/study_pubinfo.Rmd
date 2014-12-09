@@ -39,27 +39,36 @@ get_reference <- function(id, related=FALSE){
 # Update every month
 id <- ds_pubmed$pubmed_id
 id <- id[id != "PMC"]
-study_citation <- lapply(id, get_reference)
-pubmed_list <- entrez_link(db="all", id=id, dbfrom="pubmed")
-url_citedin <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=", id)
+if(length(id) ==0){
+   citationtxt <- "No article references (PMIDs) could be found for this study. If you think this is an error, please post a message on the <a href='https://www.immunespace.org/project/home/support/begin.view', target='_blank'>support board</a> and the ImmuneSpace team will update this information as soon as possible."
+} else{
+  study_citation <- lapply(id, get_reference)
+  pubmed_list <- entrez_link(db="all", id=id, dbfrom="pubmed")
+  url_citedin <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=", id)
+ 
+  citationtxt <- paste0("The above study is based on the following article(s):",
+                        "\n", "<ul><li>", paste(study_citation, collapse="</li><br><li>"),  "</li></ul>",
+                        "\n", "The article has <a href=", url_citedin, "target='_blank'>",
+                        length(pubmed_list$pubmed_pubmed_citedin), "citations</a> in pubmed central.")
+}
 ```
-The above study is based on the following article(s):
 
+`r citationtxt`
 
-<ul><li>
-`r paste(study_citation, collapse="</li><br><li>")`
-</li></ul>
-
-The article has <a href=`r url_citedin` target="_blank">`r length(pubmed_list$pubmed_pubmed_citedin)` citations</a> in pubmed central. 
-
-### Related articles in PubMed are listed below:
 
 ```{r list-related-articles, results='asis', dependson="get-pubmed-info"}
-res <- lapply(pubmed_list$pubmed_pubmed[-1][1:5], get_reference, related=TRUE)
-for(i in 1:5)
-  {
-  cat(paste0(i,". ", res[i],"\n"))
-  }
-url_related <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed&from_uid=", ds_pubmed$pubmed_id)
+if(length(id) ==0){
+   relatedtxt <- " "
+} else{
+  cat("<h3> Related articles in PubMed are listed below: </h3>\n")
+  res <- lapply(pubmed_list$pubmed_pubmed[-1][1:5], get_reference, related=TRUE)
+  for(i in 1:5)
+    {
+    cat(paste0(i,". ", res[i],"\n"))
+    }
+  url_related <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed&from_uid=", ds_pubmed$pubmed_id)
+  relatedtxt <- paste0("Click <a href=", url_related, "target='_blank'>here</a> for more suggestions.")
+}
 ```
-Click <a href=`r url_related` target="_blank">here</a> for more suggestions.
+
+`r relatedtxt`

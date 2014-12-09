@@ -19,6 +19,7 @@ library(data.table)
 library(ImmuneSpaceR)
 library(reshape2)
 library(ggthemr)
+library(limma)
 
 merge_cohorts <- function(x, y){
   return(merge(x, y, by="gene_symbol"))
@@ -69,15 +70,19 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   runs <- getRunFromCohort(con, arrayCohorts)
   EM_list <- lapply(runs, con$getGEMatrix, summary = TRUE)
   PD <- rbindlist(lapply(EM_list, pData))
-  if(exprs(EM_list[[1]])>100)
+  if(any(exprs(EM_list[[1]])>100)){
     EM <- Reduce(f = merge_cohorts, lapply(EM_list, function(x){dt <- data.table(voom(x)$E); dt[, gene_symbol:=rownames(exprs(x))]}))
-  else
+  } else{
     EM <- Reduce(f = merge_cohorts, lapply(EM_list, function(x){dt <- data.table(exprs(x)); dt[, gene_symbol:=rownames(exprs(x))]}))
+  }
   
   EM <- melt(EM, id="gene_symbol", variable.name = "biosample_accession")
   HAI <- con$getDataset("hai", original_view = TRUE)
   HAI <- HAI[, list(subject_accession, study_time_collected, response=value_reported/value_reported[study_time_collected==0]), by="virus_strain,subject_accession"]
-  HAI <- HAI[study_time_collected==28]
+  #we predict the response at peak immunogenicity
+  immuno_peak <- HAI[, mean(response), by = "study_time_collected"][V1 == max(V1), study_time_collected] 
+
+  HAI <- HAI[study_time_collected==immuno_peak]
   HAI <- HAI[, list(response=log2(max(response))), by="subject_accession"]
   PD <- merge(PD, HAI, by = "subject_accession")
   DEMO <- con$getDataset("demographics")[, list(subject_accession, age_reported, gender, race)]
@@ -97,7 +102,6 @@ if(normalize){
   xlab <- "log expression"
 }
 data <- data[study_time_collected == timePoint]
-data <- add_r2(data)
   
 # Plot
 if(color=="") color <- NULL

@@ -1,7 +1,7 @@
-DROP SCHEMA IF EXISTS opencyto_preprocessing CASCADE;
-CREATE SCHEMA opencyto_preprocessing;
+DROP SCHEMA IF EXISTS lyoplate_visualization CASCADE;
+CREATE SCHEMA lyoplate_visualization;
 
-CREATE TABLE opencyto_preprocessing.gsTbl
+CREATE TABLE lyoplate_visualization.gsTbl
 (
     Container     ENTITYID      NOT NULL,
     gsId          SERIAL        NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE opencyto_preprocessing.gsTbl
     CONSTRAINT UQ_gsTbl UNIQUE (Container, gsName)
 );
 
-CREATE TABLE opencyto_preprocessing.projections
+CREATE TABLE lyoplate_visualization.projections
 (
     Container ENTITYID  NOT NULL,
     index     INT       NOT NULL,
@@ -29,11 +29,11 @@ CREATE TABLE opencyto_preprocessing.projections
 
     CONSTRAINT PK_projections PRIMARY KEY (index, x_axis, y_axis, gsId),
     CONSTRAINT FK_projections_gsTbl FOREIGN KEY (gsId)
-        REFERENCES opencyto_preprocessing.gsTbl (gsId)
+        REFERENCES lyoplate_visualization.gsTbl (gsId)
         ON DELETE CASCADE
 );
 
-CREATE TABLE opencyto_preprocessing.study_vars
+CREATE TABLE lyoplate_visualization.study_vars
 (
     Container ENTITYID      NOT NULL,
     svId      SERIAL        NOT NULL,
@@ -43,11 +43,11 @@ CREATE TABLE opencyto_preprocessing.study_vars
     CONSTRAINT PK_study_vars PRIMARY KEY (svId),
     CONSTRAINT UQ_study_vars UNIQUE (svName, gsid),
     CONSTRAINT FK_study_vars_gsTbl FOREIGN KEY (gsId)
-        REFERENCES opencyto_preprocessing.gsTbl (gsId)
+        REFERENCES lyoplate_visualization.gsTbl (gsId)
         ON DELETE CASCADE
 );
 
-CREATE TABLE opencyto_preprocessing.files
+CREATE TABLE lyoplate_visualization.files
 (
     Container ENTITYID  NOT NULL,
     fileId    INT       NOT NULL,
@@ -55,6 +55,6 @@ CREATE TABLE opencyto_preprocessing.files
 
     CONSTRAINT PK_files PRIMARY KEY (fileId, gsId),
     CONSTRAINT FK_files_gsTbl FOREIGN KEY (gsId)
-        REFERENCES opencyto_preprocessing.gsTbl (gsId)
+        REFERENCES lyoplate_visualization.gsTbl (gsId)
         ON DELETE CASCADE
 );

@@ -585,7 +585,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             text: 'The following parameters are required to generate the plot'
                         }),
                         new Ext.form.FieldSet({
-                            html: '<b>Response:</b> The variable to plot against the expression of selected genes<br><br><b>Cohorts:</b> The cohorts with subjects of interest<br><br><b>Time point:</b> The time point to plot<br><br><b>Normalize to baseline:</b> Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data<br><br><b>Genes:</b> The genes to plot',
+                            html: '<b>Response:</b> The variable to plot against the expression of selected genes. For HAI, the timepoint of peak immunogenicity is selected.<br><br><b>Cohorts:</b> The cohorts with subjects of interest<br><br><b>Time point:</b> The time point to plot<br><br><b>Normalize to baseline:</b> Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data<br><br><b>Genes:</b> The genes to plot',
                             style: 'margin-top: 5px;',
                             title: 'Parameters'
                         }),

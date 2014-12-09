@@ -1,31 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <view xmlns='http://labkey.org/data/xml/view' title='Lyoplate Visualization'>
     <dependencies>
-        <dependency path='Lyoplate/gridfilters/css/RangeMenu.css'/>
-        <dependency path='Lyoplate/gridfilters/css/GridFilters.css'/>
-        <dependency path='Lyoplate/FancyBox/source/jquery.fancybox.css'/>
-        <dependency path='Lyoplate/FancyBox/source/helpers/jquery.fancybox-buttons.css'/>
-        <dependency path='Lyoplate/Spinner/Spinner.css'/>
-        <dependency path='Lyoplate/Lyoplate.css'/>
+        <dependency path='ISCore/ISCore'/>
+        
+        <dependency path='ISCore/FancyBox'/>
+        <dependency path='ISCore/Spinner'/>
+        <dependency path='Lyoplate/GridFilters'/>
 
-        <dependency path='clientapi/ext3'/>
-
-        <dependency path='Lyoplate/ExtendedComboBox.js'/>
-        <dependency path='Lyoplate/gridfilters/menu/RangeMenu.js'/>
-        <dependency path='Lyoplate/gridfilters/menu/ListMenu.js'/>
-        <dependency path='Lyoplate/gridfilters/GridFilters.js'/>
-        <dependency path='Lyoplate/gridfilters/filter/Filter.js'/>
-        <dependency path='Lyoplate/gridfilters/filter/StringFilter.js'/>
-        <dependency path='Lyoplate/gridfilters/filter/DateFilter.js'/>
-        <dependency path='Lyoplate/gridfilters/filter/ListFilter.js'/>
-        <dependency path='Lyoplate/gridfilters/filter/NumericFilter.js'/>
-        <dependency path='Lyoplate/gridfilters/filter/BooleanFilter.js'/>
         <dependency path='Lyoplate/GridPanelHeaderResize.js'/>
         <dependency path='Lyoplate/CheckBoxMemory.js'/>
-        <dependency path='Lyoplate/MsgBus.js'/>
-        <dependency path='Lyoplate/Spinner/Spinner.js'/>
-        <dependency path='Lyoplate/Spinner/SpinnerField.js'/>
-        <dependency path='Lyoplate/Lyoplate.js'/>
 
         <dependency path='LyoplateVisualization.js'/>
     </dependencies>

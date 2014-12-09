@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<query name='AnalysisFiles' schemaName='opencyto_preprocessing' xmlns='http://labkey.org/data/xml/query'>
+<query name='AnalysisFiles' schemaName='lyoplate_visualization' xmlns='http://labkey.org/data/xml/query'>
     <description>
         Contains the files associated with each of the generated analysis.
     </description>

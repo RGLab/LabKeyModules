@@ -5,6 +5,7 @@ opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/He
 
 ```{r libraries, echo = FALSE, message = FALSE}
 library(pheatmap)
+library(gplots)
 library(data.table)
 library(ImmuneSpaceR)
 library(RColorBrewer)
@@ -88,17 +89,19 @@ for(runIdx in 1:length(runs)){
 matrix <- do.call("cbind", mat_list)
 anno <- do.call("rbind", anno_list)
 anno[, contrast] <- as.factor(anno[, contrast])
+all_coefs <- unique(anno[, contrast])
 ```
 
 
 ```{r pheatmap, fig.align = "center", fig.height = 6, fig.width = 12}
 #palette <- rev(brewer.pal(name="PiYG", n=11))
 palette <- ISpalette(20)
-coefs_palette <- brewer.pal(name = "Greys", n = length(coefs))
+#coefs_palette <- brewer.pal(name = "Greys", n = length(coefs))
+coefs_palette <- colorpanel(n = length(all_coefs), low = "white", high = "black")
 # Colors
 anno_color <- list(coefs_palette)
 names(anno_color)[[1]] <- contrast
-names(anno_color[[1]]) <- coefs
+names(anno_color[[1]]) <- all_coefs
 #max <- max(matrix)
 show_rnames <- ifelse(nrow(matrix) > 40, FALSE, TRUE)
 clust_rows <- ifelse(nrow(matrix) < 2, FALSE, TRUE)

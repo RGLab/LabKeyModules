@@ -35,8 +35,8 @@ xAxis       <- labkey.url.params$xAxis;
 yAxis       <- labkey.url.params$yAxis;
 gsPath      <- labkey.url.params$gsPath;
 population  <- labkey.url.params$population;
-overlay     <- labkey.url.params$overlay;
 separator   <- labkey.url.params$groupingSeparator;
+scale       <- as.numeric(labkey.url.params$scale);
 
 CairoPNG( filename='${imgout:Graph.png}', width = imageWidth, height = imageHeight );
 
@@ -93,9 +93,7 @@ if ( studyVarsLength != 0 ){
 
 layoutArg <- c( dim, NA, 1 );
 
-if ( overlay == '' ){
-    overlay <- NULL;
-}
+overlay <- NULL;
 
 if ( yAxis == '' ){
     yAxis <- NULL;
@@ -103,31 +101,20 @@ if ( yAxis == '' ){
 
 #DEBUG STRING GENERATION
 strngFilesNames <- paste0('c(', paste0( "'", paste( filesNames, collapse="','" ), "'" ), ')');
+tempOverlay <- 'NULL';
 if ( is.null( cond ) ){
     tempCond <- 'NULL';
     if ( is.null( yAxis ) ){
         tempYAxis <- 'NULL';
-        tempOverlay <- 'NULL';
     } else {
         tempYAxis <- paste0( "'", yAxis, "'" );
-        if ( is.null( overlay ) ){
-            tempOverlay <- 'NULL';
-        } else {
-            tempOverlay <- paste0( "'", overlay, "'" );
-        }
     }
 } else {
     tempCond <- paste0( "'", cond, "'" );
     if ( is.null( yAxis ) ){
         tempYAxis <- 'NULL';
-        tempOverlay <- 'NULL';
     } else {
         tempYAxis <- paste0( "'", yAxis, "'" );
-        if ( is.null( overlay ) ){
-            tempOverlay <- 'NULL';
-        } else {
-            tempOverlay <- paste0( "'", overlay, "'" );
-        }
     }
 }
 debugString <- paste0( "flowIncubator:::plotGate_labkey( ",
@@ -142,7 +129,13 @@ debugString <- paste0( "flowIncubator:::plotGate_labkey( ",
     "layout = c(", dim, ", NA, 1 ), ",
     "cond = ", tempCond, ", ",
     "overlay = ", tempOverlay, ", ",
-    "stack = F",
+    "stack = F, ",
+    "par.settings = list( ",
+        "par.xlab.text = list( cex = ", scale, " ), ",
+        "par.ylab.text = list( cex = ", scale, " ), ",
+        "axis.text = list( cex = ", scale, " ) ",
+    "), ",
+    "par.strip.text = list( cex = ", scale, " )",
 " )" );
 
 #stop( paste0( gsPath, "|", debugString ) );
@@ -151,18 +144,24 @@ sink('/dev/null');
 
 print(
     flowIncubator:::plotGate_labkey(
-        G           = subG,
-        parentID    = population,
-        x           = xAxis,
-        y           = yAxis,
-        xlab        = labkey.url.params$xLab,
-        ylab        = labkey.url.params$yLab,
-        margin      = T,
-        xbin        = bin,
-        layout      = layoutArg,
-        cond        = cond,
-        overlay     = overlay,
-        stack       = F
+        G               = subG,
+        parentID        = population,
+        x               = xAxis,
+        y               = yAxis,
+        xlab            = labkey.url.params$xLab,
+        ylab            = labkey.url.params$yLab,
+        margin          = T,
+        xbin            = bin,
+        layout          = layoutArg,
+        cond            = cond,
+        overlay         = overlay,
+        stack           = F,
+        par.settings    = list(
+            par.xlab.text   = list( cex = scale ),
+            par.ylab.text   = list( cex = scale ),
+            axis.text       = list( cex = scale ) 
+        ),
+        par.strip.text  = list( cex = scale )
     )
 );
 
@@ -171,4 +170,6 @@ sink();
 print( proc.time() - ptm ); # PLOTTING
 
 dev.off();
+
+Sys.sleep( 3 );
 

@@ -1,0 +1,16 @@
+<libraries xmlns='http://labkey.org/clientLibrary/xml/'> 
+    <library compileInProductionMode='false'>
+        <script path='Lyoplate/GridFilters/css/RangeMenu.css'/>
+        <script path='Lyoplate/GridFilters/css/GridFilters.css'/>
+        <script path='Lyoplate/GridFilters/menu/RangeMenu.js'/>
+        <script path='Lyoplate/GridFilters/menu/ListMenu.js'/>
+        <script path='Lyoplate/GridFilters/GridFilters.js'/>
+        <script path='Lyoplate/GridFilters/filter/Filter.js'/>
+        <script path='Lyoplate/GridFilters/filter/StringFilter.js'/>
+        <script path='Lyoplate/GridFilters/filter/DateFilter.js'/>
+        <script path='Lyoplate/GridFilters/filter/ListFilter.js'/>
+        <script path='Lyoplate/GridFilters/filter/NumericFilter.js'/>
+        <script path='Lyoplate/GridFilters/filter/BooleanFilter.js'/>
+</library>
+</libraries>
+
