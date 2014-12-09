@@ -13,6 +13,9 @@
     </target>
 
     <target name='module.properties' depends='init'>
+        <ant antfile="../build_common.xml" target="ensure_enlistment_id" />
+        <property file="enlistment.properties"/>
+
         <mkdir dir='${module.src.dir}/config'/>
         <tstamp>
             <format property='buildtime' pattern='MMMM d yyyy, h:mm aa'/>
@@ -29,6 +32,7 @@
                 <filter token='SourcePath' value='${moduleDir}'/>
                 <filter token='URL' value='Not built from a Subversion source tree'/>
                 <filter token='Revision' value='Not built from a Subversion source tree'/>
+                <filter token="EnlistmentId" value="${enlistment.id}" />
             </filterset>
         </copy>
     </target>
