@@ -50,7 +50,7 @@ if(length(id) ==0){
   citationtxt <- paste0("The above study is based on the following article(s):",
                         "\n", "<ul><li>", paste(study_citation, collapse="</li><br><li>"),  "</li></ul>",
                         "\n", "The article has <a href=", url_citedin, "target='_blank'>",
-                        length(pubmed_list$pubmed_pubmed_citedin), "citations</a> in pubmed central.")
+                        length(pubmed_list$pubmed_pubmed_citedin), " citations</a> in pubmed central.")
 }
 ```
 

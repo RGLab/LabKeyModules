@@ -55,6 +55,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var strCohortTraining = new LABKEY.ext.Store({
             autoLoad: true,
             listeners: {
+                load: function(){
+                    if ( this.getCount() > 0 ){
+                        cbCohortTesting.setDisabled( false );
+                    }
+                },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'cohorts',
@@ -122,6 +127,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var cbCohortTraining = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
+            disabled: true,
             displayField: 'cohort',
             fieldLabel: 'Training',
             lazyInit: false,

@@ -15,6 +15,7 @@
 
 suppressMessages( library( Cairo ) );
 suppressMessages( library( RJSONIO ) );
+suppressMessages( library( RCurl ) );
 suppressMessages( library( ImmuneSpaceR ) );
 
 stopcheck <- function(data){
@@ -60,7 +61,6 @@ if(legend == ""){
 
 
 message <- ''; # default value needed
-rm(con)
 con <- CreateConnection()
 m_out <- con$quick_plot(
     dataset,
@@ -77,5 +77,4 @@ m_out <- con$quick_plot(
 )
 dev.off();
 
-Sys.sleep(5)
 write( message, file='${txtout:textOutput}' );
