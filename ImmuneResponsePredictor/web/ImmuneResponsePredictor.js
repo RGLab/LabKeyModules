@@ -57,7 +57,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             listeners: {
                 load: function(){
                     if ( this.getCount() > 0 ){
-                        cbCohortTesting.setDisabled( false );
+                        cbCohortTraining.setDisabled( false );
                     }
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
@@ -85,16 +85,20 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             autoLoad: true,
             listeners: {
                 load: function(){
-                    var field = { name: 'displayTimepoint' };
-                    field = new Ext.data.Field(field);
-                    this.recordType.prototype.fields.replace(field);
-                    this.each( function(r){
-                        if ( r.data[field.name] == undefined ){
-                            r.data[field.name] = r.data['timepoint'] +  ' ' + r.data['timepointUnit'];
-                        }
-                    });
+                    if ( this.getCount() > 0 ){
+                        cbTimePoint.setDisabled( false );
 
-                    cbTimePoint.bindStore( this );
+                        var field = { name: 'displayTimepoint' };
+                        field = new Ext.data.Field(field);
+                        this.recordType.prototype.fields.replace(field);
+                        this.each( function(r){
+                            if ( r.data[field.name] == undefined ){
+                                r.data[field.name] = r.data['timepoint'] +  ' ' + r.data['timepointUnit'];
+                            }
+                        });
+
+                        cbTimePoint.bindStore( this );
+                    }
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
@@ -181,6 +185,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
+            disabled: true,
             displayField: 'displayTimepoint',
             fieldLabel: 'Select a time point',
             lazyInit: false,

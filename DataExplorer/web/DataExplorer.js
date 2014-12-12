@@ -429,9 +429,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             },
             reportId: 'module:DataExplorer/Plot.R',
             success: function( result ){
-
-console.log( result.outputParams.length );
-
                 setPlotRunning( false );
 
                 var errors = result.errors;

@@ -13,11 +13,14 @@
     </target>
 
     <target name='module.properties' depends='init'>
+        <ant antfile='../build_common.xml' target='ensure_enlistment_id' />
+        <property file='enlistment.properties'/>
+
         <mkdir dir='${module.src.dir}/config'/>
         <tstamp>
             <format property='buildtime' pattern='MMMM d yyyy, h:mm aa'/>
         </tstamp>
-        <copy tofile='${module.src.dir}/config/module.xml' file='${basedir}/module.template.xml' overwrite='true'>
+        <copy tofile='${module.src.dir}/config/module.xml' file='${build.modules.dir}/module.template.xml' overwrite='true'>
             <filterset begintoken='@@' endtoken='@@'>
                 <filtersfile file='${basedir}/module.properties'/>
                 <filter token='RequiredServerVersion' value='${RequiredServerVersion}'/>
@@ -29,6 +32,7 @@
                 <filter token='SourcePath' value='${moduleDir}'/>
                 <filter token='URL' value='Not built from a Subversion source tree'/>
                 <filter token='Revision' value='Not built from a Subversion source tree'/>
+                <filter token='EnlistmentId' value='${enlistment.id}' />
             </filterset>
         </copy>
     </target>

@@ -2,24 +2,24 @@
 
 <project name='shared tasks'>
 
-    <target name="test_enlistment_properties">
-        <property name="enlistment.file" value="${module.src.dir}/enlistment.properties"/>
-        <available property="enlistment.file.exists" file="${enlistment.file}" />
+    <target name='test_enlistment_properties'>
+        <property name='enlistment.file' value='${module.src.dir}/enlistment.properties'/>
+        <available property='enlistment.file.exists' file='${enlistment.file}'/>
     </target>
 
-    <target name="write_enlistment_properties" unless="enlistment.file.exists" depends="test_enlistment_properties">
-        <script language="javascript">
+    <target name='write_enlistment_properties' unless='enlistment.file.exists' depends='test_enlistment_properties'>
+        <script language='javascript'>
             var id = java.util.UUID.randomUUID();
-            project.setProperty("enlistment.id", id);
+            project.setProperty('enlistment.id', id);
         </script>
         <echo>enlistment.id=${enlistment.id}</echo>
-        <propertyfile file="${enlistment.file}">
-            <entry key="enlistment.id" value="${enlistment.id}"/>
+        <propertyfile file='${enlistment.file}'>
+            <entry key='enlistment.id' value='${enlistment.id}'/>
         </propertyfile>
     </target>
 
-    <target name="ensure_enlistment_id" depends="write_enlistment_properties">
-        <property file="${enlistment.file}"/>
+    <target name='ensure_enlistment_id' depends='write_enlistment_properties'>
+        <property file='${enlistment.file}'/>
     </target>
 
 </project>

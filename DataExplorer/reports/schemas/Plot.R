@@ -78,3 +78,4 @@ m_out <- con$quick_plot(
 dev.off();
 
 write( message, file='${txtout:textOutput}' );
+
