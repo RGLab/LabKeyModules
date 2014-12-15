@@ -7,11 +7,14 @@ opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Ge
 ```{r lib, cache = FALSE, message = FALSE, echo = FALSE, warning = FALSE}
 library(ImmuneSpaceR)
 library(ImmuneSpaceData)
+library(Biobase)
 library(limma)
 library(pheatmap)
 library(RColorBrewer)
 library(reshape2)
 library(gplots)
+library(gtools)
+library(data.table)
 ```
 
 ```{r param-caching, cache=TRUE, cache.extra=digest::digest(labkey.url.params), echo=FALSE}
