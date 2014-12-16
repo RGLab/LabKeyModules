@@ -2,6 +2,7 @@
     var page = (LABKEY.ActionURL.getController() + "-" + LABKEY.ActionURL.getAction()).toLowerCase();
     var isStudyFolder = LABKEY.moduleContext.study && LABKEY.moduleContext.study.timepointType;
     var isPortalPage = page == 'project-begin';
+    var isHomePage = LABKEY.container.path == '/home';
 
     if (isStudyFolder && isPortalPage){
         LABKEY.Utils.onReady(function(){
@@ -126,5 +127,72 @@
                 LABKEY.help.Tour.continueTour();
         });
     }
+
+
+  if (isHomePage){
+    LABKEY.Utils.onReady(function(){
+      LABKEY.help.Tour.register({
+        id: "immport-home-tour",
+        steps: [{
+              title: "Getting started",
+              content: "Links to the Study Finder, the Tutorial page and the Support board.",
+              target: document.getElementsByClassName("labkey-main-menu-item")[0],
+              yOffset: -20,
+              placement: "right",
+              showNextButton: true
+        },{
+              title: "Announcements",
+              content: "News from the ImmuneSpace team and the HIPC project. New features and package releases will be announced here.",
+              target: document.getElementsByClassName("labkey-wp")[0],
+              placement: "top",
+              showNextButton: true
+        },{
+              title: "Quick links",
+              content: "Direct access to useful places on ImmuneSpace as well as external resources and documentation.",
+              target: document.getElementsByClassName("labkey-wp")[2],
+              yOffset: -20,
+              placement: "left",
+              showNextButton: true
+        },{
+              title: "Tutorials",
+              content: "Resources to learn how to use ImmuneSpace and LabKey.",
+              target: document.getElementById("TutorialsTab"),
+              yOffset: -20,
+              placement: "left",
+              showNextButton: true,
+              multipage: true,
+              onNext: function(){
+                  LABKEY.help.Tour.continueAtLocation("?pageId=Tutorials");
+              }
+        },{
+              title: "About",
+              content: "An overview of the ImmuneSpace project.",
+              target: document.getElementById("AboutTab"),
+              yOffset: -20,
+              placement: "left",
+              multipage: true,
+              showNextButton: true,
+              onNext: function(){
+                  LABKEY.help.Tour.continueAtLocation("?pageId=About");
+              }
+        },{
+              title: "Home",
+              content: "Click the Home button to get back to the home page.",
+              target: document.getElementsByClassName("labkey-folder-title")[0],
+              yOffset: -20,
+              placement: "right"
+        }]
+      });
+      var pageId = ('#' + (LABKEY.ActionURL.getParameter("pageId") || '')).toLowerCase(); //make sure we only display it from the dashboard tab
+      if (pageId == '#')
+        LABKEY.help.Tour.autoShow("immport-home-tour");
+        //LABKEY.help.Tour.show("immport-home-tour");
+      else
+        LABKEY.help.Tour.continueTour();
+    });
+  }
+
+   
+
 })();
 
