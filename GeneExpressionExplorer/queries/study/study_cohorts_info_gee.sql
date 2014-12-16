@@ -1,12 +1,19 @@
 SELECT DISTINCT
- Biosample.arm_name AS cohort,
- Biosample.study_time_collected AS timepoint,
- LCASE( Biosample.study_time_collected_unit ) AS timepointUnit,
- Run.DataOutputs.Name AS expression_matrix_accession,
- Run.featureSet.RowId AS featureSetId
+    GEM.arm_name AS cohort,
+    GEM.study_time_collected AS timepoint,
+    LCASE( GEM.study_time_collected_unit ) AS timepointUnit,
+    GEM.Run.DataOutputs.Name AS expression_matrix_accession,
+    GEM.Run.featureSet.RowId AS featureSetId
 FROM
- study.hai,
- assay.ExpressionMatrix.matrix.InputSamples
-WHERE
- hai.SUBJECT_ACCESSION = Biosample.SUBJECT_ACCESSION
+    (   SELECT DISTINCT
+            Biosample.arm_name,
+            Biosample.study_time_collected,
+            Biosample.study_time_collected_unit,
+            Run
+        FROM
+            assay.ExpressionMatrix.matrix.InputSamples
+        WHERE
+            Biosample.subject_accession IN
+        (   SELECT subject_accession from study.hai )
+    ) AS GEM
 
