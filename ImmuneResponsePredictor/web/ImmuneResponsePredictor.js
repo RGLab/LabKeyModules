@@ -1,6 +1,6 @@
 // vim: sw=4:ts=4:nu:nospell
 /*
- Copyright 2013 Fred Hutchinson Cancer Research Center
+ Copyright 2014 Fred Hutchinson Cancer Research Center
 
  Licensed under the Apache License, Version 2.0 (the 'License');
  you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 ( nfDichotomize.isValid( true ) || ! chDichotomize.getValue() ) &&
                 cbTimePoint.isValid( true ) &&
                 cbAssay.isValid( true ) &&
-                nfFalseDiscoveryRate.isValid( true ) &&
                 nfFoldChange.isValid( true )
             ){
                 btnRun.setDisabled( false );
@@ -299,37 +298,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             width: fieldWidth
         });
 
-        var nfFalseDiscoveryRate = new Ext.form.NumberField({
-            allowBlank: false,
-            decimalPrecision: -1,
-            emptyText: 'Type...',
-            enableKeyEvents: true,
-            fieldLabel: 'False discovery rate is less than',
-            height: 22,
-            listeners: {
-                keyup: {
-                    buffer: 150,
-                    fn: function(field, e) {
-                        if( Ext.EventObject.ESC == e.getKey() ){
-                            field.setValue('');
-                        }
-
-                        checkBtnRunStatus();
-                    }
-                }
-            },
-            maxValue: 1,
-            minValue: 0,
-            value: 0.1,
-            width: fieldWidth
-        });
-
         var nfFoldChange = new Ext.form.NumberField({
             allowBlank: false,
             decimalPrecision: -1,
             emptyText: 'Type...',
             enableKeyEvents: true,
-            fieldLabel: 'Absolute fold change to baseline is greater than',
             height: 22,
             listeners: {
                 keyup: {
@@ -344,8 +317,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 }
             },
             minValue: 0,
-            value: 1,
-            width: fieldWidth
+            value: 0.58,
+            width: 40
         });
 
 
@@ -389,8 +362,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                                 dichotomizeValue:       nfDichotomize.getValue(),
                                 timePoint:              cbTimePoint.getValue(),
                                 timePointUnit:          cbTimePoint.getSelectedField('timepointUnit'),
-                                fdrThreshold:           nfFalseDiscoveryRate.getValue(),
-                                fcThreshold:            nfFoldChange.getValue()
+                                fdrThreshold:           chFalseDiscoveryRate(),// 0.1,
+                                fcThreshold:            chFoldChange.getValue() ? nfFoldChange.getValue() : 0
                             };
 
                             LABKEY.Query.selectRows({
@@ -472,6 +445,40 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         //  Panels, Containers, Components //
         /////////////////////////////////////
 
+        var cnfSetDisabledViaClass = {
+            setDisabledViaClass: function( bool ){
+                if ( bool ){
+                    this.addClass( 'x-item-disabled' );
+                } else {
+                    this.removeClass( 'x-item-disabled' );
+                }
+            }
+        };
+
+        var chFoldChange = new Ext.form.Checkbox({
+            checked: true,
+            handler: function( cb, s ){
+                nfFoldChange.setDisabled( !s );
+                dfFoldChange.setDisabledViaClass( !s );
+            }
+        });
+
+        var dfFoldChange = new Ext.form.DisplayField( Ext.apply({
+            value: 'Absolute log (base 2) fold change to baseline greater than:'
+        }, cnfSetDisabledViaClass) );
+
+        var chFalseDiscoveryRate = new Ext.form.Checkbox({
+            checked: false,
+            handler: function( cb, s ){
+                dfFalseDiscoveryRate.setDisabledViaClass( !s );
+            }
+        });
+
+        var dfFalseDiscoveryRate = new Ext.form.DisplayField( Ext.apply({
+            cls: 'x-item-disabled',
+            value: 'Significant differential expression over time'
+        }, cnfSetDisabledViaClass) );
+
         var arGeneExpression = [
             new Ext.form.Label({
                 cls: 'x-form-item bold-text',
@@ -482,13 +489,30 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             }),
             new Ext.form.Label({
                 cls: 'x-form-item',
-                text: 'Only consider features (e.g. genes) that are differentially expressed with respect to baseline, using the following thresholds:'
+                text: 'Only consider genes that meet the following conditions:'
             }),
             new Ext.Spacer({
                 height: 7
             }),
-            nfFalseDiscoveryRate,
-            nfFoldChange
+            new Ext.Panel({
+                align: 'middle',
+                border: false,
+                items: [
+                    chFoldChange,
+                    dfFoldChange,
+                    nfFoldChange
+                ],
+                layout: 'hbox'
+            }),
+            {
+                align: 'middle',
+                border: false,
+                items: [
+                    chFalseDiscoveryRate,
+                    dfFalseDiscoveryRate
+                ],
+                layout: 'hbox'
+            },
         ],
         boolGeneExpression = true;
  
@@ -546,6 +570,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     collapsed: true,
                     collapsible: true,
                     items: arGeneExpression,
+                    listeners: {
+                        expand: function(){
+                            this.doLayout();
+                        }
+                    },
                     title: 'Additional options',
                     titleCollapse: true
                 }),

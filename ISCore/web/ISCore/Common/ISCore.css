@@ -2,7 +2,7 @@
     vim: ts=4:sw=4:nu:fdc=4:nospell
 */
 /*
-    Copyright 2013 Fred Hutchinson Cancer Research Center
+    Copyright 2014 Fred Hutchinson Cancer Research Center
 
     Licensed under the Apache License, Version 2.0 (the 'License');
     you may not use this file except in compliance with the License.
@@ -82,11 +82,7 @@
     border-radius: 5px;
 }
 
-
-.ISCore {
-    line-height: 100% !important;
-}
-
+/* ************************************************************ */
 .iconConfigure {
     background-image: url(../_images/configure.png);
 }
@@ -149,10 +145,6 @@ pre, .ext-mb-text {
 /* Auto margin */
 .centered-table {
     margin: auto;
-}
-
-.ISCore .x-btn {
-    margin-right: 0px !important;
 }
 
 /* Zero margin */
@@ -254,13 +246,18 @@ pre, .ext-mb-text {
 }
 
 .sortable-list li, .ulList li {
-    margin: 3px 0px 3px 4px; /* 0.2em 0.3em 0.2em 0.3em */
+    margin: 3px 0px 3px 4px;
     padding: 1px;
     float: left;
 }
 
 .sortable-list li {
     font-size: 1em;
+}
+
+/**********************************/
+.ISCore .x-btn {
+    margin-right: 0px !important;
 }
 
 /**********************************/
@@ -288,7 +285,6 @@ pre, .ext-mb-text {
 }
 
 /**********************************/
-
 /* Ext TabPanel fixes */
 .ISCore .x-tab-strip {
     padding-left: 5px;
@@ -303,13 +299,12 @@ pre, .ext-mb-text {
 }
 
 /********************************/
-
 /* Ext.Resizable fix */
 .ISCore .xresizable-wrap {
     margin: 0 auto;
 }
-/********************************/
 
+/********************************/
 /* Ext GridPanel fixes */
 
 /* Fix for the column headers to look better: the pull-down arrow link will not overlap with the text */
@@ -352,7 +347,6 @@ pre, .ext-mb-text {
 }
 
 /*************************************/
-
 /* Fix so that the buttons on toolbars look normal (not text) */
 .ISCore .x-toolbar .x-btn-tl,
 .ISCore .x-toolbar .x-btn-tr,

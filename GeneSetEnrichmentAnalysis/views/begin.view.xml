@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <view xmlns='http://labkey.org/data/xml/view' title='Gene Set Enrichment Analysis'>
     <dependencies>
-        <dependency path='ISCore/ISCore'/>
+        <dependency path='ISCore/Common'/>
 
         <dependency path='GeneSetEnrichmentAnalysis.js'/>
     </dependencies>

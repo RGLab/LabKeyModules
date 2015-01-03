@@ -217,7 +217,7 @@ pred_cIdx <- grep("value|Pr", colnames(sum_relasso_coef))
 predictor_table <- sum_relasso_coef[,pred_cIdx][-1,]
 colnames(predictor_table) <- c("statistic", "p-value")
 predictor_table <- data.table(cbind(selected_features, predictor_table))
-predictor_table <- predictor_table[, c("statistic", "p-value") := lapply(.SD, function(X){ as.numeric(levels(X)[X])}), .SDcols = c("statistic", "p-value")]
+#predictor_table <- predictor_table[, c("statistic", "p-value") := lapply(.SD, function(X){ as.numeric(levels(X)[X])}), .SDcols = c("statistic", "p-value")]
 predictor_table <- predictor_table[, gene_symbol := sapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0('<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=immune_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
 ```
 

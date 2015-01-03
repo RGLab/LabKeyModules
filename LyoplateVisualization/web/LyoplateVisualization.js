@@ -1,6 +1,6 @@
 // vim: sw=4:ts=4:nu:nospell:fdc=4
 /*
- *  Copyright 2012 Fred Hutchinson Cancer Research Center
+ *  Copyright 2014 Fred Hutchinson Cancer Research Center
  *
  *  Licensed under the Apache License, Version 2.0 (the 'License');
  *  you may not use this file except in compliance with the License.
@@ -869,11 +869,11 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
         };
 
         var cnfSetDisabledViaClass = {
-            setDisabledViaClass: function(bool){
+            setDisabledViaClass: function( bool ){
                 if ( bool ){
-                    this.addClass('x-item-disabled');
+                    this.addClass( 'x-item-disabled' );
                 } else {
-                    this.removeClass('x-item-disabled');
+                    this.removeClass( 'x-item-disabled' );
                 }
             }
         };
