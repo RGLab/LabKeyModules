@@ -18,9 +18,8 @@ dat <- labkey.data
 ds_pubmed <- dat[dat$study_accession == study_acc, ]
 ```
 
-```{r get-pubmed-info, dependson="filter"}
+```{r get-pubmed-info, results='asis', dependson="filter"}
 loaded <- labkey.selectRows(labkey.url.base, "/Shared/", "lists", "loaded_studies", colNameOpt="rname")
-
 
 get_reference <- function(id, related=FALSE){
    x <- entrez_summary(db="pubmed", id=id)
@@ -47,12 +46,14 @@ if(length(id) ==0){
   pubmed_list <- lapply(id, function(x){entrez_link(db="all", id=x, dbfrom="pubmed")})
   ncitation <- sapply(lapply(pubmed_list, "[[", "pubmed_pubmed_citedin"), length)
   url_citedin <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=", id)
- 
+  
+  cat("<h3> Data from this study have been published in the following paper(s): </h3>\n")
+
   citationtxt <- paste0("<ul><li>", study_citation, "</li></ul>", "\n",
                         "The article has ",
                         ifelse(ncitation > 0, paste0("<a href=", url_citedin, " target='_blank'>",
                                                      ncitation, " citations</a>"), "0 citations"),
-                        " in pubmed central.")
+                        " in PubMed central.")
 }
 ```
 
