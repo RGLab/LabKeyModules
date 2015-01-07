@@ -2,22 +2,20 @@ var studyTour = function(){
     LABKEY.help.Tour.register({
         id: 'immport-study-tour',
         steps: [{
-            title: 'Overview Page',
-            content: 'Overall information about the study.',
-            target: '.tab-nav-active',
-            placement: 'left',
-            yOffset: -15,
-            showPrevButton: true,
+            title: 'Welcome to Study ' + LABKEY.container.name,
+            content: 'Please use this quick tour to learn how to explore study data and results using ImmuneSpace. You can always restart this tour by clicking on “QUICK HELP” available in the upper left corner below “Study Overview”.',
+            target: '.labkey-folder-title',
+            placement: 'bottom',
             showNextButton: true,
         },{
             title: 'Study Overview',
-            content: 'Overall summary about the study, objectives, protocols, conditions studied, etc.',
+            content: 'Overall summary about the study, objectives, protocols, conditions studied etc.',
             target: $('.labkey-wp')[0],
             placement: 'top',
             showPrevButton: true,
             showNextButton: true
         },{
-            title: 'Pubmed Statistics',
+            title: 'PubMed Statistics',
             content: 'List of publications associated with this study as well as related papers suggested by PubMed.',
             target: $('.labkey-wp')[1],
             placement: 'top',
@@ -25,7 +23,7 @@ var studyTour = function(){
             showNextButton: true
         },{
             title: 'Subjects',
-            content: 'Click on this tab to find out more about the subjects enrolled in this study.',
+            content: 'Click on this tab to find out more about the subjects enrolled in this study. Clicking "Next" will take you there as part of this tour',
             target: $('.tab-nav-inactive')[0],
             placement: 'left',
             yOffset: -15,
@@ -54,7 +52,7 @@ var studyTour = function(){
             showNextButton: true
         },{
             title: 'Clinical and Assay Data',
-            content: 'Click on this tab to find out more about the datasets generated in this study.',
+            content: 'Click on this tab to find out more about the datasets generated in this study. Clicking "Next" will take you there as part of this tour',
             target: $('.tab-nav-inactive')[1],
             placement: 'left',
             yOffset: -15,
@@ -85,7 +83,7 @@ var studyTour = function(){
             showNextButton: true
         },{
             title: 'Modules',
-            content: 'Click on this tab to explore the datasets using standardized analyses modules.',
+            content: 'Click on this tab to explore the datasets using standardized analyses modules. Clicking "Next" will take you there as part of this tour.',
             target: $('.tab-nav-inactive')[2],
             placement: 'left',
             yOffset: -15,
@@ -107,7 +105,7 @@ var studyTour = function(){
             }
         },{
             title: 'Reports',
-            content: 'Click on this tab to explore additional analyses/reports.',
+            content: 'Click on this tab to explore additional analyses/reports. Clicking "Next" will take you there as part of this tour.',
             target: $('.tab-nav-inactive')[3],
             placement: 'left',
             yOffset: -15,
@@ -130,7 +128,7 @@ var studyTour = function(){
         }]
     });
 
-    if ( window.location.hash == '' ){ 
+    if ( window.location.hash == '' ){
         LABKEY.help.Tour.show( 'immport-study-tour' );
     } else{
         LABKEY.help.Tour.continueTour();

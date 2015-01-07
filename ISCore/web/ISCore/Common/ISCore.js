@@ -388,7 +388,7 @@ LABKEY.ext.ISCore.SupportBoardLink =
 
 LABKEY.ext.ISCore.Contributors =
     'The ImmuneSpace development team. For bug or feature requests please use ' +
-    LABKEY.ext.ISCore.SupportBoardLink; 
+    LABKEY.ext.ISCore.SupportBoardLink;
 
 LABKEY.ext.ISCore.onFailure = function(errorInfo, options, responseObj){
     var strngErrorContact = '\nPlease, contact support, if you have questions.', text = 'Failure: ';
