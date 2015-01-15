@@ -129,7 +129,7 @@ var studyTour = function(){
     });
 
     if ( window.location.hash == '' ){
-        LABKEY.help.Tour.show( 'immport-study-tour' );
+        LABKEY.help.Tour.autoShow( 'immport-study-tour' );
     } else{
         LABKEY.help.Tour.continueTour();
     }

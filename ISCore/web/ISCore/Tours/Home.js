@@ -45,8 +45,36 @@ var homeTour = function(){
                 LABKEY.help.Tour.continueAtLocation('/project/home/begin.view?');
             }
         },{
+            title: 'Projects Navigation',
+            content: 'The folder drop-down contains the list of available projects. Hovering over each reveals the corresponding sublist of studies. Click on any study link to start exploring that study. You can also use the Study Finder to identify studies of interest, click "Next" for details.',
+            target: $('#betaBar')[0],
+            xOffset: 530,
+            yOffset: 30,
+            placement: 'right',
+            showPrevButton: true,
+            showNextButton: true,
+            onNext: function(){
+                $('.menu-projects').removeClass('selected');
+                $('#betaBar_menu').css('visibility', 'hidden');
+            },
+            onPrev: function(){
+                $('.menu-projects').removeClass('selected');
+                $('#betaBar_menu').css('visibility', 'hidden');
+            },
+            onShow: function(){
+                document.getElementById('betaBar').dispatchEvent(
+                    new MouseEvent( 'click', {
+                        'view': window,
+                        'bubbles': true,
+                        'cancelable': true
+                    })
+                );
+                $('.menu-projects').addClass('selected');
+                $('#betaBar_menu').css('visibility', 'visible');
+            }
+        },{
             title: 'Getting Started',
-            content: 'Click on the "Study Finder" link in the "Geting Started" menu to start exploring data using the study finder. Clicking "Next" will take you there directly.',
+            content: 'Click on the "Study Finder" link in the "Geting Started" menu to find studies of interest using the Study Finder. Clicking "Next" will take you there directly.',
             target: $('.labkey-main-menu-item')[0],
             yOffset: -20,
             placement: 'right',

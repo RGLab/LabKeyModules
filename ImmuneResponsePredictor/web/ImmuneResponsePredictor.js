@@ -52,11 +52,12 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         ///////////////////////////////////
 
         var strCohortTraining = new LABKEY.ext.Store({
-            autoLoad: true,
             listeners: {
                 load: function(){
                     if ( this.getCount() > 0 ){
                         cbCohortTraining.setDisabled( false );
+                    } else {
+                        cbCohortTesting.setDisabled( true );
                     }
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
@@ -87,12 +88,14 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     if ( this.getCount() > 0 ){
                         cbTimePoint.setDisabled( false );
 
-                        var field = { name: 'displayTimepoint' };
+                        var field = { name: 'displayTimepoint' }, num, unit;
                         field = new Ext.data.Field(field);
                         this.recordType.prototype.fields.replace(field);
                         this.each( function(r){
                             if ( r.data[field.name] == undefined ){
-                                r.data[field.name] = r.data['timepoint'] +  ' ' + r.data['timepointUnit'];
+                                num                 = r.data['timepoint'];
+                                unit                = r.data['timepointUnit'];
+                                r.data[field.name]  = num + ' ' + ( num != 1 ? unit : unit.slice( 0, unit.length - 1 ) );
                             }
                         });
 
@@ -101,7 +104,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'timepoints',
+            queryName: 'timepoints_IRP',
             schemaName: 'study'
         });
 
@@ -182,11 +185,27 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             width: fieldWidth
         });
 
+        var customTemplate = new Ext.XTemplate(
+            '<tpl for=".">',
+                '<div ext:qtip=\'{cohortCount:this.pluralCohort}\' class =\'x-combo-list-item\'>',
+                    '{displayTimepoint:this.process}',
+                '</div>',
+            '</tpl>',
+            {   
+                pluralCohort : function( v ) {
+                    return v + '&nbsp;cohort' + ( v == 1 ? '' : 's' );
+                },
+                process : function( value ) { 
+                    return value === '' ? '&nbsp;' : Ext.util.Format.htmlEncode( value );
+                }   
+            }   
+        );
+
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
             disabled: true,
             displayField: 'displayTimepoint',
-            fieldLabel: 'Select a time point',
+            fieldLabel: 'Select predictor time point',
             lazyInit: false,
             listeners: {
                 change:     checkBtnRunStatus,
@@ -194,6 +213,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 select:     checkBtnRunStatus
             },
             store: strTimePoint,
+            tpl: customTemplate,
             valueField: 'timepoint',
             width: fieldWidth
         });
@@ -362,7 +382,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                                 dichotomizeValue:       nfDichotomize.getValue(),
                                 timePoint:              cbTimePoint.getValue(),
                                 timePointUnit:          cbTimePoint.getSelectedField('timepointUnit'),
-                                fdrThreshold:           chFalseDiscoveryRate(),// 0.1,
+                                fdrThreshold:           chFalseDiscoveryRate.getValue(), //filtering value is 0.1, if true; no filtering ow
                                 fcThreshold:            chFoldChange.getValue() ? nfFoldChange.getValue() : 0
                             };
 
@@ -540,6 +560,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     autoScroll: true,
                     items: [
                         cbVariable,
+                        cbTimePoint,
                         new Ext.Spacer({
                             height: 20
                         }),
@@ -555,15 +576,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         chDichotomize,
                         nfDichotomize
                     ],
-                    title: 'Step 1: Select Response'
-                }),
-                new Ext.form.FieldSet({
-                    autoScroll: true,
-                    items: [
-                        cbTimePoint,
-                        cbAssay
-                    ],
-                    title: 'Step 2: Select Predictors'
+                    title: 'Select Response'
                 }),
                 new Ext.form.FieldSet({
                     autoScroll: true,

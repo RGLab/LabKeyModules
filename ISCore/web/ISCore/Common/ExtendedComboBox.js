@@ -31,7 +31,7 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                     '<div ' + ( ( this.qtipField == undefined ) ? '' : ( 'ext:qtip=\'{' + this.qtipField + ':this.process}\' ' ) ) + 'class=\'x-combo-list-item\'>{' + this.displayField + ':this.process}</div>' +
                 '</tpl>',
                 {
-                    process : function(value) {
+                    process : function( value ) {
                         return value === '' ? '&nbsp' : Ext.util.Format.htmlEncode( value );
                     }
                 }

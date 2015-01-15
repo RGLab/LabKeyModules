@@ -26,8 +26,6 @@ library(gplots)
 ```
 
 ```{r plot-styles, echo = FALSE, cache = TRUE}
-#IS_theme <- theme_bw(base_size=14)
-#palette <- rev(brewer.pal(name="PiYG", n=11))
 palette <- colorpanel(20, low = "#dc322f", mid = "#fdf6e3", high = "#268bd2")
 ```
 
@@ -38,17 +36,19 @@ param <-    list(
                 GEA_acc         = RJSONIO::fromJSON( labkey.url.params$analysisAccession ),
                 dichValue       = as.numeric( labkey.url.params$dichotomizeValue ),
                 FDR_thresh      = as.numeric( labkey.url.params$fdrThreshold ),
-                FC_thresh       = as.numeric( labkey.url.params$fcThreshold ),
+                FC_thresh       = labkey.url.params$fcThreshold,
                 dichotomize     = as.logical( labkey.url.params$dichotomize ),
                 EM_pred         = unlist( RJSONIO::fromJSON( labkey.url.params$emTesting ) )
             )
+print(param)
 ```
 
 ```{r param, cache=TRUE, cache.extra=digest::digest(param), echo=TRUE}
 ```
 
 ```{r functions, echo = FALSE, cache = TRUE}
-get_GEAR <- function(GEA_acc, FC_thresh, FDR_thresh){
+get_GEAR <- function(GEA_acc, FC_thresh, FDR_thresh = FALSE){
+  FDR_thresh <- ifelse(FDR_thresh, 0.1, 1) #No filtering if combobox isn't checked
   GEAR_filter <- makeFilter(c("analysis_accession", "IN", paste(GEA_acc, collapse=";")),
                             c("adj_p_val", "LESS_THAN", FDR_thresh),
                             c("log_fc", "NOT_BETWEEN", paste(-FC_thresh, FC_thresh, sep=",")))
@@ -193,6 +193,7 @@ GEAR <- get_GEAR(param$GEA_acc, param$FC_thresh, param$FDR_thresh)
 pdata <- get_pdata(paste0(unique(GEAR$expression_matrix), ".tsv"), param$timepoint)
 DEG <- get_DEG(GEAR, pdata)
 EM <- get_EM(pdata, DEG)
+# TODO: If timepoint <= 0, subset the matrix and use expression values for prediction
 FC <- get_FC(EM, pdata, param$timepoint)
 HAI <- get_HAI(pdata, param$dichotomize, param$dichValue)
 response <- HAI$response

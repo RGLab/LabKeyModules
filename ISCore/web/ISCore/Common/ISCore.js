@@ -82,7 +82,7 @@ Ext.TabPanel.override({
             var tt = new Ext.Template(
                 '<li class=\'{cls}\' id=\'{id}\'>',
                     '<a class=\'x-tab-strip-close\'></a>',
-                    '<a class=\'x-tab-right\' href=\'#\'>',
+                    '<a class=\'x-tab-right\'>',
                         '<em class=\'x-tab-left\'>',
                             '<span style=\'{tabStripInnerStyle}\' class=\'x-tab-strip-inner\'>',
                                 '<span class=\'x-tab-strip-text {iconCls}\'>{text}</span>',

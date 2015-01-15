@@ -1,5 +1,5 @@
 ```{r knitr-opts, echo = FALSE, message = FALSE}
-opts_chunk$set(echo = FALSE, message = FALSE)
+opts_chunk$set(echo = TRUE, message = FALSE)
 opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Heatmap/"))
 ```
 
@@ -55,7 +55,7 @@ if(errorString != ""){
 con <- CreateConnection()
 runs <- getRunFromCohort(con, uarm)
 ```
-```{r prints, eval = FALSE}
+```{r prints, eval = TRUE}
 con
 runs
 ```

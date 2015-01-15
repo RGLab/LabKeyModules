@@ -10,10 +10,11 @@ library(ImmuneSpaceR)
 library(limma)
 library(Biobase)
 library(data.table)
+library(gtools)
 ```
 
 ```{r parameters}
-contrast <- "study_time_collected"
+contrast <- c("study_time_collected", "study_time_collected_unit")
 study <- basename(labkey.url.path)
 i <- 1 #analysis accession key
 infostring <- ""
@@ -26,26 +27,41 @@ contrast: `r contrast`
 
 ```{r getData, warning = FALSE}
 con <- CreateConnection(study)
+getAllCoefs <- function(con){
+  runs <- con$data_cache$GE_matrices$name
+  if(is.null(runs)){
+    stop("This study does not have gene-expression data")
+  }
+  coefs <- data.table(con$data_cache$GE_inputs)
+  coefs <- unique(coefs[, c("arm_name", contrast), with = FALSE])
+  coefs <- coefs[study_time_collected > 0]
+  return(coefs)
+}
+
+
 if(is.null(con$data_cache[["GE_inputs"]])){
   nCoefs <- -1
   infostring <- "There is no HIPCMatrix run in this study"
 } else{
-  nCoefs <- unique(con$data_cache[["GE_inputs"]][, c("arm_name", contrast, "name")])
-  nCoefs$coefficient <- paste0(contrast, nCoefs[, contrast])
-  existGEA <- labkey.selectRows(labkey.url.base, labkey.url.path, "gene_expression", 
-                                "gene_expression_analysis", colNameOpt = "rname")
+  runs <- data.table(unique(con$data_cache[["GE_inputs"]][, c("arm_name", "name")]))
+  allCoefs <- getAllCoefs(con)
+  allCoefs[, coefficient := do.call(paste, .SD), .SDcols = contrast]
+  existGEA <- data.table(labkey.selectRows(labkey.url.base, labkey.url.path, "gene_expression", 
+                                           "gene_expression_analysis", colNameOpt = "rname"))
   if(nrow(existGEA) > 0){
     q1 <- quote(arm_name)
     q2 <- quote(coefficient)
-    exist <- data.table(existGEA)[, key := paste0(eval(q1), eval(q2))]
-    n_dt <- data.table(nCoefs[, c("arm_name", "coefficient")])[, key := paste0(eval(q1), eval(q2))]
-    n_dt <- n_dt[!key %in% exist$key]
-    arm_todo <- n_dt[, .N, by = arm_name][N > 1, arm_name]
-    i <- max(as.numeric(gsub("^GEA", "", exist$analysis_accession))) + 1
-     nCoefs <- nCoefs[ nCoefs$arm_name %in% arm_todo,]
+    #exist <- data.table(existGEA)[, key := paste0(eval(q1), eval(q2))]
+    #n_dt <- data.table(nCoefs[, c("arm_name", "coefficient")])[, key := paste0(eval(q1), eval(q2))]
+    existGEA[, key := paste0(eval(q1), eval(q2))]
+    allCoefs <- allCoefs[, key := paste0(eval(q1), eval(q2))]
+    allCoefs <- allCoefs[!key %in% existGEA$key]
+    arm_todo <- unique(allCoefs$arm_name)
+    i <- max(as.numeric(gsub("^GEA", "", existGEA$analysis_accession))) + 1
+    runs <- runs[arm_name %in% arm_todo]
   }
-  runs <- gsub(".tsv$", "", unique(nCoefs[, "name"]))
-  nCoefs <- nrow(nCoefs) - length(unique(nCoefs[, "arm_name"]))
+  runs <- gsub(".tsv$", "", runs$name)
+  nCoefs <- nrow(allCoefs)
 }
 ```
 
@@ -60,42 +76,57 @@ if(nCoefs == 0){
 `r infostring`
 ```{r stop, echo = FALSE}
 if(nCoefs == 0){
-  opts_chunk$set(eval = FALSE, echo = FALSE)
+ opts_chunk$set(eval = FALSE, echo = FALSE)
 }
 ```
 
 ```{r analysis}
 idx <- 1
-GEA_list <- vector("list", nCoefs)
-GEAR_list <- vector("list", nCoefs)
+GEA_list <- vector("list")
+GEAR_list <- vector("list")
+#GEA_list <- vector("list", nCoefs)
+#GEAR_list <- vector("list", nCoefs)
 for(run in runs){
   EM <- con$getGEMatrix(run)
-  pData(EM)[, contrast] <- factor(pData(EM)[, contrast])
-  mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
+  pd <- data.table(pData(EM))
+  gef <- con$getDataset("gene_expression_files", original_view = TRUE, reload = TRUE)
+  pd <- pd[, study_time_collected_unit := gef[match(pd$biosample_accession, gef$biosample_accession), study_time_collected_unit]]
+  pd <- pd[, coef := do.call(paste, .SD), .SDcols = contrast]
+  to_drop <- unique(pd[study_time_collected <= 0, coef])
+  pd <- pd[coef %in% to_drop, coef := "baseline"]
+  pd <- pd[, coef := factor(coef,levels = c("baseline",
+    grep("baseline", value = TRUE, invert = TRUE, mixedsort(unique(coef)))))]
+  mm <- model.matrix(formula("~subject_accession + coef"), pd)
+
+  
+  #pData(EM)[, contrast] <- factor(pData(EM)[, contrast])
+  #mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
 
   # Check if it's RNA-seq or microarrays
-  if(max(exprs(EM))>100)
+  if(max(exprs(EM))>100){
     fit <- lmFit(voom(EM), mm)
-  else
+  } else{
     fit <- lmFit(EM, mm)
+  } 
   
   fit <- eBayes(fit)
    
-  coefs <- grep(contrast, colnames(mm), value = TRUE)
+  #coefs <- grep(contrast, colnames(mm), value = TRUE)
+  coefs <- grep("^coef", colnames(mm), value = TRUE)
   for(coef in coefs){
     analysis_accession <- paste0("GEA", i)
-    day <- gsub(contrast, "", coef)
+    TP <- gsub("coef", "", coef)
     arm_name <- unique(pData(EM)$arm_name)
-    description <- paste0("Differential expression in ", run, ", Day ", day, " vs. Day 0")
+    description <- paste0("Differential expression in ", run, ", ", TP, " vs. baseline")
 
-    GEA_list[[idx]] <- data.table(analysis_accession = analysis_accession, 
-                      expression_matrix = run, arm_name = arm_name, 
-                      coefficient = coef, description = description)
+    GEA_list[[idx]] <- data.table(analysis_accession = analysis_accession,
+                                  expression_matrix = run, arm_name = arm_name, 
+                                  coefficient = gsub("^coef", "", coef), description = description)
     tt <- data.table(topTable(fit, coef = coef, number = Inf))
     tt <- tt[adj.P.Val < 0.02]
     if(nrow(tt) > 0){
       tt[, c("analysis_accession", "coefficient") := list(analysis_accession, coef)]
-      GEAR_list[[idx]] <- data.table(tt)      
+      GEAR_list[[idx]] <- data.table(tt)
     }
     i <- i + 1
     idx <- idx+1
