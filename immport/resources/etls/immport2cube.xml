@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etl xmlns="http://labkey.org/etl/xml">
+    <name>Copy from ImmPort to cube dimension tables DOES NOT WORK YET</name>
+    <transforms>
+        <transform id="build_cube" type="StoredProcedure">
+            <procedure schemaName="immport" procedureName="fn_populateDimensions" useTransaction="true">
+            </procedure>
+        </transform>
+
+    </transforms>
+
+    <incrementalFilter  className="SelectAllFilterStrategy" />
+
+</etl>

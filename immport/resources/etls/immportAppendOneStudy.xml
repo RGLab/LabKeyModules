@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etl xmlns="http://labkey.org/etl/xml">
+    <name>Append one study from ImmPort</name>
+    <description>Append results from one Immport study</description>
+    <parameters>
+        <parameter name="$STUDY" type="VARCHAR"/>
+    </parameters>
+
+    <transforms>
+        <transform id="demographics" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_demographics" />
+            <destination schemaName="study" queryName="demographics" targetOption="append" />
+        </transform>
+        <transform id="elispot" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_elispot" />
+            <destination schemaName="study" queryName="elispot" targetOption="append" />
+        </transform>
+        <transform id="hai" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_hai" />
+            <destination schemaName="study" queryName="hai" targetOption="append" />
+        </transform>
+        <transform id="hla_typing" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_hla_typing" />
+            <destination schemaName="study" queryName="hla_typing" targetOption="append" />
+        </transform>
+        <transform id="kir_typing" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_kir_typing" />
+            <destination schemaName="study" queryName="kir_typing" targetOption="append" />
+        </transform>
+        <transform id="mbaa" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_mbaa" />
+            <destination schemaName="study" queryName="mbaa" targetOption="append" />
+        </transform>
+        <transform id="neut_ab_titer" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_neut_ab_titer" />
+            <destination schemaName="study" queryName="neut_ab_titer" targetOption="append" />
+        </transform>
+        <transform id="pcr" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_pcr" />
+            <destination schemaName="study" queryName="pcr" targetOption="append" />
+        </transform>
+        <transform id="cohort_membership" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_cohort_membership" />
+            <destination schemaName="study" queryName="cohort_membership" targetOption="append" />
+        </transform>
+        <transform id="gene_expression_files" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_gene_expression_files" />
+            <destination schemaName="study" queryName="gene_expression_files" targetOption="append" />
+        </transform>
+        <transform id="fcs_analyzed_result" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_fcs_analyzed_result" />
+            <destination schemaName="study" queryName="fcs_analyzed_result" targetOption="append" />
+        </transform>
+        <transform id="elisa" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_elisa" />
+            <destination schemaName="study" queryName="elisa" targetOption="append" />
+        </transform>
+        <transform id="fcs_files" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_fcs_files" />
+            <destination schemaName="study" queryName="fcs_files" targetOption="append" />
+        </transform>
+        <transform id="subject_measure" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_subject_measure" />
+            <destination schemaName="study" queryName="subject_measure" targetOption="append" />
+        </transform>
+    </transforms>
+
+    <incrementalFilter className="SelectAllFilterStrategy" />
+
+</etl>

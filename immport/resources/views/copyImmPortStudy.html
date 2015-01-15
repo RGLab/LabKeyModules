@@ -1,0 +1,45 @@
+
+Copy study results (delete current dataset rows)
+<form id="runNowForm" action="<%=contextPath%><%=containerPath%>/dataintegration-runTransform.api" method="POST" onsubmit="runNow(this); return false;">
+  <input hidden id="transformId" name="transformId" value="{ImmPort}/immportReplaceOneStudy">
+  <input id="$STUDY" name="$STUDY" value="">
+  <input type="submit" value="copy">
+</form>
+
+<br>
+&nbsp;<b>or</b>
+<br>
+
+Append study results
+<form id="runNowForm" action="<%=contextPath%><%=containerPath%>/dataintegration-runTransform.api" method="POST" onsubmit="runNow(this); return false;">
+    <input hidden id="transformId" name="transformId" value="{ImmPort}/immportAppendOneStudy">
+    <input id="$STUDY" name="$STUDY" value="">
+    <input type="submit" value="copy">
+</form>
+
+<script>
+var EXT = Ext4||Ext;
+function runNow(form)
+{
+    var form = EXT.get(form);
+    EXT.Ajax.request({
+        url: form.dom.action,
+        params:
+        {
+            "$STUDY": EXT.get('$STUDY').getValue(),
+            "transformId": EXT.get('transformId').getValue()
+        },
+        success: redirectOnSuccess,
+        failure:LABKEY.Utils.getCallbackWrapper(null,window,true)
+    });
+    return false;
+}
+function redirectOnSuccess(response)
+{
+    var r = Ext4.JSON.decode(response.responseText);
+    if (r.pipelineURL)
+        window.location = r.pipelineURL;
+    else
+        window.alert(response.responseText);
+}
+</script>

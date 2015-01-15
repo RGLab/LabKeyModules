@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Exported from LabKey Server at http://localhost:8080/labkey/project/home/aStudy/begin.view by brïttp on Thu Jun 20 16:17:53 PDT 2013-->
+<study archiveVersion="13.15" label="Generic ImmPort Study" timepointType="VISIT" subjectNounSingular="Subject" subjectNounPlural="Subjects" subjectColumnName="SUBJECT_ACCESSION" investigator="" grant="" alternateIdPrefix="" alternateIdDigits="6" defaultTimepointDuration="1" startDate="2000-01-01-08:00" securityType="BASIC_READ" xmlns="http://labkey.org/study/xml">
+  <datasets dir="datasets" file="datasets_manifest.xml">
+    <definition file="Generic.dataset"/>
+  </datasets>
+  <visits file="visit_map.xml"/>
+  <studyDescription rendererType="TEXT_WITH_LINKS">
+    <description xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+  </studyDescription>
+</study>
