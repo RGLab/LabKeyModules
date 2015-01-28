@@ -1,0 +1,93 @@
+# Location:
+Where is stuff?
+
+## Data
+/share/files
+
+## R
+blackrhino.fhcrc.org  
+
+## LabKey modules
+Staging:  
+posey.fhcrc.org:/labkey/labkey/externalModules  
+Production:  
+gedney.fhcrc.org:/labkey/labkey/externalModules  
+
+
+# Tasks
+How to do stuff?
+
+# Update R packages
+
+## Update data
+Download the ALLSTUDIES MySQL package from ImmPort (https://immport.niaid.nih.gov/immportWeb/clinical/study/displaySharedStudyDownload.do)
+Unzip it -> Shorten the "Not specified" line in MySQL/lk_sample_type -> zip it  
+Put the archive somewhere on /share  
+/Shared/ImmPort/ > Admin > Go To Module > ImmPort  
+ > IMPORT ARCHIVE  
+ > Enter path to archive > Submit query  
+
+In each study folder:
+> Admin > Go to module > ImmPort > Copy result from one Immport study > SDYaccession
+ 
+
+## Create study
+/Studies/
+ > Admin > Folder > Management
+ > Create subfolder > Study > Inherit from parent folder
+ > Admin > Folder > Management > Import (Import template from local zip)
+ > Admin > Immport > Copy Datasets From One Study > Enter the study accession
+
+/Shared/ImmPort/ > Overview tab > cohort_membership dataset  
+ > Filter Study Accession column for the new study to create  
+ > SUBJECT GROUPS tab > Create subject group > From Selected Subjects  
+ > Subject Group Label = Subject Category = Study accession > Check Share Category  
+ 
+/Shared/ImmPort/ > Manage tab > Create ancillary study  
+ > Change location to /Studies/<new_study> > next  
+ > Select newly created subject group > next  
+ > Select all datasets > Leave study_membership unchecked > finish  
+
+## Bounce posey
+On posey.fhcrc.org:
+    sudo /etc/init.d/tomcat stop
+    sudo /etc/init.d/tomcat start
+## Bounce gedney
+    sudo /etc/init.d/tomcat stop
+    sudo /etc/init.d/tomcat start
+
+## Install R package
+On blackrhino.fhcrc.org:
+    sudo su - gottweb
+    R CMD INSTALL package.tar.gz
+
+## Restart persistent R session
+log out and log in again
+
+## Copy data
+On blackrhino.fhcrc.org:  
+Get read/write access with gottweb user:  
+    sudo su - gottweb  
+
+## HIPCMatrix module
+Enable the module in the selected folder
+Create a new ExpressionMatrix assay:
+ > Admin > Manage assays
+ > New Assay design > Expression Matrix 
+ > Assay Location = Current Folder > Name = matrix
+Add Feature Annotation Set
+ > Add Feature Annotation Set web part
+ > Import feature annotation set > Must have two columns "Probe_ID" and "Gene_Symbol"
+   > write.table( quote = FALSE, row.names = FALSE, sep = "\t")
+
+## Create expression matrix 
+Add the Sample Sets web part > Import Sample Set  
+Add Feature Annotation Set web part > Import Feature Annotation Set (Must have 2 columns: Probe_ID & Gene_Symbol)
+
+## Update DataSummary
+/Home/
+ > lists.Studies > Insert new > "SDYaccession"
+
+## Clear reports cache
+cd /share/github/LabKeyModules/Scripts/rmcache.sh
+
