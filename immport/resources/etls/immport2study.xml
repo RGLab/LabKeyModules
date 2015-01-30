@@ -51,14 +51,18 @@
             <source schemaName="immport" queryName="ds_elisa" />
             <destination schemaName="study" queryName="elisa" targetOption="truncate" />
         </transform>
-        <transform id="fcs_files" type="org.labkey.di.pipeline.TransformTask">
-            <source schemaName="immport" queryName="ds_fcs_files" />
-            <destination schemaName="study" queryName="fcs_files" targetOption="truncate" />
+        <transform id="fcs_samples" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_fcs_sample_files" />
+            <destination schemaName="study" queryName="fcs_sample_files" targetOption="truncate" />
         </transform>
-        <transform id="subject_measure" type="org.labkey.di.pipeline.TransformTask">
-            <source schemaName="immport" queryName="ds_subject_measure" />
-            <destination schemaName="study" queryName="subject_measure" targetOption="truncate" />
+        <transform id="fcs_controls" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_fcs_compensation_controls" />
+            <destination schemaName="study" queryName="fcs_compensation_controls" targetOption="truncate" />
         </transform>
+        <!--<transform id="subject_measure" type="org.labkey.di.pipeline.TransformTask">-->
+        <!--<source schemaName="immport" queryName="ds_subject_measure" />-->
+        <!--<destination schemaName="study" queryName="subject_measure" targetOption="truncate" />-->
+        <!--</transform>-->
     </transforms>
 
     <incrementalFilter className="SelectAllFilterStrategy" />
