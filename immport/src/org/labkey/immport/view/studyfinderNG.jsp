@@ -968,16 +968,16 @@ var dataspace =
 {
     dimensions :
     {
-        "Study": {name:'Study', pluralName:'Studies', hierarchyName:'Study', levelName:'Name', allMemberName:'[Study].[All Studys]', popup:true},
-        "Condition": {name:'Condition', hierarchyName:'Study.Conditions', levelName:'Condition', allMemberName:'[Study.Conditions].[All Study.Conditionss]'},
-        "Assay": {name:'Assay', hierarchyName:'Assay', levelName:'Assay', allMemberName:'[Assay].[All Assays]'},
-        "Type": {name:'Type', hierarchyName:'Study.Type', levelName:'Type', allMemberName:'[Study.Type].[All Study.Types]'},
-        "Timepoint":{name:'Timepoint', hierarchyName:'Timepoint.Timepoints', levelName:'Timepoint', allMemberName:'[Timepoint.Timepoints].[All Timepoint.Timepointss]'},
-        "Race": {name:'Race', hierarchyName:'Subject.Race', levelName:'Race', allMemberName:'[Subject.Race].[All Subject.Races]'},
-        "Gender": {name:'Gender', hierarchyName:'Subject.Gender', levelName:'Gender', allMemberName:'[Subject.Gender].[All Subject.Genders]'},
-        "Species": {name:'Species', pluralName:'Species', hierarchyName:'Subject.Species', levelName:'Species', allMemberName:'[Subject.Species].[All Subject.Speciess]'},
-        "Principal": {name:'Principal', pluralName:'Species', hierarchyName:'Study.Principal', levelName:'Principal', allMemberName:'[Study.Principal].[All Study.Principals]'},
-        "Subject": {name:'Subject', hierarchyName:'Subject', levelName:'Subject', allMemberName:'[Subject].[All Subjects]'}
+        "Study": {name:'Study', pluralName:'Studies', hierarchyName:'Study', levelName:'Name', allMemberName:'[Study].[(All)]', popup:true},
+        "Condition": {name:'Condition', hierarchyName:'Study.Conditions', levelName:'Condition', allMemberName:'[Study.Conditions].[(All)]'},
+        "Assay": {name:'Assay', hierarchyName:'Assay', levelName:'Assay', allMemberName:'[Assay].[(All)]'},
+        "Type": {name:'Type', hierarchyName:'Study.Type', levelName:'Type', allMemberName:'[Study.Type].[(All)]'},
+        "Timepoint":{name:'Timepoint', hierarchyName:'Timepoint.Timepoints', levelName:'Timepoint', allMemberName:'[Timepoint.Timepoints].[(All)]'},
+        "Race": {name:'Race', hierarchyName:'Subject.Race', levelName:'Race', allMemberName:'[Subject.Race].[(All)]'},
+        "Gender": {name:'Gender', hierarchyName:'Subject.Gender', levelName:'Gender', allMemberName:'[Subject.Gender].[(All)]'},
+        "Species": {name:'Species', pluralName:'Species', hierarchyName:'Subject.Species', levelName:'Species', allMemberName:'[Subject.Species].[(All)]'},
+        "Principal": {name:'Principal', pluralName:'Species', hierarchyName:'Study.Principal', levelName:'Principal', allMemberName:'[Study.Principal].[(All)]'},
+        "Subject": {name:'Subject', hierarchyName:'Subject', levelName:'Subject', allMemberName:'[Subject].[(All)]'}
     }
 };
 for (var p in dataspace.dimensions)
