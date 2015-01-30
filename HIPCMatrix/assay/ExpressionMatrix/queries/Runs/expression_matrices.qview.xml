@@ -1,6 +1,6 @@
 <cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" label="Gene expression matrices" category="Assays" showInDataViews="true">
     <cv:columns>
-        <cv:column name="Name"/>
+        <cv:column name="Output/Data/Run/Name"/>
         <cv:column name="Comments"/>
         <cv:column name="featureSet"/>
         <cv:column name="DataOutputs/DownloadLink"/>

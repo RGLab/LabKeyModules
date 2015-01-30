@@ -29,16 +29,17 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             me                          = this,
             maskReport                  = undefined,
             fieldWidth                  = 240,
-            flagCohortTrainingSelect    = undefined
+            flagCohortTrainingSelect    = undefined,
+            flagTimePointSelect         = undefined,
+            foldChangeValue             = 0
             ;
 
         var checkBtnRunStatus = function(){
             if (
                 cbVariable.isValid( true ) &&
-                cbCohortTraining.isValid( true ) &&
-                ( nfDichotomize.isValid( true ) || ! chDichotomize.getValue() ) &&
                 cbTimePoint.isValid( true ) &&
-                cbAssay.isValid( true ) &&
+                cbCohortTraining.isValid( true ) && ! cbCohortTraining.disabled &&
+                ( nfDichotomize.isValid( true ) || ! chDichotomize.getValue() ) &&
                 nfFoldChange.isValid( true )
             ){
                 btnRun.setDisabled( false );
@@ -52,6 +53,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         ///////////////////////////////////
 
         var strCohortTraining = new LABKEY.ext.Store({
+            autoLoad: false,
             listeners: {
                 load: function(){
                     if ( this.getCount() > 0 ){
@@ -62,7 +64,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'cohorts',
+            queryName: 'all_IRP',
             schemaName: 'study'
         });
 
@@ -77,7 +79,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'cohorts',
+            queryName: 'all_IRP',
             schemaName: 'study'
         });
 
@@ -131,60 +133,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             width: fieldWidth
         });
 
-        var cbCohortTraining = new Ext.ux.form.ExtendedLovCombo({
-            allowBlank: false,
-            disabled: true,
-            displayField: 'cohort',
-            fieldLabel: 'Training',
-            lazyInit: false,
-            listeners: {
-                blur: function(){
-                    cbCohortTesting.focus();
-                    cbCohortTesting.expand(); // .onLoad() better ?
-                },
-                change: function(){
-                    if ( ! flagCohortTrainingSelect ) {
-                        handleCohortTrainingSelection();
-                    }
-                },
-                cleared: function(){
-                    cbCohortTesting.onTrigger2Click();
-                    cbCohortTesting.setDisabled( true );
-                    btnRun.setDisabled( true );
-                },
-                expand: function(){
-                    cbCohortTesting.triggerBlur();
-                },
-                focus: function(){
-                    flagCohortTrainingSelect = false;
-                },
-                select: function(){
-                    flagCohortTrainingSelect = true;
-
-                    handleCohortTrainingSelection();
-                }
-            },
-            separator: ';', // important for Labkey filters
-            store: strCohortTraining,
-            valueField: 'cohort',
-            width: fieldWidth
-        });
-
-        var cbCohortTesting = new Ext.ux.form.ExtendedLovCombo({
-            disabled: true,
-            displayField: 'cohort',
-            fieldLabel: 'Testing',
-            lazyInit: false,
-            listeners: {
-                change:     checkBtnRunStatus,
-                cleared:    checkBtnRunStatus,
-                select:     checkBtnRunStatus
-            },
-            store: strCohortTesting,
-            valueField: 'cohort',
-            width: fieldWidth
-        });
-
         var customTemplate = new Ext.XTemplate(
             '<tpl for=".">',
                 '<div ext:qtip=\'{cohortCount:this.pluralCohort}\' class =\'x-combo-list-item\'>',
@@ -208,51 +156,76 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             fieldLabel: 'Select predictor time point',
             lazyInit: false,
             listeners: {
+                change: function(){
+                    if ( ! flagTimePoint ) {
+                        handleTimepointSelection();
+                    }
+                },
+                cleared: function(){
+                    cbCohortTraining.setDisabled(true);
+                    cbCohortTesting.setDisabled(true);
+                    btnRun.setDisabled(true);
+                },
+                focus: function(){
+                    flagTimePoint = false;
+                },
+                select: function(){
+                    flagTimePoint = true;
+                    handleTimepointSelection();
+                }
+            },
+            store: strTimePoint,
+            tpl: customTemplate,
+            valueField: 'displayTimepoint',
+            width: fieldWidth
+        });
+
+        var cbCohortTraining = new Ext.ux.form.ExtendedLovCombo({
+            allowBlank: false,
+            disabled: true,
+            displayField: 'cohort',
+            fieldLabel: 'Training',
+            lazyInit: false,
+            listeners: {
+                change: function(){
+                    if ( ! flagCohortTrainingSelect ) {
+                        handleCohortTrainingSelection();
+                    }
+                },
+                cleared: function(){
+                    cbCohortTesting.onTrigger2Click();
+                    cbCohortTesting.setDisabled( true );
+                    btnRun.setDisabled( true );
+                },
+                expand: function(){
+                    cbCohortTesting.triggerBlur();
+                },
+                focus: function(){
+                    flagCohortTrainingSelect = false;
+                },
+                select: function(){
+                    flagCohortTrainingSelect = true;
+                    handleCohortTrainingSelection();
+                }
+            },
+            separator: ';', // important for Labkey filters
+            store: strCohortTraining,
+            valueField: 'cohort',
+            width: fieldWidth
+        });
+
+        var cbCohortTesting = new Ext.ux.form.ExtendedLovCombo({
+            disabled: true,
+            displayField: 'cohort',
+            fieldLabel: 'Testing',
+            lazyInit: false,
+            listeners: {
                 change:     checkBtnRunStatus,
                 cleared:    checkBtnRunStatus,
                 select:     checkBtnRunStatus
             },
-            store: strTimePoint,
-            tpl: customTemplate,
-            valueField: 'timepoint',
-            width: fieldWidth
-        });
-
-        var cbAssay = new Ext.ux.form.ExtendedComboBox({
-            allowBlank: false,
-            displayField: 'name',
-            fieldLabel: 'Select assay',
-            listeners: {
-                change: function(){
-                    if ( this.getValue() == '' ){
-                        boolGeneExpression = false;
-                        Ext.each( arGeneExpression, function( e ){ e.hide(); } );
-                    } else {
-                        boolGeneExpression = true;
-                        Ext.each( arGeneExpression, function( e ){ e.show(); } )
-                    }
-
-                    checkBtnRunStatus();
-                },
-                cleared: function(){
-                    boolGeneExpression = false;
-                    Ext.each( arGeneExpression, function( e ){ e.hide(); } );
-
-                    checkBtnRunStatus();
-                },
-                select: function(){
-                    boolGeneExpression = true;
-                    Ext.each( arGeneExpression, function( e ){ e.show(); } )
-
-                    checkBtnRunStatus();
-                }
-            },
-            store: new Ext.data.ArrayStore({
-                data: [ [ 'Gene expression', 'Gene expression' ] ],
-                fields: [ 'name', 'name' ]
-            }),
-            value: 'Gene expression',
-            valueField: 'name',
+            store: strCohortTesting,
+            valueField: 'cohort',
             width: fieldWidth
         });
 
@@ -351,77 +324,18 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             handler: function(){
                 setReportRunning( true );
 
-                LABKEY.Query.selectRows({
-                    columns: [ 'analysis_accession' ],
-                    failure: function( errorInfo, options, responseObj ){
-                        setReportRunning( false );
-
-                        LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
-                    },
-                    filterArray: [
-                        LABKEY.Filter.create(
-                            'cohort',
-                            cbCohortTraining.getCheckedValue(),
-                            LABKEY.Filter.Types.EQUALS_ONE_OF
-                        ),
-                        LABKEY.Filter.create(
-                            'timepoint',
-                            cbTimePoint.getValue(),
-                            LABKEY.Filter.Types.EQUALS
-                        )
-                    ],
-                    queryName: 'study_cohorts_info',
-                    schemaName: 'study',
-                    success: function(data){
-                        var count = data.rows.length;
-                        if ( count >= 1 ) {
-
-                            cnfReport.inputParams = {
-                                analysisAccession:      Ext.encode( Ext.pluck( data.rows, 'analysis_accession' ) ),
-                                dichotomize:            chDichotomize.getValue(),
-                                dichotomizeValue:       nfDichotomize.getValue(),
-                                timePoint:              cbTimePoint.getValue(),
-                                timePointUnit:          cbTimePoint.getSelectedField('timepointUnit'),
-                                fdrThreshold:           chFalseDiscoveryRate.getValue(), //filtering value is 0.1, if true; no filtering ow
-                                fcThreshold:            chFoldChange.getValue() ? nfFoldChange.getValue() : 0
-                            };
-
-                            LABKEY.Query.selectRows({
-                                columns: [ 'expression_matrix_accession' ],
-                                failure: function( errorInfo, options, responseObj ){
-                                    setReportRunning( false );
-
-                                    LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
-                                },
-                                filterArray: [
-                                    LABKEY.Filter.create(
-                                        'cohort',
-                                        cbCohortTesting.getCheckedValue(),
-                                        LABKEY.Filter.Types.EQUALS_ONE_OF
-                                    ),
-                                    LABKEY.Filter.create(
-                                        'timepoint',
-                                        cbTimePoint.getValue(),
-                                        LABKEY.Filter.Types.EQUALS
-                                    )
-                                ],
-                                queryName: 'study_cohorts_info',
-                                schemaName: 'study',
-                                success: function(data){
-                                    cnfReport.inputParams['emTesting'] = Ext.encode( Ext.pluck( data.rows, 'expression_matrix_accession') );
-
-                                    LABKEY.Report.execute( cnfReport );
-                                }
-                            });
-                        } else if ( count < 1 ) {
-                            setReportRunning( false );
-
-                            LABKEY.ext.ISCore.onFailure({
-                                exception: 'The selected values result in an empty set of parameters.'
-                            });
-                        }
-                    }
-                });
+                cnfReport.inputParams = {
+                    analysisAccession:      Ext.encode( cbCohortTraining.getCheckedArray( 'analysis_accession' ) ),
+                    cohortsTraining:        Ext.encode( cbCohortTraining.getCheckedArray() ),
+                    cohortsTesting:         Ext.encode( cbCohortTesting.getCheckedArray() ),
+                    dichotomize:            chDichotomize.getValue(),
+                    dichotomizeValue:       nfDichotomize.getValue(),
+                    timePoint:              cbTimePoint.getSelectedField( 'timepoint' ),
+                    timePointUnit:          cbTimePoint.getSelectedField( 'timepointUnit' ),
+                    fdr:                    chFalseDiscoveryRate.getValue(), //filtering value is 0.1, if true; no filtering ow
+                    fcThreshold:            chFoldChange.getValue() ? nfFoldChange.getValue() : 0
+                };
+                LABKEY.Report.execute( cnfReport );
             },
             text: 'Run'
         });
@@ -437,7 +351,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
                 LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
             },
-            reportId: 'module:ImmuneResponsePredictor/study/study_cohorts_info/ImmuneResponsePredictor.Rmd',
+            reportId: 'module:ImmuneResponsePredictor/study/ImmuneResponsePredictor.Rmd',
             success: function( result ){
                 setReportRunning( false );
 
@@ -479,7 +393,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             checked: true,
             handler: function( cb, s ){
                 nfFoldChange.setDisabled( !s );
-                dfFoldChange.setDisabledViaClass( !s );
+                foldChangeValue = ! s ? nfFoldChange.getValue() : foldChangeValue;
+                nfFoldChange.setValue( s ? foldChangeValue : 0 );
             }
         });
 
@@ -489,14 +404,10 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var chFalseDiscoveryRate = new Ext.form.Checkbox({
             checked: false,
-            handler: function( cb, s ){
-                dfFalseDiscoveryRate.setDisabledViaClass( !s );
-            }
         });
 
         var dfFalseDiscoveryRate = new Ext.form.DisplayField( Ext.apply({
-            cls: 'x-item-disabled',
-            value: 'Significant differential expression over time'
+            value: 'Use genes / probes differentially expressed over time'
         }, cnfSetDisabledViaClass) );
 
         var arGeneExpression = [
@@ -732,22 +643,70 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             cbCohortTraining.setDisabled( bool );
             cbCohortTesting.setDisabled( bool );
             cbTimePoint.setDisabled( bool );
-            cbAssay.setDisabled( bool );
             btnRun.setDisabled( bool );
         };
 
-        var handleCohortTrainingSelection = function(){
-            if ( cbCohortTraining.getValue() == '' ){
-                cbCohortTesting.clearValue();
-                cbCohortTesting.setDisabled( true );
-                btnRun.setDisabled( true );
+        var handleTimepointSelection = function(){
+            if ( cbTimePoint.getSelectedField('timepoint') <= 0 ){
+                nfFoldChange.setDisabled( true );
+                chFoldChange.setDisabled( true );
+                chFalseDiscoveryRate.setDisabled( true );
+                dfFoldChange.setDisabledViaClass( true );
+                dfFalseDiscoveryRate.setDisabledViaClass( true );
+                chFoldChange.setValue( false );
             } else {
-                cbCohortTesting.clearValue();
+                nfFoldChange.setDisabled( false );
+                chFoldChange.setDisabled( false );
+                chFalseDiscoveryRate.setDisabled( false );
+                dfFoldChange.setDisabledViaClass( false );
+                dfFalseDiscoveryRate.setDisabledViaClass( false );
+                chFoldChange.setValue( true );
+            }
+            cbCohortTraining.clearValue();
+            cbCohortTraining.setDisabled( true );
+            cbCohortTesting.clearValue();
+            cbCohortTesting.setDisabled( true );
+            btnRun.setDisabled( true );
+            if ( cbTimePoint.getValue() == '' ){
+                cbCohortTraining.setDisabled( true );
+            } else {
+                strCohortTraining.setUserFilters([
+                    LABKEY.Filter.create(
+                        'timepoint',
+                        cbTimePoint.getSelectedField( 'timepoint' ),
+                        LABKEY.Filter.Types.EQUAL
+                    ),
+                    LABKEY.Filter.create(
+                        'timepointUnit',
+                        cbTimePoint.getSelectedField( 'timepointUnit' ),
+                        LABKEY.Filter.Types.EQUAL
+                    )
+                ]);
+                strCohortTraining.load();
+            }
+        };
+
+        var handleCohortTrainingSelection = function(){
+            cbCohortTesting.clearValue();
+            checkBtnRunStatus();
+            if ( cbCohortTraining.getValue() == '' ){
+                cbCohortTesting.setDisabled( true );
+            } else {
                 strCohortTesting.setUserFilters([
                     LABKEY.Filter.create(
                         'cohort',
-                        cbCohortTraining.getCheckedValue(),
+                        cbCohortTraining.getValue(),
                         LABKEY.Filter.Types.EQUALS_NONE_OF
+                    ),
+                    LABKEY.Filter.create(
+                        'timepoint',
+                        cbTimePoint.getSelectedField( 'timepoint' ),
+                        LABKEY.Filter.Types.EQUALS
+                    ),
+                    LABKEY.Filter.create(
+                        'timepointUnit',
+                        cbTimePoint.getSelectedField( 'timepointUnit' ),
+                        LABKEY.Filter.Types.EQUALS
                     )
                 ]);
                 strCohortTesting.load();
@@ -767,7 +726,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     'runReport',
                     null,
                     {
-                        reportId: 'module:ImmuneResponsePredictor/reports/schemas/study/study_cohorts_info/ImmuneResponsePredictor.Rmd',
+                        reportId: 'module:ImmuneResponsePredictor/reports/schemas/study/ImmuneResponsePredictor.Rmd',
                         tabId: 'Source'
                     }
                 ) +

@@ -33,7 +33,7 @@ msig_rnames <- function(rnames){
 }
 emory_rnames <- function(rnames){
   modules <- gsub("\\)$", "", gsub("^.*\\(", "", rnames))
-  rnames <- paste0('<a href="http://www.immuneprofiling.org/meni/btm416_annotation/btmdata/',
+  rnames <- paste0('<a href="http://www.interactivefigures.com/meni/btm416_annotation/btmdata/',
                    modules, '.htm" target="_blank">', rnames, '</a>')
   return(rnames)
 }
@@ -95,7 +95,7 @@ EM <- con$getGEMatrix(run, summary = TRUE)
 ```
 
 ```{r camera, cache = TRUE, dependson="EM;modules"}
-indices <- symbols2indices(gene_sets, fData(EM)$gene_symbol)
+indices <- ids2indices(gene_sets, fData(EM)$gene_symbol)
 pData(EM)[, contrast] <- as.factor(pData(EM)[, contrast])
 mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
 #res <- camera(EM, indices, design = mm, sort = FALSE)
@@ -152,7 +152,7 @@ if(length(DEM) > 0){
 
 
 ```{r kable, cache = TRUE, dependson="byDay", results='asis', fig.heigth = 4, fig.width = 8}
-table <- table[, Module := func_rnames(Module)]
+#table <- table[, Module := func_rnames(Module)]
 table <- table[, PValue := abs(PValue)]
 setnames(table, "PValue", "10log10(p)")
 format_table(table)
