@@ -73,8 +73,8 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             },
             store: new Ext.data.ArrayStore({
                 data: [
-                    [ 'MSigDB c7', 'MSigDB c7' ],
                     [ 'Blood transcription', 'Blood transcription' ],
+                    [ 'MSigDB c7', 'MSigDB c7' ],
                     [ 'G2 (Trial 8) Modules', 'G2 (Trial 8) Modules' ]
                 ],
                 fields: [ 'name', 'name' ]
@@ -157,7 +157,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
 
                     pnlView.update(p.value);
 
-                    $('#res_table').dataTable();
+                    $('#res_table_GSEA').dataTable();
 
                     pnlTabs.setActiveTab(1);
                 }

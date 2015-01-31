@@ -50,7 +50,7 @@ format_table <- function(x, ...){
     # This is to make sure that we don't have issues with row names in data.frames
     stop("This function only works on data.tables")
     }
-  out <- kable(x, "html", table.attr = 'class="display" id="res_table"', output = FALSE, ...)
+  out <- kable(x, "html", table.attr = 'class="display" id="res_table_GSEA"', output = FALSE, ...)
   footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
   out_new <- gsub("</thead>",footer,out)
   cat(out_new)
@@ -89,7 +89,7 @@ switch(set,
 
 
 ```{r EM, cache = TRUE, dependson="params;funcs"}
-con <- CreateConnection(study)
+con <- CreateConnection()
 run <-  getRunFromCohort(con, cohort)
 EM <- con$getGEMatrix(run, summary = TRUE)
 ```
@@ -158,7 +158,7 @@ setnames(table, "PValue", "10log10(p)")
 format_table(table)
 ```
 
-```{r pheatmap, cache=TRUE, dependson="heatmap-matrix"}
+```{r pheatmap, cache=FALSE, dependson="heatmap-matrix"}
 if(draw_heatmap){
   max <- max(abs(mat))
   if(nrow(mat) > 0){

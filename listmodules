@@ -3,7 +3,6 @@ Biobase
 Cairo
 data.table
 digest
-flowIncubator
 flowViz
 flowWorkspace
 gdata

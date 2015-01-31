@@ -1,4 +1,3 @@
-suppressMessages( library( flowIncubator ) );
 suppressMessages( library( flowWorkspace ) );
 suppressMessages( library( Rlabkey ) );
 suppressMessages( library( digest ) );
