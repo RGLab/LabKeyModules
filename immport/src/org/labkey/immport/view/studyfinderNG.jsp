@@ -203,8 +203,8 @@
 
     <tr><td align="left" colspan="2">
         <div class="innerColor" style="padding:10px; border:solid 2px #e6e6e6;">
-        <div style="float:left;"><input placeholder="Study Search" id="searchTerms" name="q" style="width:200pt;" ng-model="searchTerms" ng-change="onSearchTermsChanged()">&nbsp;&nbsp;{{searchMessage}}</div>
-        <div style="float:right;"><input type="checkbox" ng-model="showAllImmPort" ng-change="onShowAllStudiesChanged()">&nbsp;show all ImmPort studies</div>
+        <div style="float:left;"><input placeholder="Study Search" id="searchTerms" name="q" style="width:200pt;" ng-model="searchTerms" ng-change="onSearchTermsChanged()"><span class="searchMessage" style="padding-left: 10px">{{searchMessage}}</span></div>
+        <div style="float:right;"><input type="checkbox" class="showAllImmPort" ng-model="showAllImmPort" ng-change="onShowAllStudiesChanged()">&nbsp;show all ImmPort studies</div>
         <div id="studypanel" style="clear:both; max-width:940px; overflow-x:scroll;">
             <table><tr>
                 <td style="height:180px;"><img border=1 src="<%=getContextPath()%>/_.gif" style="height:180px; width:1px"></td>
@@ -226,7 +226,7 @@
                 <div ng-include="'/group.html'" ng-repeat="dim in [dimType,dimAssay]"></div>
             </td>
             <td valign=top style="min-width:180px;">
-	            <div ng-include="'/group.html'" ng-repeat="dim in [dimTimepoint]"></div>
+                <div ng-include="'/group.html'" ng-repeat="dim in [dimTimepoint]"></div>
             </td>
             <td valign=top style="min-width:180px;">
                 <div ng-include="'/group.html'" ng-repeat="dim in [dimGender,dimRace]"></div>

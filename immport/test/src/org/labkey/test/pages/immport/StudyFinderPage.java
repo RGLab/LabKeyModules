@@ -41,6 +41,16 @@ public class StudyFinderPage extends LabKeyPage
         return new StudyFinderPage(test);
     }
 
+    public void checkShowAllImmPortStudies()
+    {
+        _test.checkCheckbox(Locators.showAllCheckbox);
+    }
+
+    public void uncheckShowAllImmPortStudies()
+    {
+        _test.uncheckCheckbox(Locators.showAllCheckbox);
+     }
+
     public void studySearch(String search)
     {
         _test.setFormElement(Locators.studySearchInput, search);
@@ -125,6 +135,8 @@ public class StudyFinderPage extends LabKeyPage
     {
         public static Locator.CssLocator studyFinder = Locator.css("#studyfinderAppDIV");
         public static Locator.CssLocator studySearchInput = studyFinder.append(Locator.css("#searchTerms"));
+        public static Locator.CssLocator showAllCheckbox = studyFinder.append(Locator.css(".showAllImmPort"));
+        public static Locator.CssLocator searchMessage = studyFinder.append(Locator.css(".searchMessage"));
         public static Locator.CssLocator studyPanel = studyFinder.append(Locator.css("#studypanel"));
         public static Locator.CssLocator studyCard = studyFinder.append(Locator.css(".study-card"));
         public static Locator.CssLocator dimensionsTable = studyFinder.append(Locator.css("table.dimensions"));
