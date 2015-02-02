@@ -1,7 +1,7 @@
 SELECT
  timepoint,
  timepointUnit,
- cohort
+ COUNT( cohort ) AS cohortCount
 FROM
 (
    SELECT DISTINCT
@@ -13,6 +13,8 @@ FROM
     WHERE
      Biosample.subject_accession IN ( SELECT subject_accession from study.hai )
 )
+GROUP BY
+ timepoint, timepointUnit
 ORDER BY
  timepointUnit DESC, timepoint
 

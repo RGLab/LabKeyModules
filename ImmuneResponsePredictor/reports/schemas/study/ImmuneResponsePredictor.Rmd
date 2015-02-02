@@ -1,8 +1,7 @@
 ```{r dev, echo = FALSE, eval = FALSE}
-#labkey.url.base <- "posey.fhcrc.org"
+#labkey.url.base <- "test.immunespace.org"
 #labkey.url.path <- "Studies/SDY269"
 #labkey.file.root <- "~/Downloads/"
-#param <- list(timepoint = 7, GEA_acc = c("GEA2", "GEA4"), FC_thresh = 1, FDR_thresh = 0.1, dichotomize = FALSE, dichValue = 4)
 ```
 
 ```{r knitr-opts, echo = FALSE, message = FALSE, cache = FALSE}
@@ -23,27 +22,30 @@ library(RColorBrewer)
 library(RJSONIO)
 library(ggthemr)
 library(gplots)
+library(ImmuneSpaceR)
+library(Biobase)
 ```
 
 ```{r plot-styles, echo = FALSE, cache = TRUE}
-palette <- colorpanel(20, low = "#dc322f", mid = "#fdf6e3", high = "#268bd2")
+palette <- ISpalette(20)
 ```
 
 ```{r envir-var, echo = FALSE, cache=FALSE}
-param <-    list(
-                timepoint       = as.numeric( labkey.url.params$timePoint ),
-                timepointUnit   = labkey.url.params$timePointUnit,
-                GEA_acc         = RJSONIO::fromJSON( labkey.url.params$analysisAccession ),
-                dichValue       = as.numeric( labkey.url.params$dichotomizeValue ),
-                FDR_thresh      = as.numeric( labkey.url.params$fdrThreshold ),
-                FC_thresh       = labkey.url.params$fcThreshold,
-                dichotomize     = as.logical( labkey.url.params$dichotomize ),
-                EM_pred         = unlist( RJSONIO::fromJSON( labkey.url.params$emTesting ) )
-            )
-print(param)
+param <- list(
+  timepoint       = as.numeric(labkey.url.params$timePoint),
+  timepointUnit   = labkey.url.params$timePointUnit,
+  cohortsTraining = fromJSON(labkey.url.params$cohortsTraining),
+  cohortsTesting  = fromJSON(labkey.url.params$cohortsTesting),
+  GEA_acc         = fromJSON(labkey.url.params$analysisAccession),
+
+  dichotomize     = as.logical(labkey.url.params$dichotomize),
+  dichValue       = as.numeric(labkey.url.params$dichotomizeValue),
+  FC_thresh       = as.numeric(labkey.url.params$fcThreshold),
+  FDR_thresh      = as.logical(labkey.url.params$fdr)
+)
 ```
 
-```{r param, cache=TRUE, cache.extra=digest::digest(param), echo=TRUE}
+```{r param, cache=TRUE, cache.extra=digest::digest(param)}
 ```
 
 ```{r functions, echo = FALSE, cache = TRUE}
@@ -55,7 +57,7 @@ get_GEAR <- function(GEA_acc, FC_thresh, FDR_thresh = FALSE){
   GEAR <-data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "gene_expression", queryName = "gene_expression_analysis_results", colNameOpt="rname", colFilter=GEAR_filter))
   if(nrow(GEAR)==0){
     opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
-    stop("There are 0 probes selected. Try lowering the FDR threshold or the absolute log-FoldChange threshold.")
+    stop("There are 0 probes selected. Try removing the the absolute log-FoldChange filtering under 'Additional options'.")
   }
   GEA_filter <- makeFilter(c("analysis_accession", "IN", paste(unique(GEAR$analysis_accession), collapse = ";")))
   GEA <- data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "gene_expression", queryName = "gene_expression_analysis", colNameOpt = "rname", colFilter = GEA_filter))
@@ -78,8 +80,7 @@ get_pdata <- function(EM_acc, timepoint){
 }
 
 get_DEG <- function(GEAR, pdata){
-  em2fas <- unique( pdata[, list(run_dataoutputs_name, run_featureset)])
-  ## TODO: Problem if two probes with same name map different genes?
+  em2fas <- unique(pdata[, list(run_dataoutputs_name, run_featureset)])
   FAS_filter <- makeFilter(c("FeatureAnnotationSetId", "IN", paste(em2fas$run_featureset, collapse = ";")))
   FAS <- data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName="Microarray", queryName="FeatureAnnotation", colFilter = FAS_filter, colNameOpt = "rname", colSelect=c("featureid", "genesymbol")))
   setnames(FAS, c("featureid"), "feature_id")
@@ -102,7 +103,7 @@ get_EM <- function(pdata, DEG){
   return(EM)
 }
 
-get_FC <- function(EM, pdata, timepoint){ ## TODO: maybe I should include it in get_EM
+get_FC <- function(EM, pdata, timepoint){
   FC <- EM[pdata[study_time_collected == timepoint, biosample_accession], ] - EM[pdata[study_time_collected == 0, biosample_accession],]
   rownames(FC) <- pdata[match(rownames(FC), biosample_accession), subject_accession]
   return(FC)
@@ -138,7 +139,7 @@ select_features <- function(FC, response, dichotomize){
   selected_features <- grep("Intercept", selected_features, invert = TRUE, value = TRUE)
   if(length(selected_features) < 2){
     opts_chunk$set(eval=FALSE, cache=FALSE)
-    stop("No features were selected as predictive. You may try to change the filtering criteria.")
+    stop("No features were selected as predictive. You may try to remove the fold change filtering under 'Additional options'.")
   }
   # Need more obs than features
   nFeatures <- length(selected_features)
@@ -168,7 +169,7 @@ draw_heatmap <- function(FC_selected, HAI, dichotomize, palette){
   rownames(mat) <- ifelse(nchar(rownames(mat)) > 15, paste0(substr(rownames(mat), 1, 15), "..."), rownames(mat))
   pheatmap(mat, dendrogram = "none", cluster_cols = FALSE, cluster_rows = TRUE,
            breaks = seq(-max_FC, max_FC, length.out = length(palette) +1),
-           color = palette, show_colnames = FALSE, scale = "none", 
+           color = palette, show_colnames = FALSE, scale = "row", 
            cluster_distance="correlation", cluster_method = "ward",
            annotation = annotation, annotation_colors = anno_col)
 }
@@ -180,25 +181,84 @@ format_table <- function(x, ...){
     #This is to make sure that we don't have issues with row names in data.frames
     stop("This function only works on data.tables")
   }
-  out <- kable(x, "html", table.attr = 'class="display" id="res_table"', output = FALSE, ...)
+  out <- kable(x, format="html", digits=4, table.attr = 'class="display" id="res_table"', output = FALSE, ...)
   footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
   out_new <- gsub("</thead>",footer,out)
   cat(out_new)
 }
 ```
 
+```{r funcs2, echo = FALSE}
+getRun <- function(con, cohort){
+  gem <- con$data_cache$GE_inputs
+  run <- gsub(".tsv$", "", unique(gem[ gem$arm_name %in% cohort, "name"]))
+  return(run)
+}
+
+# Get the hai response at peak immunogenicity for a subject list
+# @value A data.table with response and subject_accession, ordered by subject (i.e: same order as FC or matrix)
+getHAI <- function(con, subjects, dichotomize, dichValue){
+  hai <- con$getDataset("hai", original_view = TRUE)
+  hai <- hai[subject_accession %in% subjects]
+  hai <- hai[, list(arm_accession, study_time_collected, study_time_collected_unit,
+                    response = value_reported/mean(value_reported[study_time_collected<=0])),
+               by = "virus_strain,subject_accession"]
+  hai <- hai[, mr := mean(response), by="study_time_collected"]
+  hai <- hai[, ma := max(mr), by = "arm_accession"]
+  peak <- unique(hai[mr ==ma, list(study_time_collected, arm_accession)])
+  hai <- merge(hai, peak, by=c("study_time_collected", "arm_accession"))
+  #print(hai[, max(mr), by="arm_accession"])
+  #immuno_peak <- hai[hai[, mr == max(mr)], study_time_collected]
+  #
+  #print(immuno_peak)
+  #hai <- hai[study_time_collected == immuno_peak]
+  hai <- hai[, list(response=log2(max(response))), by="subject_accession"]
+  if(dichotomize){
+    hai <- hai[,response:=ifelse(response>=log2(dichValue), TRUE,  FALSE)]
+  }
+  hai <- hai[order(subject_accession)]
+  return(hai)
+}
+```
+
+
+```{r no-probes, cache = FALSE, echo = FALSE}
+if(param$timepoint > 0){
+  GEAR <- get_GEAR(param$GEA_acc, param$FC_thresh, param$FDR_thresh)
+}
+```
 
 ```{r main, cache = FALSE}
-GEAR <- get_GEAR(param$GEA_acc, param$FC_thresh, param$FDR_thresh)
-pdata <- get_pdata(paste0(unique(GEAR$expression_matrix), ".tsv"), param$timepoint)
-DEG <- get_DEG(GEAR, pdata)
-EM <- get_EM(pdata, DEG)
-# TODO: If timepoint <= 0, subset the matrix and use expression values for prediction
-FC <- get_FC(EM, pdata, param$timepoint)
-HAI <- get_HAI(pdata, param$dichotomize, param$dichValue)
-response <- HAI$response
-selected_features <- select_features(FC, response, param$dichotomize)
-FC_selected <- FC[,selected_features]
+con <- CreateConnection()
+if(param$timepoint > 0){
+  #EM <- con$getGEMatrix(
+  pdata <- get_pdata(paste0(unique(GEAR$expression_matrix), ".tsv"), param$timepoint)
+  DEG <- get_DEG(GEAR, pdata)
+  EM <- get_EM(pdata, DEG)
+  training_data <- get_FC(EM, pdata, param$timepoint)
+
+  HAI <- get_HAI(pdata, param$dichotomize, param$dichValue)
+  response <- HAI$response
+
+} else{
+  #$timepoint <= 0
+  #$GEA_acc = NULL
+  runs <- getRun(con, param$cohortsTraining)
+  EM <- con$getGEMatrix(runs, summary = TRUE, reload = TRUE)
+  EM <- EM[, pData(EM)$study_time_collected == param$timepoint & tolower(pData(EM)$study_time_collected_unit) == param$timepointUnit]
+  subs <- pData(EM)$subject_accession
+  HAI <- getHAI(con, subs, param$dichotomize, param$dichValue)
+  HAI <- HAI[, arm_name := pData(EM)$arm_name]
+  response <- HAI$response
+  colnames(exprs(EM)) <- subs
+  training_data <- t(exprs(EM))
+}
+```
+```{r select-features, cache = FALSE}
+selected_features <- select_features(training_data, response, param$dichotomize)
+
+```{r lasso, cache = FALSE}
+FC_selected <- training_data[,selected_features]
 
 # lasso #IN FC_selected, dichotomize, selected_features #OUT predictor_table
 FC_selected <- data.frame(FC_selected, check.names = FALSE)
@@ -218,32 +278,53 @@ pred_cIdx <- grep("value|Pr", colnames(sum_relasso_coef))
 predictor_table <- sum_relasso_coef[,pred_cIdx][-1,]
 colnames(predictor_table) <- c("statistic", "p-value")
 predictor_table <- data.table(cbind(selected_features, predictor_table))
-#predictor_table <- predictor_table[, c("statistic", "p-value") := lapply(.SD, function(X){ as.numeric(levels(X)[X])}), .SDcols = c("statistic", "p-value")]
-predictor_table <- predictor_table[, gene_symbol := sapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0('<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=immune_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
+predictor_table <- predictor_table[, `:=`(c("statistic", "p-value"), list(as.numeric(statistic), as.numeric(`p-value`)))]
+predictor_table <- predictor_table[, gene_symbol := selected_features]
+# TODO: Fix links in DataTables
+#predictor_table <- predictor_table[, gene_symbol := sapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0('<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=immune_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
 ```
 
-```{r pred-cohort, echo = FALSE}
-if(length(param$EM_pred) > 0){
-  pdata_pred <- get_pdata(param$EM_pred, param$timepoint)
-  EM_pred <- get_EM(pdata_pred, selected_features)
-  FC_pred <- get_FC(EM_pred, pdata_pred, param$timepoint)
-  colnames(FC_pred) <- colnames(FC_selected)
-  HAI_pred <- get_HAI(pdata_pred, param$dichotomize, param$dichValue)
+```{r pred-cohort}
+if(length(param$cohortsTesting) > 0){
+  run <- getRun(con, param$cohortsTesting)
+  EM_pred <- con$getGEMatrix(run, summary = TRUE)
+  EM_pred <- EM_pred[selected_features,]
+  if(param$timepoint <= 0){
+    EM_pred <- EM_pred[, EM_pred$study_time_collected == param$timepoint]
+    EM_pred <- EM_pred[, pData(EM_pred)$study_time_collected == param$timepoint &
+                         tolower(pData(EM_pred)$study_time_collected_unit) == param$timepointUnit]
+    pdata <- data.table(pData(EM_pred))
+    subs <- pdata$subject_accession
+    data_pred <- t(exprs(EM_pred))
+  } else{ #Need FC
+    pdata <- data.table(pData(EM_pred))
+    pdata <- pdata[study_time_collected %in% c(0, param$timepoint) & tolower(study_time_collected_unit) == param$timepointUnit]
+    subs <- pdata[, .N, by = "subject_accession"][N>1, subject_accession]
+    pdata <- pdata[subject_accession %in% subs]
+    pdata <- pdata[order(subject_accession, study_time_collected)]
+    data_pred <- exprs(EM_pred[, pdata[study_time_collected == param$timepoint, biosample_accession]]) -
+          exprs(EM_pred[, pdata[study_time_collected == 0, biosample_accession]])
+    data_pred <- t(data_pred)
+    rownames(data_pred) <- pdata[match(rownames(data_pred), pdata$biosample_accession), subject_accession]
+  }
+  colnames(data_pred) <- colnames(FC_selected) #Handles the -/_@ issues
+  HAI_pred <- getHAI(con, subs, param$dichotomize, param$dichValue)
+  HAI_pred <- HAI_pred[, arm_name := pdata[, arm_name]]
 }
 ```
 
-```{r prediction, echo = FALSE}
+```{r prediction, echo = FALSE, dev='CairoPNG'}
 # Prediction
-if(length(param$EM_pred) == 0){
+if(length(param$cohortsTesting) == 0){
      data <- data.frame(observed = response, fitted=relasso$fitted.values)
-   p<- ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm")# + IS_theme
+   p<- ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm")
 } else{
-  prediction_data <- data.frame(FC_pred)
-  predicted_val <- predict(relasso, newdata = prediction_data, type = "response")
+  data_pred <- data.frame(data_pred)
+  predicted_val <- predict(relasso, newdata = data_pred, type = "response")
   data <- data.frame(observed = c(HAI$response, HAI_pred$response),
                      fitted = c(relasso$fitted.values, predicted_val),
                      cohort = c(paste("a:", HAI$arm_name, "(Training)"), paste("b:", HAI_pred$arm_name, "(Testing)")))
-  p<- ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") +# IS_theme +
+  p<- ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") +
     facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predicted response")
 }
   ggthemr('solarized')
