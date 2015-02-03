@@ -239,7 +239,7 @@
            <table id="summaryArea" ng-cloak>
                 <tr><td colspan="2"><h3 style="text-align:center;">summary</h3></td></tr>
                 <tr><td align="right" class="big-summary" style="width:60pt;">{{dimStudy.summaryCount}}</td><td class="big-summary">&nbsp;studies</td></tr>
-                <tr><td align="right" class="big-summary" style="width:60pt;">{{dimSubject.allMemberCount||0}}</td><td class="big-summary">participants</td></tr>
+                <tr><td align="right" class="big-summary" style="width:60pt;">{{dimSubject.allMemberCount||0}}</td><td class="big-summary">&nbsp;participants</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimSpecies.summaryCount}}</td><td class="small-summary">&nbsp;species</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimType.summaryCount}}</td><td class="small-summary">&nbsp;types</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimCondition.summaryCount}}</td><td class="small-summary">&nbsp;conditions</td></tr>
