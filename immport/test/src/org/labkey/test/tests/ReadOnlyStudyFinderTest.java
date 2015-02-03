@@ -183,6 +183,7 @@ public class ReadOnlyStudyFinderTest extends BaseWebDriverTest implements Postgr
     {
         StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
         studyFinder.dismissTour();
+        studyFinder.checkShowAllImmPortStudies();
 
         List<StudyFinderPage.StudyCard> studyCards = studyFinder.getStudyCards();
         String searchString = studyCards.get(0).getAccession();
