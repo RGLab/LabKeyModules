@@ -666,6 +666,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 dfFoldChange.setDisabledViaClass( true );
                 dfFalseDiscoveryRate.setDisabledViaClass( true );
                 chFoldChange.setValue( false );
+                chFalseDiscoveryRate.setValue( false );
             } else {
                 nfFoldChange.setDisabled( false );
                 chFoldChange.setDisabled( false );

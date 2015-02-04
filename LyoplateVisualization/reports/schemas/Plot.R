@@ -19,7 +19,6 @@ ptm <- proc.time();
 
 suppressMessages( library( Cairo ) );
 suppressMessages( library( flowViz ) );
-suppressMessages( library( Rlabkey ) );
 suppressMessages( library( gdata ) );
 suppressMessages( library( RJSONIO ) );
 
@@ -228,7 +227,7 @@ if ( is.null( cond ) ){
         tempYAxis <- paste0( "'", yAxis, "'" );
     }
 }
-debugString <- paste0( "flowIncubator:::plotGate_labkey( ",
+debugString <- paste0( "plotGate_labkey( ",
     "G[ ", strngFilesNames, " ], ",
     "parentID = '", population, "', ",
     "x = '", xAxis, "', ",
@@ -254,7 +253,7 @@ debugString <- paste0( "flowIncubator:::plotGate_labkey( ",
 sink('/dev/null');
 
 print(
-    flowIncubator:::plotGate_labkey(
+    plotGate_labkey(
         G               = subG,
         parentID        = population,
         x               = xAxis,
@@ -281,6 +280,4 @@ sink();
 print( proc.time() - ptm ); # PLOTTING
 
 dev.off();
-
-Sys.sleep( 3 );
 

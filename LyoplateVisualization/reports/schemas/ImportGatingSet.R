@@ -1,9 +1,26 @@
+# vim: sw=4:ts=4:nu:nospell:fdc=4
+#
+#  Copyright 2014 Fred Hutchinson Cancer Research Center
+#
+#  Licensed under the Apache License, Version 2.0 (the 'License');
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an 'AS IS' BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
 suppressMessages( library( flowWorkspace ) );
 suppressMessages( library( Rlabkey ) );
+co <- labkey.setCurlOptions( sslversion = 1, ssl.verifyhost = 2 );
 suppressMessages( library( digest ) );
 suppressMessages( library( Rlibstree ) );
 
-importGatingSet <- function( addresses, folders, filesPaths, names, descriptions = NULL ){
+importGatingSet <- function( addresses, folders, filesPaths, names, descriptions = NULL, verbose = F ){
     if ( length( names ) > 1 & length( addresses ) == 1 ){
         addresses <- rep( addresses, times = length( names ) );
     }
@@ -22,6 +39,10 @@ importGatingSet <- function( addresses, folders, filesPaths, names, descriptions
 
     for ( i in 1:length( filesPaths ) ){
         labkey.url.base <- addresses[i];
+        labkey.url.base <- gsub( 'http:', 'https:', labkey.url.base );
+        if ( length( grep('^https://', labkey.url.base ) ) == 0 ){
+            labkey.url.base <- paste0( 'https://', labkey.url.base );
+        }
         labkey.url.path <- folders[i];
         path            <- filesPaths[i];
         analysisName    <- names[i];
@@ -51,14 +72,9 @@ importGatingSet <- function( addresses, folders, filesPaths, names, descriptions
             }
         }
 
-        if ( is.null( analysisName ) ){
+        if ( analysisName == '' | is.null( analysisName ) ){
             analysisName <- basename( path );
             message( paste0( 'Using the name of the specified gating set file for the analysis name: "', analysisName, '"' ) );
-        } else {
-            if ( analysisName == '' ){
-                analysisName <- basename( path );
-                message( paste0( 'Using the name of the specified gating set file for the analysis name: "', analysisName, '"' ) );
-            }
         }
 
         if ( is.null( analysisDescription ) ){
@@ -323,6 +339,10 @@ importGatingSet <- function( addresses, folders, filesPaths, names, descriptions
             unlink( paste0( file.path( rootPath, basename( path ) ), '.csv' ), force = T, recursive = T );
             unlink( file.path( gatingSetPath, 'FOLDER_LOCKED_TEMP' ), force = T, recursive = T );
 
+            if ( verbose ){
+                message( paste0( 'Added an analysis named ', analysisName ) );
+            }
+
         }, error = function(e){
 
             if ( exists( 'gsid' ) & exists( 'container' ) ){
@@ -358,5 +378,5 @@ importGatingSet <- function( addresses, folders, filesPaths, names, descriptions
     }
 };
 
-print( 'importGatingSet( addresses, folders, filesPaths, names, descriptions = NULL ) defined' );
+print( 'importGatingSet( addresses, folders, filesPaths, names, descriptions = NULL, verbose = F ) defined' );
 
