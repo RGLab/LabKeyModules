@@ -31,8 +31,8 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                     '<div ' + ( ( this.qtipField == undefined ) ? '' : ( 'ext:qtip=\'{' + this.qtipField + ':this.process}\' ' ) ) + 'class=\'x-combo-list-item\'>{' + this.displayField + ':this.process}</div>' +
                 '</tpl>',
                 {
-                    process : function( value ) {
-                        return value === '' ? '&nbsp' : Ext.util.Format.htmlEncode( value );
+                    process : function( value ){
+                        return value === '' ? '&nbsp;' : Ext.util.Format.htmlEncode( value );
                     }
                 }
             );
@@ -63,10 +63,10 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
                                 this.el.focus();
                             } else {
                                 this.onFocus({});
-                                if(this.triggerAction == 'all') {
-                                    this.doQuery(this.allQuery, true);
+                                if( this.triggerAction == 'all' ){
+                                    this.doQuery( this.allQuery, true );
                                 } else {
-                                    this.doQuery(this.getRawValue());
+                                    this.doQuery( this.getRawValue() );
                                 }
                                 this.el.focus();
                             }

@@ -50,18 +50,22 @@ param <- list(
 
 ```{r functions, echo = FALSE, cache = TRUE}
 get_GEAR <- function(GEA_acc, FC_thresh, FDR_thresh = FALSE){
-  FDR_thresh <- ifelse(FDR_thresh, 0.1, 1) #No filtering if combobox isn't checked
-  GEAR_filter <- makeFilter(c("analysis_accession", "IN", paste(GEA_acc, collapse=";")),
-                            c("adj_p_val", "LESS_THAN", FDR_thresh),
-                            c("log_fc", "NOT_BETWEEN", paste(-FC_thresh, FC_thresh, sep=",")))
-  GEAR <-data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "gene_expression", queryName = "gene_expression_analysis_results", colNameOpt="rname", colFilter=GEAR_filter))
-  if(nrow(GEAR)==0){
-    opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
-    stop("There are 0 probes selected. Try removing the the absolute log-FoldChange filtering under 'Additional options'.")
+  if(FDR_thresh){
+    FDR_thresh <- ifelse(FDR_thresh, 0.1, 1) #No filtering if combobox isn't checked
+    GEAR_filter <- makeFilter(c("analysis_accession", "IN", paste(GEA_acc, collapse=";")),
+                              c("adj_p_val", "LESS_THAN", FDR_thresh),
+                              c("log_fc", "NOT_BETWEEN", paste(-FC_thresh, FC_thresh, sep=",")))
+    GEAR <-data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "gene_expression", queryName = "gene_expression_analysis_results", colNameOpt="rname", colFilter=GEAR_filter))
+    if(nrow(GEAR)==0){
+      opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
+      stop("There are 0 probes selected. Try removing the the absolute log-FoldChange filtering under 'Additional options'.")
+    }
+    GEA_filter <- makeFilter(c("analysis_accession", "IN", paste(unique(GEAR$analysis_accession), collapse = ";")))
+    GEA <- data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "gene_expression", queryName = "gene_expression_analysis", colNameOpt = "rname", colFilter = GEA_filter))
+    GEAR <- merge(GEAR, GEA, by = "analysis_accession")
+  } else{
+    GEAR <- NULL
   }
-  GEA_filter <- makeFilter(c("analysis_accession", "IN", paste(unique(GEAR$analysis_accession), collapse = ";")))
-  GEA <- data.table(labkey.selectRows(baseUrl = labkey.url.base, folderPath = labkey.url.path, schemaName = "gene_expression", queryName = "gene_expression_analysis", colNameOpt = "rname", colFilter = GEA_filter))
-  GEAR <- merge(GEAR, GEA, by = "analysis_accession")
   return(GEAR)
 }
 
@@ -168,7 +172,7 @@ draw_heatmap <- function(FC_selected, HAI, dichotomize, palette){
   max_FC <- max(abs(mat))
   rownames(mat) <- ifelse(nchar(rownames(mat)) > 15, paste0(substr(rownames(mat), 1, 15), "..."), rownames(mat))
   pheatmap(mat, dendrogram = "none", cluster_cols = FALSE, cluster_rows = TRUE,
-           breaks = seq(-max_FC, max_FC, length.out = length(palette) +1),
+           #breaks = seq(-max_FC, max_FC, length.out = length(palette) +1),
            color = palette, show_colnames = FALSE, scale = "row", 
            cluster_distance="correlation", cluster_method = "ward",
            annotation = annotation, annotation_colors = anno_col)
@@ -198,7 +202,7 @@ getRun <- function(con, cohort){
 # Get the hai response at peak immunogenicity for a subject list
 # @value A data.table with response and subject_accession, ordered by subject (i.e: same order as FC or matrix)
 getHAI <- function(con, subjects, dichotomize, dichValue){
-  hai <- con$getDataset("hai", original_view = TRUE)
+  hai <- con$getDataset("hai", original_view = TRUE, reload = TRUE)
   hai <- hai[subject_accession %in% subjects]
   hai <- hai[, list(arm_accession, study_time_collected, study_time_collected_unit,
                     response = value_reported/mean(value_reported[study_time_collected<=0])),
@@ -207,10 +211,7 @@ getHAI <- function(con, subjects, dichotomize, dichValue){
   hai <- hai[, ma := max(mr), by = "arm_accession"]
   peak <- unique(hai[mr ==ma, list(study_time_collected, arm_accession)])
   hai <- merge(hai, peak, by=c("study_time_collected", "arm_accession"))
-  #print(hai[, max(mr), by="arm_accession"])
   #immuno_peak <- hai[hai[, mr == max(mr)], study_time_collected]
-  #
-  #print(immuno_peak)
   #hai <- hai[study_time_collected == immuno_peak]
   hai <- hai[, list(response=log2(max(response))), by="subject_accession"]
   if(dichotomize){
@@ -219,40 +220,75 @@ getHAI <- function(con, subjects, dichotomize, dichValue){
   hai <- hai[order(subject_accession)]
   return(hai)
 }
-```
 
-
-```{r no-probes, cache = FALSE, echo = FALSE}
-if(param$timepoint > 0){
-  GEAR <- get_GEAR(param$GEA_acc, param$FC_thresh, param$FDR_thresh)
+getGenes <- function(con, GEA_acc, FDR_thresh, FC_thresh){
+  #if FDR_thresh: filter GEA_acc
+  if(FDR_thresh){
+    DEG <- con$getGEAnalysis(GEA_acc)
+    DEG <- DEG[abs(log_fc) > FC_thresh]
+    DEG <- unique(DEG$gene_symbol)
+    if(length(DEG) == 0){
+      opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
+      stop("\n\nThere are 0 genes selected. Try removing the filter on differentially expressed probes in 'Additional options' or lower the log fold-change threshold.")
+    }
+  } else{
+    DEG <- NULL
+  }
+  return(DEG)
 }
 ```
 
+
 ```{r main, cache = FALSE}
 con <- CreateConnection()
+runs <- getRun(con, param$cohortsTraining)
+EM <- con$getGEMatrix(runs, summary = TRUE, reload = TRUE)
+#if(param$timepoint >0){
+#  TP <- c(0, param$timepoint)
+#} else{
+#  TP <- param$timepoint
+#}
+##EM <- EM[, pData(EM)$study_time_collected == param$timepoint & tolower(pData(EM)$study_time_collected_unit) == param$timepointUnit]
+#EM <- EM[, pData(EM)$study_time_collected %in% TP & tolower(pData(EM)$study_time_collected_unit) == param$timepointUnit]
+DEG <- getGenes(con, param$GEA_acc, param$FDR_thresh, param$FC_thresh)
+```
+```{r main2, cache = FALSE}
+if(!is.null(DEG)){
+  EM <- EM[fData(EM)$gene_symbol %in% DEG,]
+}
 if(param$timepoint > 0){
-  #EM <- con$getGEMatrix(
-  pdata <- get_pdata(paste0(unique(GEAR$expression_matrix), ".tsv"), param$timepoint)
-  DEG <- get_DEG(GEAR, pdata)
-  EM <- get_EM(pdata, DEG)
-  training_data <- get_FC(EM, pdata, param$timepoint)
-
-  HAI <- get_HAI(pdata, param$dichotomize, param$dichValue)
-  response <- HAI$response
-
+  pdata <- data.table(pData(EM))
+  pdata <- pdata[study_time_collected %in% c(0, param$timepoint) & tolower(study_time_collected_unit) == param$timepointUnit]
+  subs <- pdata[, .N, by = "subject_accession"][N>1, subject_accession]
+  pdata <- pdata[subject_accession %in% subs]
+  pdata <- pdata[order(subject_accession, study_time_collected)]
+  training_data <- exprs(EM[, pdata[study_time_collected == param$timepoint, biosample_accession]]) -
+                   exprs(EM[, pdata[study_time_collected == 0, biosample_accession]])
+  training_data <- t(training_data)
+  if(is.null(DEG) & param$FC_thresh > 0){ #i.e: not using the GEAR but using a FC thresh on the matrix
+    training_data <- training_data[, log(apply(abs(training_data), 2, max)) > param$FC_thresh, drop = FALSE]
+    if(ncol(training_data) <= 1){
+      opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
+      stop("\n\nAt least two genes are required for prediction. Try lowering or diabling the log fold-change filter in the 'Additional options' section to increase the number of selected genes.")
+    }
+  }
+  rownames(training_data) <- pdata[match(rownames(training_data), pdata$biosample_accession), subject_accession]
 } else{
-  #$timepoint <= 0
-  #$GEA_acc = NULL
-  runs <- getRun(con, param$cohortsTraining)
-  EM <- con$getGEMatrix(runs, summary = TRUE, reload = TRUE)
-  EM <- EM[, pData(EM)$study_time_collected == param$timepoint & tolower(pData(EM)$study_time_collected_unit) == param$timepointUnit]
-  subs <- pData(EM)$subject_accession
+  pdata <- data.table(pData(EM))
+  pdata <- pdata[study_time_collected == param$timepoint & tolower(study_time_collected_unit) == param$timepointUnit]
+  EM <- EM[, pdata$biosample_accession]
+  subs <- pdata$subject_accession
   HAI <- getHAI(con, subs, param$dichotomize, param$dichValue)
-  HAI <- HAI[, arm_name := pData(EM)$arm_name]
+  HAI <- HAI[, arm_name := pdata$arm_name]
   response <- HAI$response
   colnames(exprs(EM)) <- subs
   training_data <- t(exprs(EM))
 }
+HAI <- getHAI(con, subs, param$dichotomize, param$dichValue)
+HAI <- HAI[, arm_name := pdata[match(HAI$subject_accession, pdata$subject_accession), arm_name]]
+response <- HAI$response
+
+
 ```
 ```{r select-features, cache = FALSE}
 selected_features <- select_features(training_data, response, param$dichotomize)

@@ -65,10 +65,10 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                                 this.el.focus();
                             } else {
                                 this.onFocus({});
-                                if(this.triggerAction == 'all') {
-                                    this.doQuery(this.allQuery, true);
+                                if ( this.triggerAction == 'all' ){
+                                    this.doQuery( this.allQuery, true );
                                 } else {
-                                    this.doQuery(this.getRawValue());
+                                    this.doQuery( this.getRawValue() );
                                 }
                                 this.el.focus();
                             }

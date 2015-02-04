@@ -15,6 +15,7 @@
 #  limitations under the License.
 
 suppressMessages( library( Rlabkey ) );
+co <- labkey.setCurlOptions( sslversion = 1, ssl.verifyhost = 2 );
 suppressMessages( library( RJSONIO ) );
 
 gspaths     <- RJSONIO::fromJSON( labkey.url.params$gspaths );
@@ -71,6 +72,4 @@ for ( i in 1:length( gsids ) ){
 };
 
 write( txt, file='${txtout:textOutput}' );
-
-Sys.sleep( 15 );
 

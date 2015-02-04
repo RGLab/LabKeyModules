@@ -18,6 +18,7 @@ apt-get -y install libxml2-dev
 apt-get -y install openmpi-bin
 apt-get -y install openmpi-common
 apt-get -y install xorg-dev
+apt-get -y install xvfb
 #apt-get -y install protobuf-compiler CAN ENABLE ONCE 2.6
 #apt-get -y install libprotobuf-dev   MAKES IT TO REPOSITORY
 apt-get -y autoremove

@@ -487,7 +487,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         chDichotomize,
                         nfDichotomize
                     ],
-                    title: 'Select Response'
+                    //title: 'Select Response'
+                    title: 'Parameters'
                 }),
                 new Ext.form.FieldSet({
                     autoScroll: true,
@@ -580,26 +581,37 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.Label({
-                            text: 'The first step is to select the predicted variable and the cohorts used to train and test the model'
+                            text: 'Select the data used to train and test the model.'
                         }),
                         new Ext.form.FieldSet({
-                            html: '<b>Variable:</b> The predicted response (currently, only HAI is available)<br><br><b>Training:</b> The cohort used to train the model<br><br><b>Testing:</b> The cohort used to test the model<br><br><b>Dichotomize values:</b> If checked, the predicted response is dichotomized using the specified threshold <br><br><b>Dichotomization threshold:</b> The threshold for dichotomization, every subject with a value above the selected threshold will be considered a responder',
+                            html: '\
+                                <b>Variable:</b> The predicted response (currently, only HAI is available)<br><br>\
+                                <b>Time point:</b> The gene expression time point used to predict the variable<br><br>\
+                                <b>Training:</b> The cohort used to train the model. Some cohorts are only available at specific time points.<br><br>\
+                                <b>Testing:</b> The cohort used to test the model<br><br>\
+                                <b>Dichotomize values:</b> If checked, the predicted response is dichotomized using the specified threshold<br><br>\
+                                <b>Dichotomization threshold:</b> The threshold for dichotomization, every subject with a value above the selected threshold will be considered a responder\
+                            ',
                             style: 'margin-top: 5px;',
-                            title: 'Response'
+                            //title: 'Response'
+                            title: 'Parameters'
                         }),
+                       // new Ext.form.Label({
+                       //     text: 'This section is used to select the predicting variable'
+                       // }),
+                       // new Ext.form.FieldSet({
+                       //     html: '<b>Time point:</b> The time point in the predicting assay to be used<br><b>Assay:</b> The predicting assay (currently, only gene expression is available)',
+                       //     style: 'margin-top: 5px;',
+                       //     title: 'Predictors'
+                       // }),
                         new Ext.form.Label({
-                            text: 'This section is used to select the predicting variable'
+                            text: 'The additional options are used for filtering of the predicting features. Note that if Time point is 0 or less, the filtering options are disabled.'
                         }),
                         new Ext.form.FieldSet({
-                            html: '<b>Time point:</b> The time point in the predicting assay to be used<br><b>Assay:</b> The predicting assay (currently, only gene expression is available)',
-                            style: 'margin-top: 5px;',
-                            title: 'Predictors'
-                        }),
-                        new Ext.form.Label({
-                            text: 'The additional options are used for filtering of the predicting features'
-                        }),
-                        new Ext.form.FieldSet({
-                            html: '<b>False Discovery Rate:</b> Features with an FDR <u>higher</u> than this threshold will be excluded<br><br><b>Absolute fold-change:</b> Features with an absolute fold change to baseline <u>lower</u> than the threshold will be excluded',
+                            html: '\
+                                    <b>Absolute fold-change:</b> Features with an absolute fold change to baseline <u>lower</u> than the threshold will be excluded<br><br>\
+                                    <b>False Discovery Rate:</b> If checked, only probes differentially expressed over time are selected.\
+                            ',
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Additional options'
                         })
@@ -654,6 +666,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 dfFoldChange.setDisabledViaClass( true );
                 dfFalseDiscoveryRate.setDisabledViaClass( true );
                 chFoldChange.setValue( false );
+                chFalseDiscoveryRate.setValue( false );
             } else {
                 nfFoldChange.setDisabled( false );
                 chFoldChange.setDisabled( false );
