@@ -677,7 +677,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
                 LABKEY.ext.ISCore.onFailure(errorInfo, options, responseObj);
             },
-            reportId: 'module:LyoplateVisualization/Load.R',
+            reportId: 'module:LyoplateVisualization/VizModule/Load.R',
             success: function( result ){
                 cbAnalysis.setDisabled(false);
                 flagGraphLoading = false;
@@ -734,7 +734,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 LABKEY.ext.ISCore.onFailure(errorInfo, options, responseObj);
             },
             inputParams: {},
-            reportId: 'module:LyoplateVisualization/Plot.R',
+            reportId: 'module:LyoplateVisualization/VizModule/Plot.R',
             success: function( result ){
                 manageTlbrGraph();
                 maskGraph.hide();
@@ -813,7 +813,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
                 LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
             },
-            reportId: 'module:LyoplateVisualization/Delete.R',
+            reportId: 'module:LyoplateVisualization/VizModule/Delete.R',
             success: function( result ) {
                 maskDelete.hide();
 
@@ -1990,7 +1990,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                     'runReport',
                     null,
                     {
-                        reportId: 'module:LyoplateVisualization/reports/schemas/Plot.R',
+                        reportId: 'module:LyoplateVisualization/reports/schemas/VizModule/Plot.R',
                         tabId: 'Source'
                     }
                 ) +

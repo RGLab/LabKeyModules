@@ -1,0 +1,278 @@
+## Automated gating of Seracare cells stained using the Lyoplate panels
+<hr>  
+ 
+**Goal:** This report uses the **OpenCyto** framework to perform the automated gating of the Seracare cells utilizing the Lyoplate staining panels. Gating templates are provided for each staining panel. The data are preprocessed in the same manner as in the manual gating analysis. Cell population statistics, in the form of cell population proportions relative to parent cell populations, cell population counts and parent cell population counts, are extracted from the gated data and written to the database, together with annotations for sample, center, replicate, and cell population names.
+
+   
+**Conclusion:** The OpenCyto framework can be integrated into an automated flow cytometry data analysis pipeline used to perform automated gating of standardized assays, such as those utilizing the Lyoplate staining panels.  
+<hr>  
+### Analysis code
+   
+OpenCyto and other required R libraries are loaded. The gating is performed using the *OpenCyto* framework from BioConductor, and takes advantage of external gating tools like the `flowDensity` package. 
+
+```{r eval=TRUE,echo=FALSE,warning=FALSE, message=FALSE}
+    library(openCyto)
+    library(data.table)
+    library(digest)
+    library(tools)
+    library(Rlabkey)
+    co <- labkey.setCurlOptions(sslversion = 1)
+    library(plyr)
+    library(flowDensity)
+```
+
+In order to use `flowDensity`, we define a *wrapper* function so that `flowDensity` can be included in the OpenCyto gating template definition.
+
+```{r eval=FALSE,echo=TRUE}
+flowDensityEx <- function(fr, pp_res, channels, ...){
+  if(length(channels)==2)
+    flowDensity::.flowDensity(fr, pp_res, channels[1], channels[2], ...)
+  else
+    flowDensity::.flowDensity(fr, pp_res, yChannel = channels, ...)
+}
+registerPlugins(fun=flowDensityEx,methodName="flowDensity",dep="flowDensity")
+```
+
+```{r eval=TRUE,echo=FALSE,results='hide'}
+flowDensityEx <- function(fr, pp_res, channels, ...){
+  if(length(channels)==2)
+    flowDensity::.flowDensity(fr, pp_res, channels[1], channels[2], ...)
+  else
+    flowDensity::.flowDensity(fr, pp_res, yChannel = channels, ...)
+}
+registerPlugins(fun=flowDensityEx,methodName="flowDensity",dep="flowDensity")
+```
+     
+The gating proceeds conditionally. If the data has not already been gated, it will be regated, otherwise the stored `GatingSets` are loaded.
+     
+## T-cells 
+
+The gating template for the T-cell panel  can be downloaded [here](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gating-templates/gt-tcell.csv).  
+The manually gated `GatingSet` is available for download [here](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gated_data/pop_renamed/manual-gslist-tcell.tar.gz).  
+The *OpenCyto* gated `GatingSet` is available [here](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gated_data/pop_renamed/auto-gslist-tcell.tar.gz).  
+   
+```{r paths, eval=TRUE, echo=FALSE,results='hide'}
+path <- "/share/files/HIPC/Lyoplate/@files/"
+scriptPath <- file.path(path,"scripts")
+
+source(file.path(scriptPath, "wrapper-functions.r"))
+
+#' load panel-specific settings (uncomment the panel you want to gate)
+source(file.path(scriptPath,"settings-tcell.r"))
+```
+   
+To perform automated gating, we wish to use data that has been preprocessed in the same manner as for the manual gating analysis. We load the manually gated data here.
+
+```{r echo=TRUE,eval=FALSE,results='hide'}
+   tcells <- load_gslist(gslist_path_manual)
+```
+   
+```{r load_manual, eval=TRUE, echo=FALSE,results='hide'} 
+#' -----------------------------------------
+#' gating
+#' -----------------------------------------
+#' Loads archived manual gated data 
+suppressMessages(gslist <- load_gslist(gslist_path_manual))
+tcells<-gslist
+```
+
+Next, we perform the gating. The script tests if the gating has been performed already by looking for a saved version of the automated `GatingSet` on disk. For simplicity, here we show the code required to gate the T-cell panel. 
+   
+```{r eval=FALSE,echo=TRUE,results='hide'}
+   #Delete all existing gates from the manually gated data except the root (ungated cells).
+   first_gate = getNodes(gslist[[1]], showHidden = T)[2]
+   Rm(first_gate, tcells)
+   
+   #Save the new gating set to a new location so that we don't overwrite the manual gates
+   save_gslist(tcells, file.path(path,"gated_data/auto/gslist-tcell"), cdf = "copy")
+   tcells <- load_gslist(file.path(path,"gated_data/auto/gslist-tcell"))
+
+   #assuming the automated gating template is in the current directory
+   gt_path = file.path(path,"gating-templates/gt-tcell.csv") 
+   
+   #Creates the gating-template object from the CSV gating template file. Name it "tcells"
+   gt <- gatingTemplate(gt_path,"tcells")
+   
+   #Applies OpenCyto to GatingSet. Use 10 cores in parallel.
+   gating(gt, tcells,  mc.cores = 10, parallel_type = "multicore")
+
+   #save the gated data, overwriting.
+   save_gslist(tcells, path = file.path(path,"gated_data/auto/gslist-tcell"), overwrite = TRUE)
+   
+```
+   
+
+```{r test_auto, echo=FALSE,eval=TRUE,message=FALSE,warning=FALSE,results='hide'}
+#' Test if the autogated data exists. If so, skip the gating.
+suppressMessages(try(gslist_auto<-load_gslist(gslist_path_auto),silent=TRUE))
+   dogating<-FALSE
+if(!inherits(gslist_auto,"try-error")){
+   message("Gating set list exists. No need to gate")
+   dogating<-FALSE
+}else{
+   message("Gating set list doesn't exist. Proceed with gating")
+   dogating=TRUE
+}
+```
+   
+```{r dogating, eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+if(dogating){
+#' remove the second node and leave only 'root' node
+Rm(getNodes(gslist[[1]], showHidden = T)[2], gslist)
+   
+#' save it to a different folder
+save_gslist(gslist, gslist_path_auto, cdf = "copy")
+gslist <- load_gslist(gslist_path_auto)
+#' Creates the gating-template object from a CSV file
+gt <- gatingTemplate(gt_path, panel)
+Rm("boundary", gslist)
+popToRm <- getChildren(gslist[[1]], 'CD19andCD20', path = "auto")[1:6]
+lapply(popToRm, function(node)Rm(node, gslist))
+getNodes(gslist[[1]], showHidden = T)
+#' Applies OpenCyto to GatingSet (11m with 10 cores)
+gating(gt, gslist
+        ,  mc.cores = 10, parallel_type = "multicore"
+#    , stop.at = "*"
+)
+#'hide the helper gates
+hideNodes(gslist, nodesToHide)
+#' Archives the GatingSet
+save_gslist(gslist, path = gslist_path_auto, overwrite = TRUE)
+}
+```
+   
+
+Finally, we'll extract the statistics and replace them if they have changed.  
+```{r,eval=FALSE,echo=TRUE}
+stats = getPopStats(tcells,format="long")
+```
+
+```{r extract_stats, eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+
+#' -----------------------------------------
+#' rename and extract stats
+#' -----------------------------------------   
+   #' rename pop names to the common pop names
+
+suppressMessages(gslist <- load_gslist(gslist_path_auto))
+rename_pops(gslist, subpopulations_auto, subpopulations_common)
+if(panel == "DC"){
+  #hide the extra helper gates
+   invisible(lapply(gslist, setNode, "lymph", FALSE, level = 1))
+   invisible(lapply(gslist, setNode,"live_gate", FALSE, level = 1))
+}
+  
+
+if(panel == "bcell"){
+  invisible(lapply(gslist, setNode, "CD19andCD20", "CD19 AND CD20", level = 1))
+  invisible(lapply(gslist, setNode, "CD19and!CD20", "CD19 AND NOT CD20", level = 1))
+}
+save_gslist(gslist, path = sub("gated_data", "gated_data/pop_renamed", gslist_path_auto), cdf = "copy", overwrite = T)
+   
+#Extract stats and write to DB
+#' get stats
+suppressMessages(pop_stats <- extractStats(gslist, subpopulations_common))
+td<-file.path(tempdir(),"stats.csv")
+   #prepare for insert into DB table
+pop_stats<-cbind(pop_stats,Panel=panel,Method="automated")
+pop_stats<-data.table(pop_stats)
+pop_stats=pop_stats[,c("ParticipantID","SequenceNum"):=  list(paste0(Filename,Panel,Center,Method,Sample,Population),1)]
+pop_stats[,ParticipantID:=digest(ParticipantID),ParticipantID]
+#rename the population levels
+pop_stats$Panel=mapvalues(pop_stats$Panel,from=c("bcell","tcell","DC","treg"),to=c("Bcell","Tcell","DC","Treg"))
+write.csv(pop_stats, file = td, row.names = FALSE)
+md5new <- md5sum(td)
+ md5current<-md5sum(stats_path_auto)
+if(TRUE){
+  message("Writing population statistics")
+  write.csv(pop_stats, file = stats_path_auto, row.names = FALSE)
+   #query
+   todelete<- labkey.selectRows(baseUrl=labkey.url.base, folderPath="HIPC/Lyoplate", schemaName="study", queryName="cell_population_statistics",colNameOpt="rname",showHidden=TRUE)
+   todelete<-subset(todelete,method=="automated"&panel%in%unique(pop_stats$Panel))[,"lsid",drop=FALSE]
+   #Delete and update
+   if(nrow(todelete)>0){
+       labkey.deleteRows(baseUrl=labkey.url.base,folderPath="HIPC/Lyoplate",schemaName="study",queryName="cell_population_statistics",toDelete=todelete)
+   }
+   #Insert into labkey database
+   labkey.importRows(baseUrl=labkey.url.base,folderPath="HIPC/Lyoplate",schemaName="study",queryName="cell_population_statistics",toImport=as.data.frame(pop_stats,stringsAsFactors=FALSE))
+}
+   
+```
+## B-cells, T-regs, and DC/Monocytes/NK
+   
+We repeat the same procedure for the rest of the panels (B-cells, DC/Monocytes/NK, T-regulatory cells). 
+   
+## Downloads
+
+You may download the scripts required to replicate the analysis from [here](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=opencyto_scripts_and_templates.tar.gz).    
+Gating sets for manual gating of [T-regulatory cells](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gated_data/pop_renamed/manual-gslist-treg.tar.gz), [B-cells](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gated_data/pop_renamed/manual-gslist-bcell.tar.gz), and [DC/Monocyte/NK](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gated_data/pop_renamed/manual-gslist-DC.tar.gz) cells, and [T-cells](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gated_data/pop_renamed/manual-gslist-tcell.tar.gz).    
+Automated gating sets results for [T-regs](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gated_data/pop_renamed/auto-gslist-treg.tar.gz), [B-cells](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gated_data/pop_renamed/auto-gslist-bcell.tar.gz), and [DC/Monocyte/NK cells](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gated_data/pop_renamed/auto-gslist-DC.tar.gz), and [T-cells](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gated_data/pop_renamed/auto-gslist-tcell.tar.gz).   
+Gating templates for [T-cells](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gating-templates/gt-tcell.csv), [B-cells](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gating-templates/gt-bcell.csv), [DC](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gating-templates/gt-DC.csv), [T-regs](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gating-templates/gt-treg.csv).    
+    
+```{r bcell, eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+path <- "/share/files/HIPC/Lyoplate/@files/"
+scriptPath <- file.path(path,"scripts")
+
+source(file.path(scriptPath, "wrapper-functions.r"))
+
+#' load panel-specific settings (uncomment the panel you want to gate)
+source(file.path(scriptPath,"settings-bcell.r"))
+```
+   
+```{r ref.label='load_manual',eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+```
+   
+```{r ref.label='test_auto',eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+```
+   
+```{r ref.label='dogating',eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+```
+   
+```{r ref.label='extract_stats' ,eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+```
+   
+```{r treg, eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+path <- "/share/files/HIPC/Lyoplate/@files/"
+scriptPath <- file.path(path,"scripts")
+
+source(file.path(scriptPath, "wrapper-functions.r"))
+
+#' load panel-specific settings (uncomment the panel you want to gate)
+source(file.path(scriptPath,"settings-treg.r"))
+```
+   
+```{r ref.label='load_manual', echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+```
+   
+```{r ref.label='test_auto', echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+```
+   
+```{r ref.label='dogating', echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+```
+   
+```{r ref.label='extract_stats' , echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+```
+
+
+```{r dc, eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+path <- "/share/files/HIPC/Lyoplate/@files/"
+scriptPath <- file.path(path,"scripts")
+
+source(file.path(scriptPath, "wrapper-functions.r"))
+
+#' load panel-specific settings (uncomment the panel you want to gate)
+source(file.path(scriptPath,"settings-DC.r"))
+```
+   
+```{r ref.label='load_manual',warning=FALSE,message=FALSE,echo=FALSE,results='hide'}
+```
+   
+```{r ref.label='test_auto',warning=FALSE,message=FALSE,echo=FALSE,results='hide'}
+```
+   
+```{r ref.label='dogating',warning=FALSE,message=FALSE,echo=FALSE,results='hide'}
+```
+   
+```{r ref.label='extract_stats' ,echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+```
+

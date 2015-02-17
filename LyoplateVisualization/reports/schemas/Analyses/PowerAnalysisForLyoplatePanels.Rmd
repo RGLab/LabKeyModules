@@ -1,0 +1,195 @@
+```{r init,echo=FALSE,eval=TRUE, message=FALSE}
+    library(knitr)
+    opts_chunk$set( dev='CairoPNG' ) #, fig.width=10, fig.height=7 )
+```
+
+# Power analysis for Lyoplate panels
+<hr>
+
+**Goal**
+The goal of this report is to assess the power gained by standardizing flow data analysis by using centralized automated gating, as compared with local manual gating per center, and comparing the impact of center-to-center variability. The power analysis is performed by simulating from the mixed effects models used to assess the Seracare results [here](/study/HIPC/Lyoplate/dataset.view?Dataset.reportId=db%3A159&datasetId=5001). We assessed the minimum sample size that could be detected at 80% power under models where variablity due to center was present (or not), and were variability due to gating was compatible with that measured for central automated gating, or with local center specific gating. The variabliity due to local center specific manual gating was evaluated on the Cytotrol data and the change in variance was compared to central manual gating on the cytotrol data. That variance inflation factor was used to adjust the variability due to gating in the mixed effects model. 
+
+**Conclusion**
+The power analysis shows that consistent data analysis in the form of careful centralized gating (whether automated or manual) can increase the power to detect differences across nearly all cell populations in the Lyoplate panels. Center-to-center variability has a significant impact on statistical power, but it is not a major contributor for all cell populations across all panels. 
+<hr>   
+
+```{r,echo=FALSE, message=FALSE}
+# Load libraries
+library(plyr)
+library(lme4)
+library(clue)
+library(reshape2)
+library(arm)
+library(gdata)
+library(clue)
+library(reshape)
+library(gridExtra)
+library(data.table)
+library(Rlabkey)
+co <- labkey.setCurlOptions(sslversion = 1)
+library(ggplot2)
+library(utils)
+knit_hooks$set(htmlcap = function(before, options, envir) {
+  if(!before) {
+    paste('<p class="caption">',options$htmlcap,"</p>",sep="")
+    }
+})
+
+# Read the seracare and cytotrol data
+```
+
+We read the data for the Seracare, Cytotrol FlowCAP III, and Local vs Central manual gating of Cytotrol samples, and combine these into one data set. 
+
+```{r,warning=FALSE,message=FALSE,cache=TRUE,echo=TRUE,results='hide'}
+#' Read in the data sets
+seracare = data.table(labkey.selectRows(labkey.url.base,folderPath = "HIPC/Lyoplate","study","cell_population_statistics"))
+cytotrol = data.table(labkey.selectRows(labkey.url.base,folderPath  = "HIPC/Lyoplate", "lists","cytotrol statistics for power analysis"))
+local_central = data.table(labkey.selectRows(labkey.url.base,folderPath="HIPC/Lyoplate","lists","Local vs. Central Manual Gating - Cytotrol Data"))
+
+#' Subset common columns
+seracare = seracare[,c("Population","Center","Sample","Proportion","Panel","Method"),with=FALSE]
+seracare$Experiment = "Seracare"
+   
+#' Merge the data sets
+data = rbind(seracare,cytotrol,local_central)
+```
+   
+We are interested in comparing the coefficients of variation between the manual central gating and the local manual gating in the Cytotrol data set. We calculate these and show a plot.
+```{r, eval=TRUE,echo=1:2,results='hide',message=FALSE,warning=FALSE}
+#Compute CVs for each Lyoplate panel, cell population, method and center, report the average CV across centers.
+CVS<-data[Method%in%c("local","central"),CV:=100*sd(Proportion,na.rm=TRUE)/mean(Proportion,na.rm=TRUE),list(Experiment,Panel,Population,Method,Center)][,list(CV=mean(CV,na.rm=TRUE)),list(Experiment,Panel,Population,Method)]
+CVS<-data[Method%in%c("manual","automated"),CV:=100*sd(Proportion,na.rm=TRUE)/mean(Proportion,na.rm=TRUE),list(Experiment,Panel,Population,Method,Sample,Center)][,list(CV=mean(CV,na.rm=TRUE)),list(Experiment,Panel,Population,Method)]
+```
+
+```{r,warning=FALSE,message=FALSE,cache=FALSE,fig.width=10,fig.height=5,echo=FALSE,include=TRUE,htmlcap='Coefficients of variability for cell populations identified in the Lyoplate panles on the Cytotrol data, comparing local vs central manual gating. The CVs are equivalen or lower for all cell populations across panels with the exception of the Memory IgD+ cell population in the B-cell panel. The IgD stain was known to be problematic for the Lyplate panels in the Cytotrol data set.'}
+#Plot Cytotrol
+ggplot(CVS[Method%in%c("local","central")])+aes(y=CV,x=Population,fill=Method)+facet_wrap(~Panel,scales="free")+geom_bar(position="dodge",stat="identity")+theme(axis.text.x=element_text(angle=45,hjust=1))+ggtitle("Cytotrol Cells")+scale_fill_brewer(type = "qual")
+```
+
+```{r,warning=FALSE,message=FALSE,cache=FALSE,fig.width=10,fig.height=5,echo=FALSE,include=FALSE}
+#Plot SeraCare
+ggplot(CVS[Method%in%c("manual","automated")])+aes(y=CV,x=Population,fill=Method)+facet_grid(~Panel,scales="free")+geom_bar(position="dodge",stat="identity")+theme(axis.text.x=element_text(angle=45,hjust=1))+ggtitle("SeraCare Cells")+scale_fill_brewer(type="qual")
+```
+
+### Power analysis
+The ratio of CVs between the local and manual gating is used to rescale the center-to-center variability for the power anlysis when simulating locally gated data. We also repeat the evaluation of the Seracare results presented [here](/study/HIPC/Lyoplate/dataset.view?Dataset.reportId=db%3A148&datasetId=5001) in order to extract the components of variability and the model fits.
+
+```{r,warning=FALSE,message=FALSE,cache=TRUE,echo=1:2,results='hide'}
+#' CV scaling factor for each cell population and panel between local and central gating
+cv.ratio<-CVS[Experiment%in%"Local_vs_Central"&Method%in%c("local","central"),list(ratio=CV[Method%in%"local"]/CV[Method%in%"central"]),list(Panel,Population)]
+setnames(cv.ratio,c("panel","Population","ratio"))
+
+#Now do the power analysis.
+panel=labkey.selectRows(labkey.url.base,"HIPC/Lyoplate","lists","Populations For Power Analysis")
+mapping<-solve_LSAP(adist(cv.ratio$Population,panel$Population))
+cv.ratio=cbind(cv.ratio[,list(panel,ratio)],Population=panel$Population[mapping])
+path<-"/share/files/HIPC/Lyoplate/@files"
+source(file.path(path,"scripts/helperFunctions.r"))
+data<-data.table(labkey.selectRows(labkey.url.base,folderPath = "HIPC/Lyoplate","study","cell_population_statistics"))
+data = data[,lp:=car::logit(Proportion,adjust=1e-5)]
+data = data[,Method:=factor(Method)]
+data=data[,Sample:=relevel(factor(Sample),"12828")]           
+```
+
+```{r,warning=FALSE,message=FALSE,cache=TRUE,results='hide',echo=FALSE}
+#Fit B-cells
+merb <- .fitMer(as.data.frame(data[Panel=="Bcell"]))
+vc2 <- .extractVcomp(merb,sd=FALSE)
+vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
+vc <- .extractVcomp(merb,sd=TRUE)
+vc2 <- .reorder.factor(vc2)
+vc <- .reorder.factor(vc)
+vcb<-vc2
+merb<-.fitMerBias(as.data.frame(data[Panel%in%"Bcell"]))
+cb<-.getCI(merb)
+cb<-.transCI(cb)
+levels(cb$Method)<-c("Automated","Manual")
+levels(vcb$Method)<-c("Automated","Manual")
+
+
+#Fit T-cells
+mert <- .fitMer(as.data.frame(data[Panel=="Tcell"]))
+vc2 <- .extractVcomp(mert,sd=FALSE)
+vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
+vc <- .extractVcomp(mert,sd=TRUE)
+vc2 <- .reorder.factor(vc2)
+vc <- .reorder.factor(vc)
+vct<-vc2
+mert<-.fitMerBias(as.data.frame(data[Panel%in%"Tcell"]))
+ct<-.getCI(mert)
+ct<-.transCI(ct)
+levels(ct$Method)<-c("Automated","Manual")
+levels(vct$Method)<-c("Automated","Manual")
+
+#Fit T-reg
+mertr <- .fitMer(as.data.frame(data[Panel=="Treg"]))
+vc2 <- .extractVcomp(mertr,sd=FALSE)
+vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
+vc <- .extractVcomp(mertr,sd=TRUE)
+vc2 <- .reorder.factor(vc2)
+vc <- .reorder.factor(vc)
+vctr<-vc2
+mertr<-.fitMerBias(as.data.frame(data[Panel%in%"Treg"]))
+ctr<-.getCI(mertr)
+ctr<-.transCI(ctr)
+levels(ctr$Method)<-c("Automated","Manual")
+levels(vctr$Method)<-c("Automated","Manual")
+
+#Fit DC
+merdc <- .fitMer(as.data.frame(data[Panel=="DC"]))
+vc2 <- .extractVcomp(merdc,sd=FALSE)
+vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
+vc <- .extractVcomp(merdc,sd=TRUE)
+vc2 <- .reorder.factor(vc2)
+vc <- .reorder.factor(vc)
+vcdc<-vc2
+merdc<-.fitMerBias(as.data.frame(data[Panel%in%"DC"]))
+cdc<-.getCI(merdc)
+cdc<-.transCI(cdc)
+levels(cdc$Method)<-c("Automated","Manual")
+levels(vcdc$Method)<-c("Automated","Manual")
+```
+   
+```{r,warning=FALSE,message=FALSE,cache=TRUE,echo=FALSE,results='hide'}
+.matchPops<-function(p1,p2,weight=c(1,1,1)){
+  d<-adist(p1,p2,costs = list(insertions=weight[1],deletions=weight[2],substitutions=weight[3]))
+  trans<-FALSE
+  if(ncol(d)<=nrow(d))
+    trans<-TRUE
+  if(trans){
+    d<-t(d)
+  }
+  mapping<-solve_LSAP(d)
+  if(trans){
+    l<-as.list(p2)
+    names(l)<-p1[mapping]
+  }else{
+    l<-as.list(p2[mapping])
+    names(l)<-p1
+  }
+  l
+}
+```
+   
+```{r,warning=FALSE,message=FALSE,cache=TRUE,echo=FALSE,results='hide'}
+plots<-mapply(function(pnl,V,CC){
+  mapping = .matchPops(levels(factor(subset(cv.ratio,panel==pnl)$Population)),levels(factor(V$Population)),weight=c(1,1,10))
+  ratio = subset(cv.ratio,panel==pnl)
+  ratio$Population = factor(ratio$Population)
+  ratio$Population = factor(mapvalues(as.character(ratio$Population),from=names(mapping),to=unlist(mapping)))
+  setnames(ratio,"ratio","var.ratio")
+  foo<-.prepDF(V,CC,ratio=ratio)
+  list(ggplot(foo)+geom_line(aes(x=SampleSize.value,y=effects,lty=S.cat,col=S.cat),lwd=1)+scale_x_continuous("Sample Size")+scale_y_continuous("Detectable Effect Size")+ggtitle(Kmisc::wrap(paste0("Effect Size Detected at 80% Power: ",pnl),35))+facet_wrap(~Population,scales="free_y")+scale_linetype("Variability",labels=c("Central: - Cross-Center","Central: Within-Center","Local Gating"))+theme_bw()+theme(legend.position="bottom")+scale_color_brewer("Variability",type="qual",labels=c("Central: - Cross-Center","Central: Within-Center","Local Gating")))
+},pnl=as.list(levels(factor(cv.ratio$panel))),V=list(vctr,vct,vcb),CC=list(ctr,ct,cb))
+```
+   
+```{r,echo=FALSE, htmlcap='Power analysis for the Lyoplate T-regulatory cell panel.'}
+ plots[[1]]
+```
+```{r,echo=FALSE, htmlcap='Power analysis for the Lyoplate T-cell panel.'}
+plots[[2]]
+```
+```{r,echo=FALSE, htmlcap='Power analysis for the Lyoplate B-cell panel.'}
+plots[[3]]
+```
+

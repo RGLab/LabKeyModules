@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <ReportDescriptor>
     <hidden>true</hidden>
+    <category>LyoplateVisualization module script</category>
     <category>A script that can be used manually for importing existing gating sets into the Lyoplate Visualization module framework</category>
 </ReportDescriptor>
 

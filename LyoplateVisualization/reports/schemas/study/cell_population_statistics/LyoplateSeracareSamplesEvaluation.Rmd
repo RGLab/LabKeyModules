@@ -1,0 +1,282 @@
+```{r init,echo=FALSE,eval=TRUE, message=FALSE}
+    library(knitr)
+    opts_chunk$set( dev='CairoPNG', fig.width=10, fig.height=7 )
+```
+
+# Lyoplate automated and manual gating evaluation of variability and bias
+
+<hr>
+**Goal:** This report evaluates and compare manual an automated gating on the seracare data (all panels). The evaluation is using the population frequencies reported by the different approaches. The table of statistics is available [here](/study/HIPC/Lyoplate/dataset.view?datasetId=5001). Evaluation is done both in terms of variability across replicates/centers and bias for the automated results compared to central manual analysis.
+
+**Conclusion:** Variability is comparable between manual and automated analysis is comparable across nearly all cell populations from all Lyoplate panels. This leads us to conclude that an automated gating pipeline can be used to supplant careful central manual gating for highly standardized cross-center studies utilizing standardized panels such as the Lyplates.
+<hr>
+
+```{r load_libraries,echo=FALSE,eval=TRUE,message=FALSE}
+    path<-"/share/files/HIPC/Lyoplate/@files/scripts"
+    library(tools);
+    library(data.table)
+library(reshape)
+library(plyr)
+library(lme4)
+library(car)
+library(clue)
+library(ggplot2)
+library(languageR)
+library(Kmisc)
+library(contrast)
+library(multcomp)
+library(Rlabkey)
+co <- labkey.setCurlOptions(sslversion = 1)
+library(formatR)
+source(file.path(path,"helperFunctions.r"))
+knit_hooks$set(htmlcap = function(before, options, envir) {
+    if(!before) {
+        paste('<p class="caption">',options$htmlcap,"</p>",sep="")
+    }
+})
+data<-fread("${input_data}")
+data<-data[,list(population,filename,center,sample,replicate,proportion,count,parent,count_parent,panel,method)]
+setnames(data,c("Population","Filename", "Center",  "Sample" , "Replicate", "Proportion", "Count", "Parent", "Parent Count", "Panel","Method"))
+data=data[!Population%in%c("Monocytes","CD3","Lymphocytes")]
+library(extrafont)
+loadfonts()
+```
+
+## Model fitting
+
+We fit a mixed-effects model to the logit-transformed cell population proportions.  
+We let $p_{rij}$ represent the proportion of cells in replicate $r$ from sample $i$, and center $j$. We transformed the proportion, $_{yrij}= logit(p_{rij})$, and model:
+$y_{rij}=\mu+ \alpha_i+\beta_j+\epsilon_{rij}$
+where $\mu$ is the intercept, $\alpha_i$ are the sample-level random effects, $\beta_j$ are the center-level random effects, and $\epsilon_{rij}$ are the residual technical errors, with $\epsilon_{rij} \sim N(0,\sigma^2_r)$, $\alpha_i \sim N(0,\sigma^2_{sample})$, $\beta_j \sim N(0,\sigma^2_{center})$ .   
+The estimates of the $\sigma^2$ from the model are the components of variance due to the different sources of variability.
+
+This is accomplished by the `.fitMer` function which is defined as:
+   
+```{r fitmer}
+# Fit a mixed effects regression model per Method and Cell Population.
+.fitMer <- function(TBL){
+   mer<-dlply(TBL,.(Method,Population),function(x){
+     fit<-lmer(lp~1+(1|Center)+(1|Sample),x,REML=FALSE,verbose=FALSE) #Model biological and center to center variability
+     fit
+   })
+   mer
+ }
+```
+
+### B-cell Panel
+
+This model is fit to each panel and cell population. The cell population proportions are logit-transformed. The `.extractVcomp` function extracts the variance components for sample, center, and residual effects from the `lme4` model fit objects for each method and cell population. The percent of variance and standard deviation are stored.
+
+```{r bcell_fit,  eval=TRUE,echo=TRUE}
+data = data[,lp:=logit(Proportion,adjust=1e-5)]
+data = data[,Method:=factor(Method)]
+merb <- .fitMer(as.data.frame(data[Panel=="Bcell"]))
+vc2 <- .extractVcomp(merb,sd=FALSE)
+vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
+vc <- .extractVcomp(merb,sd=TRUE)
+
+vc2 <- .reorder.factor(vc2)
+vc <- .reorder.factor(vc)
+```
+   
+   
+
+```{r bcell_variability,echo=TRUE,message=FALSE,warning=FALSE,htmlcap='Components of variability due to center, sample, and residual variation for each cell population in the B-cell panel. Stacked barplots of the variability across centers and samples for each cell population and method in the B-cell panel. The relative contribution of each component of variance is evident from the relative size of the stacked bars, as well as the magnitude of the total variability for each cell population and method.'}
+vc<-data.table(vc)[,value:=sd(arm::invlogit(rnorm(1000,sd=value))),list(Method,Population)]
+ ggplot(vc)+
+   geom_bar(aes(x=Method,y=value,fill=variable),stat="identity",position="stack")+
+   ggtitle("Variability per Method for B-Cell Panel")+
+   facet_wrap(~Population,scales="free_y",nrow=2)+
+   theme_bw()+
+   theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")+
+   scale_y_continuous("Standard Deviation")+
+   scale_fill_brewer("Source of Variability",type = "qual")+
+   scale_x_discrete(limits=c("automated","manual"))       
+```
+           
+We are also interested in the bias of each method compared to manual gating. As before, we fit a mixed effects model, but `Sample` is a fixed rather than a random effect. The estimates are extracted for each level of `Sample` as well as their 95% confidence interavals. These are then back-transformed onto the proportion scale for visualizaiton and comparison. 
+   
+The function `.fitMerBias` to perform the model fitting is:   
+
+```{r,echo=TRUE,eval=FALSE}
+.fitMerBias<-function(TBL){
+  mer<-dlply(TBL,.(Method,Population),function(x){
+    fit<-lmer(lp~Sample+(1|Center),x,REML=FALSE,verbose=FALSE) #Model biological and center to center variability
+    fit
+  })
+  mer
+}
+```
+           
+           
+```{r bias_bcell,echo=TRUE,message=FALSE,warning=FALSE,fig.height=8,htmlcap='Bias of each cell population gated using automated methods, relative to manually gated cell populations in the B-cell panel.'}
+data=data[,Sample:=relevel(factor(Sample),"12828")]           
+merb<-.fitMerBias(as.data.frame(data[Panel%in%"Bcell"]))
+
+
+cb<-.getCI(merb)
+cb<-.transCI(cb)
+           
+ggplot(cb)+
+           geom_point(aes(x=mean,y=Sample:Method,col=Sample,shape=Method),size=3)+
+           geom_segment(aes(x=lower,xend=upper,y=Sample:Method,yend=Sample:Method,col=Sample),lineend="round",lwd=1)+
+           theme_bw()+
+           scale_x_continuous("Proportion")+
+           scale_y_discrete()+
+           facet_wrap(~Population,ncol=3,scales="free_x")+
+           theme(axis.text.y=element_blank(),axis.title.y=element_blank(),axis.ticks.y=element_blank(),legend.position="bottom",legend.direction="horizontal")+
+           scale_color_brewer(type="qual")+ggtitle("Bias for B-cell Panel")        #   + xlim(c(0,0.9))
+```
+
+## T-cell, DC/Monocyte/NK, T-regulatory cell Lyoplate panels
+   
+We proceed as above to analyze the remaining Lyoplate panels. 
+   
+### T-cell Panel
+
+```{r tcell_fit,  eval=TRUE,echo=TRUE,fig.width=13}
+mert <- .fitMer(as.data.frame(data[Panel=="Tcell"]))
+vc2 <- .extractVcomp(mert,sd=FALSE)
+vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
+vc <- .extractVcomp(mert,sd=TRUE)
+
+vc2 <- .reorder.factor(vc2)
+vc <- .reorder.factor(vc)
+```
+   
+   
+
+```{r tcell_variability,echo=TRUE,message=FALSE,warning=FALSE,htmlcap="Components of variability due to center, sample, and residual variation for each cell population in the T-cell panel."}
+vc<-data.table(vc)[,value:=sd(arm::invlogit(rnorm(1000,sd=value))),list(Method,Population)]
+
+ ggplot(vc)+
+   geom_bar(aes(x=Method,y=value,fill=variable),stat="identity",position="stack")+
+   ggtitle("Variability per Method for T-Cell Panel")+
+   facet_wrap(~Population,scales="free_y",nrow=2)+
+   theme_bw()+
+   theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")+
+   scale_y_continuous("Standard Deviation")+
+   scale_fill_brewer("Source of Variability",type = "qual")+
+   scale_x_discrete(limits=c("automated","manual"))       
+```
+           
+           
+           
+```{r bias_tcell,echo=TRUE,message=FALSE,warning=FALSE,fig.height=8,htmlcap="Bias of each cell population gated using automated methods, relative to manually gated cell populations in the T-cell panel."}
+mert<-.fitMerBias(as.data.frame(data[Panel%in%"Tcell"]))
+
+
+ct<-.getCI(mert)
+ct<-.transCI(ct)
+           
+ggplot(ct)+
+           geom_point(aes(x=mean,y=Sample:Method,col=Sample,shape=Method),size=3)+
+           geom_segment(aes(x=lower,xend=upper,y=Sample:Method,yend=Sample:Method,col=Sample),lineend="round",lwd=1)+
+           theme_bw()+
+           scale_x_continuous("Proportion")+
+           scale_y_discrete()+
+           facet_wrap(~Population,ncol=3,scales="free_x")+
+           theme(axis.text.y=element_blank(),axis.title.y=element_blank(),axis.ticks.y=element_blank(),legend.position="bottom",legend.direction="horizontal")+
+           scale_color_brewer(type="qual")+ggtitle("Bias for T-cell Panel")       # + xlim(c(0,0.7))   
+```
+
+### DC / Mono / NK Panel
+             
+
+```{r dc_fit,  eval=TRUE,echo=TRUE,fig.width=13}
+merdc <- .fitMer(as.data.frame(data[Panel=="DC"]))
+vc2 <- .extractVcomp(merdc,sd=FALSE)
+vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
+vc <- .extractVcomp(merdc,sd=TRUE)
+
+vc2 <- .reorder.factor(vc2)
+vc <- .reorder.factor(vc)
+vcdc<-vc2
+```
+     
+
+```{r dc_variability,echo=TRUE,message=FALSE,warning=FALSE,htmlcap="Components of variability due to center, sample, and residual variation for each cell population in the DC/Monocyte/NK panel."}
+vc<-data.table(vc)[,value:=sd(arm::invlogit(rnorm(1000,sd=value))),list(Method,Population)]
+
+ ggplot(vc)+
+   geom_bar(aes(x=Method,y=value,fill=variable),stat="identity",position="stack")+
+   ggtitle("Variability per Method for DC/Mono/NK Panel")+
+   facet_wrap(~Population,scales="free_y",nrow=2)+
+   theme_bw()+
+   theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")+
+   scale_y_continuous("Standard Deviation")+
+   scale_fill_brewer("Source of Variability",type = "qual")+
+   scale_x_discrete(limits=c("automated","manual"))       
+```
+           
+           
+           
+```{r bias_dc,echo=TRUE,message=FALSE,warning=FALSE,fig.height=10,htmlcap="Bias of each cell population gated using automated methods, relative to manually gated cell populations in the DC/Monocyte/NK cell panel."}
+merdc<-.fitMerBias(as.data.frame(data[Panel%in%"DC"]))
+
+
+cdc<-.getCI(merdc)
+cdc<-.transCI(cdc)
+           
+ggplot(cdc)+
+           geom_point(aes(x=mean,y=Sample:Method,col=Sample,shape=Method),size=3)+
+           geom_segment(aes(x=lower,xend=upper,y=Sample:Method,yend=Sample:Method,col=Sample),lineend="round",lwd=1)+
+           theme_bw()+
+           scale_x_continuous("Proportion")+
+           scale_y_discrete()+
+           facet_wrap(~Population,ncol=3,scales="free_x")+
+           theme(axis.text.y=element_blank(),axis.title.y=element_blank(),axis.ticks.y=element_blank(),legend.position="bottom",legend.direction="horizontal")+
+           scale_color_brewer(type="qual")+ggtitle("Bias for DC/Mono/NK Panel")   # +xlim(c(0,0.8))       
+```
+             
+             
+### T-regulatory Panel
+             
+
+```{r treg_fit,  eval=TRUE,echo=TRUE,fig.width=13}
+mertreg <- .fitMer(as.data.frame(data[Panel=="Treg"]))
+vc2 <- .extractVcomp(mertreg,sd=FALSE)
+vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
+vc <- .extractVcomp(mertreg,sd=TRUE)
+
+vc2 <- .reorder.factor(vc2)
+vc <- .reorder.factor(vc)
+```
+   
+   
+
+```{r treg_variability,echo=TRUE,message=FALSE,warning=FALSE,htmlcap="Components of variability due to center, sample, and residual variation for each cell population in the T-regulatory cell panel."}
+
+vc<-data.table(vc)[,value:=sd(arm::invlogit(rnorm(1000,sd=value))),list(Method,Population)]
+
+ ggplot(vc)+
+   geom_bar(aes(x=Method,y=value,fill=variable),stat="identity",position="stack")+
+   ggtitle("Variability per Method for T-regulatory Cell Panel")+
+   facet_wrap(~Population,scales="free_y",nrow=2)+
+   theme_bw()+
+   theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")+
+   scale_y_continuous("Standard Deviation")+
+   scale_fill_brewer("Source of Variability",type = "qual")+
+   scale_x_discrete(limits=c("automated","manual"))       
+```
+           
+           
+           
+```{r bias_treg,echo=TRUE,message=FALSE,warning=FALSE,fig.height=10,htmlcap="Bias of each cell population gated using automated methods, relative to manually gated cell populations in the T-regulatory cell panel."}
+mertreg<-.fitMerBias(as.data.frame(data[Panel%in%"Treg"]))
+
+
+ctreg<-.getCI(mertreg)
+ctreg<-.transCI(ctreg)
+           
+ggplot(ctreg)+
+           geom_point(aes(x=mean,y=Sample:Method,col=Sample,shape=Method),size=3)+
+           geom_segment(aes(x=lower,xend=upper,y=Sample:Method,yend=Sample:Method,col=Sample),lineend="round",lwd=1)+
+           theme_bw()+
+           scale_x_continuous("Proportion")+
+           scale_y_discrete()+
+           facet_wrap(~Population,ncol=3,scales="free_x")+
+           theme(axis.text.y=element_blank(),axis.title.y=element_blank(),axis.ticks.y=element_blank(),legend.position="bottom",legend.direction="horizontal")+
+           scale_color_brewer(type="qual")+ggtitle("Bias for T-regulatory Cell Panel")  # + xlim(c(0,0.5))
+```
+
