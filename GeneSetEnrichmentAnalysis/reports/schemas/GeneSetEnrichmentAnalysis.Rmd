@@ -1,7 +1,7 @@
 ```{r knitr-opts, echo = FALSE}
 library(knitr)
 opts_chunk$set(message = FALSE, echo = FALSE, warning=FALSE)
-opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/GeneSetEnrichmentAnalysis/"))
+opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/GeneSetEnrichmentAnalysis/", labkey.user.email, ""))
 ```
 
 ```{r lib, cache = FALSE, message = FALSE, echo = FALSE, warning = FALSE}
@@ -21,11 +21,6 @@ library(data.table)
 ```
 
 ```{r funcs, echo = FALSE, cache = TRUE}
-getRunFromCohort <- function(con, cohort){
-  run <- gsub(".tsv$", "", unique(subset(con$data_cache$GE_inputs, arm_name == cohort)[, "name"]))
-  return(run)
-}
-
 msig_rnames <- function(rnames){
   rnames <- paste0('<a href="http://www.broadinstitute.org/gsea/msigdb/cards/',
                    rnames, '.html" target="_blank">', rnames, '</a>')
@@ -90,15 +85,13 @@ switch(set,
 
 ```{r EM, cache = TRUE, dependson="params;funcs"}
 con <- CreateConnection()
-run <-  getRunFromCohort(con, cohort)
-EM <- con$getGEMatrix(run, summary = TRUE)
+EM <- con$getGEMatrix(cohort = cohort, summary = TRUE)
 ```
 
 ```{r camera, cache = TRUE, dependson="EM;modules"}
 indices <- ids2indices(gene_sets, fData(EM)$gene_symbol)
 pData(EM)[, contrast] <- as.factor(pData(EM)[, contrast])
 mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
-#res <- camera(EM, indices, design = mm, sort = FALSE)
 ```
 
 ## Gene set enrichment analysis of `r cohort`
