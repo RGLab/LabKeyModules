@@ -503,8 +503,8 @@ public class DataLoader extends PipelineJob
         new StudyCopyConfig("study_pubmed"),
         new StudyCopyConfig("subject_measure_definition"),
         new StudyCopyConfig("substance_merge"),
-//        new HipcCopyConfig("contract_grant"), //ERROR: duplicate key value violates unique constraint "contract_grant_pkey"
-//        new HipcCopyConfig("program"), //ERROR: duplicate key value violates unique constraint "program_pkey"
+        new SharedCopyConfig("contract_grant"),
+        new SharedCopyConfig("program"),
 
         new SharedCopyConfig("fcs_annotation"),
         new SharedCopyConfig("fcs_analyzed_result_marker"),
