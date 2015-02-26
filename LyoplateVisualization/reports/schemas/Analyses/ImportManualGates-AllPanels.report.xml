@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ReportDescriptor>
+    <category>Manual Gating Import Script</category>
+    <description>Process and import manual gates for the Lyoplate panels from the FlowJo XML workspaces and FCS files.</description>
+    <label>Import manual gates - All Panels</label>
+</ReportDescriptor>

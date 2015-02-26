@@ -59,10 +59,14 @@
             <source schemaName="immport" queryName="ds_fcs_sample_files" />
             <destination schemaName="study" queryName="fcs_sample_files" targetOption="truncate" />
         </transform>
-        <transform id="fcs_analyzed_result_controls" type="org.labkey.di.pipeline.TransformTask">
-            <source schemaName="immport" queryName="ds_fcs_compensation_controls" />
-            <destination schemaName="study" queryName="fcs_compensation_controls" targetOption="truncate" />
+        <transform id="fcs_control" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="immport" queryName="ds_fcs_control" />
+            <destination schemaName="study" queryName="fcs_control" targetOption="truncate"/>
         </transform>
+        <!--<transform id="fcs_analyzed_result_controls" type="org.labkey.di.pipeline.TransformTask">-->
+        <!--    <source schemaName="immport" queryName="ds_fcs_control" />-->
+        <!--    <destination schemaName="study" queryName="fcs_compensation_controls" targetOption="truncate" />-->
+        <!--</transform>-->
         <!--<transform id="subject_measure" type="org.labkey.di.pipeline.TransformTask">-->
         <!--<source schemaName="immport" queryName="ds_subject_measure" />-->
         <!--<destination schemaName="study" queryName="subject_measure" targetOption="truncate" />-->

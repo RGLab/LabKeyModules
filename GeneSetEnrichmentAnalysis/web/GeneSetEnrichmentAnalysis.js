@@ -79,6 +79,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 ],
                 fields: [ 'name', 'name' ]
             }),
+            value: 'Blood transcription',
             valueField: 'name',
             width: fieldWidth
         });
@@ -189,6 +190,42 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             },
             deferredRender: false,
             items: [
+                {
+                    border: false,
+                    defaults: {
+                        border: false
+                    },
+                    items: [
+                        { html: 'For information and help on how to use the Gene Set Enrichment Analysis module, click the' },
+                        new Ext.Container({
+                            autoEl: 'a',
+                            html: '&nbsp;\'About\'&nbsp;',
+                            listeners: {
+                                afterrender: {
+                                    fn: function(){
+                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 2 ); } );
+                                    },
+                                    single: true
+                                }
+                            }
+                        }),
+                        { html: 'and' },
+                        new Ext.Container({
+                            autoEl: 'a',
+                            html: '&nbsp;\'Help\'&nbsp;',
+                            listeners: {
+                                afterrender: {
+                                    fn: function(){
+                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 3 ); } );
+                                    },
+                                    single: true
+                                }
+                            }
+                        }),
+                        { html: 'tabs above.</br></br>' }
+                    ],
+                    layout: 'hbox'
+                },
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
@@ -216,7 +253,29 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 autoHeight: true,
                 hideMode: 'offsets'
             },
-            html: 'Switch to the \'Input\' tab, select the parameter values and click the \'RUN\' button to generate the report',
+            items: {
+                border: false,
+                defaults: {
+                    border: false
+                },
+                items: [
+                    { html: 'Switch to the' },
+                    new Ext.Container({
+                        autoEl: 'a',
+                        html: '&nbsp;\'Input\'&nbsp;',
+                        listeners: {
+                            afterrender: {
+                                fn: function(){
+                                    this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 0 ); } );
+                                },
+                                single: true
+                            }
+                        }
+                    }),
+                    { html: 'tab, select the parameter values and click the \'RUN\' button to generate the report' },
+                ],
+                layout: 'hbox'
+            },
             layout: 'fit',
             tabTip: 'View',
             title: 'View'
@@ -275,7 +334,12 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: '<b>Cohort:</b> The cohorts with subjects of interest<br><br><b>Modules:</b> The modules used for grouping genes, currently the following modules are available:<br><ul><li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp" target="_blank">MSigDB c7</a>: Gene sets that represent cell states and perturbations within the immune system.</li><li><a href="http://www.immuneprofiling.org/meni/meni-paper/btm-landing.gsp" target="_blank">Blood transcription</a>: Set of transcription modules in blood.</li><li><a href="http://www.biir.net/public_wikis/module_annotation/G2_Trial_8_Modules" target="_blank">G2 (Trial 8) Modules</a>: Repertoire of co-clustering genes.</li></ul>',
+                            html: '<b>Cohort:</b> The cohorts with subjects of interest<br><br>\
+                                   <b>Modules:</b> The modules used for grouping genes, currently the following modules are available:<br><ul>\
+                                      <li><a href="http://www.immuneprofiling.org/meni/meni-paper/btm-landing.gsp" target="_blank">Blood transcription</a>: Set of transcription modules in blood.</li>\
+                                      <li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp" target="_blank">MSigDB c7</a>: Gene sets that represent cell states and perturbations within the immune system.</li>\
+                                      <li><a href="http://www.biir.net/public_wikis/module_annotation/G2_Trial_8_Modules" target="_blank">G2 (Trial 8) Modules</a>: Repertoire of co-clustering genes.</li>\
+                                   </ul>',
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Parameters'
                         })
@@ -297,8 +361,8 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                                 msgCls: 'mask-loading'
                             }
                         );
-                    },   
-                    single: true 
+                    },
+                    single: true
                 },
                 tabchange: function(tabPanel, tab){
                     if ( tab.title == 'Create' ){
