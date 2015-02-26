@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='SeraCare FCS Files' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        Contains up to one row of SeraCare FCS Files Snapshot (SeraCare FCS Files) data for each Participant/Visit combination.
+    </description>
+</query>
