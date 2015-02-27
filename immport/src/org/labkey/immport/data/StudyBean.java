@@ -49,6 +49,7 @@ public class StudyBean
     String maximum_age;
     String minimum_age;
     Date planned_public_release_date;
+    String program_title;
 
     // not in study table, but can be joined if desired
     String pi_names;
@@ -311,5 +312,15 @@ public class StudyBean
     public void setPi_names(String pi_names)
     {
         this.pi_names = pi_names;
+    }
+
+    public String getProgram_title()
+    {
+        return program_title;
+    }
+
+    public void setProgram_title(String program_title)
+    {
+        this.program_title = program_title;
     }
 }

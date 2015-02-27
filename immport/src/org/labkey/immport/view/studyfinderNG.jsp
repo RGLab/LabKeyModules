@@ -37,6 +37,8 @@
 <%@ page import="java.util.Comparator" %>
 <%@ page import="java.util.LinkedHashSet" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="java.util.TreeSet" %>
+<%@ page import="java.util.TreeMap" %>
 <%@ page extends="org.labkey.api.jsp.JspBase"%>
 <%!
     public LinkedHashSet<ClientDependency> getClientDependencies()
@@ -48,15 +50,17 @@
 %>
 <%
     ViewContext context = HttpView.currentContext();
-    ArrayList<StudyBean> studies = new SqlSelector(DbSchema.get("immport"),"SELECT study.*, pi.pi_names\n" +
-            "FROM immport.study LEFT OUTER JOIN\n" +
+    ArrayList<StudyBean> studies = new SqlSelector(DbSchema.get("immport"),"SELECT study.*, P.title as program_title, pi.pi_names\n" +
+            "FROM immport.study " +
+            "LEFT OUTER JOIN immport.workspace W ON study.workspace_id = W.workspace_id\n" +
+            "LEFT OUTER JOIN immport.contract_grant C ON W.contract_id = C.contract_grant_id\n" +
+            "LEFT OUTER JOIN immport.program P on C.program_id = P.program_id\n" +
+            "LEFT OUTER JOIN\n" +
             "\t(\n" +
             "\tSELECT study_accession, array_to_string(array_agg(first_name || ' ' || last_name),', ') as pi_names\n" +
             "\tFROM immport.study_personnel\n" +
             "\tWHERE role_in_study ilike '%principal%'\n" +
             "\tGROUP BY study_accession) pi ON study.study_accession = pi.study_accession\n").getArrayList(StudyBean.class);
-
-
 
     String hipcImg = request.getContextPath() + "/immport/hipc.png";
     Collections.sort(studies, new Comparator<StudyBean>(){
@@ -68,6 +72,10 @@
             return Integer.parseInt(a.substring(3)) - Integer.parseInt(b.substring(3));
         }
     });
+
+    Map<String,StudyBean> mapOfStudies = new TreeMap<>();
+    for (StudyBean sb : studies)
+        mapOfStudies.put(sb.getStudy_accession(), sb);
 %>
 
 <script src="<%=h(request.getContextPath())%>/query/olap.js"></script>
@@ -249,7 +257,7 @@
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimRace.summaryCount}}</td><td class="small-summary">&nbsp;races</td></tr>
                 <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">selection</h3></td></tr>
                 <tbody ng-repeat="dim in [dimCondition,dimSpecies,dimPrincipal,dimGender,dimRace,dimTimepoint,dimAssay,dimType] | filter:dimensionHasFilter ">
-                <tr><td colspan="2"><fieldset style="width:100%;"><legend>{{dim.name}}</legend>
+                <tr><td colspan="2"><fieldset style="width:100%;"><legend>{{dim.caption || dim.name}}</legend>
                     <div class="filter-member" ng-repeat="member in dim.filters">
                     <img class="delete" style="vertical-align:bottom;" src="<%=getContextPath()%>/_images/partdelete.png" ng-click="removeFilterMember(dim,member)">{{member.name}}
                     </div>
@@ -282,7 +290,7 @@
 </script>
 
 <script type="text/ng-template" id="/group.html">
-    <fieldset id="group_{{dim.name}}" class="group-fieldset"><h3 style="text-align:center;">{{dim.name}}</h3>
+    <fieldset id="group_{{dim.name}}" class="group-fieldset"><h3 style="text-align:center;">{{dim.caption || dim.name}}</h3>
         <div id="m_{{dim.Name}}_ALL" style="position:relative; width:100%;" class="member"
              ng-class="{selectedMember:(dim.selectedMember=='ALL')}"
              ng-click="selectMember(dim.name,null,$event)">
@@ -972,7 +980,7 @@ var dataspace =
         "Condition": {name:'Condition', hierarchyName:'Study.Conditions', levelName:'Condition', allMemberName:'[Study.Conditions].[(All)]'},
         "Assay": {name:'Assay', hierarchyName:'Assay', levelName:'Assay', allMemberName:'[Assay].[(All)]'},
         "Type": {name:'Type', hierarchyName:'Study.Type', levelName:'Type', allMemberName:'[Study.Type].[(All)]'},
-        "Timepoint":{name:'Timepoint', hierarchyName:'Timepoint.Timepoints', levelName:'Timepoint', allMemberName:'[Timepoint.Timepoints].[(All)]'},
+        "Timepoint":{caption:'Day of Study', name:'Timepoint', hierarchyName:'Timepoint.Timepoints', levelName:'Timepoint', allMemberName:'[Timepoint.Timepoints].[(All)]'},
         "Race": {name:'Race', hierarchyName:'Subject.Race', levelName:'Race', allMemberName:'[Subject.Race].[(All)]'},
         "Gender": {name:'Gender', hierarchyName:'Subject.Gender', levelName:'Gender', allMemberName:'[Subject.Gender].[(All)]'},
         "Species": {name:'Species', pluralName:'Species', hierarchyName:'Subject.Species', levelName:'Species', allMemberName:'[Subject.Species].[(All)]'},
@@ -1018,6 +1026,7 @@ if (!c.isRoot())
     TableInfo sp = s.getTable("StudyProperties");
     ((ContainerFilterable)sp).setContainerFilter(cf);
     Collection<Map<String, Object>> maps = new TableSelector(sp).getMapCollection();
+
     for (Map<String, Object> map : maps)
     {
         Container studyContainer = ContainerManager.getForId((String)map.get("container"));
@@ -1030,8 +1039,13 @@ if (!c.isRoot())
             study_accession = name;
         if (null != study_accession)
         {
-            %><%=text(comma)%><%=q(study_accession)%>:{ name:<%=q(study_accession)%>, uniqueName:'[Study].[<%=text(study_accession)%>]', <%
-                %>'hipc_funded':<%=text(isTrue(map.get("hipc_funded")))%>,<%
+            StudyBean bean = mapOfStudies.get(study_accession);
+            if (null == bean)
+                continue;
+            %><%=text(comma)%><%=q(study_accession)%>:{<%
+                %>name:<%=q(study_accession)%>,<%
+                %>uniqueName:<%=q("[Study].["+study_accession+"]")%>, <%
+                %>hipc_funded:<%=text(isTrue(StringUtils.contains(bean.getProgram_title(),"HIPC")))%>,<%
                 %>containerId:<%=q((String)map.get("container"))%>, url:<%=q(url.getLocalURIString())%>}<%
                comma = ",\n";
            }
