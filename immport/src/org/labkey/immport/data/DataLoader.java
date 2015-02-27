@@ -479,7 +479,7 @@ public class DataLoader extends PipelineJob
         new SharedCopyConfig("reagent"),
         new SharedCopyConfig("treatment", QueryUpdateService.InsertOption.MERGE),   // TODO bug duplicate treatments in mysql archive
         new StudyCopyConfig("adverse_event"),
-        new SharedCopyConfig("analyte"),
+//        new SharedCopyConfig("analyte"),
         new StudyCopyConfig("assessment"),
         new SharedCopyConfig("control_sample"),
         new SharedCopyConfig("expsample_mbaa_detail"),
