@@ -56,8 +56,8 @@
             <destination schemaName="study" queryName="fcs_sample_files" targetOption="truncate" />
         </transform>
         <transform id="fcs_controls" type="org.labkey.di.pipeline.TransformTask">
-            <source schemaName="immport" queryName="ds_fcs_control" />
-            <destination schemaName="study" queryName="fcs_compensation_controls" targetOption="truncate" />
+            <source schemaName="immport" queryName="ds_fcs_control_files" />
+            <destination schemaName="study" queryName="fcs_control_files" targetOption="truncate" />
         </transform>
         <!--<transform id="subject_measure" type="org.labkey.di.pipeline.TransformTask">-->
         <!--<source schemaName="immport" queryName="ds_subject_measure" />-->
