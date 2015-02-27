@@ -325,6 +325,7 @@
             <column columnName="participantid"/>
             <column columnName="study"/>
             <column columnName="type"/>
+            <column columnName="program"/>
             <column columnName="sortorder"/>
         </columns>
     </table>

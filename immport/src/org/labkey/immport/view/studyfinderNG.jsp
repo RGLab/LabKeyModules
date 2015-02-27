@@ -37,6 +37,8 @@
 <%@ page import="java.util.Comparator" %>
 <%@ page import="java.util.LinkedHashSet" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="java.util.TreeSet" %>
+<%@ page import="java.util.TreeMap" %>
 <%@ page extends="org.labkey.api.jsp.JspBase"%>
 <%!
     public LinkedHashSet<ClientDependency> getClientDependencies()
@@ -48,15 +50,17 @@
 %>
 <%
     ViewContext context = HttpView.currentContext();
-    ArrayList<StudyBean> studies = new SqlSelector(DbSchema.get("immport"),"SELECT study.*, pi.pi_names\n" +
-            "FROM immport.study LEFT OUTER JOIN\n" +
+    ArrayList<StudyBean> studies = new SqlSelector(DbSchema.get("immport"),"SELECT study.*, P.title as program_title, pi.pi_names\n" +
+            "FROM immport.study " +
+            "LEFT OUTER JOIN immport.workspace W ON study.workspace_id = W.workspace_id\n" +
+            "LEFT OUTER JOIN immport.contract_grant C ON W.contract_id = C.contract_grant_id\n" +
+            "LEFT OUTER JOIN immport.program P on C.program_id = P.program_id\n" +
+            "LEFT OUTER JOIN\n" +
             "\t(\n" +
             "\tSELECT study_accession, array_to_string(array_agg(first_name || ' ' || last_name),', ') as pi_names\n" +
             "\tFROM immport.study_personnel\n" +
             "\tWHERE role_in_study ilike '%principal%'\n" +
             "\tGROUP BY study_accession) pi ON study.study_accession = pi.study_accession\n").getArrayList(StudyBean.class);
-
-
 
     String hipcImg = request.getContextPath() + "/immport/hipc.png";
     Collections.sort(studies, new Comparator<StudyBean>(){
@@ -68,6 +72,10 @@
             return Integer.parseInt(a.substring(3)) - Integer.parseInt(b.substring(3));
         }
     });
+
+    Map<String,StudyBean> mapOfStudies = new TreeMap<>();
+    for (StudyBean sb : studies)
+        mapOfStudies.put(sb.getStudy_accession(), sb);
 %>
 
 <script src="<%=h(request.getContextPath())%>/query/olap.js"></script>
@@ -1018,6 +1026,7 @@ if (!c.isRoot())
     TableInfo sp = s.getTable("StudyProperties");
     ((ContainerFilterable)sp).setContainerFilter(cf);
     Collection<Map<String, Object>> maps = new TableSelector(sp).getMapCollection();
+
     for (Map<String, Object> map : maps)
     {
         Container studyContainer = ContainerManager.getForId((String)map.get("container"));
@@ -1030,8 +1039,13 @@ if (!c.isRoot())
             study_accession = name;
         if (null != study_accession)
         {
-            %><%=text(comma)%><%=q(study_accession)%>:{ name:<%=q(study_accession)%>, uniqueName:'[Study].[<%=text(study_accession)%>]', <%
-                %>'hipc_funded':<%=text(isTrue(map.get("hipc_funded")))%>,<%
+            StudyBean bean = mapOfStudies.get(study_accession);
+            if (null == bean)
+                continue;
+            %><%=text(comma)%><%=q(study_accession)%>:{<%
+                %>name:<%=q(study_accession)%>,<%
+                %>uniqueName:<%=q("[Study].["+study_accession+"]")%>, <%
+                %>hipc_funded:<%=text(isTrue(StringUtils.contains(bean.getProgram_title(),"HIPC")))%>,<%
                 %>containerId:<%=q((String)map.get("container"))%>, url:<%=q(url.getLocalURIString())%>}<%
                comma = ",\n";
            }
