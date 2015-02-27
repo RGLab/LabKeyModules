@@ -257,7 +257,7 @@
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimRace.summaryCount}}</td><td class="small-summary">&nbsp;races</td></tr>
                 <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">selection</h3></td></tr>
                 <tbody ng-repeat="dim in [dimCondition,dimSpecies,dimPrincipal,dimGender,dimRace,dimTimepoint,dimAssay,dimType] | filter:dimensionHasFilter ">
-                <tr><td colspan="2"><fieldset style="width:100%;"><legend>{{dim.name}}</legend>
+                <tr><td colspan="2"><fieldset style="width:100%;"><legend>{{dim.caption || dim.name}}</legend>
                     <div class="filter-member" ng-repeat="member in dim.filters">
                     <img class="delete" style="vertical-align:bottom;" src="<%=getContextPath()%>/_images/partdelete.png" ng-click="removeFilterMember(dim,member)">{{member.name}}
                     </div>
@@ -290,7 +290,7 @@
 </script>
 
 <script type="text/ng-template" id="/group.html">
-    <fieldset id="group_{{dim.name}}" class="group-fieldset"><h3 style="text-align:center;">{{dim.name}}</h3>
+    <fieldset id="group_{{dim.name}}" class="group-fieldset"><h3 style="text-align:center;">{{dim.caption || dim.name}}</h3>
         <div id="m_{{dim.Name}}_ALL" style="position:relative; width:100%;" class="member"
              ng-class="{selectedMember:(dim.selectedMember=='ALL')}"
              ng-click="selectMember(dim.name,null,$event)">
@@ -980,7 +980,7 @@ var dataspace =
         "Condition": {name:'Condition', hierarchyName:'Study.Conditions', levelName:'Condition', allMemberName:'[Study.Conditions].[(All)]'},
         "Assay": {name:'Assay', hierarchyName:'Assay', levelName:'Assay', allMemberName:'[Assay].[(All)]'},
         "Type": {name:'Type', hierarchyName:'Study.Type', levelName:'Type', allMemberName:'[Study.Type].[(All)]'},
-        "Timepoint":{name:'Timepoint', hierarchyName:'Timepoint.Timepoints', levelName:'Timepoint', allMemberName:'[Timepoint.Timepoints].[(All)]'},
+        "Timepoint":{caption:'Day of Study', name:'Timepoint', hierarchyName:'Timepoint.Timepoints', levelName:'Timepoint', allMemberName:'[Timepoint.Timepoints].[(All)]'},
         "Race": {name:'Race', hierarchyName:'Subject.Race', levelName:'Race', allMemberName:'[Subject.Race].[(All)]'},
         "Gender": {name:'Gender', hierarchyName:'Subject.Gender', levelName:'Gender', allMemberName:'[Subject.Gender].[(All)]'},
         "Species": {name:'Species', pluralName:'Species', hierarchyName:'Subject.Species', levelName:'Species', allMemberName:'[Subject.Species].[(All)]'},
