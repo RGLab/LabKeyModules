@@ -231,7 +231,7 @@
                 <div ng-include="'/group.html'" ng-repeat="dim in [dimSpecies,dimCondition]"></div>
             </td>
             <td valign=top style="min-width:180px;">
-                <div ng-include="'/group.html'" ng-repeat="dim in [dimType,dimAssay]"></div>
+                <div ng-include="'/group.html'" ng-repeat="dim in [dimType,dimCategory,dimAssay]"></div>
             </td>
             <td valign=top style="min-width:180px;">
                 <div ng-include="'/group.html'" ng-repeat="dim in [dimTimepoint]"></div>
@@ -256,7 +256,7 @@
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimGender.summaryCount}}</td><td class="small-summary">&nbsp;genders</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimRace.summaryCount}}</td><td class="small-summary">&nbsp;races</td></tr>
                 <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">selection</h3></td></tr>
-                <tbody ng-repeat="dim in [dimCondition,dimSpecies,dimPrincipal,dimGender,dimRace,dimTimepoint,dimAssay,dimType] | filter:dimensionHasFilter ">
+                <tbody ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace] | filter:dimensionHasFilter ">
                 <tr><td colspan="2"><fieldset style="width:100%;"><legend>{{dim.caption || dim.name}}</legend>
                     <div class="filter-member" ng-repeat="member in dim.filters">
                     <img class="delete" style="vertical-align:bottom;" src="<%=getContextPath()%>/_images/partdelete.png" ng-click="removeFilterMember(dim,member)">{{member.name}}
@@ -903,6 +903,7 @@ studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http)
 	$scope.dimTimepoint=dataspace.dimensions.Timepoint;
 	$scope.dimAssay=dataspace.dimensions.Assay;
     $scope.dimType=dataspace.dimensions.Type;
+    $scope.dimCategory=dataspace.dimensions.Category;
 
     $scope.cube = LABKEY.query.olap.CubeManager.getCube({
         configId: 'ImmPort:/StudyCube',
@@ -980,6 +981,7 @@ var dataspace =
         "Condition": {name:'Condition', hierarchyName:'Study.Conditions', levelName:'Condition', allMemberName:'[Study.Conditions].[(All)]'},
         "Assay": {name:'Assay', hierarchyName:'Assay', levelName:'Assay', allMemberName:'[Assay].[(All)]'},
         "Type": {name:'Type', hierarchyName:'Study.Type', levelName:'Type', allMemberName:'[Study.Type].[(All)]'},
+        "Category": {name:'Category', hierarchyName:'Study.Category', levelName:'Category', allMemberName:'[Study.Category].[(All)]'},
         "Timepoint":{caption:'Day of Study', name:'Timepoint', hierarchyName:'Timepoint.Timepoints', levelName:'Timepoint', allMemberName:'[Timepoint.Timepoints].[(All)]'},
         "Race": {name:'Race', hierarchyName:'Subject.Race', levelName:'Race', allMemberName:'[Subject.Race].[(All)]'},
         "Gender": {name:'Gender', hierarchyName:'Subject.Gender', levelName:'Gender', allMemberName:'[Subject.Gender].[(All)]'},
