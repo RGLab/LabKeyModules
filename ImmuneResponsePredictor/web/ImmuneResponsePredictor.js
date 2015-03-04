@@ -467,6 +467,42 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             },
             deferredRender: false,
             items: [
+                {
+                    border: false,
+                    defaults: {
+                        border: false
+                    },
+                    items: [
+                        { html: 'For information and help on how to use the Immune Response Predictor module, click the' },
+                        new Ext.Container({
+                            autoEl: 'a',
+                            html: '&nbsp;\'About\'&nbsp;',
+                            listeners: {
+                                afterrender: {
+                                    fn: function(){
+                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 2 ); } );
+                                    },
+                                    single: true
+                                }
+                            }
+                        }),
+                        { html: 'and' },
+                        new Ext.Container({
+                            autoEl: 'a',
+                            html: '&nbsp;\'Help\'&nbsp;',
+                            listeners: {
+                                afterrender: {
+                                    fn: function(){
+                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 3 ); } );
+                                    },
+                                    single: true
+                                }
+                            }
+                        }),
+                        { html: 'tabs above.</br></br>' }
+                    ],
+                    layout: 'hbox'
+                },
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
@@ -487,7 +523,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         chDichotomize,
                         nfDichotomize
                     ],
-                    //title: 'Select Response'
                     title: 'Parameters'
                 }),
                 new Ext.form.FieldSet({
@@ -522,7 +557,29 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 autoHeight: true,
                 hideMode: 'offsets'
             },
-            html: 'Switch to the \'Input\' tab, select the parameter values and click the \'RUN\' button to generate the report',
+            items: {
+                border: false,
+                defaults: {
+                    border: false
+                },
+                items: [
+                    { html: 'Switch to the' },
+                    new Ext.Container({
+                        autoEl: 'a',
+                        html: '&nbsp;\'Input\'&nbsp;',
+                        listeners: {
+                            afterrender: {
+                                fn: function(){
+                                    this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 0 ); } );
+                                },
+                                single: true
+                            }
+                        }
+                    }),
+                    { html: 'tab, select the parameter values and click the \'RUN\' button to generate the report' },
+                ],
+                layout: 'hbox'
+            },
             layout: 'fit',
             tabTip: 'View',
             title: 'View'
@@ -593,17 +650,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                                 <b>Dichotomization threshold:</b> The threshold for dichotomization, every subject with a value above the selected threshold will be considered a responder\
                             ',
                             style: 'margin-top: 5px;',
-                            //title: 'Response'
                             title: 'Parameters'
                         }),
-                       // new Ext.form.Label({
-                       //     text: 'This section is used to select the predicting variable'
-                       // }),
-                       // new Ext.form.FieldSet({
-                       //     html: '<b>Time point:</b> The time point in the predicting assay to be used<br><b>Assay:</b> The predicting assay (currently, only gene expression is available)',
-                       //     style: 'margin-top: 5px;',
-                       //     title: 'Predictors'
-                       // }),
                         new Ext.form.Label({
                             text: 'The additional options are used for filtering of the predicting features. Note that if Time point is 0 or less, the filtering options are disabled.'
                         }),

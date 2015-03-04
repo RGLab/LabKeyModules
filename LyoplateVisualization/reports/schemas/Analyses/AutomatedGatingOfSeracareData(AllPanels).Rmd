@@ -183,7 +183,7 @@ pop_stats$Panel=mapvalues(pop_stats$Panel,from=c("bcell","tcell","DC","treg"),to
 write.csv(pop_stats, file = td, row.names = FALSE)
 md5new <- md5sum(td)
  md5current<-md5sum(stats_path_auto)
-if(TRUE){
+if(labkey.user.email=="gfinak@fhcrc.org"){
   message("Writing population statistics")
   write.csv(pop_stats, file = stats_path_auto, row.names = FALSE)
    #query

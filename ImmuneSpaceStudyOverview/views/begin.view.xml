@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<view xmlns='http://labkey.org/data/xml/view' title='Study Overview'>
+<view xmlns='http://labkey.org/data/xml/view' title='ImmuneSpace Study Overview'>
     <dependencies>
         <dependency path='ISCore/Common'/>
 

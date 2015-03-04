@@ -4,5 +4,6 @@
         <cv:column name="Comments"/>
         <cv:column name="featureSet"/>
         <cv:column name="DataOutputs/DownloadLink"/>
+        <cv:column name="Cohort"/>
     </cv:columns>
 </cv:customView>

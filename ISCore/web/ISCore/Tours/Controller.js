@@ -1,8 +1,7 @@
 (function(){
     var
-        page            = ( LABKEY.ActionURL.getController() + '-' + LABKEY.ActionURL.getAction() ).toLowerCase(),
-        isPortalPage    = page == 'project-begin',
-        isMainTabOrCont = ( window.location.hash != '' ) || // Indicates tour continuation regardless of the tab
+        isPortalPage    = ( LABKEY.ActionURL.getController() + '-' + LABKEY.ActionURL.getAction() ).toLowerCase() == 'project-begin',
+        isMainTabOrCont = ( window.location.hash != '' ) ||                                     // Indicates tour continuation regardless of the tab
                           ( ( Object.keys( LABKEY.ActionURL.getParameters() ).length == 0 ) &&  // No params, so it's the first tab
                             ( window.location.hash == '' ) ),                                   // Direct hit, no tour implied
         isStudyFolder   = LABKEY.moduleContext.study && LABKEY.moduleContext.study.timepointType && isMainTabOrCont,

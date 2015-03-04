@@ -35,7 +35,7 @@ LABKEY.ext.DataSummary = Ext.extend( Ext.Panel, {
 
         $('#' + config.webPartDivId).append(
             '<div id=\'Summary' + config.webPartDivId + '\'>' +
-                '<div class=\'placeholder\' style=\'height: 40px;\'></div>' +
+                '<div class=\'placeholder\' style=\'height: 50px;\'></div>' +
             '</div>'
         );
 
@@ -48,7 +48,7 @@ LABKEY.ext.DataSummary = Ext.extend( Ext.Panel, {
         me.myMask = new Ext.LoadMask(
             $('#Summary' + config.webPartDivId)[0],
             {
-                msg: 'Please, wait, while the aggregate summary table is loading',
+                msg: 'Wait, while the aggregate summary table is loading',
                 msgCls: 'mask-loading'
             }
         );

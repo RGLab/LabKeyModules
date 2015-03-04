@@ -1,6 +1,6 @@
 ```{r knitr-opts, echo = FALSE, message = FALSE}
-opts_chunk$set(echo = TRUE, message = FALSE)
-opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Heatmap/"))
+opts_chunk$set(echo = FALSE, message = FALSE)
+opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Heatmap/", labkey.user.email, ""))
 ```
 
 ```{r libraries, echo = FALSE, message = FALSE}
@@ -53,17 +53,16 @@ if(errorString != ""){
 
 ```{r read-EM}
 con <- CreateConnection()
-runs <- getRunFromCohort(con, uarm)
 ```
-```{r prints, eval = TRUE}
+```{r prints, eval = FALSE}
 con
-runs
+uarm
 ```
 
 ```{r runs}
-anno_list <- mat_list <- vector("list", length(runs))
-for(runIdx in 1:length(runs)){
-   EM <- con$getGEMatrix(runs[runIdx], summary = TRUE)
+anno_list <- mat_list <- vector("list", length(uarm))
+for(runIdx in 1:length(uarm)){
+   EM <- con$getGEMatrix(cohort = uarm, summary = TRUE)
    pd <- data.table(pData(EM))
    pd <- pd[order(get(contrast), subject_accession)]
    coefs <- unique(pd[, get(contrast)])

@@ -80,8 +80,16 @@
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
+    font: 12px verdana, arial, helvetica, sans-serif;
 }
 
+.ISCore .x-tool-toggle {
+    margin-top: 2px;
+}
+
+.ISCore .x-fieldset-header {
+    padding-top: 2px;
+}
 /* ************************************************************ */
 .iconConfigure {
     background-image: url(../_images/configure.png);
@@ -183,11 +191,6 @@ pre, .ext-mb-text {
 }
 
 .ISCore .mask-loading {
-    border-left: 0px;
-    left: 0 !important;
-    margin-left: 0px;
-    padding-left: 0px;
-    width: 100%;
     z-index: 999;
 }
 
@@ -217,10 +220,6 @@ pre, .ext-mb-text {
 }
 .ISCore .x-form-check-wrap {
     margin-bottom: 1px;
-}
-
-.ISCore ul.x-tab-strip-top {
-    padding-top: 0px;
 }
 
 
@@ -286,6 +285,10 @@ pre, .ext-mb-text {
 
 /**********************************/
 /* Ext TabPanel fixes */
+.ISCore ul.x-tab-strip-top {
+    padding-top: 0px;
+}
+
 .ISCore .x-tab-strip {
     padding-left: 5px;
 }
@@ -296,6 +299,10 @@ pre, .ext-mb-text {
 
 .ISCore .x-tab-strip-over {
     text-decoration: underline;
+}
+
+.ISCore .x-tab-strip span.x-tab-strip-text {
+    font: bold 12px tahoma,arial,helvetica;
 }
 
 /********************************/

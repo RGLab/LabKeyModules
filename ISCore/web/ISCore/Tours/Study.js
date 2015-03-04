@@ -9,7 +9,7 @@ var studyTour = function(){
             showNextButton: true,
         },{
             title: 'Study Overview',
-            content: 'Overall summary about the study, objectives, protocols, conditions studied etc.',
+            content: 'Overall summary of the study, objectives, protocols, conditions studied etc.',
             target: $('.labkey-wp')[0],
             placement: 'top',
             showPrevButton: true,
@@ -31,7 +31,7 @@ var studyTour = function(){
             showPrevButton: true,
             showNextButton: true,
             onNext: function(){
-                LABKEY.help.Tour.continueAtLocation('?pageId=study.PARTICIPANTS');
+                LABKEY.help.Tour.continueAtLocation('/project' + LABKEY.container.path + '/begin.view?pageId=study.PARTICIPANTS');
             }
         },{
             title: 'Subject List',
@@ -41,7 +41,7 @@ var studyTour = function(){
             showPrevButton: true,
             showNextButton: true,
             onPrev: function(){
-                LABKEY.help.Tour.continueAtLocation('?');
+                LABKEY.help.Tour.continueAtLocation('/project' + LABKEY.container.path + '/begin.view?');
             }
         },{
             title: 'Demographics Table',
@@ -60,7 +60,7 @@ var studyTour = function(){
             showPrevButton: true,
             showNextButton: true,
             onNext: function(){
-                LABKEY.help.Tour.continueAtLocation('?pageId=study.DATA_ANALYSIS');
+                LABKEY.help.Tour.continueAtLocation('/project' + LABKEY.container.path + '/begin.view?pageId=study.DATA_ANALYSIS');
             }
         },{
             title: 'Data Views',
@@ -70,7 +70,7 @@ var studyTour = function(){
             showPrevButton: true,
             showNextButton: true,
             onPrev: function(){
-                LABKEY.help.Tour.continueAtLocation('?pageId=study.PARTICIPANTS');
+                LABKEY.help.Tour.continueAtLocation('/project' + LABKEY.container.path + '/begin.view?pageId=study.PARTICIPANTS');
             }
 
         },{
@@ -91,7 +91,7 @@ var studyTour = function(){
             showPrevButton: true,
             showNextButton: true,
             onNext: function(){
-                LABKEY.help.Tour.continueAtLocation('?pageId=Modules');
+                LABKEY.help.Tour.continueAtLocation('/project' + LABKEY.container.path + '/begin.view?pageId=Modules');
             }
         },{
             title: 'Active Modules',
@@ -101,7 +101,7 @@ var studyTour = function(){
             showPrevButton: true,
             showNextButton: true,
             onPrev: function(){
-                LABKEY.help.Tour.continueAtLocation('?pageId=study.DATA_ANALYSIS');
+                LABKEY.help.Tour.continueAtLocation('/project' + LABKEY.container.path + '/begin.view?pageId=study.DATA_ANALYSIS');
             }
         },{
             title: 'Reports',
@@ -113,16 +113,16 @@ var studyTour = function(){
             showPrevButton: true,
             showNextButton: true,
             onNext: function(){
-                LABKEY.help.Tour.continueAtLocation('?pageId=Reports');
+                LABKEY.help.Tour.continueAtLocation('/project' + LABKEY.container.path + '/begin.view?pageId=Reports');
             }
         },{
             title: 'Available Reports',
-            content: 'List of available reports for this study. The list vary depending on the data available and the type of study. Reports can be generic or tailored to the study.',
+            content: 'List of available reports for this study. The list will vary depending on the data available and the type of study. Reports can be generic or tailored to the study.',
             target: $('.labkey-wp')[0],
             placement: 'top',
             showPrevButton: true,
             onPrev: function(){
-                LABKEY.help.Tour.continueAtLocation('?pageId=Modules');
+                LABKEY.help.Tour.continueAtLocation('/project' + LABKEY.container.path + '/begin.view?pageId=Modules');
             }
 
         }]

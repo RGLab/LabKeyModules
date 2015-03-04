@@ -34,8 +34,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             ;
 
         var checkBtnPlotStatus = function(){
-            chNormalize.setDisabled( cbTimePoint.getValue() === 0 );
-
             if (    cbResponse.isValid( true ) &&
                     cbCohorts.isValid( true ) &&
                     cbTimePoint.isValid( true ) &&
@@ -50,7 +48,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var manageCbGenesState = function(){
             var tempSQL = '',
-                tempArray = cbCohorts.getCheckedArray('featureSetId'),
+                tempArray = cbCohorts.getCheckedArray( 'featureSetId' ),
                 len = tempArray.length
             ;
             if ( len >= 1 ){
@@ -81,11 +79,18 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         ///////////////////////////////////
 
         var strCohort = new LABKEY.ext.Store({
-            autoLoad: true,
+            autoLoad: false,
             listeners: {
+                load: function(){
+                    if ( this.getCount() > 0 ){
+                        cbCohorts.setDisabled( false );
+                    } else {
+                        cbCohorts.setDisabled( true );
+                    }
+                },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'cohorts_GEE',
+            queryName: 'studyCohortsInfo_GEE',
             schemaName: 'study'
         });
 
@@ -93,12 +98,14 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             autoLoad: true,
             listeners: {
                 load: function(){
-                    var field = { name: 'displayTimepoint' };
+                    var field = { name: 'displayTimepoint' }, num, unit;
                     field = new Ext.data.Field(field);
                     this.recordType.prototype.fields.replace(field);
                     this.each( function(r){
-                        if ( ! r.data[field.name] ){
-                            r.data[field.name] = r.data['timepoint'] +  ' ' + r.data['timepointUnit'];
+                        if ( r.data[field.name] == undefined ){
+                            num                 = r.data['timepoint'];
+                            unit                = r.data['timepointUnit'];
+                            r.data[field.name]  = num + ' ' + ( num != 1 ? unit : unit.slice( 0, unit.length - 1 ) );
                         }
                     });
 
@@ -187,6 +194,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 data: [ [ 'HAI', 'HAI' ] ],
                 fields: [ 'name', 'name' ]
             }),
+            value: 'HAI',
             valueField: 'name',
             width: fieldWidth
         });
@@ -196,11 +204,13 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             displayField: 'cohort',
             fieldLabel: 'Cohorts',
             lazyInit: false,
+            disabled: true,
             listeners: {
                 change:     manageCbGenesState,
                 cleared:    manageCbGenesState,
                 select:     manageCbGenesState
             },
+            separator: ';',
             store: strCohort,
             valueField: 'cohort',
             width: fieldWidth
@@ -212,12 +222,18 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             fieldLabel: 'Time point',
             lazyInit: false,
             listeners: {
-                change:     checkBtnPlotStatus,
-                cleared:    checkBtnPlotStatus,
-                select:     checkBtnPlotStatus
+                change: function(){
+                    handleTimepointSelection();
+                },
+                cleared: function(){
+                    handleTimepointSelection();
+                },
+                select: function(){
+                    handleTimepointSelection();
+                }
             },
             store: strTimePoint,
-            valueField: 'timepoint',
+            valueField: 'displayTimepoint',
             width: fieldWidth
         });
 
@@ -330,8 +346,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 cnfPlot.inputParams = {
                     response:           cbResponse.getValue(),
                     cohorts:            Ext.encode( cbCohorts.getCheckedArray() ),
-                    timePoint:          cbTimePoint.getValue(),
-                    timePointDisplay:   cbTimePoint.getRawValue(),
+                    timePoint:          cbTimePoint.getSelectedField( 'timepoint' ),
+                    timePointUnit:      cbTimePoint.getSelectedField( 'timepointUnit' ),
                     normalize:          chNormalize.getValue(),
                     genes:              Ext.encode( cbGenes.getValuesAsArray() ),
                     textSize:           spnrTextSize.getValue(),
@@ -357,7 +373,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             allowDecimals: false,
             fieldLabel: 'Text size',
             listeners: {
-                invalid:    function(){ btnPlot.setDisabled(true); },
+                invalid:    function(){ btnPlot.setDisabled( true ); },
                 valid:      checkBtnPlotStatus
             },
             maxValue: 30,
@@ -486,6 +502,42 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             },
             deferredRender: false,
             items: [
+                {
+                    border: false,
+                    defaults: {
+                        border: false
+                    },
+                    items: [
+                        { html: 'For information and help on how to use the Gene Expression Explorer module, click the' },
+                        new Ext.Container({
+                            autoEl: 'a',
+                            html: '&nbsp;\'About\'&nbsp;',
+                            listeners: {
+                                afterrender: {
+                                    fn: function(){
+                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 1 ); } );
+                                    },
+                                    single: true
+                                }
+                            }
+                        }),
+                        { html: 'and</br></br>' },
+                        new Ext.Container({
+                            autoEl: 'a',
+                            html: '&nbsp;\'Help\'&nbsp;',
+                            listeners: {
+                                afterrender: {
+                                    fn: function(){
+                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 2 ); } );
+                                    },
+                                    single: true
+                                }
+                            }
+                        }),
+                        { html: 'tabs above.' }
+                    ],
+                    layout: 'hbox'
+                },
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
@@ -494,8 +546,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             height: 20,
                             html: '&nbsp'
                         }),
-                        cbCohorts,
                         cbTimePoint,
+                        cbCohorts,
                         chNormalize,
                         cbGenes
                     ],
@@ -585,7 +637,12 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             text: 'The following parameters are required to generate the plot'
                         }),
                         new Ext.form.FieldSet({
-                            html: '<b>Response:</b> The variable to plot against the expression of selected genes. For HAI, the timepoint of peak immunogenicity is selected.<br><br><b>Cohorts:</b> The cohorts with subjects of interest<br><br><b>Time point:</b> The time point to plot<br><br><b>Normalize to baseline:</b> Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data<br><br><b>Genes:</b> The genes to plot',
+                            html: '\
+                              <b>Response:</b> The variable to plot against the expression of selected genes. For HAI, the timepoint of peak immunogenicity is selected.<br><br>\
+                              <b>Time point:</b> The gene-expression time point to plot<br><br>\
+                              <b>Cohorts:</b> The cohorts with subjects of interest. Some cohorts might only be available at specific timepoints.<br><br>\
+                              <b>Normalize to baseline:</b> Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data<br><br>\
+                              <b>Genes:</b> The genes to plot',
                             style: 'margin-top: 5px;',
                             title: 'Parameters'
                         }),
@@ -610,7 +667,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         maskPlot = new Ext.LoadMask(
                             this.getEl(),
                             {
-                                msg: 'Generating the plot...',
+                                msg: 'Generating the plot, be patient, this might take some time...',
                                 msgCls: 'mask-loading'
                             }
                         );
@@ -627,6 +684,34 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         //             Functions           //
         /////////////////////////////////////
         
+        var handleTimepointSelection = function(){
+            cbCohorts.clearValue( true );
+            if ( cbTimePoint.getSelectedField( 'timepoint' ) <= 0){
+                chNormalize.setDisabled( true );
+                chNormalize.setValue( false );
+            } else{
+                chNormalize.setDisabled( false );
+            }
+            if ( cbTimePoint.getValue == '' ){
+                cbCohorts.setDisabled( true );
+            } else {
+                strCohort.setUserFilters([
+                LABKEY.Filter.create(
+                    'timepoint',
+                    cbTimePoint.getSelectedField( 'timepoint' ),
+                    LABKEY.Filter.Types.EQUAL
+                ),
+                LABKEY.Filter.create(
+                    'timepointUnit',
+                    cbTimePoint.getSelectedField( 'timepointUnit' ),
+                    LABKEY.Filter.Types.EQUAL
+                )
+                ]);
+                strCohort.load();
+            }
+            checkBtnPlotStatus();
+        };
+
         var setPlotRunning = function( bool ){
             if ( bool ){
                 maskPlot.show();
