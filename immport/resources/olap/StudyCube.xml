@@ -27,7 +27,10 @@
 
         <Dimension name="Study" visible="true" highCardinality="false" foreignKey="study">
             <Hierarchy hasAll="true">
-                <Level name="Name" visible="true" column="study" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
+                <Level name="Name" visible="true" nameColumn="study" column="sortOrder" type="Integer" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="Program" hasAll="true">
+                <Level name="Program" visible="true" column="program" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
             <Hierarchy name="Type" hasAll="true">
                 <Level name="Type" visible="true" column="type" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
@@ -39,6 +42,11 @@
             <Hierarchy name="Principal" hasAll="true" primaryKey="study">
                 <Table name="dimStudyPrincipals" schema="immport"/>
                 <Level name="Principal" visible="true" table="dimStudyPrincipals" type="String" column="full_name" ordinalColumn="sortorder" uniqueMembers="true" levelType="Regular" hideMemberIf="Never">
+                </Level>
+            </Hierarchy>
+            <Hierarchy name="Category" hasAll="true" primaryKey="study_accession">
+                <Table name="study_categorization" schema="immport" />
+                <Level name="Category" visible="true" table="study_categorization" type="String" column="research_focus" uniqueMembers="true" levelType="Regular" hideMemberIf="Never">
                 </Level>
             </Hierarchy>
         </Dimension>

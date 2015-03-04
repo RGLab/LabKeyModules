@@ -151,13 +151,18 @@ BEGIN
 
   DELETE FROM immport.dimStudy;
 
-  INSERT INTO immport.dimStudy (ParticipantId, Study, Type, SortOrder)
-  SELECT DISTINCT
-    subject_accession AS ParticipantId,
-    study_accession as Study,
-    (select type from immport.study where study.study_accession=v_results_union.study_accession) as Type,
-    cast(substring(study_accession,4) as integer) as SortOrder
-  FROM immport.v_results_union;
+  INSERT INTO immport.dimStudy (ParticipantId, Study, Type, Program, SortOrder)
+    SELECT
+      subject_accession AS ParticipantId,
+      study.study_accession as Study,
+      study.type as Type,
+      P.title as Program,
+      cast(substring(study.study_accession,4) as integer) as SortOrder
+    FROM (SELECT DISTINCT subject_accession, study_accession FROM immport.v_results_union) _ss
+      INNER JOIN immport.study ON _ss.study_accession = study.study_accession
+      LEFT OUTER JOIN immport.workspace W ON study.workspace_id = W.workspace_id
+      LEFT OUTER JOIN immport.contract_grant C ON W.contract_id = C.contract_grant_id
+      LEFT OUTER JOIN immport.program P on C.program_id = P.program_id;
 
 
   -- dimStudyCondition

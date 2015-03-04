@@ -7,4 +7,4 @@
 PARAMETERS($STUDY VARCHAR DEFAULT NULL)
 SELECT * FROM ds_fcs_sample_files
 UNION ALL
-SELECT * FROM ds_fcs_control
+SELECT * FROM ds_fcs_control_files

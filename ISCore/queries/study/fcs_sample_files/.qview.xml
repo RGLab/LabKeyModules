@@ -14,7 +14,10 @@
         <cv:column name="description"/>
         <cv:column name="type"/>
         <cv:column name="subtype"/>
-        <cv:column name="study_time_t0_event"/>
-        <cv:column name="arm_name"/>
+        <cv:column name="arm_accession/name">
+          <cv:properties>
+            <cv:property name="columnTitle" value="Arm Name"/>
+          </cv:properties>
+        </cv:column>
     </cv:columns>
 </cv:customView>

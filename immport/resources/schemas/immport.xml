@@ -325,6 +325,7 @@
             <column columnName="participantid"/>
             <column columnName="study"/>
             <column columnName="type"/>
+            <column columnName="program"/>
             <column columnName="sortorder"/>
         </columns>
     </table>
@@ -1328,6 +1329,7 @@
         </columns>
     </table>
     <table tableName="program" tableDbType="TABLE">
+        <titleColumn>title</titleColumn>
         <columns>
             <column columnName="program_id"/>
             <column columnName="deputy_project_officer"/>
@@ -1398,7 +1400,12 @@
     <table tableName="workspace" tableDbType="TABLE">
         <columns>
             <column columnName="workspace_id"/>
-            <column columnName="contract_id"/>
+            <column columnName="contract_id">
+                <fk>
+                    <fkColumnName>contract_grant_id</fkColumnName>
+                    <fkTable>contract_grant</fkTable>
+                </fk>
+            </column>
             <column columnName="description"/>
             <column columnName="goal"/>
             <column columnName="keywords"/>
@@ -1745,6 +1752,7 @@
         </columns>
     </table>
     <table tableName="contract_grant" tableDbType="TABLE">
+        <titleColumn>name</titleColumn>
         <columns>
             <column columnName="contract_grant_id"/>
             <column columnName="deputy_project_officer"/>
@@ -1752,7 +1760,12 @@
             <column columnName="extended_date"/>
             <column columnName="keywords"/>
             <column columnName="name"/>
-            <column columnName="program_id"/>
+            <column columnName="program_id">
+                <fk>
+                    <fkColumnName>program_id</fkColumnName>
+                    <fkTable>program</fkTable>
+                </fk>
+            </column>
             <column columnName="project_officer"/>
             <column columnName="type"/>
             <column columnName="start_date"/>

@@ -16,7 +16,5 @@
         <cv:column name="biosampling_accession"/>
         <cv:column name="type"/>
         <cv:column name="subtype"/>
-        <cv:column name="study_time_t0_event"/>
-        <cv:column name="arm_name"/>
     </cv:columns>
 </cv:customView>

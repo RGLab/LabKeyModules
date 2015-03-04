@@ -479,7 +479,7 @@ public class DataLoader extends PipelineJob
         new SharedCopyConfig("reagent"),
         new SharedCopyConfig("treatment", QueryUpdateService.InsertOption.MERGE),   // TODO bug duplicate treatments in mysql archive
         new StudyCopyConfig("adverse_event"),
-        new SharedCopyConfig("analyte"),
+//        new SharedCopyConfig("analyte"),
         new StudyCopyConfig("assessment"),
         new SharedCopyConfig("control_sample"),
         new SharedCopyConfig("expsample_mbaa_detail"),
@@ -503,8 +503,8 @@ public class DataLoader extends PipelineJob
         new StudyCopyConfig("study_pubmed"),
         new StudyCopyConfig("subject_measure_definition"),
         new StudyCopyConfig("substance_merge"),
-//        new HipcCopyConfig("contract_grant"), //ERROR: duplicate key value violates unique constraint "contract_grant_pkey"
-//        new HipcCopyConfig("program"), //ERROR: duplicate key value violates unique constraint "program_pkey"
+        new SharedCopyConfig("contract_grant"),
+        new SharedCopyConfig("program"),
 
         new SharedCopyConfig("fcs_annotation"),
         new SharedCopyConfig("fcs_analyzed_result_marker"),
