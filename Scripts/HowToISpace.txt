@@ -89,5 +89,5 @@ Add Feature Annotation Set web part > Import Feature Annotation Set (Must have 2
  > lists.Studies > Insert new > "SDYaccession"
 
 ## Clear reports cache
-cd /share/github/LabKeyModules/Scripts/rmcache.sh
+cd /share/github/LabKeyModules/scripts/rmcache.sh
 

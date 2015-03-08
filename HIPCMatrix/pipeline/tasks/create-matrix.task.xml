@@ -6,12 +6,14 @@
     <description>Create expression matrix</description>
     <author>kevink@labkey.com</author>
     <inputs>
+        <file name='input.csv' splitFiles='true'/>
         <file name='input.CEL' splitFiles='true'/>
         <file name='input.tsv' splitFiles='true'/>
         <file name='input.txt' splitFiles='true'/>
     </inputs>
     <outputs>
         <file name='output.tsv' useProtocolNameAsBaseName="true"/>
+        <!--<file name='output.tsv' useProtocolNameAsBaseName="true" outputDir="/analysis/exprs_matrices"/>-->
     </outputs>
     <script file='create-matrix.r'/>
 </task>

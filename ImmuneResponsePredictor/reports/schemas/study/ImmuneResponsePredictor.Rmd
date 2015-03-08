@@ -8,20 +8,17 @@
 library(knitr)
 opts_chunk$set(cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE,
                fig.width=8, fig.height=4, dpi=100, fig.align="center",
-               cache.path=paste(labkey.file.root, "cache/ImmuneResponsePredictor/", sep="/"))
+               cache.path=file.path(labkey.file.root, "cache/ImmuneResponsePredictor/", labkey.user.email, ""))
 ```
 
 ```{r libraries, echo = FALSE, message = FALSE, cache = FALSE}
 library(data.table)
 library(Rlabkey)
-co <- labkey.setCurlOptions(sslversion = 1, ssl.verifyhost = 2)
 library(ggplot2)
 library(glmnet)
 library(pheatmap)
 library(RColorBrewer)
 library(RJSONIO)
-library(ggthemr)
-library(gplots)
 library(ImmuneSpaceR)
 library(Biobase)
 ```
@@ -241,8 +238,9 @@ getGenes <- function(con, GEA_acc, FDR_thresh, FC_thresh){
 
 ```{r main, cache = FALSE}
 con <- CreateConnection()
-runs <- getRun(con, param$cohortsTraining)
-EM <- con$getGEMatrix(runs, summary = TRUE, reload = TRUE)
+#runs <- getRun(con, param$cohortsTraining)
+#EM <- con$getGEMatrix(runs, summary = TRUE, reload = TRUE)
+EM <- con$getGEMatrix(cohort = param$cohortsTraining, summary = TRUE, reload = TRUE)
 #if(param$timepoint >0){
 #  TP <- c(0, param$timepoint)
 #} else{
@@ -322,8 +320,9 @@ predictor_table <- predictor_table[, gene_symbol := selected_features]
 
 ```{r pred-cohort}
 if(length(param$cohortsTesting) > 0){
-  run <- getRun(con, param$cohortsTesting)
-  EM_pred <- con$getGEMatrix(run, summary = TRUE)
+  #run <- getRun(con, param$cohortsTesting)
+  #EM_pred <- con$getGEMatrix(run, summary = TRUE)
+  EM_pred <- con$getGEMatrix(cohort = param$cohortsTesting, summary = TRUE)
   EM_pred <- EM_pred[selected_features,]
   if(param$timepoint <= 0){
     EM_pred <- EM_pred[, EM_pred$study_time_collected == param$timepoint]

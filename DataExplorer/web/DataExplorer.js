@@ -117,7 +117,31 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             } else {
                 qwpDataset = undefined;
                 cmpStatus.update( '' );
-                pnlData.getEl().update('Please, go to the "Input / View" tab to select a dataset to display below. You will then be able to filter this data here before plotting.'),
+                pnlData.add(
+                    {
+                        border: false,
+                        defaults: {
+                            border: false
+                        },
+                        items: [
+                            { html: 'Please, go to the' },
+                            new Ext.Container({
+                                autoEl: 'a',
+                                html: '&nbsp;\'Input / View\'&nbsp;',
+                                listeners: {
+                                    afterrender: {
+                                        fn: function(){
+                                            this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 0 ); } );
+                                        },
+                                        single: true
+                                    }
+                                }
+                            }),
+                            { html: 'tab to select a dataset to display below. You will then be able to filter this data here before plotting.' },
+                        ],
+                        layout: 'hbox'
+                    }
+                );
                 tlbrPlot.setDisabled( true );
                 cntPlot.update( '<div style=\'height: 10px\'></div>' );
             }
@@ -551,6 +575,42 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             },
             deferredRender: false,
             items: [
+                {
+                    border: false,
+                    defaults: {
+                        border: false
+                    },
+                    items: [
+                        { html: 'For information and help on how to use the Data Explorer module, click the' },
+                        new Ext.Container({
+                            autoEl: 'a',
+                            html: '&nbsp;\'About\'&nbsp;',
+                            listeners: {
+                                afterrender: {
+                                    fn: function(){
+                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 2 ); } );
+                                    },
+                                    single: true
+                                }
+                            }
+                        }),
+                        { html: 'and' },
+                        new Ext.Container({
+                            autoEl: 'a',
+                            html: '&nbsp;\'Help\'&nbsp;',
+                            listeners: {
+                                afterrender: {
+                                    fn: function(){
+                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 3 ); } );
+                                    },
+                                    single: true
+                                }
+                            }
+                        }),
+                        { html: 'tabs above.</br></br>' }
+                    ],
+                    layout: 'hbox'
+                },
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
@@ -587,7 +647,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 autoHeight: true,
                 hideMode: 'offsets'
             },
-            html: 'Please, go to the "Input / View" tab to select a dataset to display below. You will then be able to filter this data here before plotting.',
             layout: 'fit',
             tabTip: 'Data',
             title: 'Data'

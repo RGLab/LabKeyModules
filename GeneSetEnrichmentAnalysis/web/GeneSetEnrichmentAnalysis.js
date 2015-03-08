@@ -48,9 +48,12 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         //            Stores             //
         ///////////////////////////////////
 
-        var strCohortTraining = new LABKEY.ext.Store({
+        var strCohort = new LABKEY.ext.Store({
             autoLoad: true,
             listeners: {
+                load: function(){
+                    decodeParams( window.location.hash, [ cbCohort, cbSignature ] );
+                },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'expression_matrices_cohorts',
@@ -61,28 +64,6 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //     ComboBoxes / TextFields     //
         /////////////////////////////////////
-
-        var cbSignature = new Ext.ux.form.ExtendedComboBox({
-            allowBlank: false,
-            displayField: 'name',
-            fieldLabel: 'Modules',
-            listeners: {
-                change:     checkBtnRunStatus,
-                cleared:    checkBtnRunStatus,
-                select:     checkBtnRunStatus
-            },
-            store: new Ext.data.ArrayStore({
-                data: [
-                    [ 'Blood transcription', 'Blood transcription' ],
-                    [ 'MSigDB c7', 'MSigDB c7' ],
-                    [ 'G2 (Trial 8) Modules', 'G2 (Trial 8) Modules' ]
-                ],
-                fields: [ 'name', 'name' ]
-            }),
-            value: 'Blood transcription',
-            valueField: 'name',
-            width: fieldWidth
-        });
 
         var cbCohort = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
@@ -107,9 +88,35 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     handleCohortSelection();
                 }
             },
-            store: strCohortTraining,
+            store: strCohort,
             valueField: 'cohort',
             width: fieldWidth
+        });
+
+        var cbSignature = new Ext.ux.form.ExtendedComboBox({
+            allowBlank: false,
+            displayField: 'name',
+            fieldLabel: 'Modules',
+            listeners: {
+                change:     checkBtnRunStatus,
+                cleared:    checkBtnRunStatus,
+                select:     checkBtnRunStatus
+            },
+            store: new Ext.data.ArrayStore({
+                data: [
+                    [ 'Blood transcription', 'Blood transcription' ],
+                    [ 'MSigDB c7', 'MSigDB c7' ],
+                    [ 'G2 (Trial 8) Modules', 'G2 (Trial 8) Modules' ]
+                ],
+                fields: [ 'name', 'name' ]
+            }),
+            value: 'Blood transcription',
+            valueField: 'name',
+            width: fieldWidth
+        });
+
+        var taImportExport = new Ext.form.TextArea({
+            //value: '#Cohort=LAIV group 2008&Modules=Blood transcription'
         });
 
 
@@ -281,6 +288,113 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             title: 'View'
         });
 
+        var tabItems = [
+            pnlInput,
+            pnlView,
+            new Ext.Panel({
+                defaults: {
+                    autoHeight: true,
+                    bodyStyle: 'padding-bottom: 1px;',
+                    hideMode: 'offsets'
+                },
+                items: [
+                    new Ext.form.Label(),
+                    new Ext.form.FieldSet({
+                        html: 'This module can be used to perform a gene set enrichment analysis across time (or across a prespecified contrast) within a specified cohort. ',
+                        style: 'margin-top: 5px;',
+                        title: 'Description'
+                    }),
+                    new Ext.form.FieldSet({
+                        html: 'The gene set enrichment analysis is performed using the CAMERA method of the <a href="http://www.bioconductor.org/packages/release/bioc/html/limma.html" target="_blank">Limma</a> R package.',
+                        style: 'margin-top: 5px;',
+                        title: 'Details'
+                    }),
+                    new Ext.form.FieldSet({
+                        html: LABKEY.ext.ISCore.Contributors,
+                        style: 'margin-bottom: 2px; margin-top: 5px;',
+                        title: 'Contributors'
+                    })
+                ],
+                layout: 'fit',
+                tabTip: 'About',
+                title: 'About'
+            }),
+            new Ext.Panel({
+                defaults: {
+                    autoHeight: true,
+                    bodyStyle: 'padding-bottom: 1px;',
+                    hideMode: 'offsets'
+                },
+                items: [
+                    new Ext.form.Label(),
+                    new Ext.form.FieldSet({
+                        html: '<b>Cohort:</b> The cohorts with subjects of interest<br><br>\
+                               <b>Modules:</b> The modules used for grouping genes, currently the following modules are available:<br><ul>\
+                                  <li><a href="http://www.immuneprofiling.org/meni/meni-paper/btm-landing.gsp" target="_blank">Blood transcription</a>: Set of transcription modules in blood.</li>\
+                                  <li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp" target="_blank">MSigDB c7</a>: Gene sets that represent cell states and perturbations within the immune system.</li>\
+                                  <li><a href="http://www.biir.net/public_wikis/module_annotation/G2_Trial_8_Modules" target="_blank">G2 (Trial 8) Modules</a>: Repertoire of co-clustering genes.</li>\
+                               </ul>',
+                        style: 'margin-bottom: 2px; margin-top: 5px;',
+                        title: 'Parameters'
+                    })
+                ],
+                layout: 'fit',
+                tabTip: 'Help',
+                title: 'Help'
+            })
+        ];
+        if ( false ){ tabItems.push(
+            new Ext.Panel({
+                defaults: {
+                    autoHeight: true,
+                    bodyStyle: 'padding-bottom: 1px;',
+                    hideMode: 'offsets'
+                },
+                items: [
+                    taImportExport,
+                    {
+                        border: false,
+                        items: [
+                            new Ext.Button({
+                                handler: function(){
+                                    var hash = taImportExport.getValue();
+                                    var ind = hash.indexOf( '#' );
+                                    if ( ind >= 0 ){
+                                        hash = hash.substring( ind );
+
+                                        decodeParams( hash, [ cbCohort, cbSignature ] );
+                                    }
+                                },
+                                text: 'Import from text',
+                                width: 200
+                            }),
+                            new Ext.Button({
+                                handler: function(){
+                                    var address = window.location.href;
+                                    var hash    = address.indexOf( '#' );
+                                    if ( hash >= 0 ){ address = address.substring( 0, hash ); }
+                                    taImportExport.setValue( address + '#' + encodeParams( [ cbCohort, cbSignature ] ) );
+                                },
+                                text: 'Export',
+                                width: 200
+                            }),
+                            new Ext.Button({
+                                handler: function(){
+                                    taImportExport.setValue( '' );
+                                },
+                                text: 'Clear',
+                                width: 200
+                            })
+                        ],
+                        layout: 'hbox'
+                    }
+                ],
+                layout: 'fit',
+                tabTip: 'Import / Export',
+                title: 'Import / Export'
+            })
+        ); }
+
         var pnlTabs = new Ext.TabPanel({
             activeTab: 0,
             autoHeight: true,
@@ -294,62 +408,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             },
             deferredRender: false,
             forceLayout: true,
-            items: [
-                pnlInput,
-                pnlView,
-                new Ext.Panel({
-                    defaults: {
-                        autoHeight: true,
-                        bodyStyle: 'padding-bottom: 1px;',
-                        hideMode: 'offsets'
-                    },
-                    items: [
-                        new Ext.form.Label(),
-                        new Ext.form.FieldSet({
-                            html: 'This module can be used to perform a gene set enrichment analysis across time (or across a prespecified contrast) within a specified cohort. ',
-                            style: 'margin-top: 5px;',
-                            title: 'Description'
-                        }),
-                        new Ext.form.FieldSet({
-                            html: 'The gene set enrichment analysis is performed using the CAMERA method of the <a href="http://www.bioconductor.org/packages/release/bioc/html/limma.html" target="_blank">Limma</a> R package.',
-                            style: 'margin-top: 5px;',
-                            title: 'Details'
-                        }),
-                        new Ext.form.FieldSet({
-                            html: LABKEY.ext.ISCore.Contributors,
-                            style: 'margin-bottom: 2px; margin-top: 5px;',
-                            title: 'Contributors'
-                        })
-                    ],
-                    layout: 'fit',
-                    tabTip: 'About',
-                    title: 'About'
-                }),
-                new Ext.Panel({
-                    defaults: {
-                        autoHeight: true,
-                        bodyStyle: 'padding-bottom: 1px;',
-                        hideMode: 'offsets'
-                    },
-                    items: [
-                        new Ext.form.Label(),
-                        new Ext.form.FieldSet({
-                            html: '<b>Cohort:</b> The cohorts with subjects of interest<br><br>\
-                                   <b>Modules:</b> The modules used for grouping genes, currently the following modules are available:<br><ul>\
-                                      <li><a href="http://www.immuneprofiling.org/meni/meni-paper/btm-landing.gsp" target="_blank">Blood transcription</a>: Set of transcription modules in blood.</li>\
-                                      <li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp" target="_blank">MSigDB c7</a>: Gene sets that represent cell states and perturbations within the immune system.</li>\
-                                      <li><a href="http://www.biir.net/public_wikis/module_annotation/G2_Trial_8_Modules" target="_blank">G2 (Trial 8) Modules</a>: Repertoire of co-clustering genes.</li>\
-                                   </ul>',
-                            style: 'margin-bottom: 2px; margin-top: 5px;',
-                            title: 'Parameters'
-                        })
-                    ],
-                    layout: 'fit',
-                    tabTip: 'Help',
-                    title: 'Help'
-                })
-
-            ],
+            items: tabItems,
             layoutOnTabChange: true,
             listeners: {
                 afterrender: {
@@ -377,6 +436,47 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //             Functions           //
         /////////////////////////////////////
+
+        var formParamString = function( el ){
+            return el.getValue();
+        };
+
+        var encodeParams = function( arrayToProcess ){
+            var result = '';
+            if ( arrayToProcess.length >= 1 ){
+                result += formParamString( arrayToProcess[0] );
+            }
+            for ( var i = 1; i < arrayToProcess.length ; i ++ ){
+                result += '&' + formParamString( arrayToProcess[i] );
+            }
+            return result;
+        };
+
+        var decodeParams = function( hash, els ){
+            var arrayToProcess;
+            if ( hash && hash.charAt( 0 ) == '#' ){
+                hash = hash.substring( 1 );
+                arrayToProcess = hash.split( '&' );
+                if ( arrayToProcess.length != els.length ){
+                    LABKEY.ext.ISCore.onFailure({
+                        exception: 'Parsing failure, the number of parameters spcified does not match the number of parameters needed'
+                    });
+                } else{
+                    Ext.each(
+                        els,
+                        function( e, i ){
+                            if ( e.findRecord( e.valueField, arrayToProcess[i] ) ){
+                                e.setValue( arrayToProcess[i] );
+                            } else{
+                                e.clearValue();
+                                e.markInvalid( '"' + arrayToProcess[i] + '" in the supplied URL is not a valid value, select from the available choices' );
+                            }
+                        }
+                    );
+                    checkBtnRunStatus();
+                }
+            }
+        };
 
         var setReportRunning = function( bool ){
             if ( bool ){

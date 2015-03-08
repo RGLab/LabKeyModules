@@ -13,7 +13,6 @@
             <cv:property name="columnTitle" value="Arm Name"/>
           </cv:properties>
         </cv:column>
-        <cv:column name="analyte"/>
         <cv:column name="study_time_collected"/>
         <cv:column name="study_time_collected_unit"/>
         <cv:column name="virus_strain"/>

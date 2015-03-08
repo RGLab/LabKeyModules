@@ -38,7 +38,8 @@ Demo
 
     - Check the 'Study Specimens' SampleSet for each selected biosample
     - Submit the pipeline job that will:
-        - create the matrix from the files
+        - create a probe level expression matrix from the files
+        - create a gene level expression matrix from the files
         - import the results into the 'matrix' assay
 
 5. The output is two tsv files. An expression matrix with the probes as first column and the first column title is a space. And an expression matrix with values averaged per gene and a first column titled "gene__symbol". All other columns are biosample_accession.

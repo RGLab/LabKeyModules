@@ -14,7 +14,7 @@ if [ $1 ] ; then
 
     tar xzf ${NAME}
 
-    ./${NAME%.*.*}/manual-upgrade.sh -l /labkey/labkey -d ./${NAME%.*.*} -c /labkey/apps/tomcat -u gottweb --service
+    ./${NAME%.*.*}/manual-upgrade.sh -l /labkey/labkey -d ./${NAME%.*.*} -c /labkey/apps/tomcat -u immunespace --service
 else
     echo 'The web address or path of the server build tar file must be specified as the argument'
 fi

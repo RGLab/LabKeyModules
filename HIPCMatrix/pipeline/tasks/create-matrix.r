@@ -81,6 +81,20 @@ process_TSV <- function(con, pdata, inputFiles, selectedBiosamples){
   }
 }
 
+process_CSV <- function(con, pdata, inputFiles, selectedBiosamples){
+  library(lumi)
+  raw_exprs <- fread(inputFiles)
+  setnames(raw_exprs, tolower(gsub(" ", "_", colnames(raw_exprs))))
+  raw_exprs <- raw_exprs[, c(grep("experiment_sample", colnames(raw_exprs), value = TRUE), "target_id", "raw_signal"), with = FALSE]
+  setnames(raw_exprs, c("sample", "feature_id", "signal"))
+  feature_id <- raw_exprs$feature_id
+  norm_exprs <- acast(raw_exprs, formula("feature_id ~ sample"), value.var="signal")
+  eset <- new("ExpressionSet", exprs = norm_exprs)
+  eset <- lumiN(eset, method="quantile")
+  norm_exprs <- log2(exprs(eset))
+  #rownames(norm_exprs) <- feature_id
+
+}
 
 process_CEL <- function(con, pdata, inputFiles){
   library(affy)
@@ -94,7 +108,6 @@ process_CEL <- function(con, pdata, inputFiles){
   return(norm_exprs)
 }
 
-
 # @value A data.table with a feature_id column and one column per biosample_accession
 normalizeMatrix <- function(jobInfo, selectedBiosamples){
   labkey.url.base <- jobInfo$value[jobInfo$name == "baseUrl"]
@@ -106,6 +119,7 @@ normalizeMatrix <- function(jobInfo, selectedBiosamples){
   filter <- makeFilter(c("file_info_name", "IN", paste(basename(inputFiles), collapse=";")),
                        c("biosample_accession", "IN", gsub(",", ";", selectedBiosamples)))
   pdata <- con$getDataset("gene_expression_files", colFilter = filter, original_view = TRUE, reload = TRUE)
+  cohort <<- unique(pdata$arm_name)
   if(length(ext) > 1){
     stop(paste("There is more than one file extension:", paste(ext, collapse=",")))
   } else if(ext == "CEL"){
@@ -113,7 +127,7 @@ normalizeMatrix <- function(jobInfo, selectedBiosamples){
   } else if(ext %in% c("tsv", "txt")){
     norm_exprs <- process_TSV(con, pdata, inputFiles, selectedBiosamples)
   } else if(ext == "csv"){
-    process_CSV(con)
+    norm_exprs <- process_CSV(con)
   } else{
     stop(paste("The file extension", ext, "is not valid"))
   }
@@ -144,6 +158,7 @@ writeMatrix <- function(exprs, bygene){
 
 
 
+cohort <- NULL
 #-------------------------------
 # PIPELINE
 #-------------------------------
@@ -165,3 +180,11 @@ bygene <- summarizeMatrix(exprs, f2g)
 #colnames(exprs)[1] <- " "
 
 writeMatrix(exprs, bygene)
+
+outProps = file(description="${pipeline, taskOutputParams}", open="w")
+cat(file=outProps, sep="", "name\tvalue\n")
+cat(file=outProps, sep="", "assay run property, cohort\t", cohort, "\n")
+flush(con=outProps)
+close(con=outProps)
+#cohort_out <- paste0("assay run property, cohort\t", cohort, "\n")
+#write(cohort_out, file="${pipeline,taskOutputParams}")

@@ -32,7 +32,7 @@ var homeTour = function(){
             showNextButton: true,
             multipage: true,
             onNext: function(){
-                LABKEY.help.Tour.continueAtLocation('?pageId=Tutorials');
+                LABKEY.help.Tour.continueAtLocation('/project/home/begin.view?pageId=Tutorials');
             }
         },{
             title: 'Video Tutorials',
@@ -62,7 +62,7 @@ var homeTour = function(){
                 $('#betaBar_menu').css('visibility', 'hidden');
             },
             onShow: function(){
-                document.getElementById('betaBar').dispatchEvent(
+                $('#betaBar')[0].dispatchEvent(
                     new MouseEvent( 'click', {
                         'view': window,
                         'bubbles': true,
@@ -83,16 +83,16 @@ var homeTour = function(){
             multipage: true,
             onNext: function(){
                 $('.labkey-main-menu-item').removeClass('selected');
-                $("[id='Wiki Menu12$Header_menu']").css('visibility', 'hidden');
+                $('#WikiMenu12-Header_menu').css('visibility', 'hidden');
 
                 LABKEY.help.Tour.continueAtLocation('/immport/Studies/studyFinder.view?');
             },
             onPrev: function(){
                 $('.labkey-main-menu-item').removeClass('selected');
-                $("[id='Wiki Menu12$Header_menu']").css('visibility', 'hidden');
+                $('#WikiMenu12-Header_menu').css('visibility', 'hidden');
             },
             onShow: function(){
-                document.getElementById('Wiki Menu12$Header').dispatchEvent(
+                $('#WikiMenu12-Header')[0].dispatchEvent(
                     new MouseEvent( 'click', {
                         'view': window,
                         'bubbles': true,
@@ -100,7 +100,7 @@ var homeTour = function(){
                     })
                 );
                 $('.labkey-main-menu-item').addClass('selected');
-                $("[id='Wiki Menu12$Header_menu']").css('visibility', 'visible');
+                $('#WikiMenu12-Header_menu').css('visibility', 'visible');
             }
         },{
             title: 'Dummy last step to make the previous step show the NEXT button'
