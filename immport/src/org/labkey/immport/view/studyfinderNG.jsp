@@ -37,8 +37,9 @@
 <%@ page import="java.util.Comparator" %>
 <%@ page import="java.util.LinkedHashSet" %>
 <%@ page import="java.util.Map" %>
-<%@ page import="java.util.TreeSet" %>
 <%@ page import="java.util.TreeMap" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="org.labkey.api.util.HeartBeat" %>
 <%@ page extends="org.labkey.api.jsp.JspBase"%>
 <%!
     public LinkedHashSet<ClientDependency> getClientDependencies()
@@ -212,7 +213,12 @@
     <tr><td align="left" colspan="2">
         <div class="innerColor" style="padding:10px; border:solid 2px #e6e6e6;">
         <div style="float:left;"><input placeholder="Study Search" id="searchTerms" name="q" style="width:200pt;" ng-model="searchTerms" ng-change="onSearchTermsChanged()"><span class="searchMessage" style="padding-left: 10px">{{searchMessage}}</span></div>
-        <div style="float:right;"><input type="checkbox" class="showAllImmPort" ng-model="showAllImmPort" ng-change="onShowAllStudiesChanged()">&nbsp;show all ImmPort studies</div>
+        <div style="float:right;">
+            <span ng-show="loaded_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmuneSpace" ng-change="onStudySubsetChanged()">All ImmuneSpace studies</span>
+            <span ng-show="recent_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="Recent" ng-change="onStudySubsetChanged()">Recently added</span>
+            <span ng-show="hipc_study_list.length" >&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="HipcFunded" ng-change="onStudySubsetChanged()">HIPC funded</span>
+            <span>&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmPort" ng-change="onStudySubsetChanged()">All ImmPort studies</span>
+        </div>
         <div id="studypanel" style="clear:both; max-width:940px; overflow-x:scroll;">
             <table><tr>
                 <td style="height:180px;"><img border=1 src="<%=getContextPath()%>/_.gif" style="height:180px; width:1px"></td>
@@ -404,7 +410,7 @@ studyfinderScope.prototype =
     mdx: null,
     searchTerms : '',
     searchMessage : '',
-    showAllImmPort : false,
+    studySubset : "ImmuneSpace",
 
     fnTRUE : function(a) {return true;},
     fnFALSE : function(b) {return false;},
@@ -702,7 +708,7 @@ studyfinderScope.prototype =
                 // might be an all member
                 if (dim.allMemberName == resultMember.uniqueName)
                     dim.allMemberCount = count;
-                else (-1 == resultMember.uniqueName.indexOf("#"))
+                else (-1 == resultMember.uniqueName.indexOf("#") && "(All)" != resultMember.name)
                     console.log("member not found: " + resultMember.uniqueName);
             }
             else
@@ -737,19 +743,27 @@ studyfinderScope.prototype =
 
     clearStudyFilter : function()
     {
-        if (this.showAllImmPort)
+        if (this.studySubset == "ImmPort")
         {
             this._clearFilter("Study");
             this.updateCountsAsync();
         }
         else
         {
-            var list = [];
-            for (var p in loaded_studies)
-                if (loaded_studies.hasOwnProperty(p))
-                    list.push(loaded_studies[p].uniqueName);
-            this.setStudyFilter(list);
+            this.setStudyFilter(this.getStudySubsetList());
         }
+    },
+
+
+    getStudySubsetList : function()
+    {
+        if (this.studySubset == "ImmuneSpace")
+            return this.loaded_study_list;
+        if (this.studySubset == "Recent")
+            return this.recent_study_list;
+        if (this.studySubset == "HipcFunded")
+            return this.hipc_study_list;
+        return this.dimStudy.members;
     },
 
 
@@ -774,7 +788,7 @@ studyfinderScope.prototype =
     },
 
 
-    onShowAllStudiesChanged: function()
+    onStudySubsetChanged: function()
     {
         // if there are search terms, just act as if the search terms have changed
         if (this.searchTerms)
@@ -786,6 +800,7 @@ studyfinderScope.prototype =
             this.clearStudyFilter();
         }
     },
+
 
     doSearchTermsChanged_promise : null,
 
@@ -815,7 +830,7 @@ studyfinderScope.prototype =
             if (promise != scope.doSearchTermsChanged_promise)
                 return;
             var hits = data.hits;
-            var studies = [];
+            var searchStudies = [];
             var found = {};
             for (var h=0 ; h<hits.length ; h++)
             {
@@ -824,10 +839,9 @@ studyfinderScope.prototype =
                 if (found[accession])
                     continue;
                 found[accession] = true;
-                if (scope.showAllImmPort || loaded_studies[accession])
-                    studies.push("[Study].[" + accession + "]");
+                searchStudies.push("[Study].[" + accession + "]");
             }
-            if (!studies.length)
+            if (!searchStudies.length)
             {
                 scope.clearStudyFilter();
                 scope.searchMessage = 'no matches';
@@ -835,9 +849,22 @@ studyfinderScope.prototype =
             else
             {
                 scope.searchMessage = '';
-                scope.setStudyFilter(studies);
+                // intersect with study subset list
+                var result = this.intersect(searchStudies, this.getStudySubsetList());
+                scope.setStudyFilter(result);
             }
         });
+    },
+
+    intersect : function(a,b)
+    {
+        var o = {}, ret=[], i;
+        for (i=0 ; i< a.length ; i++)
+            o[a[i]] = a[i];
+        for (i=0 ; i< b.length ; i++)
+            if (o[b[i]])
+                ret.push(b[i]);
+        return ret;
     },
 
     onSearchTermsChanged_promise : null,
@@ -857,6 +884,7 @@ studyfinderScope.prototype =
 
 };
 
+
 var debug_scope;
 
 studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http)
@@ -865,10 +893,13 @@ studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http)
     Ext4.apply($scope, new studyfinderScope());
     $scope.timeout = $timeout;
     $scope.http = $http;
-	
-	var studies = [];
-	for (var i=0 ; i<studyData.length ; i++)
-	{
+
+    var studies = [];
+    var loaded_study_list = [];
+    var recent_study_list = [];
+    var hipc_study_list = [];
+    for (var i=0 ; i<studyData.length ; i++)
+    {
         var name = studyData[i][0];
         var s =
         {
@@ -883,25 +914,34 @@ studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http)
         {
             s.loaded = true;
             s.hipc_funded = loaded_studies[name].hipc_funded;
+            s.highlight = loaded_studies[name].highlight;
             s.url = loaded_studies[name].url;
+            loaded_study_list.push(s.memberName);
+            if (s.highlight)
+                recent_study_list.push(s.memberName);
+            if (s.hipc_funded)
+                hipc_study_list.push(s.memberName);
         }
-		studies.push(s);
-	}
+        studies.push(s);
+    }
 
     $scope.dataspace = dataspace;
     $scope.studies = studies;
+    $scope.loaded_study_list = loaded_study_list;
+    $scope.recent_study_list = recent_study_list;
+    $scope.hipc_study_list = hipc_study_list;
 //    $scope.filterMembers = [];
 
     // shortcuts
     $scope.dimSubject=dataspace.dimensions.Subject;
     $scope.dimStudy=dataspace.dimensions.Study;
-	$scope.dimCondition=dataspace.dimensions.Condition;
-	$scope.dimSpecies=dataspace.dimensions.Species;
+    $scope.dimCondition=dataspace.dimensions.Condition;
+    $scope.dimSpecies=dataspace.dimensions.Species;
     $scope.dimPrincipal=dataspace.dimensions.Principal;
-	$scope.dimGender=dataspace.dimensions.Gender;
-	$scope.dimRace=dataspace.dimensions.Race;
-	$scope.dimTimepoint=dataspace.dimensions.Timepoint;
-	$scope.dimAssay=dataspace.dimensions.Assay;
+    $scope.dimGender=dataspace.dimensions.Gender;
+    $scope.dimRace=dataspace.dimensions.Race;
+    $scope.dimTimepoint=dataspace.dimensions.Timepoint;
+    $scope.dimAssay=dataspace.dimensions.Assay;
     $scope.dimType=dataspace.dimensions.Type;
     $scope.dimCategory=dataspace.dimensions.Category;
 
@@ -917,8 +957,11 @@ studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http)
         {
             $scope.mdx = m;
             $scope.initCubeMetaData();
-            // init study list according to showAllImmPort flag
-            $scope.onShowAllStudiesChanged();
+
+            // init study list according to studySubset
+            if (loaded_study_list.length == 0)
+                $scope.studySubset = "ImmPort";
+            $scope.onStudySubsetChanged();
             // doShowAllStudiesChanged() has side-effect of calling updateCountsAsync()
             //$scope.updateCountsAsync();
         });
@@ -1029,6 +1072,8 @@ if (!c.isRoot())
     ((ContainerFilterable)sp).setContainerFilter(cf);
     Collection<Map<String, Object>> maps = new TableSelector(sp).getMapCollection();
 
+    long now = HeartBeat.currentTimeMillis();
+
     for (Map<String, Object> map : maps)
     {
         Container studyContainer = ContainerManager.getForId((String)map.get("container"));
@@ -1037,6 +1082,8 @@ if (!c.isRoot())
         ActionURL url = studyContainer.getStartURL(context.getUser());
         String study_accession = (String)map.get("study_accession");
         String name = (String)map.get("Label");
+        Date until = (Date)map.get("highlight_until");
+        boolean highlight = null != until && until.getTime() > now;
         if (StringUtils.isEmpty(study_accession) && StringUtils.startsWith(name,"SDY"))
             study_accession = name;
         if (null != study_accession)
@@ -1048,6 +1095,7 @@ if (!c.isRoot())
                 %>name:<%=q(study_accession)%>,<%
                 %>uniqueName:<%=q("[Study].["+study_accession+"]")%>, <%
                 %>hipc_funded:<%=text(isTrue(StringUtils.contains(bean.getProgram_title(),"HIPC")))%>,<%
+                %>highlight:<%=text(highlight?"true":"false")%>,<%
                 %>containerId:<%=q((String)map.get("container"))%>, url:<%=q(url.getLocalURIString())%>}<%
                comma = ",\n";
            }
