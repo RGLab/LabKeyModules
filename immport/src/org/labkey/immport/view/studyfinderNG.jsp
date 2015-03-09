@@ -763,7 +763,7 @@ studyfinderScope.prototype =
             return this.recent_study_list;
         if (this.studySubset == "HipcFunded")
             return this.hipc_study_list;
-        return this.dimStudy.members;
+        return Ext.pluck( this.dimStudy.members, 'uniqueName' );
     },
 
 
@@ -850,7 +850,7 @@ studyfinderScope.prototype =
             {
                 scope.searchMessage = '';
                 // intersect with study subset list
-                var result = this.intersect(searchStudies, this.getStudySubsetList());
+                var result = scope.intersect(searchStudies, scope.getStudySubsetList());
                 scope.setStudyFilter(result);
             }
         });
