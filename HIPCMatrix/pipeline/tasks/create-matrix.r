@@ -1,6 +1,6 @@
 library(data.table)
 library(Rlabkey)
-library(tools)
+require( tools)
 
 # read the job info
 #stop(paste("read: ", "${pipeline, taskInfo}", "| getwd: ", getwd()))
