@@ -1024,7 +1024,7 @@ var dataspace =
         "Condition": {name:'Condition', hierarchyName:'Study.Conditions', levelName:'Condition', allMemberName:'[Study.Conditions].[(All)]'},
         "Assay": {name:'Assay', hierarchyName:'Assay', levelName:'Assay', allMemberName:'[Assay].[(All)]'},
         "Type": {name:'Type', hierarchyName:'Study.Type', levelName:'Type', allMemberName:'[Study.Type].[(All)]'},
-        "Research focus": {name:'Category', hierarchyName:'Study.Category', levelName:'Category', allMemberName:'[Study.Category].[(All)]'},
+        "Category": {caption:'Research focus', name:'Category', hierarchyName:'Study.Category', levelName:'Category', allMemberName:'[Study.Category].[(All)]'},
         "Timepoint":{caption:'Day of Study', name:'Timepoint', hierarchyName:'Timepoint.Timepoints', levelName:'Timepoint', allMemberName:'[Timepoint.Timepoints].[(All)]'},
         "Race": {name:'Race', hierarchyName:'Subject.Race', levelName:'Race', allMemberName:'[Subject.Race].[(All)]'},
         "Gender": {name:'Gender', hierarchyName:'Subject.Gender', levelName:'Gender', allMemberName:'[Subject.Gender].[(All)]'},
