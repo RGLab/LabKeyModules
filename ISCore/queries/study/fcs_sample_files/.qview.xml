@@ -10,7 +10,11 @@
         <cv:column name="biosample_accession/subject_accession/race"/>
         <cv:column name="study_time_collected"/>
         <cv:column name="study_time_collected_unit"/>
-        <cv:column name="file_info_name"/>
+        <cv:column name="file_info_name/File Info Name">
+          <cv:properties>
+            <cv:property name="columnTitle" value="File Info Name"/>
+          </cv:properties>
+        </cv:column>
         <cv:column name="description"/>
         <cv:column name="type"/>
         <cv:column name="subtype"/>
