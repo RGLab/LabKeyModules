@@ -91,10 +91,31 @@ then
       mkdir /share/files/Studies/${SDY}/@files/rawdata/flow
     fi
     $EXE --mode=recv -p -v -P 33001 -O 33001 -l 100M -m 10M -v immport-hipc@aspera-immport.niaid.nih.gov:/${SDY}/${SDY}-DR11_Flow_cytometry_compensation_or_control_1.zip ${destination}/${SDY}_flow_${i}.zip
-    for i in {1..10}
+    for i in {1..20}
     do
-    {  
+    {
       $EXE --mode=recv -p -v -P 33001 -O 33001 -l 100M -m 10M -v immport-hipc@aspera-immport.niaid.nih.gov:/${SDY}/${SDY}-DR11_Flow_cytometry_result_${i}.zip ${destination}/${SDY}_flow_${i}.zip
+      unzip -u ${destination}/${SDY}_flow_${i}.zip -d ${destination}/flow/
+    } || {
+      break
+    }
+    done
+  done
+  for SDY in ${SDYs12[@]}
+  do
+    echo "${SDY}:"
+    destination=/share/files/Studies/${SDY}/@files/rawdata
+    if [ ! -d $destination ]; then
+      mkdir $destination
+    fi
+    if [ ! -d /share/files/Studies/${SDY}/@files/rawdata/flow ]; then
+      mkdir /share/files/Studies/${SDY}/@files/rawdata/flow
+    fi
+    $EXE --mode=recv -p -v -P 33001 -O 33001 -l 100M -m 10M -v immport-hipc@aspera-immport.niaid.nih.gov:/${SDY}/${SDY}-DR12_Flow_cytometry_compensation_or_control_1.zip ${destination}/${SDY}_flow_${i}.zip
+    for i in {1..20}
+    do
+    {
+      $EXE --mode=recv -p -v -P 33001 -O 33001 -l 100M -m 10M -v immport-hipc@aspera-immport.niaid.nih.gov:/${SDY}/${SDY}-DR12_Flow_cytometry_result_${i}.zip ${destination}/${SDY}_flow_${i}.zip
       unzip -u ${destination}/${SDY}_flow_${i}.zip -d ${destination}/flow/
     } || {
       break
