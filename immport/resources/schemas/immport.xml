@@ -1529,7 +1529,7 @@
     <table tableName="mbaa_result" tableDbType="TABLE">
         <columns>
             <column columnName="result_id"/>
-            <column columnName="analyte_name"/>
+            <column columnName="analyte"/>
             <column columnName="arm_accession">
                 <fk>
                     <fkColumnName>arm_accession</fkColumnName>
