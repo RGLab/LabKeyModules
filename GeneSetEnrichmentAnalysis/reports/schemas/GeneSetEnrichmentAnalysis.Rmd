@@ -92,13 +92,15 @@ EM <- con$getGEMatrix(cohort = cohort, summary = TRUE)
 indices <- ids2indices(gene_sets, fData(EM)$gene_symbol)
 pData(EM)[, contrast] <- as.factor(pData(EM)[, contrast])
 mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
+colnames(mm) <- make.names(colnames(mm))
 ```
 
 ## Gene set enrichment analysis of `r cohort`
 
 ```{r byDay,  cache = TRUE, dependson="camera"}
 lev <- levels(pData(EM)[, contrast])
-lev <- paste0(contrast, lev[2:length(lev)])
+lev_label <- paste0(contrast, lev[2:length(lev)])
+lev <- make.names(lev_label)
 cam_list <- vector('list', length = length(lev))
 for(i in 1:length(lev)){
   contrasti <- lev[[i]]
@@ -110,7 +112,7 @@ for(i in 1:length(lev)){
 
   dt <- data.table(res) 
   dt[, Module := rownames(res)]
-  dt[, Coefficient := lev[[i]]]
+  dt[, Coefficient := lev_label[[i]]]
   #dt[, PValue := 10*log10(PValue)]
   dt[, PValue := ifelse(Direction=="Up", -10*log10(PValue), 10*log10(PValue))]
   cam_list[[i]] <- dt

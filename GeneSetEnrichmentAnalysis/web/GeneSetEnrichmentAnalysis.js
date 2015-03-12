@@ -491,6 +491,8 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         var handleCohortSelection = function(){
             if ( cbCohort.getValue() == '' ){
                 btnRun.setDisabled( true );
+            } else{
+                checkBtnRunStatus()
             }
         };
 

@@ -109,8 +109,8 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             requiredVersion: 12.3,
             schemaName: 'immport',
             queryName: 'study',
-            columns:  'brief_title, type, condition_studied, brief_description, actual_start_date,' +
-                      ' description, objectives, endpoints, actual_enrollment, sponsoring_organization',
+            columns:  'brief_title, type, condition_studied, brief_description, actual_start_date, ' +
+                      'description, objectives, endpoints, actual_enrollment, sponsoring_organization',
             filterArray: [
                 LABKEY.Filter.create(
                     'study_accession',
@@ -132,8 +132,8 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 $('#condition' + config.webPartDivId)[0].innerHTML      = row['condition_studied'].value;
                 $('#bdesc' + config.webPartDivId)[0].innerHTML          = row['brief_description'].value;
                 $('#start' + config.webPartDivId)[0].innerHTML          = row['actual_start_date'].value;
-                $('#description' + config.webPartDivId)[0].innerHTML    = '<br>' + ( ! row['description'].value ? '' : row['description'].value );
-                $('#objective' + config.webPartDivId)[0].innerHTML      = '<br>' + ( ! row['objectives'].value ? '' : row['description'].value );
+                $('#description' + config.webPartDivId)[0].innerHTML    = ( ! row['description'].value ? '' : row['description'].value );
+                $('#objective' + config.webPartDivId)[0].innerHTML      = ( ! row['objectives'].value ? '' : row['objectives'].value );
                 $('#endpoints' + config.webPartDivId)[0].innerHTML      = row['endpoints'].value;
                 $('#subjects' + config.webPartDivId)[0].innerHTML       = row['actual_enrollment'].value;
                 $('#organization' + config.webPartDivId)[0].innerHTML   = row['sponsoring_organization'].value;

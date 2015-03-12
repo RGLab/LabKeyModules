@@ -45,7 +45,7 @@ if(is.null(con$data_cache[["GE_matrices"]])){
   infostring <- "There is no HIPCMatrix run in this study"
 } else{
   runs <- con$data_cache$GE_matrices[, list(cohort, name)]
-  setnames(runs, "name", "arm_name")
+  setnames(runs, "cohort", "arm_name")
   allCoefs <- getAllCoefs(con)
   allCoefs[, coefficient := do.call(paste, .SD), .SDcols = contrast]
   existGEA <- data.table(labkey.selectRows(labkey.url.base, labkey.url.path, "gene_expression", 
