@@ -763,7 +763,7 @@ studyfinderScope.prototype =
             return this.recent_study_list;
         if (this.studySubset == "HipcFunded")
             return this.hipc_study_list;
-        return Ext.pluck( this.dimStudy.members, 'uniqueName' );
+        return Ext4.pluck( this.dimStudy.members, 'uniqueName' );
     },
 
 
@@ -1066,10 +1066,13 @@ if (!c.isRoot())
 {
     comma = "\n";
     Container p = c.getProject();
-    ContainerFilter cf = new ContainerFilter.AllInProject(context.getUser());
     QuerySchema s = DefaultSchema.get(context.getUser(), p).getSchema("study");
     TableInfo sp = s.getTable("StudyProperties");
-    ((ContainerFilterable)sp).setContainerFilter(cf);
+    if (sp.supportsContainerFilter())
+    {
+        ContainerFilter cf = new ContainerFilter.AllInProject(context.getUser());
+        ((ContainerFilterable)sp).setContainerFilter(cf);
+    }
     Collection<Map<String, Object>> maps = new TableSelector(sp).getMapCollection();
 
     long now = HeartBeat.currentTimeMillis();
