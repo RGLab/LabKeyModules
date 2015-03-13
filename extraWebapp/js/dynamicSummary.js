@@ -6,7 +6,7 @@ $(document).ready(function() {
         $('#Summary').append( this.errorCode );
     };
 
-    me.errorCode = '<p style=\'margin-left: 30px; color: red;\'>Failed to retrieve the aggregate summary</p>';
+    me.errorCode = '<div class=\'error\'>Not available at the moment: </br>the portal is either undergoing maintenance </br>or you are experiencing network problems.</div>';
     me.myMask = new Ext.LoadMask(
         $('#Summary')[0],
         {
