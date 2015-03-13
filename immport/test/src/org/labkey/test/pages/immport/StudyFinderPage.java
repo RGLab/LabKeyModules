@@ -154,7 +154,7 @@ public class StudyFinderPage extends LabKeyPage
         CONDITION("condition", "conditions"),
         TYPE("type", "types"),
         ASSAY("assay", "assays"),
-        TIMEPOINT("timepoint", "timepoints"),
+        TIMEPOINT("day of study", "timepoints"),
         GENDER("gender", "genders"),
         RACE("race", "races"),
         CATEGORY("category", "categories");
