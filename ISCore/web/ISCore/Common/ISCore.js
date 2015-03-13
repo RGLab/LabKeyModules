@@ -47,6 +47,123 @@ LABKEY.ext.ISCore.initTableQuickTips = function( o ){
     });
 };
 
+//
+// Helper methods for resizeToViewport
+//
+/**
+ * check current presence of horizontal and vertical scrollbars
+ * @param win
+ * @returns {*[boolean, boolean]}
+ */
+var getSBLive = function(win){
+
+    var horiztonal = false, vertical = false;
+
+    if (win)
+    {
+        var doc = win.document;
+        var compatMode = doc.compatMode;
+        var r = compatMode && /CSS/.test(compatMode) ? doc.documentElement : document.body;
+
+        if (Ext.isNumber(win.innerWidth))
+        {
+            horiztonal = win.innerHeight > r.clientHeight;
+            vertical = win.innerWidth > r.clientWidth;
+        }
+        else
+        {
+            horiztonal = r.scrollHeight > r.clientHeight;
+            vertical = r.scrollWidth > r.clientWidth;
+        }
+    }
+
+    return [horiztonal, vertical];
+};
+
+/**
+ * get current horizontal and vertical scrollbar thickness
+ * @param win
+ * @returns {*[Number, Number]}
+ */
+var getSBSize = function(win){
+    var horiztonal = 0, vertical = 0;
+
+    if (win)
+    {
+        var doc = win.document;
+        var body = doc.body;
+
+        if (body)
+        {
+            var t = doc.createElement('div');
+            t.style.cssText = 'position:absolte;overflow:scroll;top:-100px;left:-100px;width:100px;height:100px';
+            body.insertBefore(t, body.firstChild);
+            horiztonal = t.offsetHeight - t.clientHeight;
+            vertical = t.offsetWidth - t.clientWidth;
+            body.removeChild(t);
+        }
+    }
+
+    return [horiztonal, vertical];
+};
+
+LABKEY.ext.Utils.resizeToViewport = function( extContainer, width, height, paddingX, paddingY, offsetX, offsetY ) {
+    if (!extContainer || !extContainer.rendered)
+        return;
+
+    if (width < 0 && height < 0)
+        return;
+
+    var padding = [];
+    if (offsetX == undefined || offsetX == null)
+        offsetX = 35;
+    if (offsetY == undefined || offsetY == null)
+        offsetY = 35;
+
+    if (paddingX !== undefined && paddingX != null)
+        padding.push(paddingX);
+    else
+    {
+
+        var bp = Ext.get('bodypanel');
+        if (bp) {
+            var t  = Ext.query('table.labkey-proj');
+            if (t && t.length > 0) {
+                t = Ext.get(t[0]);
+                padding.push((t.getWidth()-(bp.getWidth())) + offsetX);
+            }
+            else
+                padding.push(offsetX);
+        }
+        else
+            padding.push(offsetX);
+    }
+    if (paddingY !== undefined && paddingY != null)
+        padding.push(paddingY);
+    else
+        padding.push(offsetY);
+
+    var xy = extContainer.el.getXY();
+    
+    var sbLive = getSBLive(window);
+    var sbSize = getSBSize(window);
+    var calculatedWidth = width - xy[0] - padding[0] - (sbLive[1] ? sbSize[1] : 0);
+    var calculatedHeight = height - xy[1] - padding[1] - (sbLive[0] ? sbSize[0] : 0);
+
+    var size = {
+        width  : Math.max(100, calculatedWidth),
+        height : Math.max(100, calculatedHeight)
+    };
+
+    if (width < 0)
+        extContainer.setHeight(size.height);
+    else if (height < 0)
+        extContainer.setWidth(size.width);
+    else
+        extContainer.setSize(size);
+    extContainer.doLayout();
+};
+
 
 /*
  * Set Tab titles centered (should be able to do any other customizations by setting the tabStripInnerStyle config)
@@ -54,7 +171,7 @@ LABKEY.ext.ISCore.initTableQuickTips = function( o ){
  */
 Ext.TabPanel.override({
     tabStripInnerStyle : 'text-align: center;',
-    onRender : function(ct, position){
+    onRender : function( ct, position ){
         Ext.TabPanel.superclass.onRender.call(this, ct, position);
 
         if(this.plain){
@@ -98,7 +215,7 @@ Ext.TabPanel.override({
 
         this.items.each(this.initTab, this);
     },
-    initTab : function(item, index){
+    initTab : function( item, index ){
         var before = this.strip.dom.childNodes[index],
             p = this.getTemplateArgs(item);
         p.tabStripInnerStyle = this.tabStripInnerStyle;
@@ -108,7 +225,7 @@ Ext.TabPanel.override({
                 cls = 'x-tab-strip-over',
                 tabEl = Ext.get(el);
 
-        tabEl.hover(function(){
+        tabEl.hover( function(){
             if(!item.disabled){
                 if ( ! tabEl.hasClass( 'x-tab-strip-active' ) ){
                     tabEl.addClass(cls);
@@ -230,7 +347,7 @@ Ext.override(Ext.grid.HeaderDragZone, {
 
 // Apply class 'x-dd-drop-nodrop' for anything being attempted to be dropped to the first 'disallowMoveBefore' positions
 Ext.override(Ext.grid.HeaderDropZone, {
-    positionIndicator : function(h, n, e){
+    positionIndicator : function( h, n, e ){
         if ( this.grid.colModel.disallowMoveBefore != undefined ){
             if ( this.view.getCellIndex(n) <= this.grid.colModel.disallowMoveBefore ){
                 return false;
@@ -282,7 +399,7 @@ Ext.grid.CustomColumnModel = Ext.extend(Ext.grid.ColumnModel, {
 
 // Can add components with text as well as checkbox-es, which become checkItems
 Ext.override( Ext.layout.ToolbarLayout, {
-    addComponentToMenu : function(menu, component) {
+    addComponentToMenu : function( menu, component ) {
         if (component instanceof Ext.Toolbar.Separator) {
             menu.add('-');
 
@@ -294,7 +411,7 @@ Ext.override( Ext.layout.ToolbarLayout, {
                 menu.add(this.createMenuConfig(component, !component.menu));
 
             } else if (component.isXType('buttongroup')) {
-                component.items.each(function(item){
+                component.items.each( function( item ){
                     this.addComponentToMenu(menu, item);
                 }, this);
             } else if ( component.isXType('checkbox')){
@@ -322,7 +439,7 @@ Ext.override( Ext.layout.ToolbarLayout, {
                                     new Ext.ToolTip({
                                         target: this.getEl(),
                                         listeners: {
-                                            beforeshow: function(tip) {
+                                            beforeshow: function( tip ){
                                                 var msg = this.getEl().dom.innerHTML;
                                                 tip.update( Ext.util.Format.htmlEncode( msg ) );
                                                 return (msg.length > 0);
@@ -343,10 +460,10 @@ Ext.override( Ext.layout.ToolbarLayout, {
     triggerWidth: 30
 });
 
-LABKEY.ext.ISCore.captureEvents = function(observable) {
+LABKEY.ext.ISCore.captureEvents = function( observable ) {
     Ext.util.Observable.capture(
         observable,
-        function(eventName, o) {
+        function( eventName, o ) {
             if ( eventName != 'mouseout' && eventName != 'mouseover' ){
                 var ot = 'unknown';
                 if ( o != undefined ){
@@ -390,7 +507,7 @@ LABKEY.ext.ISCore.Contributors =
     'The ImmuneSpace development team. For bug or feature requests please use ' +
     LABKEY.ext.ISCore.SupportBoardLink;
 
-LABKEY.ext.ISCore.onFailure = function(errorInfo, options, responseObj){
+LABKEY.ext.ISCore.onFailure = function( errorInfo, options, responseObj ){
     var strngErrorContact = '\nPlease, contact support, if you have questions.', text = 'Failure: ';
 
     if (errorInfo && errorInfo.exception){

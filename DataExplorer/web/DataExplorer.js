@@ -27,8 +27,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
         var
             me              = this;
-            qwpDataset      = undefined;
-      var      maskPlot        = undefined,
+            qwpDataset      = undefined,
+            maskPlot        = undefined,
             reportSessionId = undefined,
             fieldWidth      = 330,
             labelWidth      = 130,
@@ -80,6 +80,17 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         };
 
         var checkBtnPlotStatus = function(){
+            var onRender = function(){
+                if ( qwpDataset != undefined ){
+                    var numRows = qwpDataset.getDataRegion().totalRows;
+                    cmpStatus.update( numRows + ' data point' + ( numRows == '1' ? ' is ' : 's are ' ) + 'selected' );
+                } else {
+                    cmpStatus.update( '' );
+                }
+
+                $('.labkey-data-region-wrap').doubleScroll();
+            };
+
             var dataset = cbDataset.getValue();
             if (    dataset !== '' &&
                     spnrTextSize.isValid( true )
@@ -98,25 +109,22 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         frame: 'none',
                         queryName: dataset,
                         renderTo: pnlData.getEl(),
-                        schemaName: 'study',
-                        success: function(){
-                            var numRows = qwpDataset.getDataRegion().totalRows;
-                            cmpStatus.update( numRows + ' data point' + ( numRows == '1' ? ' is ' : 's are ' ) + 'selected' );
-                        }
+                        schemaName: 'study'
                     });
+                    qwpDataset.on( 'render', onRender );
+                    me.qwpDataset = qwpDataset;
 
                 } else if ( qwpDataset.queryName != dataset ) {
                     qwpDataset.queryName = dataset;
                     qwpDataset.getDataRegion().clearAllFilters(),
                     qwpDataset.render();
-                    var numRows = qwpDataset.getDataRegion().totalRows;
-                    cmpStatus.update( numRows + ' data point' + ( numRows == '1' ? ' is ' : 's are ' ) + 'selected' );
                 }
 
                 tlbrPlot.setDisabled( false );
             } else {
                 qwpDataset = undefined;
                 cmpStatus.update( '' );
+                pnlData.update( '' );
                 pnlData.add(
                     {
                         border: false,
@@ -199,7 +207,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     if ( s.getCount() == 0 ){
                         componentsSetDisabled( true );
                         pnlTabs.getEl().mask(
-                            'No immunological datasets are available for exploration in this study.</br>If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.SupportBoardLink, 'infoMask'
+                            'No data are available for visualization in this study ' +
+                            '(e.g. derived or processed immunological data).</br>' +
+                            'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.SupportBoardLink,
+                            'infoMask'
                         );
                     }
                 }
@@ -736,6 +747,11 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         );
                     },   
                     single: true 
+                },
+                tabchange: function( tabPanel, activeTab ){
+                    if ( activeTab.title == 'Data' ){
+                        $('.labkey-data-region-wrap').doubleScroll( 'refresh' );
+                    } 
                 }
             },
             minTabWidth: 100,
@@ -822,7 +838,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         this.width          = document.getElementById(config.webPartDivId).offsetWidth;
 
         this.cntPlot = cntPlot;
-        this.qwpDataset = qwpDataset;
 
         LABKEY.ext.DataExplorer.superclass.constructor.apply(this, arguments);
 
