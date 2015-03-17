@@ -13,7 +13,7 @@
             <cv:property name="columnTitle" value="Arm Name"/>
           </cv:properties>
         </cv:column>
-        <cv:column name="analyte_name"/>
+        <cv:column name="analyte"/>
         <cv:column name="comments"/>
         <cv:column name="concentration_value"/>
         <cv:column name="concentration_unit"/>
