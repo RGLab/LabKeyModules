@@ -26,7 +26,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var
-            me              = this;
+            me              = this,
             qwpDataset      = undefined,
             maskPlot        = undefined,
             reportSessionId = undefined,
@@ -92,8 +92,9 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             };
 
             var dataset = cbDataset.getValue();
-            if (    dataset !== '' &&
-                    spnrTextSize.isValid( true )
+            if (
+                dataset !== '' &&
+                spnrTextSize.isValid( true )
             ){
                 if ( qwpDataset == undefined ){
 

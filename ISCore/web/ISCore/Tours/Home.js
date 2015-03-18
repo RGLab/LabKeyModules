@@ -4,20 +4,20 @@ var homeTour = function(){
         steps: [{
             title: 'Welcome to ImmuneSpace',
             content: 'Please, use this quick tour to familiarize yourself with the project home page. You can always restart this tour by clicking the "QUICK HELP" link below.',
-            target: $('.labkey-wp')[1],
+            target: $('.labkey-wp')[0],
             placement: 'top',
             showNextButton: true
         },{
             title: 'Announcements',
             content: 'News from the ImmuneSpace team and the HIPC project. New features and package releases will be announced here.',
-            target: $('.labkey-wp')[0],
+            target: $('.labkey-wp')[1],
             placement: 'top',
             showPrevButton: true,
             showNextButton: true
         },{
             title: 'Quick Links',
             content: 'Direct access to useful places on ImmuneSpace as well as external resources and documentation.',
-            target: $('.labkey-wp')[2],
+            target: $('.labkey-wp')[3],
             yOffset: -15,
             placement: 'left',
             showPrevButton: true,
