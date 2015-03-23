@@ -45,7 +45,7 @@ format_table <- function(x, ...){
     # This is to make sure that we don't have issues with row names in data.frames
     stop("This function only works on data.tables")
     }
-  out <- kable(x, "html", table.attr = 'class="display" id="res_table_GSEA"', output = FALSE, ...)
+  out <- kable(x, "html", table.attr = 'class="display" id="res_table_GSEA"', escape = FALSE, output = FALSE, ...)
   footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
   out_new <- gsub("</thead>",footer,out)
   cat(out_new)
@@ -147,7 +147,7 @@ if(length(DEM) > 0){
 
 
 ```{r kable, cache = TRUE, dependson="byDay", results='asis', fig.heigth = 4, fig.width = 8}
-#table <- table[, Module := func_rnames(Module)]
+table <- table[, Module := func_rnames(Module)]
 table <- table[, PValue := abs(PValue)]
 setnames(table, "PValue", "10log10(p)")
 format_table(table)

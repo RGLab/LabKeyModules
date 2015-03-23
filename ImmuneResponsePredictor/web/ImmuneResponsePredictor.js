@@ -90,8 +90,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     if ( this.getCount() > 0 ){
                         cbTimePoint.setDisabled( false );
 
-                        var field = { name: 'displayTimepoint' }, num, unit;
-                        field = new Ext.data.Field(field);
+                        var num, unit,
+                        field = new Ext.data.Field({ name: 'displayTimepoint' });
                         this.recordType.prototype.fields.replace(field);
                         this.each( function(r){
                             if ( r.data[field.name] == undefined ){
@@ -135,13 +135,13 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var customTemplate = new Ext.XTemplate(
             '<tpl for=".">',
-                '<div ext:qtip=\'{cohortCount:this.pluralCohort}\' class =\'x-combo-list-item\'>',
-                    '{displayTimepoint:this.process}',
+                '<div class =\'x-combo-list-item\'>',
+                    '{displayTimepoint:this.process} ({cohortCount:this.pluralCohort})',
                 '</div>',
             '</tpl>',
-            {   
+            {
                 pluralCohort : function( v ) {
-                    return v + '&nbsp;cohort' + ( v == 1 ? '' : 's' );
+                    return Ext.util.Format.plural( v, 'cohort' );
                 },
                 process : function( value ) { 
                     return value === '' ? '&nbsp;' : Ext.util.Format.htmlEncode( value );

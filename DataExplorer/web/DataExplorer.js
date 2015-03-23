@@ -79,18 +79,30 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             }
         };
 
-        var checkBtnPlotStatus = function(){
-            var onRender = function(){
-                if ( qwpDataset != undefined ){
-                    var numRows = qwpDataset.getDataRegion().totalRows;
-                    cmpStatus.update( numRows + ' data point' + ( numRows == '1' ? ' is ' : 's are ' ) + 'selected' );
-                } else {
-                    cmpStatus.update( '' );
+        var onRender = function(){
+            var cohortCountQuery = 'SELECT COUNT(*) AS CohortCount FROM ( SELECT DISTINCT arm_accession FROM ' + cbDataset.getValue() + ' )';
+
+            LABKEY.Query.executeSql({
+                 schemaName: 'study',
+                 sql: cohortCountQuery,
+                 success: function(d){
+                    if ( qwpDataset != undefined ){
+                        var numRows = qwpDataset.getDataRegion().totalRows;
+                        cmpStatus.update(
+                            Ext.util.Format.plural( numRows, 'data point' ) + 
+                            ' across ' + Ext.util.Format.plural( d.rows[0].CohortCount, 'cohort' ) +
+                            ( numRows == '1' ? ' is ' : ' are ' ) + 'selected' 
+                        );
+                    } else {
+                        cmpStatus.update( '' );
+                    }
                 }
+            })
 
-                $('.labkey-data-region-wrap').doubleScroll();
-            };
+            $('.labkey-data-region-wrap').doubleScroll();
+        };
 
+        var checkBtnPlotStatus = function(){
             var dataset = cbDataset.getValue();
             if (
                 dataset !== '' &&

@@ -122,6 +122,16 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             failure: onError
         });
 
+        LABKEY.Query.selectRows({
+            requiredVersion: 12.3,
+            schemaName: 'immport',
+            queryName: 'HIPCfundedStudies',
+            columns:  'study_accession',
+            filterArray: [LABKEY.Filter.create('study_accession', SDY, LABKEY.Filter.Types.EQUAL)],
+            success: onSuccessHIPCfund,
+            failure: onError
+        });
+
         //FUNCTIONS
         function onSuccessStudy(results) {
             if ( results.rows.length > 0 ){
@@ -151,6 +161,12 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 PI.push(row['first_name'].value + ' ' + row['last_name'].value);
             }
             document.getElementById('PI' + config.webPartDivId).innerHTML = PI.join(', ');
+        };
+
+        function onSuccessHIPCfund(results){
+            if(results.rows.length > 0){
+              $('#organization' + config.webPartDivId)[0].innerHTML = $('#organization' + config.webPartDivId)[0].innerHTML +" (HIPC funded)";
+            }
         };
 
         function onError(errorInfo) {

@@ -696,16 +696,16 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 cbCohorts.setDisabled( true );
             } else {
                 strCohort.setUserFilters([
-                LABKEY.Filter.create(
-                    'timepoint',
-                    cbTimePoint.getSelectedField( 'timepoint' ),
-                    LABKEY.Filter.Types.EQUAL
-                ),
-                LABKEY.Filter.create(
-                    'timepointUnit',
-                    cbTimePoint.getSelectedField( 'timepointUnit' ),
-                    LABKEY.Filter.Types.EQUAL
-                )
+                    LABKEY.Filter.create(
+                        'timepoint',
+                        cbTimePoint.getSelectedField( 'timepoint' ),
+                        LABKEY.Filter.Types.EQUAL
+                    ),
+                    LABKEY.Filter.create(
+                        'timepointUnit',
+                        cbTimePoint.getSelectedField( 'timepointUnit' ),
+                        LABKEY.Filter.Types.EQUAL
+                    )
                 ]);
                 strCohort.load();
             }

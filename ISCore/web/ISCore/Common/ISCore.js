@@ -526,6 +526,52 @@ LABKEY.ext.ISCore.onFailure = function( errorInfo, options, responseObj ){
     Ext.Msg.alert('Error', text + strngErrorContact);
 };
 
+LABKEY.ext.ISCore.moduleNotEnabled =
+    'This module is not currently enabled in this study.' +
+    ( LABKEY.user.isAdmin ? ' Click <a href=\'' +
+    LABKEY.ActionURL.buildURL( 'admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
+    '\'>here</a> to enable it.' : '' );
+
+LABKEY.ext.ISCore.renderTempPnl = function( maskMsg, webPartDiv ){
+    var
+        temp = new Ext.Panel({
+            border: false,
+            cls: 'ISCore',
+            frame: false,
+            height: 100,
+            layout: 'fit',
+            listeners: {
+                afterrender: function(){
+                    this.getEl().mask( maskMsg, 'infoMask' );
+                }
+            },
+            renderTo: webPartDiv
+        }),
+        resizeModule = function(){
+            temp.getEl().mask( maskMsg, 'infoMask' );
+        }
+    ;
+
+    Ext.EventManager.onWindowResize( resizeModule );
+};
+
+LABKEY.ext.ISCore.geneExpressionDataRequiredMsg = function( dataSetId ){
+    return
+        'Gene expression data is required, but none was found in this study.' +
+        ( dataSetId ?
+        ' Navigate <a href="' +
+        LABKEY.ActionURL.buildURL(
+            'study',
+            'dataset',
+            null,
+            {
+                datasetId: dataSetId
+            }
+        ) + '">here</a> to generate expression matrices.' :
+        ' Expression matrices need to be generated first.' ) +
+        '</br>If you are unsure on what to do, please, contact us and fill out an issue on ' + LABKEY.ext.ISCore.SupportBoardLink;
+};
+
 Ext4.Ajax.timeout = 6 * 60 * 60 * 1000; // override the timeout to be 6 hours; value is in milliseconds
 
 Ext.QuickTips.init();
