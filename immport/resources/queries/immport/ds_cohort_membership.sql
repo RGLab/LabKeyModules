@@ -5,7 +5,9 @@
  */
 
 PARAMETERS($STUDY VARCHAR DEFAULT NULL)
-SELECT subject.subject_accession,
+SELECT 
+subject.subject_accession AS participantid,
+subject.subject_accession,
 CAST(0 AS INTEGER) as sequencenum,
 arm_or_cohort.*
 FROM subject
