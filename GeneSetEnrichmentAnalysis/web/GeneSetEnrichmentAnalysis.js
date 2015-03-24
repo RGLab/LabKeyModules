@@ -52,6 +52,10 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             autoLoad: true,
             listeners: {
                 load: function(){
+                    if ( this.getCount() > 0 ){
+                        cbCohort.setDisabled( false );
+                    }
+
                     decodeParams( window.location.hash, [ cbCohort, cbSignature ] );
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
@@ -67,6 +71,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
 
         var cbCohort = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
+            disabled: true,
             displayField: 'cohort',
             fieldLabel: 'Cohort',
             lazyInit: false,
@@ -310,7 +315,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                         title: 'Details'
                     }),
                     new Ext.form.FieldSet({
-                        html: LABKEY.ext.ISCore.Contributors,
+                        html: LABKEY.ext.ISCore.contributors,
                         style: 'margin-bottom: 2px; margin-top: 5px;',
                         title: 'Contributors'
                     })
@@ -416,7 +421,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                         maskReport = new Ext.LoadMask(
                             this.getEl(),
                             {
-                                msg: 'Generating the plot...',
+                                msg: LABKEY.ext.ISCore.generatingMessage,
                                 msgCls: 'mask-loading'
                             }
                         );

@@ -154,8 +154,14 @@ select_features <- function(FC, response, dichotomize){
 
 # Heatmap #FC_selected, HAI, palette, dichotomize
 draw_heatmap <- function(FC_selected, HAI, dichotomize, palette){
-  annotation <- HAI[, list(subject_accession, response, arm_name)]
-  annotation <- data.frame(annotation[order( response, arm_name, subject_accession)])
+  if(length(unique(HAI$type)) > 1){
+    annotation <- HAI[, list(subject_accession, response, arm_name, type)]
+    annotation <- annotation[order(response, arm_name, subject_accession)]
+    annotation <- data.frame(annotation[order(type, decreasing = TRUE)])
+  } else{
+    annotation <- HAI[, list(subject_accession, response, arm_name)]
+    annotation <- data.frame(annotation[order( response, arm_name, subject_accession)])
+  }
   rownames(annotation) <- annotation$subject_accession
   annotation$subject_accession <- NULL
   if(dichotomize){
@@ -182,7 +188,7 @@ format_table <- function(x, ...){
     #This is to make sure that we don't have issues with row names in data.frames
     stop("This function only works on data.tables")
   }
-  out <- kable(x, format="html", digits=4, table.attr = 'class="display" id="res_table"', output = FALSE, ...)
+  out <- kable(x, format="html", digits=4, table.attr = 'class="display" id="res_table"', output = FALSE, escape = FALSE, ...)
   footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
   out_new <- gsub("</thead>",footer,out)
   cat(out_new)
@@ -315,7 +321,7 @@ predictor_table <- data.table(cbind(selected_features, predictor_table))
 predictor_table <- predictor_table[, `:=`(c("statistic", "p-value"), list(as.numeric(statistic), as.numeric(`p-value`)))]
 predictor_table <- predictor_table[, gene_symbol := selected_features]
 # TODO: Fix links in DataTables
-#predictor_table <- predictor_table[, gene_symbol := sapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0('<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=immune_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
+predictor_table <- predictor_table[, gene_symbol := sapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0('<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=immune_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
 ```
 
 ```{r pred-cohort}
@@ -331,6 +337,7 @@ if(length(param$cohortsTesting) > 0){
     pdata <- data.table(pData(EM_pred))
     subs <- pdata$subject_accession
     data_pred <- t(exprs(EM_pred))
+    rownames(data_pred) <- pdata[match(rownames(data_pred), pdata$biosample_accession), subject_accession]
   } else{ #Need FC
     pdata <- data.table(pData(EM_pred))
     pdata <- pdata[study_time_collected %in% c(0, param$timepoint) & tolower(study_time_collected_unit) == param$timepointUnit]
@@ -376,5 +383,11 @@ format_table(predictor_table)
 
 ## Heatmap of the selected features
 ```{r heatmap}
-draw_heatmap(FC_selected, HAI, param$dichotomize, palette)
+HAI$type <- "Training set"
+if(length(param$cohortsTesting) == 0){
+  draw_heatmap(FC_selected, HAI, param$dichotomize, palette)
+} else{
+  HAI_pred$type <- "Testing set"
+  draw_heatmap(rbind(FC_selected, data_pred), rbind(HAI, HAI_pred), param$dichotomize, palette)
+}
 ```

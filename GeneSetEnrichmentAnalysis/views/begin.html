@@ -25,26 +25,7 @@ vim: ts=4:sw=4:nu:fdc=4:spell
 <script type='text/javascript'>
 
     var initGeneSetEnrichmentAnalysis = function(){
-        var
-            webPartDiv = <%=webpartContext%>.wrapperDivId,
-
-            createTempPnl = function(){
-                LABKEY.Query.executeSql({
-                    failure: function(){
-                        LABKEY.ext.ISCore.renderTempPnl( LABKEY.ext.ISCore.geneExpressionDataRequiredMsg( null ), webPartDiv );
-                    },
-                    schemaName: 'study',
-                    sql: 'SELECT DataSetId FROM DataSets WHERE Name = \'gene_expression_files\'',
-                    success: function( d ){
-                        if ( d.rows.length > 0 ){
-                            LABKEY.ext.ISCore.renderTempPnl( LABKEY.ext.ISCore.geneExpressionDataRequiredMsg( d.rows[0].DataSetId ), webPartDiv );
-                        } else {
-                            LABKEY.ext.ISCore.renderTempPnl( LABKEY.ext.ISCore.geneExpressionDataRequiredMsg( null ), webPartDiv );
-                        }
-                    }
-                });
-            }
-        ;
+        var webPartDiv = <%=webpartContext%>.wrapperDivId;
 
         LABKEY.Query.getQueryDetails({
             failure: function(){
@@ -53,29 +34,18 @@ vim: ts=4:sw=4:nu:fdc=4:spell
             queryName: 'expression_matrices_cohorts',
             schemaName: 'study',
             success: function(){
-                LABKEY.Query.getSchemas({
-                    apiVersion: '9.3',
-                    failure: createTempPnl,
-                    schemaName: 'assay.ExpressionMatrix',
-                    success: function( d ){
-                        if ( d.matrix ){
-                            var
-                                GeneSetEnrichmentAnalysis = new LABKEY.ext.GeneSetEnrichmentAnalysis({
-                                    webPartDivId: webPartDiv
-                                }),
+                var
+                    GeneSetEnrichmentAnalysis = new LABKEY.ext.GeneSetEnrichmentAnalysis({
+                        webPartDivId: webPartDiv
+                    }),
 
-                                resizeModule = function(w, h){
-                                    LABKEY.ext.Utils.resizeToViewport( GeneSetEnrichmentAnalysis, w, -1, null, null, -5 );
-                                    GeneSetEnrichmentAnalysis.resize();
-                                }
-                            ;
-
-                            Ext.EventManager.onWindowResize( resizeModule );
-                        } else {
-                            createTempPnl();
-                        }
+                    resizeModule = function(w, h){
+                        LABKEY.ext.Utils.resizeToViewport( GeneSetEnrichmentAnalysis, w, -1, null, null, -5 );
+                        GeneSetEnrichmentAnalysis.resize();
                     }
-                });
+                ;
+
+                Ext.EventManager.onWindowResize( resizeModule );
             } 
         });
 
