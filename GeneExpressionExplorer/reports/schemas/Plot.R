@@ -61,7 +61,7 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
 } else{
   EM <- con$getGEMatrix(cohort = arrayCohorts, summary = TRUE)
   PD <- data.table(pData(EM))
-  if(any(exprs(EM)>100)){
+  if(any(exprs(EM)>100, na.rm = TRUE)){
     dt <- data.table(voom(EM)$E)
     dt <- dt[, gene_symbol := rownames(exprs(EM))]
   } else{

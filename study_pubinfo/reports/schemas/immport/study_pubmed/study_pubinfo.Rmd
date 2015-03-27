@@ -23,7 +23,7 @@ loaded <- labkey.selectRows(labkey.url.base, "/Shared/", "lists", "loaded_studie
 
 get_reference <- function(id, related=FALSE){
    x <- entrez_summary(db="pubmed", id=id)
-   reference <- paste(paste(x$AuthorList,collapse=", "), ". ", x$Title, " <i>", x$Source, "</i> ", x$Volume, "(", x$Issue, "), ", x$PubDate, ".", sep="")
+   reference <- paste(paste(x$authors$name,collapse=", "), ". ", x$title, " <i>", x$source, "</i> ", x$volume, "(", x$issue, "), ", x$pubdate, ".", sep="")
    pubmed_link <- paste0("<a href='http://www.ncbi.nlm.nih.gov/pubmed/", id,"' target='_blank'>", "PMID:", id,"</a>")
    if(related){
     SDY <- as.character(dat[ dat$pubmed_id == id, "study_accession"])

@@ -6,6 +6,7 @@
         <dependency path='ISCore/ExtendedLovCombo'/>
         <dependency path='ISCore/FancyBox'/>
         <dependency path='ISCore/Spinner'/>
+        <dependency path='ISCore/DoubleScroll'/>
 
         <dependency path='DataExplorer.js'/>
     </dependencies>

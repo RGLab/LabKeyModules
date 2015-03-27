@@ -26,9 +26,9 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var
-            me              = this;
-            qwpDataset      = undefined;
-      var      maskPlot        = undefined,
+            me              = this,
+            qwpDataset      = undefined,
+            maskPlot        = undefined,
             reportSessionId = undefined,
             fieldWidth      = 330,
             labelWidth      = 130,
@@ -79,10 +79,34 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             }
         };
 
+        var onRender = function(){
+            var cohortCountQuery = 'SELECT COUNT(*) AS CohortCount FROM ( SELECT DISTINCT arm_accession FROM ' + cbDataset.getValue() + ' )';
+
+            LABKEY.Query.executeSql({
+                 schemaName: 'study',
+                 sql: cohortCountQuery,
+                 success: function(d){
+                    if ( qwpDataset != undefined ){
+                        var numRows = qwpDataset.getDataRegion().totalRows;
+                        cmpStatus.update(
+                            Ext.util.Format.plural( numRows, 'data point' ) + 
+                            ' across ' + Ext.util.Format.plural( d.rows[0].CohortCount, 'cohort' ) +
+                            ( numRows == '1' ? ' is ' : ' are ' ) + 'selected' 
+                        );
+                    } else {
+                        cmpStatus.update( '' );
+                    }
+                }
+            })
+
+            $('.labkey-data-region-wrap').doubleScroll();
+        };
+
         var checkBtnPlotStatus = function(){
             var dataset = cbDataset.getValue();
-            if (    dataset !== '' &&
-                    spnrTextSize.isValid( true )
+            if (
+                dataset !== '' &&
+                spnrTextSize.isValid( true )
             ){
                 if ( qwpDataset == undefined ){
 
@@ -98,25 +122,22 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         frame: 'none',
                         queryName: dataset,
                         renderTo: pnlData.getEl(),
-                        schemaName: 'study',
-                        success: function(){
-                            var numRows = qwpDataset.getDataRegion().totalRows;
-                            cmpStatus.update( numRows + ' data point' + ( numRows == '1' ? ' is ' : 's are ' ) + 'selected' );
-                        }
+                        schemaName: 'study'
                     });
+                    qwpDataset.on( 'render', onRender );
+                    me.qwpDataset = qwpDataset;
 
                 } else if ( qwpDataset.queryName != dataset ) {
                     qwpDataset.queryName = dataset;
                     qwpDataset.getDataRegion().clearAllFilters(),
                     qwpDataset.render();
-                    var numRows = qwpDataset.getDataRegion().totalRows;
-                    cmpStatus.update( numRows + ' data point' + ( numRows == '1' ? ' is ' : 's are ' ) + 'selected' );
                 }
 
                 tlbrPlot.setDisabled( false );
             } else {
                 qwpDataset = undefined;
                 cmpStatus.update( '' );
+                pnlData.update( '' );
                 pnlData.add(
                     {
                         border: false,
@@ -199,7 +220,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     if ( s.getCount() == 0 ){
                         componentsSetDisabled( true );
                         pnlTabs.getEl().mask(
-                            'No immunological datasets are available for exploration in this study.</br>If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.SupportBoardLink, 'infoMask'
+                            'No data are available for visualization in this study ' +
+                            '(e.g. derived or processed immunological data).</br>' +
+                            'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.supportBoardLink,
+                            'infoMask'
                         );
                     }
                 }
@@ -687,7 +711,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             title: 'Details'
                         }),
                         new Ext.form.FieldSet({
-                            html: LABKEY.ext.ISCore.Contributors,
+                            html: LABKEY.ext.ISCore.contributors,
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Contributors'
                         })
@@ -730,12 +754,17 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         maskPlot = new Ext.LoadMask(
                             this.getEl(),
                             {
-                                msg: 'Generating the plot...',
+                                msg: LABKEY.ext.ISCore.generatingMessage,
                                 msgCls: 'mask-loading'
                             }
                         );
                     },   
                     single: true 
+                },
+                tabchange: function( tabPanel, activeTab ){
+                    if ( activeTab.title == 'Data' ){
+                        $('.labkey-data-region-wrap').doubleScroll( 'refresh' );
+                    } 
                 }
             },
             minTabWidth: 100,
@@ -822,7 +851,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         this.width          = document.getElementById(config.webPartDivId).offsetWidth;
 
         this.cntPlot = cntPlot;
-        this.qwpDataset = qwpDataset;
 
         LABKEY.ext.DataExplorer.superclass.constructor.apply(this, arguments);
 

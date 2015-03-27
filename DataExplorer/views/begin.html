@@ -1,5 +1,5 @@
 <!--
-vim: ts=2:sw=2:nu:fdc=2:spell
+vim: ts=4:sw=4:nu:fdc=4:spell
 -->
 <!--
     Copyright 2014 Fred Hutchinson Cancer Research Center
@@ -20,20 +20,30 @@ vim: ts=2:sw=2:nu:fdc=2:spell
 <script type='text/javascript'>
 
     var initDataExplorer = function(){
-        var
-            webPartDiv = <%=webpartContext%>.wrapperDivId,
+        var webPartDiv = <%=webpartContext%>.wrapperDivId;
 
-            DataExplorer = new LABKEY.ext.DataExplorer({
-                webPartDivId: webPartDiv
-            }),
+        LABKEY.Query.getQueryDetails({
+            failure: function(){
+                LABKEY.ext.ISCore.renderTempPnl( LABKEY.ext.ISCore.moduleNotEnabled, webPartDiv );
+            },
+            queryName: 'data_sets',
+            schemaName: 'study',
+            success: function(){
+                var
+                    DataExplorer = new LABKEY.ext.DataExplorer({
+                        webPartDivId: webPartDiv
+                    }),
 
-            resizeModule = function(w, h){
-                LABKEY.ext.Utils.resizeToViewport( DataExplorer, w, -1, null, null, -5 );
-                DataExplorer.resize();
-            }
-        ;
+                    resizeModule = function(w, h){
+                        LABKEY.ext.Utils.resizeToViewport( DataExplorer, w, -1, null, null, -5 );
+                        DataExplorer.resize();
+                    }
+                ;
 
-        Ext.EventManager.onWindowResize( resizeModule );
+                Ext.EventManager.onWindowResize( resizeModule );
+            } 
+        });
+
         Ext.EventManager.fireWindowResize();
     };
 

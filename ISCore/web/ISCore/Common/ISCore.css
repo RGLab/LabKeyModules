@@ -90,6 +90,11 @@
 .ISCore .x-fieldset-header {
     padding-top: 2px;
 }
+
+.ISCore .labkey-data-region-wrap {
+    overflow: auto;
+}
+
 /* ************************************************************ */
 .iconConfigure {
     background-image: url(../_images/configure.png);

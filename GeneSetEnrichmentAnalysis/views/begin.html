@@ -1,5 +1,5 @@
 <!--
-vim: ts=2:sw=2:nu:fdc=2:spell
+vim: ts=4:sw=4:nu:fdc=4:spell
 -->
 <!--
     Copyright 2014 Fred Hutchinson Cancer Research Center
@@ -25,73 +25,17 @@ vim: ts=2:sw=2:nu:fdc=2:spell
 <script type='text/javascript'>
 
     var initGeneSetEnrichmentAnalysis = function(){
-        var
-            webPartDiv = <%=webpartContext%>.wrapperDivId,
-            resizeModule,
-            renderTempPnl = function( dataSetId ){
-                var
-                    maskMsg =
-                        'Gene expression data is required, but none was found in this study.' +
-                        ( dataSetId ?
-                        ' Navigate <a href="' +
-                        LABKEY.ActionURL.buildURL(
-                            'study',
-                            'dataset',
-                            null,
-                            {
-                                datasetId: dataSetId
-                            }
-                        ) + '">here</a> to generate expression matrices.' :
-                        ' Expression matrices need to be generated first.' ) +
-                        '</br>If you are unsure on what to do, please, contact us and fill out an issue on ' + LABKEY.ext.ISCore.SupportBoardLink,
+        var webPartDiv = <%=webpartContext%>.wrapperDivId;
 
-                    temp = new Ext.Panel({
-                        border: false,
-                        cls: 'ISCore',
-                        frame: false,
-                        height: 100,
-                        layout: 'fit',
-                        listeners: {
-                            afterrender: function(){
-                                this.getEl().mask( maskMsg, 'infoMask' );
-                            }
-                        },
-                        renderTo: webPartDiv
-                    })
-                ;
-
-                resizeModule = function(){
-                    temp.getEl().mask( maskMsg, 'infoMask' );
-                };
-
-                Ext.EventManager.onWindowResize( resizeModule );
+        LABKEY.Query.getQueryDetails({
+            failure: function(){
+                LABKEY.ext.ISCore.renderTempPnl( LABKEY.ext.ISCore.moduleNotEnabled, webPartDiv );
             },
-
-            createTempPnl = function(){
-                LABKEY.Query.executeSql({
-                    failure: function(){
-                        renderTempPnl( null );
-                    },
-                    schemaName: 'study',
-                    sql: 'SELECT DataSetId FROM DataSets WHERE Name = \'gene_expression_files\'',
-                    success: function( d ){
-                        if ( d.rows.length > 0 ){
-                            renderTempPnl( d.rows[0].DataSetId );
-                        } else {
-                            renderTempPnl( null );
-                        }
-                    }
-                });
-            }
-        ;
-
-        LABKEY.Query.getSchemas({
-            apiVersion: '9.3',
-            failure: createTempPnl,
-            schemaName: 'assay.ExpressionMatrix',
-            success: function(d){
-                if ( d.matrix ){
-                    var GeneSetEnrichmentAnalysis = new LABKEY.ext.GeneSetEnrichmentAnalysis({
+            queryName: 'expression_matrices_cohorts',
+            schemaName: 'study',
+            success: function(){
+                var
+                    GeneSetEnrichmentAnalysis = new LABKEY.ext.GeneSetEnrichmentAnalysis({
                         webPartDivId: webPartDiv
                     }),
 
@@ -99,12 +43,10 @@ vim: ts=2:sw=2:nu:fdc=2:spell
                         LABKEY.ext.Utils.resizeToViewport( GeneSetEnrichmentAnalysis, w, -1, null, null, -5 );
                         GeneSetEnrichmentAnalysis.resize();
                     }
+                ;
 
-                    Ext.EventManager.onWindowResize( resizeModule );
-                } else {
-                    createTempPnl();
-                }
-            }
+                Ext.EventManager.onWindowResize( resizeModule );
+            } 
         });
 
         Ext.EventManager.fireWindowResize();

@@ -23,6 +23,8 @@ library(ImmuneSpaceR)
 #-------------------------------
 
 # Change colnames to biosample_accession
+# @param exprs A matrix
+# @param pdata A data.table with biosample information
 process_TSV_colnames <- function(exprs, pdata){
   # Get biosample_accession as column names
   if(length(grep("^SUB", colnames(exprs))) == ncol(exprs)){
@@ -59,8 +61,11 @@ process_TSV <- function(con, pdata, inputFiles, selectedBiosamples){
   if(unique(pdata$file_info_purpose) == "RNA-Seq result"){
     #simply average counts accross genes for transcript mapping the same symbol
     norm_exprs <- fread(inputFiles)
-    feature_id <- norm_exprs[, 1, with = FALSE]
+    feature_id <- unlist(norm_exprs[, 1, with = FALSE], use.names = FALSE)
     norm_exprs <- norm_exprs[, grep("^BS", colnames(norm_exprs)), with = FALSE]
+    norm_exprs <- as.matrix(norm_exprs)
+    rownames(norm_exprs) <- feature_id
+    norm_exprs <- process_TSV_colnames(norm_exprs, pdata)
   } else{
     library(lumi)
     raw_exprs <- fread(inputFiles)
@@ -131,8 +136,10 @@ normalizeMatrix <- function(jobInfo, selectedBiosamples){
   } else{
     stop(paste("The file extension", ext, "is not valid"))
   }
-  norm_exprs <- data.table(norm_exprs, keep.rownames = TRUE)
-  setnames(norm_exprs, "rn", "feature_id")
+  if(!is(norm_exprs, "data.table")){
+    norm_exprs <- data.table(norm_exprs, keep.rownames = TRUE)
+    setnames(norm_exprs, "rn", "feature_id")
+  }
   return(norm_exprs)
 }
 

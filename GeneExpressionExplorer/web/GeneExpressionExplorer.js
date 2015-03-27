@@ -98,18 +98,22 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             autoLoad: true,
             listeners: {
                 load: function(){
-                    var field = { name: 'displayTimepoint' }, num, unit;
-                    field = new Ext.data.Field(field);
-                    this.recordType.prototype.fields.replace(field);
-                    this.each( function(r){
-                        if ( r.data[field.name] == undefined ){
-                            num                 = r.data['timepoint'];
-                            unit                = r.data['timepointUnit'];
-                            r.data[field.name]  = num + ' ' + ( num != 1 ? unit : unit.slice( 0, unit.length - 1 ) );
-                        }
-                    });
+                    if ( this.getCount() > 0 ){
+                        cbTimePoint.setDisabled( false );
 
-                    cbTimePoint.bindStore( this );
+                        var num, unit,
+                            field = new Ext.data.Field({ name: 'displayTimepoint' });
+                        this.recordType.prototype.fields.replace(field);
+                        this.each( function(r){
+                            if ( r.data[field.name] == undefined ){
+                                num                 = r.data['timepoint'];
+                                unit                = r.data['timepointUnit'];
+                                r.data[field.name]  = num + ' ' + ( num != 1 ? unit : unit.slice( 0, unit.length - 1 ) );
+                            }
+                        });
+
+                        cbTimePoint.bindStore( this );
+                    }
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
@@ -218,6 +222,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
+            disabled: true,
             displayField: 'displayTimepoint',
             fieldLabel: 'Time point',
             lazyInit: false,
@@ -617,7 +622,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             title: 'Details'
                         }),
                         new Ext.form.FieldSet({
-                            html: LABKEY.ext.ISCore.Contributors,
+                            html: LABKEY.ext.ISCore.contributors,
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Contributors'
                         })
@@ -667,7 +672,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         maskPlot = new Ext.LoadMask(
                             this.getEl(),
                             {
-                                msg: 'Generating the plot, be patient, this might take some time...',
+                                msg: LABKEY.ext.ISCore.generatingMessage,
                                 msgCls: 'mask-loading'
                             }
                         );
@@ -696,16 +701,16 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 cbCohorts.setDisabled( true );
             } else {
                 strCohort.setUserFilters([
-                LABKEY.Filter.create(
-                    'timepoint',
-                    cbTimePoint.getSelectedField( 'timepoint' ),
-                    LABKEY.Filter.Types.EQUAL
-                ),
-                LABKEY.Filter.create(
-                    'timepointUnit',
-                    cbTimePoint.getSelectedField( 'timepointUnit' ),
-                    LABKEY.Filter.Types.EQUAL
-                )
+                    LABKEY.Filter.create(
+                        'timepoint',
+                        cbTimePoint.getSelectedField( 'timepoint' ),
+                        LABKEY.Filter.Types.EQUAL
+                    ),
+                    LABKEY.Filter.create(
+                        'timepointUnit',
+                        cbTimePoint.getSelectedField( 'timepointUnit' ),
+                        LABKEY.Filter.Types.EQUAL
+                    )
                 ]);
                 strCohort.load();
             }

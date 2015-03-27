@@ -9,7 +9,7 @@
     <transforms>
         <transform id="demographics" type="org.labkey.di.pipeline.TransformTask">
             <source schemaName="immport" queryName="ds_demographics" />
-            <destination schemaName="study" queryName="demographics" targetOption="truncate" />
+            <destination schemaName="study" queryName="demographics" targetOption="merge" />
         </transform>
         <transform id="elispot" type="org.labkey.di.pipeline.TransformTask">
             <source schemaName="immport" queryName="ds_elispot" />

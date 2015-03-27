@@ -763,7 +763,7 @@ studyfinderScope.prototype =
             return this.recent_study_list;
         if (this.studySubset == "HipcFunded")
             return this.hipc_study_list;
-        return this.dimStudy.members;
+        return Ext4.pluck( this.dimStudy.members, 'uniqueName' );
     },
 
 
@@ -850,7 +850,7 @@ studyfinderScope.prototype =
             {
                 scope.searchMessage = '';
                 // intersect with study subset list
-                var result = this.intersect(searchStudies, this.getStudySubsetList());
+                var result = scope.intersect(searchStudies, scope.getStudySubsetList());
                 scope.setStudyFilter(result);
             }
         });
@@ -1024,7 +1024,7 @@ var dataspace =
         "Condition": {name:'Condition', hierarchyName:'Study.Conditions', levelName:'Condition', allMemberName:'[Study.Conditions].[(All)]'},
         "Assay": {name:'Assay', hierarchyName:'Assay', levelName:'Assay', allMemberName:'[Assay].[(All)]'},
         "Type": {name:'Type', hierarchyName:'Study.Type', levelName:'Type', allMemberName:'[Study.Type].[(All)]'},
-        "Category": {name:'Category', hierarchyName:'Study.Category', levelName:'Category', allMemberName:'[Study.Category].[(All)]'},
+        "Category": {caption:'Research focus', name:'Category', hierarchyName:'Study.Category', levelName:'Category', allMemberName:'[Study.Category].[(All)]'},
         "Timepoint":{caption:'Day of Study', name:'Timepoint', hierarchyName:'Timepoint.Timepoints', levelName:'Timepoint', allMemberName:'[Timepoint.Timepoints].[(All)]'},
         "Race": {name:'Race', hierarchyName:'Subject.Race', levelName:'Race', allMemberName:'[Subject.Race].[(All)]'},
         "Gender": {name:'Gender', hierarchyName:'Subject.Gender', levelName:'Gender', allMemberName:'[Subject.Gender].[(All)]'},
@@ -1066,10 +1066,13 @@ if (!c.isRoot())
 {
     comma = "\n";
     Container p = c.getProject();
-    ContainerFilter cf = new ContainerFilter.AllInProject(context.getUser());
     QuerySchema s = DefaultSchema.get(context.getUser(), p).getSchema("study");
     TableInfo sp = s.getTable("StudyProperties");
-    ((ContainerFilterable)sp).setContainerFilter(cf);
+    if (sp.supportsContainerFilter())
+    {
+        ContainerFilter cf = new ContainerFilter.AllInProject(context.getUser());
+        ((ContainerFilterable)sp).setContainerFilter(cf);
+    }
     Collection<Map<String, Object>> maps = new TableSelector(sp).getMapCollection();
 
     long now = HeartBeat.currentTimeMillis();

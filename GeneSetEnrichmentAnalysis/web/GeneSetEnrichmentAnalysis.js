@@ -52,6 +52,10 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             autoLoad: true,
             listeners: {
                 load: function(){
+                    if ( this.getCount() > 0 ){
+                        cbCohort.setDisabled( false );
+                    }
+
                     decodeParams( window.location.hash, [ cbCohort, cbSignature ] );
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
@@ -67,6 +71,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
 
         var cbCohort = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
+            disabled: true,
             displayField: 'cohort',
             fieldLabel: 'Cohort',
             lazyInit: false,
@@ -310,7 +315,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                         title: 'Details'
                     }),
                     new Ext.form.FieldSet({
-                        html: LABKEY.ext.ISCore.Contributors,
+                        html: LABKEY.ext.ISCore.contributors,
                         style: 'margin-bottom: 2px; margin-top: 5px;',
                         title: 'Contributors'
                     })
@@ -330,7 +335,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     new Ext.form.FieldSet({
                         html: '<b>Cohort:</b> The cohorts with subjects of interest<br><br>\
                                <b>Modules:</b> The modules used for grouping genes, currently the following modules are available:<br><ul>\
-                                  <li><a href="http://www.immuneprofiling.org/meni/meni-paper/btm-landing.gsp" target="_blank">Blood transcription</a>: Set of transcription modules in blood.</li>\
+                                  <li><a href="http://www.interactivefigures.com/meni/meni-paper/btm-landing.gsp" target="_blank">Blood transcription</a>: Set of transcription modules in blood.</li>\
                                   <li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp" target="_blank">MSigDB c7</a>: Gene sets that represent cell states and perturbations within the immune system.</li>\
                                   <li><a href="http://www.biir.net/public_wikis/module_annotation/G2_Trial_8_Modules" target="_blank">G2 (Trial 8) Modules</a>: Repertoire of co-clustering genes.</li>\
                                </ul>',
@@ -416,7 +421,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                         maskReport = new Ext.LoadMask(
                             this.getEl(),
                             {
-                                msg: 'Generating the plot...',
+                                msg: LABKEY.ext.ISCore.generatingMessage,
                                 msgCls: 'mask-loading'
                             }
                         );
@@ -491,6 +496,8 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         var handleCohortSelection = function(){
             if ( cbCohort.getValue() == '' ){
                 btnRun.setDisabled( true );
+            } else{
+                checkBtnRunStatus()
             }
         };
 

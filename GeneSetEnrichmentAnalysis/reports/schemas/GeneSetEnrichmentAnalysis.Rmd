@@ -45,7 +45,7 @@ format_table <- function(x, ...){
     # This is to make sure that we don't have issues with row names in data.frames
     stop("This function only works on data.tables")
     }
-  out <- kable(x, "html", table.attr = 'class="display" id="res_table_GSEA"', output = FALSE, ...)
+  out <- kable(x, "html", table.attr = 'class="display" id="res_table_GSEA"', escape = FALSE, output = FALSE, ...)
   footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
   out_new <- gsub("</thead>",footer,out)
   cat(out_new)
@@ -92,13 +92,15 @@ EM <- con$getGEMatrix(cohort = cohort, summary = TRUE)
 indices <- ids2indices(gene_sets, fData(EM)$gene_symbol)
 pData(EM)[, contrast] <- as.factor(pData(EM)[, contrast])
 mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
+colnames(mm) <- make.names(colnames(mm))
 ```
 
 ## Gene set enrichment analysis of `r cohort`
 
 ```{r byDay,  cache = TRUE, dependson="camera"}
 lev <- levels(pData(EM)[, contrast])
-lev <- paste0(contrast, lev[2:length(lev)])
+lev_label <- paste0(contrast, lev[2:length(lev)])
+lev <- make.names(lev_label)
 cam_list <- vector('list', length = length(lev))
 for(i in 1:length(lev)){
   contrasti <- lev[[i]]
@@ -110,7 +112,7 @@ for(i in 1:length(lev)){
 
   dt <- data.table(res) 
   dt[, Module := rownames(res)]
-  dt[, Coefficient := lev[[i]]]
+  dt[, Coefficient := lev_label[[i]]]
   #dt[, PValue := 10*log10(PValue)]
   dt[, PValue := ifelse(Direction=="Up", -10*log10(PValue), 10*log10(PValue))]
   cam_list[[i]] <- dt
@@ -145,7 +147,7 @@ if(length(DEM) > 0){
 
 
 ```{r kable, cache = TRUE, dependson="byDay", results='asis', fig.heigth = 4, fig.width = 8}
-#table <- table[, Module := func_rnames(Module)]
+table <- table[, Module := func_rnames(Module)]
 table <- table[, PValue := abs(PValue)]
 setnames(table, "PValue", "10log10(p)")
 format_table(table)
