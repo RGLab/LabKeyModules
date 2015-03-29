@@ -201,6 +201,10 @@
         background-color:rgba(81, 158, 218, 0.8);
         /* background: linear-gradient(to right, rgba(81, 158, 218, 0.8) 0%,rgba(81, 158, 218, 0.3) 50%, rgba(81, 158, 218, 0.8) 100%); */
     }
+    SPAN.searchNotFound
+    {
+        background-color:yellow;
+    }
 </style>
 
 
@@ -212,7 +216,9 @@
 
     <tr><td align="left" colspan="2">
         <div class="innerColor" style="padding:10px; border:solid 2px #e6e6e6;">
-        <div style="float:left;"><input placeholder="Study Search" id="searchTerms" name="q" style="width:200pt;" ng-model="searchTerms" ng-change="onSearchTermsChanged()"><span class="searchMessage" style="padding-left: 10px">{{searchMessage}}</span></div>
+        <div style="float:left;"><input placeholder="Study Search" id="searchTerms" name="q" style="width:200pt;" ng-model="searchTerms" ng-change="onSearchTermsChanged()">
+            <span class="searchMessage" ng-class="{searchNotFound:(searchMessage=='no matches')}">&nbsp;{{searchMessage}}&nbsp;</span>
+        </div>
         <div style="float:right;">
             <span ng-show="loaded_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmuneSpace" ng-change="onStudySubsetChanged()">All ImmuneSpace studies</span>
             <span ng-show="recent_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="Recent" ng-change="onStudySubsetChanged()">Recently added</span>
