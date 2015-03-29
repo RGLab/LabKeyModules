@@ -222,7 +222,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         pnlTabs.getEl().mask(
                             'No data are available for visualization in this study ' +
                             '(e.g. derived or processed immunological data).</br>' +
-                            'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.SupportBoardLink,
+                            'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.supportBoardLink,
                             'infoMask'
                         );
                     }
@@ -711,7 +711,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             title: 'Details'
                         }),
                         new Ext.form.FieldSet({
-                            html: LABKEY.ext.ISCore.Contributors,
+                            html: LABKEY.ext.ISCore.contributors,
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Contributors'
                         })
@@ -754,7 +754,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         maskPlot = new Ext.LoadMask(
                             this.getEl(),
                             {
-                                msg: 'Generating the plot...',
+                                msg: LABKEY.ext.ISCore.generatingMessage,
                                 msgCls: 'mask-loading'
                             }
                         );

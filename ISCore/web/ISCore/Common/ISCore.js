@@ -495,18 +495,6 @@ LABKEY.ext.ISCore.captureEvents = function( observable ) {
     );
 };
 
-LABKEY.ext.ISCore.SupportBoardLink =
-    'the <a href="' +
-    LABKEY.ActionURL.buildURL(
-      'project',
-      'begin',
-      '/home/support'
-    ) + '">support board</a>.';
-
-LABKEY.ext.ISCore.Contributors =
-    'The ImmuneSpace development team. For bug or feature requests please use ' +
-    LABKEY.ext.ISCore.SupportBoardLink;
-
 LABKEY.ext.ISCore.onFailure = function( errorInfo, options, responseObj ){
     var strngErrorContact = '\nPlease, contact support, if you have questions.', text = 'Failure: ';
 
@@ -525,6 +513,21 @@ LABKEY.ext.ISCore.onFailure = function( errorInfo, options, responseObj ){
 
     Ext.Msg.alert('Error', text + strngErrorContact);
 };
+
+LABKEY.ext.ISCore.supportBoardLink =
+    'the <a href="' +
+    LABKEY.ActionURL.buildURL(
+      'project',
+      'begin',
+      '/home/support'
+    ) + '">support board</a>.';
+
+LABKEY.ext.ISCore.generatingMessage =
+    'Generating the output, be patient, this could take some time.';
+
+LABKEY.ext.ISCore.contributors =
+    'The ImmuneSpace development team. For bug or feature requests please use ' +
+    LABKEY.ext.ISCore.supportBoardLink;
 
 LABKEY.ext.ISCore.moduleNotEnabled =
     'This module is not currently enabled in this study.' +
@@ -553,23 +556,6 @@ LABKEY.ext.ISCore.renderTempPnl = function( maskMsg, webPartDiv ){
     ;
 
     Ext.EventManager.onWindowResize( resizeModule );
-};
-
-LABKEY.ext.ISCore.geneExpressionDataRequiredMsg = function( dataSetId ){
-    return
-        'Gene expression data is required, but none was found in this study.' +
-        ( dataSetId ?
-        ' Navigate <a href="' +
-        LABKEY.ActionURL.buildURL(
-            'study',
-            'dataset',
-            null,
-            {
-                datasetId: dataSetId
-            }
-        ) + '">here</a> to generate expression matrices.' :
-        ' Expression matrices need to be generated first.' ) +
-        '</br>If you are unsure on what to do, please, contact us and fill out an issue on ' + LABKEY.ext.ISCore.SupportBoardLink;
 };
 
 Ext4.Ajax.timeout = 6 * 60 * 60 * 1000; // override the timeout to be 6 hours; value is in milliseconds

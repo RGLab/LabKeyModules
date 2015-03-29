@@ -91,7 +91,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         cbTimePoint.setDisabled( false );
 
                         var num, unit,
-                        field = new Ext.data.Field({ name: 'displayTimepoint' });
+                            field = new Ext.data.Field({ name: 'displayTimepoint' });
                         this.recordType.prototype.fields.replace(field);
                         this.each( function(r){
                             if ( r.data[field.name] == undefined ){
@@ -620,7 +620,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                             title: 'Details'
                         }),
                         new Ext.form.FieldSet({
-                            html: LABKEY.ext.ISCore.Contributors,
+                            html: LABKEY.ext.ISCore.contributors,
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Contributors'
                         })
@@ -676,7 +676,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         maskReport = new Ext.LoadMask(
                             this.getEl(),
                             {
-                                msg: 'Generating the report ...',
+                                msg: LABKEY.ext.ISCore.generatingMessage,
                                 msgCls: 'mask-loading'
                             }
                         );

@@ -15,18 +15,28 @@
      * limitations under the License.
      */
 %>
-<%@ page import="org.labkey.api.view.HttpView" %>
-<%@ page import="org.apache.commons.lang3.StringUtils" %>
-<%@ page import="org.labkey.immport.ImmPortController" %>
-<%@ page extends="org.labkey.api.jsp.JspBase"%>
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
+<%@ page import="org.apache.commons.lang3.StringUtils" %>
+<%@ page import="org.labkey.api.view.HttpView" %>
+<%@ page import="org.labkey.api.view.template.ClientDependency" %>
+<%@ page import="org.labkey.immport.ImmPortController" %>
+<%@ page import="java.util.LinkedHashSet" %>
+<%@ page extends="org.labkey.api.jsp.JspBase"%>
+<%!
+    public LinkedHashSet<ClientDependency> getClientDependencies()
+    {
+        LinkedHashSet<ClientDependency> resources = new LinkedHashSet<>();
+        resources.add(ClientDependency.fromPath("Ext4"));
+        return resources;
+    }
+%>
 <%
     ImmPortController.CopyBean form = (ImmPortController.CopyBean)HttpView.currentModel();
     String log = StringUtils.defaultString(form.log,"");
 %>
 
 <labkey:errors/>
-<labkey:form method="POST" onsubmit="Ext.getBody().mask();true;">
+<labkey:form name="importArchive" method="POST" onsubmit="Ext.getBody().mask();true;;">
 Copy from mysql archive -&gt; labkey.immport<br>
 <input style='width:640px;' name=path value="<%=h(form.getPath())%>"><br>
 <input type="checkbox" name="restricted">restricted</input><br>
