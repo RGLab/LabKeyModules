@@ -23,36 +23,12 @@ vim: ts=4:sw=4:nu:fdc=4:spell
 <script src="https://cdn.datatables.net/1.10.1/js/jquery.dataTables.min.js" type="text/javascript"></script>
 
 <script type='text/javascript'>
-
-    var initGeneSetEnrichmentAnalysis = function(){
-        var webPartDiv = <%=webpartContext%>.wrapperDivId;
-
-        LABKEY.Query.getQueryDetails({
-            failure: function(){
-                LABKEY.ext.ISCore.renderTempPnl( LABKEY.ext.ISCore.moduleNotEnabled, webPartDiv );
-            },
-            queryName: 'expression_matrices_cohorts',
-            schemaName: 'study',
-            success: function(){
-                var
-                    GeneSetEnrichmentAnalysis = new LABKEY.ext.GeneSetEnrichmentAnalysis({
-                        webPartDivId: webPartDiv
-                    }),
-
-                    resizeModule = function(w, h){
-                        LABKEY.ext.Utils.resizeToViewport( GeneSetEnrichmentAnalysis, w, -1, null, null, -5 );
-                        GeneSetEnrichmentAnalysis.resize();
-                    }
-                ;
-
-                Ext.EventManager.onWindowResize( resizeModule );
-            } 
-        });
-
-        Ext.EventManager.fireWindowResize();
-    };
-
-    Ext.onReady( initGeneSetEnrichmentAnalysis );
-
+    Ext.onReady(
+        LABKEY.ext.ISCore.initModule.createCallback(
+            function( webPartDiv ){ return new LABKEY.ext.GeneSetEnrichmentAnalysis({ webPartDivId: webPartDiv }); },
+            <%=webpartContext%>.wrapperDivId,
+            'expression_matrices_cohorts'
+        )
+    );
 </script>
 

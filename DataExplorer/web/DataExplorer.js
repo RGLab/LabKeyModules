@@ -25,15 +25,27 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         //            Variables            //
         /////////////////////////////////////
 
+            qwpDataset      = undefined;
+tempMap = {};
         var
             me              = this,
-            qwpDataset      = undefined,
+            dataregion      = undefined,
             maskPlot        = undefined,
+            numVars         = undefined,
             reportSessionId = undefined,
             fieldWidth      = 330,
             labelWidth      = 130,
             aspectRatio     = 0.5
-            ;
+            map             = {
+                'hai': 'virus_strain',
+                'neut_ab_titer': 'virus_strain',
+                'mbaa': 'analyte',
+                'elisa': 'analyte',
+                'elispot': 'analyte',
+                'pcr': 'entrez_gene_id',
+                'fcs_analyzed_result': 'population_name_reported'
+            }
+        ;
 
         var manageAdditionalOptions = function(){
             var plotType = cbPlotType.getValue();
@@ -80,24 +92,47 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         };
 
         var onRender = function(){
-            var cohortCountQuery = 'SELECT COUNT(*) AS CohortCount FROM ( SELECT DISTINCT arm_accession FROM ' + cbDataset.getValue() + ' )';
+            var dataset = cbDataset.getValue();
 
-            LABKEY.Query.executeSql({
-                 schemaName: 'study',
-                 sql: cohortCountQuery,
-                 success: function(d){
-                    if ( qwpDataset != undefined ){
-                        var numRows = qwpDataset.getDataRegion().totalRows;
-                        cmpStatus.update(
-                            Ext.util.Format.plural( numRows, 'data point' ) + 
-                            ' across ' + Ext.util.Format.plural( d.rows[0].CohortCount, 'cohort' ) +
-                            ( numRows == '1' ? ' is ' : ' are ' ) + 'selected' 
-                        );
-                    } else {
-                        cmpStatus.update( '' );
-                    }
+            dataregion = qwpDataset.getDataRegion();
+
+            LABKEY.Query.selectDistinctRows({
+                column: 'arm_accession',
+                failure: LABKEY.ext.ISCore.onFailure,
+                filterArray: dataregion.getUserFilterArray(),
+                queryName: dataset,
+                schemaName: 'study',
+                success: function( cohorts ){
+                    LABKEY.Query.selectDistinctRows({
+                        column: map[dataset],
+                        failure: LABKEY.ext.ISCore.onFailure,
+                        filterArray: dataregion.getUserFilterArray(),
+                        queryName: dataset,
+                        schemaName: 'study',
+                        success: function( variables ){
+                            var numRows = dataregion.totalRows;
+
+                            numVars = variables.values.length;
+
+                            cmpStatus.update(
+                                Ext.util.Format.plural( numRows, 'data point' ) + 
+                                ' across ' + Ext.util.Format.plural( cohorts.values.length, 'cohort' ) +
+                                ' and ' + Ext.util.Format.plural( numVars, 'variable' ) +
+                                ( numRows == '1' ? ' is ' : ' are ' ) + 'selected' 
+                            );
+
+                            tlbrPlot.setDisabled( false );
+if ( ! tempMap[dataset] ){
+    tempMap[dataset] = qwpDataset.getDataRegion().totalRows;
+} else {
+    if ( tempMap[dataset] != qwpDataset.getDataRegion().totalRows ){
+        console.log( dataset + ' - ' + 'old: ' + tempMap[dataset] + '; new: ' +  qwpDataset.getDataRegion().totalRows );
+    }
+}
+                        }
+                    });
                 }
-            })
+            });
 
             $('.labkey-data-region-wrap').doubleScroll();
         };
@@ -109,7 +144,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 spnrTextSize.isValid( true )
             ){
                 if ( qwpDataset == undefined ){
-
+                    tlbrPlot.setDisabled( true );
                     qwpDataset = new LABKEY.QueryWebPart({
                         buttonBar: {
                             items:[
@@ -126,14 +161,12 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     });
                     qwpDataset.on( 'render', onRender );
                     me.qwpDataset = qwpDataset;
-
                 } else if ( qwpDataset.queryName != dataset ) {
+                    tlbrPlot.setDisabled( true );
+                    dataregion.clearAllFilters();
                     qwpDataset.queryName = dataset;
-                    qwpDataset.getDataRegion().clearAllFilters(),
                     qwpDataset.render();
                 }
-
-                tlbrPlot.setDisabled( false );
             } else {
                 qwpDataset = undefined;
                 cmpStatus.update( '' );
@@ -163,6 +196,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         layout: 'hbox'
                     }
                 );
+                numVars = undefined;
                 tlbrPlot.setDisabled( true );
                 cntPlot.update( '<div style=\'height: 10px\'></div>' );
             }
@@ -393,7 +427,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     function(){
                         tlbrPlot.setDisabled( true );
                     },
-                valid:      checkBtnPlotStatus
+                valid: checkBtnPlotStatus
             },
             maxValue: 30,
             minValue: 0,
@@ -431,33 +465,45 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             disabled: true,
             handler: function(){
                 var
-                    width   = Math.min( cntPlot.getWidth(), 800 ),
-                    height  = width * aspectRatio
+                    threshold,
+                    plotType = cbPlotType.getValue()
                 ;
 
-                cntPlotMessage.update('');
-                cntPlot.update('<div style=\'height: 10px\'></div>'); 
+                if ( plotType == 'auto' ){
+                    if ( numVars > 10 ){
+                        plotType = 'heatmap';
+                    } else {
+                        plotType = 'boxplot';
+                    }
+                }
 
-                cnfPlot.inputParams = {
-                    datasetName:        cbDataset.getValue(),
-                    datasetDisplay:     cbDataset.getRawValue(),
-                    plotType:           cbPlotType.getValue(),
-                    normalize:          chNormalize.getValue(),
-                    filters:            Ext.encode( qwpDataset.getDataRegion().getUserFilter() ),
-                    textSize:           spnrTextSize.getValue(),
-                    facet:              rgFacet.getValue().getGroupValue(),
-                    shape:              cbShape.getValue(),
-                    color:              cbColor.getValue(),
-                    legend:             cbAnnotation.getValue(),
-                    size:               cbSize.getValue(),
-                    alpha:              cbAlpha.getValue(),
-                    imageWidth:         1.5 * width,
-                    imageHeight:        1.5 * height
-                };
+                if ( plotType == 'heatmap' ){
+                    threshold = 100; 
+                } else {
+                    threshold = 10;
+                }
 
-                setPlotRunning( true );
-                cnfPlot.reportSessionId = reportSessionId;
-                LABKEY.Report.execute( cnfPlot );
+                if ( numVars > threshold ){
+                    Ext.Msg.show({
+                        title: 'Proceed?',
+                        closable: false,
+                        msg:    'You chose ' + numVars + ' variables to plot.<br />' +
+                                'This may take longer than you expect.<br />' +
+                                'You can subset the data by filtering the grid in the "Data" tab.<br />' +
+                                'Would you still like to proceed?',
+                        buttons: Ext.Msg.YESNO,
+                        icon: Ext.Msg.WARNING,
+                        fn: function(btn){
+                            if (btn === 'no'){
+                                return;
+                            } else {
+                                renderPlot();
+                            }    
+                        }    
+                    });  
+                }  else {
+                    renderPlot();
+                }
             },
             text: 'Plot'
         });
@@ -701,7 +747,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to quickly plot a selected immunological response variable (e.g. HAI) in one or more cohorts across multiple analytes (when applicable). Several graphical options are made available including lines, boxplots, violin plots and heatmaps. Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
+                            html: 'This module can be used to quickly plot a selected immunological response variable (e.g. HAI) in one or more cohorts across multiple analytes (when applicable). Several graphical options are made available including lines, boxplots, violin plots and heatmaps. Demographics such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
@@ -775,6 +821,37 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //             Functions           //
         /////////////////////////////////////
+
+        var renderPlot = function(){
+            var
+                width   = Math.min( cntPlot.getWidth(), 800 ),
+                height  = width * aspectRatio
+            ;
+
+            cntPlotMessage.update('');
+            cntPlot.update('<div style=\'height: 10px\'></div>'); 
+
+            cnfPlot.inputParams = {
+                datasetName:        cbDataset.getValue(),
+                datasetDisplay:     cbDataset.getRawValue(),
+                plotType:           cbPlotType.getValue(),
+                normalize:          chNormalize.getValue(),
+                filters:            Ext.encode( dataregion.getUserFilter() ),
+                textSize:           spnrTextSize.getValue(),
+                facet:              rgFacet.getValue().getGroupValue(),
+                shape:              cbShape.getValue(),
+                color:              cbColor.getValue(),
+                legend:             cbAnnotation.getValue(),
+                size:               cbSize.getValue(),
+                alpha:              cbAlpha.getValue(),
+                imageWidth:         1.5 * width,
+                imageHeight:        1.5 * height
+            };
+
+            setPlotRunning( true );
+            cnfPlot.reportSessionId = reportSessionId;
+            LABKEY.Report.execute( cnfPlot );
+        };
         
         var setPlotRunning = function( bool ){
             if ( bool ){

@@ -19,25 +19,13 @@ vim: ts=4:sw=4:nu:fdc=4:spell
 
 <!--<script type='text/javascript'>	LABKEY.requiresExt4ClientAPI(); </script>-->
 <script type='text/javascript'>
-
-    var initActiveModules = function(){
-        var
-            webPartDiv = <%=webpartContext%>.wrapperDivId,
-
-            ActiveModules = new LABKEY.ext.ActiveModules({
-                webPartDivId: webPartDiv
-            }),
-
-            resizeModule = function(w, h){
-                LABKEY.ext.Utils.resizeToViewport( ActiveModules, w, -1, null, null, -5 );
-            }
-        ;
-
-        Ext.EventManager.onWindowResize( resizeModule );
-        Ext.EventManager.fireWindowResize();
-    };
-
-    Ext.onReady( initActiveModules );
-
+    Ext.onReady(
+        LABKEY.ext.ISCore.initModule.createCallback(
+            function( webPartDiv ){ return new LABKEY.ext.ActiveModules({ webPartDivId: webPartDiv }); },
+            <%=webpartContext%>.wrapperDivId,
+            'modules',
+            'lists'
+        )
+    );
 </script>
 
