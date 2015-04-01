@@ -187,7 +187,7 @@ public class ImmPortController extends SpringActionController
                 log = "<pre>" + PageFlowUtil.filter(_log, true, true) + "</pre>";
             }
             return new HtmlView("<p class='labkey-error'>" + PageFlowUtil.filter(error) + "</p>" +
-                "<form method=post onsubmit='Ext.getBody().mask();true;'>Copy from immport schema to cube dimensions<br>" +
+                "<form name='populateCube' method='post' onsubmit='Ext.getBody().mask();true;'>Copy from immport schema to cube dimensions<br>" +
                 "<input type=hidden name='X-LABKEY-CSRF' value='" + CSRFUtil.getExpectedToken(getViewContext()) + "'>" +
                 "<input type=submit></form>" +
                 "<p></p>" + log);

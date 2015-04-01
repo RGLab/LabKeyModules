@@ -15,15 +15,23 @@
      * limitations under the License.
      */
 %>
-<%@ page import="java.util.Map" %>
-<%@ page import="java.util.List" %>
-<%@ page import="org.labkey.api.data.DbSchema" %>
-<%@ page import="org.labkey.api.data.SqlSelector" %>
-<%@ page import="org.apache.commons.beanutils.converters.BooleanConverter" %>
-<%@ page import="org.apache.commons.beanutils.ConvertUtils" %>
-<%@ page import="org.labkey.api.data.JdbcType" %>
-<%@ page extends="org.labkey.api.jsp.JspBase"%>
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
+<%@ page import="org.labkey.api.data.DbSchema" %>
+<%@ page import="org.labkey.api.data.JdbcType" %>
+<%@ page import="org.labkey.api.data.SqlSelector" %>
+<%@ page import="org.labkey.api.view.template.ClientDependency" %>
+<%@ page import="java.util.LinkedHashSet" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page extends="org.labkey.api.jsp.JspBase"%>
+<%!
+    public LinkedHashSet<ClientDependency> getClientDependencies()
+    {
+        LinkedHashSet<ClientDependency> resources = new LinkedHashSet<>();
+        resources.add(ClientDependency.fromPath("Ext4"));
+        return resources;
+    }
+%>
 <%
     List<Map<String,Object>> list = (List<Map<String,Object>>)(List)new SqlSelector(DbSchema.get("immport").getScope(),
             "SELECT study_accession, restricted, brief_title " +
