@@ -18,26 +18,13 @@ vim: ts=4:sw=4:nu:fdc=4:spell
 -->
 
 <script type='text/javascript'>
-
-    var initImmuneSpaceStudyOverview = function(){
-        var
-            webPartDiv = <%=webpartContext%>.wrapperDivId,
-
-             ImmuneSpaceStudyOverview = new LABKEY.ext.ImmuneSpaceStudyOverview({
-                webPartDivId: webPartDiv
-            }),
-
-            resizeModule = function(w, h){
-                LABKEY.ext.Utils.resizeToViewport( ImmuneSpaceStudyOverview, w, -1, null, null, -5 );
-            }
-        ;
-
-        Ext.EventManager.onWindowResize( resizeModule );
-        Ext.EventManager.fireWindowResize();
-
-    };
-
-    Ext.onReady( initImmuneSpaceStudyOverview );
-
+    Ext.onReady(
+        LABKEY.ext.ISCore.initModule.createCallback(
+            function( webPartDiv ){ return new LABKEY.ext.ImmuneSpaceStudyOverview({ webPartDivId: webPartDiv }); },
+            <%=webpartContext%>.wrapperDivId,
+            'HIPCfundedStudies',
+            'immport'
+        )
+    );
 </script>
 

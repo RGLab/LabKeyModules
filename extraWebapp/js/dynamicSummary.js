@@ -1,28 +1,45 @@
 $(document).ready(function() {
     var me = this;
 
-    me.onFailure = function(){
-        this.myMask.hide();
+    me.errorCode = '<div class=\'error\'>Not available at the moment: </br>the portal is either undergoing maintenance </br>or you are experiencing network problems.</div>';
+
+    me.onFailureSummary = function(){
+        this.maskSummary.hide();
         $('#Summary').append( this.errorCode );
     };
 
-    me.errorCode = '<div class=\'error\'>Not available at the moment: </br>the portal is either undergoing maintenance </br>or you are experiencing network problems.</div>';
-    me.myMask = new Ext.LoadMask(
+    me.maskSummary = new Ext.LoadMask(
         $('#Summary')[0],
         {
-            msg: 'Please, wait, while the aggregate<br/> summary table is loading',
+            msg: 'Please, wait, while the aggregate</br> summary table is loading',
             msgCls: 'mask-loading'
         }
     );
 
-    me.myMask.show();
+    me.onFailureNews = function(){
+        this.maskNews.hide();
+        $('#News').append( this.errorCode );
+    };
+
+    me.maskNews = new Ext.LoadMask(
+        $('#News')[0],
+        {
+            msg: 'Please, wait, while</br> the news are loading',
+            msgCls: 'mask-loading'
+        }
+    );
+
+    me.maskSummary.show();
+
+    me.maskNews.show();
+
 
     LABKEY.contextPath = '';
     LABKEY.container = {};
     LABKEY.container.path = '/home';
 
     LABKEY.Query.selectRows({
-        failure: me.onFailure.bind( me ),
+        failure: me.onFailureSummary.bind( me ),
         queryName: 'studies',
         schemaName: 'study',
         success: function(d){
@@ -30,11 +47,11 @@ $(document).ready(function() {
                 var numStudies = d.rows.length, filterString = [];
 
                 if ( numStudies == 0 ){
-                    me.onFailure.bind( me )();
+                    me.onFailureSummary.bind( me )();
                 } else {
 
                     LABKEY.Query.selectRows({
-                        failure: me.onFailure.bind( me ),
+                        failure: me.onFailureSummary.bind( me ),
                         queryName: 'totalSubjectCount',
                         schemaName: 'immport',
                         success: function(d){
@@ -42,11 +59,11 @@ $(document).ready(function() {
                             var subjectCount = d.rows[0].subject_count;
 
                             LABKEY.Query.selectRows({
-                                failure: me.onFailure.bind( me ),
+                                failure: me.onFailureSummary.bind( me ),
                                 queryName: 'aggregateSubjectCount',
                                 schemaName: 'immport',
                                 success: function(d){
-                                    me.myMask.hide();
+                                    me.maskSummary.hide();
 
                                     $('.left').append(
                                             '<table cellpadding=\'2\' cellspacing=\'2\' border=\'0\'>' +
@@ -63,7 +80,7 @@ $(document).ready(function() {
                                                     '</tr>'
                                     );
 
-                                    Ext.each( d.rows, function(row, i){
+                                    Ext.each( d.rows, function(row){
                                         $('.left tbody').append(
                                                 '<tr>' +
                                                         '<td>' + row.assay_type + '</td>' +
@@ -78,8 +95,36 @@ $(document).ready(function() {
                     });
                 }
             } else {
-                me.onFailure.bind( me )();
+                me.onFailureSummary.bind( me )();
             }
         }
     });
+
+    LABKEY.Query.executeSql({
+        failure: me.onFailureNews.bind( me ),
+        schemaName: 'announcement',
+        sql: 'SELECT RowId, Title, FormattedBody, to_char( Created, \'Month FMDD, YYYY\' ) AS Date FROM Announcement WHERE Expires IS NULL OR Expires > NOW() ORDER BY Created DESC',
+        success: function(d){
+            me.maskNews.hide();
+
+            if ( d && d.rows ){
+                Ext.each( d.rows, function(row){
+                    $('#News').append(
+                        '<p><strong>' + row.Date + '. <a href=\'' +
+                        LABKEY.ActionURL.buildURL(
+                            'announcements',
+                            'thread',
+                            null,
+                            {    
+                                rowId: row.RowId
+                            }    
+                        ) +  
+                        '\' target=\'_blank\'>' + row.Title + '.</a></strong>' +
+                        '</br>' + row.FormattedBody + '</p>'
+                    );
+                });
+            }
+        }
+    });
+
 });

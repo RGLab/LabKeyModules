@@ -17,6 +17,142 @@
 
 Ext.namespace('LABKEY.ext.ISCore');
 
+LABKEY.ext.ISCore.supportBoardLink =
+    'the <a href="' +
+    LABKEY.ActionURL.buildURL(
+      'project',
+      'begin',
+      '/home/support'
+    ) + '">support board</a>.';
+
+LABKEY.ext.ISCore.generatingMessage =
+    'Generating the output, be patient, this could take some time.';
+
+LABKEY.ext.ISCore.contributors =
+    'The ImmuneSpace development team. For bug or feature requests please use ' +
+    LABKEY.ext.ISCore.supportBoardLink;
+
+LABKEY.ext.ISCore.moduleNotEnabled =
+    'This module is not currently enabled in this study.' +
+    ( LABKEY.user.isAdmin ? ' Click <a href=\'' +
+    LABKEY.ActionURL.buildURL( 'admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
+    '\'>here</a> to enable it.' : '' );
+
+LABKEY.ext.ISCore.renderTempPnl = function( maskMsg, webPartDiv ){
+    var
+        temp = new Ext.Panel({
+            border: false,
+            cls: 'ISCore',
+            frame: false,
+            height: 100,
+            layout: 'fit',
+            listeners: {
+                afterrender: function(){
+                    this.getEl().mask( maskMsg, 'infoMask' );
+                }
+            },
+            renderTo: webPartDiv
+        }),
+        resizeModule = function(){
+            temp.getEl().mask( maskMsg, 'infoMask' );
+        }
+    ;
+
+    Ext.EventManager.onWindowResize( resizeModule );
+};
+
+LABKEY.ext.ISCore.simpleInitModule = function( renderModule,webPartDiv ){
+    var
+        module = renderModule( webPartDiv ),
+
+        resizeModule = function(w, h){
+            LABKEY.ext.Utils.resizeToViewport( module, w, -1, null, null, -5 );
+            if ( module.resize ){
+                module.resize();
+            }
+        }
+    ;
+
+    Ext.EventManager.onWindowResize( resizeModule );
+    Ext.EventManager.fireWindowResize();
+}
+
+LABKEY.ext.ISCore.initModule = function( renderModule, webPartDiv, queryToCheck, schemaToCheck ){
+    if ( queryToCheck == undefined ){
+        LABKEY.ext.ISCore.simpleInitModule( renderModule, webPartDiv );
+    } else{
+        LABKEY.Query.getQueryDetails({
+            failure: function(){
+                LABKEY.ext.ISCore.renderTempPnl( LABKEY.ext.ISCore.moduleNotEnabled, webPartDiv );
+            },
+            queryName: queryToCheck,
+            schemaName: schemaToCheck ? schemaToCheck : 'study',
+            success: LABKEY.ext.ISCore.simpleInitModule.createCallback( renderModule, webPartDiv )
+        });
+    }
+};
+
+LABKEY.ext.ISCore.captureEvents = function( observable ) {
+    Ext.util.Observable.capture(
+        observable,
+        function( eventName, o ) {
+            if ( eventName != 'mouseout' && eventName != 'mouseover' ){
+                var ot = 'unknown';
+                if ( o ){
+                    if ( o.combo ){
+                        o = o.combo;
+                    }
+                    if ( o.constructor ){
+                        if ( o.constructor.xtype ){
+                            ot = o.constructor.xtype;
+                        } else if (o.constructor.ptype ){
+                            ot = o.constructor.ptype;
+                        } else if ( o.ctype ){
+                            ot = o.ctype;
+                        }
+                    } else if ( o.id ){
+                        ot = o.id.split('-');
+                        ot.pop();
+                        ot = ot.join('-');
+                    } else if ( o.target && o.target.className ){
+                        ot = o.target.className.split(' ');
+                        ot = ot[0];
+                        ot = ot.split('-')
+                        ot.shift();
+                        ot = ot.join('-');
+                    }
+                }
+                console.info( ot + ' fired: ' + eventName);
+            }
+        },
+        this
+    );
+};
+
+LABKEY.ext.ISCore.onFailure = function( errorInfo, options, responseObj ){
+    var strngErrorContact = '\nPlease, contact support, if you have questions.', text = 'Failure: ';
+
+    if (errorInfo && errorInfo.exception){
+        text += errorInfo.exception;
+    }
+    else {
+        if ( responseObj != undefined ){
+            text += responseObj.statusText;
+        } else {
+            text += errorInfo.statusText + ( errorInfo.timedout == true ? ', timed out.' : '' );
+        }
+    }
+
+    Ext.Msg.maxWidth = 900;
+
+    Ext.Msg.alert('Error', text + strngErrorContact);
+};
+
+Ext4.Ajax.timeout = 6 * 60 * 60 * 1000; // override the timeout to be 6 hours; value is in milliseconds
+
+Ext.QuickTips.init();
+
+
 //============================//
 // Ext specific functionality //
 //============================//
@@ -125,18 +261,34 @@ LABKEY.ext.Utils.resizeToViewport = function( extContainer, width, height, paddi
     else
     {
 
-        var bp = Ext.get('bodypanel');
-        if (bp) {
-            var t  = Ext.query('table.labkey-proj');
-            if (t && t.length > 0) {
-                t = Ext.get(t[0]);
-                padding.push((t.getWidth()-(bp.getWidth())) + offsetX);
+        var p,
+            spt = Ext.query('td.labkey-side-panel #'+extContainer.id).length,
+            bpt = Ext.query('td.labkey-body-panel #'+extContainer.id).length;
+
+        if ( spt == 0 && bpt == 1 ){ // left main body panel contains the module
+            p = Ext.query('td.labkey-body-panel');
+            if (p && p.length >0) {
+                p = Ext.get(p[0]);
+                var t = Ext.query('table.labkey-proj');
+                if (t && t.length > 0) {
+                    t = Ext.get(t[0]);
+                    padding.push((t.getWidth()-(p.getWidth())) + offsetX);
+                }
+                else
+                    padding.push(offsetX);
+            }
+            else
+                padding.push(offsetX);
+        } else if ( spt == 1 && bpt == 0 ){ // right narrow side panel contains the module
+            p = Ext.query('td.labkey-side-panel');
+            if (p && p.length >0) {
+                p = Ext.get(p[0]);
+                padding.push( 20 + p.getSize().width - p.getStyleSize().width + offsetX );
             }
             else
                 padding.push(offsetX);
         }
-        else
-            padding.push(offsetX);
+
     }
     if (paddingY !== undefined && paddingY != null)
         padding.push(paddingY);
@@ -460,109 +612,6 @@ Ext.override( Ext.layout.ToolbarLayout, {
     triggerWidth: 30
 });
 
-LABKEY.ext.ISCore.captureEvents = function( observable ) {
-    Ext.util.Observable.capture(
-        observable,
-        function( eventName, o ) {
-            if ( eventName != 'mouseout' && eventName != 'mouseover' ){
-                var ot = 'unknown';
-                if ( o != undefined ){
-                    if ( o.combo != undefined ){
-                        o = o.combo;
-                    }
-                    if ( o.constructor != undefined ){
-                        if ( o.constructor.xtype != undefined ){
-                            ot = o.constructor.xtype;
-                        } else if (o.constructor.ptype != undefined ){
-                            ot = o.constructor.ptype;
-                        }
-                    } else if ( o.id != undefined ){
-                        ot = o.id.split('-');
-                        ot.pop();
-                        ot = ot.join('-');
-                    } else if ( o.target != undefined && o.target.className != undefined ){
-                        ot = o.target.className.split(' ');
-                        ot = ot[0];
-                        ot = ot.split('-')
-                        ot.shift();
-                        ot = ot.join('-');
-                    }
-                }
-                console.info( ot + ' fired: ' + eventName);
-            }
-        },
-        this
-    );
-};
-
-LABKEY.ext.ISCore.onFailure = function( errorInfo, options, responseObj ){
-    var strngErrorContact = '\nPlease, contact support, if you have questions.', text = 'Failure: ';
-
-    if (errorInfo && errorInfo.exception){
-        text += errorInfo.exception;
-    }
-    else {
-        if ( responseObj != undefined ){
-            text += responseObj.statusText;
-        } else {
-            text += errorInfo.statusText + ( errorInfo.timedout == true ? ', timed out.' : '' );
-        }
-    }
-
-    Ext.Msg.maxWidth = 900;
-
-    Ext.Msg.alert('Error', text + strngErrorContact);
-};
-
-LABKEY.ext.ISCore.supportBoardLink =
-    'the <a href="' +
-    LABKEY.ActionURL.buildURL(
-      'project',
-      'begin',
-      '/home/support'
-    ) + '">support board</a>.';
-
-LABKEY.ext.ISCore.generatingMessage =
-    'Generating the output, be patient, this could take some time.';
-
-LABKEY.ext.ISCore.contributors =
-    'The ImmuneSpace development team. For bug or feature requests please use ' +
-    LABKEY.ext.ISCore.supportBoardLink;
-
-LABKEY.ext.ISCore.moduleNotEnabled =
-    'This module is not currently enabled in this study.' +
-    ( LABKEY.user.isAdmin ? ' Click <a href=\'' +
-    LABKEY.ActionURL.buildURL( 'admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
-    '\'>here</a> to enable it.' : '' );
-
-LABKEY.ext.ISCore.renderTempPnl = function( maskMsg, webPartDiv ){
-    var
-        temp = new Ext.Panel({
-            border: false,
-            cls: 'ISCore',
-            frame: false,
-            height: 100,
-            layout: 'fit',
-            listeners: {
-                afterrender: function(){
-                    this.getEl().mask( maskMsg, 'infoMask' );
-                }
-            },
-            renderTo: webPartDiv
-        }),
-        resizeModule = function(){
-            temp.getEl().mask( maskMsg, 'infoMask' );
-        }
-    ;
-
-    Ext.EventManager.onWindowResize( resizeModule );
-};
-
-Ext4.Ajax.timeout = 6 * 60 * 60 * 1000; // override the timeout to be 6 hours; value is in milliseconds
-
-Ext.QuickTips.init();
-
-
 //================================//
 // Generic utility functionality: //
 //================================//
@@ -743,3 +792,4 @@ if (!Array.prototype.map) {
         return A;
     };
 }
+

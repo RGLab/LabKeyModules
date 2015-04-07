@@ -19,113 +19,12 @@ vim: ts=4:sw=4:nu:fdc=4:spell
 
 <!--<script type='text/javascript'>	LABKEY.requiresExt4ClientAPI(); </script>-->
 <script type='text/javascript'>
-
-    var initGeneExpressionExplorer = function(){
-        var
-            webPartDiv = <%=webpartContext%>.wrapperDivId,
-            resizeModule,
-
-            generateMaskMsg = function( dataSetId ){
-                return
-                    'Gene expression data is required, but none was found in this study.' +
-                    ( dataSetId ?
-                    ' Navigate <a href="' +
-                    LABKEY.ActionURL.buildURL(
-                        'study',
-                        'dataset',
-                        null,
-                        {
-                            datasetId: dataSetId
-                        }
-                    ) + '">here</a> to generate expression matrices.' :
-                    ' Expression matrices need to be generated first.' ) +
-                    '</br>If you are unsure on what to do, please, contact us and fill out an issue on ' + LABKEY.ext.ISCore.supportBoardLink
-            },
-
-            renderTempPnl = function( maskMsg ){
-                var
-                    temp = new Ext.Panel({
-                        border: false,
-                        cls: 'ISCore',
-                        frame: false,
-                        height: 100,
-                        layout: 'fit',
-                        listeners: {
-                            afterrender: function(){
-                                this.getEl().mask( maskMsg, 'infoMask' );
-                            }
-                        },
-                        renderTo: webPartDiv
-                    })
-                ;
-
-                resizeModule = function(){
-                    temp.getEl().mask( maskMsg, 'infoMask' );
-                };
-
-                Ext.EventManager.onWindowResize( resizeModule );
-            },
-
-            createTempPnl = function(){
-                LABKEY.Query.executeSql({
-                    failure: function(){
-                        renderTempPnl( generateMaskMsg( null ) );
-                    },
-                    schemaName: 'study',
-                    sql: 'SELECT DataSetId FROM DataSets WHERE Name = \'gene_expression_files\'',
-                    success: function( d ){
-                        if ( d.rows.length > 0 ){
-                            renderTempPnl( generateMaskMsg( d.rows[0].DataSetId ) );
-                        } else {
-                            renderTempPnl( generateMaskMsg( null ) );
-                        }
-                    }
-                });
-            }
-        ;
-
-        LABKEY.Query.getQueryDetails({
-            failure: function(){
-                renderTempPnl(
-                    'This module is not currently enabled in this study.' +
-                    ( LABKEY.user.isAdmin ? ' Click <a href=\'' +
-                    LABKEY.ActionURL.buildURL( 'admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
-                    '\'>here</a> to enable it.' : '' )
-                );
-            },
-            queryName: 'timepoints_GEE',
-            schemaName: 'study',
-            success: function(){
-                LABKEY.Query.getSchemas({
-                    apiVersion: '9.3',
-                    failure: createTempPnl,
-                    schemaName: 'assay.ExpressionMatrix',
-                    success: function( d ){
-                        if ( d.matrix ){
-                            var
-                                GeneExpressionExplorer = new LABKEY.ext.GeneExpressionExplorer({
-                                    webPartDivId: webPartDiv
-                                }),
-
-                                resizeModule = function(w, h){
-                                    LABKEY.ext.Utils.resizeToViewport( GeneExpressionExplorer, w, -1, null, null, -5 );
-                                    GeneExpressionExplorer.resize();
-                                }
-                            ;
-
-                            Ext.EventManager.onWindowResize( resizeModule );
-                        } else {
-                            createTempPnl();
-                        }
-                    }
-                });
-            } 
-        });
-
-        Ext.EventManager.fireWindowResize();
-    };
-
-    Ext.onReady( initGeneExpressionExplorer );
-
+    Ext.onReady(
+        LABKEY.ext.ISCore.initModule.createCallback(
+            function( webPartDiv ){ return new LABKEY.ext.GeneExpressionExplorer({ webPartDivId: webPartDiv }); },
+            <%=webpartContext%>.wrapperDivId,
+            'timepoints_GEE'
+        )
+    );
 </script>
 

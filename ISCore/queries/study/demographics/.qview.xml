@@ -5,6 +5,7 @@
             <cv:property name="columnTitle" value="Subject Accession"/>
           </cv:properties>
         </cv:column>
+        <cv:column name="SUBJECT_ACCESSION/Cohort"/> 
         <cv:column name="phenotype"/> 
         <cv:column name="gender"/>
         <cv:column name="age_reported"/>
