@@ -26,6 +26,7 @@ library(reshape)
 library(gridExtra)
 library(data.table)
 library(Rlabkey)
+library(RColorBrewer)
 co <- labkey.setCurlOptions(sslversion = 1)
 library(ggplot2)
 library(utils)
@@ -59,17 +60,45 @@ We are interested in comparing the coefficients of variation between the manual 
 #Compute CVs for each Lyoplate panel, cell population, method and center, report the average CV across centers.
 CVS<-data[Method%in%c("local","central"),CV:=100*sd(Proportion,na.rm=TRUE)/mean(Proportion,na.rm=TRUE),list(Experiment,Panel,Population,Method,Center)][,list(CV=mean(CV,na.rm=TRUE)),list(Experiment,Panel,Population,Method)]
 CVS<-data[Method%in%c("manual","automated"),CV:=100*sd(Proportion,na.rm=TRUE)/mean(Proportion,na.rm=TRUE),list(Experiment,Panel,Population,Method,Sample,Center)][,list(CV=mean(CV,na.rm=TRUE)),list(Experiment,Panel,Population,Method)]
+CVS=CVS[CVS[,Population%like%"^Na.+ve"],Population:='Naive']
 ```
 
 ```{r,warning=FALSE,message=FALSE,cache=FALSE,fig.width=10,fig.height=5,echo=FALSE,include=TRUE,htmlcap='Coefficients of variability for cell populations identified in the Lyoplate panles on the Cytotrol data, comparing local vs central manual gating. The CVs are equivalen or lower for all cell populations across panels with the exception of the Memory IgD+ cell population in the B-cell panel. The IgD stain was known to be problematic for the Lyplate panels in the Cytotrol data set.'}
 #Plot Cytotrol
-ggplot(CVS[Method%in%c("local","central")])+aes(y=CV,x=Population,fill=Method)+facet_wrap(~Panel,scales="free")+geom_bar(position="dodge",stat="identity")+theme(axis.text.x=element_text(angle=45,hjust=1))+ggtitle("Cytotrol Cells")+scale_fill_brewer(type = "qual")
+#ggplot(CVS[Method%in%c("local","central")])+aes(y=CV,x=Population,fill=Method)+facet_wrap(~Panel,scales="free")+geom_bar(position="dodge",stat="identity")+theme(axis.text.x=element_text(angle=45,hjust=1))+ggtitle("Cytotrol Cells")+scale_fill_brewer(type = "qual")
+ggplot(CVS[Method%in%c("local","central")])+aes(y=CV,x=Population,fill=Method)+facet_wrap(~Panel,scales="free")+geom_bar(position="dodge",stat="identity")+scale_fill_brewer(type = "qual",palette = 5,labels=c("Lyophilized Cells\n(Central gating)","Lyophilized Cells\n(Local gating)"))+theme_bw()+theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")
+
 ```
 
 ```{r,warning=FALSE,message=FALSE,cache=FALSE,fig.width=10,fig.height=5,echo=FALSE,include=FALSE}
 #Plot SeraCare
-ggplot(CVS[Method%in%c("manual","automated")])+aes(y=CV,x=Population,fill=Method)+facet_grid(~Panel,scales="free")+geom_bar(position="dodge",stat="identity")+theme(axis.text.x=element_text(angle=45,hjust=1))+ggtitle("SeraCare Cells")+scale_fill_brewer(type="qual")
+#ggplot(CVS[Method%in%c("manual","automated")])+aes(y=CV,x=Population,fill=Method)+facet_grid(~Panel,scales="free")+geom_bar(position="dodge",stat="identity")+theme(axis.text.x=element_text(angle=45,hjust=1))+ggtitle("SeraCare Cells")+scale_fill_brewer(type="qual")
+ggplot(CVS[Method%in%c("manual","automated")])+aes(y=CV,x=Population,fill=Method)+facet_wrap(~Panel,scales="free",ncol=2)+geom_bar(position="dodge",stat="identity")+scale_fill_brewer(type="qual",palette = 5,labels=c("Lyophilized Cells\n(automated gating)","Lyophilized Cells\n(central manual gating)"))+theme_bw()+theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")
+
 ```
+
+### Figure 1 and 2 - Intra and inter-site variability 
+```{r combined_cv,fig.width=15,fig.height=8}
+CVS_2<-na.omit(CVS)[!Method%in%"automated"]
+CVS_2=CVS_2[,plotlabel:=factor(factor(Experiment):factor(Method),labels=c("Lyophilized PBMC (Central Gating)","Lyophilized PBMC (Local Gating)","Cryopreserved PBMC (Central Gating)"))]
+
+
+p1<-ggplot(CVS_2[plotlabel%like%"Lyophilized"])+geom_bar(aes(x=Population,y=CV,fill=plotlabel),position="dodge",stat="identity")+facet_wrap(~Panel,scales="free_x",ncol=3)+scale_fill_manual("Experiment",values=brewer.pal(n = 3,name = "Pastel2")[c(1,2)])+theme_bw()+theme(axis.text.x=element_text(angle=45,hjust=1,size=10),strip.text.x=element_text(size=12),axis.title.x=element_text(size=12),axis.title.y=element_text(size=12),legend.position="right")+scale_y_continuous("Coefficient of Variability (%)")+scale_x_discrete("Cell Population")
+
+p2<-ggplot(merge(CVS_2,CVS_2[plotlabel%like%"Central",.N==2,list(Panel,Population)][V1==TRUE,Panel,Population],by=c("Population","Panel"))[plotlabel%in%c("Lyophilized PBMC (Central Gating)","Cryopreserved PBMC (Central Gating)")])+geom_bar(aes(x=Population,y=CV,fill=plotlabel),position="dodge",stat="identity")+facet_wrap(~Panel,scales="free",ncol=3)+scale_fill_manual("Experiment",labels=c("Lyophilized PBMC (Central Gating)","Cryopreserved PBMC (Central Gating)"),values=brewer.pal(n = 3,name = "Pastel2")[c(1,3)])+theme_bw()+theme(axis.text.x=element_text(angle=45,hjust=1,size=10),strip.text.x=element_text(size=12),axis.title.x=element_text(size=12),axis.title.y=element_text(size=12),legend.position="right")+scale_y_continuous("Coefficient of Variability (%)")+scale_x_discrete("Cell Population")
+layout<-matrix(rep(c(1,2),each=30*20/2),ncol=30,nrow=20,byrow=TRUE)
+grid.newpage()
+pushViewport(viewport(layout=grid.layout(nrow = nrow(layout),ncol=ncol(layout))))
+ind<-which(layout==1,T)
+vp<-viewport(layout.pos.row = ind[,1],layout.pos.col=ind[,2])
+print(p1,vp=vp)
+ind<-which(layout==2,T)
+vp<-viewport(layout.pos.row = ind[,1],layout.pos.col=ind[,2])
+print(p2,vp=vp)
+grid.text("A",x=0.01,y=0.99)
+grid.text("B",x=0.01,y=0.50)
+```
+
 
 ### Power analysis
 The ratio of CVs between the local and manual gating is used to rescale the center-to-center variability for the power anlysis when simulating locally gated data. We also repeat the evaluation of the Seracare results presented [here](/study/HIPC/Lyoplate/dataset.view?Dataset.reportId=db%3A148&datasetId=5001) in order to extract the components of variability and the model fits.
@@ -180,16 +209,16 @@ plots<-mapply(function(pnl,V,CC){
   setnames(ratio,"ratio","var.ratio")
   foo<-.prepDF(V,CC,ratio=ratio)
   list(ggplot(foo)+geom_line(aes(x=SampleSize.value,y=effects,lty=S.cat,col=S.cat),lwd=1)+scale_x_continuous("Sample Size")+scale_y_continuous("Detectable Effect Size")+ggtitle(Kmisc::wrap(paste0("Effect Size Detected at 80% Power: ",pnl),35))+facet_wrap(~Population,scales="free_y")+scale_linetype("Variability",labels=c("Central: - Cross-Center","Central: Within-Center","Local Gating"))+theme_bw()+theme(legend.position="bottom")+scale_color_brewer("Variability",type="qual",labels=c("Central: - Cross-Center","Central: Within-Center","Local Gating")))
-},pnl=as.list(levels(factor(cv.ratio$panel))),V=list(vctr,vct,vcb),CC=list(ctr,ct,cb))
+},pnl=as.list(levels(factor(cv.ratio$panel))),V=list(vcb,vct,vctr),CC=list(cb,ct,ctr))
 ```
    
-```{r,echo=FALSE, htmlcap='Power analysis for the Lyoplate T-regulatory cell panel.'}
+```{r,echo=FALSE, htmlcap='Power analysis for the Lyoplate B-cell panel.'}
  plots[[1]]
 ```
 ```{r,echo=FALSE, htmlcap='Power analysis for the Lyoplate T-cell panel.'}
 plots[[2]]
 ```
-```{r,echo=FALSE, htmlcap='Power analysis for the Lyoplate B-cell panel.'}
+```{r,echo=FALSE, htmlcap='Power analysis for the Lyoplate T-regulatory cell panel.'}
 plots[[3]]
 ```
 
