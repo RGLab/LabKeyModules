@@ -8,7 +8,7 @@ Evaluation is done both in terms of variability across replicates/centers and bi
 
 **Conclusion:** Based on the data shown below, we conclude that OpenCyto and flowDensity performs the best with relatively low variability and small bias compared to other algorithms. 
 In addition, OpenCyto and flowDensity seemed to be complementary, in that one algorithm could outperform the other on some population statistics and vice-versa. For this reason, 
-the two algorithms were combined as an OpenCyto pipeline, which was then used to analyze the Seracare data. A report peforming the automated gating for all panels can be found [here](/reports/HIPC/Lyoplate/runReport.view?reportId=db%3A158&redirectUrl=%2Fproject%2FHIPC%2FLyoplate%2Fbegin.view%3FpageId%3DAnalyses). The evaluation of the results 
+the two algorithms were combined as an OpenCyto pipeline, which was then used to analyze the Seracare data. A report peforming the automated gating for all panels can be found [here](/reports/HIPC/Lyoplate/runReport.view?reportId=module%3ALyoplateVisualization%2Freports%2Fschemas%2FAnalyses%2FAutomatedGatingOfSeracareData%28AllPanels%29.Rmd&redirectUrl=%2Fproject%2FHIPC%2FLyoplate%2Fbegin.view%3FpageId%3DAnalyses). The evaluation of the results 
    compared to manual analysis can be found [here](/study/HIPC/Lyoplate/dataset.view?Dataset.reportId=db%3A159&datasetId=5001).
 
 <hr>
