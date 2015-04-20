@@ -25,10 +25,9 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         //            Variables            //
         /////////////////////////////////////
 
-            qwpDataset      = undefined;
-tempMap = {};
         var
             me              = this,
+            qwpDataset      = undefined,
             dataregion      = undefined,
             maskPlot        = undefined,
             numVars         = undefined,
@@ -43,11 +42,15 @@ tempMap = {};
                 'elisa': 'analyte',
                 'elispot': 'analyte',
                 'pcr': 'entrez_gene_id',
-                'fcs_analyzed_result': 'population_name_reported'
+                'fcs_analyzed_result': 'population_name_reported',
+                'gene_expression_analysis_results': 'gene_symbol'
             }
         ;
 
         var manageAdditionalOptions = function(){
+            cntPlot.update( '<div style=\'height: 10px\'></div>' );
+            checkBtnPlotStatus();
+
             var plotType = cbPlotType.getValue();
             if ( plotType == '' ){
                 spnrTextSize.setVisible( false );
@@ -97,18 +100,18 @@ tempMap = {};
             dataregion = qwpDataset.getDataRegion();
 
             LABKEY.Query.selectDistinctRows({
-                column: 'arm_accession',
+                column: dataset == 'gene_expression_analysis_results' ? 'analysis_accession/arm_name' : 'arm_accession',
                 failure: LABKEY.ext.ISCore.onFailure,
                 filterArray: dataregion.getUserFilterArray(),
                 queryName: dataset,
-                schemaName: 'study',
+                schemaName: dataset == 'gene_expression_analysis_results' ? 'gene_expression' : 'study',
                 success: function( cohorts ){
                     LABKEY.Query.selectDistinctRows({
                         column: map[dataset],
                         failure: LABKEY.ext.ISCore.onFailure,
                         filterArray: dataregion.getUserFilterArray(),
                         queryName: dataset,
-                        schemaName: 'study',
+                        schemaName: dataset == 'gene_expression_analysis_results' ? 'gene_expression' : 'study',
                         success: function( variables ){
                             var numRows = dataregion.totalRows;
 
@@ -121,14 +124,7 @@ tempMap = {};
                                 ( numRows == '1' ? ' is ' : ' are ' ) + 'selected' 
                             );
 
-                            tlbrPlot.setDisabled( false );
-if ( ! tempMap[dataset] ){
-    tempMap[dataset] = qwpDataset.getDataRegion().totalRows;
-} else {
-    if ( tempMap[dataset] != qwpDataset.getDataRegion().totalRows ){
-        console.log( dataset + ' - ' + 'old: ' + tempMap[dataset] + '; new: ' +  qwpDataset.getDataRegion().totalRows );
-    }
-}
+                            checkBtnPlotStatus();
                         }
                     });
                 }
@@ -137,14 +133,17 @@ if ( ! tempMap[dataset] ){
             $('.labkey-data-region-wrap').doubleScroll();
         };
 
-        var checkBtnPlotStatus = function(){
-            var dataset = cbDataset.getValue();
-            if (
-                dataset !== '' &&
-                spnrTextSize.isValid( true )
-            ){
-                if ( qwpDataset == undefined ){
+        var loadDataset = function(){
+            var dataset = cbDataset.getValue(); 
+            if ( dataset !== '' ){
+                if (    
+                    qwpDataset == undefined ||
+                    ( qwpDataset != undefined && qwpDataset.queryName != dataset )
+                ){
                     tlbrPlot.setDisabled( true );
+                    cmpStatus.update( '' );
+
+                    LABKEY.DataRegions = {};
                     qwpDataset = new LABKEY.QueryWebPart({
                         buttonBar: {
                             items:[
@@ -156,52 +155,58 @@ if ( ! tempMap[dataset] ){
                         },
                         frame: 'none',
                         queryName: dataset,
-                        renderTo: pnlData.getEl(),
-                        schemaName: 'study'
+                        schemaName: dataset == 'gene_expression_analysis_results' ? 'gene_expression' : 'study',
+                        viewName: dataset == 'gene_expression_analysis_results' ? 'DGEAR' : undefined 
                     });
                     qwpDataset.on( 'render', onRender );
                     me.qwpDataset = qwpDataset;
-                } else if ( qwpDataset.queryName != dataset ) {
-                    tlbrPlot.setDisabled( true );
-                    dataregion.clearAllFilters();
-                    qwpDataset.queryName = dataset;
-                    qwpDataset.render();
+                    pnlData.removeAll();
+                    qwpDataset.render( pnlData.getLayout().innerCt );
                 }
             } else {
-                qwpDataset = undefined;
-                cmpStatus.update( '' );
-                pnlData.update( '' );
-                pnlData.add(
-                    {
-                        border: false,
-                        defaults: {
-                            border: false
-                        },
-                        items: [
-                            { html: 'Please, go to the' },
-                            new Ext.Container({
-                                autoEl: 'a',
-                                html: '&nbsp;\'Input / View\'&nbsp;',
-                                listeners: {
-                                    afterrender: {
-                                        fn: function(){
-                                            this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 0 ); } );
-                                        },
-                                        single: true
-                                    }
-                                }
-                            }),
-                            { html: 'tab to select a dataset to display below. You will then be able to filter this data here before plotting.' },
-                        ],
-                        layout: 'hbox'
-                    }
-                );
-                numVars = undefined;
                 tlbrPlot.setDisabled( true );
+                cmpStatus.update( '' );
+
+                qwpDataset = undefined;
+                me.qwpDataset = qwpDataset;
+
+                pnlData.removeAll();
+                pnlData.add([
+                    { html: 'Please, go to the' },
+                    new Ext.Container({
+                        autoEl: 'a',
+                        html: '&nbsp;\'Input / View\'&nbsp;',
+                        listeners: {
+                            afterrender: {
+                                fn: function(){
+                                    this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 0 ); } );
+                                },
+                                single: true
+                            }
+                        }
+                    }),
+                    { html: 'tab to select a dataset to display below. You will then be able to filter this data here before plotting.' },
+                ]);
+                pnlData.doLayout();
+
+                numVars = undefined;
+
                 cntPlot.update( '<div style=\'height: 10px\'></div>' );
+                checkBtnPlotStatus();
             }
         };
-
+            
+        var checkBtnPlotStatus = function(){
+            if (
+                cbDataset.getValue() !== '' &&
+                cbPlotType.getValue() !== '' &&
+                spnrTextSize.isValid( true )
+            ){
+                tlbrPlot.setDisabled( false );
+            } else {
+                tlbrPlot.setDisabled( true );
+            }
+        };
 
         ///////////////////////////////////
         //            Stores             //
@@ -331,9 +336,9 @@ if ( ! tempMap[dataset] ){
             fieldLabel: 'Choose a dataset',
             lazyInit: false,
             listeners: {
-                change:     checkBtnPlotStatus,
-                cleared:    checkBtnPlotStatus,
-                select:     checkBtnPlotStatus
+                change:     loadDataset,
+                cleared:    loadDataset,
+                select:     loadDataset
             },
             store: strDataset,
             valueField: 'Name',
@@ -710,14 +715,31 @@ if ( ! tempMap[dataset] ){
             title: 'Input / View'
         });
 
-        var pnlData = new Ext.Panel({
+         pnlData = new Ext.Panel({
             autoScroll: true,
             bodyStyle: 'padding: 1px;',
             defaults: {
                 autoHeight: true,
+                border: false,
                 hideMode: 'offsets'
             },
-            layout: 'fit',
+            items: [
+                { html: 'Please, go to the' },
+                new Ext.Container({
+                    autoEl: 'a',
+                    html: '&nbsp;\'Input / View\'&nbsp;',
+                    listeners: {
+                        afterrender: {
+                            fn: function(){
+                                this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 0 ); } );
+                            },
+                            single: true
+                        }
+                    }
+                }),
+                { html: 'tab to select a dataset to display below. You will then be able to filter this data here before plotting.' },
+            ],
+            layout: 'hbox',
             tabTip: 'Data',
             title: 'Data'
         });

@@ -220,10 +220,10 @@
             <span class="searchMessage" ng-class="{searchNotFound:(searchMessage=='no matches')}">&nbsp;{{searchMessage}}&nbsp;</span>
         </div>
         <div style="float:right;">
-            <span ng-show="loaded_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmuneSpace" ng-change="onStudySubsetChanged()">All ImmuneSpace studies</span>
-            <span ng-show="recent_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="Recent" ng-change="onStudySubsetChanged()">Recently added</span>
-            <span ng-show="hipc_study_list.length" >&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="HipcFunded" ng-change="onStudySubsetChanged()">HIPC funded</span>
-            <span>&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmPort" ng-change="onStudySubsetChanged()">All ImmPort studies</span>
+            <label ng-show="loaded_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmuneSpace" ng-change="onStudySubsetChanged()">All ImmuneSpace studies</label>
+            <label ng-show="recent_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="Recent" ng-change="onStudySubsetChanged()">Recently added</label>
+            <label ng-show="hipc_study_list.length" >&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="HipcFunded" ng-change="onStudySubsetChanged()">HIPC funded</label>
+            <label>&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmPort" ng-change="onStudySubsetChanged()">All ImmPort studies</label>
         </div>
         <div id="studypanel" style="clear:both; max-width:940px; overflow-x:scroll;">
             <table><tr>
@@ -423,7 +423,7 @@ studyfinderScope.prototype =
 
     countForStudy : function(study)
     {
-        var uniqueName = study.memberName;
+        var uniqueName = study.memberName || study.uniqueName;
         var studyMember = dataspace.dimensions.Study.memberMap[uniqueName];
         return studyMember ? studyMember.count : 0;
     },
@@ -674,6 +674,8 @@ studyfinderScope.prototype =
             member = dim.members[m];
             dim.members[m].percent = max==0 ? 0 : (100.0*member.count)/max;
         }
+
+        this.updateContainerFilter();
     },
 
 
@@ -883,6 +885,27 @@ studyfinderScope.prototype =
         this.onSearchTermsChanged_promise = this.timeout(function(){scope.doSearchTermsChanged();}, 500);
     },
 
+    updateContainerFilter : function ()
+    {
+        // Collect the container ids of the loaded studies
+        var dim = dataspace.dimensions.Study;
+        var containers = [];
+        for (var name in loaded_studies)
+        {
+            var study = loaded_studies[name];
+            var count = this.countForStudy(study);
+            if (count)
+                containers.push(study.containerId);
+        }
+
+        // CONSIDER: delete the shared container filter if all loaded_studies are selected
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('study', 'sharedStudyContainerFilter.api'),
+            method: 'POST',
+            jsonData: { containers: containers }
+        });
+    },
+
     showStudyPopup: function(study_accession)
     {
         showPopup(null,'study',study_accession);
@@ -914,7 +937,8 @@ studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http)
             'id':studyData[i][1], 'title':studyData[i][2], 'pi':studyData[i][3],
             'hipc_funded': false,
             'loaded': false,
-            'url' : null
+            'url' : null,
+            'containerId': null
         };
         if (loaded_studies[name])
         {
@@ -922,6 +946,7 @@ studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http)
             s.hipc_funded = loaded_studies[name].hipc_funded;
             s.highlight = loaded_studies[name].highlight;
             s.url = loaded_studies[name].url;
+            s.containerId = loaded_studies[name].containerId;
             loaded_study_list.push(s.memberName);
             if (s.highlight)
                 recent_study_list.push(s.memberName);

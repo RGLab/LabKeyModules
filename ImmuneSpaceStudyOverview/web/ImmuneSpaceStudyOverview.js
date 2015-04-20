@@ -30,13 +30,15 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 bs + 'Title:</span> ' +
                 '<span id=\'title' + config.webPartDivId + '\'></span></br></br>' +
                 bs + 'Type:</span> ' + 
-                '<span id=\'type' + config.webPartDivId + '\'></span></br></br>' +
+                '<span style="padding-right:25px" id=\'type' + config.webPartDivId + '\'></span>' +
                 bs + 'Condition studied:</span> ' +
-                '<span id=\'condition' + config.webPartDivId + '\'></span></br></br>' +
+                '<span style="padding-right:25px" id=\'condition' + config.webPartDivId + '\'></span>' +
+                bs + 'Number of subjects: </span>' +
+                '<span id=\'subjects' + config.webPartDivId + '\'></span></br></br>' +
                 bs + 'Brief description:</span> ' +
                 '<span id=\'bdesc' + config.webPartDivId + '\'></span></br></br>' +
-                bs + 'Start date:</span> ' +
-                '<span id=\'start' + config.webPartDivId + '\'></span></br></br>' +
+                //bs + 'Start date:</span> ' +
+                //'<span id=\'start' + config.webPartDivId + '\'></span></br></br>' +
                 bs + 'Description: </span>' +
                 '<a id=\'showdesc' + config.webPartDivId + '\' class=\'show' + config.webPartDivId + '\'>show</a>' +
                 '<span id=\'description' + config.webPartDivId + '\' style=\'display: none\'></span><div style=\'height: 1em;\'></div>' +
@@ -46,12 +48,11 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 bs + 'Endpoints: </span>' +
                 '<a id=\'showend' + config.webPartDivId + '\' class=\'show' + config.webPartDivId + '\'>show</a>' +
                 '<span id=\'endpoints' + config.webPartDivId + '\' style=\'display: none\'></span><div style=\'height: 1em;\'></div>' +
-                bs + 'Number of subjects: </span>' +
-                '<span id=\'subjects' + config.webPartDivId + '\'></span></br></br>' +
                 bs + 'Sponsoring organization: </span>' +
                 '<span id=\'organization' + config.webPartDivId + '\'></span></br></br>' +
                 bs + 'ImmPort accession number: </span>' +
                 '<span id=\'immport' + config.webPartDivId + '\'></span></br></br>' +
+                '<span id=\'assoc_studies' + config.webPartDivId + '\'></span>' +
                 bs + 'Protocol documents: </span>' +
                 '<a href=\'/_webdav/Studies/' + SDY + '/%40files/protocols/' + SDY + '_protocol.zip\'>protocol.zip</a>'
         ;
@@ -132,6 +133,16 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             failure: onError
         });
 
+        LABKEY.Query.selectRows({
+            requiredVersion: 12.3,
+            schemaName: 'immport',
+            queryName: 'assocStudies',
+            columns:  'study_accession',
+            parameters: {$STUDY: SDY},
+            success: onSuccessPubmedAssoc,
+            failure: onError
+        });
+ 
         //FUNCTIONS
         function onSuccessStudy(results) {
             if ( results.rows.length > 0 ){
@@ -141,7 +152,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 $('#type' + config.webPartDivId)[0].innerHTML           = row['type'].value;
                 $('#condition' + config.webPartDivId)[0].innerHTML      = row['condition_studied'].value;
                 $('#bdesc' + config.webPartDivId)[0].innerHTML          = row['brief_description'].value;
-                $('#start' + config.webPartDivId)[0].innerHTML          = row['actual_start_date'].value;
+                //$('#start' + config.webPartDivId)[0].innerHTML          = row['actual_start_date'].value;
                 $('#description' + config.webPartDivId)[0].innerHTML    = ( ! row['description'].value ? '' : row['description'].value );
                 $('#objective' + config.webPartDivId)[0].innerHTML      = ( ! row['objectives'].value ? '' : row['objectives'].value );
                 $('#endpoints' + config.webPartDivId)[0].innerHTML      = row['endpoints'].value;
@@ -166,6 +177,20 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
         function onSuccessHIPCfund(results){
             if(results.rows.length > 0){
               $('#organization' + config.webPartDivId)[0].innerHTML = $('#organization' + config.webPartDivId)[0].innerHTML +" (HIPC funded)";
+            }
+        };
+
+        function onSuccessPubmedAssoc(results){
+            if(results.rows.length > 0){
+                var assoc_SDY =  null;
+                $('#assoc_studies' + config.webPartDivId)[0].innerHTML = $('#assoc_studies' + config.webPartDivId)[0].innerHTML +
+                '<b>Associated ImmuneSpace studies:</b> ';
+                for(i=0; i < results.rows.length; i++){
+                    assoc_SDY = results.rows[i]['study_accession'].value;
+                    $('#assoc_studies' + config.webPartDivId)[0].innerHTML = $('#assoc_studies' +config.webPartDivId)[0].innerHTML + 
+                    ' <a href="/project/Studies/' +assoc_SDY + '/begin.view">' + assoc_SDY + '</a>';
+                }
+                $('#assoc_studies' +config.webPartDivId)[0].innerHTML = $('#assoc_studies' + config.webPartDivId)[0].innerHTML + "<br><br>";
             }
         };
 
