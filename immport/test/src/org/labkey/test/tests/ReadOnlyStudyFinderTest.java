@@ -31,11 +31,14 @@ import java.util.Map;
 
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
+import org.labkey.test.TestFileUtils;
 import org.labkey.test.TestTimeoutException;
 import org.labkey.test.categories.InDevelopment;
 import org.labkey.test.components.immport.StudySummaryWindow;
 import org.labkey.test.pages.immport.ImmPortBeginPage;
 import org.labkey.test.pages.immport.StudyFinderPage;
+import org.labkey.test.util.APIContainerHelper;
+import org.labkey.test.util.AbstractContainerHelper;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.PostgresOnlyTest;
 import org.openqa.selenium.WebElement;
@@ -47,12 +50,13 @@ import static org.junit.Assert.*;
  * Test assumes test data is loaded manually
  * Before running this test, you should manually load an ImmPort archive and ensure that {@link #getProjectName()}
  * links to the project containing that archive
+ * {@link #setupProject()} might work for project setup with some minor code modifications
  * TODO: Set-up and tear-down project once smaller sample data is available
  */
 @Category({InDevelopment.class})
 public class ReadOnlyStudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTest
 {
-    private static File immPortArchive = new File("C:\\labkey\\HIPC Test Data\\ALLSTUDIES-DR11_MySQL.zip"); // Change to actual path to archive
+    private static File immPortArchive = new File(TestFileUtils.getLabKeyRoot(), "../HIPC Test Data/ALLSTUDIES-DR11_MySQL.zip"); // Change to actual path to archive
 
     public ReadOnlyStudyFinderTest()
     {
@@ -82,12 +86,15 @@ public class ReadOnlyStudyFinderTest extends BaseWebDriverTest implements Postgr
 
     private void setupProject()
     {
-        _containerHelper.createProject(getProjectName(), null);
-        _containerHelper.enableModule("ImmPort");
+        AbstractContainerHelper containerHelper = new APIContainerHelper(this);
+        containerHelper.createProject(getProjectName(), null);
+        containerHelper.enableModule("ImmPort");
 
         clickTab("ImmPort");
         ImmPortBeginPage beginPage = new ImmPortBeginPage(this);
-        beginPage.importArchive(immPortArchive.getAbsolutePath(), false);
+        beginPage.importArchive(immPortArchive, false);
+        clickTab("ImmPort");
+        beginPage.populateCube();
     }
 
     @Override

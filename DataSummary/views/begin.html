@@ -18,18 +18,12 @@ vim: ts=4:sw=4:nu:fdc=4:spell
 -->
 
 <script type='text/javascript'>
-
-    var initDataSummary = function(){
-        var
-            webPartDiv = <%=webpartContext%>.wrapperDivId,
-
-            DataSummary = new LABKEY.ext.DataSummary({
-                webPartDivId: webPartDiv
-            })
-        ;
-    };
-
-    Ext.onReady( initDataSummary );
-
+    Ext.onReady(
+        LABKEY.ext.ISCore.initModule.createCallback(
+            function( webPartDiv ){ return new LABKEY.ext.DataSummary({ webPartDivId: webPartDiv }); },
+            <%=webpartContext%>.wrapperDivId,
+            'studies'
+        )
+    );
 </script>
 

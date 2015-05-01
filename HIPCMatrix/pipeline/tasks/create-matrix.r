@@ -11,8 +11,6 @@ jobInfo <- read.table("${pipeline, taskInfo}",
                       fill=TRUE, na.strings="")
 
 
-#selectedLsids <- "${selected-lsids}"
-#selectedSubjects <- "${selected-subjects}"
 selectedBiosamples <- "${selected-biosamples}"
 
 library(ImmuneSpaceR)
@@ -67,8 +65,8 @@ process_TSV <- function(con, pdata, inputFiles, selectedBiosamples){
     rownames(norm_exprs) <- feature_id
     norm_exprs <- process_TSV_colnames(norm_exprs, pdata)
   } else{
-    library(lumi)
     raw_exprs <- fread(inputFiles)
+    library(lumi)
     feature_id <- raw_exprs[, PROBE_ID]
     sigcols <- grep("Signal", colnames(raw_exprs), value=TRUE)
     if(length(sigcols) > 0){
@@ -123,23 +121,27 @@ normalizeMatrix <- function(jobInfo, selectedBiosamples){
   ext <- unique(file_ext(inputFiles))
   filter <- makeFilter(c("file_info_name", "IN", paste(basename(inputFiles), collapse=";")),
                        c("biosample_accession", "IN", gsub(",", ";", selectedBiosamples)))
-  pdata <- con$getDataset("gene_expression_files", colFilter = filter, original_view = TRUE, reload = TRUE)
+  gef <- pdata <- con$getDataset("gene_expression_files", colFilter = filter, original_view = TRUE, reload = TRUE)
   cohort <<- unique(pdata$arm_name)
-  if(length(ext) > 1){
-    stop(paste("There is more than one file extension:", paste(ext, collapse=",")))
-  } else if(ext == "CEL"){
-    norm_exprs <- process_CEL(con, pdata, inputFiles)
-  } else if(ext %in% c("tsv", "txt")){
-    norm_exprs <- process_TSV(con, pdata, inputFiles, selectedBiosamples)
-  } else if(ext == "csv"){
-    norm_exprs <- process_CSV(con)
-  } else{
-    stop(paste("The file extension", ext, "is not valid"))
-  }
-  if(!is(norm_exprs, "data.table")){
-    norm_exprs <- data.table(norm_exprs, keep.rownames = TRUE)
-    setnames(norm_exprs, "rn", "feature_id")
-  }
+  #norm_exprs <- try(con$makeMatrix(gef))
+  norm_exprs <- con$makeMatrix(gef)
+  #if(inherits(norm_exprs, "try-error")){
+  #  if(length(ext) > 1){
+  #    stop(paste("There is more than one file extension:", paste(ext, collapse=",")))
+  #  } else if(ext == "CEL"){
+  #    norm_exprs <- process_CEL(con, pdata, inputFiles)
+  #  } else if(ext %in% c("tsv", "txt")){
+  #    norm_exprs <- process_TSV(con, pdata, inputFiles, selectedBiosamples)
+  #  } else if(ext == "csv"){
+  #    norm_exprs <- process_CSV(con)
+  #  } else{
+  #    stop(paste("The file extension", ext, "is not valid"))
+  #  }
+  #  if(!is(norm_exprs, "data.table")){
+  #    norm_exprs <- data.table(norm_exprs, keep.rownames = TRUE)
+  #    setnames(norm_exprs, "rn", "feature_id")
+  #  }
+  #}
   return(norm_exprs)
 }
 

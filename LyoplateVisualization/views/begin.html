@@ -19,72 +19,13 @@ vim: ts=4:sw=4:nu:fdc=4:spell
 
 <!--<script type='text/javascript'>	LABKEY.requiresExt4ClientAPI(); </script>-->
 <script type='text/javascript'>
-
-    var initLyoplateVisualization = function(){
-        var webPartDiv = <%=webpartContext%>.wrapperDivId;
-
-        var resizeModule;
-// REMOVE once the issue with a web part rendering even though a module is disabled is taken care of
-
-var createTempPnl = function( moduleName ){
-    var
-        maskMsg =
-            'Seems like you have not enabled the ' + moduleName + ' module, click <a href="' +
-            LABKEY.ActionURL.buildURL('admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
-            '">here</a> to do so.',
-
-        temp = new Ext.Panel({
-            border: false,
-            cls: 'ISCore',
-            frame: false,
-            height: 100,
-            layout: 'fit',
-            listeners: {
-                afterrender: function(){
-                    this.getEl().mask( maskMsg, 'infoMask' );
-                }
-            },
-            renderTo: webPartDiv
-        });
-
-    resizeModule = function(){
-        temp.getEl().mask( maskMsg, 'infoMask' );
-    };
-
-    Ext.EventManager.onWindowResize( resizeModule );
-};
-
-LABKEY.Query.getSchemas({
-    apiVersion: '9.3',
-    failure: LABKEY.ext.ISCore.onFailure,
-    success: function( schemasInfo ){
-        if ( schemasInfo.lyoplate_visualization ) {
-// END REMOVE
-
-        var LyoplateVisualization = new LABKEY.ext.LyoplateVisualization({
-            webPartDivId: webPartDiv
-        });
-
-        resizeModule = function(w, h){
-
-            LABKEY.ext.Utils.resizeToViewport( LyoplateVisualization, w, -1, null, null, -5 );
-
-            LyoplateVisualization.resize();
-        };
-
-        Ext.EventManager.onWindowResize( resizeModule );
-
-// REMOVE once the issue with a web part rendering even though a module is disabled is taken care of
-        } else {
-            createTempPnl( 'LyoplateVisualization' );
-        }
-    }
-});
-// END REMOVE
-
-        Ext.EventManager.fireWindowResize();
-    };
-
-    Ext.onReady( initLyoplateVisualization );
-
+    Ext.onReady(
+        LABKEY.ext.ISCore.initModule.createCallback(
+            function( webPartDiv ){ return new LABKEY.ext.LyoplateVisualization({ webPartDivId: webPartDiv }); },
+            <%=webpartContext%>.wrapperDivId,
+            'GatingSet',
+            'lyoplate_visualization'
+        )
+    );
 </script>
+

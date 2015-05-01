@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ReportDescriptor>
+    <hidden>false</hidden>
+    <category>Custom Analysis</category>
+    <label>Caching issue</label>
+    <reportType>
+      <R>
+        <dependencies>
+          <dependency path="https://code.jquery.com/jquery-1.11.1.min.js"/>
+          <dependency path="https://cdn.datatables.net/1.10.1/js/jquery.dataTables.min.js"/>
+          <dependency path="https://cdn.datatables.net/1.10.1/css/jquery.dataTables.css"/>
+        </dependencies>
+      </R>
+    </reportType>
+</ReportDescriptor>

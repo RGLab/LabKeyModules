@@ -50,10 +50,12 @@ import org.labkey.api.view.JspView;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.VBox;
+import org.labkey.api.view.WebPartView;
 import org.labkey.immport.data.DataLoader;
 import org.labkey.immport.data.StudyBean;
 import org.labkey.immport.data.StudyPersonnelBean;
 import org.labkey.immport.data.StudyPubmedBean;
+import org.labkey.immport.view.StudyFinderWebPart;
 import org.labkey.immport.view.StudyIdForm;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.validation.BindException;
@@ -187,7 +189,7 @@ public class ImmPortController extends SpringActionController
                 log = "<pre>" + PageFlowUtil.filter(_log, true, true) + "</pre>";
             }
             return new HtmlView("<p class='labkey-error'>" + PageFlowUtil.filter(error) + "</p>" +
-                "<form method=post onsubmit='Ext.getBody().mask();true;'>Copy from immport schema to cube dimensions<br>" +
+                "<form name='populateCube' method='post' onsubmit='Ext.getBody().mask();true;'>Copy from immport schema to cube dimensions<br>" +
                 "<input type=hidden name='X-LABKEY-CSRF' value='" + CSRFUtil.getExpectedToken(getViewContext()) + "'>" +
                 "<input type=submit></form>" +
                 "<p></p>" + log);
@@ -443,7 +445,9 @@ public class ImmPortController extends SpringActionController
     {
         public ModelAndView getView(Object o, BindException errors) throws Exception
         {
-            return new JspView("/org/labkey/immport/view/studyfinderNG.jsp");
+            StudyFinderWebPart wp = new StudyFinderWebPart();
+            wp.setFrame(WebPartView.FrameType.DIV);
+            return wp;
         }
 
         public NavTree appendNavTrail(NavTree root)

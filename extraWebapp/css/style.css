@@ -129,8 +129,12 @@ td.nobg {
 	font-size: 70%;	
 }
 
+.news-text .mask-loading {
+    font-size: 80%;
+}
+
 .news-text {
-	height: 220px;
+	height: 230px;
 	overflow-y: auto;
 }
 
@@ -161,7 +165,7 @@ label.pw {
 input[type="text"],
 input[type="password"] {
 	width: 210px;
-	height: 35px;
+	height: 25px;
 	border: 0;
 	background-color: #fff;
 	margin-top: 5px;

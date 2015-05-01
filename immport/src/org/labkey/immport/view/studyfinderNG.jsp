@@ -26,6 +26,7 @@
 <%@ page import="org.labkey.api.data.TableSelector" %>
 <%@ page import="org.labkey.api.query.DefaultSchema" %>
 <%@ page import="org.labkey.api.query.QuerySchema" %>
+<%@ page import="org.labkey.api.util.HeartBeat" %>
 <%@ page import="org.labkey.api.view.ActionURL" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.ViewContext" %>
@@ -35,17 +36,16 @@
 <%@ page import="java.util.Collection" %>
 <%@ page import="java.util.Collections" %>
 <%@ page import="java.util.Comparator" %>
+<%@ page import="java.util.Date" %>
 <%@ page import="java.util.LinkedHashSet" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.TreeMap" %>
-<%@ page import="java.util.Date" %>
-<%@ page import="org.labkey.api.util.HeartBeat" %>
 <%@ page extends="org.labkey.api.jsp.JspBase"%>
 <%!
     public LinkedHashSet<ClientDependency> getClientDependencies()
     {
         LinkedHashSet<ClientDependency> resources = new LinkedHashSet<>();
-        resources.add(ClientDependency.fromFilePath("Ext4"));
+        resources.add(ClientDependency.fromPath("Ext4"));
         return resources;
     }
 %>
@@ -201,6 +201,10 @@
         background-color:rgba(81, 158, 218, 0.8);
         /* background: linear-gradient(to right, rgba(81, 158, 218, 0.8) 0%,rgba(81, 158, 218, 0.3) 50%, rgba(81, 158, 218, 0.8) 100%); */
     }
+    SPAN.searchNotFound
+    {
+        background-color:yellow;
+    }
 </style>
 
 
@@ -212,12 +216,14 @@
 
     <tr><td align="left" colspan="2">
         <div class="innerColor" style="padding:10px; border:solid 2px #e6e6e6;">
-        <div style="float:left;"><input placeholder="Study Search" id="searchTerms" name="q" style="width:200pt;" ng-model="searchTerms" ng-change="onSearchTermsChanged()"><span class="searchMessage" style="padding-left: 10px">{{searchMessage}}</span></div>
+        <div style="float:left;"><input placeholder="Study Search" id="searchTerms" name="q" style="width:200pt;" ng-model="searchTerms" ng-change="onSearchTermsChanged()">
+            <span class="searchMessage" ng-class="{searchNotFound:(searchMessage=='no matches')}">&nbsp;{{searchMessage}}&nbsp;</span>
+        </div>
         <div style="float:right;">
-            <span ng-show="loaded_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmuneSpace" ng-change="onStudySubsetChanged()">All ImmuneSpace studies</span>
-            <span ng-show="recent_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="Recent" ng-change="onStudySubsetChanged()">Recently added</span>
-            <span ng-show="hipc_study_list.length" >&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="HipcFunded" ng-change="onStudySubsetChanged()">HIPC funded</span>
-            <span>&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmPort" ng-change="onStudySubsetChanged()">All ImmPort studies</span>
+            <label ng-show="loaded_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmuneSpace" ng-change="onStudySubsetChanged()">All ImmuneSpace studies</label>
+            <label ng-show="recent_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="Recent" ng-change="onStudySubsetChanged()">Recently added</label>
+            <label ng-show="hipc_study_list.length" >&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="HipcFunded" ng-change="onStudySubsetChanged()">HIPC funded</label>
+            <label>&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmPort" ng-change="onStudySubsetChanged()">All ImmPort studies</label>
         </div>
         <div id="studypanel" style="clear:both; max-width:940px; overflow-x:scroll;">
             <table><tr>
@@ -417,7 +423,7 @@ studyfinderScope.prototype =
 
     countForStudy : function(study)
     {
-        var uniqueName = study.memberName;
+        var uniqueName = study.memberName || study.uniqueName;
         var studyMember = dataspace.dimensions.Study.memberMap[uniqueName];
         return studyMember ? studyMember.count : 0;
     },
@@ -668,6 +674,8 @@ studyfinderScope.prototype =
             member = dim.members[m];
             dim.members[m].percent = max==0 ? 0 : (100.0*member.count)/max;
         }
+
+        this.updateContainerFilter();
     },
 
 
@@ -877,6 +885,27 @@ studyfinderScope.prototype =
         this.onSearchTermsChanged_promise = this.timeout(function(){scope.doSearchTermsChanged();}, 500);
     },
 
+    updateContainerFilter : function ()
+    {
+        // Collect the container ids of the loaded studies
+        var dim = dataspace.dimensions.Study;
+        var containers = [];
+        for (var name in loaded_studies)
+        {
+            var study = loaded_studies[name];
+            var count = this.countForStudy(study);
+            if (count)
+                containers.push(study.containerId);
+        }
+
+        // CONSIDER: delete the shared container filter if all loaded_studies are selected
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('study', 'sharedStudyContainerFilter.api'),
+            method: 'POST',
+            jsonData: { containers: containers }
+        });
+    },
+
     showStudyPopup: function(study_accession)
     {
         showPopup(null,'study',study_accession);
@@ -908,7 +937,8 @@ studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http)
             'id':studyData[i][1], 'title':studyData[i][2], 'pi':studyData[i][3],
             'hipc_funded': false,
             'loaded': false,
-            'url' : null
+            'url' : null,
+            'containerId': null
         };
         if (loaded_studies[name])
         {
@@ -916,6 +946,7 @@ studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http)
             s.hipc_funded = loaded_studies[name].hipc_funded;
             s.highlight = loaded_studies[name].highlight;
             s.url = loaded_studies[name].url;
+            s.containerId = loaded_studies[name].containerId;
             loaded_study_list.push(s.memberName);
             if (s.highlight)
                 recent_study_list.push(s.memberName);

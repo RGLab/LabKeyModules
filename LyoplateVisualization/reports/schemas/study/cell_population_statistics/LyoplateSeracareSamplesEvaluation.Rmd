@@ -82,11 +82,10 @@ vc <- .reorder.factor(vc)
    
 
 ```{r bcell_variability,echo=TRUE,message=FALSE,warning=FALSE,htmlcap='Components of variability due to center, sample, and residual variation for each cell population in the B-cell panel. Stacked barplots of the variability across centers and samples for each cell population and method in the B-cell panel. The relative contribution of each component of variance is evident from the relative size of the stacked bars, as well as the magnitude of the total variability for each cell population and method.'}
-vc<-data.table(vc)[,value:=sd(arm::invlogit(rnorm(1000,sd=value))),list(Method,Population)]
  ggplot(vc)+
    geom_bar(aes(x=Method,y=value,fill=variable),stat="identity",position="stack")+
    ggtitle("Variability per Method for B-Cell Panel")+
-   facet_wrap(~Population,scales="free_y",nrow=2)+
+   facet_wrap(~Population,nrow=2)+
    theme_bw()+
    theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")+
    scale_y_continuous("Standard Deviation")+
@@ -147,12 +146,11 @@ vc <- .reorder.factor(vc)
    
 
 ```{r tcell_variability,echo=TRUE,message=FALSE,warning=FALSE,htmlcap="Components of variability due to center, sample, and residual variation for each cell population in the T-cell panel."}
-vc<-data.table(vc)[,value:=sd(arm::invlogit(rnorm(1000,sd=value))),list(Method,Population)]
 
  ggplot(vc)+
    geom_bar(aes(x=Method,y=value,fill=variable),stat="identity",position="stack")+
    ggtitle("Variability per Method for T-Cell Panel")+
-   facet_wrap(~Population,scales="free_y",nrow=2)+
+   facet_wrap(~Population,nrow=2)+
    theme_bw()+
    theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")+
    scale_y_continuous("Standard Deviation")+
@@ -196,12 +194,11 @@ vcdc<-vc2
      
 
 ```{r dc_variability,echo=TRUE,message=FALSE,warning=FALSE,htmlcap="Components of variability due to center, sample, and residual variation for each cell population in the DC/Monocyte/NK panel."}
-vc<-data.table(vc)[,value:=sd(arm::invlogit(rnorm(1000,sd=value))),list(Method,Population)]
 
  ggplot(vc)+
    geom_bar(aes(x=Method,y=value,fill=variable),stat="identity",position="stack")+
    ggtitle("Variability per Method for DC/Mono/NK Panel")+
-   facet_wrap(~Population,scales="free_y",nrow=2)+
+   facet_wrap(~Population,nrow=2)+
    theme_bw()+
    theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")+
    scale_y_continuous("Standard Deviation")+
@@ -247,12 +244,10 @@ vc <- .reorder.factor(vc)
 
 ```{r treg_variability,echo=TRUE,message=FALSE,warning=FALSE,htmlcap="Components of variability due to center, sample, and residual variation for each cell population in the T-regulatory cell panel."}
 
-vc<-data.table(vc)[,value:=sd(arm::invlogit(rnorm(1000,sd=value))),list(Method,Population)]
-
  ggplot(vc)+
    geom_bar(aes(x=Method,y=value,fill=variable),stat="identity",position="stack")+
    ggtitle("Variability per Method for T-regulatory Cell Panel")+
-   facet_wrap(~Population,scales="free_y",nrow=2)+
+   facet_wrap(~Population,nrow=2)+
    theme_bw()+
    theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")+
    scale_y_continuous("Standard Deviation")+

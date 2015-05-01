@@ -16,18 +16,19 @@ public class ImmPortBeginPage
         _test = test;
     }
 
-    public void importArchive(String pathToArchive, boolean restricted)
+    public void importArchive(File archive, boolean restricted)
     {
         _test.clickAndWait(Locator.linkWithText("Import Archive"));
-        _test.setFormElement(Locator.name("path"), pathToArchive);
+        _test.setFormElement(Locator.name("path"), archive);
         if (restricted) _test.checkCheckbox(Locator.name("restricted"));
-        _test.clickAndWait(Locator.tagWithAttribute("input", "type", "submit"));
+        _test.clickAndWait(Locator.css("form[name=importArchive] input[type=submit]"));
+        _test.waitForPipelineJobsToComplete(1, "Load ImmPort archive", false, 600000);
     }
 
     public void populateCube()
     {
         _test.clickAndWait(Locator.linkWithText("Populate Cube"));
-        _test.clickAndWait(Locator.tagWithAttribute("input", "type", "submit"), 120000);
+        _test.clickAndWait(Locator.css("form[name=populateCube] input[type=submit]"), 120000);
     }
 
     public StudyFinderPage goToStudyFinder()

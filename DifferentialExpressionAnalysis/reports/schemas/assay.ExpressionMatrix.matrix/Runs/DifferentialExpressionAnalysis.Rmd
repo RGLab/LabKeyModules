@@ -22,7 +22,7 @@ infostring <- ""
 
 ## Differential expression analysis
 
-study: `r study`
+study: `r study`  
 contrast: `r contrast`
 
 ```{r getData, warning = FALSE}
@@ -67,7 +67,8 @@ if(is.null(con$data_cache[["GE_matrices"]])){
 
 ```{r infostring-set, echo = FALSE}
 if(nCoefs == 0){
-  infostring <- "This analysis has already been run. Click on the 'Data' tab for a summary of the anlysis. You can visualize the results using the Heatmap report."
+  #infostring <- "This analysis has already been run. Click on the 'Data' tab for a summary of the anlysis. You can visualize the results using the Heatmap report."
+  infostring <- "This analysis has already been run. You can visualize the results using the Heatmap report."
 } else if(nCoefs > 0){
   infostring <- paste("There will be", nCoefs, "new differential expression analysis.")
 }
@@ -130,8 +131,14 @@ for(run in runs){
   }
 }
 GEA <- rbindlist(GEA_list)
-GEAR <- rbindlist(GEAR_list)
-setnames(GEAR, c("FeatureId", "gene_symbol", "adj.P.Val", "AveExpr", "logFC", "P.Value", "t"), c("feature_id", "gene_symbol", "adj_p_val", "ave_expr", "log_fc", "p_value", "statistic"))
+if(length(GEAR_list) == 0){
+  warning("No feature was found to be differentially expressed at any timepoint.")
+  opts_chunk$set(eval = FALSE, echo = FALSE)
+} else{
+  GEAR <- rbindlist(GEAR_list)
+  print(colnames(GEAR))
+  setnames(GEAR, c("FeatureId", "gene_symbol", "adj.P.Val", "AveExpr", "logFC", "P.Value", "t"), c("feature_id", "gene_symbol", "adj_p_val", "ave_expr", "log_fc", "p_value", "statistic"))
+}
 ```
 
 ```{r write}

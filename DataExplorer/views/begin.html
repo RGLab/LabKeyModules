@@ -18,36 +18,12 @@ vim: ts=4:sw=4:nu:fdc=4:spell
 -->
 
 <script type='text/javascript'>
-
-    var initDataExplorer = function(){
-        var webPartDiv = <%=webpartContext%>.wrapperDivId;
-
-        LABKEY.Query.getQueryDetails({
-            failure: function(){
-                LABKEY.ext.ISCore.renderTempPnl( LABKEY.ext.ISCore.moduleNotEnabled, webPartDiv );
-            },
-            queryName: 'data_sets',
-            schemaName: 'study',
-            success: function(){
-                var
-                    DataExplorer = new LABKEY.ext.DataExplorer({
-                        webPartDivId: webPartDiv
-                    }),
-
-                    resizeModule = function(w, h){
-                        LABKEY.ext.Utils.resizeToViewport( DataExplorer, w, -1, null, null, -5 );
-                        DataExplorer.resize();
-                    }
-                ;
-
-                Ext.EventManager.onWindowResize( resizeModule );
-            } 
-        });
-
-        Ext.EventManager.fireWindowResize();
-    };
-
-    Ext.onReady( initDataExplorer );
-
+    Ext.onReady(
+        LABKEY.ext.ISCore.initModule.createCallback(
+            function( webPartDiv ){ return new LABKEY.ext.DataExplorer({ webPartDivId: webPartDiv }); },
+            <%=webpartContext%>.wrapperDivId,
+            'data_sets'
+        )
+    );
 </script>
 
