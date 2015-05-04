@@ -51,10 +51,13 @@
     {
         String comma = "\n";
         Container p = c.getProject();
-        ContainerFilter cf = new ContainerFilter.AllInProject(context.getUser());
         QuerySchema s = DefaultSchema.get(context.getUser(), p).getSchema("study");
         TableInfo sp = s.getTable("StudyProperties");
-        ((ContainerFilterable)sp).setContainerFilter(cf);
+        if (sp.supportsContainerFilter())
+        {
+            ContainerFilter cf = new ContainerFilter.AllInProject(context.getUser());
+            ((ContainerFilterable) sp).setContainerFilter(cf);
+        }
         Collection<Map<String, Object>> maps = new TableSelector(sp).getMapCollection();
         for (Map<String, Object> map : maps)
         {
