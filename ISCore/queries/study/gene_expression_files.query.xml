@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns='http://labkey.org/data/xml/query'>
+    <metadata>
+        <tables xmlns='http://labkey.org/data/xml'>
+            <table tableName='gene_expression_files' tableDbType='TABLE'>
+                <buttonBarOptions position='both' includeStandardButtons='false'>
+                    <item text='Filter' insertPosition='end'>
+                        <originalText>Filter</originalText>
+                    </item>
+                    <item text='Views' insertPosition='end'>
+                        <originalText>Views</originalText>
+                    </item>
+                    <item text='Export' insertPosition='end'>
+                        <originalText>Export</originalText>
+                    </item>
+                    <item text='Page size' insertPosition='end'>
+                        <originalText>Page size</originalText>
+                    </item>
+                    <item text='Insert new' insertPosition='end'>
+                        <originalText>Insert new</originalText>
+                    </item>
+                    <item text='Manage dataset' insertPosition='end'>
+                        <originalText>Manage dataset</originalText>
+                    </item>
+                    <item text='Import data' insertPosition='end'>
+                        <originalText>Import data</originalText>
+                    </item>
+                    <item text='Delete' insertPosition='end'>
+                        <originalText>Delete</originalText>
+                    </item>
+                </buttonBarOptions>
+            </table>
+        </tables>
+    </metadata>
+</query>
+

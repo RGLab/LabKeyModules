@@ -294,7 +294,17 @@ a.forgotpw:hover {
 }
 
 div.error {
-    margin-left: 30px;
     color: red;
+    margin-left: 30px;
+}
+
+.fixed-height {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 10;
+    display: -webkit-box;
+    font-size: 80%;
+    max-height: 155px;
+    overflow-y: hidden;
+    position: relative;
 }
 

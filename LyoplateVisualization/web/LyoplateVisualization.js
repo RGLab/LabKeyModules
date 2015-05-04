@@ -362,7 +362,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
         var chAppendFileName = new Ext.form.Checkbox({
             boxLabel: 'Append file name',
-            cls: 'extra10pxPaddingLeft',
+            cls: 'paddingLeft10px',
             hidden: true,
             hideLable: true,
             listeners: {
@@ -374,7 +374,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
         var chEnableGrouping = new Ext.form.Checkbox({
             boxLabel: 'Enable grouping',
             checked: true,
-            cls: 'extra10pxPaddingLeft',
+            cls: 'paddingLeft10px',
             hidden: true,
             onRender: customOnRender
         });
@@ -1028,7 +1028,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             }
         });
 
-        cmpTableStatus.addClass( 'extra10pxPaddingLeft' ); // so that this class does not get propagated to the toolbar's overflow menu
+        cmpTableStatus.addClass( 'paddingLeft10px' ); // so that this class does not get propagated to the toolbar's overflow menu
 
         var smCheckBox = new Ext.grid.CheckboxSelectionModel({
             checkOnly: true,

@@ -106,7 +106,7 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                                                                     (
                                                                         e.Description == null ?
                                                                         '' :
-                                                                        '<div class=\'extra5pxPadding\'>' + e.Description + '</div>'
+                                                                        '<div class=\'padding5px\'>' + e.Description + '</div>'
                                                                     ) +
                                                                 '</div>',
                                                             style: 'padding-bottom: 4px; padding-top: 4px;'
