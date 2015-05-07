@@ -150,39 +150,39 @@ public class StudyFinderPage extends LabKeyPage
 
     public enum Dimension
     {
-        SPECIES("species", "species"),
-        CONDITION("condition", "conditions"),
-        TYPE("type", "types"),
-        ASSAY("assay", "assays"),
-        TIMEPOINT("day of study", "timepoints"),
-        GENDER("gender", "genders"),
-        RACE("race", "races"),
-        CATEGORY("category", "categories");
+        SPECIES("Species", "species"),
+        CONDITION("Condition", "conditions"),
+        TYPE("Type", "types"),
+        CATEGORY("Research focus", null),
+        ASSAY("Assay", "assays"),
+        TIMEPOINT("Day of Study", "timepoints"),
+        GENDER("Gender", "genders"),
+        RACE("Race", "races");
 
-        private String singular;
-        private String plural;
+        private String caption;
+        private String summaryLabel;
 
-        Dimension(String singular, String plural)
+        Dimension(String caption, String summaryLabel)
         {
-            this.singular = singular;
-            this.plural = plural;
+            this.caption = caption;
+            this.summaryLabel = summaryLabel;
         }
 
-        public String getSingular()
+        public String getCaption()
         {
-            return singular;
+            return caption;
         }
 
-        public String getPlural()
+        public String getSummaryLabel()
         {
-            return plural;
+            return summaryLabel;
         }
 
         public static Dimension fromString(String value)
         {
             for (Dimension dimension : values())
             {
-                if (dimension.getPlural().equals(value.toLowerCase()) || dimension.getSingular().equals(value.toLowerCase()))
+                if (value.equals(dimension.getSummaryLabel()) || value.equals(dimension.getCaption()))
                     return dimension;
             }
 
@@ -214,35 +214,22 @@ public class StudyFinderPage extends LabKeyPage
 
         public List<String> getValues()
         {
-            return getValues(elements.value);
+            return _test.getTexts(elements.value.findElements(panel));
         }
 
         public List<String> getEmptyValues()
         {
-            return getValues(elements.emptyValue);
+            return _test.getTexts(elements.emptyValue.findElements(panel));
         }
 
         public List<String> getNonEmptyValues()
         {
-            return getValues(elements.nonEmptyValue);
+            return _test.getTexts(elements.nonEmptyValue.findElements(panel));
         }
 
         public List<String> getSelectedValues()
         {
-            return getValues(elements.selectedValue);
-        }
-
-        private List<String> getValues(Locator valueLoc)
-        {
-            List<WebElement> els = valueLoc.findElements(panel);
-            List<String> values = new ArrayList<>();
-
-            for (WebElement el : els)
-            {
-                values.add(el.getText().trim());
-            }
-
-            return values;
+            return _test.getTexts(elements.selectedValue.findElements(panel));
         }
 
         public void selectAll()
