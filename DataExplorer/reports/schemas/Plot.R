@@ -43,7 +43,6 @@ alpha               <- labkey.url.params$alpha;
 
 filter <- as.matrix( lapply( filters, function( e ){
     return( paste0( curlEscape( e['fieldKey'] ), '~', e['op'], '=', curlEscape( e['value'] ) ) );
-#    return( paste0( e['fieldKey'], '~', e['op'], '=', curlEscape( e['value'] ) ) );
 }) );
 if ( nrow( filter ) == 0 ){
   filter <- NULL;

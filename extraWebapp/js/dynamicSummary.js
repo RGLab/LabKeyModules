@@ -85,7 +85,7 @@ $(document).ready(function() {
                                                 '<tr>' +
                                                         '<td>' + row.assay_type + '</td>' +
                                                         '<td class=\'numberColumn\' align=\'right\'>' + row.subject_count + '</td>' +
-                                                        '</tr>'
+                                                '</tr>'
                                         );
                                     });
                                 }
@@ -110,17 +110,17 @@ $(document).ready(function() {
             if ( d && d.rows ){
                 Ext.each( d.rows, function(row){
                     $('#News').append(
-                        '<p><strong>' + row.Date + '. <a href=\'' +
-                        LABKEY.ActionURL.buildURL(
-                            'announcements',
-                            'thread',
-                            null,
-                            {    
-                                rowId: row.RowId
-                            }    
-                        ) +  
-                        '\' target=\'_blank\'>' + row.Title + '.</a></strong>' +
-                        '</br>' + row.FormattedBody + '</p>'
+                        '<div class=\'fixed-height\'><strong>' + row.Date + '. <a href=\'' +
+                            LABKEY.ActionURL.buildURL(
+                                'announcements',
+                                'thread',
+                                null,
+                                {
+                                    rowId: row.RowId
+                                }
+                            ) +
+                            '\' target=\'_blank\'>' + row.Title + '.</a></strong>' +
+                        '</br>' + row.FormattedBody + '</div></br>'
                     );
                 });
             }

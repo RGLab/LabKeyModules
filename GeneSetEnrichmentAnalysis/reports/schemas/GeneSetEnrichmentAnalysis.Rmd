@@ -153,7 +153,7 @@ setnames(table, "PValue", "10log10(p)")
 format_table(table)
 ```
 
-```{r pheatmap, cache=FALSE, dependson="heatmap-matrix"}
+```{r pheatmap, cache=TRUE, dependson="heatmap-matrix"}
 if(draw_heatmap){
   max <- max(abs(mat))
   if(nrow(mat) > 0){

@@ -25,6 +25,8 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         //            Variables            //
         /////////////////////////////////////
 
+        String.prototype.wpdi = function(){ return this + config.webPartDivId; };
+
         var
             me                  = this,
             maskReport          = undefined,
@@ -56,7 +58,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                         cbCohort.setDisabled( false );
                     }
 
-                    decodeParams( window.location.hash, [ cbCohort, cbSignature ] );
+                    decodeParams( window.location.hash );
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
@@ -74,6 +76,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             disabled: true,
             displayField: 'cohort',
             fieldLabel: 'Cohort',
+            id: 'cbCohort',
             lazyInit: false,
             listeners: {
                 change: function(){
@@ -102,6 +105,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             allowBlank: false,
             displayField: 'name',
             fieldLabel: 'Modules',
+            id: 'cbSignature',
             listeners: {
                 change:     checkBtnRunStatus,
                 cleared:    checkBtnRunStatus,
@@ -348,6 +352,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 title: 'Help'
             })
         ];
+
         if ( false ){ tabItems.push(
             new Ext.Panel({
                 defaults: {
@@ -363,11 +368,11 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                             new Ext.Button({
                                 handler: function(){
                                     var hash = taImportExport.getValue();
-                                    var ind = hash.indexOf( '#' );
+                                    var ind = hash.indexOf( '#&' );
                                     if ( ind >= 0 ){
                                         hash = hash.substring( ind );
 
-                                        decodeParams( hash, [ cbCohort, cbSignature ] );
+                                        decodeParams( hash );
                                     }
                                 },
                                 text: 'Import from text',
@@ -378,7 +383,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                                     var address = window.location.href;
                                     var hash    = address.indexOf( '#' );
                                     if ( hash >= 0 ){ address = address.substring( 0, hash ); }
-                                    taImportExport.setValue( address + '#' + encodeParams( [ cbCohort, cbSignature ] ) );
+                                    taImportExport.setValue( address + encodeParams( [ cbCohort, cbSignature ] ) );
                                 },
                                 text: 'Export',
                                 width: 200
@@ -442,44 +447,35 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         //             Functions           //
         /////////////////////////////////////
 
-        var formParamString = function( el ){
+        var getParamString = function( el ){
             return el.getValue();
         };
 
         var encodeParams = function( arrayToProcess ){
-            var result = '';
-            if ( arrayToProcess.length >= 1 ){
-                result += formParamString( arrayToProcess[0] );
-            }
-            for ( var i = 1; i < arrayToProcess.length ; i ++ ){
-                result += '&' + formParamString( arrayToProcess[i] );
-            }
-            return result;
+            var obj = {};
+            Ext.each( arrayToProcess, function(e){
+                obj[e.getId()] = getParamString(e);
+            });
+            return Ext.urlEncode( obj, '#' );
         };
 
-        var decodeParams = function( hash, els ){
-            var arrayToProcess;
-            if ( hash && hash.charAt( 0 ) == '#' ){
-                hash = hash.substring( 1 );
-                arrayToProcess = hash.split( '&' );
-                if ( arrayToProcess.length != els.length ){
-                    LABKEY.ext.ISCore.onFailure({
-                        exception: 'Parsing failure, the number of parameters spcified does not match the number of parameters needed'
-                    });
-                } else{
-                    Ext.each(
-                        els,
-                        function( e, i ){
-                            if ( e.findRecord( e.valueField, arrayToProcess[i] ) ){
-                                e.setValue( arrayToProcess[i] );
-                            } else{
-                                e.clearValue();
-                                e.markInvalid( '"' + arrayToProcess[i] + '" in the supplied URL is not a valid value, select from the available choices' );
-                            }
+        var decodeParams = function( hash ){
+            var toProcess, arrayToProcess, e;
+            if ( hash && hash.charAt( 0 ) == '#' && hash.charAt( 1 ) == '&' ){
+                toProcess = Ext.urlDecode( hash.substring( 2 ) );
+                $.each( toProcess, function( k, v ){
+                    e = Ext.getCmp( k );
+                    if ( e ){
+                        if ( e.findRecord( e.valueField, v ) ){
+                            e.setValue( v );
+                        } else{
+                            e.clearValue();
+                            e.markInvalid( '"' + v + '" in the supplied URL is not a valid value, select from the available choices' );
                         }
-                    );
-                    checkBtnRunStatus();
-                }
+                    }
+                });
+
+                checkBtnRunStatus();
             }
         };
 
@@ -503,7 +499,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
 
         // jQuery-related
 
-        $('#' + config.webPartDivId)
+        $('#'.wpdi())
             .parents('tr')
             .prev()
             .find('.labkey-wp-title-text')
@@ -527,9 +523,9 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         this.frame          = false;
         this.items          = pnlTabs;
         this.layout         = 'fit';
-        this.renderTo       = config.webPartDivId;
-        this.webPartDivId   = config.webPartDivId;
-        this.width          = document.getElementById(config.webPartDivId).offsetWidth;
+        this.renderTo       = ''.wpdi();
+        this.webPartDivId   = ''.wpdi();
+        this.width          = document.getElementById(''.wpdi()).offsetWidth;
 
         LABKEY.ext.GeneSetEnrichmentAnalysis.superclass.constructor.apply(this, arguments);
 

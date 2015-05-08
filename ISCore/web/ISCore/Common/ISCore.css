@@ -403,12 +403,20 @@ pre, .ext-mb-text {
 }
 /**********************************/
 
-.extra5pxPadding {
+.padding5px {
     padding: 5px !important;
 }
 
-.extra10pxPaddingLeft {
+.paddingLeft10px {
     padding-left: 10px !important;
+}
+
+.paddingRight25px {
+    padding-right: 25px !important;
+}
+
+.overview-spacing {
+    padding-bottom: 0.5em;
 }
 
 #fancybox-buttons ul {

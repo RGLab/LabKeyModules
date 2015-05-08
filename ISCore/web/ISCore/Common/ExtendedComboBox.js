@@ -258,10 +258,10 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
         if ( ! this.disabled ){
             this.collapse();
             if ( this.store ){
-                this.reset();                       // reset contents of combobox, clear any filters as well
+                this.reset();                   // reset contents of combobox, clear any filters as well
             }
             this.clearValue();
-            this.fireEvent('cleared');          // send notification that contents have been cleared
+            this.fireEvent('cleared', this);    // send notification that contents have been cleared
         }
     },
 

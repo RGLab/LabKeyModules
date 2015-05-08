@@ -10,7 +10,6 @@
         <cv:column name="expsample_accession"/>
         <cv:column name="experiment_accession"/>
         <cv:column name="study_accession"/>
-        <cv:column name="comments"/>
         <cv:column name="study_time_collected"/>
         <cv:column name="study_time_collected_unit"/>
         <cv:column name="virus_strain"/>

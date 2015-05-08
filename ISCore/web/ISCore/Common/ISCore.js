@@ -585,7 +585,7 @@ Ext.override( Ext.layout.ToolbarLayout, {
                     menu.add(
                         new Ext.menu.TextItem({
                             cls: component.initialConfig.cls,
-                            ctCls: 'extra5pxPadding',
+                            ctCls: 'padding5px',
                             listeners: {
                                 render: function(){
                                     new Ext.ToolTip({

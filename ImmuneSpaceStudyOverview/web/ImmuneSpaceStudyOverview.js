@@ -18,70 +18,204 @@
 Ext.namespace('LABKEY.ext');
 
 LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
+
     constructor : function(config) {
-        var SDY = LABKEY.container.title;
+
+        /////////////////////////////////////
+        //            Variables            //
+        /////////////////////////////////////
+
         var
-            me = this,
-            bs = '<span class=\'bold-text\'>',
-            initialHTML =
-                bs + '<a class=\'labkey-text-link\' onClick="LABKEY.help.Tour.show(\'immport-study-tour\')">quick help</a></br></span></br>' + 
-                bs + 'Principal Investigator: </span>' +
-                '<span id=\'PI' + config.webPartDivId + '\'></span></br></br>' +
-                bs + 'Title:</span> ' +
-                '<span id=\'title' + config.webPartDivId + '\'></span></br></br>' +
-                bs + 'Type:</span> ' + 
-                '<span style="padding-right:25px" id=\'type' + config.webPartDivId + '\'></span>' +
-                bs + 'Condition studied:</span> ' +
-                '<span style="padding-right:25px" id=\'condition' + config.webPartDivId + '\'></span>' +
-                bs + 'Number of subjects: </span>' +
-                '<span id=\'subjects' + config.webPartDivId + '\'></span></br></br>' +
-                bs + 'Brief description:</span> ' +
-                '<span id=\'bdesc' + config.webPartDivId + '\'></span></br></br>' +
-                //bs + 'Start date:</span> ' +
-                //'<span id=\'start' + config.webPartDivId + '\'></span></br></br>' +
-                bs + 'Description: </span>' +
-                '<a id=\'showdesc' + config.webPartDivId + '\' class=\'show' + config.webPartDivId + '\'>show</a>' +
-                '<span id=\'description' + config.webPartDivId + '\' style=\'display: none\'></span><div style=\'height: 1em;\'></div>' +
-                bs + 'Objectives: </span>' +
-                '<a id=\'showobj' + config.webPartDivId + '\' class=\'show' + config.webPartDivId + '\'>show</a>' +
-                '<span id=\'objective' + config.webPartDivId + '\' style=\'display: none\'></span><div style=\'height: 1em;\'></div>' +
-                bs + 'Endpoints: </span>' +
-                '<a id=\'showend' + config.webPartDivId + '\' class=\'show' + config.webPartDivId + '\'>show</a>' +
-                '<span id=\'endpoints' + config.webPartDivId + '\' style=\'display: none\'></span><div style=\'height: 1em;\'></div>' +
-                bs + 'Sponsoring organization: </span>' +
-                '<span id=\'organization' + config.webPartDivId + '\'></span></br></br>' +
-                bs + 'ImmPort accession number: </span>' +
-                '<span id=\'immport' + config.webPartDivId + '\'></span></br></br>' +
-                '<span id=\'assoc_studies' + config.webPartDivId + '\'></span>' +
-                bs + 'Protocol documents: </span>' +
-                '<a href=\'/_webdav/Studies/' + SDY + '/%40files/protocols/' + SDY + '_protocol.zip\'>protocol.zip</a>'
+            SDY = LABKEY.container.title,
+            dh  = Ext.DomHelper
         ;
 
-        $('#' + config.webPartDivId).append(
-            '<div id=\'ImmuneSpaceStudyOverview' + config.webPartDivId + '\'>' + initialHTML + '</div>'
-        );
+        String.prototype.wpdi = function(){ return this + config.webPartDivId; };
 
-        var toggle = function( link ){
-            var el = $( '#' + link.id ).next()[0].style;
+        var
+            me = this,
+            spec =
+                {
+                    id: 'ImmuneSpaceStudyOverview'.wpdi(),
+                    cn: [
+                        {
+                            cls: 'overview-spacing',
+                            cn: [
+                                {
+                                    cls: 'labkey-text-link bold-text',
+                                    html: 'quick help',
+                                    onClick: 'LABKEY.help.Tour.show(\'immport-study-tour\')',
+                                    tag: 'a'
+                                }
+                            ]
+                        },{
+                            cls: 'overview-spacing',
+                            cn: [
+                                {
+                                    cls: 'bold-text',
+                                    html: 'Principal Investigator: ',
+                                    tag: 'span'
+                                },{
+                                    id: 'PI'.wpdi(),
+                                    tag: 'span'
+                                }
+                            ]
+                        },{
+                            cls: 'overview-spacing',
+                            cn: [
+                                    {
+                                        cls: 'bold-text',
+                                        html: 'Title: ',
+                                        tag: 'span'
+                                    },{
+                                        id: 'title'.wpdi(),
+                                        tag: 'span'
+                                    }
+                            ]
+                        },{
+                            cls: 'overview-spacing',
+                            cn: [
+                                    {
+                                        cls: 'bold-text',
+                                        html: 'Type: ',
+                                        tag: 'span'
+                                    },{
+                                        cls: 'paddingRight25px',
+                                        id: 'type'.wpdi(),
+                                        tag: 'span'
+                                    },{
+                                        cls: 'bold-text',
+                                        html: 'Condition studied: ',
+                                        tag: 'span'
+                                    },{
+                                        cls: 'paddingRight25px',
+                                        id: 'condition'.wpdi(),
+                                        tag: 'span'
+                                    },{
+                                        cls: 'bold-text',
+                                        html: 'Number of subjects: ',
+                                        tag: 'span'
+                                    },{
+                                        id: 'subjects'.wpdi(),
+                                        tag: 'span'
+                                    }
+                            ]
+                        },{
+                            cls: 'overview-spacing',
+                            cn: [
+                                    {
+                                        cls: 'bold-text',
+                                        html: 'Brief description: ',
+                                        tag: 'span'
+                                    },{
+                                        id: 'bdesc'.wpdi(),
+                                        tag: 'span'
+                                    }
+                            ]
+                        },{
+                            cls: 'overview-spacing',
+                            cn: [
+                                    {
+                                        cls: 'bold-text',
+                                        html: 'Description: ',
+                                        tag: 'span'
+                                    },{
+                                        cls: 'show'.wpdi(),
+                                        html: 'show',
+                                        id: 'showdesc'.wpdi(),
+                                        tag: 'a'
+                                    },{
+                                        cls: 'hidden',
+                                        id: 'description'.wpdi()
+                                    }
+                            ]
+                        },{
+                            cls: 'overview-spacing',
+                            cn: [
+                                    {
+                                        cls: 'bold-text',
+                                        html: 'Objectives: ',
+                                        tag: 'span'
+                                    },{
+                                        cls: 'show'.wpdi(),
+                                        html: 'show',
+                                        id: 'showobj'.wpdi(),
+                                        tag: 'a'
+                                    },{
+                                        cls: 'hidden',
+                                        id: 'objective'.wpdi()
+                                    }
+                            ]
+                        },{
+                            cls: 'overview-spacing',
+                            cn: [
+                                    {
+                                        cls: 'bold-text',
+                                        html: 'Endpoints: ',
+                                        tag: 'span'
+                                    },{
+                                        cls: 'show'.wpdi(),
+                                        html: 'show',
+                                        id: 'showend'.wpdi(),
+                                        tag: 'a'
+                                    },{
+                                        cls: 'hidden',
+                                        id: 'endpoints'.wpdi()
+                                    }
+                            ]
+                        },{
+                            cls: 'overview-spacing',
+                            cn: [
+                                    {
+                                        cls: 'bold-text',
+                                        html: 'Sponsoring organization: ',
+                                        tag: 'span'
+                                    },{
+                                        id: 'organization'.wpdi(),
+                                        tag: 'span'
+                                    }
+                            ]
+                        },{
+                            cls: 'overview-spacing',
+                            cn: [
+                                    {
+                                        cls: 'bold-text',
+                                        html: 'ImmPort accession number: ',
+                                        tag: 'span'
+                                    },{
+                                        cls: 'paddingRight25px',
+                                        href: 'https://immport.niaid.nih.gov/immportWeb/clinical/study/displayStudyDetails.do?itemList=' + SDY,
+                                        html: SDY,
+                                        tag: 'a',
+                                        target: '_blank',
+                                        title: SDY + ' on ImmPort'
+                                    },{
+                                        id: 'GEO'.wpdi(),
+                                        tag: 'span'
+                                    }
+                            ]
+                        },{
+                            id: 'assoc_studies'.wpdi()
+                        },{
+                            cls: 'bold-text',
+                            html: 'Protocol documents: ',
+                            tag: 'span'
+                        },{
+                            href: '/_webdav/Studies/' + SDY + '/%40files/protocols/' + SDY + '_protocol.zip',
+                            html: 'protocol.zip',
+                            tag: 'a'
+                        }
+                    ]
+                }
+        ;
 
-            if ( el.display == 'block' ){
-                el.display = 'none';
-                link.innerHTML = 'show';
-            } else{
-                el.display = 'block';
-                link.innerHTML = 'hide';
-            }
-        };
+        dh.append( ''.wpdi(), spec );
 
-        $( '.show' + config.webPartDivId ).click(
+        $( '.show'.wpdi() ).click(
             function(){
-                toggle( this );
+                $( '#' + this.id ).next().toggleClass( 'hidden' );
             }
         );
-
-
-        $('#immport' + config.webPartDivId)[0].innerHTML =
-'<a href=\'https://immport.niaid.nih.gov/immportWeb/clinical/study/displayStudyDetails.do?itemList=' + SDY + '\' title=\'' + SDY + ' on ImmPort\' target=\'_blank\'>'+ SDY +'</a>'
       
         // QUERIES
         LABKEY.Query.selectRows({
@@ -126,38 +260,59 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
         LABKEY.Query.selectRows({
             requiredVersion: 12.3,
             schemaName: 'immport',
-            queryName: 'HIPCfundedStudies',
-            columns:  'study_accession',
-            filterArray: [LABKEY.Filter.create('study_accession', SDY, LABKEY.Filter.Types.EQUAL)],
-            success: onSuccessHIPCfund,
-            failure: onError
-        });
-
-        LABKEY.Query.selectRows({
-            requiredVersion: 12.3,
-            schemaName: 'immport',
             queryName: 'assocStudies',
             columns:  'study_accession',
             parameters: {$STUDY: SDY},
             success: onSuccessPubmedAssoc,
             failure: onError
         });
+
+        LABKEY.Query.selectRows({
+            requiredVersion: 12.3,
+            schemaName: 'immport',
+            queryName: 'study_link',
+            columns:  'value',
+            filterArray: [
+                LABKEY.Filter.create(
+                    'study_accession',
+                    SDY,
+                    LABKEY.Filter.Types.EQUAL
+                ),
+                LABKEY.Filter.create(
+                    'name',
+                    'Gene Expression Omnibus (GEO)',
+                    LABKEY.Filter.Types.EQUAL
+                )
+            ],
+            success: onSuccessGEO,
+            failure: onError
+        });
+
  
         //FUNCTIONS
         function onSuccessStudy(results) {
             if ( results.rows.length > 0 ){
                 var row = results.rows[0];
 
-                $('#title' + config.webPartDivId)[0].innerHTML          = row['brief_title'].value;
-                $('#type' + config.webPartDivId)[0].innerHTML           = row['type'].value;
-                $('#condition' + config.webPartDivId)[0].innerHTML      = row['condition_studied'].value;
-                $('#bdesc' + config.webPartDivId)[0].innerHTML          = row['brief_description'].value;
-                //$('#start' + config.webPartDivId)[0].innerHTML          = row['actual_start_date'].value;
-                $('#description' + config.webPartDivId)[0].innerHTML    = ( ! row['description'].value ? '' : row['description'].value );
-                $('#objective' + config.webPartDivId)[0].innerHTML      = ( ! row['objectives'].value ? '' : row['objectives'].value );
-                $('#endpoints' + config.webPartDivId)[0].innerHTML      = row['endpoints'].value;
-                $('#subjects' + config.webPartDivId)[0].innerHTML       = row['actual_enrollment'].value;
-                $('#organization' + config.webPartDivId)[0].innerHTML   = row['sponsoring_organization'].value;
+                $('#title'.wpdi())[0].innerHTML          = row['brief_title'].value;
+                $('#type'.wpdi())[0].innerHTML           = row['type'].value;
+                $('#condition'.wpdi())[0].innerHTML      = row['condition_studied'].value;
+                $('#bdesc'.wpdi())[0].innerHTML          = row['brief_description'].value;
+                $('#description'.wpdi())[0].innerHTML    = ( ! row['description'].value ? '' : row['description'].value );
+                $('#objective'.wpdi())[0].innerHTML      = ( ! row['objectives'].value ? '' : row['objectives'].value );
+                $('#endpoints'.wpdi())[0].innerHTML      = row['endpoints'].value;
+                $('#subjects'.wpdi())[0].innerHTML       = row['actual_enrollment'].value;
+                $('#organization'.wpdi())[0].innerHTML   = row['sponsoring_organization'].value;
+
+                LABKEY.Query.selectRows({
+                    requiredVersion: 12.3,
+                    schemaName: 'immport',
+                    queryName: 'HIPCfundedStudies',
+                    columns:  'study_accession',
+                    filterArray: [LABKEY.Filter.create('study_accession', SDY, LABKEY.Filter.Types.EQUAL)],
+                    success: onSuccessHIPCfund,
+                    failure: onError
+                });
             }
         };
 
@@ -171,26 +326,60 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 var row = rows[idxRow];
                 PI.push(row['first_name'].value + ' ' + row['last_name'].value);
             }
-            document.getElementById('PI' + config.webPartDivId).innerHTML = PI.join(', ');
+            $('#PI'.wpdi())[0].innerHTML = PI.join(', ');
         };
 
         function onSuccessHIPCfund(results){
             if(results.rows.length > 0){
-              $('#organization' + config.webPartDivId)[0].innerHTML = $('#organization' + config.webPartDivId)[0].innerHTML +" (HIPC funded)";
+              $('#organization'.wpdi())[0].innerHTML = $('#organization'.wpdi())[0].innerHTML + ' (HIPC funded)';
             }
         };
 
         function onSuccessPubmedAssoc(results){
-            if(results.rows.length > 0){
-                var assoc_SDY =  null;
-                $('#assoc_studies' + config.webPartDivId)[0].innerHTML = $('#assoc_studies' + config.webPartDivId)[0].innerHTML +
-                '<b>Associated ImmuneSpace studies:</b> ';
-                for(i=0; i < results.rows.length; i++){
+            if ( results.rows.length > 0 ){
+                var
+                    assoc_SDY =  null,
+                    toBuild =
+                        [
+                            {
+                                cls: 'bold-text',
+                                html: 'Associated ImmuneSpace studies:',
+                                tag: 'span'
+                            }
+                        ]
+                ;
+
+                for ( var i = 0; i < results.rows.length; i ++ ){
                     assoc_SDY = results.rows[i]['study_accession'].value;
-                    $('#assoc_studies' + config.webPartDivId)[0].innerHTML = $('#assoc_studies' +config.webPartDivId)[0].innerHTML + 
-                    ' <a href="/project/Studies/' +assoc_SDY + '/begin.view">' + assoc_SDY + '</a>';
+
+                    toBuild.push({
+                        href: '/project/Studies/' + assoc_SDY + '/begin.view',
+                        html: ' ' + assoc_SDY,
+                        tag: 'a'
+                    });
                 }
-                $('#assoc_studies' +config.webPartDivId)[0].innerHTML = $('#assoc_studies' + config.webPartDivId)[0].innerHTML + "<br><br>";
+                dh.append(
+                    'assoc_studies'.wpdi(),
+                    toBuild
+                );
+                $('#assoc_studies'.wpdi()).addClass( 'overview-spacing' );
+            }
+        };
+
+        function onSuccessGEO(results){
+            if (results.rows.length > 0){
+                var GEO = [],
+                    GEOlink,
+                    GEOacc
+                ;
+
+                GEO.push('GEO accession:'.bold());
+                for ( var idxRow = 0; idxRow < results.rows.length; idxRow ++ ){
+                    GEOlink = results.rows[idxRow]['value'].value;
+                    GEOacc = GEOlink.split("=")[1];
+                    GEO.push( GEOacc.link( GEOlink ) );
+                }
+                $('#GEO'.wpdi())[0].innerHTML = GEO.join(' ');
             }
         };
 
@@ -200,7 +389,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
 
         me.border         = false;                                                                                                         
         me.cls            = 'ISCore';
-        me.contentEl      = 'ImmuneSpaceStudyOverview' + config.webPartDivId;
+        me.contentEl      = 'ImmuneSpaceStudyOverview'.wpdi();
         me.frame          = false;
         me.layout         = 'fit';
         me.renderTo       = config.webPartDivId;

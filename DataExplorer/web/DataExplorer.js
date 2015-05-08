@@ -32,10 +32,11 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             maskPlot        = undefined,
             numVars         = undefined,
             reportSessionId = undefined,
+            schemaName      = undefined,
             fieldWidth      = 330,
             labelWidth      = 130,
             aspectRatio     = 0.5
-            map             = {
+            tableToVarMap   = {
                 'hai': 'virus_strain',
                 'neut_ab_titer': 'virus_strain',
                 'mbaa': 'analyte',
@@ -104,14 +105,14 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 failure: LABKEY.ext.ISCore.onFailure,
                 filterArray: dataregion.getUserFilterArray(),
                 queryName: dataset,
-                schemaName: dataset == 'gene_expression_analysis_results' ? 'gene_expression' : 'study',
+                schemaName: schemaName,
                 success: function( cohorts ){
                     LABKEY.Query.selectDistinctRows({
-                        column: map[dataset],
+                        column: tableToVarMap[ dataset ],
                         failure: LABKEY.ext.ISCore.onFailure,
                         filterArray: dataregion.getUserFilterArray(),
                         queryName: dataset,
-                        schemaName: dataset == 'gene_expression_analysis_results' ? 'gene_expression' : 'study',
+                        schemaName: schemaName,
                         success: function( variables ){
                             var numRows = dataregion.totalRows;
 
@@ -133,10 +134,74 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             $('.labkey-data-region-wrap').doubleScroll();
         };
 
-        var loadDataset = function(){
-            var dataset = cbDataset.getValue(); 
+        var loadDataset = function( params ){
+            var
+                dataset = cbDataset.getValue(),
+                filters = [],
+                viewName = dataset == 'gene_expression_analysis_results' ? 'DGEAR' : undefined
+            ;
+
+            schemaName = dataset == 'gene_expression_analysis_results' ? 'gene_expression' : 'study';
+
+            if ( params.dataset ){
+                var
+                    viewName = params.view,
+                    ar, cn, ft,
+                    filterMap =
+                        {
+                            eq: 'EQUAL',
+                            dateeq: 'DATE_EQUAL',
+                            neq: 'NOT_EQUAL',
+                            dateneq: 'DATE_NOT_EQUAL',
+                            neqornull: 'NOT_EQUAL_OR_MISSING',
+                            gt: 'GREATER_THAN',
+                            dategt: 'DATE_GREATER_THAN',
+                            gte: 'GREATER_THAN_OR_EQUAL',
+                            dategte: 'DATE_GREATER_THAN_OR_EQUAL',
+                            lt: 'LESS_THAN',
+                            datelt: 'DATE_LESS_THAN',
+                            lte: 'LESS_THAN_OR_EQUAL',
+                            datelte: 'DATE_LESS_THAN_OR_EQUAL',
+                            startswith: 'STARTS_WITH',
+                            doesnotstartwith: 'DOES_NOT_START_WITH',
+                            contains: 'CONTAINS',
+                            doesnotcontain: 'DOES_NOT_CONTAIN',
+                            containsoneof: 'CONTAINS_ONE_OF',
+                            containsnoneof: 'CONTAINS_NONE_OF',
+                            'in' : 'EQUALS_ONE_OF',
+                            notin: 'EQUALS_NONE_OF',
+                            between: 'BETWEEN',
+                            notbetween: 'NOT_BETWEEN',
+                            memberof: 'MEMBER_OF',
+                            isblank: 'MISSING',
+                            isnonblank: 'NOT_MISSING',
+                            hasmvvalue: 'HAS_MISSING_VALUE',
+                            nomvvalue: 'DOES_NOT_HAVE_MISSING_VALUE'
+                        }
+                ;
+
+                schemaName = params.schema;
+
+                delete params.view;
+                delete params.schema;
+                delete params.dataset;
+
+                $.each( params, function( k, v ){
+                    ar = k.split( '~' );
+                    if ( ar.length == 2 ){
+
+                        ft = LABKEY.Filter.Types[ filterMap[ ar[1] ] ];
+                        cn = ar[0];
+
+                        if ( ft && cn.substring( 0, 6 ) == 'query.' ){
+                            filters.push( LABKEY.Filter.create( cn.substring( 6 ), v, ft ) );
+                        }
+                    }
+                });
+            }
+
             if ( dataset !== '' ){
-                if (    
+                if (
                     qwpDataset == undefined ||
                     ( qwpDataset != undefined && qwpDataset.queryName != dataset )
                 ){
@@ -147,6 +212,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     qwpDataset = new LABKEY.QueryWebPart({
                         buttonBar: {
                             items:[
+                                LABKEY.QueryWebPart.standardButtons.views,
                                 LABKEY.QueryWebPart.standardButtons.exportRows,
                                 LABKEY.QueryWebPart.standardButtons.pageSize
                             ],
@@ -155,8 +221,9 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         },
                         frame: 'none',
                         queryName: dataset,
-                        schemaName: dataset == 'gene_expression_analysis_results' ? 'gene_expression' : 'study',
-                        viewName: dataset == 'gene_expression_analysis_results' ? 'DGEAR' : undefined 
+                        removeableFilters: filters,
+                        schemaName: schemaName,
+                        viewName: viewName
                     });
                     qwpDataset.on( 'render', onRender );
                     me.qwpDataset = qwpDataset;
@@ -264,6 +331,26 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.supportBoardLink,
                             'infoMask'
                         );
+                    } else {
+                        var
+                            params,
+                            valueToSet,
+                            search = window.location.search
+                        ;
+
+                        if ( search && search.charAt( 0 ) == '?' ){
+                            params = Ext.urlDecode( search.substring( 1 ) );
+                            valueToSet = params.dataset;
+                            if ( valueToSet ){
+                                if ( cbDataset.findRecord( cbDataset.valueField, valueToSet ) ){
+                                    cbDataset.setValue( valueToSet );
+                                    loadDataset( params );
+                                } else{
+                                    cbDataset.clearValue();
+                                    cbDataset.markInvalid( '"' + valueToSet + '" in the supplied URL is not a valid value, select from the available choices' );
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -586,7 +673,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     p = outputParams[1];
 
                     if ( p && p.type == 'text'){
-                        cntPlotMessage.update( '<div class=\'centered-text extra5pxPadding\'>' + p.value + '</div>' );
+                        cntPlotMessage.update( '<div class=\'centered-text padding5px\'>' + p.value + '</div>' );
                     }
                 }
             }
@@ -605,7 +692,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         var cntPlotMessage = new Ext.Container();
         
         var cmpStatus = new Ext.Component({
-            cls: 'extra10pxPaddingLeft'
+            cls: 'paddingLeft10px'
         });
 
         var fsAdditionalOptions = new Ext.form.FieldSet({
@@ -715,7 +802,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             title: 'Input / View'
         });
 
-         pnlData = new Ext.Panel({
+        var pnlData = new Ext.Panel({
             autoScroll: true,
             bodyStyle: 'padding: 1px;',
             defaults: {
