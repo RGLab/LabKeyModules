@@ -41,12 +41,12 @@ public class StudyFinderPage extends LabKeyPage
         return new StudyFinderPage(test);
     }
 
-    public void checkShowAllImmPortStudies()
+    public void showAllImmPortStudies()
     {
         _test.checkRadioButton(Locators.showAllRadioButton);
     }
 
-    public void uncheckShowAllImmPortStudies()
+    public void showAllImmuneSpaceStudies()
     {
         _test.checkRadioButton(Locators.showAllImmuneSpaceRadioButton);
      }
@@ -131,7 +131,7 @@ public class StudyFinderPage extends LabKeyPage
             _test.click(closeTourButton);
     }
 
-    protected static class Locators
+    public static class Locators
     {
         public static Locator.CssLocator studyFinder = Locator.css("#studyfinderAppDIV");
         public static Locator.CssLocator studySearchInput = studyFinder.append(Locator.css("#searchTerms"));

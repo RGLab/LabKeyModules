@@ -18,6 +18,8 @@ package org.labkey.test.tests;
 
 import org.apache.commons.collections15.Bag;
 import org.apache.commons.collections15.bag.HashBag;
+import org.apache.http.HttpStatus;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,6 +27,7 @@ import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
+import org.labkey.test.WebTestHelper;
 import org.labkey.test.categories.External;
 import org.labkey.test.components.immport.StudySummaryWindow;
 import org.labkey.test.pages.immport.ImmPortBeginPage;
@@ -33,10 +36,12 @@ import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.AbstractContainerHelper;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.PostgresOnlyTest;
+import org.labkey.test.util.ReadOnlyTest;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,9 +52,12 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 @Category({External.class})
-public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTest
+public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTest, ReadOnlyTest
 {
-    private static File immPortArchive = TestFileUtils.getSampleData("HIPC/ANIMAL_STUDIES.zip"); // Change to actual path to archive
+    private static File FOLDER_ARCHIVE = TestFileUtils.getSampleData("HIPC/ImmPortTest Project.folder.zip");
+    private static File immPortArchive = TestFileUtils.getSampleData("HIPC/ANIMAL_STUDIES.zip");
+    private static String[] ANIMAL_STUDIES = {"SDY21", "SDY29", "SDY30", "SDY31", "SDY32", "SDY35", "SDY62", "SDY64", "SDY78", "SDY95", "SDY99", "SDY139", "SDY147", "SDY208", "SDY215", "SDY217", "SDY241", "SDY259", "SDY271", "SDY286", "SDY288"};
+    private static String[] STUDY_SUBFOLDERS = {"SDY139", "SDY147", "SDY208", "SDY217"};
 
     @Override
     protected String getProjectName()
@@ -68,19 +76,33 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     {
         StudyFinderTest init = (StudyFinderTest)getCurrentTest();
 
-        init.setupProject();
+        if (init.needsSetup())
+            init.setupProject();
+    }
+
+    @Override
+    public boolean needsSetup()
+    {
+        try
+        {
+            return HttpStatus.SC_NOT_FOUND == WebTestHelper.getHttpGetResponse(WebTestHelper.buildURL("project", getProjectName(), "begin"));
+        }
+        catch (IOException fail)
+        {
+            return true;
+        }
     }
 
     private void setupProject()
     {
         AbstractContainerHelper containerHelper = new APIContainerHelper(this);
         containerHelper.createProject(getProjectName(), null);
-        containerHelper.enableModule("ImmPort");
+        importFolderFromZip(FOLDER_ARCHIVE, false, 1);
 
-        clickTab("ImmPort");
+        goToModule("ImmPort");
         ImmPortBeginPage beginPage = new ImmPortBeginPage(this);
         beginPage.importArchive(immPortArchive, false);
-        clickTab("ImmPort");
+        goToModule("ImmPort");
         beginPage.populateCube();
     }
 
@@ -88,7 +110,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     public void testCounts()
     {
         goToProjectHome();
-        clickTab("ImmPort");
         clickAndWait(Locator.linkWithText("Study Finder"));
 
         StudyFinderPage studyFinder = new StudyFinderPage(this);
@@ -113,6 +134,27 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         List<StudyFinderPage.StudyCard> studyCards = studyFinder.getStudyCards();
 
         studyCards.get(0).viewSummary();
+    }
+
+    @Test
+    public void testImmuneSpaceStudySubset()
+    {
+        StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
+        studyFinder.dismissTour();
+
+        studyFinder.showAllImmPortStudies();
+        Assert.assertEquals("Wrong ImmPort studies have LabKey study links", Arrays.asList(STUDY_SUBFOLDERS),
+                getTexts(Locator.tagWithClass("div", "study-card").withPredicate(Locator.linkWithText("go to study"))
+                        .append(Locator.tagWithClass("span", "studycard-accession")).findElements(getDriver())));
+
+        studyFinder.showAllImmuneSpaceStudies();
+        List<StudyFinderPage.StudyCard> studyCards = studyFinder.getStudyCards();
+        List<String> studies = new ArrayList<>();
+        for (StudyFinderPage.StudyCard studyCard : studyCards)
+        {
+            studies.add(studyCard.getAccession());
+        }
+        Assert.assertEquals("Wrong study cards for ImmuneSpace studies", Arrays.asList(STUDY_SUBFOLDERS), studies);
     }
 
     @Test
@@ -171,7 +213,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     {
         StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
         studyFinder.dismissTour();
-        studyFinder.checkShowAllImmPortStudies();
+        studyFinder.showAllImmPortStudies();
 
         List<StudyFinderPage.StudyCard> studyCards = studyFinder.getStudyCards();
         String searchString = studyCards.get(0).getAccession();

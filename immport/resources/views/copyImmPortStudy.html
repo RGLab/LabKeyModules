@@ -1,6 +1,6 @@
 
 Copy study results (delete current dataset rows)
-<form id="runNowForm" action="<%=contextPath%><%=containerPath%>/dataintegration-runTransform.api" method="POST" onsubmit="runNow(this); return false;">
+<form id="replaceResultsForm" action="<%=contextPath%><%=containerPath%>/dataintegration-runTransform.api" method="POST" onsubmit="runNow(this); return false;">
   <input hidden id="transformId" name="transformId" value="{ImmPort}/immportReplaceOneStudy">
   <input id="$STUDY" name="$STUDY" value="">
   <input type="submit" value="copy">
@@ -11,7 +11,7 @@ Copy study results (delete current dataset rows)
 <br>
 
 Append study results
-<form id="runNowForm" action="<%=contextPath%><%=containerPath%>/dataintegration-runTransform.api" method="POST" onsubmit="runNow(this); return false;">
+<form id="appendResultsForm" action="<%=contextPath%><%=containerPath%>/dataintegration-runTransform.api" method="POST" onsubmit="runNow(this); return false;">
     <input hidden id="transformId" name="transformId" value="{ImmPort}/immportAppendOneStudy">
     <input id="$STUDY" name="$STUDY" value="">
     <input type="submit" value="copy">

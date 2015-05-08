@@ -3,6 +3,7 @@ package org.labkey.test.pages.immport;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.pages.LabKeyPage;
+import org.labkey.test.util.LogMethod;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
@@ -16,6 +17,7 @@ public class ImmPortBeginPage
         _test = test;
     }
 
+    @LogMethod
     public void importArchive(File archive, boolean restricted)
     {
         _test.clickAndWait(Locator.linkWithText("Import Archive"));
@@ -25,6 +27,7 @@ public class ImmPortBeginPage
         _test.waitForPipelineJobsToComplete(1, "Load ImmPort archive", false, 600000);
     }
 
+    @LogMethod
     public void populateCube()
     {
         _test.clickAndWait(Locator.linkWithText("Populate Cube"));
@@ -58,7 +61,7 @@ public class ImmPortBeginPage
     {
         _test.clickAndWait(Locator.linkWithText("Copy Datasets for One Study"));
 
-        return new LabKeyPage(_test);
+        return new CopyImmPortStudyPage(_test);
     }
 
     public File downloadSpecimens()
