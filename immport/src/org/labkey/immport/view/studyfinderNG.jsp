@@ -295,7 +295,7 @@
         <hr style="clear:both;">
         <div>
             <a class="labkey-text-link" style="float:left;" ng-click="showStudyPopup(study.study_accession)" title="click for more details">view summary</a>
-            <a class="labkey-text-link" ng-if="study.loaded && study.url" style="float:right;" target="_blank" href="{{study.url}}">go to study</a>
+            <a class="labkey-text-link" ng-if="study.loaded && study.url" style="float:right;" href="{{study.url}}">go to study</a>
         </div>
         <p class="studycard-description" style="clear:both;">{{study.title}}</p>
     </div>
