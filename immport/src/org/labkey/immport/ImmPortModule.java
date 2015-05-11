@@ -87,7 +87,8 @@ public class ImmPortModule extends DefaultModule
             ss.addSearchCategory(ImmPortModule.searchCategoryStudy);
         }
 
-        ModuleLoader.getInstance().registerFolderType(this, new ImmPortFolderType(this));
+//        ModuleLoader.getInstance().registerFolderType(this, new ImmPortFolderType(this));
+    	FolderManager.get().registerFolderType(this, new ImmPortFolderType(this));
     }
 
     @NotNull
