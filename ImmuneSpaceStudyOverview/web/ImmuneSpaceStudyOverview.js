@@ -77,14 +77,6 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                             cn: [
                                     {
                                         cls: 'bold-text',
-                                        html: 'Type: ',
-                                        tag: 'span'
-                                    },{
-                                        cls: 'paddingRight25px',
-                                        id: 'type'.wpdi(),
-                                        tag: 'span'
-                                    },{
-                                        cls: 'bold-text',
                                         html: 'Condition studied: ',
                                         tag: 'span'
                                     },{
@@ -184,7 +176,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                                         tag: 'span'
                                     },{
                                         cls: 'paddingRight25px',
-                                        href: 'https://immport.niaid.nih.gov/immportWeb/clinical/study/displayStudyDetails.do?itemList=' + SDY,
+                                        href: 'http://open.immport.org/immport-open/public/study/study/displayStudyDetail/' + SDY,
                                         html: SDY,
                                         tag: 'a',
                                         target: '_blank',
@@ -295,7 +287,6 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 var row = results.rows[0];
 
                 $('#title'.wpdi())[0].innerHTML          = row['brief_title'].value;
-                $('#type'.wpdi())[0].innerHTML           = row['type'].value;
                 $('#condition'.wpdi())[0].innerHTML      = row['condition_studied'].value;
                 $('#bdesc'.wpdi())[0].innerHTML          = row['brief_description'].value;
                 $('#description'.wpdi())[0].innerHTML    = ( ! row['description'].value ? '' : row['description'].value );

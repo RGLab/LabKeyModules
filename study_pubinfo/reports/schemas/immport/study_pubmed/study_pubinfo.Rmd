@@ -1,7 +1,7 @@
 ```{r knitr-options, echo=FALSE, eval=TRUE, cache=FALSE}
 library(knitr)
 opts_chunk$set(echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, dev="png", fig.width=6, fig.height=4, dpi=100, autodep=FALSE)
-opts_chunk$set(cache.path=paste(labkey.file.root, "cache/pubmed_report_cache/", sep="/"), cache=TRUE)
+opts_chunk$set(cache.path=paste(labkey.file.root, "cache/pubmed_report_cache/", sep="/"), cache=FALSE)
 options(width=80)
 ```
 ```{r load-required-packages, cache=FALSE}
@@ -59,20 +59,21 @@ if(length(id) ==0){
 
 `r citationtxt`
 
-
-```{r list-related-articles, results='asis', dependson="get-pubmed-info"}
-if(length(id) ==0){
-   relatedtxt <- " "
-} else{
-  cat("<h3> Related articles in PubMed are listed below: </h3>\n")
-  res <- lapply(pubmed_list[[1]]$pubmed_pubmed[-1][1:5], get_reference, related=TRUE)
-  for(i in 1:5)
-    {
-    cat(paste0(i,". ", res[i],"\n"))
-    }
-  url_related <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed&from_uid=", ds_pubmed$pubmed_id[1])
-  relatedtxt <- paste0("Click <a href=", url_related, "target='_blank'>here</a> for more suggestions.")
-}
-```
-
-`r relatedtxt`
+<!--
+#```{r list-related-articles, results='asis', dependson="get-pubmed-info"}
+#if(length(id) ==0){
+#   relatedtxt <- " "
+#} else{
+#  cat("<h3> Related articles in PubMed are listed below: </h3>\n")
+#  res <- lapply(pubmed_list[[1]]$pubmed_pubmed[-1][1:5], get_reference, related=TRUE)
+#  for(i in 1:5)
+#    {
+#    cat(paste0(i,". ", res[i],"\n"))
+#    }
+#  url_related <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed&from_uid=", ds_pubmed$pubmed_id[1])
+#  relatedtxt <- paste0("Click <a href=", url_related, "target='_blank'>here</a> for more suggestions.")
+#}
+#```
+#
+#r relatedtxt
+-->

@@ -146,51 +146,16 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             if ( params.dataset ){
                 var
                     viewName = params.view,
-                    ar, cn, ft,
-                    filterMap =
-                        {
-                            eq: 'EQUAL',
-                            dateeq: 'DATE_EQUAL',
-                            neq: 'NOT_EQUAL',
-                            dateneq: 'DATE_NOT_EQUAL',
-                            neqornull: 'NOT_EQUAL_OR_MISSING',
-                            gt: 'GREATER_THAN',
-                            dategt: 'DATE_GREATER_THAN',
-                            gte: 'GREATER_THAN_OR_EQUAL',
-                            dategte: 'DATE_GREATER_THAN_OR_EQUAL',
-                            lt: 'LESS_THAN',
-                            datelt: 'DATE_LESS_THAN',
-                            lte: 'LESS_THAN_OR_EQUAL',
-                            datelte: 'DATE_LESS_THAN_OR_EQUAL',
-                            startswith: 'STARTS_WITH',
-                            doesnotstartwith: 'DOES_NOT_START_WITH',
-                            contains: 'CONTAINS',
-                            doesnotcontain: 'DOES_NOT_CONTAIN',
-                            containsoneof: 'CONTAINS_ONE_OF',
-                            containsnoneof: 'CONTAINS_NONE_OF',
-                            'in' : 'EQUALS_ONE_OF',
-                            notin: 'EQUALS_NONE_OF',
-                            between: 'BETWEEN',
-                            notbetween: 'NOT_BETWEEN',
-                            memberof: 'MEMBER_OF',
-                            isblank: 'MISSING',
-                            isnonblank: 'NOT_MISSING',
-                            hasmvvalue: 'HAS_MISSING_VALUE',
-                            nomvvalue: 'DOES_NOT_HAVE_MISSING_VALUE'
-                        }
+                    ar, cn, ft
                 ;
 
                 schemaName = params.schema;
-
-                delete params.view;
-                delete params.schema;
-                delete params.dataset;
 
                 $.each( params, function( k, v ){
                     ar = k.split( '~' );
                     if ( ar.length == 2 ){
 
-                        ft = LABKEY.Filter.Types[ filterMap[ ar[1] ] ];
+                        ft = LABKEY.Filter.getFilterTypeForURLSuffix( ar[1] );
                         cn = ar[0];
 
                         if ( ft && cn.substring( 0, 6 ) == 'query.' ){

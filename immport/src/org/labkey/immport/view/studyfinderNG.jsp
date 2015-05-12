@@ -257,7 +257,7 @@
     </td>
     <td valign="top" style="width:200px;">
            <table id="summaryArea" ng-cloak>
-                <tr><td colspan="2"><h3 style="text-align:center;">summary</h3></td></tr>
+                <tr><td colspan="2"><h3 style="text-align:center;">Summary</h3></td></tr>
                 <tr><td align="right" class="big-summary" style="width:60pt;">{{dimStudy.summaryCount}}</td><td class="big-summary">&nbsp;studies</td></tr>
                 <tr><td align="right" class="big-summary" style="width:60pt;">{{dimSubject.allMemberCount||0}}</td><td class="big-summary">&nbsp;participants</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimSpecies.summaryCount}}</td><td class="small-summary">&nbsp;species</td></tr>
@@ -267,7 +267,7 @@
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimTimepoint.summaryCount}}</td><td class="small-summary">&nbsp;timepoints</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimGender.summaryCount}}</td><td class="small-summary">&nbsp;genders</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimRace.summaryCount}}</td><td class="small-summary">&nbsp;races</td></tr>
-                <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">selection</h3></td></tr>
+                <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">Selection</h3></td></tr>
                 <tbody ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace] | filter:dimensionHasFilter ">
                 <tr><td colspan="2"><fieldset style="width:100%;"><legend>{{dim.caption || dim.name}}</legend>
                     <div class="filter-member" ng-repeat="member in dim.filters">
