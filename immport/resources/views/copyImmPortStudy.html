@@ -19,6 +19,9 @@ Append study results
 
 <script>
 var EXT = Ext4||Ext;
+var SDY = LABKEY.container.title;
+var study_field = document.getElementById('$STUDY');
+study_field.value = SDY;
 function runNow(form)
 {
     var form = EXT.get(form);
