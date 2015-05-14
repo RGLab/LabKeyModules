@@ -19,7 +19,7 @@
                 <ns:columnTitle>Expression matrix</ns:columnTitle>
             </ns:column>
             <ns:column columnName='arm_name'>
-                <ns:columnTitle>Arm name</ns:columnTitle>
+                <ns:columnTitle>Cohort</ns:columnTitle>
             </ns:column>
             <ns:column columnName='coefficient'>
                 <ns:columnTitle>Coefficient</ns:columnTitle>

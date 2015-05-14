@@ -11,6 +11,9 @@
                     <item text='Views' insertPosition='end'>
                         <originalText>Views</originalText>
                     </item>
+                    <item text='Subject groups' insertPosition='end'>
+                        <originalText>Subject groups</originalText>
+                    </item>
                     <item text='Export' insertPosition='end'>
                         <originalText>Export</originalText>
                     </item>
