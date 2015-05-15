@@ -27,6 +27,7 @@ import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
+import org.labkey.test.TestTimeoutException;
 import org.labkey.test.WebTestHelper;
 import org.labkey.test.categories.External;
 import org.labkey.test.components.immport.StudySummaryWindow;
@@ -34,7 +35,10 @@ import org.labkey.test.pages.immport.ImmPortBeginPage;
 import org.labkey.test.pages.immport.StudyFinderPage;
 import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.AbstractContainerHelper;
+import org.labkey.test.util.DatasetDomainEditor;
 import org.labkey.test.util.LogMethod;
+import org.labkey.test.util.Maps;
+import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.PostgresOnlyTest;
 import org.labkey.test.util.ReadOnlyTest;
 import org.openqa.selenium.WebElement;
@@ -54,21 +58,30 @@ import static org.junit.Assert.assertTrue;
 @Category({External.class})
 public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTest, ReadOnlyTest
 {
-    private static File FOLDER_ARCHIVE = TestFileUtils.getSampleData("HIPC/ImmPortTest Project.folder.zip");
     private static File immPortArchive = TestFileUtils.getSampleData("HIPC/ANIMAL_STUDIES.zip");
+    private static File TEMPLATE_ARCHIVE = TestFileUtils.getSampleData("HIPC/SDY_template.zip");
+    private static String IMMPORT_PROJECT = "ImmPort Admin Project";
     private static String[] ANIMAL_STUDIES = {"SDY21", "SDY29", "SDY30", "SDY31", "SDY32", "SDY35", "SDY62", "SDY64", "SDY78", "SDY95", "SDY99", "SDY139", "SDY147", "SDY208", "SDY215", "SDY217", "SDY241", "SDY259", "SDY271", "SDY286", "SDY288"};
     private static String[] STUDY_SUBFOLDERS = {"SDY139", "SDY147", "SDY208", "SDY217"};
 
     @Override
     protected String getProjectName()
     {
-        return "ImmPortTest Project";
+        return "ImmuneSpace Test Dataspace";
     }
 
     @Override
     protected BrowserType bestBrowser()
     {
         return BrowserType.CHROME;
+    }
+
+    @Override
+    protected void doCleanup(boolean afterTest) throws TestTimeoutException
+    {
+        AbstractContainerHelper containerHelper = new APIContainerHelper(this);
+        containerHelper.deleteProject(getProjectName(), afterTest);
+        containerHelper.deleteProject(IMMPORT_PROJECT, afterTest);
     }
 
     @BeforeClass
@@ -85,7 +98,8 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     {
         try
         {
-            return HttpStatus.SC_NOT_FOUND == WebTestHelper.getHttpGetResponse(WebTestHelper.buildURL("project", getProjectName(), "begin"));
+            return HttpStatus.SC_NOT_FOUND == WebTestHelper.getHttpGetResponse(WebTestHelper.buildURL("project", getProjectName(), "begin")) ||
+                    HttpStatus.SC_NOT_FOUND == WebTestHelper.getHttpGetResponse(WebTestHelper.buildURL("project", IMMPORT_PROJECT, "begin"));
         }
         catch (IOException fail)
         {
@@ -96,14 +110,43 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     private void setupProject()
     {
         AbstractContainerHelper containerHelper = new APIContainerHelper(this);
-        containerHelper.createProject(getProjectName(), null);
-        importFolderFromZip(FOLDER_ARCHIVE, false, 1);
+        containerHelper.createProject(IMMPORT_PROJECT, null);
+        containerHelper.enableModule("ImmPort");
+        ImmPortBeginPage
+                .beginAt(this, IMMPORT_PROJECT)
+                .importArchive(immPortArchive, false);
 
+        containerHelper.createProject(getProjectName(), "Study");
+        clickButton("Create Study");
+        checkRadioButton(Locator.radioButtonByNameAndValue("shareDatasets", "true"));
+        checkRadioButton(Locator.radioButtonByNameAndValue("shareVisits", "true"));
+        selectOptionByValue(Locator.name("securityString"), "ADVANCED_WRITE");
+        clickButton("Create Study");
+        containerHelper.enableModule("ImmPort");
+        containerHelper.setFolderType("Dataspace");
+        new PortalHelper(this).addWebPart("ImmPort Study Finder");
+
+        containerHelper.createSubfolder(getProjectName(), "SDY_template", "Study");
+        importStudyFromZip(TEMPLATE_ARCHIVE, true, true);
+
+        // Share demographics
+        beginAt(WebTestHelper.buildURL("study", getProjectName(), "editType", Maps.of("datasetId", "5001")));
+        DatasetDomainEditor datasetDomainEditor = new DatasetDomainEditor(this);
+        datasetDomainEditor.shareDemographics(DatasetDomainEditor.ShareDemographicsBy.PTID);
+        datasetDomainEditor.save();
+
+        for (String studyAccession : STUDY_SUBFOLDERS)
+        {
+            containerHelper.createSubfolder(getProjectName(), studyAccession, "Study");
+            clickButton("Create Study");
+            setFormElement(Locator.name("label"), studyAccession);
+            selectOptionByValue(Locator.name("securityString"), "ADVANCED_WRITE");
+            clickButton("Create Study");
+        }
+
+        goToProjectHome();
         goToModule("ImmPort");
-        ImmPortBeginPage beginPage = new ImmPortBeginPage(this);
-        beginPage.importArchive(immPortArchive, false);
-        goToModule("ImmPort");
-        beginPage.populateCube();
+        new ImmPortBeginPage(this).populateCube();
     }
 
     @Test

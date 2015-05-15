@@ -2,19 +2,34 @@ package org.labkey.test.pages.immport;
 
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
+import org.labkey.test.WebTestHelper;
 import org.labkey.test.pages.LabKeyPage;
 import org.labkey.test.util.LogMethod;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 
-public class ImmPortBeginPage
+public class ImmPortBeginPage extends LabKeyPage
 {
-    BaseWebDriverTest _test;
-
     public ImmPortBeginPage(BaseWebDriverTest test)
     {
-        _test = test;
+        super(test);
+    }
+
+    protected static String getController()
+    {
+        return "immport";
+    }
+
+    protected static String getAction()
+    {
+        return "begin";
+    }
+
+    public static ImmPortBeginPage beginAt(BaseWebDriverTest test, String containerPath)
+    {
+        test.beginAt(WebTestHelper.buildURL(getController(), containerPath, getAction()));
+        return new ImmPortBeginPage(test);
     }
 
     @LogMethod
@@ -56,8 +71,7 @@ public class ImmPortBeginPage
         return new LabKeyPage(_test);
     }
 
-    //TODO: Create CopyImmPortStudyPage
-    public LabKeyPage copyDatasetsForOneStudy()
+    public CopyImmPortStudyPage copyDatasetsForOneStudy()
     {
         _test.clickAndWait(Locator.linkWithText("Copy Datasets for One Study"));
 
