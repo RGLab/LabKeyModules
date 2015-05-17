@@ -7,47 +7,53 @@ from shutil import copy, copytree, ignore_patterns, move, rmtree
 import re
 
 def main(argv):
-	immport_archive_dir = '.'
+	src_archive_dir = '.'
 	dest_archive_dir = '.'
 	include_docs = False
 	try:
 		opts, args = getopt.getopt(argv,"i:o:d")
 	except getopt.GetoptError:
-		print 'test.py [-i <immport_archive_dir>] [-o <dest_archive_dir>] [-d]'
+		print 'test.py [-i <src_archive_dir>] [-o <dest_archive_dir>] [-d]'
 		sys.exit(2)
 
 	for opt, arg in opts:
 		if opt == "-i":
-			immport_archive_dir = arg
+			src_archive_dir = arg
 		elif opt == "-o":
 			dest_archive_dir = arg
 		elif opt == "-d":
 			include_docs = True
 
-	source_mysql_dir = join(immport_archive_dir, "MySQL")
+	source_mysql_dir = join(src_archive_dir, "MySQL")
 	dest_mysql_dir = join(dest_archive_dir, "MySQL")
-	in_place = immport_archive_dir == dest_archive_dir
+	in_place = src_archive_dir == dest_archive_dir
 
-	if not exists(immport_archive_dir):
-		print 'Immport archive does not exist: ' + immport_archive_dir
+	if not exists(src_archive_dir):
+		print 'Immport archive does not exist: ' + src_archive_dir
 	if not exists(source_mysql_dir):
-		print 'Not an Immport study archive, MySQL does not exist in ' + immport_archive_dir
+		print 'Not an Immport study archive, MySQL does not exist in ' + src_archive_dir
 
 	if not in_place:
 		if exists(dest_archive_dir):
 			print 'destination already exists'
 			sys.exit(2)
-		copytree(immport_archive_dir, dest_archive_dir, ignore=ignore_patterns("MySQL"))
+		copytree(src_archive_dir, dest_archive_dir, ignore=ignore_patterns("MySQL"))
 		mkdir(dest_mysql_dir)
 	else:
 		print "Minimizing Immport archive in place"
 
 	study_prefix = "SDY"
 	field_sep = "~@~"
+	re_field_sep = re.compile(field_sep)
 	line_sep = "~@@~\n"
+	re_line_sep = re.compile(line_sep)
 	animal_studies = [21, 29, 30, 31, 32, 35, 62, 64, 78, 95, 99, 139, 147, 208, 215, 217, 241, 259, 271, 286, 288]
+	junction_file_sep = "_2_"
 
-	data_file_names = [f for f in listdir(source_mysql_dir) if isfile(join(source_mysql_dir,f))]
+	file_names = [f for f in listdir(source_mysql_dir) if isfile(join(source_mysql_dir,f))]
+	data_file_names = [f for f in file_names if junction_file_sep not in f]
+	junction_file_names = [f for f in file_names if junction_file_sep in f]
+	skipped_data_file_names = []
 
 	for data_file_name in data_file_names:
 		print data_file_name
@@ -66,6 +72,7 @@ def main(argv):
 		data = src_file.read()
 		src_file.close()
 		if study_prefix not in data and "Homo sapiens" not in data:
+			skipped_data_file_names.append(data_file_name)
 			print "  No study or species identifiers. Inlcluding all data"
 			if not in_place:
 				copy(src_file_path, dest_file_path)
@@ -77,7 +84,7 @@ def main(argv):
 				rmtree(src_doc_dir_path)
 			continue
 
-		lines = re.compile(line_sep).split(data)
+		lines = re_line_sep.split(data)
 		dest_file = open(dest_file_path, "w")
 
 		line_count = 0
@@ -87,7 +94,7 @@ def main(argv):
 				continue
 			include_line = False
 			line_count += 1
-			split_line = re.compile(field_sep).split(line)
+			split_line = re_field_sep.split(line)
 			if "Homo sapiens" in split_line:
 				continue
 			if study_prefix not in line:
@@ -127,6 +134,113 @@ def main(argv):
 			else:
 				print "  Skipping " + str(doc_count) + " related documents ('-d' to include documents)"
 
+	for junction_file_name in junction_file_names:
+		print junction_file_name
+		junction_table = junction_file_name.replace(".txt", "")
+		left_table = junction_table.split(junction_file_sep)[0]
+		right_table = junction_table.split(junction_file_sep)[1]
+		if left_table != "arm":
+			left_file_name = left_table + ".txt"
+		else:
+			left_file_name = "arm_or_cohort.txt"
+		if right_table != "arm":
+			right_file_name = right_table + ".txt"
+		else:
+			right_file_name = "arm_or_cohort.txt"
+
+		src_file_path = join(source_mysql_dir, junction_file_name)
+		dest_file_path = join(dest_mysql_dir, junction_file_name)
+		left_file_path = join(dest_mysql_dir, left_file_name)
+		right_file_path = join(dest_mysql_dir, right_file_name)
+		
+		if not isfile(left_file_path):
+			print "  No file '" + left_file_name + "' for junction. Including entire junction table."
+			if not in_place:
+				copy(src_file_path, dest_file_path)
+			continue
+		if not isfile(right_file_path):
+			print "  No file '" + right_file_name + "' for junction. Including entire junction table."
+			if not in_place:
+				copy(src_file_path, dest_file_path)
+			continue
+
+		if left_file_name in skipped_data_file_names and right_file_name in skipped_data_file_names:
+			print "  No changes to either side of junction. Including entire junction table."
+			if not in_place:
+				copy(src_file_path, dest_file_path)
+			continue
+
+		src_file = open(src_file_path, "r")
+		junction_data = src_file.read()
+		src_file.close()
+
+		left_file = open(left_file_path, "r")
+		left_data = left_file.read()
+		left_file.close()
+
+		right_file = open(right_file_path, "r")
+		right_data = right_file.read()
+		right_file.close()
+
+		junction_fields = get_table_fields(join(src_archive_dir, "load", junction_file_name.replace(".txt", ".load")))
+		left_fields = get_table_fields(join(src_archive_dir, "load", left_file_name.replace(".txt", ".load")))
+		right_fields = get_table_fields(join(src_archive_dir, "load", right_file_name.replace(".txt", ".load")))
+
+		left_i_in_junction = get_accession_field_index(left_table, junction_fields)
+		right_i_in_junction = get_accession_field_index(right_table, junction_fields)
+		left_i = get_accession_field_index(left_table, left_fields)
+		right_i = get_accession_field_index(right_table, right_fields)
+
+		# This many splits is too slow for large files
+		# left_lines = re_line_sep.split(left_data)
+		# left_accessions = [a[left_i] for a in [re_field_sep.split(line) for line in left_lines]]
+		# right_lines = re_line_sep.split(right_data)
+		# right_accessions = [a[right_i] for a in [re_field_sep.split(line) for line in right_lines]]
+
+		left_col_count = len(re_field_sep.split(re_line_sep.split(left_data)[0]))
+		right_col_count = len(re_field_sep.split(re_line_sep.split(right_data)[0]))
+
+		dest_file = open(dest_file_path, "w")
+		included_count = 0
+		junction_data_lines = re_line_sep.split(junction_data)
+		for junction_data_line in junction_data_lines:
+			if len(junction_data_line) == 0:
+				continue
+			split_line = re_field_sep.split(junction_data_line)
+
+			left_accession_str = split_line[left_i_in_junction]
+			if left_i > 0:
+				left_accession_str = field_sep + left_accession_str
+			if left_i < left_col_count - 1:
+				left_accession_str = left_accession_str + field_sep
+
+			right_accession_str = split_line[right_i_in_junction]
+			if right_i > 0:
+				right_accession_str = field_sep + right_accession_str
+			if right_i < right_col_count - 1:
+				right_accession_str = right_accession_str + field_sep
+
+			if left_accession_str in left_data and right_accession_str in right_data:
+				dest_file.write(junction_data_line + line_sep)
+				included_count += 1
+		print '  Included ' + str(included_count) + ' of ' + str(len(junction_data_lines)) + ' junction rows'
+
+
+def get_table_fields(file_path):
+	file = open(file_path)
+	data = file.read()
+	file.close()
+	fieldstr = data[data.index("(")+1:data.index(")")].strip()
+	fields = re.compile(",\\s*").split(fieldstr)
+	return fields
+
+def get_accession_field_index(table_name, fields):
+	index = -1
+	if table_name + "_accession" in fields:
+		index = fields.index(table_name + "_accession")
+	elif table_name + "_id" in fields:
+		index = fields.index(table_name + "_id")
+	return index
 
 if __name__ == "__main__":
 	main(sys.argv[1:])

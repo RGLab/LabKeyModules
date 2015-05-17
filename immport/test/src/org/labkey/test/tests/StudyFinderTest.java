@@ -153,7 +153,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     public void testCounts()
     {
         goToProjectHome();
-        clickAndWait(Locator.linkWithText("Study Finder"));
 
         StudyFinderPage studyFinder = new StudyFinderPage(this);
 
@@ -203,14 +202,14 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     @Test
     public void testSelection()
     {
-        StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
-        studyFinder.dismissTour();
+        goToProjectHome();
+        StudyFinderPage studyFinder = new StudyFinderPage(this);
+        studyFinder.showAllImmPortStudies();
 
         Map<StudyFinderPage.Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
 
         dimensionPanels.get(StudyFinderPage.Dimension.SPECIES).selectFirstIntersectingMeasure();
         List<String> selectedGenders = new ArrayList<>();
-        selectedGenders.add(dimensionPanels.get(StudyFinderPage.Dimension.GENDER).selectFirstIntersectingMeasure());
         selectedGenders.add(dimensionPanels.get(StudyFinderPage.Dimension.GENDER).selectFirstIntersectingMeasure());
 
         assertCountsSynced(studyFinder);
