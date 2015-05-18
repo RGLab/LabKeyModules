@@ -7,8 +7,10 @@ import org.labkey.test.components.immport.StudySummaryWindow;
 import org.labkey.test.pages.LabKeyPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.ArrayList;
@@ -51,9 +53,21 @@ public class StudyFinderPage extends LabKeyPage
         _test.checkRadioButton(Locators.showAllImmuneSpaceRadioButton);
      }
 
+    /**
+     * Assumes that summary counts will change as a result of the search
+     */
     public void studySearch(String search)
     {
+        final Map<String, Integer> initialCounts = getSummaryCounts();
         _test.setFormElement(Locators.studySearchInput, search);
+        _test.shortWait().until(new ExpectedCondition<Boolean>()
+        {
+            @Override
+            public Boolean apply(WebDriver webDriver)
+            {
+                return !initialCounts.equals(getSummaryCounts());
+            }
+        });
     }
 
     public Map<String, Integer> getSummaryCounts()
@@ -135,9 +149,10 @@ public class StudyFinderPage extends LabKeyPage
     {
         public static Locator.CssLocator studyFinder = Locator.css("#studyfinderAppDIV");
         public static Locator.CssLocator studySearchInput = studyFinder.append(Locator.css("#searchTerms"));
+        public static Locator.CssLocator searchMessage = studyFinder.append(Locator.css("span.searchMessage"));
+        public static Locator.CssLocator searchMessageNotFound = studyFinder.append(Locator.css("span.searchNotFound"));
         public static Locator.XPathLocator showAllRadioButton = Locator.radioButtonByNameAndValue("studySubset", "ImmPort");
         public static Locator.XPathLocator showAllImmuneSpaceRadioButton = Locator.radioButtonByNameAndValue("studySubset","ImmuneSpace");
-        public static Locator.CssLocator searchMessage = studyFinder.append(Locator.css(".searchMessage"));
         public static Locator.CssLocator studyPanel = studyFinder.append(Locator.css("#studypanel"));
         public static Locator.CssLocator studyCard = studyFinder.append(Locator.css(".study-card"));
         public static Locator.CssLocator dimensionsTable = studyFinder.append(Locator.css("table.dimensions"));

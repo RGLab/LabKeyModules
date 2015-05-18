@@ -31,6 +31,7 @@ import org.labkey.test.TestTimeoutException;
 import org.labkey.test.WebTestHelper;
 import org.labkey.test.categories.External;
 import org.labkey.test.components.immport.StudySummaryWindow;
+import org.labkey.test.components.study.StudyOverviewWebPart;
 import org.labkey.test.pages.immport.ImmPortBeginPage;
 import org.labkey.test.pages.immport.StudyFinderPage;
 import org.labkey.test.util.APIContainerHelper;
@@ -48,8 +49,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -115,6 +119,9 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         ImmPortBeginPage
                 .beginAt(this, IMMPORT_PROJECT)
                 .importArchive(immPortArchive, false);
+        ImmPortBeginPage
+                .beginAt(this, IMMPORT_PROJECT)
+                .populateCube();
 
         containerHelper.createProject(getProjectName(), "Study");
         clickButton("Create Study");
@@ -142,6 +149,10 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
             setFormElement(Locator.name("label"), studyAccession);
             selectOptionByValue(Locator.name("securityString"), "ADVANCED_WRITE");
             clickButton("Create Study");
+            goToModule("ImmPort");
+            new ImmPortBeginPage(this)
+                    .copyDatasetsForOneStudy()
+                    .copyStudyResults(studyAccession);
         }
 
         goToProjectHome();
@@ -297,6 +308,32 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
 
         summaryWindow.closeWindow();
     }
+
+
+    @Test
+    public void testStudyParticipantCounts()
+    {
+        Map<String, Integer> studyFinderParticipantCounts = new HashMap<>();
+        Map<String, Integer> studyParticipantCounts = new HashMap<>();
+
+        goToProjectHome();
+        StudyFinderPage studyFinder = new StudyFinderPage(this);
+        for (String studyAccession : STUDY_SUBFOLDERS)
+        {
+            studyFinder.studySearch(studyAccession);
+            studyFinderParticipantCounts.put(studyAccession, studyFinder.getSummaryCounts().get("participants"));
+        }
+
+        for (String studyAccession : STUDY_SUBFOLDERS)
+        {
+            clickFolder(studyAccession);
+            StudyOverviewWebPart studyOverview = new StudyOverviewWebPart(this);
+            studyParticipantCounts.put(studyAccession, studyOverview.getParticipantCount());
+        }
+
+        Assert.assertEquals("Participant counts in study finder don't match LabKey studies", studyFinderParticipantCounts, studyParticipantCounts);
+    }
+
 
     @Test @Ignore("TODO: Add a LabKey study to the cube and test that it has a 'go to study' link in the study finder")
     public void testLabKeyStudyIntegration() {}
