@@ -281,15 +281,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         assertCountsSynced(studyFinder);
     }
 
-    @Test @Ignore("Requires selenium.reuseWebDriver = false. Dubious usefulness")
-    public void testAutoShowQuickHelp()
-    {
-        StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
-
-        Locator helpBubbleLoc = Locator.css(".hopscotch-bubble");
-        WebElement helpBubble = helpBubbleLoc.waitForElement(getDriver(), shortWait());
-    }
-
     @Test
     public void testStudySummaryWindow()
     {
