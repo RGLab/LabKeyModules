@@ -166,6 +166,7 @@ public class StudyFinderPage extends LabKeyPage
     public enum Dimension
     {
         SPECIES("Species", "species"),
+        PARTICIPANTS(null, "participants"),
         CONDITION("Condition", "conditions"),
         TYPE("Type", "types"),
         CATEGORY("Research focus", null),
@@ -317,7 +318,7 @@ public class StudyFinderPage extends LabKeyPage
 
         public void clickGoToStudy()
         {
-            _test.clickAndWait(elements.goToStudyLink.findElement(card), BaseWebDriverTest.WAIT_FOR_PAGE);
+            elements.goToStudyLink.findElement(card).click();
         }
 
         public String getAccession()

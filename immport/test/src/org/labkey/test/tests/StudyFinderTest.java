@@ -50,8 +50,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -326,8 +328,26 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     }
 
 
-    @Test @Ignore("TODO: Add a LabKey study to the cube and test that it has a 'go to study' link in the study finder")
-    public void testLabKeyStudyIntegration() {}
+    @Test
+    public void testStudyCardLinks()
+    {
+        goToProjectHome();
+        StudyFinderPage studyFinder = new StudyFinderPage(this);
+        Set<String> foundAccessions = new HashSet<>();
+        for (StudyFinderPage.StudyCard studyCard : studyFinder.getStudyCards())
+        {
+            String studyAccession = studyCard.getAccession();
+            foundAccessions.add(studyAccession);
+            studyCard.clickGoToStudy();
+            switchToWindow(1);
+            WebElement title = Locator.css(".labkey-folder-title").waitForElement(getDriver(), shortWait());
+            Assert.assertEquals("Study card linked to wrong study", studyAccession, title.getText());
+            getDriver().close();
+            switchToMainWindow();
+        }
+
+        Assert.assertEquals("Didn't find all studies", new HashSet<>(Arrays.asList(STUDY_SUBFOLDERS)), foundAccessions);
+    }
 
     @LogMethod(quiet = true)
     private void assertCountsSynced(StudyFinderPage studyFinder)
