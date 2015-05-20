@@ -58,7 +58,7 @@ public class StudyFinderPage extends LabKeyPage
      */
     public void studySearch(String search)
     {
-        final Map<String, Integer> initialCounts = getSummaryCounts();
+        final Map<Dimension, Integer> initialCounts = getSummaryCounts();
         _test.setFormElement(Locators.studySearchInput, search);
         _test.shortWait().until(new ExpectedCondition<Boolean>()
         {
@@ -70,15 +70,15 @@ public class StudyFinderPage extends LabKeyPage
         });
     }
 
-    public Map<String, Integer> getSummaryCounts()
+    public Map<Dimension, Integer> getSummaryCounts()
     {
         List<WebElement> summaryCountRows = Locators.summaryCountRow.findElements(_test.getDriver());
-        Map<String, Integer> countMap = new HashMap<>();
+        Map<Dimension, Integer> countMap = new HashMap<>();
 
         for (WebElement row : summaryCountRows)
         {
             List<WebElement> cells = row.findElements(By.cssSelector("td"));
-            String dimension = cells.get(1).getText().trim();
+            Dimension dimension = Dimension.fromString(cells.get(1).getText().trim());
             Integer count = Integer.parseInt(cells.get(0).getText());
 
             countMap.put(dimension, count);
@@ -165,8 +165,9 @@ public class StudyFinderPage extends LabKeyPage
 
     public enum Dimension
     {
-        SPECIES("Species", "species"),
+        STUDIES(null, "studies"),
         PARTICIPANTS(null, "participants"),
+        SPECIES("Species", "species"),
         CONDITION("Condition", "conditions"),
         TYPE("Type", "types"),
         CATEGORY("Research focus", null),
@@ -263,6 +264,18 @@ public class StudyFinderPage extends LabKeyPage
 
             elements.selectedValue.withText(value).waitForElement(panel, _test.shortWait());
             return value;
+        }
+
+        public void select(String value)
+        {
+            elements.value.withText(value).findElement(panel).click();
+            waitForSelection(value);
+        }
+
+        public void addToSelection(String value)
+        {
+            controlClick(elements.value.withText(value).findElement(panel));
+            waitForSelection(value);
         }
 
         private void controlClick(WebElement el)

@@ -19,9 +19,7 @@ package org.labkey.test.tests;
 import org.apache.commons.collections15.Bag;
 import org.apache.commons.collections15.bag.HashBag;
 import org.apache.http.HttpStatus;
-import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
@@ -30,12 +28,15 @@ import org.labkey.test.TestFileUtils;
 import org.labkey.test.TestTimeoutException;
 import org.labkey.test.WebTestHelper;
 import org.labkey.test.categories.External;
+import org.labkey.test.components.ParticipantListWebPart;
 import org.labkey.test.components.immport.StudySummaryWindow;
 import org.labkey.test.components.study.StudyOverviewWebPart;
 import org.labkey.test.pages.immport.ImmPortBeginPage;
 import org.labkey.test.pages.immport.StudyFinderPage;
+import org.labkey.test.pages.immport.StudyFinderPage.Dimension;
 import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.AbstractContainerHelper;
+import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.DatasetDomainEditor;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.Maps;
@@ -54,8 +55,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -166,17 +165,15 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     public void testCounts()
     {
         goToProjectHome();
-
         StudyFinderPage studyFinder = new StudyFinderPage(this);
-
         assertCountsSynced(studyFinder);
 
-        Map<String, Integer> studyCounts = studyFinder.getSummaryCounts();
+        Map<Dimension, Integer> studyCounts = studyFinder.getSummaryCounts();
 
-        for (Map.Entry count : studyCounts.entrySet())
+        for (Map.Entry<Dimension, Integer> count : studyCounts.entrySet())
         {
-            if (!count.getKey().equals("participants"))
-                assertNotEquals("No " + count.getKey(), 0, count.getValue());
+            if (count.getKey().getSummaryLabel() != null)
+                assertNotEquals("No " + count.getKey().getSummaryLabel(), 0, count.getValue().intValue());
         }
     }
 
@@ -198,7 +195,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         studyFinder.dismissTour();
 
         studyFinder.showAllImmPortStudies();
-        Assert.assertEquals("Wrong ImmPort studies have LabKey study links", Arrays.asList(STUDY_SUBFOLDERS),
+        assertEquals("Wrong ImmPort studies have LabKey study links", Arrays.asList(STUDY_SUBFOLDERS),
                 getTexts(Locator.tagWithClass("div", "study-card").withPredicate(Locator.linkWithText("go to study"))
                         .append(Locator.tagWithClass("span", "studycard-accession")).findElements(getDriver())));
 
@@ -209,7 +206,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         {
             studies.add(studyCard.getAccession());
         }
-        Assert.assertEquals("Wrong study cards for ImmuneSpace studies", Arrays.asList(STUDY_SUBFOLDERS), studies);
+        assertEquals("Wrong study cards for ImmuneSpace studies", Arrays.asList(STUDY_SUBFOLDERS), studies);
     }
 
     @Test
@@ -219,19 +216,19 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         StudyFinderPage studyFinder = new StudyFinderPage(this);
         studyFinder.showAllImmPortStudies();
 
-        Map<StudyFinderPage.Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
+        Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
 
-        dimensionPanels.get(StudyFinderPage.Dimension.SPECIES).selectFirstIntersectingMeasure();
+        dimensionPanels.get(Dimension.SPECIES).selectFirstIntersectingMeasure();
         List<String> selectedGenders = new ArrayList<>();
-        selectedGenders.add(dimensionPanels.get(StudyFinderPage.Dimension.GENDER).selectFirstIntersectingMeasure());
+        selectedGenders.add(dimensionPanels.get(Dimension.GENDER).selectFirstIntersectingMeasure());
 
         assertCountsSynced(studyFinder);
         assertSelectionsSynced(studyFinder);
 
-        dimensionPanels.get(StudyFinderPage.Dimension.SPECIES).selectAll();
+        dimensionPanels.get(Dimension.SPECIES).selectAll();
 
-        List<String> finalSelectedGenders = dimensionPanels.get(StudyFinderPage.Dimension.GENDER).getSelectedValues();
-        List<String> finalSelectedSpecies = dimensionPanels.get(StudyFinderPage.Dimension.SPECIES).getSelectedValues();
+        List<String> finalSelectedGenders = dimensionPanels.get(Dimension.GENDER).getSelectedValues();
+        List<String> finalSelectedSpecies = dimensionPanels.get(Dimension.SPECIES).getSelectedValues();
 
         assertEquals("Clearing Species selection removed Gender filter", selectedGenders, finalSelectedGenders);
         assertEquals("Clicking 'ALL' didn't clear species selection", 0, finalSelectedSpecies.size());
@@ -243,6 +240,17 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     @Test
     public void testSelectingEmptyMeasure()
     {
+        Map<Dimension, Integer> expectedCounts = new HashMap<>();
+        expectedCounts.put(Dimension.STUDIES, 0);
+        expectedCounts.put(Dimension.PARTICIPANTS, 0);
+        expectedCounts.put(Dimension.SPECIES, 0);
+        expectedCounts.put(Dimension.TYPE, 0);
+        expectedCounts.put(Dimension.CONDITION, 0);
+        expectedCounts.put(Dimension.ASSAY, 0);
+        expectedCounts.put(Dimension.TIMEPOINT, 0);
+        expectedCounts.put(Dimension.GENDER, 0);
+        expectedCounts.put(Dimension.RACE, 0);
+
         StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
         studyFinder.dismissTour();
 
@@ -253,14 +261,10 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         studyFinder.waitForSelection(value);
 
         List<StudyFinderPage.StudyCard> filteredStudyCards = studyFinder.getStudyCards();
-        Map<String, Integer> filteredSummaryCounts = studyFinder.getSummaryCounts();
+        Map<Dimension, Integer> filteredSummaryCounts = studyFinder.getSummaryCounts();
 
         assertEquals("Study cards visible after selection", 0, filteredStudyCards.size());
-
-        for (Map.Entry count : filteredSummaryCounts.entrySet())
-        {
-            assertEquals(String.format("Wrong %s count after selection", count.getKey()), 0, count.getValue());
-        }
+        assertEquals("Wrong counts after selecting empty measure", expectedCounts, filteredSummaryCounts);
     }
 
     @Test
@@ -302,7 +306,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         summaryWindow.closeWindow();
     }
 
-
     @Test
     public void testStudyParticipantCounts()
     {
@@ -314,7 +317,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         for (String studyAccession : STUDY_SUBFOLDERS)
         {
             studyFinder.studySearch(studyAccession);
-            studyFinderParticipantCounts.put(studyAccession, studyFinder.getSummaryCounts().get("participants"));
+            studyFinderParticipantCounts.put(studyAccession, studyFinder.getSummaryCounts().get(Dimension.PARTICIPANTS));
         }
 
         for (String studyAccession : STUDY_SUBFOLDERS)
@@ -324,9 +327,8 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
             studyParticipantCounts.put(studyAccession, studyOverview.getParticipantCount());
         }
 
-        Assert.assertEquals("Participant counts in study finder don't match LabKey studies", studyFinderParticipantCounts, studyParticipantCounts);
+        assertEquals("Participant counts in study finder don't match LabKey studies", studyFinderParticipantCounts, studyParticipantCounts);
     }
-
 
     @Test
     public void testStudyCardLinks()
@@ -341,28 +343,68 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
             studyCard.clickGoToStudy();
             switchToWindow(1);
             WebElement title = Locator.css(".labkey-folder-title").waitForElement(getDriver(), shortWait());
-            Assert.assertEquals("Study card linked to wrong study", studyAccession, title.getText());
+            assertEquals("Study card linked to wrong study", studyAccession, title.getText());
             getDriver().close();
             switchToMainWindow();
         }
 
-        Assert.assertEquals("Didn't find all studies", new HashSet<>(Arrays.asList(STUDY_SUBFOLDERS)), foundAccessions);
+        assertEquals("Didn't find all studies", new HashSet<>(Arrays.asList(STUDY_SUBFOLDERS)), foundAccessions);
+    }
+
+    @Test
+    public void testStickyStudyFinderFilterCounts()
+    {
+        Map<Dimension, Integer> expectedCounts = new HashMap<>();
+        expectedCounts.put(Dimension.STUDIES, 2);
+        expectedCounts.put(Dimension.PARTICIPANTS, 307);
+        expectedCounts.put(Dimension.SPECIES, 1);
+        expectedCounts.put(Dimension.TYPE, 1);
+        expectedCounts.put(Dimension.CONDITION, 0);
+        expectedCounts.put(Dimension.ASSAY, 3);
+        expectedCounts.put(Dimension.TIMEPOINT, 11);
+        expectedCounts.put(Dimension.GENDER, 1);
+        expectedCounts.put(Dimension.RACE, 1);
+
+        goToProjectHome();
+
+        StudyFinderPage studyFinder = new StudyFinderPage(this);
+        studyFinder.getDimensionPanels().get(Dimension.CATEGORY).select("Immune Response");
+
+        Map<Dimension, Integer> studyFinderSummaryCounts = studyFinder.getSummaryCounts();
+        assertEquals("Study finder counts not as expected for 'Immune Response'.", expectedCounts, studyFinderSummaryCounts);
+
+        clickAndWait(Locator.linkWithText("15 datasets"));
+        clickAndWait(Locator.linkWithText("Demographics"));
+        DataRegionTable demData = new DataRegionTable("Dataset", this);
+        demData.showAll();
+        assertEquals("Demographics dataset doesn't have same number of genders as filtered study finder",
+                new HashSet<>(demData.getColumnDataAsText("Gender")).size(), studyFinderSummaryCounts.get(Dimension.GENDER).intValue());
+        assertEquals("Demographics dataset doesn't have same number of races as filtered study finder",
+                new HashSet<>(demData.getColumnDataAsText("Race")).size(), studyFinderSummaryCounts.get(Dimension.RACE).intValue());
+        assertEquals("Demographics dataset doesn't have same number of species as filtered study finder",
+                new HashSet<>(demData.getColumnDataAsText("Species")).size(), studyFinderSummaryCounts.get(Dimension.SPECIES).intValue());
+        assertEquals("Demographics dataset doesn't have same number of participants as filtered study finder",
+                demData.getDataRowCount(), studyFinderSummaryCounts.get(Dimension.PARTICIPANTS).intValue());
+
+        clickTab("Participants");
+        ParticipantListWebPart participantListWebPart = new ParticipantListWebPart(this);
+        assertEquals("Participant list count doesn't match study finder", participantListWebPart.getParticipantCount(), studyFinderSummaryCounts.get(Dimension.PARTICIPANTS));
     }
 
     @LogMethod(quiet = true)
     private void assertCountsSynced(StudyFinderPage studyFinder)
     {
         List<StudyFinderPage.StudyCard> studyCards = studyFinder.getStudyCards();
-        Map<String, Integer> studyCounts = studyFinder.getSummaryCounts();
-        Map<StudyFinderPage.Dimension, StudyFinderPage.DimensionPanel> dimensions = studyFinder.getDimensionPanels();
+        Map<Dimension, Integer> studyCounts = studyFinder.getSummaryCounts();
+        Map<Dimension, StudyFinderPage.DimensionPanel> dimensions = studyFinder.getDimensionPanels();
 
-        assertEquals("Study count mismatch", studyCards.size(), studyCounts.get("studies").intValue());
+        assertEquals("Study count mismatch", studyCards.size(), studyCounts.get(Dimension.STUDIES).intValue());
 
-        for (StudyFinderPage.Dimension dim : StudyFinderPage.Dimension.values())
+        for (Dimension dim : Dimension.values())
         {
             if (dim.getSummaryLabel() != null && dim.getCaption() != null)
             {
-                assertEquals("Counts out of sync: " + dim.getCaption(), studyCounts.get(dim.getSummaryLabel()).intValue(), dimensions.get(dim).getNonEmptyValues().size());
+                assertEquals("Counts out of sync: " + dim.getCaption(), studyCounts.get(dim).intValue(), dimensions.get(dim).getNonEmptyValues().size());
             }
         }
     }
@@ -370,12 +412,16 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     @LogMethod(quiet = true)
     private void assertSelectionsSynced(StudyFinderPage studyFinder)
     {
-        Map<StudyFinderPage.Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
-        Map<StudyFinderPage.Dimension, StudyFinderPage.DimensionFilter> summarySelections = studyFinder.getSelections();
+        Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
+        Map<Dimension, StudyFinderPage.DimensionFilter> summarySelections = studyFinder.getSelections();
 
-        for (StudyFinderPage.Dimension dim : StudyFinderPage.Dimension.values())
+        for (Dimension dim : Dimension.values())
         {
-            Bag<String> panelSelections = new HashBag<>(dimensionPanels.get(dim).getSelectedValues());
+            Bag<String> panelSelections;
+            if (dimensionPanels.containsKey(dim))
+                panelSelections = new HashBag<>(dimensionPanels.get(dim).getSelectedValues());
+            else
+                panelSelections = new HashBag<>();
 
             Bag<String> dimensionSummarySelections;
             if (summarySelections.containsKey(dim))
