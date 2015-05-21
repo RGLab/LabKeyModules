@@ -19,6 +19,7 @@ package org.labkey.immport;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
 import org.labkey.api.module.DefaultModule;
+import org.labkey.api.module.FolderTypeManager;
 import org.labkey.api.module.ModuleContext;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.search.SearchService;
@@ -87,7 +88,7 @@ public class ImmPortModule extends DefaultModule
             ss.addSearchCategory(ImmPortModule.searchCategoryStudy);
         }
 
-        ModuleLoader.getInstance().registerFolderType(this, new ImmPortFolderType(this));
+    	FolderTypeManager.get().registerFolderType(this, new ImmPortFolderType(this));
     }
 
     @NotNull
