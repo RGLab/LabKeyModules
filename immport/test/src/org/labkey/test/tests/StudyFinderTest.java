@@ -34,6 +34,7 @@ import org.labkey.test.components.study.StudyOverviewWebPart;
 import org.labkey.test.pages.immport.ImmPortBeginPage;
 import org.labkey.test.pages.immport.StudyFinderPage;
 import org.labkey.test.pages.immport.StudyFinderPage.Dimension;
+import org.labkey.test.pages.study.OverviewPage;
 import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.AbstractContainerHelper;
 import org.labkey.test.util.DataRegionTable;
@@ -352,7 +353,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     }
 
     @Test
-    public void testStickyStudyFinderFilterCounts()
+    public void testStickyStudyFinderFilterOnDataset()
     {
         Map<Dimension, Integer> expectedCounts = new HashMap<>();
         expectedCounts.put(Dimension.STUDIES, 2);
@@ -389,6 +390,52 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         clickTab("Participants");
         ParticipantListWebPart participantListWebPart = new ParticipantListWebPart(this);
         assertEquals("Participant list count doesn't match study finder", participantListWebPart.getParticipantCount(), studyFinderSummaryCounts.get(Dimension.PARTICIPANTS));
+    }
+
+    @Test
+    public void testStickyStudyFinderFilterOnStudyNavigator()
+    {
+        goToProjectHome();
+
+        StudyFinderPage studyFinder = new StudyFinderPage(this);
+        studyFinder.getDimensionPanels().get(Dimension.CATEGORY).select("Immune Response");
+
+        List<String> assaysWithData = studyFinder.getDimensionPanels().get(Dimension.ASSAY).getNonEmptyValues();
+        List<String> assaysWithoutData = studyFinder.getDimensionPanels().get(Dimension.ASSAY).getEmptyValues();
+        Map<Dimension, Integer> studyFinderSummaryCounts = studyFinder.getSummaryCounts();
+
+        OverviewPage studyOverview = new StudyOverviewWebPart(this).clickStudyNavigator();
+
+        Map<String, Integer> studyOverviewParticipantCounts = studyOverview.getDatasetTotalParticipantCounts();
+
+        for (String assayWithData : assaysWithData)
+        {
+            for (Map.Entry<String, Integer> participantCount : studyOverviewParticipantCounts.entrySet())
+            {
+                if (participantCount.getKey().contains(assayWithData))
+                {
+                    assertTrue(String.format("Assay [%s] should have data with current filter, but does not",
+                            assayWithData), participantCount.getValue() > 0);
+                    break;
+                }
+            }
+        }
+
+        for (String assayWithoutData : assaysWithoutData)
+        {
+            for (Map.Entry<String, Integer> participantCount : studyOverviewParticipantCounts.entrySet())
+            {
+                if (participantCount.getKey().contains(assayWithoutData))
+                {
+                    assertTrue(String.format("Assay [%s] should be empty with current filter, but is not",
+                            assayWithoutData), participantCount.getValue() == 0);
+                    break;
+                }
+            }
+        }
+
+        assertEquals("Participant count from study finder does not match Demographics dataset participant count",
+                studyFinderSummaryCounts.get(Dimension.PARTICIPANTS), studyOverviewParticipantCounts.get("Demographics"));
     }
 
     @LogMethod(quiet = true)
