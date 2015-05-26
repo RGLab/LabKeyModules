@@ -1,0 +1,5 @@
+{table}
+Library|Version|Source|License|LabKey Dev|Purpose
+AngularJS|1.1.2|{link:AngularJS|https://angularjs.org/}|{link:MIT|http://www.opensource.org/licenses/MIT}|matthewb|Used in study finder
+angular-local-storage|0.2.1|{link:angular-local-storage|https://github.com/grevory/angular-local-storage}|{link:MIT|http://www.opensource.org/licenses/MIT}|kevink|Used in study finder
+{table}

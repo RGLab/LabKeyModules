@@ -46,6 +46,8 @@
     {
         LinkedHashSet<ClientDependency> resources = new LinkedHashSet<>();
         resources.add(ClientDependency.fromPath("Ext4"));
+        resources.add(ClientDependency.fromPath("query/olap.js"));
+        resources.add(ClientDependency.fromPath("angular.lib.xml"));
         return resources;
     }
 %>
@@ -68,8 +70,8 @@
         @Override
         public int compare(StudyBean o1, StudyBean o2)
         {
-            String a = ((StudyBean)o1).getStudy_accession();
-            String b = ((StudyBean)o2).getStudy_accession();
+            String a = o1.getStudy_accession();
+            String b = o2.getStudy_accession();
             return Integer.parseInt(a.substring(3)) - Integer.parseInt(b.substring(3));
         }
     });
@@ -78,10 +80,6 @@
     for (StudyBean sb : studies)
         mapOfStudies.put(sb.getStudy_accession(), sb);
 %>
-
-<script src="<%=h(request.getContextPath())%>/query/olap.js"></script>
-<script src="<%=h(request.getContextPath())%>/angular.js"></script>
-<link rel="stylesheet" href="<%=h(request.getContextPath())%>/hopscotch/css/hopscotch.css">
 
 <style>
     DIV.wrapAll
@@ -407,7 +405,11 @@ function hidePopup()
 // angular scope prototype
 //
 
-var studyfinderApp = angular.module('studyfinderApp', []);
+var studyfinderApp = angular.module('studyfinderApp', ['LocalStorageModule']);
+studyfinderApp.config(function (localStorageServiceProvider) {
+    localStorageServiceProvider
+        .setPrefix("studyfinder")
+});
 
 var studyfinderScope = function(){};
 studyfinderScope.prototype =
@@ -675,6 +677,7 @@ studyfinderScope.prototype =
             dim.members[m].percent = max==0 ? 0 : (100.0*member.count)/max;
         }
 
+        this.saveFilterState();
         this.updateContainerFilter();
     },
 
@@ -885,6 +888,68 @@ studyfinderScope.prototype =
         this.onSearchTermsChanged_promise = this.timeout(function(){scope.doSearchTermsChanged();}, 500);
     },
 
+    // save just the filtered uniqueNames for each dimension
+    saveFilterState : function ()
+    {
+        if (!this.localStorageService.isSupported)
+            return;
+
+        for (var d in dataspace.dimensions)
+        {
+            if (!dataspace.dimensions.hasOwnProperty(d))
+                continue;
+            if (d == "Study" && this.filterByStudy)
+                continue;
+
+            var dim = dataspace.dimensions[d];
+            var filterMembers = dim.filters;
+            if (!filterMembers || filterMembers.length == 0)
+            {
+                this.localStorageService.remove(dim.name);
+            }
+            else
+            {
+                var filteredNames = [];
+                for (var i = 0; i < filterMembers.length; i++)
+                {
+                    filteredNames.push(filterMembers[i].uniqueName);
+                }
+                this.localStorageService.set(dim.name, filteredNames);
+            }
+        }
+    },
+
+    // load just the filtered uniqueNames for each dimension
+    loadFilterState : function ()
+    {
+        if (!this.localStorageService.isSupported)
+            return;
+
+        for (var d in dataspace.dimensions)
+        {
+            if (!dataspace.dimensions.hasOwnProperty(d))
+                continue;
+            if (d == "Study" && this.filterByStudy)
+                continue;
+
+            var dim = dataspace.dimensions[d];
+            var filteredNames = this.localStorageService.get(dim.name);
+            if (filteredNames && filteredNames.length)
+            {
+                for (var i = 0; i < filteredNames.length; i++)
+                {
+                    var filteredName = filteredNames[i];
+                    var member = dim.memberMap[filteredName];
+                    if (member)
+                    {
+                        member.selected = true;
+                        dim.filters.push(member);
+                    }
+                }
+            }
+        }
+    },
+
     updateContainerFilter : function ()
     {
         // Collect the container ids of the loaded studies
@@ -916,12 +981,15 @@ studyfinderScope.prototype =
 
 var debug_scope;
 
-studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http)
+studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http, localStorageService)
 {
     debug_scope = $scope;
     Ext4.apply($scope, new studyfinderScope());
     $scope.timeout = $timeout;
     $scope.http = $http;
+    $scope.localStorageService = localStorageService;
+
+    localStorageService.bind($scope, 'searchTerms');
 
     var studies = [];
     var loaded_study_list = [];
@@ -988,6 +1056,7 @@ studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http)
         {
             $scope.mdx = m;
             $scope.initCubeMetaData();
+            $scope.loadFilterState();
 
             // init study list according to studySubset
             if (loaded_study_list.length == 0)

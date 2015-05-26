@@ -7,8 +7,10 @@ import org.labkey.test.components.immport.StudySummaryWindow;
 import org.labkey.test.pages.LabKeyPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.ArrayList;
@@ -41,30 +43,42 @@ public class StudyFinderPage extends LabKeyPage
         return new StudyFinderPage(test);
     }
 
-    public void checkShowAllImmPortStudies()
+    public void showAllImmPortStudies()
     {
         _test.checkRadioButton(Locators.showAllRadioButton);
     }
 
-    public void uncheckShowAllImmPortStudies()
+    public void showAllImmuneSpaceStudies()
     {
         _test.checkRadioButton(Locators.showAllImmuneSpaceRadioButton);
      }
 
+    /**
+     * Assumes that summary counts will change as a result of the search
+     */
     public void studySearch(String search)
     {
+        final Map<Dimension, Integer> initialCounts = getSummaryCounts();
         _test.setFormElement(Locators.studySearchInput, search);
+        _test.shortWait().until(new ExpectedCondition<Boolean>()
+        {
+            @Override
+            public Boolean apply(WebDriver webDriver)
+            {
+                return !initialCounts.equals(getSummaryCounts());
+            }
+        });
     }
 
-    public Map<String, Integer> getSummaryCounts()
+    public Map<Dimension, Integer> getSummaryCounts()
     {
         List<WebElement> summaryCountRows = Locators.summaryCountRow.findElements(_test.getDriver());
-        Map<String, Integer> countMap = new HashMap<>();
+        Map<Dimension, Integer> countMap = new HashMap<>();
 
         for (WebElement row : summaryCountRows)
         {
             List<WebElement> cells = row.findElements(By.cssSelector("td"));
-            String dimension = cells.get(1).getText().trim();
+            Dimension dimension = Dimension.fromString(cells.get(1).getText().trim());
             Integer count = Integer.parseInt(cells.get(0).getText());
 
             countMap.put(dimension, count);
@@ -86,18 +100,31 @@ public class StudyFinderPage extends LabKeyPage
         return studyCards;
     }
 
-    public Map<Dimension, DimensionFilter> getSelections()
+    public Map<Dimension, SummaryFilterPanel> getSelectionPanels()
     {
         List<WebElement> selectionEls = Locators.selection.findElements(_test.getDriver());
-        Map<Dimension, DimensionFilter> dimensionSelections = new HashMap<>();
+        Map<Dimension, SummaryFilterPanel> dimensionSelections = new HashMap<>();
 
         for (WebElement el : selectionEls)
         {
-            DimensionFilter dimensionSelection = new DimensionFilter(el);
+            SummaryFilterPanel dimensionSelection = new SummaryFilterPanel(el);
             dimensionSelections.put(dimensionSelection.getDimension(), dimensionSelection);
         }
 
         return dimensionSelections;
+    }
+
+    public Map<Dimension, List<String>> getSelectionValues()
+    {
+        Map<Dimension, SummaryFilterPanel> selectionPanels = getSelectionPanels();
+        Map<Dimension, List<String>> selectionValues = new HashMap<>();
+
+        for (Map.Entry<Dimension, SummaryFilterPanel> selection : selectionPanels.entrySet())
+        {
+            selectionValues.put(selection.getKey(), selection.getValue().getFilterValues());
+        }
+
+        return selectionValues;
     }
 
     public Map<Dimension, DimensionPanel> getDimensionPanels()
@@ -117,11 +144,11 @@ public class StudyFinderPage extends LabKeyPage
     /**
      * Not very precise
      */
-    public DimensionFilter waitForSelection(String value)
+    public SummaryFilterPanel waitForSelection(String value)
     {
         WebElement selectionEl = Locators.selection.containing(value).waitForElement(_test.getDriver(), _test.shortWait());
 
-        return new DimensionFilter(selectionEl);
+        return new SummaryFilterPanel(selectionEl);
     }
 
     public void dismissTour()
@@ -131,13 +158,14 @@ public class StudyFinderPage extends LabKeyPage
             _test.click(closeTourButton);
     }
 
-    protected static class Locators
+    public static class Locators
     {
         public static Locator.CssLocator studyFinder = Locator.css("#studyfinderAppDIV");
         public static Locator.CssLocator studySearchInput = studyFinder.append(Locator.css("#searchTerms"));
+        public static Locator.CssLocator searchMessage = studyFinder.append(Locator.css("span.searchMessage"));
+        public static Locator.CssLocator searchMessageNotFound = studyFinder.append(Locator.css("span.searchNotFound"));
         public static Locator.XPathLocator showAllRadioButton = Locator.radioButtonByNameAndValue("studySubset", "ImmPort");
         public static Locator.XPathLocator showAllImmuneSpaceRadioButton = Locator.radioButtonByNameAndValue("studySubset","ImmuneSpace");
-        public static Locator.CssLocator searchMessage = studyFinder.append(Locator.css(".searchMessage"));
         public static Locator.CssLocator studyPanel = studyFinder.append(Locator.css("#studypanel"));
         public static Locator.CssLocator studyCard = studyFinder.append(Locator.css(".study-card"));
         public static Locator.CssLocator dimensionsTable = studyFinder.append(Locator.css("table.dimensions"));
@@ -150,39 +178,41 @@ public class StudyFinderPage extends LabKeyPage
 
     public enum Dimension
     {
-        SPECIES("species", "species"),
-        CONDITION("condition", "conditions"),
-        TYPE("type", "types"),
-        ASSAY("assay", "assays"),
-        TIMEPOINT("day of study", "timepoints"),
-        GENDER("gender", "genders"),
-        RACE("race", "races"),
-        CATEGORY("category", "categories");
+        STUDIES(null, "studies"),
+        PARTICIPANTS(null, "participants"),
+        SPECIES("Species", "species"),
+        CONDITION("Condition", "conditions"),
+        TYPE("Type", "types"),
+        CATEGORY("Research focus", null),
+        ASSAY("Assay", "assays"),
+        TIMEPOINT("Day of Study", "timepoints"),
+        GENDER("Gender", "genders"),
+        RACE("Race", "races");
 
-        private String singular;
-        private String plural;
+        private String caption;
+        private String summaryLabel;
 
-        Dimension(String singular, String plural)
+        Dimension(String caption, String summaryLabel)
         {
-            this.singular = singular;
-            this.plural = plural;
+            this.caption = caption;
+            this.summaryLabel = summaryLabel;
         }
 
-        public String getSingular()
+        public String getCaption()
         {
-            return singular;
+            return caption;
         }
 
-        public String getPlural()
+        public String getSummaryLabel()
         {
-            return plural;
+            return summaryLabel;
         }
 
         public static Dimension fromString(String value)
         {
             for (Dimension dimension : values())
             {
-                if (dimension.getPlural().equals(value.toLowerCase()) || dimension.getSingular().equals(value.toLowerCase()))
+                if (value.equals(dimension.getSummaryLabel()) || value.equals(dimension.getCaption()))
                     return dimension;
             }
 
@@ -214,35 +244,22 @@ public class StudyFinderPage extends LabKeyPage
 
         public List<String> getValues()
         {
-            return getValues(elements.value);
+            return _test.getTexts(elements.value.findElements(panel));
         }
 
         public List<String> getEmptyValues()
         {
-            return getValues(elements.emptyValue);
+            return _test.getTexts(elements.emptyValue.findElements(panel));
         }
 
         public List<String> getNonEmptyValues()
         {
-            return getValues(elements.nonEmptyValue);
+            return _test.getTexts(elements.nonEmptyValue.findElements(panel));
         }
 
         public List<String> getSelectedValues()
         {
-            return getValues(elements.selectedValue);
-        }
-
-        private List<String> getValues(Locator valueLoc)
-        {
-            List<WebElement> els = valueLoc.findElements(panel);
-            List<String> values = new ArrayList<>();
-
-            for (WebElement el : els)
-            {
-                values.add(el.getText().trim());
-            }
-
-            return values;
+            return _test.getTexts(elements.selectedValue.findElements(panel));
         }
 
         public void selectAll()
@@ -260,6 +277,18 @@ public class StudyFinderPage extends LabKeyPage
 
             elements.selectedValue.withText(value).waitForElement(panel, _test.shortWait());
             return value;
+        }
+
+        public void select(String value)
+        {
+            elements.value.withText(value).findElement(panel).click();
+            waitForSelection(value);
+        }
+
+        public void addToSelection(String value)
+        {
+            controlClick(elements.value.withText(value).findElement(panel));
+            waitForSelection(value);
         }
 
         private void controlClick(WebElement el)
@@ -315,7 +344,7 @@ public class StudyFinderPage extends LabKeyPage
 
         public void clickGoToStudy()
         {
-            _test.clickAndWait(elements.goToStudyLink.findElement(card), BaseWebDriverTest.WAIT_FOR_PAGE);
+            elements.goToStudyLink.findElement(card).click();
         }
 
         public String getAccession()
@@ -343,13 +372,13 @@ public class StudyFinderPage extends LabKeyPage
         }
     }
 
-    public class DimensionFilter
+    public class SummaryFilterPanel
     {
         private WebElement dimensionFilter;
         private Elements elements;
         private Dimension dimension;
 
-        private DimensionFilter(WebElement dimensionFilter)
+        private SummaryFilterPanel(WebElement dimensionFilter)
         {
             this.dimensionFilter = dimensionFilter;
             elements = new Elements();

@@ -2,20 +2,37 @@ package org.labkey.test.pages.immport;
 
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
+import org.labkey.test.WebTestHelper;
 import org.labkey.test.pages.LabKeyPage;
+import org.labkey.test.util.LogMethod;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 
-public class ImmPortBeginPage
+public class ImmPortBeginPage extends LabKeyPage
 {
-    BaseWebDriverTest _test;
-
     public ImmPortBeginPage(BaseWebDriverTest test)
     {
-        _test = test;
+        super(test);
     }
 
+    protected static String getController()
+    {
+        return "immport";
+    }
+
+    protected static String getAction()
+    {
+        return "begin";
+    }
+
+    public static ImmPortBeginPage beginAt(BaseWebDriverTest test, String containerPath)
+    {
+        test.beginAt(WebTestHelper.buildURL(getController(), containerPath, getAction()));
+        return new ImmPortBeginPage(test);
+    }
+
+    @LogMethod
     public void importArchive(File archive, boolean restricted)
     {
         _test.clickAndWait(Locator.linkWithText("Import Archive"));
@@ -25,6 +42,7 @@ public class ImmPortBeginPage
         _test.waitForPipelineJobsToComplete(1, "Load ImmPort archive", false, 600000);
     }
 
+    @LogMethod
     public void populateCube()
     {
         _test.clickAndWait(Locator.linkWithText("Populate Cube"));
@@ -53,12 +71,11 @@ public class ImmPortBeginPage
         return new LabKeyPage(_test);
     }
 
-    //TODO: Create CopyImmPortStudyPage
-    public LabKeyPage copyDatasetsForOneStudy()
+    public CopyImmPortStudyPage copyDatasetsForOneStudy()
     {
         _test.clickAndWait(Locator.linkWithText("Copy Datasets for One Study"));
 
-        return new LabKeyPage(_test);
+        return new CopyImmPortStudyPage(_test);
     }
 
     public File downloadSpecimens()

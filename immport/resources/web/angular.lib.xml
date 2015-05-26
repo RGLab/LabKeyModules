@@ -1,0 +1,8 @@
+<libraries xmlns="http://labkey.org/clientLibrary/xml/">
+    <library compileInProductionMode="false">
+        <script path="immport/angular/angular.js" mode="both"/>
+        <script path="immport/angular/angular.min.js" mode="production"/>
+        <script path="immport/angular/angular-local-storage.js" mode="dev"/>
+        <script path="immport/angular/angular-local-storage.min.js" mode="production"/>
+    </library>
+</libraries>
