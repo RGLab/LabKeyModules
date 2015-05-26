@@ -100,18 +100,31 @@ public class StudyFinderPage extends LabKeyPage
         return studyCards;
     }
 
-    public Map<Dimension, DimensionFilter> getSelections()
+    public Map<Dimension, SummaryFilterPanel> getSelectionPanels()
     {
         List<WebElement> selectionEls = Locators.selection.findElements(_test.getDriver());
-        Map<Dimension, DimensionFilter> dimensionSelections = new HashMap<>();
+        Map<Dimension, SummaryFilterPanel> dimensionSelections = new HashMap<>();
 
         for (WebElement el : selectionEls)
         {
-            DimensionFilter dimensionSelection = new DimensionFilter(el);
+            SummaryFilterPanel dimensionSelection = new SummaryFilterPanel(el);
             dimensionSelections.put(dimensionSelection.getDimension(), dimensionSelection);
         }
 
         return dimensionSelections;
+    }
+
+    public Map<Dimension, List<String>> getSelectionValues()
+    {
+        Map<Dimension, SummaryFilterPanel> selectionPanels = getSelectionPanels();
+        Map<Dimension, List<String>> selectionValues = new HashMap<>();
+
+        for (Map.Entry<Dimension, SummaryFilterPanel> selection : selectionPanels.entrySet())
+        {
+            selectionValues.put(selection.getKey(), selection.getValue().getFilterValues());
+        }
+
+        return selectionValues;
     }
 
     public Map<Dimension, DimensionPanel> getDimensionPanels()
@@ -131,11 +144,11 @@ public class StudyFinderPage extends LabKeyPage
     /**
      * Not very precise
      */
-    public DimensionFilter waitForSelection(String value)
+    public SummaryFilterPanel waitForSelection(String value)
     {
         WebElement selectionEl = Locators.selection.containing(value).waitForElement(_test.getDriver(), _test.shortWait());
 
-        return new DimensionFilter(selectionEl);
+        return new SummaryFilterPanel(selectionEl);
     }
 
     public void dismissTour()
@@ -359,13 +372,13 @@ public class StudyFinderPage extends LabKeyPage
         }
     }
 
-    public class DimensionFilter
+    public class SummaryFilterPanel
     {
         private WebElement dimensionFilter;
         private Elements elements;
         private Dimension dimension;
 
-        private DimensionFilter(WebElement dimensionFilter)
+        private SummaryFilterPanel(WebElement dimensionFilter)
         {
             this.dimensionFilter = dimensionFilter;
             elements = new Elements();

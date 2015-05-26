@@ -19,9 +19,15 @@ package org.labkey.test.tests;
 import org.apache.commons.collections15.Bag;
 import org.apache.commons.collections15.bag.HashBag;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.labkey.remoteapi.Command;
+import org.labkey.remoteapi.CommandException;
+import org.labkey.remoteapi.Connection;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
@@ -49,6 +55,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -160,6 +167,29 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         goToProjectHome();
         goToModule("ImmPort");
         new ImmPortBeginPage(this).populateCube();
+    }
+
+    @Before
+    public void clearSharedStudyContainerFilter()
+    {
+        Connection connection = createDefaultConnection(false);
+        Command command = new Command("study", "sharedStudyContainerFilter")
+        {
+            @Override
+            protected HttpUriRequest createRequest(URI uri)
+            {
+                return new HttpDelete(uri);
+            }
+        };
+
+        try
+        {
+            command.execute(connection, getProjectName());
+        }
+        catch (CommandException | IOException fail)
+        {
+            throw new RuntimeException(fail);
+        }
     }
 
     @Test
@@ -332,24 +362,77 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     }
 
     @Test
-    public void testStudyCardLinks()
+    public void testStudyCardStudyLinks()
     {
         goToProjectHome();
-        StudyFinderPage studyFinder = new StudyFinderPage(this);
         Set<String> foundAccessions = new HashSet<>();
-        for (StudyFinderPage.StudyCard studyCard : studyFinder.getStudyCards())
+        for (int i = 0; i < STUDY_SUBFOLDERS.length; i++)
         {
+            StudyFinderPage studyFinder = new StudyFinderPage(this);
+            StudyFinderPage.StudyCard studyCard = studyFinder.getStudyCards().get(i);
             String studyAccession = studyCard.getAccession();
             foundAccessions.add(studyAccession);
             studyCard.clickGoToStudy();
-            switchToWindow(1);
             WebElement title = Locator.css(".labkey-folder-title").waitForElement(getDriver(), shortWait());
             assertEquals("Study card linked to wrong study", studyAccession, title.getText());
-            getDriver().close();
-            switchToMainWindow();
+            goBack();
         }
 
         assertEquals("Didn't find all studies", new HashSet<>(Arrays.asList(STUDY_SUBFOLDERS)), foundAccessions);
+    }
+
+    @Test
+    public void testNavigationDoesNotDoesNotRemoveStudyFinderFilter()
+    {
+        goToProjectHome();
+        StudyFinderPage studyFinder = new StudyFinderPage(this);
+        Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
+        dimensionPanels.get(Dimension.SPECIES).selectFirstIntersectingMeasure();
+
+        Map<Dimension, List<String>> selections = studyFinder.getSelectionValues();
+        clickTab("Manage");
+        clickTab("Overview");
+        assertEquals("Navigation cleared study finder filter", selections, studyFinder.getSelectionValues());
+    }
+
+    @Test
+    public void testRefreshDoesNotDoesNotRemoveStudyFinderFilter()
+    {
+        goToProjectHome();
+        StudyFinderPage studyFinder = new StudyFinderPage(this);
+        Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
+        dimensionPanels.get(Dimension.SPECIES).selectFirstIntersectingMeasure();
+
+        Map<Dimension, List<String>> selections = studyFinder.getSelectionValues();
+        refresh();
+        assertEquals("'Refresh' cleared study finder filter", selections, studyFinder.getSelectionValues());
+    }
+
+    @Test
+    public void testBackDoesNotDoesNotRemoveStudyFinderFilter()
+    {
+        goToProjectHome();
+        StudyFinderPage studyFinder = new StudyFinderPage(this);
+        Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
+        dimensionPanels.get(Dimension.SPECIES).selectFirstIntersectingMeasure();
+
+        Map<Dimension, List<String>> selections = studyFinder.getSelectionValues();
+        clickTab("Manage");
+        goBack();
+        assertEquals("'Back' cleared study finder filter", selections, studyFinder.getSelectionValues());
+    }
+
+    @Test
+    public void testStudyFinderWebPartAndActionShareFilter()
+    {
+        goToProjectHome();
+        StudyFinderPage studyFinder = new StudyFinderPage(this);
+        Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
+        dimensionPanels.get(Dimension.SPECIES).selectFirstIntersectingMeasure();
+
+        Map<Dimension, List<String>> selections = studyFinder.getSelectionValues();
+        StudyFinderPage.goDirectlyToPage(this, getProjectName());
+        assertEquals("WebPart study finder filter didn't get applied to StudyFinderAction", selections, studyFinder.getSelectionValues());
     }
 
     @Test
@@ -460,7 +543,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     private void assertSelectionsSynced(StudyFinderPage studyFinder)
     {
         Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
-        Map<Dimension, StudyFinderPage.DimensionFilter> summarySelections = studyFinder.getSelections();
+        Map<Dimension, StudyFinderPage.SummaryFilterPanel> summarySelections = studyFinder.getSelectionPanels();
 
         for (Dimension dim : Dimension.values())
         {
