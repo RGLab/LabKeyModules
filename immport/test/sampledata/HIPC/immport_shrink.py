@@ -47,6 +47,9 @@ def main(argv):
 	re_field_sep = re.compile(field_sep)
 	line_sep = "~@@~\n"
 	re_line_sep = re.compile(line_sep)
+
+	# These study accessions are the animal studies from ALLSTUDIES-DR11_MySQL.zip
+	# Update these accessions if you intend to run this against a different archive
 	animal_studies = [21, 29, 30, 31, 32, 35, 62, 64, 78, 95, 99, 139, 147, 208, 215, 217, 241, 259, 271, 286, 288]
 	junction_file_sep = "_2_"
 

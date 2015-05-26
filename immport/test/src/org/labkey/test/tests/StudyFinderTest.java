@@ -71,7 +71,7 @@ import static org.junit.Assert.assertTrue;
 @Category({External.class})
 public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTest, ReadOnlyTest
 {
-    private static File immPortArchive = TestFileUtils.getSampleData("HIPC/ANIMAL_STUDIES.zip");
+    private static File immPortArchive = TestFileUtils.getSampleData("HIPC/ANIMAL_STUDIES-DR11.zip");
     private static File TEMPLATE_ARCHIVE = TestFileUtils.getSampleData("HIPC/SDY_template.zip");
     private static String IMMPORT_PROJECT = "ImmPort Admin Project";
     private static String[] ANIMAL_STUDIES = {"SDY21", "SDY29", "SDY30", "SDY31", "SDY32", "SDY35", "SDY62", "SDY64", "SDY78", "SDY95", "SDY99", "SDY139", "SDY147", "SDY208", "SDY215", "SDY217", "SDY241", "SDY259", "SDY271", "SDY286", "SDY288"};
