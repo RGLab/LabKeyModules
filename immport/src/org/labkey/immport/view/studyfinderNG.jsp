@@ -1191,9 +1191,13 @@ if (!c.isRoot())
             study_accession = name;
         if (null != study_accession)
         {
+            if (StringUtils.endsWithIgnoreCase(study_accession," Study"))
+                study_accession = study_accession.substring(0,study_accession.length()-6).trim();
             StudyBean bean = mapOfStudies.get(study_accession);
             if (null == bean)
+            {
                 continue;
+            }
             %><%=text(comma)%><%=q(study_accession)%>:{<%
                 %>name:<%=q(study_accession)%>,<%
                 %>uniqueName:<%=q("[Study].["+study_accession+"]")%>, <%
