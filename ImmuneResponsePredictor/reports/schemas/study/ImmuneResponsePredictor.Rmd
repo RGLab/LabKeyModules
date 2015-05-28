@@ -354,7 +354,9 @@ if(length(param$cohortsTesting) > 0){
   HAI_pred <- HAI_pred[, cohort := pdata[, cohort]]
 }
 ```
+<br><br>
 
+## Predicted response vs. observed response per subject
 ```{r prediction, echo = FALSE, dev='CairoPNG'}
 # Prediction
 if(length(param$cohortsTesting) == 0){
@@ -375,12 +377,6 @@ if(length(param$cohortsTesting) == 0){
 ```
 <br><br>
 
-## Table of probes selected by the Elastic Net
-```{r kable, results = 'asis'}
-format_table(predictor_table)
-```
-<br><br>
-
 ## Heatmap of the selected features
 ```{r heatmap}
 HAI$type <- "Training set"
@@ -390,4 +386,10 @@ if(length(param$cohortsTesting) == 0){
   HAI_pred$type <- "Testing set"
   draw_heatmap(rbind(FC_selected, data_pred), rbind(HAI, HAI_pred), param$dichotomize, palette)
 }
+```
+<br><br>
+
+## Table of genes selected by the Elastic Net
+```{r kable, results = 'asis'}
+format_table(predictor_table)
 ```

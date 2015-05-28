@@ -586,13 +586,7 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect,
                             var rec = this.createRecord(r);
                             this.store.add(rec);
                             this.addRecord(rec);
-                            this.addedRecords.push(rec); // keep
-                            // track
-                            // of
-                            // records
-                            // added
-                            // to
-                            // store
+                            this.addedRecords.push(rec); // keep track of records added to store
                             (function() {
                                 if (this.isExpanded()) {
                                     this.collapse();

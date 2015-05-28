@@ -29,7 +29,7 @@ process_TSV_colnames <- function(exprs, pdata){
     # One biosample per subject
     colnames(exprs) <- pdata[match(colnames(exprs), pdata$subject_accession), "biosample_accession"]
   } else if(length(grep("^BS", colnames(exprs))) == ncol(exprs)){
-    # Produced by Renan: simply subset the expression matrix (will eventually use EXPSAMPLE)
+    # Simply subset the expression matrix (will eventually use EXPSAMPLE)
     exprs <- exprs[, colnames(exprs) %in% pdata$biosample_accession]
   } else{
     # Assume it's Illumina samplenames

@@ -160,6 +160,18 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                             cn: [
                                     {
                                         cls: 'bold-text',
+                                        html: 'Available datasets: ',
+                                        tag: 'span'
+                                    },{
+                                        id: 'datasets'.wpdi(),
+                                        tag: 'span'
+                                    }
+                            ]
+                        },{
+                            cls: 'overview-spacing',
+                            cn: [
+                                    {
+                                        cls: 'bold-text',
                                         html: 'Sponsoring organization: ',
                                         tag: 'span'
                                     },{
@@ -229,6 +241,16 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             ],
             sort: 'study_accession',
             success: onSuccessPI,
+            failure: onError
+        });
+
+        LABKEY.Query.selectRows({
+            requiredVersion: 12.3,
+            schemaName: 'study',
+            queryName: 'datasets_ISSO',
+            columns: 'Label',
+            sort: 'Label',
+            success: onSuccessDS,
             failure: onError
         });
 
@@ -312,12 +334,23 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 rows = results.rows,
                 length = rows.length,
                 PI = [];
-            ;
             for ( var idxRow = 0; idxRow < length; idxRow ++ ){
                 var row = rows[idxRow];
                 PI.push(row['first_name'].value + ' ' + row['last_name'].value);
             }
             $('#PI'.wpdi())[0].innerHTML = PI.join(', ');
+        };
+
+        function onSuccessDS(results){
+            var
+                rows = results.rows,
+                length = rows.length,
+                datasets = [];
+            for(var idxRow = 0; idxRow < length; idxRow++){
+                var row = rows[idxRow];
+                datasets.push(row['Label'].value);
+            }
+            $('#datasets'.wpdi())[0].innerHTML = datasets.join(', ');
         };
 
         function onSuccessHIPCfund(results){

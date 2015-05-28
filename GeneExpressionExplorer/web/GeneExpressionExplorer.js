@@ -242,7 +242,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             width: fieldWidth
         });
 
-        var cbGenes = new Ext.ux.form.SuperBoxSelect({
+         cbGenes = new Ext.ux.form.SuperBoxSelect({
             allowBlank: false,
             disabled: true,
             displayField: 'gene_symbol',
