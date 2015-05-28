@@ -6,6 +6,8 @@ td.labkey-main-icon { padding: 4px 4px 6px 116px;}
 #labkey-main-title { display: none;}
 
     /* ************************************************************ */
+    /* ***************** Top Bar Item Link Styling **************** */
+    /* ************************************************************ */
     .labkey-main-menu li.labkey-main-menu-item {
         background: url(/images/Arrow.png) no-repeat top right;
         background-color: rgba(0,0,0,0.3);
@@ -24,6 +26,22 @@ td.labkey-main-icon { padding: 4px 4px 6px 116px;}
         padding: 6px 18px 6px 10px;
         border-left: 1px solid transparent;
         border-right: 1px solid transparent;
+    }
+    /* ************************************************************ */
+
+    /* ************************************************************ */
+    /* ***************** Top Bar Menu Items Styling *************** */
+    /* ************************************************************ */
+    .wiki-list li:hover {
+        white-space: nowrap; background-color: #ededdf;
+    }
+
+    .wiki-list li {
+        padding: 5px;
+    }
+
+    .wiki-list ul {
+        list-style-type: none;
     }
     /* ************************************************************ */
 

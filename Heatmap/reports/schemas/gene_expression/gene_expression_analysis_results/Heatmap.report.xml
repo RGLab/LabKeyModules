@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<ReportDescriptor>
-  <hidden>false</hidden>
-  <category>Gene Expression</category>
-  <label>Heatmap of Differentialy Expressed Genes</label>
-  <description>This report displays a heatmap of the log fold change of selected differentially expressed genes</description>
-</ReportDescriptor>

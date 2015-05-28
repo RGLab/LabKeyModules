@@ -22,9 +22,7 @@ vim: ts=4:sw=4:nu:fdc=4:spell
     Ext.onReady(
         LABKEY.ext.ISCore.initModule.createCallback(
             function( webPartDiv ){ return new LABKEY.ext.ActiveModules({ webPartDivId: webPartDiv }); },
-            <%=webpartContext%>.wrapperDivId,
-            'modules',
-            'lists'
+            <%=webpartContext%>.wrapperDivId
         )
     );
 </script>
