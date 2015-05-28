@@ -32,7 +32,7 @@
                 <filter token='SourcePath' value='${moduleDir}'/>
                 <filter token='URL' value='Not built from a Subversion source tree'/>
                 <filter token='Revision' value='Not built from a Subversion source tree'/>
-                <filter token='EnlistmentId' value='${enlistment.id}' />
+                <filter token='EnlistmentId' value='${enlistment.id}'/>
             </filterset>
         </copy>
     </target>

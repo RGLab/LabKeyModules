@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<query name='modules' schemaName='lists' xmlns='http://labkey.org/data/xml/query'>
-    <description>
-        List of available modules.
-    </description>
-</query>

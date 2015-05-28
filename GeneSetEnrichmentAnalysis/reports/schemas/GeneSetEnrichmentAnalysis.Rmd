@@ -34,7 +34,7 @@ emory_rnames <- function(rnames){
 }
 baylor_rnames <- function(rnames){
   rnames <- paste0('<a href="http://www.biir.net/public_wikis/module_annotation/V2_Trial_8_Modules_',
-                   rnames, '" target="_blank">', rnames, '</a>')
+                   gsub("_.*$", "", rnames), '" target="_blank">', rnames, '</a>')
   return(rnames)
 }
 format_table <- function(x, ...){

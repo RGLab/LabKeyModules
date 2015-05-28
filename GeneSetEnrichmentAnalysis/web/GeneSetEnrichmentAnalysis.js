@@ -36,7 +36,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
 
         var checkBtnRunStatus = function(){
             if (
-                cbSignature.isValid( true ) &&
+                cbModules.isValid( true ) &&
                 cbCohort.isValid( true )
             ){
                 btnRun.setDisabled( false );
@@ -101,11 +101,11 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             width: fieldWidth
         });
 
-        var cbSignature = new Ext.ux.form.ExtendedComboBox({
+        var cbModules = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
             displayField: 'name',
             fieldLabel: 'Modules',
-            id: 'cbSignature',
+            id: 'cbModules',
             listeners: {
                 change:     checkBtnRunStatus,
                 cleared:    checkBtnRunStatus,
@@ -137,7 +137,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             disabled: true,
             handler: function(){
                 cnfReport.inputParams = {
-                    signature:  cbSignature.getValue(),
+                    signature:  cbModules.getValue(),
                     cohort:     cbCohort.getValue()
                 };
 
@@ -246,7 +246,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     autoScroll: true,
                     items: [
                         cbCohort,
-                        cbSignature
+                        cbModules
                     ],
                     title: 'Parameters'
                 }),
@@ -383,7 +383,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                                     var address = window.location.href;
                                     var hash    = address.indexOf( '#' );
                                     if ( hash >= 0 ){ address = address.substring( 0, hash ); }
-                                    taImportExport.setValue( address + encodeParams( [ cbCohort, cbSignature ] ) );
+                                    taImportExport.setValue( address + encodeParams( [ cbCohort, cbModules ] ) );
                                 },
                                 text: 'Export',
                                 width: 200
@@ -487,6 +487,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             }
             btnRun.setDisabled( bool );
             cbCohort.setDisabled( bool );
+            cbModules.setDisabled( bool );
         };
 
         var handleCohortSelection = function(){

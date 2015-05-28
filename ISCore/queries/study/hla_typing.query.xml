@@ -4,11 +4,20 @@
         <tables xmlns='http://labkey.org/data/xml'>
             <table tableName='hla_typing' tableDbType='TABLE'>
                 <buttonBarOptions position='both' includeStandardButtons='false'>
+                    <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
                     <item text='Filter' insertPosition='end'>
                         <originalText>Filter</originalText>
                     </item>
                     <item text='Views' insertPosition='end'>
-                        <originalText>Views</originalText>
+                        <item text='Default'>
+                            <onClick>goToView(dataRegion, ''); return false;</onClick>
+                        </item>
+                        <item text='Full'>
+                            <onClick>goToView(dataRegion, 'full'); return false;</onClick>
+                        </item>
+                    </item>
+                    <item text='Subject groups' insertPosition='end'>
+                        <originalText>Subject groups</originalText>
                     </item>
                     <item text='Export' insertPosition='end'>
                         <originalText>Export</originalText>

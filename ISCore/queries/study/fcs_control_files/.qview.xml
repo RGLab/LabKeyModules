@@ -22,7 +22,7 @@
         </cv:column>
         <cv:column name="arm_accession/name">
           <cv:properties>
-            <cv:property name="columnTitle" value="Arm Name"/>
+            <cv:property name="columnTitle" value="Cohort"/>
           </cv:properties>
         </cv:column>
     </cv:columns>
