@@ -247,7 +247,7 @@
                 <div ng-include="'/group.html'" ng-repeat="dim in [dimTimepoint]"></div>
             </td>
             <td valign=top style="min-width:180px;">
-                <div ng-include="'/group.html'" ng-repeat="dim in [dimGender,dimRace]"></div>
+                <div ng-include="'/group.html'" ng-repeat="dim in [dimGender,dimRace,dimAge]"></div>
             </td>
         </tr>
         </table>
@@ -265,8 +265,9 @@
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimTimepoint.summaryCount}}</td><td class="small-summary">&nbsp;timepoints</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimGender.summaryCount}}</td><td class="small-summary">&nbsp;genders</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimRace.summaryCount}}</td><td class="small-summary">&nbsp;races</td></tr>
+                <tr><td align="right" class="small-summary" style="width:60pt;">{{dimAge.summaryCount}}</td><td class="small-summary">&nbsp;age groups</td></tr>
                 <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">Selection</h3></td></tr>
-                <tbody ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace] | filter:dimensionHasFilter ">
+                <tbody ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace,dimAge] | filter:dimensionHasFilter ">
                 <tr><td colspan="2"><fieldset style="width:100%;"><legend>{{dim.caption || dim.name}}</legend>
                     <div class="filter-member" ng-repeat="member in dim.filters">
                     <img class="delete" style="vertical-align:bottom;" src="<%=getContextPath()%>/_images/partdelete.png" ng-click="removeFilterMember(dim,member)">{{member.name}}
@@ -1039,6 +1040,7 @@ studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http, loca
     $scope.dimPrincipal=dataspace.dimensions.Principal;
     $scope.dimGender=dataspace.dimensions.Gender;
     $scope.dimRace=dataspace.dimensions.Race;
+    $scope.dimAge=dataspace.dimensions.Age;
     $scope.dimTimepoint=dataspace.dimensions.Timepoint;
     $scope.dimAssay=dataspace.dimensions.Assay;
     $scope.dimType=dataspace.dimensions.Type;
@@ -1127,6 +1129,7 @@ var dataspace =
         "Category": {caption:'Research focus', name:'Category', hierarchyName:'Study.Category', levelName:'Category', allMemberName:'[Study.Category].[(All)]'},
         "Timepoint":{caption:'Day of Study', name:'Timepoint', hierarchyName:'Timepoint.Timepoints', levelName:'Timepoint', allMemberName:'[Timepoint.Timepoints].[(All)]'},
         "Race": {name:'Race', hierarchyName:'Subject.Race', levelName:'Race', allMemberName:'[Subject.Race].[(All)]'},
+        "Age": {name:'Age', hierarchyName:'Subject.Age', levelName:'Age', allMemberName:'[Subject.Age].[(All)]'},
         "Gender": {name:'Gender', hierarchyName:'Subject.Gender', levelName:'Gender', allMemberName:'[Subject.Gender].[(All)]'},
         "Species": {name:'Species', pluralName:'Species', hierarchyName:'Subject.Species', levelName:'Species', allMemberName:'[Subject.Species].[(All)]'},
         "Principal": {name:'Principal', pluralName:'Species', hierarchyName:'Study.Principal', levelName:'Principal', allMemberName:'[Study.Principal].[(All)]'},

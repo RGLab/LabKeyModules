@@ -65,6 +65,7 @@
     <td valign=top>
     <div id=group_gender valign=top align=left style="min-width:150pt;"></div>
     <div id=group_race valign=top align=left style="min-width:150pt;"></div>
+    <div id=group_age valign=top align=left style="min-width:150pt;"></div>
     </td>
 </tr>
 </table>
@@ -82,6 +83,7 @@
         <div id=group_summary_timepoint valign=top align=left style="min-width:150pt;"></div>
         <div id=group_summary_gender valign=top align=left style="min-width:150pt;"></div>
         <div id=group_summary_race valign=top align=left style="min-width:150pt;"></div>
+        <div id=group_summary_age valign=top align=left style="min-width:150pt;"></div>
         <div id=group_filter valign=top align=left style="min-width:150pt;"></div>
     </td>
 </table>
@@ -113,6 +115,7 @@ Ext4.onReady(function(){
                 "SELECT 'type' AS Type, Type AS Member, cast(NULL as integer) As sortorder from dimStudy UNION\n" +
                 "SELECT 'timepoint' AS Type, Timepoint AS Member, sortorder from dimStudyTimepoint UNION\n" +
                 "SELECT 'race' AS Type, Race AS Member, cast(NULL as integer) As sortorder FROM dimDemographic UNION\n" +
+                "SELECT 'age' AS Type, Age AS Member, cast(NULL as integer) As sortorder FROM dimDemographic UNION\n" +
                 "SELECT 'gender' AS Type, gender AS Member, cast(NULL as integer) As sortorder FROM dimDemographic UNION\n" +
                 "SELECT 'species' AS Type, species AS Member, cast(NULL as integer) As sortorder from dimDemographic UNION\n" +
                 "SELECT 'participant' AS Type, participantid AS Member, cast(NULL as integer) As sortorder FROM dimDemographic\n" +
@@ -135,6 +138,7 @@ var dataspace =
         type:null,
         timepoint:null,
         race:null,
+        age:null,
         gender:null,
         species:null,
         participant:null
@@ -147,6 +151,7 @@ var dataspace =
         {name:'type', plural:'types', table:'dimstudy', members:{}, fn:function(row){return row.Condition;}},
         {name:'timepoint', plural:'timepoints', table:'(SELECT ParticipantId, Timepoint FROM dimStudy JOIN dimStudyTimepoint ON dimStudy.Study=dimStudyTimepoint.Study)', members:{}, fn:function(row){return row.Timepoint;}},
         {name:'race', plural:'races', table:'dimdemographic', members:{}, fn:function(row){return row.Race;}},
+        {name:'age', plural:'age groups', table:'dimdemographic', members:{}, fn:function(row){return row.Age;}},
         {name:'gender', plural:'genders', table:'dimdemographic', members:{}, fn:function(row){return row.Gender;}},
         {name:'species', plural:'species', table:'dimdemographic', members:{}, fn:function(row){return row.Species;}},
         {name:'participant', plural:'participants',  members:{}}],

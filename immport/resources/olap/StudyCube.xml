@@ -14,7 +14,11 @@
             <Hierarchy name="Race" visible="true" hasAll="true" uniqueKeyLevelName="Name" primaryKey="participantid">
                 <Table name="dimDemographic" schema="immport"/>
                 <Level name="Race" visible="true" column="race" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
-\            </Hierarchy>
+            </Hierarchy>
+            <Hierarchy name="Age" visible="true" hasAll="true" uniqueKeyLevelName="Name" primaryKey="participantid">
+                <Table name="dimDemographic" schema="immport"/>
+                <Level name="Age" visible="true" column="age" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
             <Hierarchy name="Gender" visible="true" hasAll="true" uniqueKeyLevelName="Name" primaryKey="participantid">
                 <Table name="dimDemographic" schema="immport"/>
                 <Level name="Gender" visible="true" column="gender" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
