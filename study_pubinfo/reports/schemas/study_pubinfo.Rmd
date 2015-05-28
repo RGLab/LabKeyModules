@@ -1,0 +1,53 @@
+```{r knitr-options, echo=FALSE, eval=TRUE, cache=FALSE}
+library(knitr)
+opts_chunk$set(echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, dev="png", fig.width=6, fig.height=4, dpi=100, autodep=FALSE)
+opts_chunk$set(cache.path=paste(labkey.file.root, "cache/pubmed_report_cache/", sep="/"), cache=FALSE)
+options(width=80)
+```
+```{r load-required-packages, cache=FALSE}
+# Required librairies
+library(Rlabkey)
+co <- labkey.setCurlOptions(sslversion = 1, ssl.verifyhost = 2)
+library(rentrez)
+```
+
+```{r filter}
+dat <- labkey.selectRows(labkey.url.base, labkey.url.path, "immport", "study_pubmed", colNameOpt="rname")
+SDY <- basename(labkey.url.path)
+ds_pubmed <- dat[dat$study_accession == SDY, ]
+```
+
+```{r get-pubmed-info, results='asis', dependson="filter", error=FALSE}
+id <- ds_pubmed$pubmed_id
+id <- id[id != "PMC"]
+
+get_reference <- function(id){
+  x <- entrez_summary(db="pubmed", id=id)
+  reference <- paste(paste(x$authors$name,collapse=", "), ". ", x$title, " <i>", x$source, "</i> ", x$volume, "(", x$issue, "), ", x$pubdate, ".", sep="")
+  pubmed_link <- paste0("<a href='http://www.ncbi.nlm.nih.gov/pubmed/", id,"' target='_blank'>", "PMID:", id,"</a>")
+  return(paste(reference, pubmed_link))
+}
+getCitationCount <- function(x){
+  count <- length(entrez_link(db = "all", dbfrom = "pubmed", id = x)$pubmed_pubmed_citedin)
+  return(count)
+}
+
+if(length(id) ==0){
+   citationtxt <- "No article references (PMIDs) could be found for this study. If you think this is an error, please post a message on the <a href='https://www.immunespace.org/project/home/support/begin.view', target='_blank'>support board</a> and the ImmuneSpace team will update this information as soon as possible."
+} else{
+  study_citation <- lapply(id, get_reference)
+  ncitation <- sapply(id, getCitationCount)
+  url_citedin <- paste0("http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=", id)
+
+  cat("<h3> Data from this study have been published in the following paper(s): </h3>\n")
+
+  citationtxt <- paste0("<ul><li>", study_citation, "</li></ul>", "\n",
+                        "The article has ",
+                        ifelse(ncitation > 0, paste0("<a href=", url_citedin, " target='_blank'>",
+                                                     ncitation, " citations</a>"), "0 citations"),
+                        " in PubMed central.", collapse="\n")
+}
+```
+
+`r citationtxt`
+

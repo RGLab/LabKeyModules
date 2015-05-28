@@ -266,7 +266,7 @@
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimGender.summaryCount}}</td><td class="small-summary">&nbsp;genders</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimRace.summaryCount}}</td><td class="small-summary">&nbsp;races</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimAge.summaryCount}}</td><td class="small-summary">&nbsp;age groups</td></tr>
-                <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">Selection</h3></td></tr>
+                <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">Study Attributes Selection</h3></td></tr>
                 <tbody ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace,dimAge] | filter:dimensionHasFilter ">
                 <tr><td colspan="2"><fieldset style="width:100%;"><legend>{{dim.caption || dim.name}}</legend>
                     <div class="filter-member" ng-repeat="member in dim.filters">
@@ -1194,9 +1194,13 @@ if (!c.isRoot())
             study_accession = name;
         if (null != study_accession)
         {
+            if (StringUtils.endsWithIgnoreCase(study_accession," Study"))
+                study_accession = study_accession.substring(0,study_accession.length()-6).trim();
             StudyBean bean = mapOfStudies.get(study_accession);
             if (null == bean)
+            {
                 continue;
+            }
             %><%=text(comma)%><%=q(study_accession)%>:{<%
                 %>name:<%=q(study_accession)%>,<%
                 %>uniqueName:<%=q("[Study].["+study_accession+"]")%>, <%

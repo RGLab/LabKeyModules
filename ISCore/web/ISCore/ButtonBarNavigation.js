@@ -12,6 +12,19 @@ function goToDataExplorer( dataRegion ) {
         params[e.getURLParameterName()] = e.getURLParameterValue()
     });
 
-    window.location = LABKEY.ActionURL.buildURL( 'DataExplorer', 'begin.view', null, params );
+    window.location = LABKEY.ActionURL.buildURL('DataExplorer', 'begin.view', null, params );
+}
+
+function goToView( dataRegion, view ) {
+    var params = LABKEY.ActionURL.getParameters();
+
+    params[ dataRegion.id + '.viewName' ] = view;
+
+    window.location = LABKEY.ActionURL.buildURL(
+        LABKEY.ActionURL.getController(),
+        LABKEY.ActionURL.getAction(),
+        null,
+        params
+    );
 }
 

@@ -419,7 +419,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             hidden: true,
             lazyInit: false,
             store: strDemographics,
-            value: [ 'Age', 'Gender' ].join( this.separator ),
+            value: [ 'Age' ].join( this.separator ),
             valueField: 'value',
             width: fieldWidth
         });
@@ -441,7 +441,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             hidden: true,
             lazyInit: false,
             store: strShape,
-            value: 'Gender',
             valueField: 'value',
             width: fieldWidth
         });

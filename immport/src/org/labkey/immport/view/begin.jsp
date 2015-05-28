@@ -43,8 +43,8 @@ To create a single study<br>
 <%=textLink("Copy Datasets for One Study", new ActionURL("immport", "copyImmPortStudy", c))%>
 </p>
 <p>
-To create the gender groups<br>
-<%=textLink("Create gender subject groups", new ActionURL("immport", "createGenderGroups", c))%>
+To create a gender subject_groups<br>
+<%=textLink("Create gender subject groups", new ActionURL("immport", "createSubjectGroup", c))%>
 </p>
 <p>
 <%=textLink("Download Specimens",exportSpecimens)%>&nbsp;&nbsp;<%=textLink("Upload Specimens",importSpecimens)%>

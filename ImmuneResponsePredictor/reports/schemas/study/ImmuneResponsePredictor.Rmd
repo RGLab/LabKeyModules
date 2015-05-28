@@ -120,7 +120,7 @@ get_HAI <- function(pdata, dichotomize, di_value){
   if(dichotomize){
     HAI <- HAI[,response:=ifelse(response>=log2(di_value), TRUE,  FALSE)]
   }
-  cohorts <- unique(pdata[, list(arm_name, subject_accession)])
+  cohorts <- unique(pdata[, list(cohort, subject_accession)])
   HAI <- merge(HAI, cohorts, by = "subject_accession")
   HAI <- HAI[order(subject_accession)]
   return(HAI)
@@ -155,12 +155,12 @@ select_features <- function(FC, response, dichotomize){
 # Heatmap #FC_selected, HAI, palette, dichotomize
 draw_heatmap <- function(FC_selected, HAI, dichotomize, palette){
   if(length(unique(HAI$type)) > 1){
-    annotation <- HAI[, list(subject_accession, response, arm_name, type)]
-    annotation <- annotation[order(response, arm_name, subject_accession)]
+    annotation <- HAI[, list(subject_accession, response, cohort, type)]
+    annotation <- annotation[order(response, cohort, subject_accession)]
     annotation <- data.frame(annotation[order(type, decreasing = TRUE)])
   } else{
-    annotation <- HAI[, list(subject_accession, response, arm_name)]
-    annotation <- data.frame(annotation[order( response, arm_name, subject_accession)])
+    annotation <- HAI[, list(subject_accession, response, cohort)]
+    annotation <- data.frame(annotation[order( response, cohort, subject_accession)])
   }
   rownames(annotation) <- annotation$subject_accession
   annotation$subject_accession <- NULL
@@ -198,7 +198,7 @@ format_table <- function(x, ...){
 ```{r funcs2, echo = FALSE}
 getRun <- function(con, cohort){
   gem <- con$data_cache$GE_inputs
-  run <- gsub(".tsv$", "", unique(gem[ gem$arm_name %in% cohort, "name"]))
+  run <- gsub(".tsv$", "", unique(gem[ gem$cohort %in% cohort, "name"]))
   return(run)
 }
 
@@ -283,13 +283,13 @@ if(param$timepoint > 0){
   EM <- EM[, pdata$biosample_accession]
   subs <- pdata$subject_accession
   HAI <- getHAI(con, subs, param$dichotomize, param$dichValue)
-  HAI <- HAI[, arm_name := pdata$arm_name]
+  HAI <- HAI[, cohort := pdata$cohort]
   response <- HAI$response
   colnames(exprs(EM)) <- subs
   training_data <- t(exprs(EM))
 }
 HAI <- getHAI(con, subs, param$dichotomize, param$dichValue)
-HAI <- HAI[, arm_name := pdata[match(HAI$subject_accession, pdata$subject_accession), arm_name]]
+HAI <- HAI[, cohort := pdata[match(HAI$subject_accession, pdata$subject_accession), cohort]]
 response <- HAI$response
 
 
@@ -351,10 +351,12 @@ if(length(param$cohortsTesting) > 0){
   }
   colnames(data_pred) <- colnames(FC_selected) #Handles the -/_@ issues
   HAI_pred <- getHAI(con, subs, param$dichotomize, param$dichValue)
-  HAI_pred <- HAI_pred[, arm_name := pdata[, arm_name]]
+  HAI_pred <- HAI_pred[, cohort := pdata[, cohort]]
 }
 ```
+<br><br>
 
+## Predicted response vs. observed response per subject
 ```{r prediction, echo = FALSE, dev='CairoPNG'}
 # Prediction
 if(length(param$cohortsTesting) == 0){
@@ -365,19 +367,13 @@ if(length(param$cohortsTesting) == 0){
   predicted_val <- predict(relasso, newdata = data_pred, type = "response")
   data <- data.frame(observed = c(HAI$response, HAI_pred$response),
                      fitted = c(relasso$fitted.values, predicted_val),
-                     cohort = c(paste("a:", HAI$arm_name, "(Training)"), paste("b:", HAI_pred$arm_name, "(Testing)")))
+                     cohort = c(paste("a:", HAI$cohort, "(Training)"), paste("b:", HAI_pred$cohort, "(Testing)")))
   p<- ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") +
     facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predicted response")
 }
   ggthemr('solarized')
   plot(p)
   
-```
-<br><br>
-
-## Table of probes selected by the Elastic Net
-```{r kable, results = 'asis'}
-format_table(predictor_table)
 ```
 <br><br>
 
@@ -390,4 +386,10 @@ if(length(param$cohortsTesting) == 0){
   HAI_pred$type <- "Testing set"
   draw_heatmap(rbind(FC_selected, data_pred), rbind(HAI, HAI_pred), param$dichotomize, palette)
 }
+```
+<br><br>
+
+## Table of genes selected by the Elastic Net
+```{r kable, results = 'asis'}
+format_table(predictor_table)
 ```
