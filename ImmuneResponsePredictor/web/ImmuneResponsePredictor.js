@@ -118,7 +118,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var cbVariable = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
             displayField: 'name',
-            fieldLabel: 'Select a variable',
+            fieldLabel: 'Select a response variable',
             listeners: {
                 change:     checkBtnRunStatus,
                 cleared:    checkBtnRunStatus,

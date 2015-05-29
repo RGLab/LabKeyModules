@@ -1653,6 +1653,7 @@
         <columns>
             <column columnName="participantid"/>
             <column columnName="ageinyears"/>
+            <column columnName="age"/>
             <column columnName="species"/>
             <column columnName="gender"/>
             <column columnName="race"/>

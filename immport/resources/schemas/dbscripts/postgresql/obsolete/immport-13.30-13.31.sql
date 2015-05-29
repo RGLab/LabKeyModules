@@ -31,7 +31,8 @@ CREATE TABLE immport.dimDemographic
    AgeInYears INTEGER,
    Species VARCHAR(100),
    Gender VARCHAR(100),
-   Race VARCHAR(100)
+   Race VARCHAR(100),
+   Age VARCHAR(100)
 );
 CREATE INDEX participantage ON immport.dimDemographic (ParticipantId,AgeInYears);
 CREATE INDEX ageparticipant ON immport.dimDemographic (AgeInYears,ParticipantId);

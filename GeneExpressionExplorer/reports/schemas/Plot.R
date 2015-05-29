@@ -24,9 +24,9 @@ library(limma)
 
 add_r2 <- function(data){
   dt <- data.table(data)
-  dt <- dt[, r2 :=  paste("R^2 ==", round(summary(lm(response ~ value))[['r.squared']], 3)), by = "arm_name,gene_symbol"]
-  dt <- dt[, r2x := min(value), by = "arm_name,gene_symbol"]
-  dt <- dt[, r2y := max(response), by = "arm_name,gene_symbol"]
+  dt <- dt[, r2 :=  paste("R^2 ==", round(summary(lm(response ~ value))[['r.squared']], 3)), by = "cohort,gene_symbol"]
+  dt <- dt[, r2x := min(value), by = "cohort,gene_symbol"]
+  dt <- dt[, r2y := max(response), by = "cohort,gene_symbol"]
   return(data.frame(dt))
 }
 
@@ -109,9 +109,9 @@ if(alpha=="") alpha <- NULL
 data <- add_r2(data)
 p <- ggplot(data=data, aes(x=value, y=response)) + geom_point(aes_string(size=size, color=color, alpha=alpha, shape=shape)) + geom_smooth(method="lm") + ylab(response) + xlab(xlab) + geom_text(aes(x=r2x, y=r2y, label = r2), hjust = 0, vjust = 1, data = data, parse = TRUE) + theme(text=element_text(size=textSize)) 
 if(facet == "grid"){
-  p <- p + facet_grid(aes(arm_name, gene_symbol), scales="free")
+  p <- p + facet_grid(aes(cohort, gene_symbol), scales="free")
 } else{
-  p <- p + facet_wrap(~arm_name + gene_symbol, scales="free")
+  p <- p + facet_wrap(~cohort + gene_symbol, scales="free")
 }
 ggthemr("solarized")
 print(p)

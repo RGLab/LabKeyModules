@@ -79,6 +79,7 @@
     Map<String,StudyBean> mapOfStudies = new TreeMap<>();
     for (StudyBean sb : studies)
         mapOfStudies.put(sb.getStudy_accession(), sb);
+    int uuid = getRequestScopedUID();
 %>
 
 <style>
@@ -206,9 +207,11 @@
 </style>
 
 
-<%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%><br>
 
-<div id="studyfinderAppDIV" class="x-hidden" ng-app="studyfinderApp" ng-controller="studyfinder">
+<div id="studyfinderOuterDIV<%=uuid%>" style="min-height:100px; min-width:400px;">
+<div id="studyfinderAppDIV<%=uuid%>" class="x-hidden" ng-app="studyfinderApp" ng-controller="studyfinder">
+
+<%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%><br>
 
 <table style="max-width:980px;" bordercolor=red border="0">
 
@@ -247,7 +250,7 @@
                 <div ng-include="'/group.html'" ng-repeat="dim in [dimTimepoint]"></div>
             </td>
             <td valign=top style="min-width:180px;">
-                <div ng-include="'/group.html'" ng-repeat="dim in [dimGender,dimRace]"></div>
+                <div ng-include="'/group.html'" ng-repeat="dim in [dimGender,dimRace,dimAge]"></div>
             </td>
         </tr>
         </table>
@@ -265,8 +268,9 @@
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimTimepoint.summaryCount}}</td><td class="small-summary">&nbsp;timepoints</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimGender.summaryCount}}</td><td class="small-summary">&nbsp;genders</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimRace.summaryCount}}</td><td class="small-summary">&nbsp;races</td></tr>
-                <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">Selection</h3></td></tr>
-                <tbody ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace] | filter:dimensionHasFilter ">
+                <tr><td align="right" class="small-summary" style="width:60pt;">{{dimAge.summaryCount}}</td><td class="small-summary">&nbsp;age groups</td></tr>
+                <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">Study Attributes Selection</h3></td></tr>
+                <tbody ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace,dimAge] | filter:dimensionHasFilter ">
                 <tr><td colspan="2"><fieldset style="width:100%;"><legend>{{dim.caption || dim.name}}</legend>
                     <div class="filter-member" ng-repeat="member in dim.filters">
                     <img class="delete" style="vertical-align:bottom;" src="<%=getContextPath()%>/_images/partdelete.png" ng-click="removeFilterMember(dim,member)">{{member.name}}
@@ -279,7 +283,6 @@
 </tr>
 </table>
 
-<div id="mask" style="position:fixed; top:0; left:0; height:0; width:0; z-index:1000; background-color:#dddddd; opacity:0.5; cursor:wait;"></div>
 <div id="studyPopup"></div>
 
 <!--
@@ -316,15 +319,17 @@
 </script>
 
 </div>
+</div>
 
 
-
-<!-- 
+<%--
 			controller
- -->
+ --%>
+<%-- TODO {low} make robust enough to have two finder web parts on the same page --%>
 
 <script>
-
+var studyfinderMaskId = 'studyfinderOuterDIV<%=uuid%>';
+var studyfinderAppId = 'studyfinderAppDIV<%=uuid%>';
 
 //
 // study detail pop-up window
@@ -744,7 +749,7 @@ studyfinderScope.prototype =
 
         if (loadMask)
         {
-            Ext4.get("studyfinderAppDIV").removeCls("x-hidden");
+            Ext4.get(studyfinderAppId).removeCls("x-hidden");
             loadMask.hide();
             loadMask = null;
             LABKEY.help.Tour.autoShow('immport.studyfinder');
@@ -965,7 +970,7 @@ studyfinderScope.prototype =
 
         // CONSIDER: delete the shared container filter if all loaded_studies are selected
         LABKEY.Ajax.request({
-            url: LABKEY.ActionURL.buildURL('study', 'sharedStudyContainerFilter.api'),
+            url: LABKEY.ActionURL.buildURL('study-shared', 'sharedStudyContainerFilter.api'),
             method: 'POST',
             jsonData: { containers: containers }
         });
@@ -1039,6 +1044,7 @@ studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http, loca
     $scope.dimPrincipal=dataspace.dimensions.Principal;
     $scope.dimGender=dataspace.dimensions.Gender;
     $scope.dimRace=dataspace.dimensions.Race;
+    $scope.dimAge=dataspace.dimensions.Age;
     $scope.dimTimepoint=dataspace.dimensions.Timepoint;
     $scope.dimAssay=dataspace.dimensions.Assay;
     $scope.dimType=dataspace.dimensions.Type;
@@ -1075,32 +1081,6 @@ function initEmptyDimension(name)
 }
 
 
-var startTime;
-
-function busy()
-{
-    var mask = $('mask');
-    mask.style.width = window.innerWidth;
-    mask.style.height = window.innerHeight;
-    mask.style.display = 'block';
-    document.body.style.cursor='wait';
-    if (!startTime)
-        startTime = new Date();
-}
-function ready()
-{
-    var endTime = new Date();
-    //$('showTime').innerHTML = (endTime-startTime) + 'ms';
-    startTime = null;
-
-    var mask = $('mask');
-    mask.style.width = 0;
-    mask.style.height = 0;
-    mask.style.display = 'none';
-    document.body.style.cursor='auto';
-}
-
-
 <%-- data --%>
 
 var cube = null;
@@ -1127,6 +1107,7 @@ var dataspace =
         "Category": {caption:'Research focus', name:'Category', hierarchyName:'Study.Category', levelName:'Category', allMemberName:'[Study.Category].[(All)]'},
         "Timepoint":{caption:'Day of Study', name:'Timepoint', hierarchyName:'Timepoint.Timepoints', levelName:'Timepoint', allMemberName:'[Timepoint.Timepoints].[(All)]'},
         "Race": {name:'Race', hierarchyName:'Subject.Race', levelName:'Race', allMemberName:'[Subject.Race].[(All)]'},
+        "Age": {name:'Age', hierarchyName:'Subject.Age', levelName:'Age', allMemberName:'[Subject.Age].[(All)]'},
         "Gender": {name:'Gender', hierarchyName:'Subject.Gender', levelName:'Gender', allMemberName:'[Subject.Gender].[(All)]'},
         "Species": {name:'Species', pluralName:'Species', hierarchyName:'Subject.Species', levelName:'Species', allMemberName:'[Subject.Species].[(All)]'},
         "Principal": {name:'Principal', pluralName:'Species', hierarchyName:'Study.Principal', levelName:'Principal', allMemberName:'[Study.Principal].[(All)]'},
@@ -1143,7 +1124,7 @@ for (var p in dataspace.dimensions)
 var loadMask = null;
 
 Ext4.onReady(function(){
-    loadMask = new Ext4.LoadMask(Ext4.getBody(), {msg:"Loading study definitions..."});
+    loadMask = new Ext4.LoadMask(Ext4.get(studyfinderMaskId), {msg:"Loading study definitions..."});
     loadMask.show();
 });
 
@@ -1191,9 +1172,13 @@ if (!c.isRoot())
             study_accession = name;
         if (null != study_accession)
         {
+            if (StringUtils.endsWithIgnoreCase(study_accession," Study"))
+                study_accession = study_accession.substring(0,study_accession.length()-6).trim();
             StudyBean bean = mapOfStudies.get(study_accession);
             if (null == bean)
+            {
                 continue;
+            }
             %><%=text(comma)%><%=q(study_accession)%>:{<%
                 %>name:<%=q(study_accession)%>,<%
                 %>uniqueName:<%=q("[Study].["+study_accession+"]")%>, <%

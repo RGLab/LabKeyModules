@@ -38,10 +38,20 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
 
                         myMask.show();
 
-                        var activeModulesFilterArray = [
+                        var filters = [
                             LABKEY.Filter.create(
                                 'Name',
                                 LABKEY.container.activeModules.join(';'),
+                                LABKEY.Filter.Types.IN
+                            ),
+                            LABKEY.Filter.create(
+                                'Name',
+                                [
+                                    'DataExplorer',
+                                    'GeneExpressionExplorer',
+                                    'GeneSetEnrichmentAnalysis',
+                                    'ImmuneResponsePredictor'
+                                ].join(';'),
                                 LABKEY.Filter.Types.IN
                             )
                         ];
@@ -51,84 +61,53 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                             LABKEY.ext.ISCore.onFailure( a, b, c);
                         };
 
-                        LABKEY.Query.selectDistinctRows({
-                            column: 'Category',
+                        LABKEY.Query.selectRows({
+                            columns: [ 'Name', 'Label', 'Description' ],
                             failure: onFailure,
-                            filterArray: activeModulesFilterArray,
+                            filterArray: filters,
                             queryName: 'modules',
-                            schemaName: 'lists',
+                            schemaName: 'core',
                             success: function( d ){
-                                var categories = d.values;
+                                myMask.hide();
 
-                                LABKEY.Query.selectRows({
-                                    columns: ['Category', 'Name', 'Title', 'Description'],
-                                    failure: onFailure,
-                                    filterArray: activeModulesFilterArray,
-                                    queryName: 'modules',
-                                    schemaName: 'lists',
-                                    success: function( d ){
-                                        myMask.hide();
+                                if ( d.rows.length == 0 ){
+                                    cntMain.getEl().mask(
+                                        'There are no active modules enabled in this study.', 'infoMask'
+                                    );
+                                } else {
+                                    cntMain.update('');
 
-                                        if ( categories.length == 0 ){
-                                            cntMain.getEl().mask(
-                                                'There are no active modules enabled in this study.', 'infoMask'
+                                    Ext.each(
+                                        d.rows,
+                                        function( e ){
+                                            cntMain.add(
+                                                new Ext.Container({
+                                                    html:
+                                                        '<div>' +
+                                                            '<div class=\'bold-text\'><a href=\"' +
+                                                                LABKEY.ActionURL.buildURL( e.Name, 'begin' ) +
+                                                            '\">' + e.Label + '</a></div>' +
+                                                            (
+                                                                e.Description == null ?
+                                                                '' :
+                                                                '<div class=\'padding5px\'>' + e.Description + '</div>'
+                                                            ) +
+                                                        '</div>',
+                                                    style: 'padding-bottom: 4px; padding-top: 4px;'
+                                                })
                                             );
-                                        } else {
-                                            cntMain.update('');
-
-                                            var objects = [];
-                                            Ext.each(
-                                                categories,
-                                                function( e ){
-                                                    objects.push(
-                                                        new Ext.form.FieldSet({
-                                                            autoScroll: true,
-                                                            id: 'category' + e + config.webPartDivId,
-                                                            style: 'margin-bottom: 0px; margin-top: 5px; margin-left: 0px; margin-right: 0px;',
-                                                            title: e
-                                                        })
-                                                    );
-                                                } 
-                                            );
-                                            cntMain.add( objects );
-
-                                            Ext.each(
-                                                d.rows,
-                                                function( e ){
-                                                    var category = Ext.getCmp( 'category' + e.Category + config.webPartDivId );
-                                                    category.add(
-                                                        new Ext.Container({
-                                                            html:
-                                                                '<div>' +
-                                                                    '<div class=\'bold-text\'><a href=\"' +
-                                                                        LABKEY.ActionURL.buildURL( e.Name, 'begin' ) +
-                                                                    '\">' + e.Title + '</a></div>' +
-                                                                    (
-                                                                        e.Description == null ?
-                                                                        '' :
-                                                                        '<div class=\'padding5px\'>' + e.Description + '</div>'
-                                                                    ) +
-                                                                '</div>',
-                                                            style: 'padding-bottom: 4px; padding-top: 4px;'
-                                                        })
-                                                    );
-                                                }
-                                            );
-
-                                            cntMain.doLayout();
                                         }
-                                    }
-                                });               
-                            } 
-                        });                       
+                                    );
+
+                                    cntMain.doLayout();
+                                }
+                            }
+                        });
                     },
                     single: true
                 }
             }
         });
-
-
-
 
         this.border         = false;
         this.boxMinWidth    = 370;

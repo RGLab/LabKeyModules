@@ -143,7 +143,18 @@ BEGIN
     END as AgeInYears,
     species As Species,
     gender AS Gender,
-    coalesce(race,'Not_Specified') AS Race
+    coalesce(race,'Not_Specified') AS Race,
+    CASE
+      WHEN floor(age_reported) < 10 THEN '0-10'
+      WHEN floor(age_reported) < 20 THEN '11-20'
+      WHEN floor(age_reported) < 30 THEN '21-30'
+      WHEN floor(age_reported) < 40 THEN '31-40'
+      WHEN floor(age_reported) < 50 THEN '41-50'
+      WHEN floor(age_reported) < 60 THEN '51-60'
+      WHEN floor(age_reported) < 70 THEN '61-70'
+      WHEN floor(age_reported) >= 70 THEN '> 70'
+      ELSE 'Unknown'
+    END AS Age
   FROM immport.subject;
 
 
