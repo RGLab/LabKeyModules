@@ -970,7 +970,7 @@ studyfinderScope.prototype =
 
         // CONSIDER: delete the shared container filter if all loaded_studies are selected
         LABKEY.Ajax.request({
-            url: LABKEY.ActionURL.buildURL('study', 'sharedStudyContainerFilter.api'),
+            url: LABKEY.ActionURL.buildURL('study-shared', 'sharedStudyContainerFilter.api'),
             method: 'POST',
             jsonData: { containers: containers }
         });
