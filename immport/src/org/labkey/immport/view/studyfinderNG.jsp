@@ -79,6 +79,7 @@
     Map<String,StudyBean> mapOfStudies = new TreeMap<>();
     for (StudyBean sb : studies)
         mapOfStudies.put(sb.getStudy_accession(), sb);
+    int uuid = getRequestScopedUID();
 %>
 
 <style>
@@ -206,9 +207,11 @@
 </style>
 
 
-<%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%><br>
 
-<div id="studyfinderAppDIV" class="x-hidden" ng-app="studyfinderApp" ng-controller="studyfinder">
+<div id="studyfinderOuterDIV<%=uuid%>" style="min-height:100px; min-width:400px;">
+<div id="studyfinderAppDIV<%=uuid%>" class="x-hidden" ng-app="studyfinderApp" ng-controller="studyfinder">
+
+<%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%><br>
 
 <table style="max-width:980px;" bordercolor=red border="0">
 
@@ -280,7 +283,6 @@
 </tr>
 </table>
 
-<div id="mask" style="position:fixed; top:0; left:0; height:0; width:0; z-index:1000; background-color:#dddddd; opacity:0.5; cursor:wait;"></div>
 <div id="studyPopup"></div>
 
 <!--
@@ -317,15 +319,17 @@
 </script>
 
 </div>
+</div>
 
 
-
-<!-- 
+<%--
 			controller
- -->
+ --%>
+<%-- TODO {low} make robust enough to have two finder web parts on the same page --%>
 
 <script>
-
+var studyfinderMaskId = 'studyfinderOuterDIV<%=uuid%>';
+var studyfinderAppId = 'studyfinderAppDIV<%=uuid%>';
 
 //
 // study detail pop-up window
@@ -745,7 +749,7 @@ studyfinderScope.prototype =
 
         if (loadMask)
         {
-            Ext4.get("studyfinderAppDIV").removeCls("x-hidden");
+            Ext4.get(studyfinderAppId).removeCls("x-hidden");
             loadMask.hide();
             loadMask = null;
             LABKEY.help.Tour.autoShow('immport.studyfinder');
@@ -1077,32 +1081,6 @@ function initEmptyDimension(name)
 }
 
 
-var startTime;
-
-function busy()
-{
-    var mask = $('mask');
-    mask.style.width = window.innerWidth;
-    mask.style.height = window.innerHeight;
-    mask.style.display = 'block';
-    document.body.style.cursor='wait';
-    if (!startTime)
-        startTime = new Date();
-}
-function ready()
-{
-    var endTime = new Date();
-    //$('showTime').innerHTML = (endTime-startTime) + 'ms';
-    startTime = null;
-
-    var mask = $('mask');
-    mask.style.width = 0;
-    mask.style.height = 0;
-    mask.style.display = 'none';
-    document.body.style.cursor='auto';
-}
-
-
 <%-- data --%>
 
 var cube = null;
@@ -1146,7 +1124,7 @@ for (var p in dataspace.dimensions)
 var loadMask = null;
 
 Ext4.onReady(function(){
-    loadMask = new Ext4.LoadMask(Ext4.getBody(), {msg:"Loading study definitions..."});
+    loadMask = new Ext4.LoadMask(Ext4.get(studyfinderMaskId), {msg:"Loading study definitions..."});
     loadMask.show();
 });
 
