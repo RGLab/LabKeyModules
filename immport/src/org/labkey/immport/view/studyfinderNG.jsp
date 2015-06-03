@@ -1217,7 +1217,7 @@ LABKEY.help.Tour.register({
         {
             target: 'summaryArea',
             title: "Summary",
-            content: "Here is a summary of the data in the selected studies.",
+            content: "Here is a summary of the data in the selected studies. Studies represents the number of studies that contain some participants that match the criteria. Participants is the number of subjects accross all selected studies (including participants that did not match all attributes).",
             placement: "left"
         },
         {
