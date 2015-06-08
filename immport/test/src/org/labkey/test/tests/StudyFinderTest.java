@@ -173,7 +173,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     public void clearSharedStudyContainerFilter()
     {
         Connection connection = createDefaultConnection(false);
-        Command command = new Command("study", "sharedStudyContainerFilter")
+        Command command = new Command("study-shared", "sharedStudyContainerFilter")
         {
             @Override
             protected HttpUriRequest createRequest(URI uri)

@@ -3,6 +3,7 @@ package org.labkey.test.pages.immport;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.WebTestHelper;
+import org.labkey.test.components.ComponentElements;
 import org.labkey.test.components.immport.StudySummaryWindow;
 import org.labkey.test.pages.LabKeyPage;
 import org.openqa.selenium.By;
@@ -24,17 +25,23 @@ public class StudyFinderPage extends LabKeyPage
 {
     private static final String CONTROLLER = "immport";
     private static final String ACTION = "studyFinder";
+    private String _uuid = "1";
 
     public StudyFinderPage(BaseWebDriverTest test)
     {
         super(test);
     }
 
+    public void setUuid(String uuid)
+    {
+        _uuid = uuid;
+    }
+
     @Override
     protected void waitForPage()
     {
         _test._ext4Helper.waitForMaskToDisappear();
-        _test.waitForElement(Locators.studySearchInput);
+        _test.waitForElement(Locator.tag("div").attributeStartsWith("id", "studyfinderAppDIV"));
     }
 
     public static StudyFinderPage goDirectlyToPage(BaseWebDriverTest test, String containerPath)
@@ -45,12 +52,12 @@ public class StudyFinderPage extends LabKeyPage
 
     public void showAllImmPortStudies()
     {
-        _test.checkRadioButton(Locators.showAllRadioButton);
+        _test.checkRadioButton(elements().showAllRadioButton);
     }
 
     public void showAllImmuneSpaceStudies()
     {
-        _test.checkRadioButton(Locators.showAllImmuneSpaceRadioButton);
+        _test.checkRadioButton(elements().showAllImmuneSpaceRadioButton);
      }
 
     /**
@@ -59,7 +66,7 @@ public class StudyFinderPage extends LabKeyPage
     public void studySearch(String search)
     {
         final Map<Dimension, Integer> initialCounts = getSummaryCounts();
-        _test.setFormElement(Locators.studySearchInput, search);
+        _test.setFormElement(elements().studySearchInput, search);
         _test.shortWait().until(new ExpectedCondition<Boolean>()
         {
             @Override
@@ -72,7 +79,7 @@ public class StudyFinderPage extends LabKeyPage
 
     public Map<Dimension, Integer> getSummaryCounts()
     {
-        List<WebElement> summaryCountRows = Locators.summaryCountRow.findElements(_test.getDriver());
+        List<WebElement> summaryCountRows = elements().summaryCountRow.findElements(_test.getDriver());
         Map<Dimension, Integer> countMap = new HashMap<>();
 
         for (WebElement row : summaryCountRows)
@@ -89,7 +96,7 @@ public class StudyFinderPage extends LabKeyPage
 
     public List<StudyCard> getStudyCards()
     {
-        List<WebElement> studyCardEls = Locators.studyCard.findElements(_test.getDriver());
+        List<WebElement> studyCardEls = elements().studyCard.findElements(_test.getDriver());
         List<StudyCard> studyCards = new ArrayList<>();
 
         for (WebElement el : studyCardEls)
@@ -102,7 +109,7 @@ public class StudyFinderPage extends LabKeyPage
 
     public Map<Dimension, SummaryFilterPanel> getSelectionPanels()
     {
-        List<WebElement> selectionEls = Locators.selection.findElements(_test.getDriver());
+        List<WebElement> selectionEls = elements().selection.findElements(_test.getDriver());
         Map<Dimension, SummaryFilterPanel> dimensionSelections = new HashMap<>();
 
         for (WebElement el : selectionEls)
@@ -129,7 +136,7 @@ public class StudyFinderPage extends LabKeyPage
 
     public Map<Dimension, DimensionPanel> getDimensionPanels()
     {
-        List<WebElement> dimensionPanelEls = Locators.dimensionPanel.findElements(_test.getDriver());
+        List<WebElement> dimensionPanelEls = elements().dimensionPanel.findElements(_test.getDriver());
         Map<Dimension, DimensionPanel> dimensionPanels = new HashMap<>();
 
         for (WebElement el : dimensionPanelEls)
@@ -146,7 +153,7 @@ public class StudyFinderPage extends LabKeyPage
      */
     public SummaryFilterPanel waitForSelection(String value)
     {
-        WebElement selectionEl = Locators.selection.containing(value).waitForElement(_test.getDriver(), _test.shortWait());
+        WebElement selectionEl = elements().selection.containing(value).waitForElement(_test.getDriver(), _test.shortWait());
 
         return new SummaryFilterPanel(selectionEl);
     }
@@ -158,22 +165,27 @@ public class StudyFinderPage extends LabKeyPage
             _test.click(closeTourButton);
     }
 
-    public static class Locators
+    protected Elements elements()
     {
-        public static Locator.CssLocator studyFinder = Locator.css("#studyfinderAppDIV");
-        public static Locator.CssLocator studySearchInput = studyFinder.append(Locator.css("#searchTerms"));
-        public static Locator.CssLocator searchMessage = studyFinder.append(Locator.css("span.searchMessage"));
-        public static Locator.CssLocator searchMessageNotFound = studyFinder.append(Locator.css("span.searchNotFound"));
-        public static Locator.XPathLocator showAllRadioButton = Locator.radioButtonByNameAndValue("studySubset", "ImmPort");
-        public static Locator.XPathLocator showAllImmuneSpaceRadioButton = Locator.radioButtonByNameAndValue("studySubset","ImmuneSpace");
-        public static Locator.CssLocator studyPanel = studyFinder.append(Locator.css("#studypanel"));
-        public static Locator.CssLocator studyCard = studyFinder.append(Locator.css(".study-card"));
-        public static Locator.CssLocator dimensionsTable = studyFinder.append(Locator.css("table.dimensions"));
-        public static Locator.CssLocator dimensionPanel = dimensionsTable.append(Locator.css("fieldset.group-fieldset"));
-        public static Locator.CssLocator summaryArea = studyFinder.append(Locator.css("#summaryArea"));
-        public static Locator.CssLocator summaryCounts = summaryArea.append(Locator.css("> tbody:first-child"));
-        public static Locator.CssLocator summaryCountRow = summaryCounts.append(Locator.css("> tr:not(:first-child):not(:last-child)"));
-        public static Locator.CssLocator selection = summaryArea.append(Locator.css("> tbody:not(:first-child)"));
+        return new Elements();
+    }
+    
+    protected class Elements
+    {
+        public Locator.CssLocator studyFinder = Locator.css("#studyfinderAppDIV" + _uuid);
+        public Locator.CssLocator studySearchInput = studyFinder.append(Locator.css("#searchTerms"));
+        public Locator.CssLocator searchMessage = studyFinder.append(Locator.css("span.searchMessage"));
+        public Locator.CssLocator searchMessageNotFound = studyFinder.append(Locator.css("span.searchNotFound"));
+        public Locator.XPathLocator showAllRadioButton = Locator.radioButtonByNameAndValue("studySubset", "ImmPort");
+        public Locator.XPathLocator showAllImmuneSpaceRadioButton = Locator.radioButtonByNameAndValue("studySubset","ImmuneSpace");
+        public Locator.CssLocator studyPanel = studyFinder.append(Locator.css("#studypanel"));
+        public Locator.CssLocator studyCard = studyFinder.append(Locator.css(".study-card"));
+        public Locator.CssLocator dimensionsTable = studyFinder.append(Locator.css("table.dimensions"));
+        public Locator.CssLocator dimensionPanel = dimensionsTable.append(Locator.css("fieldset.group-fieldset"));
+        public Locator.CssLocator summaryArea = studyFinder.append(Locator.css("#summaryArea"));
+        public Locator.CssLocator summaryCounts = summaryArea.append(Locator.css("> tbody:first-child"));
+        public Locator.CssLocator summaryCountRow = summaryCounts.append(Locator.css("> tr:not(:first-child):not(:last-child)"));
+        public Locator.CssLocator selection = summaryArea.append(Locator.css("> tbody:not(:first-child)"));
     }
 
     public enum Dimension
@@ -187,7 +199,8 @@ public class StudyFinderPage extends LabKeyPage
         ASSAY("Assay", "assays"),
         TIMEPOINT("Day of Study", "timepoints"),
         GENDER("Gender", "genders"),
-        RACE("Race", "races");
+        RACE("Race", "races"),
+        AGE("Age", "age groups");
 
         private String caption;
         private String summaryLabel;
