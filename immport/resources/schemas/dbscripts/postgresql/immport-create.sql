@@ -132,7 +132,7 @@ BEGIN
   -- dimDemographic
 
   DELETE FROM immport.dimDemographic;
-  INSERT INTO immport.dimDemographic
+  INSERT INTO immport.dimDemographic (ParticipantId, AgeInYears, Species, Gender, Race, Age)
   SELECT DISTINCT
     subject_accession AS ParticipantId,
     CASE age_unit
