@@ -141,12 +141,12 @@
     TD.big-summary
     {
         font-size : 110%;
-        padding:5pt;
+        padding:3pt 2pt 3pt 2pt;
         white-space:nowrap;
     }
     TD.small-summary
     {
-        padding:5pt;
+        padding:2pt;
         white-space:nowrap;
     }
     DIV.filter-summary
@@ -258,7 +258,7 @@
     </td>
     <td valign="top" style="width:200px;">
            <table id="summaryArea" ng-cloak>
-                <tr><td colspan="2"><h3 style="text-align:center;">Summary</h3></td></tr>
+                <tr><td colspan="2"><h3 style="display:inline-block;">Summary</h3></td></tr>
                 <tr><td align="right" class="big-summary" style="width:60pt;">{{dimStudy.summaryCount}}</td><td class="big-summary">&nbsp;studies</td></tr>
                 <tr><td align="right" class="big-summary" style="width:60pt;">{{dimSubject.allMemberCount||0}}</td><td class="big-summary">&nbsp;participants</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimSpecies.summaryCount}}</td><td class="small-summary">&nbsp;species</td></tr>
@@ -269,11 +269,16 @@
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimGender.summaryCount}}</td><td class="small-summary">&nbsp;genders</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimRace.summaryCount}}</td><td class="small-summary">&nbsp;races</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimAge.summaryCount}}</td><td class="small-summary">&nbsp;age groups</td></tr>
-                <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">Study Attributes Selection</h3></td></tr>
+                <tr>
+                    <td colspan="2">
+                        <h3 style="display:inline-block;" id="filterArea">Study Filters</h3>
+                        <a ng-click="clearAllFilters();" ng-show="hasFilters()">[clear all]</a>
+                    </td>
+                </tr>
                 <tbody ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace,dimAge] | filter:dimensionHasFilter ">
                 <tr><td colspan="2"><fieldset style="width:100%;"><legend>{{dim.caption || dim.name}}</legend>
                     <div class="filter-member" ng-repeat="member in dim.filters">
-                    <img class="delete" style="vertical-align:bottom;" src="<%=getContextPath()%>/_images/partdelete.png" ng-click="removeFilterMember(dim,member)">{{member.name}}
+                    <img class="delete" style="vertical-align:middle;" src="<%=getContextPath()%>/_images/partdelete.png" ng-click="removeFilterMember(dim,member)">{{member.name}}
                     </div>
                 </fieldset></td></tr>
                 </tbody>
@@ -436,6 +441,21 @@ studyfinderScope.prototype =
     },
 
 
+    hasFilters : function ()
+    {
+        for (var d in dataspace.dimensions)
+        {
+            if (!dataspace.dimensions.hasOwnProperty(d))
+                continue;
+            if (d == "Study")
+                continue;
+            var filterMembers = dataspace.dimensions[d].filters;
+            if (filterMembers && filterMembers.length > 0)
+                return true;
+        }
+        return false;
+    },
+
     dimensionHasFilter : function(dim)
     {
         return (dim.filters && dim.filters.length) ? true : false;
@@ -483,6 +503,18 @@ studyfinderScope.prototype =
         this.updateCountsAsync();
     },
 
+
+    clearAllFilters : function ()
+    {
+        for (var d in dataspace.dimensions) {
+            if (!dataspace.dimensions.hasOwnProperty(d))
+                continue;
+            if (d == "Study")
+                continue;
+            this._clearFilter(d);
+        }
+        this.updateCountsAsync();
+    },
 
     _clearFilter : function(dimName)
     {
@@ -556,6 +588,8 @@ studyfinderScope.prototype =
         var d, i;
         for (d in dataspace.dimensions)
         {
+            if (!dataspace.dimensions.hasOwnProperty(d))
+                continue;
             var filterMembers = dataspace.dimensions[d].filters;
             if (!filterMembers || filterMembers.length == 0)
                 continue;
@@ -696,6 +730,8 @@ studyfinderScope.prototype =
         // clear old counts (to be safe)
         for (d in dataspace.dimensions)
         {
+            if (!dataspace.dimensions.hasOwnProperty(d))
+                continue;
             if (d == "Study" && this.filterByStudy)
                 continue;
             dim = dataspace.dimensions[d];
@@ -962,18 +998,30 @@ studyfinderScope.prototype =
         var containers = [];
         for (var name in loaded_studies)
         {
+            if (!loaded_studies.hasOwnProperty(name))
+                continue;
             var study = loaded_studies[name];
             var count = this.countForStudy(study);
             if (count)
                 containers.push(study.containerId);
         }
 
-        // CONSIDER: delete the shared container filter if all loaded_studies are selected
-        LABKEY.Ajax.request({
-            url: LABKEY.ActionURL.buildURL('study-shared', 'sharedStudyContainerFilter.api'),
-            method: 'POST',
-            jsonData: { containers: containers }
-        });
+        if (containers.length == 0 || containers.length == this.loaded_study_list.length)
+        {
+            // Delete the shared container filter if all loaded_studies are selected
+            LABKEY.Ajax.request({
+                url: LABKEY.ActionURL.buildURL('study-shared', 'sharedStudyContainerFilter.api'),
+                method: 'DELETE'
+            });
+        }
+        else
+        {
+            LABKEY.Ajax.request({
+                url: LABKEY.ActionURL.buildURL('study-shared', 'sharedStudyContainerFilter.api'),
+                method: 'POST',
+                jsonData: { containers: containers }
+            });
+        }
     },
 
     showStudyPopup: function(study_accession)

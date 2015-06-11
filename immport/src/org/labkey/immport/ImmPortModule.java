@@ -25,7 +25,7 @@ import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.search.SearchService;
 import org.labkey.api.security.roles.RoleManager;
 import org.labkey.api.services.ServiceRegistry;
-import org.labkey.api.view.DefaultWebPartFactory;
+import org.labkey.api.view.SimpleWebPartFactory;
 import org.labkey.api.view.WebPartFactory;
 import org.labkey.immport.security.ImmPortAdminRole;
 import org.labkey.immport.view.StudyFinderWebPart;
@@ -65,7 +65,7 @@ public class ImmPortModule extends DefaultModule
     protected Collection<WebPartFactory> createWebPartFactories()
     {
         ArrayList<WebPartFactory> list = new ArrayList<>();
-        list.add(new DefaultWebPartFactory("ImmPort Study Finder", StudyFinderWebPart.class, WebPartFactory.LOCATION_BODY));
+        list.add(new SimpleWebPartFactory("ImmPort Study Finder", WebPartFactory.LOCATION_BODY, StudyFinderWebPart.class, null));
         return list;
     }
 
