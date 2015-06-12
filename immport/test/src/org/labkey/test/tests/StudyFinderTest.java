@@ -50,6 +50,7 @@ import org.labkey.test.util.Maps;
 import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.PostgresOnlyTest;
 import org.labkey.test.util.ReadOnlyTest;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -73,8 +74,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
 {
     private static File immPortArchive = TestFileUtils.getSampleData("HIPC/ANIMAL_STUDIES-DR11.zip");
     private static File TEMPLATE_ARCHIVE = TestFileUtils.getSampleData("HIPC/SDY_template.zip");
-    private static String IMMPORT_PROJECT = "ImmPort Admin Project";
-    private static String[] ANIMAL_STUDIES = {"SDY21", "SDY29", "SDY30", "SDY31", "SDY32", "SDY35", "SDY62", "SDY64", "SDY78", "SDY95", "SDY99", "SDY139", "SDY147", "SDY208", "SDY215", "SDY217", "SDY241", "SDY259", "SDY271", "SDY286", "SDY288"};
+    private static String[] ANIMAL_STUDIES = {"SDY99", "SDY139", "SDY147", "SDY208", "SDY215", "SDY217"};
     private static String[] STUDY_SUBFOLDERS = {"SDY139", "SDY147", "SDY208", "SDY217"};
 
     @Override
@@ -94,7 +94,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     {
         AbstractContainerHelper containerHelper = new APIContainerHelper(this);
         containerHelper.deleteProject(getProjectName(), afterTest);
-        containerHelper.deleteProject(IMMPORT_PROJECT, afterTest);
     }
 
     @BeforeClass
@@ -111,8 +110,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     {
         try
         {
-            return HttpStatus.SC_NOT_FOUND == WebTestHelper.getHttpGetResponse(WebTestHelper.buildURL("project", getProjectName(), "begin")) ||
-                    HttpStatus.SC_NOT_FOUND == WebTestHelper.getHttpGetResponse(WebTestHelper.buildURL("project", IMMPORT_PROJECT, "begin"));
+            return HttpStatus.SC_NOT_FOUND == WebTestHelper.getHttpGetResponse(WebTestHelper.buildURL("project", getProjectName(), "begin"));
         }
         catch (IOException fail)
         {
@@ -123,22 +121,19 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     private void setupProject()
     {
         AbstractContainerHelper containerHelper = new APIContainerHelper(this);
-        containerHelper.createProject(IMMPORT_PROJECT, null);
-        containerHelper.enableModule("ImmPort");
-        ImmPortBeginPage
-                .beginAt(this, IMMPORT_PROJECT)
-                .importArchive(immPortArchive, false);
-        ImmPortBeginPage
-                .beginAt(this, IMMPORT_PROJECT)
-                .populateCube();
 
         containerHelper.createProject(getProjectName(), "Study");
+        containerHelper.enableModule("ImmPort");
+        ImmPortBeginPage
+                .beginAt(this, getProjectName())
+                .importArchive(immPortArchive, false);
+
+        goToProjectHome();
         clickButton("Create Study");
         checkRadioButton(Locator.radioButtonByNameAndValue("shareDatasets", "true"));
         checkRadioButton(Locator.radioButtonByNameAndValue("shareVisits", "true"));
         selectOptionByValue(Locator.name("securityString"), "ADVANCED_WRITE");
         clickButton("Create Study");
-        containerHelper.enableModule("ImmPort");
         containerHelper.setFolderType("Dataspace");
         new PortalHelper(this).addWebPart("ImmPort Study Finder");
 
@@ -164,12 +159,24 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
                     .copyStudyResults(studyAccession);
         }
 
-        goToProjectHome();
-        goToModule("ImmPort");
-        new ImmPortBeginPage(this).populateCube();
+        ImmPortBeginPage.beginAt(this, getProjectName()).populateCube();
     }
 
     @Before
+    public void preTest()
+    {
+        clearSharedStudyContainerFilter();
+        goToProjectHome();
+        StudyFinderPage studyFinder = new StudyFinderPage(this);
+        studyFinder.clearSearch();
+        try
+        {
+            studyFinder.clearAllFilters();
+        }
+        catch (NoSuchElementException ignore) {}
+        studyFinder.dismissTour();
+    }
+
     public void clearSharedStudyContainerFilter()
     {
         Connection connection = createDefaultConnection(false);
@@ -195,7 +202,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     @Test
     public void testCounts()
     {
-        goToProjectHome();
         StudyFinderPage studyFinder = new StudyFinderPage(this);
         assertCountsSynced(studyFinder);
 
@@ -212,7 +218,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     public void testStudyCards()
     {
         StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
-        studyFinder.dismissTour();
 
         List<StudyFinderPage.StudyCard> studyCards = studyFinder.getStudyCards();
 
@@ -223,7 +228,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     public void testImmuneSpaceStudySubset()
     {
         StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
-        studyFinder.dismissTour();
 
         studyFinder.showAllImmPortStudies();
         assertEquals("Wrong ImmPort studies have LabKey study links", Arrays.asList(STUDY_SUBFOLDERS),
@@ -243,7 +247,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     @Test
     public void testSelection()
     {
-        goToProjectHome();
         StudyFinderPage studyFinder = new StudyFinderPage(this);
         studyFinder.showAllImmPortStudies();
 
@@ -280,10 +283,10 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         expectedCounts.put(Dimension.ASSAY, 0);
         expectedCounts.put(Dimension.TIMEPOINT, 0);
         expectedCounts.put(Dimension.GENDER, 0);
+        expectedCounts.put(Dimension.AGE, 0);
         expectedCounts.put(Dimension.RACE, 0);
 
         StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
-        studyFinder.dismissTour();
 
         WebElement emptyMember = Locator.css("fieldset.group-fieldset > div.emptyMember").waitForElement(getDriver(), shortWait());
         String value = emptyMember.getText().trim();
@@ -302,7 +305,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     public void testSearch()
     {
         StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
-        studyFinder.dismissTour();
         studyFinder.showAllImmPortStudies();
 
         List<StudyFinderPage.StudyCard> studyCards = studyFinder.getStudyCards();
@@ -322,7 +324,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     public void testStudySummaryWindow()
     {
         StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
-        studyFinder.dismissTour();
 
         StudyFinderPage.StudyCard studyCard = studyFinder.getStudyCards().get(0);
 
@@ -343,7 +344,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         Map<String, Integer> studyFinderParticipantCounts = new HashMap<>();
         Map<String, Integer> studyParticipantCounts = new HashMap<>();
 
-        goToProjectHome();
         StudyFinderPage studyFinder = new StudyFinderPage(this);
         for (String studyAccession : STUDY_SUBFOLDERS)
         {
@@ -364,7 +364,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     @Test
     public void testStudyCardStudyLinks()
     {
-        goToProjectHome();
         Set<String> foundAccessions = new HashSet<>();
         for (int i = 0; i < STUDY_SUBFOLDERS.length; i++)
         {
@@ -384,7 +383,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     @Test
     public void testNavigationDoesNotDoesNotRemoveStudyFinderFilter()
     {
-        goToProjectHome();
         StudyFinderPage studyFinder = new StudyFinderPage(this);
         Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
         dimensionPanels.get(Dimension.SPECIES).selectFirstIntersectingMeasure();
@@ -398,7 +396,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     @Test
     public void testRefreshDoesNotDoesNotRemoveStudyFinderFilter()
     {
-        goToProjectHome();
         StudyFinderPage studyFinder = new StudyFinderPage(this);
         Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
         dimensionPanels.get(Dimension.SPECIES).selectFirstIntersectingMeasure();
@@ -411,7 +408,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     @Test
     public void testBackDoesNotDoesNotRemoveStudyFinderFilter()
     {
-        goToProjectHome();
         StudyFinderPage studyFinder = new StudyFinderPage(this);
         Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
         dimensionPanels.get(Dimension.SPECIES).selectFirstIntersectingMeasure();
@@ -425,7 +421,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     @Test
     public void testStudyFinderWebPartAndActionShareFilter()
     {
-        goToProjectHome();
         StudyFinderPage studyFinder = new StudyFinderPage(this);
         Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
         dimensionPanels.get(Dimension.SPECIES).selectFirstIntersectingMeasure();
@@ -440,16 +435,15 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     {
         Map<Dimension, Integer> expectedCounts = new HashMap<>();
         expectedCounts.put(Dimension.STUDIES, 2);
-        expectedCounts.put(Dimension.PARTICIPANTS, 307);
+        expectedCounts.put(Dimension.PARTICIPANTS, 345);
         expectedCounts.put(Dimension.SPECIES, 1);
         expectedCounts.put(Dimension.TYPE, 1);
         expectedCounts.put(Dimension.CONDITION, 0);
         expectedCounts.put(Dimension.ASSAY, 3);
         expectedCounts.put(Dimension.TIMEPOINT, 11);
         expectedCounts.put(Dimension.GENDER, 1);
+        expectedCounts.put(Dimension.AGE, 1);
         expectedCounts.put(Dimension.RACE, 1);
-
-        goToProjectHome();
 
         StudyFinderPage studyFinder = new StudyFinderPage(this);
         studyFinder.getDimensionPanels().get(Dimension.CATEGORY).select("Immune Response");
@@ -478,8 +472,6 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     @Test
     public void testStickyStudyFinderFilterOnStudyNavigator()
     {
-        goToProjectHome();
-
         StudyFinderPage studyFinder = new StudyFinderPage(this);
         studyFinder.getDimensionPanels().get(Dimension.CATEGORY).select("Immune Response");
 
@@ -497,7 +489,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
             {
                 if (participantCount.getKey().contains(assayWithData))
                 {
-                    assertTrue(String.format("Assay [%s] should have data with current filter, but does not",
+                    assertTrue(String.format("Assay [%s] should have data with current filter, but does not.",
                             assayWithData), participantCount.getValue() > 0);
                     break;
                 }
@@ -510,14 +502,14 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
             {
                 if (participantCount.getKey().contains(assayWithoutData))
                 {
-                    assertTrue(String.format("Assay [%s] should be empty with current filter, but is not",
-                            assayWithoutData), participantCount.getValue() == 0);
+                    assertEquals(String.format("Assay [%s] should be empty with current filter, but is not.",
+                            assayWithoutData), 0, participantCount.getValue().intValue());
                     break;
                 }
             }
         }
 
-        assertEquals("Participant count from study finder does not match Demographics dataset participant count",
+        assertEquals("Participant count from study finder does not match Demographics dataset participant count.",
                 studyFinderSummaryCounts.get(Dimension.PARTICIPANTS), studyOverviewParticipantCounts.get("Demographics"));
     }
 

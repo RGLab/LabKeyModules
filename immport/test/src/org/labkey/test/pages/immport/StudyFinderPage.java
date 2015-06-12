@@ -41,7 +41,7 @@ public class StudyFinderPage extends LabKeyPage
     protected void waitForPage()
     {
         _test._ext4Helper.waitForMaskToDisappear();
-        _test.waitForElement(Locator.tag("div").attributeStartsWith("id", "studyfinderAppDIV"));
+        _test.shortWait().until(ExpectedConditions.elementToBeClickable(elements().studySearchInput.toBy()));
     }
 
     public static StudyFinderPage goDirectlyToPage(BaseWebDriverTest test, String containerPath)
@@ -75,6 +75,12 @@ public class StudyFinderPage extends LabKeyPage
                 return !initialCounts.equals(getSummaryCounts());
             }
         });
+    }
+
+    public void clearSearch()
+    {
+        _test.setFormElement(elements().studySearchInput, "a");
+        _test.setFormElement(elements().studySearchInput, "");
     }
 
     public Map<Dimension, Integer> getSummaryCounts()
@@ -158,6 +164,13 @@ public class StudyFinderPage extends LabKeyPage
         return new SummaryFilterPanel(selectionEl);
     }
 
+    public void clearAllFilters()
+    {
+        WebElement clearAll = elements().clearAll.findElement(_test.getDriver());
+        if (clearAll.isDisplayed())
+            clearAll.click();
+    }
+
     public void dismissTour()
     {
         Locator closeTourButton = Locator.css("a.hopscotch-close");
@@ -172,7 +185,7 @@ public class StudyFinderPage extends LabKeyPage
     
     protected class Elements
     {
-        public Locator.CssLocator studyFinder = Locator.css("#studyfinderAppDIV" + _uuid);
+        public Locator.CssLocator studyFinder = Locator.css("#studyfinderAppDIV" + (_uuid == null ? "1" : _uuid));
         public Locator.CssLocator studySearchInput = studyFinder.append(Locator.css("#searchTerms"));
         public Locator.CssLocator searchMessage = studyFinder.append(Locator.css("span.searchMessage"));
         public Locator.CssLocator searchMessageNotFound = studyFinder.append(Locator.css("span.searchNotFound"));
@@ -186,6 +199,7 @@ public class StudyFinderPage extends LabKeyPage
         public Locator.CssLocator summaryCounts = summaryArea.append(Locator.css("> tbody:first-child"));
         public Locator.CssLocator summaryCountRow = summaryCounts.append(Locator.css("> tr:not(:first-child):not(:last-child)"));
         public Locator.CssLocator selection = summaryArea.append(Locator.css("> tbody:not(:first-child)"));
+        public Locator.CssLocator clearAll = summaryArea.append(Locator.css("a[ng-click='clearAllFilters();']"));
     }
 
     public enum Dimension
