@@ -30,6 +30,7 @@ dataset             <- labkey.url.params$datasetName;
 datasetDisplay      <- labkey.url.params$datasetLabel;
 plotType            <- labkey.url.params$plotType;
 normalize           <- as.logical( labkey.url.params$normalize );
+show_strains        <- as.logical( labkey.url.params$show_strains );
 filters             <- RJSONIO::fromJSON( labkey.url.params$filters );
 textSize            <- as.numeric( labkey.url.params$textSize );
 facet               <- tolower(labkey.url.params$facet);
@@ -72,7 +73,8 @@ m_out <- con$quick_plot(
     size                    = size,
     shape                   = shape,
     alpha                   = alpha,
-    legend                  = legend
+    legend                  = legend,
+    show_virus_strain       = show_strains
 )
 dev.off();
 
