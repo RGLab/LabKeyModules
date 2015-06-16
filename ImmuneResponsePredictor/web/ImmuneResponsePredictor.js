@@ -162,9 +162,9 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     }
                 },
                 cleared: function(){
-                    cbCohortTraining.setDisabled(true);
-                    cbCohortTesting.setDisabled(true);
-                    btnRun.setDisabled(true);
+                    cbCohortTraining.setDisabled( true );
+                    cbCohortTesting.setDisabled( true );
+                    btnRun.setDisabled( true );
                 },
                 focus: function(){
                     flagTimePoint = false;
@@ -452,9 +452,34 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             defaults: {
                 style: 'padding-top: 1px; padding-bottom: 1px;'
             },
-            disabled: true,
             enableOverflow: true,
-            items: [ btnRun ],
+            items: [
+                btnRun,
+                new Ext.Button({
+                    handler: function(){
+                        cbVariable.reset();
+                        cbTimePoint.reset();
+                        cbCohortTraining.reset();
+                        cbCohortTraining.setDisabled( true );
+                        cbCohortTesting.reset();
+                        cbCohortTesting.setDisabled( true );
+                        chDichotomize.reset();
+                        nfDichotomize.reset();
+                        
+                        nfFoldChange.reset();
+                        chFoldChange.reset();
+                        chFalseDiscoveryRate.reset();
+
+                        chFoldChange.setDisabled( false );
+                        chFalseDiscoveryRate.setDisabled( false );
+
+                        dfFoldChange.setDisabledViaClass( false );
+                        dfFalseDiscoveryRate.setDisabledViaClass( false );
+                        checkBtnRunStatus();
+                    },
+                    text: 'Reset'
+                })
+            ],
             style: 'padding-right: 2px; padding-left: 2px;'
         });
 
@@ -662,7 +687,21 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                             ',
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Additional options'
-                        })
+                        }),
+                        new Ext.form.FieldSet({
+                            html: '\
+                                The first figure in the view tab is a plot of the predicted response vs. the observed response\
+                                where each point  represents a subject. Each panel represents a cohort and indicates whether\
+                                it was used for\
+                                training (i.e: selecting predictive features) or testing. The heatmap of selected features\
+                                shows the expression of the genes selected\
+                                as predictors of the response. If the selected timepoint is later than baseline, the expression\
+                                is the fold-change to baseline. The table of genes summarizes the features selected as predictors\
+                                of the response by the elastic net.\
+                            ',
+                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            title: 'View'
+                        }),
                     ],
                     layout: 'fit',
                     tabTip: 'Help',

@@ -111,16 +111,17 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 cleared:    checkBtnRunStatus,
                 select:     checkBtnRunStatus
             },
+            qtipField: 'qtip',
             store: new Ext.data.ArrayStore({
                 data: [
-                    [ 'Blood transcription', 'Blood transcription' ],
-                    [ 'MSigDB c7', 'MSigDB c7' ],
-                    [ 'G2 (Trial 8) Modules', 'G2 (Trial 8) Modules' ]
+                    [ 'Blood transcription', 'Blood transcription', 'Set of transcription modules in blood.' ],
+                    [ 'MSigDB c7', 'MSigDB c7', 'Gene sets that represent cell states and perturbations within the immune system.' ],
+                    [ 'G2 (Trial 8) Modules', 'G2 (Trial 8) Modules', 'Repertoire of co-clustering genes.' ]
                 ],
-                fields: [ 'name', 'name' ]
+                fields: [ 'name', 'value', 'qtip' ]
             }),
             value: 'Blood transcription',
-            valueField: 'name',
+            valueField: 'value',
             width: fieldWidth
         });
 
@@ -191,9 +192,18 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             defaults: {
                 style: 'padding-top: 1px; padding-bottom: 1px;'
             },
-            disabled: true,
             enableOverflow: true,
-            items: [ btnRun ],
+            items: [
+                btnRun,
+                new Ext.Button({
+                    handler: function(){
+                        cbCohort.reset();
+                        cbModules.reset();
+                        checkBtnRunStatus();
+                    },
+                    text: 'Reset'
+                })
+            ],
             style: 'padding-right: 2px; padding-left: 2px;'
         });
 
@@ -242,6 +252,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     ],
                     layout: 'hbox'
                 },
+                
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
