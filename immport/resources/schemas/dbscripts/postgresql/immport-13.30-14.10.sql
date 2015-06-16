@@ -32,10 +32,13 @@ CREATE TABLE immport.dimDemographic
    AgeInYears INTEGER,
    Species VARCHAR(100),
    Gender VARCHAR(100),
-   Race VARCHAR(100)
+   Race VARCHAR(100),
+   Age VARCHAR(100)
 );
 CREATE INDEX participantage ON immport.dimDemographic (ParticipantId,AgeInYears);
 CREATE INDEX ageparticipant ON immport.dimDemographic (AgeInYears,ParticipantId);
+CREATE INDEX participantagegroup ON immport.dimDemographic (ParticipantId,Age);
+CREATE INDEX agegroupparticipant ON immport.dimDemographic (Age,ParticipantId);
 CREATE INDEX participantspecies ON immport.dimDemographic (ParticipantId,Species);
 CREATE INDEX speciesparticipant ON immport.dimDemographic (Species,ParticipantId);
 CREATE INDEX participantgender ON immport.dimDemographic (ParticipantId,Gender);

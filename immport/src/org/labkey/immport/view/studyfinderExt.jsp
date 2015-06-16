@@ -172,6 +172,7 @@
             <td valign=top>
                 <div id=group_gender valign=top align=left style="min-width:150pt;"></div>
                 <div id=group_race valign=top align=left style="min-width:150pt;"></div>
+                <div id=group_age valign=top align=left style="min-width:150pt;"></div>
             </td>
         </tr>
         </table>
@@ -192,6 +193,7 @@
                     <div id=group_summary_timepoint valign=top align=left style="min-width:150pt;"></div>
                     <div id=group_summary_gender valign=top align=left style="min-width:150pt;"></div>
                     <div id=group_summary_race valign=top align=left style="min-width:150pt;"></div>
+                    <div id=group_summary_age valign=top align=left style="min-width:150pt;"></div>
                     <div id=group_filter valign=top align=left style="min-width:150pt;"></div>
                     </fieldset>
                 </td>
@@ -313,6 +315,7 @@ function studyfinder_onReady()
                         "SELECT 'type' AS Dimension, Type AS Member, cast(NULL as integer) As sortorder from dimStudy UNION\n" +
                         "SELECT 'timepoint' AS v, Timepoint AS Member, sortorder from dimStudyTimepoint UNION\n" +
                         "SELECT 'race' AS Dimension, Race AS Member, cast(NULL as integer) As sortorder FROM dimDemographic UNION\n" +
+                        "SELECT 'age' AS Dimension, Age AS Member, cast(NULL as integer) As sortorder FROM dimDemographic UNION\n" +
                         "SELECT 'gender' AS Dimension, gender AS Member, cast(NULL as integer) As sortorder FROM dimDemographic UNION\n" +
                         "SELECT 'species' AS Dimension, species AS Member, cast(NULL as integer) As sortorder from dimDemographic UNION\n" +
                         "SELECT 'participant' AS Dimension, participantid AS Member, cast(NULL as integer) As sortorder FROM dimDemographic\n" +
@@ -337,6 +340,7 @@ var dataspace =
         type:null,
         timepoint:null,
         race:null,
+        age:null,
         gender:null,
         species:null,
         participant:null
@@ -349,6 +353,7 @@ var dataspace =
         {name:'type', plural:'types', table:'dimstudy', members:{}, fn:function(row){return row.Condition;}},
         {name:'timepoint', plural:'timepoints', table:'(SELECT ParticipantId, Timepoint FROM dimStudy JOIN dimStudyTimepoint ON dimStudy.Study=dimStudyTimepoint.Study)', members:{}, fn:function(row){return row.Timepoint;}},
         {name:'race', plural:'races', table:'dimdemographic', members:{}, fn:function(row){return row.Race;}},
+        {name:'age', plural:'age groups', table:'dimdemographic', members:{}, fn:function(row){return row.Age;}},
         {name:'gender', plural:'genders', table:'dimdemographic', members:{}, fn:function(row){return row.Gender;}},
         {name:'species', plural:'species', table:'dimdemographic', members:{}, fn:function(row){return row.Species;}},
         {name:'participant', plural:'participants',  members:{}}],
