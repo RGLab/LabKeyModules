@@ -790,6 +790,8 @@ studyfinderScope.prototype =
             loadMask = null;
             LABKEY.help.Tour.autoShow('immport.studyfinder');
         }
+
+        LABKEY.Utils.signalWebDriverTest('studyFinderCountsUpdated');
     },
 
 

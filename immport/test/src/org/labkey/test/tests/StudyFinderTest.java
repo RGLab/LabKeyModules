@@ -59,6 +59,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -253,8 +254,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         Map<Dimension, StudyFinderPage.DimensionPanel> dimensionPanels = studyFinder.getDimensionPanels();
 
         dimensionPanels.get(Dimension.SPECIES).selectFirstIntersectingMeasure();
-        List<String> selectedGenders = new ArrayList<>();
-        selectedGenders.add(dimensionPanels.get(Dimension.GENDER).selectFirstIntersectingMeasure());
+        String selectedGender = dimensionPanels.get(Dimension.GENDER).selectFirstIntersectingMeasure();
 
         assertCountsSynced(studyFinder);
         assertSelectionsSynced(studyFinder);
@@ -264,8 +264,8 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         List<String> finalSelectedGenders = dimensionPanels.get(Dimension.GENDER).getSelectedValues();
         List<String> finalSelectedSpecies = dimensionPanels.get(Dimension.SPECIES).getSelectedValues();
 
-        assertEquals("Clearing Species selection removed Gender filter", selectedGenders, finalSelectedGenders);
-        assertEquals("Clicking 'ALL' didn't clear species selection", 0, finalSelectedSpecies.size());
+        assertEquals("Clearing Species selection removed Gender filter", Collections.singletonList(selectedGender), finalSelectedGenders);
+        assertEquals("Clicking 'ALL' didn't clear species selection", Collections.emptyList(), finalSelectedSpecies);
 
         assertCountsSynced(studyFinder);
         assertSelectionsSynced(studyFinder);
@@ -451,16 +451,25 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         Map<Dimension, Integer> studyFinderSummaryCounts = studyFinder.getSummaryCounts();
         assertEquals("Study finder counts not as expected for 'Immune Response'.", expectedCounts, studyFinderSummaryCounts);
 
-        clickAndWait(Locator.linkWithText("15 datasets"));
+        clickAndWait(Locator.linkContainingText("datasets"));
         clickAndWait(Locator.linkWithText("Demographics"));
         DataRegionTable demData = new DataRegionTable("Dataset", this);
         demData.showAll();
+        demData.openFilterDialog("gender");
         assertEquals("Demographics dataset doesn't have same number of genders as filtered study finder",
-                new HashSet<>(demData.getColumnDataAsText("Gender")).size(), studyFinderSummaryCounts.get(Dimension.GENDER).intValue());
+                Locator.css(".labkey-filter-dialog .labkey-link").findElements(getDriver()).size(), studyFinderSummaryCounts.get(Dimension.GENDER).intValue());
+        clickButton("Cancel", 0);
+
+        demData.openFilterDialog("race");
         assertEquals("Demographics dataset doesn't have same number of races as filtered study finder",
-                new HashSet<>(demData.getColumnDataAsText("Race")).size(), studyFinderSummaryCounts.get(Dimension.RACE).intValue());
+                Locator.css(".labkey-filter-dialog .labkey-link").findElements(getDriver()).size(), studyFinderSummaryCounts.get(Dimension.RACE).intValue());
+        clickButton("Cancel", 0);
+
+        demData.openFilterDialog("species");
         assertEquals("Demographics dataset doesn't have same number of species as filtered study finder",
-                new HashSet<>(demData.getColumnDataAsText("Species")).size(), studyFinderSummaryCounts.get(Dimension.SPECIES).intValue());
+                Locator.css(".labkey-filter-dialog .labkey-link").findElements(getDriver()).size(), studyFinderSummaryCounts.get(Dimension.SPECIES).intValue());
+        clickButton("Cancel", 0);
+
         assertEquals("Demographics dataset doesn't have same number of participants as filtered study finder",
                 demData.getDataRowCount(), studyFinderSummaryCounts.get(Dimension.PARTICIPANTS).intValue());
 
