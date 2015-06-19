@@ -460,6 +460,7 @@ public class ImmPortController extends SpringActionController
     @RequiresPermissionClass(ReadPermission.class)
     public class StudyFinderAction extends StudyFinderNGAction
     {
+
     }
 
 
@@ -472,6 +473,23 @@ public class ImmPortController extends SpringActionController
         {
             ImmPortDocumentProvider.reindex();
             return new HtmlView("done");
+        }
+
+        @Override
+        public NavTree appendNavTrail(NavTree root)
+        {
+            return null;
+        }
+    }
+
+    @RequiresPermissionClass(ReadPermission.class)
+    public class ExportStudyDatasetsAction extends SimpleViewAction
+    {
+
+        @Override
+        public ModelAndView getView(Object o, BindException errors) throws Exception
+        {
+            return new JspView("/org/labkey/immport/view/exportStudyDatasets.jsp");
         }
 
         @Override
