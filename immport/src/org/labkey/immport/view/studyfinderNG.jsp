@@ -90,7 +90,8 @@
     }
     .studycard-highlight
     {
-        color:#cc541f; font-variant:small-caps;
+        color:black;
+	font-variant:small-caps;
     }
     .innerColor
     {
@@ -109,7 +110,7 @@
     DIV.member span.bar
     {
         height:14pt; top:3px;
-        background-color:#EBEBE3;
+        background-color:#DEDEDE;
     }
     DIV.selectedMember
     {
@@ -173,7 +174,7 @@
     }
     DIV.study-card
     {
-        background-color:#EEEEEE;
+        background-color:#F8F8F8;
         border:1pt solid #AAAAAA;
         padding: 5pt;
         margin: 5pt;
@@ -199,7 +200,7 @@
     }
     DIV.loaded
     {
-        background-color:rgba(81, 158, 218, 0.8);
+        background-color:rgba(81, 158, 218, 0.2);
         /* background: linear-gradient(to right, rgba(81, 158, 218, 0.8) 0%,rgba(81, 158, 218, 0.3) 50%, rgba(81, 158, 218, 0.8) 100%); */
     }
     SPAN.searchNotFound
@@ -1220,7 +1221,7 @@ LABKEY.help.Tour.register({
         {
             target: 'summaryArea',
             title: "Summary",
-            content: "Here is a summary of the data in the selected studies.",
+            content: "Here is a summary of the data in the selected studies. Studies represents the number of studies that contain some participants that match the criteria. Participants is the number of subjects accross all selected studies (including participants that did not match all attributes).",
             placement: "left"
         },
         {
