@@ -2,7 +2,6 @@
 <view xmlns='http://labkey.org/data/xml/view' title='Gene Set Enrichment Analysis'>
     <dependencies>
         <dependency path='ISCore/Common'/>
-
         <dependency path='GeneSetEnrichmentAnalysis.js'/>
     </dependencies>
 </view>

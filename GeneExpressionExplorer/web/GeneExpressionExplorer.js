@@ -492,9 +492,25 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             defaults: {
                 style: 'padding-top: 1px; padding-bottom: 1px;'
             },
-            disabled: true,
+            //disabled: true,
             enableOverflow: true,
-            items: [ btnPlot ],
+            items: [
+                btnPlot,
+                new Ext.Button({
+                    handler: function(){
+                        cbTimePoint.reset();
+                        cbCohorts.reset();
+                        chNormalize.reset();
+                        cbGenes.reset(); //TODO: This shouldn't open the dropdown
+                        cbShape.reset();
+                        cbColor.reset();
+                        cbSize.reset();
+                        cbAlpha.reset();
+                        checkBtnPlotStatus();
+                    },
+                    text: 'Reset'
+                })
+            ],
             style: 'padding-right: 2px; padding-left: 2px;'
         });
 

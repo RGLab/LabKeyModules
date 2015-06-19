@@ -34,7 +34,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             reportSessionId = undefined,
             schemaName      = undefined,
             fieldWidth      = 330,
-            labelWidth      = 130,
+            labelWidth      = 170,
             aspectRatio     = 0.5
             tableToVarMap   = {
                 'hai': 'virus_strain',
@@ -194,6 +194,11 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     me.qwpDataset = qwpDataset;
                     pnlData.removeAll();
                     qwpDataset.render( pnlData.getLayout().innerCt );
+                }
+                if(dataset == 'hai' || dataset == 'neut_ab_titer'){
+                    chShowStrains.setVisible(true);
+                } else{
+                    chShowStrains.setVisible(false);
                 }
             } else {
                 tlbrPlot.setDisabled( true );
@@ -474,6 +479,11 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             fieldLabel: 'Normalize to baseline'
         });
 
+        var chShowStrains = new Ext.form.Checkbox({
+            fieldLabel: 'Show individual virus strains',
+            hidden: true
+        })
+
         var spnrTextSize = new Ext.ux.form.SpinnerField({
             allowBlank: false,
             allowDecimals: false,
@@ -686,6 +696,24 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             enableOverflow: true,
             items: [
                 btnPlot,
+                new Ext.Button({
+                    handler: function(){
+                        cbDataset.reset();
+                        cbPlotType.reset();
+                        chNormalize.reset();
+                        spnrTextSize.reset();
+                        cbAnnotation.reset();
+                        rgFacet.reset();
+                        cbColor.reset();
+                        cbShape.reset();
+                        cbSize.reset();
+                        cbAlpha.reset();
+                        manageAdditionalOptions(); //Hide options
+                        loadDataset(''); //Clear the Data tab
+                        checkBtnPlotStatus(); //Disable run
+                    },
+                    text: 'Reset'
+                }),
                 cmpStatus
             ],
             style: 'padding-right: 2px; padding-left: 2px;'
@@ -746,7 +774,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         }),
                         cbDataset,
                         cbPlotType,
-                        chNormalize
+                        chNormalize,
+                        chShowStrains
                     ],
                     labelWidth: labelWidth,
                     title: 'Parameters'
@@ -848,16 +877,19 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: '<b>Choose a dataset</b>: Select an assay type to visualize. The selected data can be filtered using the grid view under the "Data" tab.</br></br><b>Plot type</b>: Five different types are available: "Boxplot", "Violin plots", "Lines", "Heatmap", and "Auto". "Auto" is the default, in which case the module\'s logic determines the best plot type for your data.</br></br><b>Normalize to baseline</b>: Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.',
+                            html: '<b>Choose a dataset</b>: Select an assay type to visualize. The selected data can be filtered using the grid view under the "Data" tab.</br></br>\
+                            <b>Plot type</b>: Five different types are available: "Boxplot", "Violin plots", "Lines", "Heatmap", and "Auto". "Auto" is the default, in which case the module\'s logic determines the best plot type for your data.</br></br>\
+                            <b>Normalize to baseline</b>: Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.<br><br>\
+                            <b>Show individual virus strains</b>: For HAI and neutralizing antibody titer experiments, by default the response is expressed as the average titer fold-change for all virus strains. When this option is enabled, the strains are used for facetting.',
                             style: 'margin-top: 5px;',
-                            title: 'Predictors'
+                            title: 'Parameters'
                         }),
                         new Ext.form.Label({
                             text: 'Parameters in the "Additional options" section can be used to customize the plot and modify it based on the demographics. Available choices are Age, Gender, and Race.'
                         }),
                         new Ext.form.FieldSet({
                             html: '<b>Text size:</b> The size of all the text elements in the plot (including axes, legend and labels).</br></br><b>Annotation:</b> Applicable to the "Heatmap" plot type only, which does not have the other options.</br></br><b>Facet:</b> The plot will facet by cohorts on the y axis and genes on the x axis. "Grid" mode - the scales are consistent for a selected response and a cohort. "Wrap" mode - the scales are free. Use "Wrap" if you observe empty spaces in the plots.</br></br><b>Shape:</b> The shape of the data points ("Gender" is selected by default).</br></br><b>Color:</b> The color of the data points ("Age" is selected by default).</br></br><b>Size:</b> The size of the data points.</br></br><b>Alpha:</b> The transparency of the data points.',
-                            style: 'margin-bottom: 2px; margin-top: 5px;',
+                            style: 'margin-top: 5px;',
                             title: 'Additional options'
                         })
                     ],
@@ -911,6 +943,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 normalize:          chNormalize.getValue(),
                 filters:            Ext.encode( dataregion.getUserFilter() ),
                 textSize:           spnrTextSize.getValue(),
+                show_strains:       chShowStrains.getValue(),
                 facet:              rgFacet.getValue().getGroupValue(),
                 shape:              cbShape.getValue(),
                 color:              cbColor.getValue(),
@@ -940,6 +973,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             cbDataset.setDisabled( bool );
             cbPlotType.setDisabled( bool );
             chNormalize.setDisabled( bool );
+            chShowStrains.setDisabled( bool );
             spnrTextSize.setDisabled( bool );
             cbAnnotation.setDisabled( bool );
             rgFacet.setDisabled( bool );
