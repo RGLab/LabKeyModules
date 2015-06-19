@@ -460,7 +460,6 @@ public class ImmPortController extends SpringActionController
     @RequiresPermissionClass(ReadPermission.class)
     public class StudyFinderAction extends StudyFinderNGAction
     {
-
     }
 
 
