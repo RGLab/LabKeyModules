@@ -31,6 +31,7 @@
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.ViewContext" %>
 <%@ page import="org.labkey.api.view.template.ClientDependency" %>
+<%@ page import="org.labkey.immport.ImmPortController" %>
 <%@ page import="org.labkey.immport.data.StudyBean" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Collection" %>
@@ -88,7 +89,8 @@
     }
     .studycard-highlight
     {
-        color:#cc541f; font-variant:small-caps;
+        color:black;
+	font-variant:small-caps;
     }
     .innerColor
     {
@@ -107,7 +109,7 @@
     DIV.member span.bar
     {
         height:14pt; top:3px;
-        background-color:#EBEBE3;
+        background-color:#DEDEDE;
     }
     DIV.selectedMember
     {
@@ -171,7 +173,7 @@
     }
     DIV.study-card
     {
-        background-color:#EEEEEE;
+        background-color:#F8F8F8;
         border:1pt solid #AAAAAA;
         padding: 5pt;
         margin: 5pt;
@@ -197,7 +199,7 @@
     }
     DIV.loaded
     {
-        background-color:rgba(81, 158, 218, 0.8);
+        background-color:rgba(81, 158, 218, 0.2);
         /* background: linear-gradient(to right, rgba(81, 158, 218, 0.8) 0%,rgba(81, 158, 218, 0.3) 50%, rgba(81, 158, 218, 0.8) 100%); */
     }
     SPAN.searchNotFound
@@ -211,7 +213,8 @@
 <div id="studyfinderOuterDIV<%=uuid%>" style="min-height:100px; min-width:400px;">
 <div id="studyfinderAppDIV<%=uuid%>" class="x-hidden" ng-app="studyfinderApp" ng-controller="studyfinder">
 
-<%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%><br>
+<%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%>
+<%=textLink("Export Study Datasets", ImmPortController.ExportStudyDatasetsAction.class)%><br>
 
 <table style="max-width:980px;" bordercolor=red border="0">
 

@@ -480,4 +480,21 @@ public class ImmPortController extends SpringActionController
             return null;
         }
     }
+
+    @RequiresPermissionClass(ReadPermission.class)
+    public class ExportStudyDatasetsAction extends SimpleViewAction
+    {
+
+        @Override
+        public ModelAndView getView(Object o, BindException errors) throws Exception
+        {
+            return new JspView("/org/labkey/immport/view/exportStudyDatasets.jsp");
+        }
+
+        @Override
+        public NavTree appendNavTrail(NavTree root)
+        {
+            return null;
+        }
+    }
 }
