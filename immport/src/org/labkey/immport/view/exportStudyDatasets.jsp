@@ -34,126 +34,131 @@
 <%
     ViewContext context = HttpView.currentContext();
     Container c = context.getContainer();
-
-    //Get list of datasets in the project-level shared study
-
-        //find project level shared study
-
-//    if (!c.isRoot())
-//    {
-//        Container p = c.getProject();
-//        QuerySchema s = DefaultSchema.get(context.getUser(), p).getSchema("study");
-//        TableInfo sp = s.getTable("StudyProperties");
-//        TableInfo datasets = s.getTable("Datasets");
-//    }
-
-    //get no. of rows in each dataset.
-
-    //for each dataset, list no. of rows - see spec pg. 3
-
-    //during 'Download' event, "export" each dataset
-
-    //include study.tsv with study.StudyProperties table - filtered to the list of studies include in the export.
-
-
 %>
+
+<table>
+    <tr>
+        <td valign="top">
+            <div id="datasetsPanel"></div>
+        </td>
+        <td valign="top">
+            <div id="studyFilter"></div>
+        </td>
+    </tr>
+</table>
 
 <script type="text/javascript">
 
-    Ext4.onReady(getListOfDatasets);
+Ext4.onReady(function () {
+
+    var studyFilterWebPart = LABKEY.WebPart({
+        partName: 'Shared Study Filter',
+        renderTo: 'studyFilter',
+        frame: 'none'
+    });
+    studyFilterWebPart.render();
+
+    var dataStore = Ext4.create('Ext.data.Store', {
+        storeId:'dataSets',
+        fields:['id', 'name', 'label', 'numRows'],
+        data: {'items': []},
+        proxy: {
+            type: 'memory',
+            reader: {
+                type: 'json',
+                root: 'items'
+            }
+        }
+    });
 
     function getListOfDatasets()
     {
-         LABKEY.Query.selectRows({
+        LABKEY.Query.selectRows({
             schemaName : 'study',
             queryName : 'Datasets',
             containerPath : '<%=text(c.getPath())%>',
-            success : function(details){
-                console.log("details", details);
+            success : function (details) {
                 var rows = details.rows;
-                this.datasetsInfo = [];
-                this.count = 0;
+
                 for (var i = 0; i < rows.length; i++)
                 {
-                    var numOfRows = [];
-                    getNumOfRows(rows[i].Name, rows.length, rows[i].Label, rows[i].DataSetId, rows[i].Name);
+                    dataStore.add({
+                        id: rows[i].DataSetId,
+                        name: rows[i].Name,
+                        label: rows[i].Label,
+                        numRows: -1
+                    });
+
+                    getNumOfRows(rows[i].Name, rows[i].DataSetId);
                 }
+                renderListOfDatasetsTable();
             }, scope : this
-         });
+        });
+
+        dataStore.add({
+            id: -1,
+            name: "StudyProperties",
+            label: "Studies",
+            numRows: -1
+        });
+        getNumOfRows('StudyProperties', -1);
     }
 
-    function getNumOfRows(queryName, rowsLength, label)
+    function getNumOfRows(queryName, datasetId)
     {
         LABKEY.Query.selectRows({
             schemaName : 'study',
             queryName : queryName,
             includeTotalCount : true,
             showRows : 0,
-            success : function(details){
+            success : function(details) {
                 console.log("numRows related details", details);
-                this.count++;
-                this.datasetsInfo.push({
-                    label: label,
-                    numRows : details.rowCount
-                });
-
-                if(rowsLength == this.count)
-                        renderListOfDatasetsTable(this.datasetsInfo);
-
+                var record = dataStore.getById(datasetId);
+                console.log(record);
+                record.set('numRows', details.rowCount);
             }, scope : this
         });
     }
 
-    function renderListOfDatasetsTable(datasetsInfo)
+    function renderListOfDatasetsTable()
     {
-        Ext4.create('Ext.data.Store', {
-            storeId:'dataSets',
-            fields:['label', 'numRows'],
-            data: {'items': this.datasetsInfo},
-            proxy: {
-                type: 'memory',
-                reader: {
-                    type: 'json',
-                    root: 'items'
-                }
-            }
-        }).sort('label', 'ASC');
-
         Ext4.create('Ext.grid.Panel', {
             title: 'Datasets',
-            margin: '20',
+            margin: '0px 20px 0px 20px',
             disabled: true,
             store: Ext4.data.StoreManager.lookup('dataSets'),
+            viewConfig: {
+                markDirty: false
+            },
             columns: [
                 { header: 'Dataset Name',  dataIndex: 'label', flex: 1},
-                { header: 'Number of Rows', dataIndex: 'numRows', width:150}
-
+                { header: 'Number of Rows', dataIndex: 'numRows', width:150,
+                    renderer: function (v) { return v == -1 ? "<span class=loading-indicator></span>" : v; }
+                }
             ],
             width: 600,
-            renderTo: Ext4.getBody()
+            loadMask: true,
+            renderTo: 'datasetsPanel'
         });
-
-        //        Ext4.create('Ext.') //TODO: add 'Overall Archive Size:'
 
         Ext4.create('Ext.Button', {
             text: 'Download',
             margin: '5 5 5 20',
             renderTo: Ext4.getBody(),
             handler: function() {
-                var schemaQueries = {"study" : []};
-                schemaQueries.study.push({
-                    queryName : 'StudyProperties'
-                });
 
-                for(var i = 0; i < datasetsInfo.length; i++)
+                var schemaQueries = {"study" : []};
+
+                var queryNames = dataStore.collect('name');
+                for(var i = 0; i < queryNames.length; i++)
                 {
                     schemaQueries.study.push({
-                        queryName : datasetsInfo[i].label
+                        queryName : queryNames[i]
                     });
                 }
                 LABKEY.Query.exportTables({
                     schemas: schemaQueries
-                })
+                });
             }
         });
 
@@ -164,5 +169,8 @@
         });
     }
 
+    getListOfDatasets();
+
+});
 
 </script>
