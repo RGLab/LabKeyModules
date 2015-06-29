@@ -18,9 +18,11 @@ package org.labkey.test.tests;
 
 import org.apache.commons.collections15.Bag;
 import org.apache.commons.collections15.bag.HashBag;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,6 +39,7 @@ import org.labkey.test.categories.External;
 import org.labkey.test.components.ParticipantListWebPart;
 import org.labkey.test.components.immport.StudySummaryWindow;
 import org.labkey.test.components.study.StudyOverviewWebPart;
+import org.labkey.test.pages.immport.ExportStudyDatasetsPage;
 import org.labkey.test.pages.immport.ImmPortBeginPage;
 import org.labkey.test.pages.immport.StudyFinderPage;
 import org.labkey.test.pages.immport.StudyFinderPage.Dimension;
@@ -50,12 +53,22 @@ import org.labkey.test.util.Maps;
 import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.PostgresOnlyTest;
 import org.labkey.test.util.ReadOnlyTest;
+import org.labkey.test.util.ext4cmp.Ext4GridRef;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -159,14 +172,20 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
             selectOptionByValue(Locator.name("securityString"), "ADVANCED_WRITE");
             clickButton("Create Study");
             goToModule("ImmPort");
+
             new ImmPortBeginPage(this)
                     .copyDatasetsForOneStudy()
                     .copyStudyResults(studyAccession);
         }
 
-        goToProjectHome();
-        goToModule("ImmPort");
-        new ImmPortBeginPage(this).populateCube();
+        // Navigate to pipeline status page and show jobs in sub-folders
+        beginAt("/pipeline-status/" + getProjectName() + "/showList.view?StatusFiles.containerFilterName=CurrentAndSubfolders");
+        int expectedJobs =
+                STUDY_SUBFOLDERS.length // copy datasets jobs
+                + 1;                    // SDY_template folder import
+        waitForPipelineJobsToComplete(expectedJobs, "immport data copy", false);
+
+        ImmPortBeginPage.beginAt(this, getProjectName()).populateCube();
     }
 
     @Before
@@ -519,6 +538,64 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
 
         assertEquals("Participant count from study finder does not match Demographics dataset participant count",
                 studyFinderSummaryCounts.get(Dimension.PARTICIPANTS), studyOverviewParticipantCounts.get("Demographics"));
+    }
+
+    @Test
+    public void testDatasetExport() throws IOException
+    {
+        StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
+        studyFinder.dismissTour();
+        studyFinder.getDimensionPanels().get(Dimension.CATEGORY).select("Immune Response");
+
+        Map<Dimension, Integer> studyCounts = studyFinder.getSummaryCounts();
+        assertEquals("Study count mismatch", 2, studyCounts.get(Dimension.STUDIES).intValue());
+
+        final int fcs_analyzed_rowCount = 78;
+
+        log("Verify dataset row counts");
+        ExportStudyDatasetsPage exportDatasetsPage = studyFinder.exportDatasets();
+        Ext4GridRef grid = new Ext4GridRef("datasets", this);
+        Map<String, Integer> datasetCounts = new HashMap<>();
+        for (int i = 1; i < grid.getRowCount()+1; i++)
+        {
+            String name = (String)grid.getFieldValue(i, "name");
+            Long datasetId = (Long)grid.getFieldValue(i, "id");
+            Long numRows = (Long)grid.getFieldValue(i, "numRows");
+            datasetCounts.put(name, numRows.intValue());
+        }
+
+        Assert.assertEquals(3, datasetCounts.get("StudyProperties").intValue()); // 2 studies plus the project-level study
+        Assert.assertEquals(345, datasetCounts.get("demographics").intValue());
+        Assert.assertEquals(960, datasetCounts.get("elispot").intValue());
+        Assert.assertEquals(fcs_analyzed_rowCount, datasetCounts.get("fcs_analyzed_result").intValue());
+
+
+        log("Download datasets zip");
+        final File exportedFile = exportDatasetsPage.download();
+        assertTrue("Expected file name to end in .tables.zip: " + exportedFile.getAbsolutePath(), exportedFile.getName().endsWith(".tables.zip"));
+        assertTrue("Exported file does not exist: " + exportedFile.getAbsolutePath(), exportedFile.exists());
+
+        waitFor(new Checker() {
+            @Override
+            public boolean check() {
+                return exportedFile.length() > 0;
+            }
+        }, "Exported file is empty", WAIT_FOR_JAVASCRIPT * 10);
+
+
+        log("Validate contents");
+        try (FileSystem fs = FileSystems.newFileSystem(exportedFile.toPath(), null)) {
+            // Verify StudyProperties.tsv exists
+            Path p = fs.getPath("StudyProperties.tsv");
+            Assert.assertTrue("Expected file within doesn't exist: " + p, Files.exists(p));
+
+            // Extract a file
+            List<String> lines = Files.readAllLines(fs.getPath("fcs_analyzed_result.tsv"));
+            Assert.assertEquals(
+                    "Expected " + fcs_analyzed_rowCount + " rows and header (dumping first two lines):\n" +
+                            StringUtils.join(lines.subList(0, 2), "\n"),
+                    fcs_analyzed_rowCount + 1, lines.size());
+        }
     }
 
     @LogMethod(quiet = true)

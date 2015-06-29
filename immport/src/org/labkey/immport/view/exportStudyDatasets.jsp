@@ -91,7 +91,6 @@ Ext4.onReady(function () {
 
                     getNumOfRows(rows[i].Name, rows[i].DataSetId);
                 }
-                renderListOfDatasetsTable();
             }, scope : this
         });
 
@@ -112,17 +111,38 @@ Ext4.onReady(function () {
             includeTotalCount : true,
             showRows : 0,
             success : function(details) {
-                console.log("numRows related details", details);
                 var record = dataStore.getById(datasetId);
-                console.log(record);
                 record.set('numRows', details.rowCount);
+
+                enableDownloadButton();
             }, scope : this
         });
+    }
+
+    // Enable the download button once all requests have returned
+    function enableDownloadButton()
+    {
+        var store = Ext4.data.StoreManager.lookup('dataSets');
+
+        // Check that we've added the datasets to the store before checking the min numRows
+        var count = store.getCount();
+        if (count <= 1)
+            return;
+
+        // Check that all numRows have been returned
+        var min = store.min("numRows");
+        if (min == -1)
+            return;
+
+        console.debug("all data loaded");
+        var btn = Ext4.getCmp("downloadBtn");
+        btn.setDisabled(false);
     }
 
     function renderListOfDatasetsTable()
     {
         Ext4.create('Ext.grid.Panel', {
+            id: 'datasets',
             title: 'Datasets',
             margin: '0px 20px 0px 20px',
             disabled: true,
@@ -142,9 +162,11 @@ Ext4.onReady(function () {
         });
 
         Ext4.create('Ext.Button', {
+            id: 'downloadBtn',
             text: 'Download',
             margin: '5 5 5 20',
             renderTo: Ext4.getBody(),
+            disabled: true,
             handler: function() {
 
                 var schemaQueries = {"study" : []};
@@ -169,6 +191,7 @@ Ext4.onReady(function () {
         });
     }
 
+    renderListOfDatasetsTable();
     getListOfDatasets();
 
 });
