@@ -31,6 +31,7 @@
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.ViewContext" %>
 <%@ page import="org.labkey.api.view.template.ClientDependency" %>
+<%@ page import="org.labkey.immport.ImmPortController" %>
 <%@ page import="org.labkey.immport.data.StudyBean" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Collection" %>
@@ -212,7 +213,8 @@
 <div id="studyfinderOuterDIV<%=uuid%>" style="min-height:100px; min-width:400px;">
 <div id="studyfinderAppDIV<%=uuid%>" class="x-hidden" ng-app="studyfinderApp" ng-controller="studyfinder">
 
-<%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%><br>
+<%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%>
+<%=textLink("Export Study Datasets", ImmPortController.ExportStudyDatasetsAction.class)%><br>
 
 <table style="max-width:980px;" bordercolor=red border="0">
 

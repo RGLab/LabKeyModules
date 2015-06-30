@@ -53,6 +53,12 @@ public class StudyFinderPage extends LabKeyPage
         return new StudyFinderPage(test);
     }
 
+    public ExportStudyDatasetsPage exportDatasets()
+    {
+        _test.clickAndWait(elements().exportDatasets);
+        return new ExportStudyDatasetsPage(_test);
+    }
+
     public void showAllImmPortStudies()
     {
         _test.applyAndWaitForPageSignal(new Function<Void, Void>()
@@ -235,6 +241,7 @@ public class StudyFinderPage extends LabKeyPage
     protected class Elements
     {
         public Locator.CssLocator studyFinder = Locator.css("#studyfinderAppDIV" + (_uuid == null ? "1" : _uuid));
+        public Locator.XPathLocator exportDatasets = Locator.linkWithText("Export Study Datasets");
         public Locator.CssLocator studySearchInput = studyFinder.append(Locator.css("#searchTerms"));
         public Locator.CssLocator searchMessage = studyFinder.append(Locator.css("span.searchMessage"));
         public Locator.CssLocator searchMessageNotFound = studyFinder.append(Locator.css("span.searchNotFound"));
