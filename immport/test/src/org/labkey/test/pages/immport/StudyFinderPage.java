@@ -1,17 +1,21 @@
 package org.labkey.test.pages.immport;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import org.apache.commons.lang3.SystemUtils;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.WebTestHelper;
-import org.labkey.test.components.ComponentElements;
+import org.labkey.test.components.Component;
 import org.labkey.test.components.immport.StudySummaryWindow;
 import org.labkey.test.pages.LabKeyPage;
+import org.labkey.test.util.LogMethod;
+import org.labkey.test.util.LoggedParam;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.ArrayList;
@@ -19,12 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.sun.jna.Platform.isMac;
-
 public class StudyFinderPage extends LabKeyPage
 {
     private static final String CONTROLLER = "immport";
     private static final String ACTION = "studyFinder";
+    private static final String COUNT_SIGNAL = "studyFinderCountsUpdated";
     private String _uuid = "1";
 
     public StudyFinderPage(BaseWebDriverTest test)
@@ -34,14 +37,14 @@ public class StudyFinderPage extends LabKeyPage
 
     public void setUuid(String uuid)
     {
-        _uuid = uuid;
+//        _uuid = uuid;
+        throw new UnsupportedOperationException("Study Finder doesn't currently support multiple instances.");
     }
 
     @Override
     protected void waitForPage()
     {
-        _test._ext4Helper.waitForMaskToDisappear();
-        _test.waitForElement(Locator.tag("div").attributeStartsWith("id", "studyfinderAppDIV"));
+        _test.waitForElement(Locators.pageSignal(COUNT_SIGNAL));
     }
 
     public static StudyFinderPage goDirectlyToPage(BaseWebDriverTest test, String containerPath)
@@ -58,29 +61,49 @@ public class StudyFinderPage extends LabKeyPage
 
     public void showAllImmPortStudies()
     {
-        _test.checkRadioButton(elements().showAllRadioButton);
+        _test.applyAndWaitForPageSignal(new Function<Void, Void>()
+        {
+            @Override
+            public Void apply(Void aVoid)
+            {
+                _test.checkRadioButton(elements().showAllRadioButton);
+                return null;
+            }
+        }, COUNT_SIGNAL);
     }
 
     public void showAllImmuneSpaceStudies()
     {
-        _test.checkRadioButton(elements().showAllImmuneSpaceRadioButton);
-     }
-
-    /**
-     * Assumes that summary counts will change as a result of the search
-     */
-    public void studySearch(String search)
-    {
-        final Map<Dimension, Integer> initialCounts = getSummaryCounts();
-        _test.setFormElement(elements().studySearchInput, search);
-        _test.shortWait().until(new ExpectedCondition<Boolean>()
+        _test.applyAndWaitForPageSignal(new Function<Void, Void>()
         {
             @Override
-            public Boolean apply(WebDriver webDriver)
+            public Void apply(Void aVoid)
             {
-                return !initialCounts.equals(getSummaryCounts());
+                _test.checkRadioButton(elements().showAllImmuneSpaceRadioButton);
+                return null;
             }
-        });
+        }, COUNT_SIGNAL);
+     }
+
+    @LogMethod
+    public void studySearch(@LoggedParam final String search)
+    {
+        _test.applyAndWaitForPageSignal(new Function<Void, Void>()
+        {
+            @Override
+            public Void apply(Void aVoid)
+            {
+                _test.setFormElement(elements().studySearchInput, search);
+                return null;
+            }
+        }, COUNT_SIGNAL);
+    }
+
+    @LogMethod(quiet = true)
+    public void clearSearch()
+    {
+        if (!_test.getFormElement(elements().studySearchInput).isEmpty())
+            studySearch(" ");
     }
 
     public Map<Dimension, Integer> getSummaryCounts()
@@ -164,11 +187,50 @@ public class StudyFinderPage extends LabKeyPage
         return new SummaryFilterPanel(selectionEl);
     }
 
+    public void clearAllFilters()
+    {
+        final WebElement clearAll = elements().clearAll.findElement(_test.getDriver());
+        if (clearAll.isDisplayed())
+        {
+            _test.applyAndWaitForPageSignal(new Function<Void, Void>()
+            {
+                @Override
+                public Void apply(Void aVoid)
+                {
+                    clearAll.click();
+                    return null;
+                }
+            }, COUNT_SIGNAL);
+        }
+    }
+
     public void dismissTour()
     {
-        Locator closeTourButton = Locator.css("a.hopscotch-close");
-        if (_test.isElementPresent(closeTourButton))
-            _test.click(closeTourButton);
+        _test.shortWait().until(new Predicate<WebDriver>()
+        {
+            @Override
+            public boolean apply(WebDriver webDriver)
+            {
+                try
+                {
+                    return (Boolean) _test.executeScript("" +
+                            "if (window.hopscotch)" +
+                            "  return !hopscotch.endTour().isActive;" +
+                            "else" +
+                            "  return true;");
+                }
+                catch (Exception recheck)
+                {
+                    return false;
+                }
+            }
+
+            @Override
+            public String toString()
+            {
+                return "tour to be dismissed.";
+            }
+        });
     }
 
     protected Elements elements()
@@ -178,7 +240,7 @@ public class StudyFinderPage extends LabKeyPage
     
     protected class Elements
     {
-        public Locator.CssLocator studyFinder = Locator.css("#studyfinderAppDIV" + _uuid);
+        public Locator.CssLocator studyFinder = Locator.css("#studyfinderAppDIV" + (_uuid == null ? "1" : _uuid));
         public Locator.XPathLocator exportDatasets = Locator.linkWithText("Export Study Datasets");
         public Locator.CssLocator studySearchInput = studyFinder.append(Locator.css("#searchTerms"));
         public Locator.CssLocator searchMessage = studyFinder.append(Locator.css("span.searchMessage"));
@@ -193,6 +255,7 @@ public class StudyFinderPage extends LabKeyPage
         public Locator.CssLocator summaryCounts = summaryArea.append(Locator.css("> tbody:first-child"));
         public Locator.CssLocator summaryCountRow = summaryCounts.append(Locator.css("> tr:not(:first-child):not(:last-child)"));
         public Locator.CssLocator selection = summaryArea.append(Locator.css("> tbody:not(:first-child)"));
+        public Locator.CssLocator clearAll = summaryArea.append(Locator.css("a[ng-click='clearAllFilters();']"));
     }
 
     public enum Dimension
@@ -240,7 +303,7 @@ public class StudyFinderPage extends LabKeyPage
         }
     }
 
-    public class DimensionPanel
+    public class DimensionPanel extends Component
     {
         private WebElement panel;
         private Elements elements;
@@ -256,65 +319,105 @@ public class StudyFinderPage extends LabKeyPage
         {
             if (dimension == null)
             {
-                dimension = Dimension.fromString(elements.dimension.findElement(panel).getText());
+                dimension = Dimension.fromString(findElement(elements.dimension).getText());
             }
 
             return dimension;
         }
 
+        @Override
+        public WebElement getComponentElement()
+        {
+            return panel;
+        }
+
         public List<String> getValues()
         {
-            return _test.getTexts(elements.value.findElements(panel));
+            return _test.getTexts(findElements(elements.value));
         }
 
         public List<String> getEmptyValues()
         {
-            return _test.getTexts(elements.emptyValue.findElements(panel));
+            return _test.getTexts(findElements(elements.emptyValue));
         }
 
         public List<String> getNonEmptyValues()
         {
-            return _test.getTexts(elements.nonEmptyValue.findElements(panel));
+            return _test.getTexts(findElements(elements.nonEmptyValue));
         }
 
         public List<String> getSelectedValues()
         {
-            return _test.getTexts(elements.selectedValue.findElements(panel));
+            return _test.getTexts(findElements(elements.selectedValue));
         }
 
         public void selectAll()
         {
-            elements.all.findElement(panel).click();
+            _test.applyAndWaitForPageSignal(new Function<Void, Void>()
+            {
+                @Override
+                public Void apply(Void aVoid)
+                {
+                    elements.all.findElement(panel).click();
+                    return null;
+                }
+            }, COUNT_SIGNAL);
             elements.selectedValue.waitForElementToDisappear(panel, _test.shortWait());
         }
 
         public String selectFirstIntersectingMeasure()
         {
-            WebElement el = elements.nonEmptyNonSelectedValue.findElement(panel);
+            WebElement el = findElement(elements.nonEmptyNonSelectedValue);
             String value = el.getText();
 
-            controlClick(el);
+            addToSelection(el);
 
-            elements.selectedValue.withText(value).waitForElement(panel, _test.shortWait());
+            waitForSelection(value);
             return value;
         }
 
         public void select(String value)
         {
-            elements.value.withText(value).findElement(panel).click();
+            select(findElement(elements.value.withText(value)));
             waitForSelection(value);
         }
 
         public void addToSelection(String value)
         {
-            controlClick(elements.value.withText(value).findElement(panel));
+            addToSelection(findElement(elements.value.withText(value)));
             waitForSelection(value);
+        }
+
+        private void select(final WebElement value)
+        {
+            _test.applyAndWaitForPageSignal(new Function<Void, Void>()
+            {
+                @Override
+                public Void apply(Void aVoid)
+                {
+                    value.click();
+                    return null;
+                }
+            }, COUNT_SIGNAL);
+        }
+
+        private void addToSelection(final WebElement value)
+        {
+            _test.applyAndWaitForPageSignal(new Function<Void, Void>()
+            {
+                @Override
+                public Void apply(Void aVoid)
+                {
+                    controlClick(value);
+                    return null;
+                }
+            }, COUNT_SIGNAL);
         }
 
         private void controlClick(WebElement el)
         {
             Keys multiSelectKey;
-            if (isMac())
+            if (SystemUtils.IS_OS_MAC)
                 multiSelectKey = Keys.COMMAND;
             else
                 multiSelectKey = Keys.CONTROL;
@@ -323,6 +426,11 @@ public class StudyFinderPage extends LabKeyPage
             builder.keyDown(multiSelectKey).build().perform();
             el.click();
             builder.keyUp(multiSelectKey).build().perform();
+        }
+
+        private void waitForSelection(String value)
+        {
+            elements.selectedValue.withText(value).waitForElement(panel, _test.shortWait());
         }
 
         private class Elements
@@ -392,25 +500,35 @@ public class StudyFinderPage extends LabKeyPage
         }
     }
 
-    public class SummaryFilterPanel
+    public class SummaryFilterPanel extends Component
     {
-        private WebElement dimensionFilter;
-        private Elements elements;
-        private Dimension dimension;
+        private final WebElement dimensionFilter;
+        private final Elements elements;
+        private final Dimension dimension;
 
-        private SummaryFilterPanel(WebElement dimensionFilter)
+        private SummaryFilterPanel(final WebElement dimensionFilter)
         {
             this.dimensionFilter = dimensionFilter;
             elements = new Elements();
+            _test.shortWait().until(new Predicate<WebDriver>()
+            {
+                @Override
+                public boolean apply(WebDriver webDriver)
+                {
+                    return findElement(elements.dimension).getText().length() > 0;
+                }
+            });
+            dimension = Dimension.fromString(findElement(elements.dimension).getText());
+        }
+
+        @Override
+        public WebElement getComponentElement()
+        {
+            return dimensionFilter;
         }
 
         public Dimension getDimension()
         {
-            if (dimension == null)
-            {
-                dimension = Dimension.fromString(elements.dimension.findElement(dimensionFilter).getText());
-            }
-
             return dimension;
         }
 
@@ -429,8 +547,18 @@ public class StudyFinderPage extends LabKeyPage
 
         public void removeFilter(String value)
         {
-            WebElement filter = elements.filterValue.withText(value).findElement(dimensionFilter);
-            Locator.css("img.delete").findElement(filter).click();
+            final WebElement filter = findElement(elements.filterValue.withText(value));
+
+            _test.applyAndWaitForPageSignal(new Function<Void, Void>()
+            {
+                @Override
+                public Void apply(Void aVoid)
+                {
+                    Locator.css("img.delete").findElement(filter).click();
+                    return null;
+                }
+            }, COUNT_SIGNAL);
+
             _test.shortWait().until(ExpectedConditions.stalenessOf(filter));
         }
 
