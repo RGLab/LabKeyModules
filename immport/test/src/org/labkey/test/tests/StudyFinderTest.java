@@ -66,6 +66,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -595,7 +596,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
             Assert.assertTrue("Expected file within doesn't exist: " + p, Files.exists(p));
 
             // Extract a file
-            List<String> lines = Files.readAllLines(fs.getPath("fcs_analyzed_result.tsv"));
+            List<String> lines = Files.readAllLines(fs.getPath("fcs_analyzed_result.tsv"), Charset.forName("UTF-8"));
             Assert.assertEquals(
                     "Expected " + fcs_analyzed_rowCount + " rows and header (dumping first two lines):\n" +
                             StringUtils.join(lines.subList(0, 2), "\n"),
