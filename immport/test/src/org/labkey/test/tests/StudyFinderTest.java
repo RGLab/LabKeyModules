@@ -53,6 +53,7 @@ import org.labkey.test.util.Maps;
 import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.PostgresOnlyTest;
 import org.labkey.test.util.ReadOnlyTest;
+import org.labkey.test.util.ext4cmp.Ext4CmpRef;
 import org.labkey.test.util.ext4cmp.Ext4GridRef;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -554,6 +555,10 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
 
         log("Verify dataset row counts");
         ExportStudyDatasetsPage exportDatasetsPage = studyFinder.exportDatasets();
+        // wait for all the dataset row counts to be loaded
+        Ext4CmpRef ref = new Ext4CmpRef("downloadBtn", this);
+        ref.waitForEnabled();
+
         Ext4GridRef grid = new Ext4GridRef("datasets", this);
         Map<String, Integer> datasetCounts = new HashMap<>();
         for (int i = 1; i < grid.getRowCount()+1; i++)
