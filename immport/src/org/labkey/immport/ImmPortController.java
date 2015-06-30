@@ -445,6 +445,7 @@ public class ImmPortController extends SpringActionController
     {
         public ModelAndView getView(Object o, BindException errors) throws Exception
         {
+            setTitle("Study Finder");
             StudyFinderWebPart wp = new StudyFinderWebPart();
             wp.setFrame(WebPartView.FrameType.DIV);
             return wp;
@@ -478,6 +479,24 @@ public class ImmPortController extends SpringActionController
         public NavTree appendNavTrail(NavTree root)
         {
             return null;
+        }
+    }
+
+    @RequiresPermissionClass(ReadPermission.class)
+    public class ExportStudyDatasetsAction extends SimpleViewAction
+    {
+
+        @Override
+        public ModelAndView getView(Object o, BindException errors) throws Exception
+        {
+            return new JspView("/org/labkey/immport/view/exportStudyDatasets.jsp");
+        }
+
+        @Override
+        public NavTree appendNavTrail(NavTree root)
+        {
+            return root.addChild("Study Finder", new ActionURL(StudyFinderAction.class, getContainer()))
+                    .addChild("Export Study Datasets");
         }
     }
 }
