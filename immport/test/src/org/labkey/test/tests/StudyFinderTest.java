@@ -179,8 +179,10 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         // Navigate to pipeline status page and show jobs in sub-folders
         beginAt("/pipeline-status/" + getProjectName() + "/showList.view?StatusFiles.containerFilterName=CurrentAndSubfolders");
         int expectedJobs =
-                STUDY_SUBFOLDERS.length // copy datasets jobs
-                + 1;                    // SDY_template folder import
+                  1                       // load ImmPort archive
+                + 1                       // SDY_template folder import
+                + STUDY_SUBFOLDERS.length // copy datasets jobs
+        ;
         waitForPipelineJobsToComplete(expectedJobs, "immport data copy", false);
 
         ImmPortBeginPage.beginAt(this, getProjectName()).populateCube();
