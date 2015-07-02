@@ -232,6 +232,7 @@
         <div id="studypanel" style="clear:both; max-width:940px; overflow-x:scroll;">
             <table><tr>
                 <td style="height:180px;"><img border=1 src="<%=getContextPath()%>/_.gif" style="height:180px; width:1px"></td>
+                <td ng-if="!anyVisibleStudies()">no studies match criteria</td>
                 <td style="height:180px;" ng-repeat="study in studies | filter:countForStudy">
                     <div ng-include="'/studycard.html'"></div>
                 </td>
@@ -443,6 +444,14 @@ studyfinderScope.prototype =
         return studyMember ? studyMember.count : 0;
     },
 
+    anyVisibleStudies : function()
+    {
+        var members = dataspace.dimensions.Study.members;
+        for (var m=0 ; m<members.length ; m++)
+            if (members[m].count)
+                return true;
+        return false;
+    },
 
     hasFilters : function ()
     {
@@ -588,16 +597,23 @@ studyfinderScope.prototype =
     updateCountsAsync : function()
     {
         var innerFilters = [];
-        var d, i;
+        var d, i, dim;
         for (d in dataspace.dimensions)
         {
             if (!dataspace.dimensions.hasOwnProperty(d))
                 continue;
-            var filterMembers = dataspace.dimensions[d].filters;
-            if (!filterMembers || filterMembers.length == 0)
-                continue;
+            dim = dataspace.dimensions[d];
+            var filterMembers = dim.filters;
             if (d == 'Study')
             {
+                if (!filterMembers || filterMembers.length == dim.members.length)
+                    continue;
+                if (filterMembers.length == 0)
+                {
+                    // in the case of study filter, this means no matches, rather than no filter!
+                    this.updateCountsZero();
+                    return;
+                }
                 var uniqueNames = [];
                 for (i = 0; i < filterMembers.length; i++)
                     uniqueNames.push(filterMembers[i].uniqueName);
@@ -608,6 +624,8 @@ studyfinderScope.prototype =
             }
             else
             {
+                if (!filterMembers || filterMembers.length == 0)
+                    continue;
                 for (i = 0; i < filterMembers.length; i++)
                 {
                     var filterMember = filterMembers[i];
@@ -630,7 +648,7 @@ studyfinderScope.prototype =
         {
             if (!dataspace.dimensions.hasOwnProperty(d))
                 continue;
-            var dim = dataspace.dimensions[d];
+            dim = dataspace.dimensions[d];
             if (dim.name == "Subject")
                 onRows.arguments.push({level:dim.hierarchy.levels[0].uniqueName});
             else if (dim.name == "Study" && this.filterByStudy)
@@ -692,6 +710,28 @@ studyfinderScope.prototype =
     },
 
 
+    updateCountsZero : function()
+    {
+        for (d in dataspace.dimensions)
+        {
+            if (!dataspace.dimensions.hasOwnProperty(d))
+                continue;
+            var dim = dataspace.dimensions[d];
+            dim.summaryCount = 0;
+            for (var m = 0; m < dim.members.length; m++)
+            {
+                dim.members[m].count = 0;
+                dim.members[m].percent = 0;
+            }
+            dim.summaryCount = 0;
+        }
+
+        this.saveFilterState();
+        this.updateContainerFilter();
+        this.doneRendering();
+    },
+
+
     updateCounts : function(dim, cellset)
     {
         var member, m;
@@ -721,6 +761,7 @@ studyfinderScope.prototype =
 
         this.saveFilterState();
         this.updateContainerFilter();
+        this.doneRendering();
     },
 
 
@@ -785,7 +826,11 @@ studyfinderScope.prototype =
                 member.percent = max==0 ? 0 : (100.0*member.count)/max;
             }
         }
+        this.doneRendering();
+    },
 
+    doneRendering : function()
+    {
         if (loadMask)
         {
             Ext4.get(studyfinderAppId).removeCls("x-hidden");
@@ -797,18 +842,9 @@ studyfinderScope.prototype =
         LABKEY.Utils.signalWebDriverTest('studyFinderCountsUpdated');
     },
 
-
     clearStudyFilter : function()
     {
-        if (this.studySubset == "ImmPort")
-        {
-            this._clearFilter("Study");
-            this.updateCountsAsync();
-        }
-        else
-        {
-            this.setStudyFilter(this.getStudySubsetList());
-        }
+        this.setStudyFilter(this.getStudySubsetList());
     },
 
 
@@ -886,6 +922,7 @@ studyfinderScope.prototype =
             // NOOP if we're not current (poor man's cancel)
             if (promise != scope.doSearchTermsChanged_promise)
                 return;
+            scope.doSearchTermsChanged_promise = null;
             var hits = data.hits;
             var searchStudies = [];
             var found = {};
