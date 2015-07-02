@@ -59,13 +59,8 @@ import org.labkey.test.util.ext4cmp.Ext4GridRef;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
@@ -313,7 +308,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
 
         StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
 
-        WebElement emptyMember = Locator.css("fieldset.group-fieldset > div.emptyMember").waitForElement(getDriver(), shortWait());
+        WebElement emptyMember = Locator.css("fieldset.group-fieldset > div.emptyMember").waitForElement(shortWait());
         String value = emptyMember.getText().trim();
         emptyMember.click();
 
@@ -397,7 +392,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
             String studyAccession = studyCard.getAccession();
             foundAccessions.add(studyAccession);
             studyCard.clickGoToStudy();
-            WebElement title = Locator.css(".labkey-folder-title").waitForElement(getDriver(), shortWait());
+            WebElement title = Locator.css(".labkey-folder-title").waitForElement(shortWait());
             assertEquals("Study card linked to wrong study", studyAccession, title.getText());
             goBack();
         }

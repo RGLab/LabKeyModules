@@ -182,7 +182,7 @@ public class StudyFinderPage extends LabKeyPage
      */
     public SummaryFilterPanel waitForSelection(String value)
     {
-        WebElement selectionEl = elements().selection.containing(value).waitForElement(_test.getDriver(), _test.shortWait());
+        WebElement selectionEl = elements().selection.containing(value).waitForElement(_test.shortWait());
 
         return new SummaryFilterPanel(selectionEl);
     }
@@ -430,7 +430,7 @@ public class StudyFinderPage extends LabKeyPage
 
         private void waitForSelection(String value)
         {
-            elements.selectedValue.withText(value).waitForElement(panel, _test.shortWait());
+            elements.selectedValue.withText(value).waitForElement(panel, BaseWebDriverTest.WAIT_FOR_JAVASCRIPT);
         }
 
         private class Elements
