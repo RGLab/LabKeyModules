@@ -59,7 +59,7 @@ public class ImmPortDocumentResolver implements SearchService.ResourceResolver
     }
 
 
-    HttpView getCustomSearchResult(User user, @NotNull String resourceIdentifier)
+    public HttpView getCustomSearchResult(User user, @NotNull String resourceIdentifier)
     {
         return null;
     }
