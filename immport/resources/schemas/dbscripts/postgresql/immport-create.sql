@@ -1,5 +1,5 @@
-  /*
- * Copyright (c) 2013-2014 LabKey Corporation
+ /*
+ * Copyright (c) 2013-2015 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+DROP VIEW IF EXISTS immport.v_results_union;
+
 CREATE OR REPLACE VIEW immport.v_results_union AS
 
- SELECT
+SELECT
+  subject_accession || '.' || SUBSTRING(study_accession,4) as subjectid,
   assay,arm_accession,biosample_accession,expsample_accession,experiment_accession,study_accession,study_time_collected,study_time_collected_unit,subject_accession,workspace_id,
   CASE study_time_collected_unit
     WHEN 'Days' THEN FLOOR(study_time_collected)
@@ -134,7 +137,7 @@ BEGIN
   DELETE FROM immport.dimDemographic;
   INSERT INTO immport.dimDemographic (ParticipantId, AgeInYears, Species, Gender, Race, Age)
   SELECT DISTINCT
-    subject_accession AS ParticipantId,
+    subjectid AS ParticipantId,
     CASE age_unit
     WHEN 'Years' THEN floor(age_reported)
       WHEN 'Weeks' THEN 0
@@ -164,7 +167,7 @@ BEGIN
 
   INSERT INTO immport.dimStudy (ParticipantId, Study, Type, Program, SortOrder)
     SELECT DISTINCT
-      subject_accession AS ParticipantId,
+      subjectid AS ParticipantId,
       study.study_accession as Study,
       study.type as Type,
       P.title as Program,
