@@ -90,7 +90,7 @@
     .studycard-highlight
     {
         color:black;
-	font-variant:small-caps;
+	    font-variant:small-caps;
     }
     .innerColor
     {
@@ -206,6 +206,15 @@
     {
         background-color:yellow;
     }
+    SPAN.hipc-label
+    {
+        border-radius: 10px;
+        border: solid 1px #AAAAAA;
+        //background: #8AC007;
+        background: #FFFFFF;
+        padding: 6px;
+
+    }
 </style>
 
 
@@ -299,7 +308,7 @@
  -->
 
 <script type="text/ng-template" id="/studycard.html">
-    <div class="study-card" ng-class="{hipc:study.hipc_funded, loaded:study.loaded}" style="width:220px; height:160px; overflow-y:hidden">
+    <div class="study-card" ng-class="{hipc:study.hipc_funded, loaded:study.loaded}" style="position:relative; width:160pt; height:140pt; overflow-y:hidden">
         <span class="studycard-highlight studycard-accession" style="float:left;">{{study.study_accession}}</span>
         <span class="studycard-highlight studycard-pi" style="float:right;">{{study.pi}}</span>
         <hr style="clear:both;">
@@ -307,7 +316,8 @@
             <a class="labkey-text-link" style="float:left;" ng-click="showStudyPopup(study.study_accession)" title="click for more details">view summary</a>
             <a class="labkey-text-link" ng-if="study.loaded && study.url" style="float:right;" href="{{study.url}}">go to study</a>
         </div>
-        <p class="studycard-description" style="clear:both;">{{study.title}}</p>
+        <div class="studycard-description" style="clear:both;">{{study.title}}</div>
+        <div ng-if="study.hipc_funded" style="width:100%; position:absolute; bottom:0; left:0; text-align:center;"><span class="hipc-label">HIPC</span></div>
     </div>
 </script>
 

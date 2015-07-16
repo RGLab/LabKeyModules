@@ -19,13 +19,14 @@ import org.apache.commons.collections15.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
-import org.labkey.api.data.ContainerManager;
 import org.labkey.api.data.DbSchema;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.search.SearchService;
+import org.labkey.api.security.User;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.Path;
 import org.labkey.api.view.ActionURL;
+import org.labkey.api.view.HttpView;
 import org.labkey.api.webdav.SimpleDocumentResource;
 import org.labkey.api.webdav.WebdavResource;
 
@@ -56,6 +57,13 @@ public class ImmPortDocumentResolver implements SearchService.ResourceResolver
         }
         return null;
     }
+
+
+    public HttpView getCustomSearchResult(User user, @NotNull String resourceIdentifier)
+    {
+        return null;
+    }
+
 
 
     public static WebdavResource createImmPortStudyResource(String id, String study_accession)
@@ -118,7 +126,7 @@ public class ImmPortDocumentResolver implements SearchService.ResourceResolver
         }
         /// append study number (w/o SDY prefix)
         if (study_accession.startsWith("SDY"))
-            html.append(" " + study_accession.substring(3) + " ");
+            html.append(" ").append(study_accession.substring(3)).append(" ");
 
         Container home =  ImmPortDocumentProvider.getDocumentContainer();
         ActionURL url = new ActionURL(ImmPortController.StudyDetailAction.class, home).addParameter("study", study_accession);

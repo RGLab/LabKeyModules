@@ -16,7 +16,7 @@ public abstract class StudySummaryPanel
     {
         _test = test;
         _panel = Locators.self.waitForElement(test.getDriver(), BaseWebDriverTest.WAIT_FOR_JAVASCRIPT);
-        elements().accession.waitForElement(_panel, test.shortWait());
+        elements().accession.waitForElement(_panel, BaseWebDriverTest.WAIT_FOR_JAVASCRIPT);
     }
 
     public String getAccession()
