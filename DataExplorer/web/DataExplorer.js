@@ -719,6 +719,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             style: 'padding-right: 2px; padding-left: 2px;'
         });
 
+DETour();
+
         var pnlInputView = new Ext.form.FormPanel({
             autoScroll: true,
             bodyStyle: 'padding: 4px;',

@@ -4,10 +4,10 @@ var DETour = function(){
         steps: [{
             title: 'Welcome to Data Explorer',
             content: 'First',
-            target: 'x-fieldset-header-text',
+            target: $('.x-fieldset-header-text')[0],
             placement: 'bottom',
             showNextButton: true
-        
         }]
     });
-}
+};
+
