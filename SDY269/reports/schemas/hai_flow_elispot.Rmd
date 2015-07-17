@@ -9,7 +9,7 @@ This report investigate the association between the number influenza-specific ce
 library(knitr)
 opts_chunk$set(cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE,
                fig.width=8, fig.height=4, dpi=100, fig.align="center",
-               cache.path=file.path("cache/reports/", labkey.user.email, ""))
+               cache.path=file.path(labkey.file.root, "cache/reports/", labkey.user.email, ""))
 ```
 
 ```{r libraries}

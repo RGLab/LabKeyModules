@@ -48,6 +48,24 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             }
         };
 
+        var checkBtnResetStatus = function(){
+            if (    cbVariable.getValue() == cbVariable.originalValue &&
+                    cbTimePoint.getValue() == cbTimePoint.originalValue &&
+                    cbCohortTraining.getValue() == cbCohortTraining.originalValue &&
+                    cbCohortTesting.getValue() == cbCohortTesting.originalValue &&
+                    chDichotomize.getValue() == chDichotomize.originalValue &&
+                    nfDichotomize.getValue() == nfDichotomize.originalValue &&
+                    chFoldChange.getValue() == chFoldChange.originalValue &&
+                    nfFoldChange.getValue() == nfFoldChange.originalValue &&
+                    chFalseDiscoveryRate.getValue() == chFalseDiscoveryRate.originalValue
+            ){
+                btnReset.setDisabled( true );
+            } else {
+                btnReset.setDisabled( false );
+            }
+        };
+
+
         ///////////////////////////////////
         //            Stores             //
         ///////////////////////////////////
@@ -120,9 +138,22 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             displayField: 'name',
             fieldLabel: 'Select a response variable',
             listeners: {
-                change:     checkBtnRunStatus,
-                cleared:    checkBtnRunStatus,
-                select:     checkBtnRunStatus
+                blur: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                },
+                change: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                },
+                cleared: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                },
+                select: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                }
             },
             store: new Ext.data.ArrayStore({
                 data: [ [ 'HAI', 'HAI' ] ],
@@ -156,22 +187,37 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             fieldLabel: 'Select predictor time point',
             lazyInit: false,
             listeners: {
+                blur: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                },
                 change: function(){
                     if ( ! flagTimePoint ) {
                         handleTimepointSelection();
                     }
+
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
                 },
                 cleared: function(){
                     cbCohortTraining.setDisabled( true );
                     cbCohortTesting.setDisabled( true );
-                    btnRun.setDisabled( true );
+
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
                 },
                 focus: function(){
                     flagTimePoint = false;
+
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
                 },
                 select: function(){
                     flagTimePoint = true;
                     handleTimepointSelection();
+
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
                 }
             },
             store: strTimePoint,
@@ -220,9 +266,18 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             fieldLabel: 'Testing',
             lazyInit: false,
             listeners: {
-                change:     checkBtnRunStatus,
-                cleared:    checkBtnRunStatus,
-                select:     checkBtnRunStatus
+                change: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                },
+                cleared: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                },
+                select: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                }
             },
             store: strCohortTesting,
             valueField: 'cohort',
@@ -238,7 +293,9 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 } else {
                     nfDichotomize.hide();
                 }
+
                 checkBtnRunStatus();
+                checkBtnResetStatus();
             }
         });
 
@@ -284,6 +341,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         }
 
                         checkBtnRunStatus();
+                        checkBtnResetStatus();
                     }
                 }
             },
@@ -306,6 +364,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         }
 
                         checkBtnRunStatus();
+                        checkBtnResetStatus();
                     }
                 }
             },
@@ -338,6 +397,34 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 LABKEY.Report.execute( cnfReport );
             },
             text: 'Run'
+        });
+
+        var btnReset = new Ext.Button({
+            disabled: true,
+            handler: function(){
+                cbVariable.reset();
+                cbTimePoint.reset();
+                cbCohortTraining.reset();
+                cbCohortTraining.setDisabled( true );
+                cbCohortTesting.reset();
+                cbCohortTesting.setDisabled( true );
+                chDichotomize.reset();
+                nfDichotomize.reset();
+
+                chFoldChange.reset();
+                nfFoldChange.reset();
+                chFalseDiscoveryRate.reset();
+
+                chFoldChange.setDisabled( false );
+                chFalseDiscoveryRate.setDisabled( false );
+
+                dfFoldChange.setDisabledViaClass( false );
+                dfFalseDiscoveryRate.setDisabledViaClass( false );
+
+                checkBtnRunStatus();
+                checkBtnResetStatus();
+            },
+            text: 'Reset'
         });
 
 
@@ -395,6 +482,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 nfFoldChange.setDisabled( !s );
                 foldChangeValue = ! s ? nfFoldChange.getValue() : foldChangeValue;
                 nfFoldChange.setValue( s ? foldChangeValue : 0 );
+
+                checkBtnResetStatus();
             }
         });
 
@@ -404,6 +493,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var chFalseDiscoveryRate = new Ext.form.Checkbox({
             checked: false,
+            handler: checkBtnResetStatus
         });
 
         var dfFalseDiscoveryRate = new Ext.form.DisplayField( Ext.apply({
@@ -455,30 +545,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             enableOverflow: true,
             items: [
                 btnRun,
-                new Ext.Button({
-                    handler: function(){
-                        cbVariable.reset();
-                        cbTimePoint.reset();
-                        cbCohortTraining.reset();
-                        cbCohortTraining.setDisabled( true );
-                        cbCohortTesting.reset();
-                        cbCohortTesting.setDisabled( true );
-                        chDichotomize.reset();
-                        nfDichotomize.reset();
-                        
-                        nfFoldChange.reset();
-                        chFoldChange.reset();
-                        chFalseDiscoveryRate.reset();
-
-                        chFoldChange.setDisabled( false );
-                        chFalseDiscoveryRate.setDisabled( false );
-
-                        dfFoldChange.setDisabledViaClass( false );
-                        dfFalseDiscoveryRate.setDisabledViaClass( false );
-                        checkBtnRunStatus();
-                    },
-                    text: 'Reset'
-                })
+                btnReset
             ],
             style: 'padding-right: 2px; padding-left: 2px;'
         });
@@ -766,7 +833,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             cbCohortTraining.setDisabled( true );
             cbCohortTesting.clearValue();
             cbCohortTesting.setDisabled( true );
-            btnRun.setDisabled( true );
+
             if ( cbTimePoint.getValue() == '' ){
                 cbCohortTraining.setDisabled( true );
             } else {
@@ -788,7 +855,10 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var handleCohortTrainingSelection = function(){
             cbCohortTesting.clearValue();
+
             checkBtnRunStatus();
+            checkBtnResetStatus();
+
             if ( cbCohortTraining.getValue() == '' ){
                 cbCohortTesting.setDisabled( true );
             } else {

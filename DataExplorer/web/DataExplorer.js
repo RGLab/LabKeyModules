@@ -735,6 +735,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         border: false
                     },
                     items: [
+                        //{ html: '<a class="labkey-text-link bold-text" onclick="LABKEY.help.Tour.show(\'immport-dataexplorer-tour\')">quick help</a>'},
                         { html: 'For information and help on how to use the Data Explorer module, click the' },
                         new Ext.Container({
                             autoEl: 'a',

@@ -16,7 +16,7 @@ var studyTour = function(){
             showNextButton: true
         },{
             title: 'PubMed Statistics',
-            content: 'List of publications associated with this study as well as related papers suggested by PubMed.',
+            content: 'List of publications associated with this study with relevant links to PubMed.',
             target: $('.labkey-wp')[1],
             placement: 'top',
             showPrevButton: true,
