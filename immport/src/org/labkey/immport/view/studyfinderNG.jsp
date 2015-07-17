@@ -31,6 +31,7 @@
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.ViewContext" %>
 <%@ page import="org.labkey.api.view.template.ClientDependency" %>
+<%@ page import="org.labkey.immport.ImmPortController" %>
 <%@ page import="org.labkey.immport.data.StudyBean" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Collection" %>
@@ -89,7 +90,7 @@
     .studycard-highlight
     {
         color:black;
-	font-variant:small-caps;
+	    font-variant:small-caps;
     }
     .innerColor
     {
@@ -103,7 +104,7 @@
     }
     DIV.member:hover
     {
-        border:1px solid #cc541f;
+        border:1px solid #000000;
     }
     DIV.member span.bar
     {
@@ -142,12 +143,12 @@
     TD.big-summary
     {
         font-size : 110%;
-        padding:5pt;
+        padding:3pt 2pt 3pt 2pt;
         white-space:nowrap;
     }
     TD.small-summary
     {
-        padding:5pt;
+        padding:2pt;
         white-space:nowrap;
     }
     DIV.filter-summary
@@ -180,7 +181,7 @@
     }
     DIV.study-card:hover
     {
-        border:1pt solid #cc541f;
+        border:1pt solid #000000;
     }
     DIV.study-detail
     {
@@ -191,10 +192,10 @@
     }
     DIV.hipc
     {
-        background-image:url('<%=text(hipcImg)%>');
-        background-image:url('<%=text(hipcImg)%>');
-        background-repeat:no-repeat;
-        background-position:center;
+        //background-image:url('<%=text(hipcImg)%>');
+        //background-image:url('<%=text(hipcImg)%>');
+        //background-repeat:no-repeat;
+        //background-position:center;
     }
     DIV.loaded
     {
@@ -205,6 +206,15 @@
     {
         background-color:yellow;
     }
+    SPAN.hipc-label
+    {
+        border-radius: 10px;
+        border: solid 1px #AAAAAA;
+        //background: #8AC007;
+        background: #FFFFFF;
+        padding: 6px;
+
+    }
 </style>
 
 
@@ -212,7 +222,8 @@
 <div id="studyfinderOuterDIV<%=uuid%>" style="min-height:100px; min-width:400px;">
 <div id="studyfinderAppDIV<%=uuid%>" class="x-hidden" ng-app="studyfinderApp" ng-controller="studyfinder">
 
-<%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%><br>
+<%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%>
+<%=textLink("Export Study Datasets", ImmPortController.ExportStudyDatasetsAction.class)%><br>
 
 <table style="max-width:980px;" bordercolor=red border="0">
 
@@ -230,6 +241,7 @@
         <div id="studypanel" style="clear:both; max-width:940px; overflow-x:scroll;">
             <table><tr>
                 <td style="height:180px;"><img border=1 src="<%=getContextPath()%>/_.gif" style="height:180px; width:1px"></td>
+                <td ng-if="!anyVisibleStudies()">no studies match criteria</td>
                 <td style="height:180px;" ng-repeat="study in studies | filter:countForStudy">
                     <div ng-include="'/studycard.html'"></div>
                 </td>
@@ -259,7 +271,7 @@
     </td>
     <td valign="top" style="width:200px;">
            <table id="summaryArea" ng-cloak>
-                <tr><td colspan="2"><h3 style="text-align:center;">Summary</h3></td></tr>
+                <tr><td colspan="2"><h3 style="display:inline-block;">Summary</h3></td></tr>
                 <tr><td align="right" class="big-summary" style="width:60pt;">{{dimStudy.summaryCount}}</td><td class="big-summary">&nbsp;studies</td></tr>
                 <tr><td align="right" class="big-summary" style="width:60pt;">{{dimSubject.allMemberCount||0}}</td><td class="big-summary">&nbsp;participants</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimSpecies.summaryCount}}</td><td class="small-summary">&nbsp;species</td></tr>
@@ -270,11 +282,16 @@
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimGender.summaryCount}}</td><td class="small-summary">&nbsp;genders</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimRace.summaryCount}}</td><td class="small-summary">&nbsp;races</td></tr>
                 <tr><td align="right" class="small-summary" style="width:60pt;">{{dimAge.summaryCount}}</td><td class="small-summary">&nbsp;age groups</td></tr>
-                <tr><td colspan="2"><h3 style="text-align:center;" id="filterArea">Study Attributes Selection</h3></td></tr>
+                <tr>
+                    <td colspan="2">
+                        <h3 style="display:inline-block;" id="filterArea">Study Filters</h3>
+                        <a ng-click="clearAllFilters();" ng-show="hasFilters()">[clear all]</a>
+                    </td>
+                </tr>
                 <tbody ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace,dimAge] | filter:dimensionHasFilter ">
                 <tr><td colspan="2"><fieldset style="width:100%;"><legend>{{dim.caption || dim.name}}</legend>
                     <div class="filter-member" ng-repeat="member in dim.filters">
-                    <img class="delete" style="vertical-align:bottom;" src="<%=getContextPath()%>/_images/partdelete.png" ng-click="removeFilterMember(dim,member)">{{member.name}}
+                    <img class="delete" style="vertical-align:middle;" src="<%=getContextPath()%>/_images/partdelete.png" ng-click="removeFilterMember(dim,member)">{{member.name}}
                     </div>
                 </fieldset></td></tr>
                 </tbody>
@@ -291,7 +308,7 @@
  -->
 
 <script type="text/ng-template" id="/studycard.html">
-    <div class="study-card" ng-class="{hipc:study.hipc_funded, loaded:study.loaded}" style="width:220px; height:160px; overflow-y:hidden">
+    <div class="study-card" ng-class="{hipc:study.hipc_funded, loaded:study.loaded}" style="position:relative; width:160pt; height:140pt; overflow-y:hidden">
         <span class="studycard-highlight studycard-accession" style="float:left;">{{study.study_accession}}</span>
         <span class="studycard-highlight studycard-pi" style="float:right;">{{study.pi}}</span>
         <hr style="clear:both;">
@@ -299,7 +316,8 @@
             <a class="labkey-text-link" style="float:left;" ng-click="showStudyPopup(study.study_accession)" title="click for more details">view summary</a>
             <a class="labkey-text-link" ng-if="study.loaded && study.url" style="float:right;" href="{{study.url}}">go to study</a>
         </div>
-        <p class="studycard-description" style="clear:both;">{{study.title}}</p>
+        <div class="studycard-description" style="clear:both;">{{study.title}}</div>
+        <div ng-if="study.hipc_funded" style="width:100%; position:absolute; bottom:0; left:0; text-align:center;"><span class="hipc-label">HIPC</span></div>
     </div>
 </script>
 
@@ -436,6 +454,29 @@ studyfinderScope.prototype =
         return studyMember ? studyMember.count : 0;
     },
 
+    anyVisibleStudies : function()
+    {
+        var members = dataspace.dimensions.Study.members;
+        for (var m=0 ; m<members.length ; m++)
+            if (members[m].count)
+                return true;
+        return false;
+    },
+
+    hasFilters : function ()
+    {
+        for (var d in dataspace.dimensions)
+        {
+            if (!dataspace.dimensions.hasOwnProperty(d))
+                continue;
+            if (d == "Study")
+                continue;
+            var filterMembers = dataspace.dimensions[d].filters;
+            if (filterMembers && filterMembers.length > 0)
+                return true;
+        }
+        return false;
+    },
 
     dimensionHasFilter : function(dim)
     {
@@ -484,6 +525,18 @@ studyfinderScope.prototype =
         this.updateCountsAsync();
     },
 
+
+    clearAllFilters : function ()
+    {
+        for (var d in dataspace.dimensions) {
+            if (!dataspace.dimensions.hasOwnProperty(d))
+                continue;
+            if (d == "Study")
+                continue;
+            this._clearFilter(d);
+        }
+        this.updateCountsAsync();
+    },
 
     _clearFilter : function(dimName)
     {
@@ -554,14 +607,23 @@ studyfinderScope.prototype =
     updateCountsAsync : function()
     {
         var innerFilters = [];
-        var d, i;
+        var d, i, dim;
         for (d in dataspace.dimensions)
         {
-            var filterMembers = dataspace.dimensions[d].filters;
-            if (!filterMembers || filterMembers.length == 0)
+            if (!dataspace.dimensions.hasOwnProperty(d))
                 continue;
+            dim = dataspace.dimensions[d];
+            var filterMembers = dim.filters;
             if (d == 'Study')
             {
+                if (!filterMembers || filterMembers.length == dim.members.length)
+                    continue;
+                if (filterMembers.length == 0)
+                {
+                    // in the case of study filter, this means no matches, rather than no filter!
+                    this.updateCountsZero();
+                    return;
+                }
                 var uniqueNames = [];
                 for (i = 0; i < filterMembers.length; i++)
                     uniqueNames.push(filterMembers[i].uniqueName);
@@ -572,6 +634,8 @@ studyfinderScope.prototype =
             }
             else
             {
+                if (!filterMembers || filterMembers.length == 0)
+                    continue;
                 for (i = 0; i < filterMembers.length; i++)
                 {
                     var filterMember = filterMembers[i];
@@ -594,7 +658,7 @@ studyfinderScope.prototype =
         {
             if (!dataspace.dimensions.hasOwnProperty(d))
                 continue;
-            var dim = dataspace.dimensions[d];
+            dim = dataspace.dimensions[d];
             if (dim.name == "Subject")
                 onRows.arguments.push({level:dim.hierarchy.levels[0].uniqueName});
             else if (dim.name == "Study" && this.filterByStudy)
@@ -656,6 +720,28 @@ studyfinderScope.prototype =
     },
 
 
+    updateCountsZero : function()
+    {
+        for (d in dataspace.dimensions)
+        {
+            if (!dataspace.dimensions.hasOwnProperty(d))
+                continue;
+            var dim = dataspace.dimensions[d];
+            dim.summaryCount = 0;
+            for (var m = 0; m < dim.members.length; m++)
+            {
+                dim.members[m].count = 0;
+                dim.members[m].percent = 0;
+            }
+            dim.summaryCount = 0;
+        }
+
+        this.saveFilterState();
+        this.updateContainerFilter();
+        this.doneRendering();
+    },
+
+
     updateCounts : function(dim, cellset)
     {
         var member, m;
@@ -685,6 +771,7 @@ studyfinderScope.prototype =
 
         this.saveFilterState();
         this.updateContainerFilter();
+        this.doneRendering();
     },
 
 
@@ -697,6 +784,8 @@ studyfinderScope.prototype =
         // clear old counts (to be safe)
         for (d in dataspace.dimensions)
         {
+            if (!dataspace.dimensions.hasOwnProperty(d))
+                continue;
             if (d == "Study" && this.filterByStudy)
                 continue;
             dim = dataspace.dimensions[d];
@@ -747,7 +836,11 @@ studyfinderScope.prototype =
                 member.percent = max==0 ? 0 : (100.0*member.count)/max;
             }
         }
+        this.doneRendering();
+    },
 
+    doneRendering : function()
+    {
         if (loadMask)
         {
             Ext4.get(studyfinderAppId).removeCls("x-hidden");
@@ -755,20 +848,13 @@ studyfinderScope.prototype =
             loadMask = null;
             LABKEY.help.Tour.autoShow('immport.studyfinder');
         }
-    },
 
+        LABKEY.Utils.signalWebDriverTest('studyFinderCountsUpdated');
+    },
 
     clearStudyFilter : function()
     {
-        if (this.studySubset == "ImmPort")
-        {
-            this._clearFilter("Study");
-            this.updateCountsAsync();
-        }
-        else
-        {
-            this.setStudyFilter(this.getStudySubsetList());
-        }
+        this.setStudyFilter(this.getStudySubsetList());
     },
 
 
@@ -846,6 +932,7 @@ studyfinderScope.prototype =
             // NOOP if we're not current (poor man's cancel)
             if (promise != scope.doSearchTermsChanged_promise)
                 return;
+            scope.doSearchTermsChanged_promise = null;
             var hits = data.hits;
             var searchStudies = [];
             var found = {};
@@ -963,18 +1050,30 @@ studyfinderScope.prototype =
         var containers = [];
         for (var name in loaded_studies)
         {
+            if (!loaded_studies.hasOwnProperty(name))
+                continue;
             var study = loaded_studies[name];
             var count = this.countForStudy(study);
             if (count)
                 containers.push(study.containerId);
         }
 
-        // CONSIDER: delete the shared container filter if all loaded_studies are selected
-        LABKEY.Ajax.request({
-            url: LABKEY.ActionURL.buildURL('study-shared', 'sharedStudyContainerFilter.api'),
-            method: 'POST',
-            jsonData: { containers: containers }
-        });
+        if (containers.length == 0 || containers.length == this.loaded_study_list.length)
+        {
+            // Delete the shared container filter if all loaded_studies are selected
+            LABKEY.Ajax.request({
+                url: LABKEY.ActionURL.buildURL('study-shared', 'sharedStudyContainerFilter.api'),
+                method: 'DELETE'
+            });
+        }
+        else
+        {
+            LABKEY.Ajax.request({
+                url: LABKEY.ActionURL.buildURL('study-shared', 'sharedStudyContainerFilter.api'),
+                method: 'POST',
+                jsonData: { containers: containers }
+            });
+        }
     },
 
     showStudyPopup: function(study_accession)

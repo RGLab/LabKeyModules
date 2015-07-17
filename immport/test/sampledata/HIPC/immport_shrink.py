@@ -50,7 +50,9 @@ def main(argv):
 
 	# These study accessions are the animal studies from ALLSTUDIES-DR11_MySQL.zip
 	# Update these accessions if you intend to run this against a different archive
-	animal_studies = [21, 29, 30, 31, 32, 35, 62, 64, 78, 95, 99, 139, 147, 208, 215, 217, 241, 259, 271, 286, 288]
+	all_animal_studies = [21, 29, 30, 31, 32, 35, 62, 64, 78, 95, 99, 139, 147, 208, 215, 217, 241, 259, 271, 286, 288]
+	# These are the studies used by StudyFinderTest
+	animal_studies = [99, 139, 147, 208, 215, 217]
 	junction_file_sep = "_2_"
 
 	file_names = [f for f in listdir(source_mysql_dir) if isfile(join(source_mysql_dir,f))]
