@@ -8,7 +8,7 @@
         <dependency path='ISCore/Spinner'/>
         <dependency path='ISCore/DoubleScroll'/>
 
-        <dependency path='DETtour.js'/>
+        <dependency path='DETour.js'/>
         <dependency path='DataExplorer.js'/>
     </dependencies>
 </view>
