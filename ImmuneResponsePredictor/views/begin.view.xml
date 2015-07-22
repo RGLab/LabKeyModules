@@ -5,6 +5,7 @@
 
         <dependency path='ISCore/ExtendedLovCombo'/>
 
+        <dependency path='IRPTour.js'/>
         <dependency path='ImmuneResponsePredictor.js'/>
     </dependencies>
 </view>

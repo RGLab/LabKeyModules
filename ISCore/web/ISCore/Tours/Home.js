@@ -3,9 +3,16 @@ var homeTour = function(){
         id: 'immport-home-tour',
         steps: [{
             title: 'Welcome to ImmuneSpace',
-            content: 'Please, use this quick tour to familiarize yourself with the project home page. You can always restart this tour by clicking the "QUICK HELP" link below.',
+            content: 'Please, use this quick tour to familiarize yourself with the home page. You can always restart this tour by clicking the "QUICK HELP" link below.',
             target: $('.labkey-wp')[0],
             placement: 'top',
+            showNextButton: true
+        },{
+            title: 'Highlighted Studies',
+            content: 'New and recently updated studies, if available, will always be listed here.',
+            target: $('#Welcome')[0],
+            placement: 'top',
+            showPrevButton: true,
             showNextButton: true
         },{
             title: 'Announcements',
@@ -45,50 +52,51 @@ var homeTour = function(){
                 LABKEY.help.Tour.continueAtLocation('/project/home/begin.view?');
             }
         },{
-            title: 'Projects Navigation',
-            content: 'The folder drop-down contains the list of available projects. Hovering over each reveals the corresponding sublist of studies. Click on any study link to start exploring that study. You can also use the Study Finder to identify studies of interest, click "Next" for details.',
-            target: $('#betaBar')[0],
-            xOffset: 530,
-            yOffset: 30,
+            title: 'Video Tutorials Menu',
+            content: 'Video tutorials quick access list, available on every page.',
+            target: $('.labkey-main-menu-item')[1],
+            xOffset: 230,
+            yOffset: 0,
             placement: 'right',
             showPrevButton: true,
             showNextButton: true,
             onNext: function(){
-                $('.menu-projects').removeClass('selected');
-                $('#betaBar_menu').css('visibility', 'hidden');
+                $('#WikiMenu13-Header').removeClass('selected');
+                $('#WikiMenu13-Header_menu').css('visibility', 'hidden');
             },
             onPrev: function(){
-                $('.menu-projects').removeClass('selected');
-                $('#betaBar_menu').css('visibility', 'hidden');
+                $('#WikiMenu13-Header').removeClass('selected');
+                $('#WikiMenu13-Header_menu').css('visibility', 'hidden');
             },
             onShow: function(){
-                $('#betaBar')[0].dispatchEvent(
+                $('#WikiMenu13-Header')[0].dispatchEvent(
                     new MouseEvent( 'click', {
                         'view': window,
                         'bubbles': true,
                         'cancelable': true
                     })
                 );
-                $('.menu-projects').addClass('selected');
-                $('#betaBar_menu').css('visibility', 'visible');
+                $('#WikiMenu13-Header').addClass('selected');
+                $('#WikiMenu13-Header_menu').css('visibility', 'visible');
             }
         },{
-            title: 'Getting Started',
-            content: 'Click on the "Study Finder" link in the "Geting Started" menu to find studies of interest using the Study Finder. Clicking "Next" will take you there directly.',
+            title: 'Studies Navigation',
+            content: 'Use the search box to quickly find the study accession number you want, then click on it to go to its overview page. </br> Click on the "Study Finder" link to find studies of interest using the Study Finder. </br> Clicking "Next" will take you there directly.',
             target: $('.labkey-main-menu-item')[0],
-            yOffset: -20,
+            xOffset: 70,
+            yOffset: 0,
             placement: 'right',
             showPrevButton: true,
             showNextButton: true,
             multipage: true,
             onNext: function(){
-                $('.labkey-main-menu-item').removeClass('selected');
+                $('#WikiMenu12-Header').removeClass('selected');
                 $('#WikiMenu12-Header_menu').css('visibility', 'hidden');
 
                 LABKEY.help.Tour.continueAtLocation('/immport/Studies/studyFinder.view?');
             },
             onPrev: function(){
-                $('.labkey-main-menu-item').removeClass('selected');
+                $('#WikiMenu12-Header').removeClass('selected');
                 $('#WikiMenu12-Header_menu').css('visibility', 'hidden');
             },
             onShow: function(){
@@ -99,7 +107,7 @@ var homeTour = function(){
                         'cancelable': true
                     })
                 );
-                $('.labkey-main-menu-item').addClass('selected');
+                $('#WikiMenu12-Header').addClass('selected');
                 $('#WikiMenu12-Header_menu').css('visibility', 'visible');
             }
         },{

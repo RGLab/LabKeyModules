@@ -8,6 +8,7 @@
         <dependency path='ISCore/Spinner'/>
         <dependency path='ISCore/SuperBoxSelect'/>
 
+        <dependency path='GEETour.js'/>
         <dependency path='GeneExpressionExplorer.js'/>
     </dependencies>
 </view>

@@ -247,6 +247,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             deferredRender: false,
             items: [
                 {
+                    html: '<a class="labkey-text-link bold-text" onclick="LABKEY.help.Tour.show(\'immport-gsea-tour\')">Quick help</a><br><br>',
                     border: false,
                     defaults: {
                         border: false
@@ -566,6 +567,10 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         LABKEY.ext.GeneSetEnrichmentAnalysis.superclass.constructor.apply(this, arguments);
 
     }, // end constructor
+
+    listeners: {
+        afterrender: GSEATour
+    },
 
     resize: function(){
     }

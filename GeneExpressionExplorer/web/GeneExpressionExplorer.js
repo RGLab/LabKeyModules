@@ -524,6 +524,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             deferredRender: false,
             items: [
                 {
+                    html: '<a class="labkey-text-link bold-text" onclick="LABKEY.help.Tour.show(\'immport-gee-tour\')">Quick help</a><br><br>',
                     border: false,
                     defaults: {
                         border: false
@@ -803,6 +804,10 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         LABKEY.ext.GeneExpressionExplorer.superclass.constructor.apply(this, arguments);
 
     }, // end constructor
+
+    listeners: {
+        afterrender: GEETour
+    },   
 
     resize : function(){
         if ( this.resizableImage != undefined ){

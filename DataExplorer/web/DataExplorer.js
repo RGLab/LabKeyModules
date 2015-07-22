@@ -18,7 +18,6 @@
 Ext.namespace('LABKEY.ext');
 
 LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
-
     constructor : function(config) {
 
         /////////////////////////////////////
@@ -298,7 +297,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         pnlTabs.getEl().mask(
                             'No data are available for visualization in this study ' +
                             '(e.g. derived or processed immunological data).</br>' +
-                            'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.supportBoardLink,
+                            'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.supportLink,
                             'infoMask'
                         );
                     } else {
@@ -719,8 +718,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             style: 'padding-right: 2px; padding-left: 2px;'
         });
 
-DETour();
-
         var pnlInputView = new Ext.form.FormPanel({
             autoScroll: true,
             bodyStyle: 'padding: 4px;',
@@ -732,12 +729,12 @@ DETour();
             deferredRender: false,
             items: [
                 {
+                    html: '<a class="labkey-text-link bold-text" onclick="LABKEY.help.Tour.show(\'immport-dataexplorer-tour\')">Quick help</a><br><br>',
                     border: false,
                     defaults: {
                         border: false
                     },
                     items: [
-                        //{ html: '<a class="labkey-text-link bold-text" onclick="LABKEY.help.Tour.show(\'immport-dataexplorer-tour\')">quick help</a>'},
                         { html: 'For information and help on how to use the Data Explorer module, click the' },
                         new Ext.Container({
                             autoEl: 'a',
@@ -771,10 +768,10 @@ DETour();
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
-                        new Ext.Spacer({
-                            height: 20,
-                            html: '&nbsp'
-                        }),
+                       // new Ext.Spacer({
+                       //     height: 20,
+                       //     html: '&nbsp'
+                       // }),
                         cbDataset,
                         cbPlotType,
                         chNormalize,
@@ -857,7 +854,7 @@ DETour();
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: 'For boxplots and lines, the visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. The heatmap are drawn using the <a href="http://cran.r-project.org/web/packages/pheatmap/index.html" targe="_blank">pheatmap</a> package.',
+                            html: 'For boxplots violin plots and lines, the visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. The heatmap are drawn using the <a href="http://cran.r-project.org/web/packages/pheatmap/index.html" targe="_blank">pheatmap</a> package.',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),
@@ -1042,6 +1039,10 @@ DETour();
         LABKEY.ext.DataExplorer.superclass.constructor.apply(this, arguments);
 
     }, // end constructor
+
+    listeners: {
+        afterrender: DETour
+    },
 
     resize : function(){
         if ( this.qwpDataset ){

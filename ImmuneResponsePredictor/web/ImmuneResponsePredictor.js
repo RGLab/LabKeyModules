@@ -560,6 +560,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             deferredRender: false,
             items: [
                 {
+                    html: '<a class="labkey-text-link bold-text" onclick="LABKEY.help.Tour.show(\'immport-irp-tour\')">Quick help</a><br><br>',
                     border: false,
                     defaults: {
                         border: false
@@ -750,7 +751,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         new Ext.form.FieldSet({
                             html: '\
                                     <b>Absolute fold-change:</b> Features with an absolute fold change to baseline <u>lower</u> than the threshold will be excluded<br><br>\
-                                    <b>False Discovery Rate:</b> If checked, only probes differentially expressed over time are selected.\
+                                    <b>Use genes differentially expressed over time:</b> If checked, only genes differentially expressed over time are selected (as opposed to the entire array).\
                             ',
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Additional options'
@@ -916,6 +917,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         LABKEY.ext.ImmuneResponsePredictor.superclass.constructor.apply(this, arguments);
 
     }, // end constructor
+
+    listeners: {
+        afterrender: IRPTour
+    },   
+
 
     resize: function(){
     }
