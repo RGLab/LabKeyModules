@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <etl xmlns="http://labkey.org/etl/xml">
 <name>Clear all immport tables</name>
-<description>Copy results to study datasets, all studies</description>
+<description>Clear all data from immport schema</description>
 <transforms>
     <transform id="subject_2_study" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="subject_2_study" targetOption="truncate" /></transform>
     <transform id="reagent_set_2_reagent" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="reagent_set_2_reagent" targetOption="truncate" /></transform>
