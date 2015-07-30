@@ -121,23 +121,24 @@ FROM subject_measure_result
 CREATE OR REPLACE FUNCTION immport.fn_populateDimensions() RETURNS INTEGER AS $$
 BEGIN
 
-
   -- dimAssay
 
   DELETE FROM immport.dimAssay;
-  INSERT INTO immport.dimAssay (Study, Assay)
+  INSERT INTO immport.dimAssay (SubjectId, Assay)
   SELECT DISTINCT
-    study_accession AS Study,
+    subject_accession || '.' || SUBSTRING(study_accession,4) AS SubjectId,
     assay as Assay
-  FROM immport.v_results_union;
+  FROM immport.v_results_union
+  WHERE subject_accession IS NOT NULL AND study_accession IS NOT NULL;
 
 
   -- dimDemographic
 
   DELETE FROM immport.dimDemographic;
-  INSERT INTO immport.dimDemographic (ParticipantId, AgeInYears, Species, Gender, Race, Age)
+  INSERT INTO immport.dimDemographic (SubjectId, Study, AgeInYears, Species, Gender, Race, Age)
   SELECT DISTINCT
-    subjectid AS ParticipantId,
+    subject.subject_accession || '.' || SUBSTRING(study_accession,4) AS SubjectId,
+    s2s.study_accession AS Study,
     CASE age_unit
     WHEN 'Years' THEN floor(age_reported)
       WHEN 'Weeks' THEN 0
@@ -158,22 +159,20 @@ BEGIN
       WHEN floor(age_reported) >= 70 THEN '> 70'
       ELSE 'Unknown'
     END AS Age
-  FROM immport.subject;
+  FROM immport.subject INNER JOIN immport.subject_2_study s2s ON subject.subject_accession = s2s.subject_accession;
 
 
   -- dimStudy
 
   DELETE FROM immport.dimStudy;
 
-  INSERT INTO immport.dimStudy (ParticipantId, Study, Type, Program, SortOrder)
+  INSERT INTO immport.dimStudy (Study, Type, Program, SortOrder)
     SELECT DISTINCT
-      subjectid AS ParticipantId,
       study.study_accession as Study,
       study.type as Type,
       P.title as Program,
       cast(substring(study.study_accession,4) as integer) as SortOrder
-    FROM immport.subject_2_study _ss
-      INNER JOIN immport.study ON _ss.study_accession = study.study_accession
+    FROM immport.study
       LEFT OUTER JOIN immport.workspace W ON study.workspace_id = W.workspace_id
       LEFT OUTER JOIN immport.contract_grant C ON W.contract_id = C.contract_grant_id
       LEFT OUTER JOIN immport.program P on C.program_id = P.program_id;
@@ -294,7 +293,41 @@ BEGIN
       FROM immport.study
       WHERE
         lower(official_title || ' ' || condition_studied) like '%vasculitis%'
-      ;
+
+      UNION ALL
+
+      SELECT study_accession AS Study, 'Diabetes' as Condition
+      FROM immport.study
+      WHERE
+        lower(official_title || ' ' || condition_studied) like '%diabet%'
+
+      UNION ALL
+
+      SELECT study_accession AS Study, 'Vaccinia' as Condition
+      FROM immport.study
+      WHERE
+        lower(official_title || ' ' || condition_studied) like '%vaccinia%'
+
+      UNION ALL
+
+      SELECT study_accession AS Study, 'Helicobacter pylori' as Condition
+      FROM immport.study
+      WHERE
+        lower(official_title || ' ' || condition_studied) like '%pylori%'
+
+      UNION ALL
+
+      SELECT study_accession AS Study, 'Escherichia coli' as Condition
+      FROM immport.study
+      WHERE
+        lower(official_title || ' ' || condition_studied) like '%escherichia coli%'
+  ;
+
+  INSERT INTO immport.dimStudyCondition (Study, Condition)
+  SELECT study_accession AS Study, 'Other' as Condition
+  FROM immport.study
+  WHERE study_accession NOT IN (SELECT Study FROM immport.dimStudyCondition);
+
 
 
   -- dimStudyTimepoint

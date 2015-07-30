@@ -2,41 +2,39 @@
 
    <Cube name="StudyCube" visible="true" defaultMeasure="RowCount" cache="true" enabled="true">
 
-        <Table schema="immport" name="dimStudy" >
+        <Table schema="immport" name="dimDemographic" >
         </Table>
 
-        <Dimension visible="true" highCardinality="false" name="Subject" foreignKey="participantid">
-            <Hierarchy visible="true" hasAll="true" uniqueKeyLevelName="Name" primaryKey="participantid">
-                <Table name="dimDemographic" schema="immport"/>
-                <Level name="Subject" visible="true" column="participantid" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never">
+        <Dimension visible="true" highCardinality="false" name="Subject">
+            <Hierarchy visible="true" hasAll="true" uniqueKeyLevelName="Name">
+                <Level name="Subject" visible="true" column="SubjectId" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never">
                 </Level>
             </Hierarchy>
-            <Hierarchy name="Race" visible="true" hasAll="true" uniqueKeyLevelName="Name" primaryKey="participantid">
-                <Table name="dimDemographic" schema="immport"/>
+            <Hierarchy name="Race" visible="true" hasAll="true" uniqueKeyLevelName="Name">
                 <Level name="Race" visible="true" column="race" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
-            <Hierarchy name="Age" visible="true" hasAll="true" uniqueKeyLevelName="Name" primaryKey="participantid">
-                <Table name="dimDemographic" schema="immport"/>
+            <Hierarchy name="Age" visible="true" hasAll="true" uniqueKeyLevelName="Name">
                 <Level name="Age" visible="true" column="age" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
-            <Hierarchy name="Gender" visible="true" hasAll="true" uniqueKeyLevelName="Name" primaryKey="participantid">
-                <Table name="dimDemographic" schema="immport"/>
+            <Hierarchy name="Gender" visible="true" hasAll="true" uniqueKeyLevelName="Name">
                 <Level name="Gender" visible="true" column="gender" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
-            <Hierarchy name="Species" visible="true" hasAll="true" uniqueKeyLevelName="Name" primaryKey="participantid">
-                <Table name="dimDemographic" schema="immport"/>
+            <Hierarchy name="Species" visible="true" hasAll="true" uniqueKeyLevelName="Name">
                 <Level name="Species" visible="true" column="species" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
         </Dimension>
 
         <Dimension name="Study" visible="true" highCardinality="false" foreignKey="study">
-            <Hierarchy hasAll="true">
+            <Hierarchy hasAll="true" primaryKey="study">
+                <Table name="dimStudy" schema="immport"/>
                 <Level name="Name" visible="true" nameColumn="study" column="sortOrder" type="Integer" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
-            <Hierarchy name="Program" hasAll="true">
+            <Hierarchy name="Program" hasAll="true" primaryKey="study">
+                <Table name="dimStudy" schema="immport"/>
                 <Level name="Program" visible="true" column="program" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
-            <Hierarchy name="Type" hasAll="true">
+            <Hierarchy name="Type" hasAll="true" primaryKey="study">
+                <Table name="dimStudy" schema="immport"/>
                 <Level name="Type" visible="true" column="type" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
             <Hierarchy name="Conditions" hasAll="true" primaryKey="study">
@@ -64,8 +62,8 @@
         </Dimension>
 
 
-        <Dimension name="Assay" visible="true" highCardinality="false" foreignKey="study">
-            <Hierarchy hasAll="true" primaryKey="study">
+        <Dimension name="Assay" visible="true" highCardinality="false" foreignKey="subjectid">
+            <Hierarchy hasAll="true" primaryKey="subjectid">
                 <Table name="dimAssay" schema="immport"/>
                 <Level name="Assay" visible="true" table="dimAssay" column="assay" type="String" uniqueMembers="true" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>

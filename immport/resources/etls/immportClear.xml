@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etl xmlns="http://labkey.org/etl/xml">
+<name>Clear all immport tables</name>
+<description>Copy results to study datasets, all studies</description>
+<transforms>
+    <transform id="subject_2_study" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="subject_2_study" targetOption="truncate" /></transform>
+    <transform id="reagent_set_2_reagent" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="reagent_set_2_reagent" targetOption="truncate" /></transform>
+    <transform id="study_2_panel" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="study_2_panel" targetOption="truncate" /></transform>
+    <transform id="standard_curve_2_file_info" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="standard_curve_2_file_info" targetOption="truncate" /></transform>
+    <transform id="reagent_2_fcs_marker" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="reagent_2_fcs_marker" targetOption="truncate" /></transform>
+    <transform id="planned_visit_2_arm" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="planned_visit_2_arm" targetOption="truncate" /></transform>
+    <transform id="expsample_2_treatment" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="expsample_2_treatment" targetOption="truncate" /></transform>
+    <transform id="control_sample_2_file_info" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="reagent_set_2_reagent" targetOption="truncate" /></transform>
+    <transform id="subject_2_protocol" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="subject_2_protocol" targetOption="truncate" /></transform>
+    <transform id="study_2_protocol" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="study_2_protocol" targetOption="truncate" /></transform>
+    <transform id="expsample_2_reagent" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="expsample_2_reagent" targetOption="truncate" /></transform>
+    <transform id="expsample_2_file_info" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="expsample_2_file_info" targetOption="truncate" /></transform>
+    <transform id="experiment_2_protocol" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="experiment_2_protocol" targetOption="truncate" /></transform>
+    <transform id="biosample_2_treatment" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="biosample_2_treatment" targetOption="truncate" /></transform>
+    <transform id="biosample_2_protocol" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="biosample_2_protocol" targetOption="truncate" /></transform>
+    <transform id="biosample_2_expsample" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="biosample_2_expsample" targetOption="truncate" /></transform>
+    <transform id="arm_2_subject" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="arm_2_subject" targetOption="truncate" /></transform>
+    <transform id="subject_measure_result" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="subject_measure_result" targetOption="truncate" /></transform>
+    <transform id="pcr_result" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="pcr_result" targetOption="truncate" /></transform>
+    <transform id="neut_ab_titer_result" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="neut_ab_titer_result" targetOption="truncate" /></transform>
+    <transform id="mbaa_result" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="mbaa_result" targetOption="truncate" /></transform>
+    <transform id="kir_typing_result" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="kir_typing_result" targetOption="truncate" /></transform>
+    <transform id="hla_typing_result" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="hla_typing_result" targetOption="truncate" /></transform>
+    <transform id="fcs_analyzed_result" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="fcs_analyzed_result" targetOption="truncate" /></transform>
+    <transform id="hai_result" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="hai_result" targetOption="truncate" /></transform>
+    <transform id="elispot_result" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="elispot_result" targetOption="truncate" /></transform>
+    <transform id="elisa_result" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="elisa_result" targetOption="truncate" /></transform>
+
+    <transform id="fcs_header" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="fcs_header" targetOption="truncate" /></transform>
+    <transform id="fcs_header_marker" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="fcs_header_marker" targetOption="truncate" /></transform>
+    <transform id="fcs_analyzed_result_marker" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="fcs_analyzed_result_marker" targetOption="truncate" /></transform>
+    <transform id="fcs_annotation" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="fcs_annotation" targetOption="truncate" /></transform>
+    <transform id="program" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="program" targetOption="truncate" /></transform>
+    <transform id="contract_grant" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="contract_grant" targetOption="truncate" /></transform>
+    <transform id="substance_merge" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="substance_merge" targetOption="truncate" /></transform>
+    <transform id="subject_measure_definition" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="subject_measure_definition" targetOption="truncate" /></transform>
+    <transform id="study_pubmed" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="study_pubmed" targetOption="truncate" /></transform>
+    <transform id="study_personnel" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="study_personnel" targetOption="truncate" /></transform>
+    <transform id="study_link" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="study_link" targetOption="truncate" /></transform>
+    <transform id="study_image" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="study_image" targetOption="truncate" /></transform>
+    <transform id="study_glossary" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="study_glossary" targetOption="truncate" /></transform>
+    <transform id="study_file" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="study_file" targetOption="truncate" /></transform>
+    <transform id="study_categorization" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="study_categorization" targetOption="truncate" /></transform>
+    <transform id="standard_curve" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="standard_curve" targetOption="truncate" /></transform>
+    <transform id="reported_early_termination" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="reported_early_termination" targetOption="truncate" /></transform>
+    <transform id="protocol_deviation" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="protocol_deviation" targetOption="truncate" /></transform>
+    <transform id="lab_test" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lab_test" targetOption="truncate" /></transform>
+    <transform id="reference_range" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="reference_range" targetOption="truncate" /></transform>
+    <transform id="kir_typing_system" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="kir_typing_system" targetOption="truncate" /></transform>
+    <transform id="inclusion_exclusion" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="inclusion_exclusion" targetOption="truncate" /></transform>
+    <transform id="hla_typing_system" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="hla_typing_system" targetOption="truncate" /></transform>
+    <transform id="hla_typing_sys_feature" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="hla_typing_sys_feature" targetOption="truncate" /></transform>
+    <transform id="hla_allele_status" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="hla_allele_status" targetOption="truncate" /></transform>
+    <transform id="expsample_public_repository" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="expsample_public_repository" targetOption="truncate" /></transform>
+    <transform id="expsample_mbaa_detail" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="expsample_mbaa_detail" targetOption="truncate" /></transform>
+    <transform id="control_sample" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="control_sample" targetOption="truncate" /></transform>
+    <transform id="assessment" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="assessment" targetOption="truncate" /></transform>
+    <transform id="adverse_event" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="adverse_event" targetOption="truncate" /></transform>
+    <transform id="treatment" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="treatment" targetOption="truncate" /></transform>
+    <transform id="reagent" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="reagent" targetOption="truncate" /></transform>
+    <transform id="protocol" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="protocol" targetOption="truncate" /></transform>
+    <transform id="file_info" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="file_info" targetOption="truncate" /></transform>
+    <transform id="expsample" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="expsample" targetOption="truncate" /></transform>
+    <transform id="experiment" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="experiment" targetOption="truncate" /></transform>
+    <transform id="biosample" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="biosample" targetOption="truncate" /></transform>
+    <transform id="arm_or_cohort" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="arm_or_cohort" targetOption="truncate" /></transform>
+    <transform id="actual_visit" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="actual_visit" targetOption="truncate" /></transform>
+    <transform id="planned_visit" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="planned_visit" targetOption="truncate" /></transform>
+    <transform id="period" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="period" targetOption="truncate" /></transform>
+    <transform id="subject" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="subject" targetOption="truncate" /></transform>
+    <transform id="study" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="study" targetOption="truncate" /></transform>
+    <transform id="workspace" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="workspace" targetOption="truncate" /></transform>
+
+    <transform id="lk_unit_of_measure" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_unit_of_measure" targetOption="truncate" /></transform>
+    <transform id="lk_time_unit" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_time_unit" targetOption="truncate" /></transform>
+    <transform id="lk_t0_event" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_t0_event" targetOption="truncate" /></transform>
+    <transform id="lk_study_type" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_study_type" targetOption="truncate" /></transform>
+    <transform id="lk_study_panel" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_study_panel" targetOption="truncate" /></transform>
+    <transform id="lk_study_file_type" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_study_file_type" targetOption="truncate" /></transform>
+    <transform id="lk_species" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_species" targetOption="truncate" /></transform>
+    <transform id="lk_source_type" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_source_type" targetOption="truncate" /></transform>
+    <transform id="lk_sample_type" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_sample_type" targetOption="truncate" /></transform>
+    <transform id="lk_research_focus" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_research_focus" targetOption="truncate" /></transform>
+    <transform id="lk_reason_not_completed" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_reason_not_completed" targetOption="truncate" /></transform>
+    <transform id="lk_reagent_type" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_reagent_type" targetOption="truncate" /></transform>
+    <transform id="lk_race" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_race" targetOption="truncate" /></transform>
+    <transform id="lk_public_repository" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_public_repository" targetOption="truncate" /></transform>
+    <transform id="lk_protocol_type" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_protocol_type" targetOption="truncate" /></transform>
+    <transform id="lk_plate_type" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_plate_type" targetOption="truncate" /></transform>
+    <transform id="lk_personnel_role" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_personnel_role" targetOption="truncate" /></transform>
+    <transform id="lk_locus_typing_method" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_locus_typing_method" targetOption="truncate" /></transform>
+    <transform id="lk_locus_name" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_locus_name" targetOption="truncate" /></transform>
+    <transform id="lk_gender" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_gender" targetOption="truncate" /></transform>
+    <transform id="lk_file_purpose" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_file_purpose" targetOption="truncate" /></transform>
+    <transform id="lk_file_detail" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_file_detail" targetOption="truncate" /></transform>
+    <transform id="lk_feature_type" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_feature_type" targetOption="truncate" /></transform>
+    <transform id="lk_feature_strand" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_feature_strand" targetOption="truncate" /></transform>
+    <transform id="lk_feature_sequence_type" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_feature_sequence_type" targetOption="truncate" /></transform>
+    <transform id="lk_feature_location" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_feature_location" targetOption="truncate" /></transform>
+    <transform id="lk_experiment_purpose" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_experiment_purpose" targetOption="truncate" /></transform>
+    <transform id="lk_expsample_result_schema" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_expsample_result_schema" targetOption="truncate" /></transform>
+    <transform id="lk_exp_measurement_tech" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_exp_measurement_tech" targetOption="truncate" /></transform>
+    <transform id="lk_exon_intron_interrogated" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_exon_intron_interrogated" targetOption="truncate" /></transform>
+    <transform id="lk_ethnicity" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_ethnicity" targetOption="truncate" /></transform>
+    <transform id="lk_data_format" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_data_format" targetOption="truncate" /></transform>
+    <transform id="lk_data_completeness" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_data_completeness" targetOption="truncate" /></transform>
+    <transform id="lk_allele_status" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_allele_status" targetOption="truncate" /></transform>
+    <transform id="lk_age_event" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_age_event" targetOption="truncate" /></transform>
+    <transform id="lk_adverse_event_severity" type="org.labkey.di.pipeline.TransformTask"> <destination schemaName="immport" queryName="lk_adverse_event_severity" targetOption="truncate" /></transform>
+</transforms>
+
+</etl>
