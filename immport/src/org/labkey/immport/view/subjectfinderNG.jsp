@@ -373,9 +373,10 @@
             </div>
           </td>
           <td valign="top" align="left" width:100% style="width:100% height:100%;">
+              <a ng-click="clearAllFilters();"><span ng-show="hasFilters()">[clear all]</span>&nbsp;</a>
             <div id="studypanel" style="height:100%; overflow-y:scroll;" ng-class="{'x-hidden':(activeTab!=='Studies')}">
             <div class="searchDiv" style="float:left; padding:10pt;">
-                text search
+                search
                 <input placeholder="Study Search" id="searchTerms" name="q" style="width:240pt; font-size:120%" ng-model="searchTerms" ng-change="onSearchTermsChanged()">
                 <span class="searchMessage" ng-class="{searchNotFound:(searchMessage=='no matches')}">&nbsp;{{searchMessage}}&nbsp;</span>
             </div>
@@ -385,32 +386,47 @@
                 <label ng-show="hipc_study_list.length" >&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="HipcFunded" ng-change="onStudySubsetChanged()">HIPC funded</label>
                 <label>&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmPort" ng-change="onStudySubsetChanged()">All ImmPort studies</label>
             </div>
-            <div ng-if="!anyVisibleStudies()">no studies match criteria</div>
             <div class="x-clear"></div>
+            <div ng-if="!anyVisibleStudies()">no studies match criteria</div>
             <table><tr>
             <td style="height:180px;"><img border=1 src="<%=getContextPath()%>/_.gif" style="height:180px; width:1px"></td>
                     <div ng-include="'/studycard.html'"ng-repeat="study in studies | filter:countForStudy"></div>
             </tr></table>
           </td>
-          <td align=left valign=top style="width:220pt; border:solid 1px red;">
+          <td align=left valign=top style="width:220pt;">
+              <div class="facet">
+                  <div class="facet-header"><span class="facet-caption">Summary</span></div>
+                  <ul>
+                      <li style="position:relative; width:100%;" class="member">
+                          <span class="member-name">Studies</span>
+                          <span class="member-count">{{dimStudy.summaryCount}}</span>
+                      </li>
+                      <li style="position:relative; width:100%;" class="member">
+                          <span class="member-name">Subjects</span>
+                          <span class="member-count">{{formatNumber(dimSubject.allMemberCount||0)}}</span>
+                      </li>
+                  </ul>
+              </div>
+              <div style="border:dotted 1px red;">
               <span style="color:red;">NYI</span>
-            <div class="facet">
-                <div class="facet-header"><span class="facet-caption">Create Subject Group</span></div>
-                <p style="padding:10pt;"><input type="text"><%=button("Save")%></p>
-            </div>
-            <div class="facet">
-                <div class="facet-header"><span class="facet-caption">Subject Groups</span></div>
-                <ul>
-                    <li style="position:relative; width:100%;" class="member">
-                        <span class="member-name">Influenza 2013</span>3
-                        <span class="member-count"><%=textLink("apply","#")%></span>
-                    </li>
-                    <li style="position:relative; width:100%;" class="member">
-                        <span class="member-name">Allergy - Male 2014</span>
-                        <span class="member-count"><%=textLink("apply", "#")%></span>
-                    </li>
-                </ul>
-            </div>
+                <div class="facet">
+                    <div class="facet-header"><span class="facet-caption">Create Subject Group</span></div>
+                    <p style="padding:10pt;"><input type="text"><%=button("Save")%></p>
+                </div>
+                <div class="facet">
+                    <div class="facet-header"><span class="facet-caption">Subject Groups</span></div>
+                    <ul>
+                        <li style="position:relative; width:100%;" class="member">
+                            <span class="member-name">Influenza 2013</span>
+                            <span class="member-count"><%=textLink("apply","#")%></span>
+                        </li>
+                        <li style="position:relative; width:100%;" class="member">
+                            <span class="member-name">Allergy - Male 2014</span>
+                            <span class="member-count"><%=textLink("apply", "#")%></span>
+                        </li>
+                    </ul>
+                </div>
+              </div>
           </td>
         </tr>
     </table>
