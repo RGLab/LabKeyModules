@@ -54,7 +54,8 @@
         resources.add(ClientDependency.fromPath("Ext4"));
         resources.add(ClientDependency.fromPath("clientapi/ext4"));
         resources.add(ClientDependency.fromPath("query/olap.js"));
-        resources.add(ClientDependency.fromPath("angular.lib.xml"));
+        resources.add(ClientDependency.fromPath("angular"));
+        resources.add(ClientDependency.fromPath("immport/subjectfinder.js"));
         return resources;
     }
 %>
@@ -478,7 +479,7 @@
             </div>
         </div>
         <ul>
-            <li ng-repeat="member in dim.members" id="m_{{dim.name}}_{{member.uniqueName}}" style="position:relative;" title="{{member.count}}" class="member"
+            <li ng-repeat="member in dim.members" id="m_{{dim.name}}_{{member.uniqueName}}" style="position:relative;" class="member"
                  ng-class="{selectedMember:member.selected, emptyMember:(!member.selected && 0==member.count)}"
                  ng-click="selectMember(dim.name,member,$event)">
                 <span class="active member-indicator" ng-class="{selected:member.selected, 'none-selected':!dim.filters.length, 'not-selected':!member.selected}" ng-click="toggleMember(dim.name,member,$event)">
@@ -500,8 +501,6 @@
 			controller
  --%>
 <%-- TODO {low} make robust enough to have two finder web parts on the same page --%>
-
-<script src="<%=h(request.getContextPath())%>/immport/subjectfinder.js"></script>
 
 <script>
 var studyData = [<%
@@ -566,7 +565,7 @@ if (!c.isRoot())
 };
 
 
-new subjectfinder(studyData, loaded_studies);
+new subjectfinder(studyData, loaded_studies, "studyfinderAppDIV");
 
 
 LABKEY.help.Tour.register({

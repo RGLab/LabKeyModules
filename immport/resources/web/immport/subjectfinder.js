@@ -1,9 +1,5 @@
-function subjectfinder(studyData, loaded_studies)
+function subjectfinder(studyData, loadedStudies, studyfinderAppId)
 {
-// TODO -- pass in as configuration
-    var studyfinderMaskId = 'studyfinderOuterDIV';
-    var studyfinderAppId = 'studyfinderAppDIV';
-
 //
 // study detail pop-up window
 //   (TODO angularify)
@@ -420,35 +416,7 @@ function subjectfinder(studyData, loaded_studies)
                 countDistinctLevel: '[Subject].[Subject]'
             };
             this.mdx.query(config);
-
-
-            //if (this.filterByLevel == "[Study].[Name]")
-            //{
-            //    var configStudy =
-            //    {
-            //        "sql": true,
-            //        "configId": "ImmPort:/StudyCube",
-            //        "schemaName": "ImmPort",
-            //        "name": "StudyCube",
-            //        success: function (cellset, mdx, config)
-            //        {
-            //            // use angular timeout() for its implicit $scope.$apply()
-            //            //                config.scope.timeout(function(){config.scope.updateCounts(config.dim, cellset);},1);
-            //            config.scope.timeout(function ()
-            //            {
-            //                config.scope.updateCounts(dataspace.dimensions.Study, cellset);
-            //            }, 1);
-            //        },
-            //        scope: this,
-            //
-            //        "onRows": {"level": "[Study].[Name]"},
-            //        "countFilter": intersectFilters,
-            //        countDistinctLevel: '[Study].[Name]'
-            //    };
-            //    this.mdx.query(configStudy);
-            //}
         },
-
 
         updateCountsZero: function ()
         {
@@ -505,6 +473,7 @@ function subjectfinder(studyData, loaded_studies)
         },
 
 
+        /* handle query response to update all the member counts with all filters applied */
         updateCountsUnion: function (cellset)
         {
             var dim, member, d, m;
@@ -564,6 +533,9 @@ function subjectfinder(studyData, loaded_studies)
                     member.percent = max == 0 ? 0 : (100.0 * member.count) / max;
                 }
             }
+
+            this.saveFilterState();
+            this.updateContainerFilter();
             this.doneRendering();
         },
 
@@ -784,11 +756,11 @@ function subjectfinder(studyData, loaded_studies)
             // Collect the container ids of the loaded studies
             var dim = dataspace.dimensions.Study;
             var containers = [];
-            for (var name in loaded_studies)
+            for (var name in loadedStudies)
             {
-                if (!loaded_studies.hasOwnProperty(name))
+                if (!loadedStudies.hasOwnProperty(name))
                     continue;
-                var study = loaded_studies[name];
+                var study = loadedStudies[name];
                 var count = this.countForStudy(study);
                 if (count)
                     containers.push(study.containerId);
@@ -823,7 +795,7 @@ function subjectfinder(studyData, loaded_studies)
     var studyfinderApp = angular.module('studyfinderApp', ['LocalStorageModule'])
     .config(function (localStorageServiceProvider)
     {
-        localStorageServiceProvider.setPrefix("LABKEY.immport.studyfinder");
+        localStorageServiceProvider.setPrefix("studyfinder");
     })
     .controller('studyfinder', function ($scope, $timeout, $http, localStorageService)
     {
@@ -852,13 +824,13 @@ function subjectfinder(studyData, loaded_studies)
                 'url': null,
                 'containerId': null
             };
-            if (loaded_studies[name])
+            if (loadedStudies[name])
             {
                 s.loaded = true;
-                s.hipc_funded = loaded_studies[name].hipc_funded;
-                s.highlight = loaded_studies[name].highlight;
-                s.url = loaded_studies[name].url;
-                s.containerId = loaded_studies[name].containerId;
+                s.hipc_funded = loadedStudies[name].hipc_funded;
+                s.highlight = loadedStudies[name].highlight;
+                s.url = loadedStudies[name].url;
+                s.containerId = loadedStudies[name].containerId;
                 loaded_study_list.push(s.memberName);
                 if (s.highlight)
                     recent_study_list.push(s.memberName);
@@ -998,7 +970,7 @@ function subjectfinder(studyData, loaded_studies)
 
     Ext4.onReady(function ()
     {
-        loadMask = new Ext4.LoadMask(Ext4.get(studyfinderMaskId), {msg: "Loading study definitions..."});
+        loadMask = new Ext4.LoadMask(Ext4.get(studyfinderAppId), {msg: "Loading study definitions..."});
         loadMask.show();
     });
 }
