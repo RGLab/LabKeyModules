@@ -51,12 +51,14 @@ import org.labkey.api.view.NavTree;
 import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.VBox;
 import org.labkey.api.view.WebPartView;
+import org.labkey.api.view.template.ClientDependency;
 import org.labkey.immport.data.DataLoader;
 import org.labkey.immport.data.StudyBean;
 import org.labkey.immport.data.StudyPersonnelBean;
 import org.labkey.immport.data.StudyPubmedBean;
 import org.labkey.immport.view.StudyFinderWebPart;
 import org.labkey.immport.view.StudyIdForm;
+import org.labkey.immport.view.SubjectFinderWebPart;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
@@ -180,6 +182,8 @@ public class ImmPortController extends SpringActionController
         @Override
         public ModelAndView getView(CopyBean form, boolean reshow, BindException errors) throws Exception
         {
+            getPageConfig().addClientDependency(ClientDependency.fromPath("Ext4"));
+
             String log = "";
             String error = "";
             if (reshow)
@@ -189,7 +193,7 @@ public class ImmPortController extends SpringActionController
                 log = "<pre>" + PageFlowUtil.filter(_log, true, true) + "</pre>";
             }
             return new HtmlView("<p class='labkey-error'>" + PageFlowUtil.filter(error) + "</p>" +
-                "<form name='populateCube' method='post' onsubmit='Ext.getBody().mask();true;'>Copy from immport schema to cube dimensions<br>" +
+                "<form name='populateCube' method='post' onsubmit='Ext4.getBody().mask();true;'>Copy from immport schema to cube dimensions<br>" +
                 "<input type=hidden name='X-LABKEY-CSRF' value='" + CSRFUtil.getExpectedToken(getViewContext()) + "'>" +
                 "<input type=submit></form>" +
                 "<p></p>" + log);
@@ -446,7 +450,7 @@ public class ImmPortController extends SpringActionController
         public ModelAndView getView(Object o, BindException errors) throws Exception
         {
             setTitle("Study Finder");
-            StudyFinderWebPart wp = new StudyFinderWebPart();
+            StudyFinderWebPart wp = new StudyFinderWebPart(getContainer());
             wp.setFrame(WebPartView.FrameType.DIV);
             return wp;
         }
@@ -463,6 +467,22 @@ public class ImmPortController extends SpringActionController
     {
     }
 
+    @RequiresPermissionClass(ReadPermission.class)
+    public class SubjectFinderAction extends SimpleViewAction
+    {
+        public ModelAndView getView(Object o, BindException errors) throws Exception
+        {
+            setTitle("Study Finder");
+            SubjectFinderWebPart wp = new SubjectFinderWebPart(getContainer());
+            wp.setIsAutoResize(true);
+            return wp;
+        }
+
+        public NavTree appendNavTrail(NavTree root)
+        {
+            return root;
+        }
+    }
 
 
     @RequiresSiteAdmin

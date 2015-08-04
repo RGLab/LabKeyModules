@@ -6,7 +6,7 @@
 
 PARAMETERS($STUDY VARCHAR DEFAULT NULL)
 SELECT 
-subject.subject_accession AS participantid,
+subject.subject_accession || '.' || SUBSTRING(study_accession,4) as participantid,
 subject.subject_accession,
 CAST(0 AS INTEGER) as sequencenum,
 arm_or_cohort.*

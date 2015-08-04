@@ -429,11 +429,6 @@ function hidePopup()
 // angular scope prototype
 //
 
-var studyfinderApp = angular.module('studyfinderApp', ['LocalStorageModule']);
-studyfinderApp.config(function (localStorageServiceProvider) {
-    localStorageServiceProvider
-        .setPrefix("studyfinder")
-});
 
 var studyfinderScope = function(){};
 studyfinderScope.prototype =
@@ -1086,7 +1081,12 @@ studyfinderScope.prototype =
 
 var debug_scope;
 
-studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http, localStorageService)
+var studyfinderApp = angular.module('studyfinderApp', ['LocalStorageModule'])
+.config(function (localStorageServiceProvider)
+{
+    localStorageServiceProvider.setPrefix("studyfinder")
+})
+.controller('studyfinder', function ($scope, $timeout, $http, localStorageService)
 {
     debug_scope = $scope;
     Ext4.apply($scope, new studyfinderScope());

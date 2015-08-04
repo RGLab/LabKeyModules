@@ -36,7 +36,7 @@
 %>
 
 <labkey:errors/>
-<labkey:form name="importArchive" method="POST" onsubmit="Ext.getBody().mask();true;;">
+<labkey:form name="importArchive" method="POST" onsubmit="Ext4.getBody().mask();true;;">
 Copy from mysql archive -&gt; labkey.immport<br>
 <input style='width:640px;' name=path value="<%=h(form.getPath())%>"><br>
 <input type="checkbox" name="restricted">restricted</input><br>

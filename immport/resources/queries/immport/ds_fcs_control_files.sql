@@ -22,7 +22,7 @@ FROM
   --file_info.purpose AS file_info_purpose,
   biosample_2_expsample.expsample_accession AS expsample_accession,
   biosample.biosample_accession,
-  biosample.subject_accession as participantid,
+  biosample.subject_accession || '.' || SUBSTRING(biosample.study_accession,4) as participantid,
   COALESCE(biosample.study_time_collected,9999.0000) as sequencenum,
   --biosample.biosampling_accession,
   --biosample.description,
