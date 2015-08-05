@@ -1,3 +1,12 @@
+/* TODOs and BUGs
+
+BUG the radio button state isn't seem to be saving and restoring
+
+NOTE for save subject group, it doesn't make sense to save participantid's for non-loaded studies
+  need to handle that.
+
+*/
+
 function subjectfinder(studyData, loadedStudies, studyfinderAppId)
 {
 //
@@ -8,7 +17,50 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
     var detailWindows = {};
     var detailShowing = null;
     var timerDeferShow = null;
-    var vp = null;
+
+    var cellsetHelper =
+    {
+        getRowPositions : function(cellset)
+        {
+            return cellset.axes[1].positions;
+        },
+
+        getRowPositionsOneLevel : function(cellset)
+        {
+            var positions = cellset.axes[1].positions;
+            if (positions.length > 0 && positions[0].length > 1)
+            {
+                console.log("warning rows have nested members");
+                throw "illegal state";
+            }
+            return positions.map(function(inner){return inner[0]});
+        },
+
+        getData : function(cellset,defaultValue)
+        {
+            var cells = cellset.cells;
+            var ret = cells.map(function(row)
+            {
+                return row.map(function(col){return col.value ? col.value : defaultValue;});
+            });
+            return ret;
+        },
+
+        getDataOneColumn : function(cellset,defaultValue)
+        {
+            var cells = cellset.cells;
+            if (cells.length > 0 && cells[0].length > 1)
+            {
+                console.log("warning cellset has more than one column");
+                throw "illegal state";
+            }
+            var ret = cells.map(function(row)
+            {
+                return row[0].value ? row[0].value : defaultvalue;
+            });
+            return ret;
+        }
+    };
 
     function showPopup(targetId, dim, member)
     {
@@ -444,17 +496,19 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
         {
             var member, m;
             var memberMap = dim.memberMap;
-            var positions = cellset.axes[1].positions;
             var max = 0;
             dim.summaryCount = 0;
             for (m = 0; m < dim.members.length; m++)
             {
                 dim.members[m].count = 0;
             }
+
+            var positions = cellsetHelper.getRowPositionsOneLevel(cellset);
+            var data = cellsetHelper.getDataOneColumn(cellset, 0);
             for (var i = 0; i < positions.length; i++)
             {
-                var uniqueName = positions[i][0].uniqueName;
-                var count = cellset.cells[i][0].value || 0;
+                var uniqueName = positions[i].uniqueName;
+                var count = data[i];
                 member = memberMap[uniqueName];
                 member.count = count;
                 if (count > max)
@@ -497,14 +551,15 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 }
             }
 
-            var positions = cellset.axes[1].positions;
+            var positions = cellsetHelper.getRowPositionsOneLevel(cellset);
+            var data = cellsetHelper.getDataOneColumn(cellset, 0);
             var max = 0;
             for (var i = 0; i < positions.length; i++)
             {
-                var resultMember = positions[i][0];
+                var resultMember = positions[i];
                 var hierarchyName = resultMember.level.hierarchy.uniqueName;
                 dim = map[hierarchyName];
-                var count = cellset.cells[i][0].value;
+                var count = data[i];
                 member = dim.memberMap[resultMember.uniqueName];
                 if (!member)
                 {
@@ -787,8 +842,12 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
         showStudyPopup: function (study_accession)
         {
             showPopup(null, 'study', study_accession);
-        }
+        },
 
+        showCreateStudyDialog : function()
+        {
+            window.alert("NYI: Create Study Dialog");
+        }
     };
 
 
