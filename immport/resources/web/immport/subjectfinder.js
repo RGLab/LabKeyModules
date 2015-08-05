@@ -56,7 +56,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             }
             var ret = cells.map(function(row)
             {
-                return row[0].value ? row[0].value : defaultvalue;
+                return row[0].value ? row[0].value : defaultValue;
             });
             return ret;
         }
