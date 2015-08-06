@@ -145,7 +145,6 @@ Ext4.onReady(function () {
             id: 'datasets',
             title: 'Datasets',
             margin: '0px 20px 0px 20px',
-            disabled: true,
             store: Ext4.data.StoreManager.lookup('dataSets'),
             viewConfig: {
                 markDirty: false
@@ -158,37 +157,33 @@ Ext4.onReady(function () {
             ],
             width: 600,
             loadMask: true,
-            renderTo: 'datasetsPanel'
-        });
+            renderTo: 'datasetsPanel',
+            buttons: [{
+                id: 'downloadBtn',
+                text: 'Download',
+                margin: '5 5 5 20',
+                disabled: true,
+                handler: function() {
 
-        Ext4.create('Ext.Button', {
-            id: 'downloadBtn',
-            text: 'Download',
-            margin: '5 5 5 20',
-            renderTo: Ext4.getBody(),
-            disabled: true,
-            handler: function() {
+                    var schemaQueries = {"study" : []};
 
-                var schemaQueries = {"study" : []};
-
-                var queryNames = dataStore.collect('name');
-                for(var i = 0; i < queryNames.length; i++)
-                {
-                    schemaQueries.study.push({
-                        queryName : queryNames[i]
+                    var queryNames = dataStore.collect('name');
+                    for(var i = 0; i < queryNames.length; i++)
+                    {
+                        schemaQueries.study.push({
+                            queryName : queryNames[i]
+                        });
+                    }
+                    LABKEY.Query.exportTables({
+                        schemas: schemaQueries
                     });
                 }
-                LABKEY.Query.exportTables({
-                    schemas: schemaQueries
-                });
-            }
+            },{
+                text: 'Back',
+                handler : function(btn) {window.history.back()}
+            }]
         });
 
-        Ext4.create('Ext.Button', {
-            text: 'Back',
-            renderTo: Ext4.getBody(),
-            handler : function(btn) {window.history.back()}
-        });
     }
 
     renderListOfDatasetsTable();
