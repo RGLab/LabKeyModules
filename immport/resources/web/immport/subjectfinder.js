@@ -132,7 +132,9 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
     var studyfinderScope = function ()
     {
         this.filterChoice = {show: false};
+        this.subjects = [];
     };
+
     studyfinderScope.prototype =
     {
         cube: null,
@@ -282,7 +284,6 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 $event.stopPropagation();
         },
 
-
         clearAllFilters: function ()
         {
             for (var d in dataspace.dimensions)
@@ -431,7 +432,10 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 }]
             }
 
-            var onRows = {operator: "UNION", arguments: []};
+            // CONSIDER: Don't fetch subject IDs every time a filter is changed.
+            var includeSubjectIds = true;
+
+            var onRows = { operator: "UNION", arguments: [] };
             for (d in dataspace.dimensions)
             {
                 if (!dataspace.dimensions.hasOwnProperty(d))
@@ -444,6 +448,9 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 else
                     onRows.arguments.push({level: dim.level.uniqueName});
             }
+
+            if (includeSubjectIds)
+                onRows.arguments.push({level: "[Subject].[Subject]", members: "members"})
 
             var config =
             {
@@ -488,6 +495,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
 
             this.saveFilterState();
             this.updateContainerFilter();
+            this.saveSessionSubjectGroup();
             this.doneRendering();
         },
 
@@ -534,7 +542,8 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             // map from hierarchyName to dataspace dimension
             var map = {};
 
-            // clear old counts (to be safe)
+            // clear old subjects and counts (to be safe)
+            this.subjects.length = 0;
             for (d in dataspace.dimensions)
             {
                 if (!dataspace.dimensions.hasOwnProperty(d))
@@ -557,27 +566,35 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             for (var i = 0; i < positions.length; i++)
             {
                 var resultMember = positions[i];
-                var hierarchyName = resultMember.level.hierarchy.uniqueName;
-                dim = map[hierarchyName];
-                var count = data[i];
-                member = dim.memberMap[resultMember.uniqueName];
-                if (!member)
+                if (resultMember.level.uniqueName == "[Subject].[Subject]")
                 {
-                    // might be an all member
-                    if (dim.allMemberName == resultMember.uniqueName)
-                        dim.allMemberCount = count;
-                    else (-1 == resultMember.uniqueName.indexOf("#") && "(All)" != resultMember.name)
-                    console.log("member not found: " + resultMember.uniqueName);
+                    this.subjects.push(resultMember.name);
                 }
                 else
                 {
-                    member.count = count;
-                    if (count)
-                        dim.summaryCount += 1;
-                    if (count > max)
-                        max = count;
+                    var hierarchyName = resultMember.level.hierarchy.uniqueName;
+                    dim = map[hierarchyName];
+                    var count = data[i];
+                    member = dim.memberMap[resultMember.uniqueName];
+                    if (!member)
+                    {
+                        // might be an all member
+                        if (dim.allMemberName == resultMember.uniqueName)
+                            dim.allMemberCount = count;
+                        else (-1 == resultMember.uniqueName.indexOf("#") && "(All)" != resultMember.name)
+                        console.log("member not found: " + resultMember.uniqueName);
+                    }
+                    else
+                    {
+                        member.count = count;
+                        if (count)
+                            dim.summaryCount += 1;
+                        if (count > max)
+                            max = count;
+                    }
                 }
             }
+
             for (d in dataspace.dimensions)
             {
                 dim = dataspace.dimensions[d];
@@ -591,6 +608,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
 
             this.saveFilterState();
             this.updateContainerFilter();
+            this.saveSessionSubjectGroup();
             this.doneRendering();
         },
 
@@ -744,7 +762,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             }, 500);
         },
 
-// save just the filtered uniqueNames for each dimension
+        // save just the filtered uniqueNames for each dimension
         saveFilterState: function ()
         {
             if (!this.localStorageService.isSupported)
@@ -775,7 +793,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             }
         },
 
-// load just the filtered uniqueNames for each dimension
+        // load just the filtered uniqueNames for each dimension
         loadFilterState: function ()
         {
             if (!this.localStorageService.isSupported)
@@ -842,6 +860,70 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
         showStudyPopup: function (study_accession)
         {
             showPopup(null, 'study', study_accession);
+        },
+
+        saveSessionSubjectGroup : function ()
+        {
+            // TODO: How to get all subject count with no filters?  I think we may need to get a count of subjects for the ImmPort loaded studies (the radio buttons) when the page is loaded
+            var allSubjectsCount = -1;
+            if (this.subjects.length == 0 || this.subjects.length == allSubjectsCount)
+            {
+                LABKEY.Ajax.request({
+                    method: "DELETE",
+                    url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api")
+                });
+            }
+            else
+            {
+                LABKEY.Ajax.request({
+                    method: "POST",
+                    url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
+                    jsonData: {
+                        participantIds: this.subjects
+                    }
+                });
+            }
+        },
+
+        saveSubjectGroup : function ()
+        {
+            // I'm sure there is an angular way to get the input value...
+            var name = document.getElementById("subjectGroupName").value;
+            if (name)
+                name = name.trim();
+            if (name.length == 0)
+                return;
+
+            var win = Ext4.create('Study.window.ParticipantGroup', {
+                subject: {
+                    nounSingular: 'Subject',
+                    nounPlural: 'Subjects',
+                    nounColumnName: 'ParticipantId'
+                },
+                groupLabel: name,
+                categoryParticipantIds: this.subjects,
+                // category: ...,
+                // TODO: also save the current filter state along with the participant group... see CDS does this.
+                canEdit: !LABKEY.user.isGuest,
+                isAdmin: LABKEY.user.isAdmin
+            });
+
+            // Save the new participant group rowId as the session filter
+            win.on('aftersave', function (data) {
+                if (data.success) {
+                    var group = data.group;
+                    if (group.rowId) {
+                        LABKEY.Ajax.request({
+                            method: "POST",
+                            url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
+                            jsonData: {
+                                rowId: group.rowId
+                            }
+                        });
+                    }
+                }
+            });
+            win.show();
         },
 
         showCreateStudyDialog : function()
