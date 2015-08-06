@@ -56,6 +56,9 @@
         resources.add(ClientDependency.fromPath("query/olap.js"));
         resources.add(ClientDependency.fromPath("angular"));
         resources.add(ClientDependency.fromPath("immport/subjectfinder.js"));
+
+        resources.add(ClientDependency.fromPath("clientapi/ext3")); // nested query webpart in ParticipantGroup panel
+        resources.add(ClientDependency.fromPath("study/ParticipantGroup.js"));
         return resources;
     }
 %>
@@ -75,14 +78,10 @@
             "\tGROUP BY study_accession) pi ON study.study_accession = pi.study_accession\n").getArrayList(StudyBean.class);
 
     String hipcImg = request.getContextPath() + "/immport/hipc.png";
-    Collections.sort(studies, new Comparator<StudyBean>(){
-        @Override
-        public int compare(StudyBean o1, StudyBean o2)
-        {
-            String a = o1.getStudy_accession();
-            String b = o2.getStudy_accession();
-            return Integer.parseInt(a.substring(3)) - Integer.parseInt(b.substring(3));
-        }
+    Collections.sort(studies, (o1, o2) -> {
+        String a = o1.getStudy_accession();
+        String b = o2.getStudy_accession();
+        return Integer.parseInt(a.substring(3)) - Integer.parseInt(b.substring(3));
     });
 
     Map<String,StudyBean> mapOfStudies = new TreeMap<>();
@@ -412,7 +411,10 @@
               <span style="color:red;">NYI</span>
                 <div class="facet">
                     <div class="facet-header"><span class="facet-caption">Create Subject Group</span></div>
-                    <p style="padding:10pt;"><input type="text"><%=button("Save")%></p>
+                    <p style="padding:10pt;">
+                        <input type="text" id="subjectGroupName">
+                        <a class="labkey-text-link" ng-class ng-click="saveSubjectGroup();" title="Create Subject Group">Save</a>
+                    </p>
                 </div>
                 <div class="facet">
                     <div class="facet-header"><span class="facet-caption">Subject Groups</span></div>
