@@ -892,7 +892,10 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             if (name)
                 name = name.trim();
             if (name.length == 0)
+            {
+                Ext.Msg.alert("Error", "Subject group name is required.");
                 return;
+            }
 
             var win = Ext4.create('Study.window.ParticipantGroup', {
                 subject: {
