@@ -1,6 +1,5 @@
 package org.labkey.test.pages.immport;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import org.apache.commons.lang3.SystemUtils;
 import org.labkey.test.BaseWebDriverTest;
@@ -61,42 +60,18 @@ public class StudyFinderPage extends LabKeyPage
 
     public void showAllImmPortStudies()
     {
-        _test.applyAndWaitForPageSignal(new Function<Void, Void>()
-        {
-            @Override
-            public Void apply(Void aVoid)
-            {
-                _test.checkRadioButton(elements().showAllRadioButton);
-                return null;
-            }
-        }, COUNT_SIGNAL);
+        _test.doAndWaitForPageSignal(() -> _test.checkRadioButton(elements().showAllRadioButton), COUNT_SIGNAL);
     }
 
     public void showAllImmuneSpaceStudies()
     {
-        _test.applyAndWaitForPageSignal(new Function<Void, Void>()
-        {
-            @Override
-            public Void apply(Void aVoid)
-            {
-                _test.checkRadioButton(elements().showAllImmuneSpaceRadioButton);
-                return null;
-            }
-        }, COUNT_SIGNAL);
+        _test.doAndWaitForPageSignal(() -> _test.checkRadioButton(elements().showAllImmuneSpaceRadioButton), COUNT_SIGNAL);
      }
 
     @LogMethod
     public void studySearch(@LoggedParam final String search)
     {
-        _test.applyAndWaitForPageSignal(new Function<Void, Void>()
-        {
-            @Override
-            public Void apply(Void aVoid)
-            {
-                _test.setFormElement(elements().studySearchInput, search);
-                return null;
-            }
-        }, COUNT_SIGNAL);
+        _test.doAndWaitForPageSignal(() -> _test.setFormElement(elements().studySearchInput, search), COUNT_SIGNAL);
     }
 
     @LogMethod(quiet = true)
@@ -192,15 +167,7 @@ public class StudyFinderPage extends LabKeyPage
         final WebElement clearAll = elements().clearAll.findElement(_test.getDriver());
         if (clearAll.isDisplayed())
         {
-            _test.applyAndWaitForPageSignal(new Function<Void, Void>()
-            {
-                @Override
-                public Void apply(Void aVoid)
-                {
-                    clearAll.click();
-                    return null;
-                }
-            }, COUNT_SIGNAL);
+            _test.doAndWaitForPageSignal(clearAll::click, COUNT_SIGNAL);
         }
     }
 
@@ -353,16 +320,8 @@ public class StudyFinderPage extends LabKeyPage
 
         public void selectAll()
         {
-            _test.applyAndWaitForPageSignal(new Function<Void, Void>()
-            {
-                @Override
-                public Void apply(Void aVoid)
-                {
-                    elements.all.findElement(panel).click();
-                    return null;
-                }
-            }, COUNT_SIGNAL);
-            elements.selectedValue.waitForElementToDisappear(panel, _test.shortWait());
+            _test.doAndWaitForPageSignal(() -> elements.all.findElement(panel).click(), COUNT_SIGNAL);
+            elements.selectedValue.waitForElementToDisappear(panel, BaseWebDriverTest.WAIT_FOR_JAVASCRIPT);
         }
 
         public String selectFirstIntersectingMeasure()
@@ -390,28 +349,12 @@ public class StudyFinderPage extends LabKeyPage
 
         private void select(final WebElement value)
         {
-            _test.applyAndWaitForPageSignal(new Function<Void, Void>()
-            {
-                @Override
-                public Void apply(Void aVoid)
-                {
-                    value.click();
-                    return null;
-                }
-            }, COUNT_SIGNAL);
+            _test.doAndWaitForPageSignal(value::click, COUNT_SIGNAL);
         }
 
         private void addToSelection(final WebElement value)
         {
-            _test.applyAndWaitForPageSignal(new Function<Void, Void>()
-            {
-                @Override
-                public Void apply(Void aVoid)
-                {
-                    controlClick(value);
-                    return null;
-                }
-            }, COUNT_SIGNAL);
+            _test.doAndWaitForPageSignal(() -> controlClick(value), COUNT_SIGNAL);
         }
 
         private void controlClick(WebElement el)
@@ -549,15 +492,7 @@ public class StudyFinderPage extends LabKeyPage
         {
             final WebElement filter = findElement(elements.filterValue.withText(value));
 
-            _test.applyAndWaitForPageSignal(new Function<Void, Void>()
-            {
-                @Override
-                public Void apply(Void aVoid)
-                {
-                    Locator.css("img.delete").findElement(filter).click();
-                    return null;
-                }
-            }, COUNT_SIGNAL);
+            _test.doAndWaitForPageSignal(() -> Locator.css("img.delete").findElement(filter).click(), COUNT_SIGNAL);
 
             _test.shortWait().until(ExpectedConditions.stalenessOf(filter));
         }

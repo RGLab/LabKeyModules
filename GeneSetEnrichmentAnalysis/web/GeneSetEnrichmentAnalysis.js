@@ -45,6 +45,16 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             }
         };
 
+        var checkBtnResetStatus = function(){
+            if (    cbModules.getValue() == cbModules.originalValue &&
+                    cbCohort.getValue() == cbCohort.originalValue
+            ){
+                btnReset.setDisabled( true );
+            } else {
+                btnReset.setDisabled( false );
+            }
+        };
+
 
         ///////////////////////////////////
         //            Stores             //
@@ -79,9 +89,14 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             id: 'cbCohort',
             lazyInit: false,
             listeners: {
+                blur: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                },
                 change: function(){
                     if ( ! flagCohortSelect ) {
-                        handleCohortSelection();
+                        checkBtnRunStatus();
+                        checkBtnResetStatus();
                     }
                 },
                 cleared: function(){
@@ -93,7 +108,8 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 select: function(){
                     flagCohortSelect = true;
 
-                    handleCohortSelection();
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
                 }
             },
             store: strCohort,
@@ -107,9 +123,18 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             fieldLabel: 'Modules',
             id: 'cbModules',
             listeners: {
-                change:     checkBtnRunStatus,
-                cleared:    checkBtnRunStatus,
-                select:     checkBtnRunStatus
+                change: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                },
+                cleared: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                },
+                select: function(){
+                    checkBtnRunStatus();
+                    checkBtnResetStatus();
+                }
             },
             qtipField: 'qtip',
             store: new Ext.data.ArrayStore({
@@ -146,6 +171,18 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 LABKEY.Report.execute( cnfReport );
             },
             text: 'Run'
+        });
+
+        var btnReset = new Ext.Button({
+            disabled: true,
+            handler: function(){
+                cbCohort.reset();
+                cbModules.reset();
+
+                checkBtnRunStatus();
+                checkBtnResetStatus();
+            },
+            text: 'Reset'
         });
 
 
@@ -195,14 +232,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             enableOverflow: true,
             items: [
                 btnRun,
-                new Ext.Button({
-                    handler: function(){
-                        cbCohort.reset();
-                        cbModules.reset();
-                        checkBtnRunStatus();
-                    },
-                    text: 'Reset'
-                })
+                btnReset
             ],
             style: 'padding-right: 2px; padding-left: 2px;'
         });
@@ -217,6 +247,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             deferredRender: false,
             items: [
                 {
+                    html: '<a class="labkey-text-link bold-text" onclick="LABKEY.help.Tour.show(\'immport-gsea-tour\')">Quick help</a><br><br>',
                     border: false,
                     defaults: {
                         border: false
@@ -497,17 +528,11 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 maskReport.hide();
             }
             btnRun.setDisabled( bool );
+            btnReset.setDisabled( bool );
             cbCohort.setDisabled( bool );
             cbModules.setDisabled( bool );
         };
 
-        var handleCohortSelection = function(){
-            if ( cbCohort.getValue() == '' ){
-                btnRun.setDisabled( true );
-            } else{
-                checkBtnRunStatus()
-            }
-        };
 
         // jQuery-related
 
@@ -542,6 +567,10 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         LABKEY.ext.GeneSetEnrichmentAnalysis.superclass.constructor.apply(this, arguments);
 
     }, // end constructor
+
+    listeners: {
+        afterrender: GSEATour
+    },
 
     resize: function(){
     }

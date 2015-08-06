@@ -18,6 +18,7 @@ package org.labkey.immport;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.collections.CaseInsensitiveTreeMap;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.Container;
@@ -27,10 +28,12 @@ import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SchemaTableInfo;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.module.Module;
+import org.labkey.api.query.DefaultQueryUpdateService;
 import org.labkey.api.query.DefaultSchema;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QueryForeignKey;
 import org.labkey.api.query.QuerySchema;
+import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.immport.security.CanViewRestrictedStudiesPermission;
@@ -125,7 +128,7 @@ public class ImmPortSchema extends UserSchema
     }
 
 
-    static class ImmPortFilteredTable extends FilteredTable<ImmPortSchema>
+    class ImmPortFilteredTable extends FilteredTable<ImmPortSchema>
     {
         ImmPortFilteredTable(TableInfo from, ImmPortSchema schema)
         {
@@ -176,6 +179,14 @@ public class ImmPortSchema extends UserSchema
 
             ret.append(") ").append(alias);
             return ret;
+        }
+
+        @Nullable @Override
+        public QueryUpdateService getUpdateService()
+        {
+            if (!getUser().isSiteAdmin())
+                return null;
+            return new DefaultQueryUpdateService(this, getRealTable());
         }
     }
 }

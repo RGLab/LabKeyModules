@@ -5,7 +5,7 @@
  */
 PARAMETERS($STUDY VARCHAR DEFAULT NULL)
 SELECT
-  subject_accession as participantid,
+  subject_accession || '.' || SUBSTRING(study_accession,4) as participantid,
   COALESCE(study_time_collected,9999.0000) as sequencenum,
   result.*
 FROM elisa_result AS result

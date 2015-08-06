@@ -34,6 +34,7 @@ import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.TableInfo;
+import org.labkey.api.data.TableSelector;
 import org.labkey.api.data.UpdateableTableInfo;
 import org.labkey.api.etl.DataIterator;
 import org.labkey.api.etl.DataIteratorBuilder;
@@ -286,6 +287,19 @@ public class DataLoader extends PipelineJob
             super(sql, tsv, target, hasAttachments);
         }
 
+        @Override
+        int copyFrom(Container c, User u, DataIteratorContext context, DataIteratorBuilder from, DataLoader dl) throws IOException, BatchValidationException
+        {
+            // if there are no rows in target table, no need to merge is there...
+            DbSchema targetSchema = DbSchema.get(this.getTargetSchema().getName());
+            TableInfo targetTableInfo = targetSchema.getTable(getTargetQuery());
+            if (null != targetTableInfo)
+            {
+                if (!(new TableSelector(targetTableInfo).exists()))
+                    this.option = QueryUpdateService.InsertOption.IMPORT;
+            }
+            return super.copyFrom(c, u, context, from, dl);
+        }
 
         @Override
         public void deleteFromTarget(PipelineJob job, List<String> studies) throws IOException, SQLException

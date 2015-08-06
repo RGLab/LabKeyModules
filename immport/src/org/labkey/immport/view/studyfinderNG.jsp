@@ -104,7 +104,7 @@
     }
     DIV.member:hover
     {
-        border:1px solid #cc541f;
+        border:1px solid #000000;
     }
     DIV.member span.bar
     {
@@ -181,7 +181,7 @@
     }
     DIV.study-card:hover
     {
-        border:1pt solid #cc541f;
+        border:1pt solid #000000;
     }
     DIV.study-detail
     {
@@ -192,10 +192,10 @@
     }
     DIV.hipc
     {
-        background-image:url('<%=text(hipcImg)%>');
-        background-image:url('<%=text(hipcImg)%>');
-        background-repeat:no-repeat;
-        background-position:center;
+        //background-image:url('<%=text(hipcImg)%>');
+        //background-image:url('<%=text(hipcImg)%>');
+        //background-repeat:no-repeat;
+        //background-position:center;
     }
     DIV.loaded
     {
@@ -429,11 +429,6 @@ function hidePopup()
 // angular scope prototype
 //
 
-var studyfinderApp = angular.module('studyfinderApp', ['LocalStorageModule']);
-studyfinderApp.config(function (localStorageServiceProvider) {
-    localStorageServiceProvider
-        .setPrefix("studyfinder")
-});
 
 var studyfinderScope = function(){};
 studyfinderScope.prototype =
@@ -1086,7 +1081,12 @@ studyfinderScope.prototype =
 
 var debug_scope;
 
-studyfinderApp.controller('studyfinder', function ($scope, $timeout, $http, localStorageService)
+var studyfinderApp = angular.module('studyfinderApp', ['LocalStorageModule'])
+.config(function (localStorageServiceProvider)
+{
+    localStorageServiceProvider.setPrefix("studyfinder")
+})
+.controller('studyfinder', function ($scope, $timeout, $http, localStorageService)
 {
     debug_scope = $scope;
     Ext4.apply($scope, new studyfinderScope());

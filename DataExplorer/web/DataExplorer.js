@@ -18,7 +18,6 @@
 Ext.namespace('LABKEY.ext');
 
 LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
-
     constructor : function(config) {
 
         /////////////////////////////////////
@@ -298,7 +297,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         pnlTabs.getEl().mask(
                             'No data are available for visualization in this study ' +
                             '(e.g. derived or processed immunological data).</br>' +
-                            'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.supportBoardLink,
+                            'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.supportLink,
                             'infoMask'
                         );
                     } else {
@@ -730,6 +729,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             deferredRender: false,
             items: [
                 {
+                    html: '<a class="labkey-text-link bold-text" onclick="LABKEY.help.Tour.show(\'immport-dataexplorer-tour\')">Quick help</a><br><br>',
                     border: false,
                     defaults: {
                         border: false
@@ -768,10 +768,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
-                        new Ext.Spacer({
-                            height: 20,
-                            html: '&nbsp'
-                        }),
+                       // new Ext.Spacer({
+                       //     height: 20,
+                       //     html: '&nbsp'
+                       // }),
                         cbDataset,
                         cbPlotType,
                         chNormalize,
@@ -854,7 +854,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: 'For boxplots and lines, the visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. The heatmap are drawn using the <a href="http://cran.r-project.org/web/packages/pheatmap/index.html" targe="_blank">pheatmap</a> package.',
+                            html: 'For boxplots violin plots and lines, the visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. The heatmap are drawn using the <a href="http://cran.r-project.org/web/packages/pheatmap/index.html" targe="_blank">pheatmap</a> package.',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),
@@ -1039,6 +1039,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         LABKEY.ext.DataExplorer.superclass.constructor.apply(this, arguments);
 
     }, // end constructor
+
+    listeners: {
+        afterrender: DETour
+    },
 
     resize : function(){
         if ( this.qwpDataset ){

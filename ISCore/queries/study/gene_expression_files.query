@@ -3,9 +3,8 @@
     <metadata>
         <tables xmlns='http://labkey.org/data/xml'>
             <table tableName='gene_expression_files' tableDbType='TABLE'>
-                <buttonBarOptions position='both' includeStandardButtons='true'>
-                    <!--<includeScript>ISCore/ButtonBarNavigation.js</includeScript>-->
-                    <includeScript>HIPCMatrix/CreateMatrix.js</includeScript>
+                <buttonBarOptions position='both' includeStandardButtons='false'>
+                    <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
                     <item text='Filter' insertPosition='end'>
                         <originalText>Filter</originalText>
                     </item>
@@ -38,12 +37,9 @@
                     <item text='Delete' insertPosition='end'>
                         <originalText>Delete</originalText>
                     </item>
-                    <item text='Create Matrix' requiresSelection='true' permission='UPDATE' insertPosition='end'>
-                        <!-- 'return false' prevents '#' from showing up on the URL -->
-                        <onClick>createMatrixClick(dataRegion); return false;</onClick>
-                    </item>
                 </buttonBarOptions>
             </table>
         </tables>
     </metadata>
 </query>
+

@@ -19,7 +19,7 @@ SELECT
 biosample_accession AS global_unique_specimen_id,
 0 AS originating_location,
 0 AS lab_id,
-subject_accession as ptid,
+subject_accession || '.' || SUBSTRING(study_accession,4) as ptid,
 COALESCE(study_time_collected_in_days, 9999.0000) as visit_value,
 primary_type_id AS primary_type_id,
 LTRIM(RTRIM(COALESCE(description,'') || ' ' || COALESCE(subtype,''))) AS specimenDerivativeType,

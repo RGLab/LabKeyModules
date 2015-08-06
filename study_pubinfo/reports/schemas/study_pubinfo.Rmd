@@ -17,7 +17,7 @@ SDY <- basename(labkey.url.path)
 ds_pubmed <- dat[dat$study_accession == SDY, ]
 ```
 
-```{r get-pubmed-info, results='asis', dependson="filter", error=FALSE}
+```{r get-pubmed-info, results='asis', dependson="filter", error=FALSE, cache.extra=format(Sys.time(),'%Y-%m')}
 id <- ds_pubmed$pubmed_id
 id <- id[id != "PMC"]
 

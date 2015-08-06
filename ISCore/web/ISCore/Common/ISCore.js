@@ -17,20 +17,20 @@
 
 Ext.namespace('LABKEY.ext.ISCore');
 
-LABKEY.ext.ISCore.supportBoardLink =
+LABKEY.ext.ISCore.supportLink =
     'the <a href="' +
     LABKEY.ActionURL.buildURL(
       'project',
       'begin',
       '/home/support'
-    ) + '">support board</a>.';
+    ) + '">support page</a>.';
 
 LABKEY.ext.ISCore.generatingMessage =
     'Generating the output, be patient, this could take some time.';
 
 LABKEY.ext.ISCore.contributors =
     'The ImmuneSpace development team. For bug or feature requests please use ' +
-    LABKEY.ext.ISCore.supportBoardLink;
+    LABKEY.ext.ISCore.supportLink;
 
 LABKEY.ext.ISCore.moduleNotEnabled =
     'This module is not currently enabled in this study.' +
