@@ -762,6 +762,11 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             }, 500);
         },
 
+        getLocalStorageKey : function(name)
+        {
+            return LABKEY.container.id + "." + name;
+        },
+
         // save just the filtered uniqueNames for each dimension
         saveFilterState: function ()
         {
@@ -779,7 +784,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 var filterMembers = dim.filters;
                 if (!filterMembers || filterMembers.length == 0)
                 {
-                    this.localStorageService.remove(dim.name);
+                    this.localStorageService.remove(this.getLocalStorageKey(dim.name));
                 }
                 else
                 {
@@ -788,12 +793,16 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                     {
                         filteredNames.push(filterMembers[i].uniqueName);
                     }
-                    this.localStorageService.set(dim.name, filteredNames);
+                    var filter= {
+                        "members" : filteredNames,
+                        "operator" : dataspace.dimensions[d].filterType
+                    };
+                    this.localStorageService.set(this.getLocalStorageKey(dim.name), filter);
                 }
             }
         },
 
-        // load just the filtered uniqueNames for each dimension
+        // load the filtered uniqueNames and the operators for each dimension
         loadFilterState: function ()
         {
             if (!this.localStorageService.isSupported)
@@ -807,12 +816,12 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                     continue;
 
                 var dim = dataspace.dimensions[d];
-                var filteredNames = this.localStorageService.get(dim.name);
-                if (filteredNames && filteredNames.length)
+                var filter = this.localStorageService.get(this.getLocalStorageKey(dim.name));
+                if (filter && filter.members.length)
                 {
-                    for (var i = 0; i < filteredNames.length; i++)
+                    for (var i = 0; i < filter.members.length; i++)
                     {
-                        var filteredName = filteredNames[i];
+                        var filteredName = filter.members[i];
                         var member = dim.memberMap[filteredName];
                         if (member)
                         {
@@ -820,9 +829,51 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                             dim.filters.push(member);
                         }
                     }
+                    dim.filterType = filter.operator;
                 }
             }
         },
+
+        // load the filtered uniqueNames and the operators for each dimension
+        getFiltersFromLocalStorage: function ()
+        {
+            if (!this.localStorageService.isSupported)
+                return;
+
+            var filters = [];
+            for (var d in dataspace.dimensions)
+            {
+                if (!dataspace.dimensions.hasOwnProperty(d))
+                    continue;
+                if (d == "Study" && this.filterByLevel == "[Study].[Name]")
+                    continue;
+
+                var dim = dataspace.dimensions[d];
+                var filter = this.localStorageService.get(this.getLocalStorageKey(dim.name));
+                if (filter && filter.members.length)
+                {
+                    var members = [];
+                    for (var i = 0; i < filter.members.length; i++)
+                    {
+                        var filteredName = filter.members[i];
+                        var member = dim.memberMap[filteredName];
+                        if (member)
+                        {
+                           members.push(member);
+                        }
+
+                    }
+                    filters.push({
+                        "name" : dim.name,
+                        "members": filter.members,
+                        "operator": filter.operator
+                    })
+                    dim.filterType = filter.operator;
+                }
+            }
+            return filters;
+        },
+
 
         updateContainerFilter: function ()
         {
@@ -905,8 +956,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 },
                 groupLabel: name,
                 categoryParticipantIds: this.subjects,
-                // category: ...,
-                // TODO: also save the current filter state along with the participant group... see CDS does this.
+                filters: this.getFiltersFromLocalStorage(),
                 canEdit: !LABKEY.user.isGuest,
                 isAdmin: LABKEY.user.isAdmin
             });
@@ -928,6 +978,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             });
             win.show();
         },
+
 
         showCreateStudyDialog : function()
         {

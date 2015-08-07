@@ -380,7 +380,7 @@
                 <input placeholder="Study Search" id="searchTerms" name="q" style="width:240pt; font-size:120%" ng-model="searchTerms" ng-change="onSearchTermsChanged()">
                 <span class="searchMessage" ng-class="{searchNotFound:(searchMessage=='no matches')}">&nbsp;{{searchMessage}}&nbsp;</span>
             </div>
-            <div class="seachDiv" style="float:right; padding:10pt;>
+            <div class="seachDiv" style="float:right; padding:10pt;">
                 <label ng-show="loaded_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmuneSpace" ng-change="onStudySubsetChanged()">All ImmuneSpace studies</label>
                 <label ng-show="recent_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="Recent" ng-change="onStudySubsetChanged()">Recently added</label>
                 <label ng-show="hipc_study_list.length" >&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="HipcFunded" ng-change="onStudySubsetChanged()">HIPC funded</label>
@@ -407,15 +407,16 @@
                       </li>
                   </ul>
               </div>
-              <div style="border:dotted 1px red;">
-              <span style="color:red;">NYI</span>
-                <div class="facet">
+
+              <div class="facet">
                     <div class="facet-header"><span class="facet-caption">Create Subject Group</span></div>
                     <p style="padding:10pt;">
                         <input type="text" id="subjectGroupName">
                         <a class="labkey-text-link" ng-class ng-click="saveSubjectGroup();" title="Create Subject Group">Save</a>
                     </p>
-                </div>
+              </div>
+              <div style="border:dotted 1px red;">
+                  <span style="color:red;">NYI</span>
                 <div class="facet">
                     <div class="facet-header"><span class="facet-caption">Subject Groups</span></div>
                     <ul>
