@@ -30,22 +30,18 @@
 <%@ page import="org.labkey.api.view.ActionURL" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.ViewContext" %>
+<%@ page import="org.labkey.api.view.WebPartView" %>
 <%@ page import="org.labkey.api.view.template.ClientDependency" %>
 <%@ page import="org.labkey.immport.ImmPortController" %>
 <%@ page import="org.labkey.immport.data.StudyBean" %>
+<%@ page import="org.labkey.immport.view.SubjectFinderWebPart" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Collection" %>
 <%@ page import="java.util.Collections" %>
-<%@ page import="java.util.Comparator" %>
 <%@ page import="java.util.Date" %>
 <%@ page import="java.util.LinkedHashSet" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.TreeMap" %>
-<%@ page import="org.labkey.api.query.QueryView" %>
-<%@ page import="org.labkey.api.query.QueryForm" %>
-<%@ page import="org.labkey.api.action.NullSafeBindException" %>
-<%@ page import="org.labkey.api.view.WebPartView" %>
-<%@ page import="org.labkey.immport.view.SubjectFinderWebPart" %>
 <%@ page extends="org.labkey.api.jsp.JspBase"%>
 <%!
     public LinkedHashSet<ClientDependency> getClientDependencies()
@@ -315,6 +311,12 @@
         float:right;
         z-index:2;
     }
+    LI.member .member-action
+    {
+        position:relative;
+        float:right;
+        z-index:2;
+    }
     LI.member .bar
     {
         height:14pt;
@@ -392,6 +394,7 @@
             <td style="height:180px;"><img border=1 src="<%=getContextPath()%>/_.gif" style="height:180px; width:1px"></td>
                     <div ng-include="'/studycard.html'"ng-repeat="study in studies | filter:countForStudy"></div>
             </tr></table>
+            </div>
           </td>
           <td align=left valign=top style="width:220pt;">
               <div class="facet">
@@ -411,26 +414,24 @@
               <div class="facet">
                     <div class="facet-header"><span class="facet-caption">Create Subject Group</span></div>
                     <p style="padding:10pt;">
-                        <input type="text" id="subjectGroupName">
-                        <a class="labkey-text-link" ng-class ng-click="saveSubjectGroup();" title="Create Subject Group">Save</a>
+                        <input type="text" id="subjectGroupName" ng-model="inputGroupName">
+                        <a class="labkey-text-link"  ng-click="saveSubjectGroup();" title="Create Subject Group">Save</a>
                     </p>
               </div>
-              <div style="border:dotted 1px red;">
-                  <span style="color:red;">NYI</span>
+
+
                 <div class="facet">
                     <div class="facet-header"><span class="facet-caption">Subject Groups</span></div>
                     <ul>
-                        <li style="position:relative; width:100%;" class="member">
-                            <span class="member-name">Influenza 2013</span>
-                            <span class="member-count"><%=textLink("apply","#")%></span>
-                        </li>
-                        <li style="position:relative; width:100%;" class="member">
-                            <span class="member-name">Allergy - Male 2014</span>
-                            <span class="member-count"><%=textLink("apply", "#")%></span>
+                        <li ng-repeat="group in groupList" id="group_{{group.id}}" style="position:relative; width:100%" class="member" ng-class="{selectedMember: group.selected}">
+                            <span class="member-name">{{group.label}}</span>
+                            <span class="member-action">
+                                <a class="labkey-text-link" ng-click="applySubjectFilter(group.id);" title="Apply Subject Filter">Apply</a>
+                                <a class="labkey-text-link" ng-click="deleteSubjectFilter(group.id);" title="Delete Subject Group">Delete</a>
+                            </span>
                         </li>
                     </ul>
                 </div>
-              </div>
           </td>
         </tr>
     </table>
@@ -503,7 +504,7 @@
 <%--
 			controller
  --%>
-<%-- TODO {low} make robust enough to have two finder web parts on the same page --%>
+<%-- N.B. This is not robust enough to have two finder web parts on the same page --%>
 
 <script>
 var studyData = [<%

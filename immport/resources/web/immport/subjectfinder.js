@@ -1,6 +1,6 @@
 /* TODOs and BUGs
 
-BUG the radio button state isn't seem to be saving and restoring
+BUG the radio button state doesn't seem to be saving and restoring
 
 NOTE for save subject group, it doesn't make sense to save participantid's for non-loaded studies
   need to handle that.
@@ -148,14 +148,14 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
         activeTab: "Studies",
         filterChoice: null,
 
-        fnTRUE: function (a)
-        {
-            return true;
-        },
-        fnFALSE: function (b)
-        {
-            return false;
-        },
+        //fnTRUE: function (a)
+        //{
+        //    return true;
+        //},
+        //fnFALSE: function (b)
+        //{
+        //    return false;
+        //},
 
         countForStudy: function (study)
         {
@@ -279,6 +279,11 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                     member.selected = false;
                 }
             }
+            if (this.currentGroupId)
+            {
+                this.groupList[this.currentGroupId].selected = false;
+                this.currentGroupId = null;
+            }
             this.updateCountsAsync();
             if ($event.stopPropagation)
                 $event.stopPropagation();
@@ -304,6 +309,12 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             for (var m = 0; m < filterMembers.length; m++)
                 filterMembers[m].selected = false;
             dim.filters = [];
+            if (this.currentGroupId)
+            {
+                this.groupList[this.currentGroupId].selected = false;
+                this.currentGroupId = null;
+            }
+
         },
 
 
@@ -834,6 +845,77 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             }
         },
 
+        loadSubjectGroups : function ()
+        {
+            LABKEY.Ajax.request({
+                url: LABKEY.ActionURL.buildURL('participant-group', 'browseParticipantGroups.api'),
+                method: 'POST',
+                jsonData : {
+                    'distinctCatgories': false,
+                    'type' : 'participantGroup',
+                    'includeUnassigned' : false,
+                    'includeParticipantIds' : false
+                },
+                scope: this,
+                success : function(res)
+                {
+                    var json = Ext4.decode(res.responseText);
+                    if (json.success)
+                    {
+                        var groups = {};
+                        for (var i = 0; i < json.groups.length; i++)
+                        {
+                            groups[json.groups[i].id] = {
+                                "id" : json.groups[i].id,
+                                "label" : json.groups[i].label,
+                                "selected": false,
+                                "filters" : json.groups[i].filters == undefined ? [] : Ext4.decode(json.groups[i].filters)
+                            }
+                        }
+                        this.groupList = groups;
+                    }
+
+                }
+
+            });
+        },
+
+        applySubjectFilter : function(groupId)
+        {
+            this.clearAllFilters();
+            var group = this.groupList[groupId];
+            for (var f = 0; f < group.filters.length; f++)
+            {
+                var filter = group.filters[f];
+
+                if (filter.name == "Study" && this.filterByLevel == "[Study].[Name]")
+                    continue;
+
+                var dim = dataspace.dimensions[filter.name];
+
+                if (dim && filter.members.length > 0)
+                {
+                    for (var i = 0; i < filter.members.length; i++)
+                    {
+                        var filteredName = filter.members[i];
+                        var member = dim.memberMap[filteredName];
+                        if (member)
+                        {
+                            member.selected = true;
+                            dim.filters.push(member);
+                        }
+                    }
+                    dim.filterType = filter.operator;
+                }
+            }
+            this.updateCountsAsync();
+            this.saveFilterState();
+            if (this.currentGroupId)
+                this.groupList[this.currentGroupId].selected = false;
+            this.currentGroupId = groupId;
+            this.groupList[groupId].selected = true;
+        },
+
         // load the filtered uniqueNames and the operators for each dimension
         getFiltersFromLocalStorage: function ()
         {
@@ -936,50 +1018,6 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             }
         },
 
-        saveSubjectGroup : function ()
-        {
-            // I'm sure there is an angular way to get the input value...
-            var name = document.getElementById("subjectGroupName").value;
-            if (name)
-                name = name.trim();
-            if (name.length == 0)
-            {
-                Ext.Msg.alert("Error", "Subject group name is required.");
-                return;
-            }
-
-            var win = Ext4.create('Study.window.ParticipantGroup', {
-                subject: {
-                    nounSingular: 'Subject',
-                    nounPlural: 'Subjects',
-                    nounColumnName: 'ParticipantId'
-                },
-                groupLabel: name,
-                categoryParticipantIds: this.subjects,
-                filters: this.getFiltersFromLocalStorage(),
-                canEdit: !LABKEY.user.isGuest,
-                isAdmin: LABKEY.user.isAdmin
-            });
-
-            // Save the new participant group rowId as the session filter
-            win.on('aftersave', function (data) {
-                if (data.success) {
-                    var group = data.group;
-                    if (group.rowId) {
-                        LABKEY.Ajax.request({
-                            method: "POST",
-                            url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
-                            jsonData: {
-                                rowId: group.rowId
-                            }
-                        });
-                    }
-                }
-            });
-            win.show();
-        },
-
-
         showCreateStudyDialog : function()
         {
             window.alert("NYI: Create Study Dialog");
@@ -999,6 +1037,8 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
         $scope.timeout = $timeout;
         $scope.http = $http;
         $scope.localStorageService = localStorageService;
+
+
 
         localStorageService.bind($scope, 'searchTerms');
 
@@ -1040,7 +1080,9 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
         $scope.loaded_study_list = loaded_study_list;
         $scope.recent_study_list = recent_study_list;
         $scope.hipc_study_list = hipc_study_list;
-//    $scope.filterMembers = [];
+        $scope.groupList = [];
+        $scope.inputGroupName = "";
+        $scope.currentGroupId = null;
 
         // shortcuts
         $scope.dimSubject = dataspace.dimensions.Subject;
@@ -1069,6 +1111,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 $scope.mdx = m;
                 $scope.initCubeMetaData();
                 $scope.loadFilterState();
+                $scope.loadSubjectGroups();
 
                 // init study list according to studySubset
                 if (loaded_study_list.length == 0)
@@ -1078,6 +1121,80 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 //$scope.updateCountsAsync();
             });
         });
+
+        $scope.saveSubjectGroup = function() {
+            if ($scope.inputGroupName != null)
+                $scope.inputGroupName = $scope.inputGroupName.trim();
+            if ($scope.inputGroupName.length == 0)
+            {
+                Ext4.Msg.alert("Error", "Subject group name is required.");
+                return;
+            }
+
+            var win = Ext4.create('Study.window.ParticipantGroup', {
+                subject: {
+                    nounSingular: 'Subject',
+                    nounPlural: 'Subjects',
+                    nounColumnName: 'ParticipantId'
+                },
+                groupLabel: $scope.inputGroupName,
+                categoryParticipantIds: $scope.subjects,
+                filters: $scope.getFiltersFromLocalStorage(),
+                canEdit: !LABKEY.user.isGuest,
+                isAdmin: LABKEY.user.isAdmin
+            });
+
+            // Save the new participant group rowId as the session filter
+            win.on('aftersave', function (data) {
+                $scope.$apply(function() {
+                    if (data.success) {
+                        var group = data.group;
+                        if (group.rowId) {
+                            LABKEY.Ajax.request({
+                                method: "POST",
+                                url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
+                                jsonData: {
+                                    rowId: group.rowId
+                                }
+                            });
+                            if ($scope.currentGroupId)
+                                $scope.groupList[$scope.currentGroupId].selected = false;
+                            $scope.groupList[group.rowId] = {
+                                "id" : group.rowId,
+                                "label" : group.label,
+                                "filters" : group.filters,
+                                "selected" : true
+                            };
+                            $scope.inputGroupName = "";
+                            $scope.currentGroupId = group.rowId;
+                        }
+                    }
+                });
+            });
+            win.show();
+        };
+
+        $scope.deleteSubjectFilter = function(groupId) {
+            LABKEY.Ajax.request({
+                url: LABKEY.ActionURL.buildURL('participant-group', 'deleteParticipantGroup.api'),
+                method: 'POST',
+                scope: this,
+                jsonData: {
+                    'rowId': groupId
+                },
+                success : function(res)
+                {
+                    $scope.$apply(function()
+                    {
+                        delete $scope.groupList[groupId];
+                        if ($scope.currentGroupId == groupId)
+                        {
+                            $scope.currentGroupId = null;
+                        }
+                    });
+                }
+            });
+        };
 
     });
 
