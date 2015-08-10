@@ -1122,10 +1122,10 @@ function resizeToViewport(el, width, height, paddingX, paddingY, offsetX, offset
 {
     el = Ext4.get(el);
     if (!el)
-        return;
+        return null;
 
     if (width < 0 && height < 0)
-        return;
+        return null;
 
     var padding = [];
     if (offsetX == undefined || offsetX == null)
@@ -1170,4 +1170,5 @@ function resizeToViewport(el, width, height, paddingX, paddingY, offsetX, offset
         el.setWidth(size.width);
     else
         el.setSize(size);
+    return size;
 }

@@ -304,7 +304,7 @@
 </style>
 
 
-<div id="studyfinderOuterDIV" style="min-height:100px; min-width:400px;">
+<div id="studyfinderOuterDIV" style="min-height:600px; min-width:800px;">
 <div id="studyfinderAppDIV" style="height:100%; width:100%;" class="x-hidden innerColor" ng-app="studyfinderApp" ng-controller="studyfinder">
 
     <table bordercolor=red border=0 style="height:100%; width:100%; padding:3pt;">
@@ -567,13 +567,18 @@ function start_tutorial()
 
 <% if (me.isAutoResize())
 { %>
-    var _resize = function(w, h)
+    function viewport()
+    {
+        if ('innerWidth' in window )
+            return { width:window.innerWidth, height:window.innerHeight};
+        var e = document.documentElement || document.body;
+        return {width: e.clientWidth, height:e.clientheight};
+    }
+    var _resize = function()
     {
         var componentOuter = Ext4.get("studyfinderOuterDIV");
         if (!componentOuter)
             return;
-
-        //resizeToViewport: function(extContainer, width, height, paddingX, paddingY, offsetX, offsetY)
         var paddingX, paddingY;
         <% if (me.getFrame() == WebPartView.FrameType.PORTAL) {%>
         paddingX = 26;
@@ -582,21 +587,19 @@ function start_tutorial()
         paddingX = 20;
         paddingY = 35;
         <%}%>
-        resizeToViewport(componentOuter.dom, w, h, paddingX, paddingY);
-        if (Ext4.isGecko)
+        var vpSize = viewport();
+        var componentSize = resizeToViewport(componentOuter,
+                Math.max(800,vpSize.width), Math.max(600,vpSize.height),
+                paddingX, paddingY);
+        if (componentSize && Ext4.isGecko)
         {
             var bottom = componentOuter.getXY()[1] + componentOuter.getSize().height;
             Ext4.get("facetpanel").setHeight(bottom - Ext4.get("facetpanel").getXY()[1]);
             Ext4.get("studypanel").setHeight(bottom - Ext4.get("studypanel").getXY()[1]);
         }
     };
-
     Ext4.EventManager.onWindowResize(_resize);
-    Ext4.defer(function()
-    {
-        var size = Ext4.getBody().getBox();
-        _resize(size.width, size.height);
-    }, 300);
+    Ext4.defer(_resize, 300);
 <%
 } %>
 </script>
