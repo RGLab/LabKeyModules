@@ -7,7 +7,7 @@ NOTE for save subject group, it doesn't make sense to save participantid's for n
 
 */
 
-function subjectfinder(studyData, loadedStudies, studyfinderAppId)
+function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
 {
 //
 // study detail pop-up window
@@ -18,16 +18,16 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
     var detailShowing = null;
     var timerDeferShow = null;
 
-    var cellsetHelper =
+    var cellSetHelper =
     {
-        getRowPositions : function(cellset)
+        getRowPositions : function(cellSet)
         {
-            return cellset.axes[1].positions;
+            return cellSet.axes[1].positions;
         },
 
-        getRowPositionsOneLevel : function(cellset)
+        getRowPositionsOneLevel : function(cellSet)
         {
-            var positions = cellset.axes[1].positions;
+            var positions = cellSet.axes[1].positions;
             if (positions.length > 0 && positions[0].length > 1)
             {
                 console.log("warning rows have nested members");
@@ -36,9 +36,9 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             return positions.map(function(inner){return inner[0]});
         },
 
-        getData : function(cellset,defaultValue)
+        getData : function(cellSet,defaultValue)
         {
-            var cells = cellset.cells;
+            var cells = cellSet.cells;
             var ret = cells.map(function(row)
             {
                 return row.map(function(col){return col.value ? col.value : defaultValue;});
@@ -46,12 +46,12 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             return ret;
         },
 
-        getDataOneColumn : function(cellset,defaultValue)
+        getDataOneColumn : function(cellSet,defaultValue)
         {
-            var cells = cellset.cells;
+            var cells = cellSet.cells;
             if (cells.length > 0 && cells[0].length > 1)
             {
-                console.log("warning cellset has more than one column");
+                console.log("warning cellSet has more than one column");
                 throw "illegal state";
             }
             var ret = cells.map(function(row)
@@ -129,13 +129,13 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
 // angular scope prototype
 //
 
-    var studyfinderScope = function ()
+    var subjectFinderScope = function ()
     {
         this.filterChoice = {show: false};
         this.subjects = [];
     };
 
-    studyfinderScope.prototype =
+    subjectFinderScope.prototype =
     {
         cube: null,
         mdx: null,
@@ -147,15 +147,6 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
         rightArrow: LABKEY.contextPath + "/_images/arrow_right.png",
         activeTab: "Studies",
         filterChoice: null,
-
-        //fnTRUE: function (a)
-        //{
-        //    return true;
-        //},
-        //fnFALSE: function (b)
-        //{
-        //    return false;
-        //},
 
         countForStudy: function (study)
         {
@@ -370,10 +361,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             }
         },
 
-
-        //filterByLevel: "[Study].[Name]",
         filterByLevel : "[Subject].[Subject]",
-
 
         updateCountsAsync: function ()
         {
@@ -469,13 +457,13 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 configId: 'ImmPort:/StudyCube',
                 schemaName: 'ImmPort',
                 name: 'StudyCube',
-                success: function (cellset, mdx, config)
+                success: function (cellSet, mdx, config)
                 {
                     // use angular timeout() for its implicit $scope.$apply()
-                    //                config.scope.timeout(function(){config.scope.updateCounts(config.dim, cellset);},1);
+                    //                config.scope.timeout(function(){config.scope.updateCounts(config.dim, cellSet);},1);
                     config.scope.timeout(function ()
                     {
-                        config.scope.updateCountsUnion(cellset);
+                        config.scope.updateCountsUnion(cellSet);
                     }, 1);
                 },
                 scope: this,
@@ -511,7 +499,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
         },
 
 
-        updateCounts: function (dim, cellset)
+        updateCounts: function (dim, cellSet)
         {
             var member, m;
             var memberMap = dim.memberMap;
@@ -522,8 +510,8 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 dim.members[m].count = 0;
             }
 
-            var positions = cellsetHelper.getRowPositionsOneLevel(cellset);
-            var data = cellsetHelper.getDataOneColumn(cellset, 0);
+            var positions = cellSetHelper.getRowPositionsOneLevel(cellSet);
+            var data = cellSetHelper.getDataOneColumn(cellSet, 0);
             for (var i = 0; i < positions.length; i++)
             {
                 var uniqueName = positions[i].uniqueName;
@@ -547,7 +535,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
 
 
         /* handle query response to update all the member counts with all filters applied */
-        updateCountsUnion: function (cellset)
+        updateCountsUnion: function (cellSet)
         {
             var dim, member, d, m;
             // map from hierarchyName to dataspace dimension
@@ -571,8 +559,8 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 }
             }
 
-            var positions = cellsetHelper.getRowPositionsOneLevel(cellset);
-            var data = cellsetHelper.getDataOneColumn(cellset, 0);
+            var positions = cellSetHelper.getRowPositionsOneLevel(cellSet);
+            var data = cellSetHelper.getDataOneColumn(cellSet, 0);
             var max = 0;
             for (var i = 0; i < positions.length; i++)
             {
@@ -592,8 +580,8 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                         // might be an all member
                         if (dim.allMemberName == resultMember.uniqueName)
                             dim.allMemberCount = count;
-                        else (-1 == resultMember.uniqueName.indexOf("#") && "(All)" != resultMember.name)
-                        console.log("member not found: " + resultMember.uniqueName);
+                        else if (-1 == resultMember.uniqueName.indexOf("#") && "(All)" != resultMember.name)
+                            console.log("member not found: " + resultMember.uniqueName);
                     }
                     else
                     {
@@ -627,13 +615,13 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
         {
             if (loadMask)
             {
-                Ext4.get(studyfinderAppId).removeCls("x-hidden");
+                Ext4.get(subjectFinderAppId).removeCls("x-hidden");
                 loadMask.hide();
                 loadMask = null;
-                LABKEY.help.Tour.autoShow('immport.studyfinder');
+                LABKEY.help.Tour.autoShow('immport.subjectFinder');
             }
 
-            LABKEY.Utils.signalWebDriverTest('studyFinderCountsUpdated');
+            LABKEY.Utils.signalWebDriverTest('subjectFinderCountsUpdated');
         },
 
         clearStudyFilter: function ()
@@ -778,12 +766,13 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             return LABKEY.container.id + "." + name;
         },
 
-        // save just the filtered uniqueNames for each dimension
+        // save just the filtered uniqueNames for each dimension into local storage
         saveFilterState: function ()
         {
             if (!this.localStorageService.isSupported)
                 return;
 
+            var filterSet = {};
             for (var d in dataspace.dimensions)
             {
                 if (!dataspace.dimensions.hasOwnProperty(d))
@@ -793,169 +782,59 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
 
                 var dim = dataspace.dimensions[d];
                 var filterMembers = dim.filters;
-                if (!filterMembers || filterMembers.length == 0)
-                {
-                    this.localStorageService.remove(this.getLocalStorageKey(dim.name));
-                }
-                else
+                if (filterMembers && filterMembers.length > 0)
                 {
                     var filteredNames = [];
                     for (var i = 0; i < filterMembers.length; i++)
                     {
                         filteredNames.push(filterMembers[i].uniqueName);
                     }
-                    var filter= {
+                    filterSet[dim.name] = {
+                        "name" : dim.name,
                         "members" : filteredNames,
                         "operator" : dataspace.dimensions[d].filterType
                     };
-                    this.localStorageService.set(this.getLocalStorageKey(dim.name), filter);
                 }
             }
+            if (filterSet.length == 0)
+                this.localStorageService.remove(this.getLocalStorageKey("filterSet"));
+            else
+                this.localStorageService.set(this.getLocalStorageKey("filterSet"), filterSet);
         },
 
-        // load the filtered uniqueNames and the operators for each dimension
+        // load the filtered uniqueNames and the operators for each dimension from local storage
         loadFilterState: function ()
         {
             if (!this.localStorageService.isSupported)
                 return;
 
-            for (var d in dataspace.dimensions)
+            var filterSet = this.localStorageService.get("filterSet");
+            if (filterSet)
             {
-                if (!dataspace.dimensions.hasOwnProperty(d))
-                    continue;
-                if (d == "Study" && this.filterByLevel == "[Study].[Name]")
-                    continue;
-
-                var dim = dataspace.dimensions[d];
-                var filter = this.localStorageService.get(this.getLocalStorageKey(dim.name));
-                if (filter && filter.members.length)
+                for (var f in filterSet)
                 {
-                    for (var i = 0; i < filter.members.length; i++)
+                    if (filterSet.hasOwnProperty(f))
                     {
-                        var filteredName = filter.members[i];
-                        var member = dim.memberMap[filteredName];
-                        if (member)
+                        var filter = filterSet[f];
+                        var dim = dataspace.dimensions[f];
+                        if (filter && filter.members.length)
                         {
-                            member.selected = true;
-                            dim.filters.push(member);
-                        }
-                    }
-                    dim.filterType = filter.operator;
-                }
-            }
-        },
-
-        loadSubjectGroups : function ()
-        {
-            LABKEY.Ajax.request({
-                url: LABKEY.ActionURL.buildURL('participant-group', 'browseParticipantGroups.api'),
-                method: 'POST',
-                jsonData : {
-                    'distinctCatgories': false,
-                    'type' : 'participantGroup',
-                    'includeUnassigned' : false,
-                    'includeParticipantIds' : false
-                },
-                scope: this,
-                success : function(res)
-                {
-                    var json = Ext4.decode(res.responseText);
-                    if (json.success)
-                    {
-                        var groups = {};
-                        for (var i = 0; i < json.groups.length; i++)
-                        {
-                            groups[json.groups[i].id] = {
-                                "id" : json.groups[i].id,
-                                "label" : json.groups[i].label,
-                                "selected": false,
-                                "filters" : json.groups[i].filters == undefined ? [] : Ext4.decode(json.groups[i].filters)
+                            for (var i = 0; i < filter.members.length; i++)
+                            {
+                                var filteredName = filter.members[i];
+                                var member = dim.memberMap[filteredName];
+                                if (member)
+                                {
+                                    member.selected = true;
+                                    dim.filters.push(member);
+                                }
                             }
-                        }
-                        this.groupList = groups;
-                    }
-
-                }
-
-            });
-        },
-
-        applySubjectFilter : function(groupId)
-        {
-            this.clearAllFilters();
-            var group = this.groupList[groupId];
-            for (var f = 0; f < group.filters.length; f++)
-            {
-                var filter = group.filters[f];
-
-                if (filter.name == "Study" && this.filterByLevel == "[Study].[Name]")
-                    continue;
-
-                var dim = dataspace.dimensions[filter.name];
-
-                if (dim && filter.members.length > 0)
-                {
-                    for (var i = 0; i < filter.members.length; i++)
-                    {
-                        var filteredName = filter.members[i];
-                        var member = dim.memberMap[filteredName];
-                        if (member)
-                        {
-                            member.selected = true;
-                            dim.filters.push(member);
+                            dim.filterType = filter.operator;
                         }
                     }
-                    dim.filterType = filter.operator;
                 }
             }
-            this.updateCountsAsync();
-            this.saveFilterState();
-            if (this.currentGroupId)
-                this.groupList[this.currentGroupId].selected = false;
-            this.currentGroupId = groupId;
-            this.groupList[groupId].selected = true;
         },
-
-        // load the filtered uniqueNames and the operators for each dimension
-        getFiltersFromLocalStorage: function ()
-        {
-            if (!this.localStorageService.isSupported)
-                return;
-
-            var filters = [];
-            for (var d in dataspace.dimensions)
-            {
-                if (!dataspace.dimensions.hasOwnProperty(d))
-                    continue;
-                if (d == "Study" && this.filterByLevel == "[Study].[Name]")
-                    continue;
-
-                var dim = dataspace.dimensions[d];
-                var filter = this.localStorageService.get(this.getLocalStorageKey(dim.name));
-                if (filter && filter.members.length)
-                {
-                    var members = [];
-                    for (var i = 0; i < filter.members.length; i++)
-                    {
-                        var filteredName = filter.members[i];
-                        var member = dim.memberMap[filteredName];
-                        if (member)
-                        {
-                           members.push(member);
-                        }
-
-                    }
-                    filters.push({
-                        "name" : dim.name,
-                        "members": filter.members,
-                        "operator": filter.operator
-                    })
-                    dim.filterType = filter.operator;
-                }
-            }
-            return filters;
-        },
-
 
         updateContainerFilter: function ()
         {
@@ -1018,6 +897,93 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             }
         },
 
+
+
+        applySubjectGroupFilter : function(groupId)
+        {
+            this.clearAllFilters();
+            var group = this.groupList[groupId];
+            //for (var f = 0; f < group.filters.length; f++)
+            for (var f in group.filters)
+            {
+                if (group.filters.hasOwnProperty(f))
+                {
+                    var filter = group.filters[f];
+
+                    if (filter.name == "Study" && this.filterByLevel == "[Study].[Name]")
+                        continue;
+
+                    var dim = dataspace.dimensions[filter.name];
+
+                    if (dim && filter.members.length > 0)
+                    {
+                        for (var i = 0; i < filter.members.length; i++)
+                        {
+                            var filteredName = filter.members[i];
+                            var member = dim.memberMap[filteredName];
+                            if (member)
+                            {
+                                member.selected = true;
+                                dim.filters.push(member);
+                            }
+                        }
+                        dim.filterType = filter.operator;
+                    }
+                }
+            }
+            this.updateCountsAsync();
+            this.saveFilterState();
+            if (this.currentGroupId)
+                this.groupList[this.currentGroupId].selected = false;
+            this.currentGroupId = groupId;
+            this.groupList[groupId].selected = true;
+        },
+
+        loadSubjectGroups : function ()
+        {
+            LABKEY.Ajax.request({
+                url: LABKEY.ActionURL.buildURL('participant-group', 'browseParticipantGroups.api'),
+                method: 'POST',
+                jsonData : {
+                    'distinctCatgories': false,
+                    'type' : 'participantGroup',
+                    'includeUnassigned' : false,
+                    'includeParticipantIds' : false
+                },
+                scope: this,
+                success : function(res)
+                {
+                    var json = Ext4.decode(res.responseText);
+                    if (json.success)
+                    {
+                        var groups = {};
+                        for (var i = 0; i < json.groups.length; i++)
+                        {
+                            groups[json.groups[i].id] = {
+                                "id" : json.groups[i].id,
+                                "label" : json.groups[i].label,
+                                "selected": false,
+                                "filters" : json.groups[i].filters == undefined ? [] : Ext4.decode(json.groups[i].filters)
+                            }
+                        }
+                        this.groupList = groups;
+                    }
+                }
+            });
+        },
+
+        toggleSubjectGroupFilter : function(groupId)
+        {
+            this.groupList[groupId].selected = !this.groupList[groupId].selected;
+            if (this.groupList[groupId].selected)
+                this.applySubjectGroupFilter(groupId);
+            else
+                this.clearAllFilters();
+
+        },
+
+
+
         showCreateStudyDialog : function()
         {
             window.alert("NYI: Create Study Dialog");
@@ -1025,20 +991,18 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
     };
 
 
-    var studyfinderApp = angular.module('studyfinderApp', ['LocalStorageModule'])
+    var subjectFinderApp = angular.module('subjectFinderApp', ['LocalStorageModule'])
     .config(function (localStorageServiceProvider)
     {
-        localStorageServiceProvider.setPrefix("studyfinder");
+        localStorageServiceProvider.setPrefix("subjectFinder");
     })
-    .controller('studyfinder', function ($scope, $timeout, $http, localStorageService)
+    .controller('subjectFinder', function ($scope, $timeout, $http, localStorageService)
     {
         window.debug_scope = $scope;
-        Ext4.apply($scope, new studyfinderScope());
+        Ext4.apply($scope, new subjectFinderScope());
         $scope.timeout = $timeout;
         $scope.http = $http;
         $scope.localStorageService = localStorageService;
-
-
 
         localStorageService.bind($scope, 'searchTerms');
 
@@ -1139,7 +1103,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
                 },
                 groupLabel: $scope.inputGroupName,
                 categoryParticipantIds: $scope.subjects,
-                filters: $scope.getFiltersFromLocalStorage(),
+                filters: $scope.localStorageService.get(this.getLocalStorageKey("filterSet")),
                 canEdit: !LABKEY.user.isGuest,
                 isAdmin: LABKEY.user.isAdmin
             });
@@ -1174,7 +1138,7 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
             win.show();
         };
 
-        $scope.deleteSubjectFilter = function(groupId) {
+        $scope.deleteSubjectGroup = function(groupId) {
             LABKEY.Ajax.request({
                 url: LABKEY.ActionURL.buildURL('participant-group', 'deleteParticipantGroup.api'),
                 method: 'POST',
@@ -1198,6 +1162,94 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
 
     });
 
+    //subjectFinderApp.contoller("subjectGroupController", ['$scope', function($scope) {
+    //
+    //    $scope.currentGropuId = null;
+    //    $scope.groupList = [];
+    //
+    //    $scope.applySubjectGroupFilter = function(groupId)
+    //    {
+    //        $scope.clearAllFilters();
+    //        var group = $scope.groupList[groupId];
+    //        //for (var f = 0; f < group.filters.length; f++)
+    //        for (var f in group.filters)
+    //        {
+    //            if (group.filters.hasOwnProperty(f))
+    //            {
+    //                var filter = group.filters[f];
+    //
+    //                if (filter.name == "Study" && $scope.filterByLevel == "[Study].[Name]")
+    //                    continue;
+    //
+    //                var dim = dataspace.dimensions[filter.name];
+    //
+    //                if (dim && filter.members.length > 0)
+    //                {
+    //                    for (var i = 0; i < filter.members.length; i++)
+    //                    {
+    //                        var filteredName = filter.members[i];
+    //                        var member = dim.memberMap[filteredName];
+    //                        if (member)
+    //                        {
+    //                            member.selected = true;
+    //                            dim.filters.push(member);
+    //                        }
+    //                    }
+    //                    dim.filterType = filter.operator;
+    //                }
+    //            }
+    //        }
+    //        $scope.updateCountsAsync();
+    //        $scope.saveFilterState();
+    //        if ($scope.currentGroupId)
+    //            $scope.groupList[$scope.currentGroupId].selected = false;
+    //        $scope.currentGroupId = groupId;
+    //        $scope.groupList[groupId].selected = true;
+    //    };
+    //
+    //    $scope.loadSubjectGroups = function ()
+    //    {
+    //        LABKEY.Ajax.request({
+    //            url: LABKEY.ActionURL.buildURL('participant-group', 'browseParticipantGroups.api'),
+    //            method: 'POST',
+    //            jsonData : {
+    //                'distinctCatgories': false,
+    //                'type' : 'participantGroup',
+    //                'includeUnassigned' : false,
+    //                'includeParticipantIds' : false
+    //            },
+    //            scope: $scope,
+    //            success : function(res)
+    //            {
+    //                var json = Ext4.decode(res.responseText);
+    //                if (json.success)
+    //                {
+    //                    var groups = {};
+    //                    for (var i = 0; i < json.groups.length; i++)
+    //                    {
+    //                        groups[json.groups[i].id] = {
+    //                            "id" : json.groups[i].id,
+    //                            "label" : json.groups[i].label,
+    //                            "selected": false,
+    //                            "filters" : json.groups[i].filters == undefined ? [] : Ext4.decode(json.groups[i].filters)
+    //                        }
+    //                    }
+    //                    $scope.groupList = groups;
+    //                }
+    //            }
+    //        });
+    //    };
+    //
+    //    $scope.toggleSubjectGroupFilter = function(groupId)
+    //    {
+    //        $scope.groupList[groupId].selected = !$scope.groupList[groupId].selected;
+    //        if ($scope.groupList[groupId].selected)
+    //            $scope.applySubjectGroupFilter(groupId);
+    //        else
+    //            $scope.clearAllFilters();
+    //    };
+    //
+    //}]);
 
     var dataspace =
     {
@@ -1282,11 +1334,22 @@ function subjectfinder(studyData, loadedStudies, studyfinderAppId)
 
     Ext4.onReady(function ()
     {
-        loadMask = new Ext4.LoadMask(Ext4.get(studyfinderAppId), {msg: "Loading study definitions..."});
+        loadMask = new Ext4.LoadMask(Ext4.get(subjectFinderAppId), {msg: "Loading study definitions..."});
         loadMask.show();
     });
 }
 
+//angular.module('subjectGroup', ['LocalStorageModule'])
+//        .config(function (localStorageServiceProvider)
+//        {
+//            localStorageServiceProvider.setPrefix("subjectFinder");
+//        })
+//        .controller('subjectGroup', function ($scope, localStorageService)
+//        {
+//            window.debug_scope = $scope;
+//        })
+//        .factory('subjectGroup', function()
+//        {});
 
 // NOTE LABKEY.ext4.Util.resizeToViewport only accepts an ext component
 function resizeToViewport(el, width, height, paddingX, paddingY, offsetX, offsetY)

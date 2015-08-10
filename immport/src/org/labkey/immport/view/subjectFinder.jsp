@@ -356,8 +356,8 @@
 </style>
 
 
-<div id="studyfinderOuterDIV" style="min-height:100px; min-width:400px;">
-<div id="studyfinderAppDIV" style="height:100%; width:100%;" class="x-hidden innerColor" ng-app="studyfinderApp" ng-controller="studyfinder">
+<div id="subjectFinderOuterDIV" style="min-height:100px; min-width:400px;">
+<div id="subjectFinderAppDIV" style="height:100%; width:100%;" class="x-hidden innerColor" ng-app="subjectFinderApp" ng-controller="subjectFinder">
 
     <table bordercolor=red border=0 style="height:100%; width:100%; padding:3pt;">
         <tr>
@@ -374,7 +374,7 @@
             <%--</div>--%>
             </div>
           </td>
-          <td valign="top" align="left" width:100% style="width:100% height:100%;">
+          <td valign="top" align="left" style="width:100% height:100%;">
               <a ng-click="clearAllFilters();"><span ng-show="hasFilters()">[clear all]</span>&nbsp;</a>
             <div id="studypanel" style="height:100%; overflow-y:scroll;" ng-class="{'x-hidden':(activeTab!=='Studies')}">
             <div class="searchDiv" style="float:left; padding:10pt;">
@@ -424,10 +424,12 @@
                     <div class="facet-header"><span class="facet-caption">Subject Groups</span></div>
                     <ul>
                         <li ng-repeat="group in groupList" id="group_{{group.id}}" style="position:relative; width:100%" class="member" ng-class="{selectedMember: group.selected}">
+                            <span class="active member-indicator" ng-class="{selected:group.selected, 'none-selected':!currentGroupId,  'not-selected':!group.selected}" ng-click="toggleSubjectGroupFilter(group.id)">
+                            </span>
                             <span class="member-name">{{group.label}}</span>
                             <span class="member-action">
-                                <a class="labkey-text-link" ng-click="applySubjectFilter(group.id);" title="Apply Subject Filter">Apply</a>
-                                <a class="labkey-text-link" ng-click="deleteSubjectFilter(group.id);" title="Delete Subject Group">Delete</a>
+                                <a class="labkey-text-link" ng-click="applySubjectGroupFilter(group.id);" title="Apply Subject Filter">Apply</a>
+                                <a class="labkey-text-link" ng-click="deleteSubjectGroup(group.id);" title="Delete Subject Group">Delete</a>
                             </span>
                         </li>
                     </ul>
@@ -569,11 +571,11 @@ if (!c.isRoot())
 };
 
 
-new subjectfinder(studyData, loaded_studies, "studyfinderAppDIV");
+new subjectFinder(studyData, loaded_studies, "subjectFinderAppDIV");
 
 
 LABKEY.help.Tour.register({
-    id: "immport.studyfinder",
+    id: "immport.subjectFinder",
     steps: [
         {
             target: "studypanel",
@@ -612,7 +614,7 @@ LABKEY.help.Tour.register({
 
 function start_tutorial()
 {
-    LABKEY.help.Tour.show("immport.studyfinder");
+    LABKEY.help.Tour.show("immport.subjectFinder");
     return false;
 }
 
@@ -621,7 +623,7 @@ function start_tutorial()
 { %>
     var _resize = function(w, h)
     {
-        var componentOuter = document.getElementById("studyfinderOuterDIV");
+        var componentOuter = document.getElementById("subjectFinderOuterDIV");
         if (!componentOuter)
             return;
 
