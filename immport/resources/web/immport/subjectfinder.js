@@ -270,11 +270,9 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                     member.selected = false;
                 }
             }
-            if (this.currentGroupId)
-            {
-                this.groupList[this.currentGroupId].selected = false;
-                this.currentGroupId = null;
-            }
+            // TODO this doesn't seem to work.  These functions probably need to be in a controller proper
+            this.$broadcast("filterSelectionChanged");
+
             this.updateCountsAsync();
             if ($event.stopPropagation)
                 $event.stopPropagation();
@@ -300,12 +298,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             for (var m = 0; m < filterMembers.length; m++)
                 filterMembers[m].selected = false;
             dim.filters = [];
-            if (this.currentGroupId)
-            {
-                this.groupList[this.currentGroupId].selected = false;
-                this.currentGroupId = null;
-            }
-
+            this.$broadcast("filterSelectionChanged");
         },
 
 
@@ -325,6 +318,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             filterMembers[index].selected = false;
             filterMembers.splice(index, 1);
             this.updateCountsAsync();
+            this.$broadcast("filterSelectionChanged");
         },
 
 
@@ -897,93 +891,6 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             }
         },
 
-
-
-        applySubjectGroupFilter : function(groupId)
-        {
-            this.clearAllFilters();
-            var group = this.groupList[groupId];
-            //for (var f = 0; f < group.filters.length; f++)
-            for (var f in group.filters)
-            {
-                if (group.filters.hasOwnProperty(f))
-                {
-                    var filter = group.filters[f];
-
-                    if (filter.name == "Study" && this.filterByLevel == "[Study].[Name]")
-                        continue;
-
-                    var dim = dataspace.dimensions[filter.name];
-
-                    if (dim && filter.members.length > 0)
-                    {
-                        for (var i = 0; i < filter.members.length; i++)
-                        {
-                            var filteredName = filter.members[i];
-                            var member = dim.memberMap[filteredName];
-                            if (member)
-                            {
-                                member.selected = true;
-                                dim.filters.push(member);
-                            }
-                        }
-                        dim.filterType = filter.operator;
-                    }
-                }
-            }
-            this.updateCountsAsync();
-            this.saveFilterState();
-            if (this.currentGroupId)
-                this.groupList[this.currentGroupId].selected = false;
-            this.currentGroupId = groupId;
-            this.groupList[groupId].selected = true;
-        },
-
-        loadSubjectGroups : function ()
-        {
-            LABKEY.Ajax.request({
-                url: LABKEY.ActionURL.buildURL('participant-group', 'browseParticipantGroups.api'),
-                method: 'POST',
-                jsonData : {
-                    'distinctCatgories': false,
-                    'type' : 'participantGroup',
-                    'includeUnassigned' : false,
-                    'includeParticipantIds' : false
-                },
-                scope: this,
-                success : function(res)
-                {
-                    var json = Ext4.decode(res.responseText);
-                    if (json.success)
-                    {
-                        var groups = {};
-                        for (var i = 0; i < json.groups.length; i++)
-                        {
-                            groups[json.groups[i].id] = {
-                                "id" : json.groups[i].id,
-                                "label" : json.groups[i].label,
-                                "selected": false,
-                                "filters" : json.groups[i].filters == undefined ? [] : Ext4.decode(json.groups[i].filters)
-                            }
-                        }
-                        this.groupList = groups;
-                    }
-                }
-            });
-        },
-
-        toggleSubjectGroupFilter : function(groupId)
-        {
-            this.groupList[groupId].selected = !this.groupList[groupId].selected;
-            if (this.groupList[groupId].selected)
-                this.applySubjectGroupFilter(groupId);
-            else
-                this.clearAllFilters();
-
-        },
-
-
-
         showCreateStudyDialog : function()
         {
             window.alert("NYI: Create Study Dialog");
@@ -995,96 +902,14 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
     .config(function (localStorageServiceProvider)
     {
         localStorageServiceProvider.setPrefix("subjectFinder");
-    })
-    .controller('subjectFinder', function ($scope, $timeout, $http, localStorageService)
-    {
-        window.debug_scope = $scope;
-        Ext4.apply($scope, new subjectFinderScope());
-        $scope.timeout = $timeout;
-        $scope.http = $http;
-        $scope.localStorageService = localStorageService;
+    });
 
-        localStorageService.bind($scope, 'searchTerms');
+    subjectFinderApp
+            .controller("SubjectGroupController", ['$scope', function($scope) {
 
-        var studies = [];
-        var loaded_study_list = [];
-        var recent_study_list = [];
-        var hipc_study_list = [];
-        for (var i = 0; i < studyData.length; i++)
-        {
-            var name = studyData[i][0];
-            var s =
-            {
-                'memberName': "[Study].[" + name + "]",
-                'study_accession': name,
-                'id': studyData[i][1], 'title': studyData[i][2], 'pi': studyData[i][3],
-                'hipc_funded': false,
-                'loaded': false,
-                'url': null,
-                'containerId': null
-            };
-            if (loadedStudies[name])
-            {
-                s.loaded = true;
-                s.hipc_funded = loadedStudies[name].hipc_funded;
-                s.highlight = loadedStudies[name].highlight;
-                s.url = loadedStudies[name].url;
-                s.containerId = loadedStudies[name].containerId;
-                loaded_study_list.push(s.memberName);
-                if (s.highlight)
-                    recent_study_list.push(s.memberName);
-                if (s.hipc_funded)
-                    hipc_study_list.push(s.memberName);
-            }
-            studies.push(s);
-        }
-
-        $scope.dataspace = dataspace;
-        $scope.studies = studies;
-        $scope.loaded_study_list = loaded_study_list;
-        $scope.recent_study_list = recent_study_list;
-        $scope.hipc_study_list = hipc_study_list;
+        $scope.currentGropuId = null;
         $scope.groupList = [];
         $scope.inputGroupName = "";
-        $scope.currentGroupId = null;
-
-        // shortcuts
-        $scope.dimSubject = dataspace.dimensions.Subject;
-        $scope.dimStudy = dataspace.dimensions.Study;
-        $scope.dimCondition = dataspace.dimensions.Condition;
-        $scope.dimSpecies = dataspace.dimensions.Species;
-        $scope.dimPrincipal = dataspace.dimensions.Principal;
-        $scope.dimGender = dataspace.dimensions.Gender;
-        $scope.dimRace = dataspace.dimensions.Race;
-        $scope.dimAge = dataspace.dimensions.Age;
-        $scope.dimTimepoint = dataspace.dimensions.Timepoint;
-        $scope.dimAssay = dataspace.dimensions.Assay;
-        $scope.dimType = dataspace.dimensions.Type;
-        $scope.dimCategory = dataspace.dimensions.Category;
-
-        $scope.cube = LABKEY.query.olap.CubeManager.getCube({
-            configId: 'ImmPort:/StudyCube',
-            schemaName: 'ImmPort',
-            name: 'StudyCube',
-            deferLoad: false
-        });
-        $scope.cube.onReady(function (m)
-        {
-            $scope.$apply(function ()
-            {
-                $scope.mdx = m;
-                $scope.initCubeMetaData();
-                $scope.loadFilterState();
-                $scope.loadSubjectGroups();
-
-                // init study list according to studySubset
-                if (loaded_study_list.length == 0)
-                    $scope.studySubset = "ImmPort";
-                $scope.onStudySubsetChanged();
-                // doShowAllStudiesChanged() has side-effect of calling updateCountsAsync()
-                //$scope.updateCountsAsync();
-            });
-        });
 
         $scope.saveSubjectGroup = function() {
             if ($scope.inputGroupName != null)
@@ -1160,96 +985,197 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             });
         };
 
+        $scope.applySubjectGroupFilter = function(groupId)
+        {
+            $scope.clearAllFilters();
+            var group = $scope.groupList[groupId];
+            //for (var f = 0; f < group.filters.length; f++)
+            for (var f in group.filters)
+            {
+                if (group.filters.hasOwnProperty(f))
+                {
+                    var filter = group.filters[f];
+
+                    if (filter.name == "Study" && $scope.filterByLevel == "[Study].[Name]")
+                        continue;
+
+                    var dim = dataspace.dimensions[filter.name];
+
+                    if (dim && filter.members.length > 0)
+                    {
+                        for (var i = 0; i < filter.members.length; i++)
+                        {
+                            var filteredName = filter.members[i];
+                            var member = dim.memberMap[filteredName];
+                            if (member)
+                            {
+                                member.selected = true;
+                                dim.filters.push(member);
+                            }
+                        }
+                        dim.filterType = filter.operator;
+                    }
+                }
+            }
+            $scope.updateCountsAsync();
+            $scope.saveFilterState();
+            if ($scope.currentGroupId)
+                $scope.groupList[$scope.currentGroupId].selected = false;
+            $scope.currentGroupId = groupId;
+            $scope.groupList[groupId].selected = true;
+        };
+
+        $scope.loadSubjectGroups = function ()
+        {
+            LABKEY.Ajax.request({
+                url: LABKEY.ActionURL.buildURL('participant-group', 'browseParticipantGroups.api'),
+                method: 'POST',
+                jsonData : {
+                    'distinctCatgories': false,
+                    'type' : 'participantGroup',
+                    'includeUnassigned' : false,
+                    'includeParticipantIds' : false
+                },
+                scope: $scope,
+                success : function(res)
+                {
+                    var json = Ext4.decode(res.responseText);
+                    if (json.success)
+                    {
+                        var groups = {};
+                        for (var i = 0; i < json.groups.length; i++)
+                        {
+                            groups[json.groups[i].id] = {
+                                "id" : json.groups[i].id,
+                                "label" : json.groups[i].label,
+                                "selected": false,
+                                "filters" : json.groups[i].filters == undefined ? [] : Ext4.decode(json.groups[i].filters)
+                            }
+                        }
+                        $scope.groupList = groups;
+                    }
+                }
+            });
+        };
+
+        $scope.toggleSubjectGroupFilter = function(groupId)
+        {
+            $scope.groupList[groupId].selected = !$scope.groupList[groupId].selected;
+            if ($scope.groupList[groupId].selected)
+                $scope.applySubjectGroupFilter(groupId);
+            else
+                $scope.clearAllFilters();
+        };
+
+        $scope.clearSubjectGroupSelection = function()
+        {
+            if ($scope.currentGroupId)
+            {
+                $scope.groupList[this.currentGroupId].selected = false;
+                $scope.currentGroupId = null;
+            }
+        };
+
+        $scope.$on("cubeReady", function(event) {
+            $scope.loadSubjectGroups();
+        });
+
+        $scope.$on("filterSelectionChanged", function(event){
+            $scope.clearSubjectGroupSelection();
+        })
+
+    }]);
+
+
+    subjectFinderApp
+    .controller('subjectFinder', function ($scope, $timeout, $http, localStorageService)
+    {
+        window.debug_scope = $scope;
+        Ext4.apply($scope, new subjectFinderScope());
+        $scope.timeout = $timeout;
+        $scope.http = $http;
+        $scope.localStorageService = localStorageService;
+
+        localStorageService.bind($scope, 'searchTerms');
+
+        var studies = [];
+        var loaded_study_list = [];
+        var recent_study_list = [];
+        var hipc_study_list = [];
+        for (var i = 0; i < studyData.length; i++)
+        {
+            var name = studyData[i][0];
+            var s =
+            {
+                'memberName': "[Study].[" + name + "]",
+                'study_accession': name,
+                'id': studyData[i][1], 'title': studyData[i][2], 'pi': studyData[i][3],
+                'hipc_funded': false,
+                'loaded': false,
+                'url': null,
+                'containerId': null
+            };
+            if (loadedStudies[name])
+            {
+                s.loaded = true;
+                s.hipc_funded = loadedStudies[name].hipc_funded;
+                s.highlight = loadedStudies[name].highlight;
+                s.url = loadedStudies[name].url;
+                s.containerId = loadedStudies[name].containerId;
+                loaded_study_list.push(s.memberName);
+                if (s.highlight)
+                    recent_study_list.push(s.memberName);
+                if (s.hipc_funded)
+                    hipc_study_list.push(s.memberName);
+            }
+            studies.push(s);
+        }
+
+        $scope.dataspace = dataspace;
+        $scope.studies = studies;
+        $scope.loaded_study_list = loaded_study_list;
+        $scope.recent_study_list = recent_study_list;
+        $scope.hipc_study_list = hipc_study_list;
+
+        // shortcuts
+        $scope.dimSubject = dataspace.dimensions.Subject;
+        $scope.dimStudy = dataspace.dimensions.Study;
+        $scope.dimCondition = dataspace.dimensions.Condition;
+        $scope.dimSpecies = dataspace.dimensions.Species;
+        $scope.dimPrincipal = dataspace.dimensions.Principal;
+        $scope.dimGender = dataspace.dimensions.Gender;
+        $scope.dimRace = dataspace.dimensions.Race;
+        $scope.dimAge = dataspace.dimensions.Age;
+        $scope.dimTimepoint = dataspace.dimensions.Timepoint;
+        $scope.dimAssay = dataspace.dimensions.Assay;
+        $scope.dimType = dataspace.dimensions.Type;
+        $scope.dimCategory = dataspace.dimensions.Category;
+
+        $scope.cube = LABKEY.query.olap.CubeManager.getCube({
+            configId: 'ImmPort:/StudyCube',
+            schemaName: 'ImmPort',
+            name: 'StudyCube',
+            deferLoad: false
+        });
+        $scope.cube.onReady(function (m)
+        {
+            $scope.$apply(function ()
+            {
+                $scope.mdx = m;
+                $scope.initCubeMetaData();
+                $scope.loadFilterState();
+
+                // init study list according to studySubset
+                if (loaded_study_list.length == 0)
+                    $scope.studySubset = "ImmPort";
+                $scope.onStudySubsetChanged();
+                // doShowAllStudiesChanged() has side-effect of calling updateCountsAsync()
+                //$scope.updateCountsAsync();
+                $scope.$broadcast("cubeReady");
+            });
+        });
     });
 
-    //subjectFinderApp.contoller("subjectGroupController", ['$scope', function($scope) {
-    //
-    //    $scope.currentGropuId = null;
-    //    $scope.groupList = [];
-    //
-    //    $scope.applySubjectGroupFilter = function(groupId)
-    //    {
-    //        $scope.clearAllFilters();
-    //        var group = $scope.groupList[groupId];
-    //        //for (var f = 0; f < group.filters.length; f++)
-    //        for (var f in group.filters)
-    //        {
-    //            if (group.filters.hasOwnProperty(f))
-    //            {
-    //                var filter = group.filters[f];
-    //
-    //                if (filter.name == "Study" && $scope.filterByLevel == "[Study].[Name]")
-    //                    continue;
-    //
-    //                var dim = dataspace.dimensions[filter.name];
-    //
-    //                if (dim && filter.members.length > 0)
-    //                {
-    //                    for (var i = 0; i < filter.members.length; i++)
-    //                    {
-    //                        var filteredName = filter.members[i];
-    //                        var member = dim.memberMap[filteredName];
-    //                        if (member)
-    //                        {
-    //                            member.selected = true;
-    //                            dim.filters.push(member);
-    //                        }
-    //                    }
-    //                    dim.filterType = filter.operator;
-    //                }
-    //            }
-    //        }
-    //        $scope.updateCountsAsync();
-    //        $scope.saveFilterState();
-    //        if ($scope.currentGroupId)
-    //            $scope.groupList[$scope.currentGroupId].selected = false;
-    //        $scope.currentGroupId = groupId;
-    //        $scope.groupList[groupId].selected = true;
-    //    };
-    //
-    //    $scope.loadSubjectGroups = function ()
-    //    {
-    //        LABKEY.Ajax.request({
-    //            url: LABKEY.ActionURL.buildURL('participant-group', 'browseParticipantGroups.api'),
-    //            method: 'POST',
-    //            jsonData : {
-    //                'distinctCatgories': false,
-    //                'type' : 'participantGroup',
-    //                'includeUnassigned' : false,
-    //                'includeParticipantIds' : false
-    //            },
-    //            scope: $scope,
-    //            success : function(res)
-    //            {
-    //                var json = Ext4.decode(res.responseText);
-    //                if (json.success)
-    //                {
-    //                    var groups = {};
-    //                    for (var i = 0; i < json.groups.length; i++)
-    //                    {
-    //                        groups[json.groups[i].id] = {
-    //                            "id" : json.groups[i].id,
-    //                            "label" : json.groups[i].label,
-    //                            "selected": false,
-    //                            "filters" : json.groups[i].filters == undefined ? [] : Ext4.decode(json.groups[i].filters)
-    //                        }
-    //                    }
-    //                    $scope.groupList = groups;
-    //                }
-    //            }
-    //        });
-    //    };
-    //
-    //    $scope.toggleSubjectGroupFilter = function(groupId)
-    //    {
-    //        $scope.groupList[groupId].selected = !$scope.groupList[groupId].selected;
-    //        if ($scope.groupList[groupId].selected)
-    //            $scope.applySubjectGroupFilter(groupId);
-    //        else
-    //            $scope.clearAllFilters();
-    //    };
-    //
-    //}]);
 
     var dataspace =
     {

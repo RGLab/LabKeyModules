@@ -411,13 +411,14 @@
                   </ul>
               </div>
 
-              <div class="facet">
+              <div ng-controller="SubjectGroupController">
+                <div class="facet">
                     <div class="facet-header"><span class="facet-caption">Create Subject Group</span></div>
                     <p style="padding:10pt;">
                         <input type="text" id="subjectGroupName" ng-model="inputGroupName">
                         <a class="labkey-text-link"  ng-click="saveSubjectGroup();" title="Create Subject Group">Save</a>
                     </p>
-              </div>
+                </div>
 
 
                 <div class="facet">
@@ -434,6 +435,7 @@
                         </li>
                     </ul>
                 </div>
+              </div>
           </td>
         </tr>
     </table>
