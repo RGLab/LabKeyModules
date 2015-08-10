@@ -41,9 +41,6 @@
 <%@ page import="java.util.LinkedHashSet" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.TreeMap" %>
-<%@ page import="org.labkey.api.query.QueryView" %>
-<%@ page import="org.labkey.api.query.QueryForm" %>
-<%@ page import="org.labkey.api.action.NullSafeBindException" %>
 <%@ page import="org.labkey.api.view.WebPartView" %>
 <%@ page import="org.labkey.immport.view.SubjectFinderWebPart" %>
 <%@ page extends="org.labkey.api.jsp.JspBase"%>
@@ -94,53 +91,7 @@
     {
         background-color:#ffffff;
     }
-/*
-    fieldset
-    {
-        float : left
-    }
-    fieldset.group-fieldset
-    {
-        border : 0;
-        float : none
-    }
-    DIV.summary-item
-    {
-		 vertical-align:top;
-		 text-align:left;
-		 min-width:150pt;
-    }
-    legend 
-    {
-        border: 1px solid #999;
-        padding: 0 5px 2px 5px;
-        background-color: #999;
-        color: #fff;
-        margin-top: 8px;
-    }
-    TD.big-summary
-    {
-        font-size : 110%;
-        padding:3pt 2pt 3pt 2pt;
-        white-space:nowrap;
-    }
-    TD.small-summary
-    {
-        padding:2pt;
-        white-space:nowrap;
-    }
-    DIV.filter-summary
-    {
-        padding:5pt;
-        white-space:nowrap;
-    }
-    TR.filterMember
-    {
-        background-color:#FFFFFF;
-        border:1px solid #000000;
-        font-style:italic;
-    }
-*/
+
     TR.filterMember IMG.delete
     {
         visibility:hidden;
@@ -178,7 +129,6 @@
     }
     DIV.hipc
     {
-        background-image:url('<%=text(hipcImg)%>');
         background-image:url('<%=text(hipcImg)%>');
         background-repeat:no-repeat;
         background-position:center;
@@ -366,7 +316,7 @@
         </tr>
         <tr>
           <td valign="top" style="width:220pt; height:100%;">
-            <div style="height:100%; overflow-y:auto;">
+            <div id="facetpanel" style="height:100%; overflow-y:auto;">
             <%--<div class="innerColor" style="padding:10px; border:solid 2px #e6e6e6;">--%>
             <div ng-include="'/facet.html'" ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace,dimAge]"></div>
             <%--</div>--%>
@@ -417,7 +367,7 @@
                     </p>
                 </div>
                 <div class="facet">
-                    <div class="facet-header"><span class="facet-caption">Subject Groups</span></div>
+                    <div class="facet-header"><span class="facet-caption">Saved Virtual Studies</span></div>
                     <ul>
                         <li style="position:relative; width:100%;" class="member">
                             <span class="member-name">Influenza 2013</span>
@@ -619,7 +569,7 @@ function start_tutorial()
 { %>
     var _resize = function(w, h)
     {
-        var componentOuter = document.getElementById("studyfinderOuterDIV");
+        var componentOuter = Ext4.get("studyfinderOuterDIV");
         if (!componentOuter)
             return;
 
@@ -632,8 +582,13 @@ function start_tutorial()
         paddingX = 20;
         paddingY = 35;
         <%}%>
-        console.log(w, h, paddingX, paddingY);
-        resizeToViewport(componentOuter, w, h, paddingX, paddingY);
+        resizeToViewport(componentOuter.dom, w, h, paddingX, paddingY);
+        if (Ext4.isGecko)
+        {
+            var bottom = componentOuter.getXY()[1] + componentOuter.getSize().height;
+            Ext4.get("facetpanel").setHeight(bottom - Ext4.get("facetpanel").getXY()[1]);
+            Ext4.get("studypanel").setHeight(bottom - Ext4.get("studypanel").getXY()[1]);
+        }
     };
 
     Ext4.EventManager.onWindowResize(_resize);
