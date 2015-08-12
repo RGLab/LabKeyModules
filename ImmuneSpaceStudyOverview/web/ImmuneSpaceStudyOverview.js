@@ -422,5 +422,5 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
 
         LABKEY.ext.ImmuneSpaceStudyOverview.superclass.constructor.apply(this, arguments);
     } // end constructor
-}); // end DataSummary Panel class
+}); // end ImmuneSpaceStudyOverviewDataSummary Panel class
 

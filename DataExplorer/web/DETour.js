@@ -2,7 +2,7 @@ var DETour = function(){
     LABKEY.help.Tour.register({
         id: 'immport-dataexplorer-tour',
         steps: [{
-            title: 'Data explorer tour',
+            title: 'Data Explorer Tour',
             content: 'The following few steps will take you through the UI elements of the Data Explorer module',
             target: $('.labkey-wp-title-text')[0],
             placement: 'top',
@@ -22,14 +22,14 @@ var DETour = function(){
             showPrevButton: true,
             showNextButton: true
         },{
-            title: 'Additional options',
+            title: 'Additional Options',
             content: 'Customize the plot using additional options. This also lets you map aesthetics of the plot to demographics (e.g: color based on the age of the subjects). Options are dynamicaly generated depending on the plot type.', 
             target: $('.x-fieldset-header-text')[1],
             placement: 'top',
             showPrevButton: true,
             showNextButton: true
         },{
-            title: 'Data grid',
+            title: 'Data Grid',
             content: 'After selecting a dataset, click this tab to see the grid. There, the data can be filtered like in any other data grid and only the selected rows will be shown in the resulting plot.',
             target: $('.x-tab-strip-inner')[1],
             placement: 'bottom',

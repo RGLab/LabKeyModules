@@ -55,7 +55,7 @@ var homeTour = function(){
             title: 'Video Tutorials Menu',
             content: 'Video tutorials quick access list, available on every page.',
             target: $('.labkey-main-menu-item')[1],
-            xOffset: 230,
+            xOffset: 270,
             yOffset: 0,
             placement: 'right',
             showPrevButton: true,

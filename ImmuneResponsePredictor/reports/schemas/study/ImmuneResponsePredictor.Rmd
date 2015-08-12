@@ -322,6 +322,8 @@ predictor_table <- predictor_table[, `:=`(c("statistic", "p-value"), list(as.num
 predictor_table <- predictor_table[, gene_symbol := selected_features]
 # TODO: Fix links in DataTables
 predictor_table <- predictor_table[, gene_symbol := sapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0('<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=immune_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
+predictor_table <- predictor_table[, selected_features := NULL]
+setcolorder(predictor_table,  c("gene_symbol", "statistic", "p-value"))
 ```
 
 ```{r pred-cohort}
@@ -369,7 +371,7 @@ if(length(param$cohortsTesting) == 0){
                      fitted = c(relasso$fitted.values, predicted_val),
                      cohort = c(paste("a:", HAI$cohort, "(Training)"), paste("b:", HAI_pred$cohort, "(Testing)")))
   p<- ggplot(data, aes(x=observed, y=fitted)) + geom_point() + geom_smooth(method="lm") +
-    facet_wrap(~cohort, scale="free") + xlab("Observed response") + ylab("Predicted response")
+    facet_wrap(~cohort, scale="free") + xlab("Observed HAI response") + ylab("Predicted HAI response")
 }
   ggthemr('solarized')
   plot(p)
@@ -377,7 +379,7 @@ if(length(param$cohortsTesting) == 0){
 ```
 <br><br>
 
-## Heatmap of the selected features
+## Heatmap of the selected genes
 ```{r heatmap}
 HAI$type <- "Training set"
 if(length(param$cohortsTesting) == 0){

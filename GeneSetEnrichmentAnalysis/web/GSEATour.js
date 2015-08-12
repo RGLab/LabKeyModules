@@ -2,7 +2,7 @@ var GSEATour = function(){
     LABKEY.help.Tour.register({
         id: 'immport-gsea-tour',
         steps: [{
-            title: 'Gene Set Enrichment Analysis tour',
+            title: 'Gene Set Enrichment Analysis Tour',
             content: 'The following few steps will take you through the UI elements of the Gene Set Enrichment Analysis module',
             target: $('.labkey-wp-title-text')[0],
             placement: 'top',
