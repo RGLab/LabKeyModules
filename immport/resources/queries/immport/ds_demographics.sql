@@ -5,7 +5,7 @@
  */
 PARAMETERS($STUDY VARCHAR DEFAULT NULL)
 SELECT
-subject.subject_accession as participantid,
+subject.subject_accession || '.' || SUBSTRING(study_accession,4) as participantid,
 subject.subject_accession,
 subject.description,
 subject.phenotype,
@@ -23,5 +23,5 @@ subject.race_specify,
 subject.species,
 subject.taxonomy_id,
 subject.workspace_id
-FROM subject
-WHERE $STUDY IS NULL OR subject_accession IN (select subject_accession from q_subject_2_study s2s where s2s.study_accession=$STUDY)
+FROM subject INNER JOIN subject_2_study s2s ON subject.subject_accession = s2s.subject_accession
+WHERE $STUDY IS NULL OR s2s.study_accession=$STUDY

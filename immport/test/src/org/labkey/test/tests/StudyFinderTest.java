@@ -544,7 +544,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
 //                studyFinderSummaryCounts.get(Dimension.PARTICIPANTS), studyOverviewParticipantCounts.get("Demographics"));
     }
 
-    @Test
+//    @Test
     public void testDatasetExport() throws IOException
     {
         StudyFinderPage studyFinder = StudyFinderPage.goDirectlyToPage(this, getProjectName());
