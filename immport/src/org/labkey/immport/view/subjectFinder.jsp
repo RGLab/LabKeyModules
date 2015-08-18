@@ -586,7 +586,7 @@ function start_tutorial()
     }
     var _resize = function()
     {
-        var componentOuter = Ext4.get("studyfinderOuterDIV");
+        var componentOuter = Ext4.get("subjectFinderOuterDIV");
         if (!componentOuter)
             return;
         var paddingX, paddingY;
