@@ -26,8 +26,8 @@ public class SubjectFinderWebPart extends JspView
 
     public SubjectFinderWebPart(Container c)
     {
-        super("/org/labkey/immport/view/subjectfinderNG.jsp");
-        setTitle("Study Finder");
+        super("/org/labkey/immport/view/subjectFinder.jsp");
+        setTitle("Subject Finder");
         setTitleHref(new ActionURL(ImmPortController.SubjectFinderAction.class, c));
     }
     public SubjectFinderWebPart(ViewContext v)

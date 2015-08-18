@@ -265,6 +265,12 @@
         float:right;
         z-index:2;
     }
+    LI.member .member-action
+    {
+        position:relative;
+        float:right;
+        z-index:2;
+    }
     LI.member .bar
     {
         height:14pt;
@@ -304,8 +310,8 @@
 </style>
 
 
-<div id="studyfinderOuterDIV" style="min-height:600px; min-width:800px;">
-<div id="studyfinderAppDIV" style="height:100%; width:100%;" class="x-hidden innerColor" ng-app="studyfinderApp" ng-controller="studyfinder">
+<div id="subjectFinderOuterDIV" style="min-height:100px; min-width:400px;">
+<div id="subjectFinderAppDIV" style="height:100%; width:100%;" class="x-hidden innerColor" ng-app="subjectFinderApp" ng-controller="subjectFinder">
 
     <table bordercolor=red border=0 style="height:100%; width:100%; padding:3pt;">
         <tr>
@@ -322,7 +328,7 @@
             <%--</div>--%>
             </div>
           </td>
-          <td valign="top" align="left" width:100% style="width:100% height:100%;">
+          <td valign="top" align="left" style="width:100% height:100%;">
               <a ng-click="clearAllFilters();"><span ng-show="hasFilters()">[clear all]</span>&nbsp;</a>
             <div id="studypanel" style="height:100%; overflow-y:scroll;" ng-class="{'x-hidden':(activeTab!=='Studies')}">
             <div class="searchDiv" style="float:left; padding:10pt;">
@@ -330,7 +336,7 @@
                 <input placeholder="Study Search" id="searchTerms" name="q" style="width:240pt; font-size:120%" ng-model="searchTerms" ng-change="onSearchTermsChanged()">
                 <span class="searchMessage" ng-class="{searchNotFound:(searchMessage=='no matches')}">&nbsp;{{searchMessage}}&nbsp;</span>
             </div>
-            <div class="seachDiv" style="float:right; padding:10pt;>
+            <div class="seachDiv" style="float:right; padding:10pt;">
                 <label ng-show="loaded_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmuneSpace" ng-change="onStudySubsetChanged()">All ImmuneSpace studies</label>
                 <label ng-show="recent_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="Recent" ng-change="onStudySubsetChanged()">Recently added</label>
                 <label ng-show="hipc_study_list.length" >&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="HipcFunded" ng-change="onStudySubsetChanged()">HIPC funded</label>
@@ -342,6 +348,7 @@
             <td style="height:180px;"><img border=1 src="<%=getContextPath()%>/_.gif" style="height:180px; width:1px"></td>
                     <div ng-include="'/studycard.html'"ng-repeat="study in studies | filter:countForStudy"></div>
             </tr></table>
+            </div>
           </td>
           <td align=left valign=top style="width:220pt;">
               <div class="facet">
@@ -357,25 +364,28 @@
                       </li>
                   </ul>
               </div>
-              <div style="border:dotted 1px red;">
-              <span style="color:red;">NYI</span>
+
+              <div ng-controller="SubjectGroupController">
                 <div class="facet">
                     <div class="facet-header"><span class="facet-caption">Create Subject Group</span></div>
                     <p style="padding:10pt;">
-                        <input type="text" id="subjectGroupName">
-                        <a class="labkey-text-link" ng-class ng-click="saveSubjectGroup();" title="Create Subject Group">Save</a>
+                        <input type="text" id="subjectGroupName" ng-model="inputGroupName">
+                        <a class="labkey-text-link"  ng-click="saveSubjectGroup();" title="Create Subject Group">Save</a>
                     </p>
                 </div>
+
+
                 <div class="facet">
-                    <div class="facet-header"><span class="facet-caption">Saved Virtual Studies</span></div>
+                    <div class="facet-header"><span class="facet-caption">Subject Groups</span></div>
                     <ul>
-                        <li style="position:relative; width:100%;" class="member">
-                            <span class="member-name">Influenza 2013</span>
-                            <span class="member-count"><%=textLink("apply","#")%></span>
-                        </li>
-                        <li style="position:relative; width:100%;" class="member">
-                            <span class="member-name">Allergy - Male 2014</span>
-                            <span class="member-count"><%=textLink("apply", "#")%></span>
+                        <li ng-repeat="group in groupList" id="group_{{group.id}}" style="position:relative; width:100%" class="member" ng-class="{selectedMember: group.selected}">
+                            <span class="active member-indicator" ng-class="{selected:group.selected, 'none-selected':!currentGroupId,  'not-selected':!group.selected}" ng-click="toggleSubjectGroupFilter(group.id)">
+                            </span>
+                            <span class="member-name">{{group.label}}</span>
+                            <span class="member-action">
+                                <a class="labkey-text-link" ng-click="applySubjectGroupFilter(group.id);" title="Apply Subject Filter">Apply</a>
+                                <a class="labkey-text-link" ng-click="deleteSubjectGroup(group.id);" title="Delete Subject Group">Delete</a>
+                            </span>
                         </li>
                     </ul>
                 </div>
@@ -452,7 +462,7 @@
 <%--
 			controller
  --%>
-<%-- TODO {low} make robust enough to have two finder web parts on the same page --%>
+<%-- N.B. This is not robust enough to have two finder web parts on the same page --%>
 
 <script>
 var studyData = [<%
@@ -517,11 +527,11 @@ if (!c.isRoot())
 };
 
 
-new subjectfinder(studyData, loaded_studies, "studyfinderAppDIV");
+new subjectFinder(studyData, loaded_studies, "subjectFinderAppDIV");
 
 
 LABKEY.help.Tour.register({
-    id: "immport.studyfinder",
+    id: "immport.subjectFinder",
     steps: [
         {
             target: "studypanel",
@@ -560,7 +570,7 @@ LABKEY.help.Tour.register({
 
 function start_tutorial()
 {
-    LABKEY.help.Tour.show("immport.studyfinder");
+    LABKEY.help.Tour.show("immport.subjectFinder");
     return false;
 }
 
@@ -576,7 +586,7 @@ function start_tutorial()
     }
     var _resize = function()
     {
-        var componentOuter = Ext4.get("studyfinderOuterDIV");
+        var componentOuter = Ext4.get("subjectFinderOuterDIV");
         if (!componentOuter)
             return;
         var paddingX, paddingY;

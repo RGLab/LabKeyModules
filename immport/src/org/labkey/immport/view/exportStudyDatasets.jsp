@@ -51,6 +51,12 @@
 
 Ext4.onReady(function () {
 
+    // Only include "SDY" studies in the StudyProperties query
+    var studyPropertyFilters = [
+        LABKEY.Filter.create("Label", "SDY", LABKEY.Filter.Types.STARTS_WITH),
+        LABKEY.Filter.create("Label", "SDY_template", LABKEY.Filter.Types.NEQ)
+    ];
+
     var studyFilterWebPart = LABKEY.WebPart({
         partName: 'Shared Study Filter',
         renderTo: 'studyFilter',
@@ -105,11 +111,17 @@ Ext4.onReady(function () {
 
     function getNumOfRows(queryName, datasetId)
     {
+        var filters = [];
+        if (queryName == "StudyProperties") {
+            filters = studyPropertyFilters;
+        }
+
         LABKEY.Query.selectRows({
             schemaName : 'study',
             queryName : queryName,
             includeTotalCount : true,
             showRows : 0,
+            filterArray: filters,
             success : function(details) {
                 var record = dataStore.getById(datasetId);
                 record.set('numRows', details.rowCount);
@@ -145,7 +157,6 @@ Ext4.onReady(function () {
             id: 'datasets',
             title: 'Datasets',
             margin: '0px 20px 0px 20px',
-            disabled: true,
             store: Ext4.data.StoreManager.lookup('dataSets'),
             viewConfig: {
                 markDirty: false
@@ -158,37 +169,38 @@ Ext4.onReady(function () {
             ],
             width: 600,
             loadMask: true,
-            renderTo: 'datasetsPanel'
-        });
+            renderTo: 'datasetsPanel',
+            buttons: [{
+                id: 'downloadBtn',
+                text: 'Download',
+                margin: '5 5 5 20',
+                disabled: true,
+                handler: function() {
 
-        Ext4.create('Ext.Button', {
-            id: 'downloadBtn',
-            text: 'Download',
-            margin: '5 5 5 20',
-            renderTo: Ext4.getBody(),
-            disabled: true,
-            handler: function() {
+                    var schemaQueries = {"study" : []};
 
-                var schemaQueries = {"study" : []};
+                    var queryNames = dataStore.collect('name');
+                    for(var i = 0; i < queryNames.length; i++)
+                    {
+                        var o = { queryName : queryNames[i] };
 
-                var queryNames = dataStore.collect('name');
-                for(var i = 0; i < queryNames.length; i++)
-                {
-                    schemaQueries.study.push({
-                        queryName : queryNames[i]
+                        if (o.queryName == "StudyProperties") {
+                            o.filters = studyPropertyFilters;
+                        }
+
+                        schemaQueries.study.push(o);
+                    }
+
+                    LABKEY.Query.exportTables({
+                        schemas: schemaQueries
                     });
                 }
-                LABKEY.Query.exportTables({
-                    schemas: schemaQueries
-                });
-            }
+            },{
+                text: 'Back',
+                handler : function(btn) {window.history.back()}
+            }]
         });
 
-        Ext4.create('Ext.Button', {
-            text: 'Back',
-            renderTo: Ext4.getBody(),
-            handler : function(btn) {window.history.back()}
-        });
     }
 
     renderListOfDatasetsTable();

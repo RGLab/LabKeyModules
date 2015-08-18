@@ -37,7 +37,7 @@ import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QuerySchema;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.security.RequiresNoPermission;
-import org.labkey.api.security.RequiresPermissionClass;
+import org.labkey.api.security.RequiresPermission;
 import org.labkey.api.security.RequiresSiteAdmin;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.ReadPermission;
@@ -78,7 +78,7 @@ public class ImmPortController extends SpringActionController
         setActionResolver(_actionResolver);
     }
 
-    @RequiresPermissionClass(ReadPermission.class)
+    @RequiresPermission(ReadPermission.class)
     public class BeginAction extends SimpleViewAction
     {
         public ModelAndView getView(Object o, BindException errors) throws Exception
@@ -122,7 +122,7 @@ public class ImmPortController extends SpringActionController
     }
 
 
-    @RequiresPermissionClass(AdminPermission.class)
+    @RequiresPermission(AdminPermission.class)
     public class ImportArchiveAction extends FormViewAction<CopyBean>
     {
         String _log = null;
@@ -169,7 +169,7 @@ public class ImmPortController extends SpringActionController
     }
 
 
-    @RequiresPermissionClass(AdminPermission.class)
+    @RequiresPermission(AdminPermission.class)
     public class PopulateCubeAction extends FormViewAction<CopyBean>
     {
         String _log = null;
@@ -262,7 +262,7 @@ public class ImmPortController extends SpringActionController
     }
 
 
-    @RequiresPermissionClass(ReadPermission.class)
+    @RequiresPermission(ReadPermission.class)
     public class StudyCardAction extends SimpleViewAction<StudyIdForm>
     {
         @Override
@@ -293,7 +293,7 @@ public class ImmPortController extends SpringActionController
         public List<StudyPubmedBean> pubmed;
     }
 
-    @RequiresPermissionClass(ReadPermission.class)
+    @RequiresPermission(ReadPermission.class)
     public class StudyDetailAction extends SimpleViewAction<StudyIdForm>
     {
         StudyIdForm _form;
@@ -429,7 +429,7 @@ public class ImmPortController extends SpringActionController
     }
 
 
-    @RequiresPermissionClass(ReadPermission.class)
+    @RequiresPermission(ReadPermission.class)
     public class StudyFinderExtAction extends SimpleViewAction
     {
         public ModelAndView getView(Object o, BindException errors) throws Exception
@@ -444,7 +444,7 @@ public class ImmPortController extends SpringActionController
     }
 
 
-    @RequiresPermissionClass(ReadPermission.class)
+    @RequiresPermission(ReadPermission.class)
     public class StudyFinderNGAction extends SimpleViewAction
     {
         public ModelAndView getView(Object o, BindException errors) throws Exception
@@ -462,12 +462,12 @@ public class ImmPortController extends SpringActionController
     }
 
 
-    @RequiresPermissionClass(ReadPermission.class)
+    @RequiresPermission(ReadPermission.class)
     public class StudyFinderAction extends StudyFinderNGAction
     {
     }
 
-    @RequiresPermissionClass(ReadPermission.class)
+    @RequiresPermission(ReadPermission.class)
     public class SubjectFinderAction extends SimpleViewAction
     {
         public ModelAndView getView(Object o, BindException errors) throws Exception
@@ -502,7 +502,7 @@ public class ImmPortController extends SpringActionController
         }
     }
 
-    @RequiresPermissionClass(ReadPermission.class)
+    @RequiresPermission(ReadPermission.class)
     public class ExportStudyDatasetsAction extends SimpleViewAction
     {
 
