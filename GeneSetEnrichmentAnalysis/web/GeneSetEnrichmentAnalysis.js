@@ -34,6 +34,14 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             flagCohortSelect    = undefined
             ;
 
+        // returns a string to be used as fieldLabel
+        function fieldLabelWithHelp(title, text){
+            var field = title + "<a class=\"labkey-help-pop-up\" href=\"#\" onclick=\"return showHelpDiv(this, '" +
+                        title + "', '" + text + "');\" onmouseout=\"return hideHelpDivDelay();\" onmouseover=\"return showHelpDivDelay(this, '" +
+                        title + "', '" + text + "');\"><span class=\"labkey-help-pop-up\">?</span></a>";
+            return(field);
+        }; 
+
         var checkBtnRunStatus = function(){
             if (
                 cbModules.isValid( true ) &&
@@ -55,6 +63,10 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             }
         };
 
+
+        // Help text
+        var cohort_help  = 'The cohorts with subjects of interest';
+        var modules_help = 'The modules used for grouping genes, currently the following modules are available:<br><ul><li><a href="http://www.interactivefigures.com/meni/meni-paper/btm-landing.gsp" target="_blank">Blood transcription</a>: Set of transcription modules in blood.</li><li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp" target="_blank">MSigDB c7</a>: Gene sets that represent cell states and perturbations within the immune system.</li><li><a href="http://www.biir.net/public_wikis/module_annotation/G2_Trial_8_Modules" target="_blank">G2 (Trial 8) Modules</a>: Repertoire of co-clustering genes.</li></ul>';
 
         ///////////////////////////////////
         //            Stores             //
@@ -246,8 +258,21 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             },
             deferredRender: false,
             items: [
+                new Ext.Container({
+                    autoEl: 'a',
+                    cls: 'labkey-text-link bold-text',
+                    html: 'quick help',
+                    listeners: {
+                        afterrender: {
+                            fn: function(){
+                                this.getEl().on( 'click', function(){ LABKEY.help.Tour.show('immport-gsea-tour'); } );
+                            },
+                            single: true
+                        }
+                    }
+                }),
                 {
-                    html: '<a class="labkey-text-link bold-text" onclick="LABKEY.help.Tour.show(\'immport-gsea-tour\')">Quick help</a><br><br>',
+                    bodyStyle: 'padding-top: 10px;',
                     border: false,
                     defaults: {
                         border: false
@@ -283,12 +308,27 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     ],
                     layout: 'hbox'
                 },
-                
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
-                        cbCohort,
-                        cbModules
+                        new Ext.form.CompositeField({
+                            items: [
+                                cbCohort,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip("Cohort", cohort_help)
+                                }
+                            ]
+                        }),
+                        new Ext.form.CompositeField({
+                            items: [
+                                cbModules,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip("Modules", "Modules or gene set are used for grouping genes. A description and links to the modules can be found in the Help tab")
+                                }
+                            ]
+                        })
                     ],
                     title: 'Parameters'
                 }),
@@ -379,14 +419,15 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 items: [
                     new Ext.form.Label(),
                     new Ext.form.FieldSet({
-                        html: '<b>Cohort:</b> The cohorts with subjects of interest<br><br>\
-                               <b>Modules:</b> The modules used for grouping genes, currently the following modules are available:<br><ul>\
-                                  <li><a href="http://www.interactivefigures.com/meni/meni-paper/btm-landing.gsp" target="_blank">Blood transcription</a>: Set of transcription modules in blood.</li>\
-                                  <li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp" target="_blank">MSigDB c7</a>: Gene sets that represent cell states and perturbations within the immune system.</li>\
-                                  <li><a href="http://www.biir.net/public_wikis/module_annotation/G2_Trial_8_Modules" target="_blank">G2 (Trial 8) Modules</a>: Repertoire of co-clustering genes.</li>\
-                               </ul>',
+                        html: '<b>Cohort:</b> ' + cohort_help + '<br><br>' +
+                              '<b>Modules:</b> ' + modules_help,
                         style: 'margin-bottom: 2px; margin-top: 5px;',
                         title: 'Parameters'
+                    }),
+                    new Ext.form.FieldSet({
+                        html: 'After a run, the <b>View</b> tab will open where the output shows a table of each gene module at each timepoint ranked by P-values and a heatmap of the most enriched gene sets. Use the "Search" at the top right corner of the table to look for the modules shown in the heatmap. The names in the module column are clickable and will open a new tab in the browser to the official description of the module.',
+                        style: 'margin-bottom: 2px; margin-top: 5px;',
+                        title: 'View'
                     })
                 ],
                 layout: 'fit',

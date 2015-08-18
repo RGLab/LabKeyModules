@@ -17,6 +17,17 @@
 
 Ext.namespace('LABKEY.ext.ISCore');
 
+//Create an help icon with tooltip and text
+LABKEY.ext.ISCore.helpTooltip = function(title, text){
+  //var field = title + "<a class=\"labkey-help-pop-up\" href=\"#\" onclick=\"return showHelpDiv(this, '" +
+  //            title + "', '" + text + "');\" onmouseout=\"return hideHelpDivDelay();\" onmouseover=\"return showHelpDivDelay(this, '" +
+  //            title + "', '" + text + "');\"><span class=\"labkey-help-pop-up\">?</span></a>";
+  var helpTip = "<a class=\"labkey-help-pop-up\" href=\"#\" onclick=\"return showHelpDiv(this, '" +
+                title + "', '" + text + "');\" onmouseout=\"return hideHelpDivDelay();\" onmouseover=\"return showHelpDivDelay(this, '" +
+                title + "', '" + text + "');\"><div class=\"labkey-help-pop-up\">?</div></a>"
+  return(helpTip);                                                      
+};  
+
 LABKEY.ext.ISCore.supportLink =
     'the <a href="' +
     LABKEY.ActionURL.buildURL(

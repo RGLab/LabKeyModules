@@ -34,6 +34,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             ;
 
         var checkBtnPlotStatus = function(){
+            cfGenes.doLayout();
+
             if (    cbResponse.isValid( true ) &&
                     cbCohorts.isValid( true ) &&
                     cbTimePoint.isValid( true ) &&
@@ -72,6 +74,19 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
             checkBtnPlotStatus();
         };
+
+        //Help text
+        var response_help  = "The variable to plot against the expression of selected genes. For HAI, the timepoint of peak immunogenicity is selected.";
+        var timepoint_help = "The gene-expression time point to plot.";
+        var cohort_help    = "The cohorts with subjects of interest. Some cohorts might only be available at specific timepoints.";
+        var normalize_help = "Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.";
+        var genes_help     = "The genes to plot.";
+        var textsize_help  = "The size of all text elements on the plot (Including axis, legend and labels)";
+        var facet_help     = "The plot will facet by cohorts on the y axis and genes on the x axis. In `grid` mode, the scales are consistent for a gene and for a cohort. In `wrap` mode, the scales are free.<br> Use wrap if you observe empty spaces in the plots. `wrap` is also more appropriate when plotting many genes and a single cohort.";
+        var shape_help     = "The shape of the data points.";
+        var color_help     = "The color of the data points. (Age is selected by default)";
+        var size_help      = "The size of the data points.";
+        var alpha_help     = "The transparency of the data points.";
 
 
         ///////////////////////////////////
@@ -250,9 +265,9 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             getParams: function(q){
                 var params = {},
                     paramNames = this.store.paramNames;
-                if(this.pageSize){
-                    params[paramNames.start] = 0;
-                    params[paramNames.limit] = this.pageSize;
+                if ( this.pageSize ){
+                    params[ paramNames.start ] = 0;
+                    params[ paramNames.limit ] = this.pageSize;
                 }
 
                 strGene.setUserFilters([
@@ -301,7 +316,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             fieldLabel: 'Shape',
             lazyInit: false,
             store: strShape,
-            value: 'Gender',
             valueField: 'name',
             width: fieldWidth
         });
@@ -514,6 +528,16 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             style: 'padding-right: 2px; padding-left: 2px;'
         });
 
+        var cfGenes = new Ext.form.CompositeField({
+            items: [
+                cbGenes,
+                {
+                    border: false,
+                    html: LABKEY.ext.ISCore.helpTooltip( 'Genes', genes_help )
+                }
+            ]
+        });
+
         var pnlInputView = new Ext.form.FormPanel({
             autoScroll: true,
             defaults: {
@@ -523,8 +547,21 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             },
             deferredRender: false,
             items: [
+                new Ext.Container({
+                    autoEl: 'a',
+                    cls: 'labkey-text-link bold-text',
+                    html: 'quick help',
+                    listeners: {
+                        afterrender: {
+                            fn: function(){
+                                this.getEl().on( 'click', function(){ LABKEY.help.Tour.show('immport-gee-tour'); } );
+                            },
+                            single: true
+                        }
+                    }
+                }),
                 {
-                    html: '<a class="labkey-text-link bold-text" onclick="LABKEY.help.Tour.show(\'immport-gee-tour\')">Quick help</a><br><br>',
+                    bodyStyle: 'padding-top: 10px;',
                     border: false,
                     defaults: {
                         border: false
@@ -563,15 +600,47 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
-                        cbResponse,
+                        new Ext.form.CompositeField({
+                            items: [
+                                cbResponse,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip( 'Response', response_help )
+                                }
+                            ]
+                        }),
                         new Ext.Spacer({
                             height: 20,
                             html: '&nbsp'
                         }),
-                        cbTimePoint,
-                        cbCohorts,
-                        chNormalize,
-                        cbGenes
+                        new Ext.form.CompositeField({
+                            items: [
+                                cbTimePoint,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip( 'Time point', timepoint_help )
+                                }
+                            ]
+                        }),
+                        new Ext.form.CompositeField({
+                            items: [
+                                cbCohorts,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip( 'Cohorts', cohort_help )
+                                }
+                            ]
+                        }),
+                        new Ext.form.CompositeField({
+                            items: [
+                                chNormalize,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip( 'Normalize to baseline', normalize_help )
+                                }
+                            ]
+                        }),
+                        cfGenes
                     ],
                     labelWidth: labelWidth,
                     title: 'Parameters'
@@ -581,8 +650,24 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     collapsed: true,
                     collapsible: true,
                     items: [
-                        spnrTextSize,
-                        rgFacet,
+                        new Ext.form.CompositeField({
+                            items: [
+                                spnrTextSize,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip( 'Text size', textsize_help )
+                                }
+                            ]
+                        }),
+                        new Ext.form.CompositeField({
+                            items: [
+                                rgFacet,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip( 'Facet', facet_help )
+                                }
+                            ]
+                        }),
                         cbShape,
                         cbColor,
                         cbSize,
@@ -626,6 +711,17 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         bodyStyle: 'padding-bottom: 1px;',
                         hideMode: 'offsets'
                     },
+                    items: [],
+                    layout: 'fit',
+                    tabTip: 'Data',
+                    title: 'Data'
+                }),
+                new Ext.Panel({
+                    defaults: {
+                        autoHeight: true,
+                        bodyStyle: 'padding-bottom: 1px;',
+                        hideMode: 'offsets'
+                    },
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
@@ -656,23 +752,27 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     },
                     items: [
                         new Ext.form.Label({
-                            text: 'The following parameters are required to generate the plot'
+                            text: 'The following parameters are required to generate the plot. Note that the valid inputs are dynamically generated and always depends on the data. Some cohorts might not have gene-expression data and some might not be available at all timepoints.'
                         }),
                         new Ext.form.FieldSet({
-                            html: '\
-                              <b>Response:</b> The variable to plot against the expression of selected genes. For HAI, the timepoint of peak immunogenicity is selected.<br><br>\
-                              <b>Time point:</b> The gene-expression time point to plot<br><br>\
-                              <b>Cohorts:</b> The cohorts with subjects of interest. Some cohorts might only be available at specific timepoints.<br><br>\
-                              <b>Normalize to baseline:</b> Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data<br><br>\
-                              <b>Genes:</b> The genes to plot',
-                            style: 'margin-top: 5px;',
+                            html: '<b>Response:</b> '  + response_help + '<br><br>' + 
+                              '<b>Time point:</b> ' + timepoint_help + '<br><br>' +
+                              '<b>Cohorts:</b> ' + cohort_help + '<br><br>' +
+                              '<b>Normalize to baseline:</b> ' + normalize_help + '<br><br>' +
+                              '<b>Genes:</b> ' + genes_help,
+                              style: 'margin-top: 5px;',
                             title: 'Parameters'
                         }),
                         new Ext.form.Label({
                             text: 'Parameters in the "Additional options" section can be used to customize the plot and modify it based on the demographic data. Available choices are Age, Gender, and Race.'
                         }),
                         new Ext.form.FieldSet({
-                            html: '<b>Text size:</b> The size of all text elements on the plot (Including axis, legend and labels)<br><br><b>Facet:</b> The plot will facet by cohorts on the y axis and genes on the x axis. In `grid` mode, the scales are consistent for a gene and for a cohort. In `wrap` mode, the scales are free. Use wrap if you observe empty spaces in the plots<br><br><b>Shape:</b> The shape of the data points (Gender is selected by default)<br><br><b>Color:</b> The color of the data points (Age is selected by default)<br><br><b>Size:</b> The size of the data points<br><br><b>Alpha:</b> The transparency of the data points',
+                            html: '<b>Text size:</b> ' + textsize_help + '<br><br>' +
+                                '<b>Facet:</b> ' + facet_help + '<br><br>' +
+                                '<b>Shape:</b> ' + shape_help + '<br><br>' +
+                                '<b>Color:</b> ' + color_help + '<br><br>' +
+                                '<b>Size:</b> ' + size_help + '<br><br>' +
+                                '<b>Alpha:</b> ' + alpha_help,
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Additional options'
                         })

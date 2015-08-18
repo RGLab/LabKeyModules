@@ -2,7 +2,7 @@ var IRPTour = function(){
     LABKEY.help.Tour.register({
         id: 'immport-irp-tour',
         steps: [{
-            title: 'Immunee Response Predictor tour',
+            title: 'Immune Response Predictor Tour',
             content: 'The following few steps will take you through the UI elements of the Immune Response Predictor module',
             target: $('.labkey-wp-title-text')[0],
             placement: 'top',
@@ -23,7 +23,7 @@ var IRPTour = function(){
             showPrevButton: true,
             showNextButton: true
         },{
-            title: 'Additional options',
+            title: 'Additional Options',
             content: 'These options are used for filtering the predicting features.\
                 If the number of features is too low, consider lowering or removing the fold change threshold. <br>\
                 By default, the entire array is used, the second option can limit the features to differentially expressed genes.\
