@@ -53,7 +53,6 @@
         resources.add(ClientDependency.fromPath("angular"));
         resources.add(ClientDependency.fromPath("immport/subjectfinder.js"));
 
-        resources.add(ClientDependency.fromPath("clientapi/ext3")); // nested query webpart in ParticipantGroup panel
         resources.add(ClientDependency.fromPath("study/ParticipantGroup.js"));
         return resources;
     }
@@ -90,53 +89,6 @@
     {
         background-color:#ffffff;
     }
-/*
-    fieldset
-    {
-        float : left
-    }
-    fieldset.group-fieldset
-    {
-        border : 0;
-        float : none
-    }
-    DIV.summary-item
-    {
-		 vertical-align:top;
-		 text-align:left;
-		 min-width:150pt;
-    }
-    legend 
-    {
-        border: 1px solid #999;
-        padding: 0 5px 2px 5px;
-        background-color: #999;
-        color: #fff;
-        margin-top: 8px;
-    }
-    TD.big-summary
-    {
-        font-size : 110%;
-        padding:3pt 2pt 3pt 2pt;
-        white-space:nowrap;
-    }
-    TD.small-summary
-    {
-        padding:2pt;
-        white-space:nowrap;
-    }
-    DIV.filter-summary
-    {
-        padding:5pt;
-        white-space:nowrap;
-    }
-    TR.filterMember
-    {
-        background-color:#FFFFFF;
-        border:1px solid #000000;
-        font-style:italic;
-    }
-*/
     TR.filterMember IMG.delete
     {
         visibility:hidden;
@@ -147,6 +99,12 @@
         cursor:pointer;
     }
 
+    TABLE.subject-finder
+    {
+        height:100%;
+        width:100%;
+        padding:3pt;
+    }
     /* study-card */
     .studycard-highlight
     {
@@ -160,11 +118,12 @@
         padding: 5pt;
         margin: 5pt;
         float:left;
+        position:relative;
+        width:160pt;
+        height:140pt;
+        overflow-y:hidden;
     }
-    DIV.study-card:hover
-    {
-        border:1pt solid #cc541f;
-    }
+
     DIV.study-detail
     {
         background-color:#EEEEEE;
@@ -174,7 +133,6 @@
     }
     DIV.hipc
     {
-        background-image:url('<%=text(hipcImg)%>');
         background-image:url('<%=text(hipcImg)%>');
         background-repeat:no-repeat;
         background-position:center;
@@ -188,22 +146,55 @@
     {
         border-radius: 10px;
         border: solid 1px #AAAAAA;
-        //background: #8AC007;
         background: #FFFFFF;
         padding: 6px;
     }
 
     /* search area */
-    DIV.searchDiv
+    DIV.search-box
     {
-        font-size: 120%;
+        float:left;
+        padding:10pt;
     }
-    SPAN.searchNotFound
+    INPUT.search-box
     {
-        background-color:yellow;
+        width:240pt;
+    }
+
+    TD.selection-pane
+    {
+        vertical-align: text-top;
+        width:220pt;
+        height:100%;
+    }
+
+    TD.help-links
+    {
+        vertical-align: text-top;
+        text-align: right;
+    }
+
+    DIV.summary LI.member
+    {
+        clear:both;
+        padding:2pt;
+        margin:1px 0px 1px 0px;
+        border:1px solid #ffffff;
+        height:14pt;
+        position:relative;
+        width:100%;
     }
 
     /* facets */
+
+    .clear-filter
+    {
+        float:right;
+    }
+    .facet-filter
+    {
+        float:left;
+    }
 
     DIV.facet
     {
@@ -214,10 +205,6 @@
     {
         cursor:pointer;
     }
-    .active:hover
-    {
-        color:#cc541f !important;
-    }
     DIV.facet-header
     {
         padding:4pt;
@@ -225,7 +212,6 @@
     }
     DIV.facet-header .facet-caption
     {
-        font-size: 130%;
         font-weight:400;
     }
     DIV.facet UL
@@ -243,22 +229,44 @@
         margin:1px 0px 1px 0px;
         border:1px solid #ffffff;
         height:14pt;
+        position:relative;
+        width:100%;
     }
     DIV.facet.collapsed LI.member
     {
         display:none;
     }
+    DIV.facet.collapsed .fa-plus-square
+    {
+        float:left;
+        display:inline;
+    }
+    DIV.facet.collapsed .fa-minus-square
+    {
+        float:left;
+        display:none;
+    }
+    DIV.expanded  .fa-plus-square
+    {
+        float:left;
+        display:none;
+    }
+    DIV.expanded  .fa-minus-square
+    {
+        float:left;
+        display:inline;
+    }
     DIV.facet.collapsed LI.member.selectedMember
     {
         display:block;
     }
-    DIV.facet LI.member:hover
+    DIV.facet LI.member:hover SPAN.bar
     {
-        border:1px solid #cc541f;
+        background-color:rgba(81, 158, 218, 0.2);
     }
     DIV.facet LI.selectedMember
     {
-        color: blue;
+        color: #126495
     }
     DIV.facet LI.emptyMember
     {
@@ -291,10 +299,6 @@
     {
         content:"\002713"; color:lightgray;
     }
-    .member-indicator.not-selected.none-selected:hover:after
-    {
-        color:#cc541f;
-    }
     LI.member .member-name
     {
         display:inline-block;
@@ -317,6 +321,12 @@
         float:right;
         z-index:2;
     }
+
+    LI.member SPAN.bar-selected
+    {
+        background-color:rgba(81, 158, 218, 0.2);
+    }
+
     LI.member .bar
     {
         height:14pt;
@@ -348,101 +358,175 @@
         padding:2pt; margin:2pt; cursor:pointer;
         border: 1px solid #ffffff;
     }
-    DIV.filterPopup LI:hover
+
+    /* menus */
+    .nav
     {
-        border: 1px solid #cc541f;
+        margin: 0;
+        padding-left: 0;;
+        list-style: none;
     }
 
+    ul.nav
+    {
+        display:block;
+    }
+
+    .navbar-nav > li
+    {
+        float: left;
+    }
+
+    .navbar-nav
+    {
+        float: left;
+        margin: 0;
+    }
+
+    .navbar-nav > li > .dropdown-menu
+    {
+        margin-top : 0;
+    }
+
+    .dropdown:hover > .dropdown-menu
+    {
+        display: block;
+    }
+
+    .open > .dropdown-menu
+    {
+        display: block;
+    }
+
+    .dropdown-menu > li > a
+    {
+        color: black;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        display: none;
+        min-width: 80px;
+        padding-left: 8px;
+        padding-right: 8px;
+        margin: 2px 0 0;
+        list-style: none;
+        background-color: white;
+        border-color:#b4b4b4;
+        border-width: 1px;
+        border-style: solid;
+        box-shadow: rgb(136, 136, 136) 0px 0px 6px;
+        z-index: 100;
+    }
 </style>
 
 
 <div id="subjectFinderOuterDIV" style="min-height:100px; min-width:400px;">
 <div id="subjectFinderAppDIV" style="height:100%; width:100%;" class="x-hidden innerColor" ng-app="subjectFinderApp" ng-controller="subjectFinder">
 
-    <table bordercolor=red border=0 style="height:100%; width:100%; padding:3pt;">
+    <table border=0 class="subject-finder">
         <tr>
-          <td colspan="3" valign="top" align="left">
+            <td>
+                <div ng-controller="SubjectGroupController">
+                    <div>{{currentGroup.id != null ? "Saved group: ": ""}}{{currentGroup.label}}</div>
+                    <div id="toolbar"></div>
+                    <div class="navbar navbar-default ">
+                        <ul class="nav navbar-nav">
+                            <li id="manageMenu" class="dropdown active">
+                                <a style="color:black; padding-right: 5px" href="#"><i class="fa fa-cog"></i> </a>
+                                <ul class="dropdown-menu" ng-if="groupList.length > 0">
+                                    <li class="x4-menu-item-text deletable" ng-repeat="group in groupList">
+                                            <a class="x4-menu-item-link" ng-click="deleteSubjectGroup(group.id)">{{group.label}} <span style="color:red; padding-right: 10px; float:right;">x</span></a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li id="loadMenu" class="dropdown" ng-class="{active : groupList.length > 0}">
+                                <a class="labkey-text-link no-arrow" href="#">Load <img src="/labkey/_images/text_link_arrow.gif" style="position:relative; background-color:transparent; width:10px; height:auto; top:-1px; right:0;"></a>
+                                <ul class="dropdown-menu" ng-if="groupList.length > 0">
+                                    <li class="x4-menu-item-text" ng-repeat="group in groupList">
+                                        <a class="x4-menu-item-link" ng-click="applySubjectGroupFilter(group)">{{group.label}}</a>
+                                    </li>
+                                    <%--<li class="x4-menu-item-text">--%>
+                                        <%--<a class="x4-menu-item-link" ng-click="manageSubjectGroups()">Manage groups</a>--%>
+                                    <%--</li>--%>
+                                </ul>
+                            </li>
+                            <li id="saveMenu" class="dropdown active">
+                                <a class="labkey-text-link no-arrow" href="#">Save <img src="/labkey/_images/text_link_arrow.gif" style="position:relative; background-color:transparent; width:10px; height:auto; top:-1px; right:0;"> </a>
+                                <ul class="dropdown-menu">
+                                    <li class="x4-menu-item-text" ng-repeat="opt in saveOptions">
+                                        <a class="x4-menu-item-link" ng-click="saveSubjectGroup(opt.id)">{{opt.label}}</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <%--<li id="manageMenu" class="dropdown active">--%>
+                                <%--<a class="labkey-text-link no-arrow" href="#"><i class="fa fa-cog"></i> </a>--%>
+                                <%--<ul class="dropdown-menu" ng-if="groupList.length > 0">--%>
+                                    <%--<li class="x4-menu-item-text" ng-repeat="group in groupList">--%>
+                                        <%--<a class="x4-menu-item-link" ng-click="deleteSubjectGroup(group)">{{group.label}}</a>--%>
+                                    <%--</li>--%>
+                                <%--</ul>--%>
+                            <%--</li>--%>
+                        </ul>
+                        <span class="clear-filter active display:inline" ng-show="hasFilters()" ng-click="clearAllFilters();">[clear all]</span>
+                    </div>
+
+                </div>
+
+            </td>
+            <td class="help-links">
             <%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%>
             <%=textLink("Export Study Datasets", ImmPortController.ExportStudyDatasetsAction.class)%><br>
-          </td>
+            </td>
         </tr>
         <tr>
-          <td valign="top" style="width:220pt; height:100%;">
-            <div style="height:100%; overflow-y:auto;">
-            <%--<div class="innerColor" style="padding:10px; border:solid 2px #e6e6e6;">--%>
-            <div ng-include="'/facet.html'" ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace,dimAge]"></div>
-            <%--</div>--%>
-            </div>
-          </td>
-          <td valign="top" align="left" style="width:100% height:100%;">
-              <a ng-click="clearAllFilters();"><span ng-show="hasFilters()">[clear all]</span>&nbsp;</a>
-            <div id="studypanel" style="height:100%; overflow-y:scroll;" ng-class="{'x-hidden':(activeTab!=='Studies')}">
-            <div class="searchDiv" style="float:left; padding:10pt;">
-                search
-                <input placeholder="Study Search" id="searchTerms" name="q" style="width:240pt; font-size:120%" ng-model="searchTerms" ng-change="onSearchTermsChanged()">
-                <span class="searchMessage" ng-class="{searchNotFound:(searchMessage=='no matches')}">&nbsp;{{searchMessage}}&nbsp;</span>
-            </div>
-            <div class="seachDiv" style="float:right; padding:10pt;">
-                <label ng-show="loaded_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmuneSpace" ng-change="onStudySubsetChanged()">All ImmuneSpace studies</label>
-                <label ng-show="recent_study_list.length">&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="Recent" ng-change="onStudySubsetChanged()">Recently added</label>
-                <label ng-show="hipc_study_list.length" >&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="HipcFunded" ng-change="onStudySubsetChanged()">HIPC funded</label>
-                <label>&nbsp;<input type="radio" name="studySubset" class="studySubset" ng-model="studySubset" value="ImmPort" ng-change="onStudySubsetChanged()">All ImmPort studies</label>
-            </div>
-            <div class="x-clear"></div>
-            <div ng-if="!anyVisibleStudies()">no studies match criteria</div>
-            <table><tr>
-            <td style="height:180px;"><img border=1 src="<%=getContextPath()%>/_.gif" style="height:180px; width:1px"></td>
-                    <div ng-include="'/studycard.html'"ng-repeat="study in studies | filter:countForStudy"></div>
-            </tr></table>
-            </div>
-          </td>
-          <td align=left valign=top style="width:220pt;">
-              <div class="facet">
-                  <div class="facet-header"><span class="facet-caption">Summary</span></div>
-                  <ul>
-                      <li style="position:relative; width:100%;" class="member">
-                          <span class="member-name">Studies</span>
-                          <span class="member-count">{{dimStudy.summaryCount}}</span>
-                      </li>
-                      <li style="position:relative; width:100%;" class="member">
-                          <span class="member-name">Subjects</span>
-                          <span class="member-count">{{formatNumber(dimSubject.allMemberCount||0)}}</span>
-                      </li>
-                  </ul>
-              </div>
+            <td class="selection-pane" >
+                <div style="height:100%;overflow-y:auto;">
+                    <div>
+                        <div class="facet">
+                            <div class="facet-header"><span class="facet-caption">Summary</span></div>
+                            <ul>
+                                <li class="member" style="cursor: auto">
+                                    <span class="member-name">Studies</span>
+                                    <span class="member-count">{{dimStudy.summaryCount}}</span>
+                                </li>
+                                <li class="member" style="cursor: auto">
+                                    <span class="member-name">Subjects</span>
+                                    <span class="member-count">{{formatNumber(dimSubject.allMemberCount||0)}}</span>
+                                </li>
+                            </ul>
+                        </div>
 
-              <div ng-controller="SubjectGroupController">
-                <div class="facet">
-                    <div class="facet-header"><span class="facet-caption">Create Subject Group</span></div>
-                    <p style="padding:10pt;">
-                        <input type="text" id="subjectGroupName" ng-model="inputGroupName">
-                        <a class="labkey-text-link"  ng-click="saveSubjectGroup();" title="Create Subject Group">Save</a>
-                    </p>
+                        <div ng-include="'/facet.html'" ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace,dimAge]"></div>
+                    </div>
                 </div>
+            </td>
+            <td valign="top" align="left" style="width:100% height:100%;">
+                <div id="studypanel" style="height:100%; overflow-y:scroll;" ng-class="{'x-hidden':(activeTab!=='Studies')}">
+                    <div>
+                        <span class="search-box">
+                            <i class="fa fa-search"></i>&nbsp;
+                            <input placeholder="Studies" id="searchTerms" name="q" class="search-box"  ng-model="searchTerms" ng-change="onSearchTermsChanged()">
+                        </span>
+                        <span name="studySubset" class="study-subset" style="position: relative">
+                            <select ng-model="studySubset" name="studySubset" ng-change="onStudySubsetChanged()">
+                                <option ng-repeat="option in subsetOptions" value="{{option.value}}">{{option.name}}</option>
+                            </select>
+                        </span>
+                        <span style="position: relative">{{searchMessage}}</span>
+                    </div>
 
 
-                <div class="facet">
-                    <div class="facet-header"><span class="facet-caption">Subject Groups</span></div>
-                    <ul>
-                        <li ng-repeat="group in groupList" id="group_{{group.id}}" style="position:relative; width:100%" class="member" ng-class="{selectedMember: group.selected}">
-                            <span class="active member-indicator" ng-class="{selected:group.selected, 'none-selected':!currentGroupId,  'not-selected':!group.selected}" ng-click="toggleSubjectGroupFilter(group.id)">
-                            </span>
-                            <span class="member-name">{{group.label}}</span>
-                            <span class="member-action">
-                                <a class="labkey-text-link" ng-click="applySubjectGroupFilter(group.id);" title="Apply Subject Filter">Apply</a>
-                                <a class="labkey-text-link" ng-click="deleteSubjectGroup(group.id);" title="Delete Subject Group">Delete</a>
-                            </span>
-                        </li>
-                    </ul>
+                    <div ng-include="'/studycard.html'" ng-repeat="study in studies | filter:countForStudy"></div>
                 </div>
-              </div>
-          </td>
+            </td>
         </tr>
     </table>
 
 
 
 <div id="studyPopup"></div>
+
 <div id="filterPopup" class="filterPopup" style="top:{{filterChoice.y}}px; left:{{filterChoice.x}}px;" ng-if="filterChoice.show" ng-mouseleave="filterChoice.show=false;">
     <ul style="list-style: none;">
         <li ng-click="setFilterType(filterChoice.dimName,filterChoice.options[0].type,$parent)">{{filterChoice.options[0].caption}}</li>
@@ -455,8 +539,9 @@
 			templates
  -->
 
+
 <script type="text/ng-template" id="/studycard.html">
-    <div class="study-card" ng-class="{hipc:study.hipc_funded, loaded:study.loaded}" style="position:relative; width:160pt; height:140pt; overflow-y:hidden">
+    <div class="study-card" ng-class="{hipc:study.hipc_funded, loaded:study.loaded}">
         <span class="studycard-highlight studycard-accession" style="float:left;">{{study.study_accession}}</span>
         <span class="studycard-highlight studycard-pi" style="float:right;">{{study.pi}}</span>
         <hr style="clear:both;">
@@ -472,21 +557,24 @@
 
 <script type="text/ng-template" id="/facet.html">
     <div id="group_{{dim.name}}" class="facet"
-        ng-class="{expanded:dim.expanded, collapsed:!dim.expanded, noneSelected:(0==dim.filters.length)}">
-        <div ng-click="dim.expanded=!dim.expanded" class="facet-header">
-            <div class="facet-caption active">
-                <span>{{dim.caption || dim.name}}</span>
-                <span style="float:right; font-size:67%">&nbsp;{{dim.expanded ? '&#x25BC;' : '&#x25BA;'}}</span>
-            </div>
-            <div ng-if="dim.expanded || dim.filters.length">
-                <%--TODO this $parent silliness seems like a good hint that this isn't the angular way to do this.... --%>
-                <span ng-if="dim.filters.length > 1 && dim.filterOptions.length>1" class="facet-filter active" ng-click="displayFilterChoice(dim.name,$event,$parent.$parent.$parent.$parent);" style="float:left;"><span class="facet-filterTypeTrigger active">&#x25BC</span>{{dim.filterCaption}}</span>
-                <span ng-if="dim.filters.length > 1 && dim.filterOptions.length<2" class="facet-filter" style="float:left;">{{dim.filterCaption}}</span>
+         ng-class="{expanded:dim.expanded, collapsed:!dim.expanded, noneSelected:(0==dim.filters.length)}">
+        <div class="facet-header">
+            <div class="facet-caption active" ng-click="dim.expanded=!dim.expanded">
+                <i class="fa fa-plus-square"></i>
+                <i class="fa fa-minus-square"></i>
                 &nbsp;
-                <span ng-if="dim.filters.length" class="clearFilter active" style="float:right;" ng-click="selectMember(dim.name,null,$event);">[clear]</span>
+                <span>{{dim.caption || dim.name}}</span>
+                <span ng-if="dim.filters.length" class="clear-filter active" ng-click="selectMember(dim.name,null,$event);">[clear]</span>
+            </div>
+            <div class="facet-caption" ng-if="dim.expanded && dim.filters.length > 1 && dim.filterOptions.length > 0">
+                &nbsp;
+                <span ng-show="dim.expanded && dim.filters.length > 1 && dim.filterOptions.length > 1" class="facet-filter active" ng-click="displayFilterChoice(dim.name,$event);">
+                    {{dim.filterCaption}}
+                </span>
+                <span ng-show="dim.expanded && dim.filters.length > 1 && dim.filterOptions.length < 2" class="facet-filter">{{dim.filterCaption}}</span>
             </div>
         </div>
-        <ul>
+        <ul ng-if="dim.expanded">
             <li ng-repeat="member in dim.members" id="m_{{dim.name}}_{{member.uniqueName}}" style="position:relative;" class="member"
                  ng-class="{selectedMember:member.selected, emptyMember:(!member.selected && 0==member.count)}"
                  ng-click="selectMember(dim.name,member,$event)">
@@ -495,7 +583,7 @@
                 <span class="member-name">{{member.name}}</span>
                 &nbsp;
                 <span class="member-count">{{formatNumber(member.count)}}</span>
-                <span class="bar" ng-show="member.count" style="width:{{member.percent}}%;"></span>
+                <span ng-class="{'bar-selected':member.selected}" class="bar" ng-show="member.count" style="width:{{member.percent}}%;"></span>
             </li>
         </ul>
     </div>
@@ -638,7 +726,6 @@ function start_tutorial()
         paddingX = 20;
         paddingY = 35;
         <%}%>
-        console.log(w, h, paddingX, paddingY);
         resizeToViewport(componentOuter, w, h, paddingX, paddingY);
     };
 

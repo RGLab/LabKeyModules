@@ -108,7 +108,6 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         detailShowing.show();
     }
 
-
     function hidePopup()
     {
         if (timerDeferShow)
@@ -127,34 +126,34 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
     var subjectFinderApp = angular.module('subjectFinderApp', ['LocalStorageModule'])
     .config(function (localStorageServiceProvider)
     {
-        localStorageServiceProvider.setPrefix("subjectFinder");
+        localStorageServiceProvider.setPrefix("subjectFinder." + LABKEY.container.id);
     });
 
     subjectFinderApp
             .controller("SubjectGroupController", ['$scope', function($scope) {
 
-        $scope.currentGropuId = null;
+        $scope.selectedGroup = null;
         $scope.groupList = [];
-        $scope.inputGroupName = "";
+        $scope.unsavedGroup = { id: null, label : "Unsaved Group"};
+        $scope.currentGroup = $scope.unsavedGroup;
+        $scope.saveOptions = [ {id: 'update', label : "Update"}, {id : "saveNew", label : "Save New Group"} ];
+        $scope.selectedSaveOption = $scope.currentGroup.id == null ? $scope.saveOptions[1] : $scope.saveOptions[0];
 
         $scope.saveSubjectGroup = function() {
-            if ($scope.inputGroupName != null)
-                $scope.inputGroupName = $scope.inputGroupName.trim();
-            if ($scope.inputGroupName.length == 0)
-            {
-                Ext4.Msg.alert("Error", "Subject group name is required.");
-                return;
-            }
 
+            var groupLabel = "";
+            if ($scope.selectedSaveOption == "update" && $scope.currentGroup.id != null) {
+                groupLabel = $scope.currentGroup.label;
+            }
             var win = Ext4.create('Study.window.ParticipantGroup', {
                 subject: {
                     nounSingular: 'Subject',
                     nounPlural: 'Subjects',
                     nounColumnName: 'ParticipantId'
                 },
-                groupLabel: $scope.inputGroupName,
+                groupLabel: groupLabel,
                 categoryParticipantIds: $scope.subjects,
-                filters: $scope.localStorageService.get(this.getLocalStorageKey("filterSet")),
+                filters: $scope.localStorageService.get("filterSet"),
                 canEdit: !LABKEY.user.isGuest,
                 isAdmin: LABKEY.user.isAdmin
             });
@@ -172,16 +171,14 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                                     rowId: group.rowId
                                 }
                             });
-                            if ($scope.currentGroupId)
-                                $scope.groupList[$scope.currentGroupId].selected = false;
-                            $scope.groupList[group.rowId] = {
+                            group = {
                                 "id" : group.rowId,
                                 "label" : group.label,
                                 "filters" : group.filters,
                                 "selected" : true
                             };
-                            $scope.inputGroupName = "";
-                            $scope.currentGroupId = group.rowId;
+                            $scope.groupList.push(group);
+                            $scope.currentGroup = group;
                         }
                     }
                 });
@@ -190,32 +187,45 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         };
 
         $scope.deleteSubjectGroup = function(groupId) {
-            LABKEY.Ajax.request({
-                url: LABKEY.ActionURL.buildURL('participant-group', 'deleteParticipantGroup.api'),
-                method: 'POST',
-                scope: this,
-                jsonData: {
-                    'rowId': groupId
-                },
-                success : function(res)
-                {
-                    $scope.$apply(function()
-                    {
-                        delete $scope.groupList[groupId];
-                        if ($scope.currentGroupId == groupId)
-                        {
-                            $scope.currentGroupId = null;
-                        }
-                    });
+            Ext4.Msg.show( {
+                title : "Delete Filter",
+                msg: "Are you sure you want to permanently remove this subject group filter?",
+                buttons: Ext4.Msg.OKCANCEL,
+                fn: function(buttonId) {
+                    if (buttonId === "ok") {
+                        LABKEY.Ajax.request({
+                            url: LABKEY.ActionURL.buildURL('participant-group', 'deleteParticipantGroup.api'),
+                            method: 'POST',
+                            scope: this,
+                            jsonData: {
+                                'rowId': groupId
+                            },
+                            success : function(res)
+                            {
+                                $scope.$apply(function()
+                                {
+                                    for (var i = 0; i < $scope.groupList.length; i++)
+                                    {
+                                        if ($scope.groupList[i].id == groupId)
+                                        {
+                                            $scope.groupList.splice(i, 1);
+                                            return;
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    }
                 }
-            });
+
+            })
+
         };
 
-        $scope.applySubjectGroupFilter = function(groupId)
+        $scope.applySubjectGroupFilter = function(group)
         {
             $scope.clearAllFilters();
-            var group = $scope.groupList[groupId];
-            //for (var f = 0; f < group.filters.length; f++)
+
             for (var f in group.filters)
             {
                 if (group.filters.hasOwnProperty(f))
@@ -245,10 +255,8 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             }
             $scope.updateCountsAsync();
             $scope.saveFilterState();
-            if ($scope.currentGroupId)
-                $scope.groupList[$scope.currentGroupId].selected = false;
-            $scope.currentGroupId = groupId;
-            $scope.groupList[groupId].selected = true;
+            $scope.currentGroup = group;
+            $scope.selectedGroup = null;
         };
 
         $scope.loadSubjectGroups = function ()
@@ -268,15 +276,15 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                     var json = Ext4.decode(res.responseText);
                     if (json.success)
                     {
-                        var groups = {};
+                        var groups = [];
                         for (var i = 0; i < json.groups.length; i++)
                         {
-                            groups[json.groups[i].id] = {
+                            groups.push({
                                 "id" : json.groups[i].id,
                                 "label" : json.groups[i].label,
                                 "selected": false,
                                 "filters" : json.groups[i].filters == undefined ? [] : Ext4.decode(json.groups[i].filters)
-                            }
+                            });
                         }
                         $scope.groupList = groups;
                     }
@@ -284,31 +292,14 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             });
         };
 
-        $scope.toggleSubjectGroupFilter = function(groupId)
-        {
-            $scope.groupList[groupId].selected = !$scope.groupList[groupId].selected;
-            if ($scope.groupList[groupId].selected)
-                $scope.applySubjectGroupFilter(groupId);
-            else
-                $scope.clearAllFilters();
-        };
-
-        $scope.clearSubjectGroupSelection = function()
-        {
-            if ($scope.currentGroupId)
-            {
-                $scope.groupList[this.currentGroupId].selected = false;
-                $scope.currentGroupId = null;
-            }
-        };
 
         $scope.$on("cubeReady", function(event) {
             $scope.loadSubjectGroups();
         });
 
         $scope.$on("filterSelectionChanged", function(event){
-            $scope.clearSubjectGroupSelection();
-        })
+            $scope.currentGroup = $scope.unsavedGroup;
+        });
 
     }]);
 
@@ -317,8 +308,9 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
     .controller('subjectFinder', function ($scope, $timeout, $http, localStorageService)
     {
         window.debug_scope = $scope;
-        //Ext4.apply($scope, new subjectFinderScope());
-        $scope.filterChoice = {show: false};
+        $scope.filterChoice = {
+            show: false
+        };
         $scope.subjects = [];
         $scope.timeout = $timeout;
         $scope.http = $http;
@@ -333,10 +325,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         $scope.downArrow = LABKEY.contextPath + "/_images/arrow_down.png";
         $scope.rightArrow = LABKEY.contextPath + "/_images/arrow_right.png";
         $scope.activeTab = "Studies";
-        $scope.filterChoice = null;
         $scope.filterByLevel  = "[Subject].[Subject]";
-
-
 
         var studies = [];
         var loaded_study_list = [];
@@ -370,6 +359,16 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             }
             studies.push(s);
         }
+
+        $scope.subsetOptions = [];
+        if (loaded_study_list.length > 0)
+            $scope.subsetOptions.push({value: 'ImmuneSpace', name: 'ImmuneSpace studies' });
+        if (recent_study_list.length > 0)
+            $scope.subsetOptions.push({value: 'Recent', name: 'Recently added studies' });
+        if (hipc_study_list.length > 0)
+            $scope.subsetOptions.push({value: 'HipcFunded', name: 'HIPC funded studies' });
+        $scope.subsetOptions.push({value:'ImmPort',  name:'All ImmPort studies'});
+
 
         $scope.dataspace = dataspace;
         $scope.studies = studies;
@@ -489,7 +488,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             return (dim.filters && dim.filters.length) ? true : false;
         };
 
-        $scope.displayFilterChoice = function (dimName, $event, $scope)
+        $scope.displayFilterChoice = function (dimName, $event)
         {
             var dim = dataspace.dimensions[dimName];
             if (!dim)
@@ -958,8 +957,6 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 return;
             }
 
-            $scope.searchMessage = "searching...";
-
             var scope = $scope;
             var url = LABKEY.ActionURL.buildURL("search", "json", LABKEY.containerPath, {
                 "category": "immport_study",
@@ -989,7 +986,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 if (!searchStudies.length)
                 {
                     $scope.clearStudyFilter();
-                    $scope.searchMessage = 'no matches';
+                    $scope.searchMessage = 'No studies match your search criteria';
                 }
                 else
                 {
@@ -1018,16 +1015,10 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         {
             if (null != $scope.onSearchTermsChanged_promise)
                 $scope.timeout.cancel($scope.onSearchTermsChanged_promise);
-            var scope = $scope;
             $scope.onSearchTermsChanged_promise = $scope.timeout(function ()
             {
                 $scope.doSearchTermsChanged();
             }, 500);
-        };
-
-        $scope.getLocalStorageKey = function(name)
-        {
-            return LABKEY.container.id + "." + name;
         };
 
         // save just the filtered uniqueNames for each dimension into local storage
@@ -1061,9 +1052,9 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 }
             }
             if (filterSet.length == 0)
-                $scope.localStorageService.remove($scope.getLocalStorageKey("filterSet"));
+                $scope.localStorageService.remove("filterSet");
             else
-                $scope.localStorageService.set($scope.getLocalStorageKey("filterSet"), filterSet);
+                $scope.localStorageService.set("filterSet", filterSet);
         };
 
         // load the filtered uniqueNames and the operators for each dimension from local storage
@@ -1255,18 +1246,6 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         loadMask.show();
     });
 }
-
-//angular.module('subjectGroup', ['LocalStorageModule'])
-//        .config(function (localStorageServiceProvider)
-//        {
-//            localStorageServiceProvider.setPrefix("subjectFinder");
-//        })
-//        .controller('subjectGroup', function ($scope, localStorageService)
-//        {
-//            window.debug_scope = $scope;
-//        })
-//        .factory('subjectGroup', function()
-//        {});
 
 // NOTE LABKEY.ext4.Util.resizeToViewport only accepts an ext component
 function resizeToViewport(el, width, height, paddingX, paddingY, offsetX, offsetY)
