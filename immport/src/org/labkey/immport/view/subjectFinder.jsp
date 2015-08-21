@@ -30,18 +30,19 @@
 <%@ page import="org.labkey.api.view.ActionURL" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.ViewContext" %>
-<%@ page import="org.labkey.api.view.WebPartView" %>
 <%@ page import="org.labkey.api.view.template.ClientDependency" %>
 <%@ page import="org.labkey.immport.ImmPortController" %>
 <%@ page import="org.labkey.immport.data.StudyBean" %>
-<%@ page import="org.labkey.immport.view.SubjectFinderWebPart" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Collection" %>
 <%@ page import="java.util.Collections" %>
+<%@ page import="java.util.Comparator" %>
 <%@ page import="java.util.Date" %>
 <%@ page import="java.util.LinkedHashSet" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.TreeMap" %>
+<%@ page import="org.labkey.api.view.WebPartView" %>
+<%@ page import="org.labkey.immport.view.SubjectFinderWebPart" %>
 <%@ page extends="org.labkey.api.jsp.JspBase"%>
 <%!
     public LinkedHashSet<ClientDependency> getClientDependencies()
@@ -89,6 +90,7 @@
     {
         background-color:#ffffff;
     }
+
     TR.filterMember IMG.delete
     {
         visibility:hidden;
@@ -539,7 +541,6 @@
 			templates
  -->
 
-
 <script type="text/ng-template" id="/studycard.html">
     <div class="study-card" ng-class="{hipc:study.hipc_funded, loaded:study.loaded}">
         <span class="studycard-highlight studycard-accession" style="float:left;">{{study.study_accession}}</span>
@@ -711,13 +712,18 @@ function start_tutorial()
 
 <% if (me.isAutoResize())
 { %>
-    var _resize = function(w, h)
+    function viewport()
     {
-        var componentOuter = document.getElementById("subjectFinderOuterDIV");
+        if ('innerWidth' in window )
+            return { width:window.innerWidth, height:window.innerHeight};
+        var e = document.documentElement || document.body;
+        return {width: e.clientWidth, height:e.clientheight};
+    }
+    var _resize = function()
+    {
+        var componentOuter = Ext4.get("subjectFinderOuterDIV");
         if (!componentOuter)
             return;
-
-        //resizeToViewport: function(extContainer, width, height, paddingX, paddingY, offsetX, offsetY)
         var paddingX, paddingY;
         <% if (me.getFrame() == WebPartView.FrameType.PORTAL) {%>
         paddingX = 26;
@@ -726,15 +732,19 @@ function start_tutorial()
         paddingX = 20;
         paddingY = 35;
         <%}%>
-        resizeToViewport(componentOuter, w, h, paddingX, paddingY);
+        var vpSize = viewport();
+        var componentSize = resizeToViewport(componentOuter,
+                Math.max(800,vpSize.width), Math.max(600,vpSize.height),
+                paddingX, paddingY);
+        if (componentSize && Ext4.isGecko)
+        {
+            var bottom = componentOuter.getXY()[1] + componentOuter.getSize().height;
+            Ext4.get("facetpanel").setHeight(bottom - Ext4.get("facetpanel").getXY()[1]);
+            Ext4.get("studypanel").setHeight(bottom - Ext4.get("studypanel").getXY()[1]);
+        }
     };
-
     Ext4.EventManager.onWindowResize(_resize);
-    Ext4.defer(function()
-    {
-        var size = Ext4.getBody().getBox();
-        _resize(size.width, size.height);
-    }, 300);
+    Ext4.defer(_resize, 300);
 <%
 } %>
 </script>

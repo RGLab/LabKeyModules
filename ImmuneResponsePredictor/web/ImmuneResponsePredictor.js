@@ -65,6 +65,13 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             }
         };
 
+        //Help strings
+        var variable_help    = "The predicted response (currently, only HAI is available).";
+        var timepoint_help   = "The gene expression time point used to predict the variable.";
+        var training_help    = "The cohort(s) used to train the model. Some cohorts are only available at specific time points.";
+        var testing_help     = "The cohort(s) used to test the model (optional).";
+        var dicho_help       = "If checked, the predicted response is dichotomized using the specified threshold.<br> Every subject with a value above the selected threshold will be considered a responder.";
+        
 
         ///////////////////////////////////
         //            Stores             //
@@ -559,8 +566,21 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             },
             deferredRender: false,
             items: [
+                new Ext.Container({
+                    autoEl: 'a',
+                    cls: 'labkey-text-link bold-text',
+                    html: 'quick help',
+                    listeners: {
+                        afterrender: {
+                            fn: function(){
+                                this.getEl().on( 'click', function(){ LABKEY.help.Tour.show('immport-irp-tour'); } );
+                            },
+                            single: true
+                        }
+                    }
+                }),
                 {
-                    html: '<a class="labkey-text-link bold-text" onclick="LABKEY.help.Tour.show(\'immport-irp-tour\')">Quick help</a><br><br>',
+                    bodyStyle: 'padding-top: 10px;',
                     border: false,
                     defaults: {
                         border: false
@@ -599,8 +619,24 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
-                        cbVariable,
-                        cbTimePoint,
+                        new Ext.form.CompositeField({
+                            items: [
+                                cbVariable,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip("Variable", variable_help)
+                                }
+                            ]
+                        }),
+                        new Ext.form.CompositeField({
+                            items: [
+                                cbTimePoint,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip("Time point", timepoint_help)
+                                }
+                            ]
+                        }),
                         new Ext.Spacer({
                             height: 20
                         }),
@@ -611,10 +647,34 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         new Ext.Spacer({
                             height: 7
                         }),
-                        cbCohortTraining,
-                        cbCohortTesting,
-                        chDichotomize,
-                        nfDichotomize
+                        new Ext.form.CompositeField({
+                            items: [
+                                cbCohortTraining,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip("Training", training_help)
+                                }
+                            ]
+                        }),
+                        new Ext.form.CompositeField({
+                            items: [
+                                cbCohortTesting,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip("Testing", testing_help)
+                                }
+                            ]
+                        }),
+                        new Ext.form.CompositeField({
+                            items: [
+                                chDichotomize,
+                                {
+                                    border: false,
+                                    html: LABKEY.ext.ISCore.helpTooltip("Dichotomize", dicho_help)
+                                }
+                            ]
+                        }),
+                        nfDichotomize,
                     ],
                     title: 'Parameters'
                 }),
@@ -703,7 +763,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to automatically select a group of genes whose expression at a given time point (e.g. gene expression levels at day 0) best predicts a given immunological response at a later time point (currently limited to HAI)',
+                            html: 'This module can be used to automatically select a group of genes whose expression at a given time point (e.g. gene expression levels at day 0) best predicts a given immunological response at a later time point (currently limited to HAI).',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
@@ -734,14 +794,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                             text: 'Select the data used to train and test the model.'
                         }),
                         new Ext.form.FieldSet({
-                            html: '\
-                                <b>Variable:</b> The predicted response (currently, only HAI is available)<br><br>\
-                                <b>Time point:</b> The gene expression time point used to predict the variable<br><br>\
-                                <b>Training:</b> The cohort used to train the model. Some cohorts are only available at specific time points.<br><br>\
-                                <b>Testing:</b> The cohort used to test the model<br><br>\
-                                <b>Dichotomize values:</b> If checked, the predicted response is dichotomized using the specified threshold<br><br>\
-                                <b>Dichotomization threshold:</b> The threshold for dichotomization, every subject with a value above the selected threshold will be considered a responder\
-                            ',
+                            html: '<b>Variable:</b> ' + variable_help + '<br><br>' + 
+                                '<b>Time point:</b> ' + timepoint_help + '<br><br>' +
+                                '<b>Training:</b> ' + training_help + '<br><br>' +
+                                '<b>Testing:</b> ' + testing_help + '<br><br>' +
+                                '<b>Dichotomize values:</b> ' + dicho_help, 
                             style: 'margin-top: 5px;',
                             title: 'Parameters'
                         }),

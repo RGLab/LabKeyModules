@@ -104,7 +104,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
     protected void doCleanup(boolean afterTest) throws TestTimeoutException
     {
         AbstractContainerHelper containerHelper = new APIContainerHelper(this);
-        containerHelper.deleteProject(getProjectName(), afterTest);
+//        containerHelper.deleteProject(getProjectName(), afterTest);
     }
 
     @BeforeClass
