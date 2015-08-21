@@ -30,19 +30,18 @@
 <%@ page import="org.labkey.api.view.ActionURL" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.ViewContext" %>
+<%@ page import="org.labkey.api.view.WebPartView" %>
 <%@ page import="org.labkey.api.view.template.ClientDependency" %>
 <%@ page import="org.labkey.immport.ImmPortController" %>
 <%@ page import="org.labkey.immport.data.StudyBean" %>
+<%@ page import="org.labkey.immport.view.SubjectFinderWebPart" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Collection" %>
 <%@ page import="java.util.Collections" %>
-<%@ page import="java.util.Comparator" %>
 <%@ page import="java.util.Date" %>
 <%@ page import="java.util.LinkedHashSet" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.TreeMap" %>
-<%@ page import="org.labkey.api.view.WebPartView" %>
-<%@ page import="org.labkey.immport.view.SubjectFinderWebPart" %>
 <%@ page extends="org.labkey.api.jsp.JspBase"%>
 <%!
     public LinkedHashSet<ClientDependency> getClientDependencies()
@@ -420,6 +419,10 @@
         box-shadow: rgb(136, 136, 136) 0px 0px 6px;
         z-index: 100;
     }
+
+    .menu-item-link {
+        padding: 0;
+    }
 </style>
 
 
@@ -437,16 +440,14 @@
                             <li id="manageMenu" class="dropdown active">
                                 <a style="color:black; padding-right: 5px" href="#"><i class="fa fa-cog"></i> </a>
                                 <ul class="dropdown-menu" ng-if="groupList.length > 0">
-                                    <li class="x4-menu-item-text deletable" ng-repeat="group in groupList">
-                                            <a class="x4-menu-item-link" ng-click="deleteSubjectGroup(group.id)">{{group.label}} <span style="color:red; padding-right: 10px; float:right;">x</span></a>
-                                    </li>
+                                    <li class="x4-menu-item-text"><a class="menu-item-link x4-menu-item-link" href="<%=new ActionURL("study", "manageParticipantCategories", getContainer()).toHString()%>">Manage Groups</a></li>
                                 </ul>
                             </li>
                             <li id="loadMenu" class="dropdown" ng-class="{active : groupList.length > 0}">
                                 <a class="labkey-text-link no-arrow" href="#">Load <img src="/labkey/_images/text_link_arrow.gif" style="position:relative; background-color:transparent; width:10px; height:auto; top:-1px; right:0;"></a>
                                 <ul class="dropdown-menu" ng-if="groupList.length > 0">
                                     <li class="x4-menu-item-text" ng-repeat="group in groupList">
-                                        <a class="x4-menu-item-link" ng-click="applySubjectGroupFilter(group)">{{group.label}}</a>
+                                        <a class="menu-item-link x4-menu-item-link" ng-click="applySubjectGroupFilter(group)">{{group.label}}</a>
                                     </li>
                                     <%--<li class="x4-menu-item-text">--%>
                                         <%--<a class="x4-menu-item-link" ng-click="manageSubjectGroups()">Manage groups</a>--%>
@@ -457,7 +458,7 @@
                                 <a class="labkey-text-link no-arrow" href="#">Save <img src="/labkey/_images/text_link_arrow.gif" style="position:relative; background-color:transparent; width:10px; height:auto; top:-1px; right:0;"> </a>
                                 <ul class="dropdown-menu">
                                     <li class="x4-menu-item-text" ng-repeat="opt in saveOptions">
-                                        <a class="x4-menu-item-link" ng-click="saveSubjectGroup(opt.id)">{{opt.label}}</a>
+                                        <a class="menu-item-link x4-menu-item-link" ng-click="saveSubjectGroup(opt.id)">{{opt.label}}</a>
                                     </li>
                                 </ul>
                             </li>
