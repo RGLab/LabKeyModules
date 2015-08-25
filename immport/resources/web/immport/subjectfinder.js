@@ -132,18 +132,18 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
     subjectFinderApp
             .controller("SubjectGroupController", ['$scope', function($scope) {
 
-        $scope.selectedGroup = null;
         $scope.groupList = [];
         $scope.unsavedGroup = { id: null, label : "Unsaved Group"};
         $scope.currentGroup = $scope.unsavedGroup;
         $scope.saveOptions = [ {id: 'update', label : "Update"}, {id : "saveNew", label : "Save New Group"} ];
-        $scope.selectedSaveOption = $scope.currentGroup.id == null ? $scope.saveOptions[1] : $scope.saveOptions[0];
 
-        $scope.saveSubjectGroup = function() {
+        $scope.saveSubjectGroup = function(option) {
 
             var groupLabel = "";
-            if ($scope.selectedSaveOption == "update" && $scope.currentGroup.id != null) {
+            var isUpdate = false;
+            if (option == "update" && $scope.currentGroup.id != null) {
                 groupLabel = $scope.currentGroup.label;
+                isUpdate = true;
             }
             var win = Ext4.create('Study.window.ParticipantGroup', {
                 subject: {
@@ -155,7 +155,9 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 categoryParticipantIds: $scope.subjects,
                 filters: $scope.localStorageService.get("filterSet"),
                 canEdit: !LABKEY.user.isGuest,
-                isAdmin: LABKEY.user.isAdmin
+                isAdmin: LABKEY.user.isAdmin,
+                groupRowId : $scope.currentGroup.id,
+                isUpdate: isUpdate
             });
 
             // Save the new participant group rowId as the session filter
@@ -184,42 +186,6 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 });
             });
             win.show();
-        };
-
-        $scope.deleteSubjectGroup = function(groupId) {
-            Ext4.Msg.show( {
-                title : "Delete Filter",
-                msg: "Are you sure you want to permanently remove this subject group filter?",
-                buttons: Ext4.Msg.OKCANCEL,
-                fn: function(buttonId) {
-                    if (buttonId === "ok") {
-                        LABKEY.Ajax.request({
-                            url: LABKEY.ActionURL.buildURL('participant-group', 'deleteParticipantGroup.api'),
-                            method: 'POST',
-                            scope: this,
-                            jsonData: {
-                                'rowId': groupId
-                            },
-                            success : function(res)
-                            {
-                                $scope.$apply(function()
-                                {
-                                    for (var i = 0; i < $scope.groupList.length; i++)
-                                    {
-                                        if ($scope.groupList[i].id == groupId)
-                                        {
-                                            $scope.groupList.splice(i, 1);
-                                            return;
-                                        }
-                                    }
-                                });
-                            }
-                        });
-                    }
-                }
-
-            })
-
         };
 
         $scope.applySubjectGroupFilter = function(group)
@@ -256,7 +222,18 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             $scope.updateCountsAsync();
             $scope.saveFilterState();
             $scope.currentGroup = group;
-            $scope.selectedGroup = null;
+            $scope.updateSubjectGroupInLocalStorage();
+        };
+
+        $scope.updateSubjectGroupInLocalStorage = function()
+        {
+            if (!$scope.localStorageService.isSupported)
+                return;
+
+            if ($scope.currentGroup.id != null)
+                $scope.localStorageService.set("group", $scope.currentGroup);
+            else
+                $scope.localStorageService.remove("group");
         };
 
         $scope.loadSubjectGroups = function ()
@@ -290,6 +267,10 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                     }
                 }
             });
+            var savedGroup = $scope.localStorageService.get("group");
+            if (savedGroup != null) {
+                $scope.currentGroup = savedGroup;
+            }
         };
 
 
@@ -297,8 +278,9 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             $scope.loadSubjectGroups();
         });
 
-        $scope.$on("filterSelectionChanged", function(event){
+        $scope.$on("filterSelectionCleared", function(event){
             $scope.currentGroup = $scope.unsavedGroup;
+            $scope.updateSubjectGroupInLocalStorage();
         });
 
     }]);
@@ -574,7 +556,6 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                     member.selected = false;
                 }
             }
-            $scope.$broadcast("filterSelectionChanged");
 
             $scope.updateCountsAsync();
             if ($event.stopPropagation)
@@ -592,6 +573,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 $scope._clearFilter(d);
             }
             $scope.updateCountsAsync();
+            $scope.$broadcast("filterSelectionCleared");
         };
 
         $scope._clearFilter = function (dimName)
@@ -601,7 +583,6 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             for (var m = 0; m < filterMembers.length; m++)
                 filterMembers[m].selected = false;
             dim.filters = [];
-            $scope.$broadcast("filterSelectionChanged");
         };
 
 
@@ -621,7 +602,6 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             filterMembers[index].selected = false;
             filterMembers.splice(index, 1);
             $scope.updateCountsAsync();
-            $scope.$broadcast("filterSelectionChanged");
         };
 
 
@@ -993,6 +973,8 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                     $scope.searchMessage = '';
                     // intersect with study subset list
                     var result = $scope.intersect(searchStudies, $scope.getStudySubsetList());
+                    //if (!result.length)
+                    //    $scope.searchMessage = 'No studies match your search criteria';
                     $scope.setStudyFilter(result);
                 }
             });
@@ -1055,6 +1037,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 $scope.localStorageService.remove("filterSet");
             else
                 $scope.localStorageService.set("filterSet", filterSet);
+
         };
 
         // load the filtered uniqueNames and the operators for each dimension from local storage
