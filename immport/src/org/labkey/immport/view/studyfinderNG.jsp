@@ -92,7 +92,7 @@
         color:black;
 	    font-variant:small-caps;
     }
-    .innerColor
+    .inner
     {
         background-color:#ffffff;
     }
@@ -228,7 +228,7 @@
 <table style="max-width:980px;" bordercolor=red border="0">
 
     <tr><td align="left" colspan="2">
-        <div class="innerColor" style="padding:10px; border:solid 2px #e6e6e6;">
+        <div class="inner" style="padding:10px; border:solid 2px #e6e6e6;">
         <div style="float:left;"><input placeholder="Study Search" id="searchTerms" name="q" style="width:200pt;" ng-model="searchTerms" ng-change="onSearchTermsChanged()">
             <span class="searchMessage" ng-class="{searchNotFound:(searchMessage=='no matches')}">&nbsp;{{searchMessage}}&nbsp;</span>
         </div>
@@ -251,7 +251,7 @@
     </td>
     </tr><tr>
     <td valign="top">
-        <div class="innerColor" style="padding:10px; border:solid 2px #e6e6e6;">
+        <div class="inner" style="padding:10px; border:solid 2px #e6e6e6;">
         <table class="dimensions"><tr>
             <td valign=top style="min-width:180px;">
                 <div ng-include="'/group.html'" ng-repeat="dim in [dimSpecies,dimCondition]"></div>

@@ -85,9 +85,16 @@
 %>
 
 <style>
-    .innerColor
+    DIV.outer {
+        min-height:100px;
+        min-width:400px;
+    }
+
+    .inner
     {
         background-color:#ffffff;
+        height:100%;
+        width:100%;
     }
 
     TR.filterMember IMG.delete
@@ -106,6 +113,7 @@
         width:100%;
         padding:3pt;
     }
+
     /* study-card */
     .studycard-highlight
     {
@@ -151,6 +159,22 @@
         padding: 6px;
     }
 
+    TD.study-panel
+    {
+        valign: top;
+    }
+
+    TD.study-panel > DIV
+    {
+        height:100%;
+        overflow-y:scroll;
+    }
+
+    SPAN.study-search
+    {
+        position: relative;
+    }
+
     /* search area */
     DIV.search-box
     {
@@ -162,11 +186,17 @@
         width:240pt;
     }
 
-    TD.selection-pane
+    TD.selection-panel
     {
         vertical-align: text-top;
         width:220pt;
         height:100%;
+    }
+
+    TD.selection-panel > DIV
+    {
+        height:100%;
+        overflow-y:auto;
     }
 
     TD.help-links
@@ -265,10 +295,10 @@
     {
         background-color:rgba(81, 158, 218, 0.2);
     }
-    DIV.facet LI.selectedMember
-    {
-        color: #126495
-    }
+    /*DIV.facet LI.selectedMember*/
+    /*{*/
+        /*color: #126495*/
+    /*}*/
     DIV.facet LI.emptyMember
     {
         color:#888888;
@@ -420,14 +450,19 @@
         z-index: 100;
     }
 
+    #manageMenu > a {
+        color:black;
+        padding-right: 5px;
+    }
+
     .menu-item-link {
         padding: 0;
     }
 </style>
 
 
-<div id="subjectFinderOuterDIV" style="min-height:100px; min-width:400px;">
-<div id="subjectFinderAppDIV" style="height:100%; width:100%;" class="x-hidden innerColor" ng-app="subjectFinderApp" ng-controller="subjectFinder">
+<div id="subjectFinderOuterDIV" class="outer">
+<div id="subjectFinderAppDIV" class="x-hidden inner" ng-app="subjectFinderApp" ng-controller="subjectFinder">
 
     <table border=0 class="subject-finder">
         <tr>
@@ -438,38 +473,27 @@
                     <div class="navbar navbar-default ">
                         <ul class="nav navbar-nav">
                             <li id="manageMenu" class="dropdown active">
-                                <a style="color:black; padding-right: 5px" href="#"><i class="fa fa-cog"></i> </a>
+                                <a href="#"><i class="fa fa-cog"></i> </a>
                                 <ul class="dropdown-menu" ng-if="groupList.length > 0">
                                     <li class="x4-menu-item-text"><a class="menu-item-link x4-menu-item-link" href="<%=new ActionURL("study", "manageParticipantCategories", getContainer()).toHString()%>">Manage Groups</a></li>
                                 </ul>
                             </li>
                             <li id="loadMenu" class="dropdown" ng-class="{active : groupList.length > 0}">
-                                <a class="labkey-text-link no-arrow" href="#">Load <img src="/labkey/_images/text_link_arrow.gif" style="position:relative; background-color:transparent; width:10px; height:auto; top:-1px; right:0;"></a>
+                                <a class="labkey-text-link no-arrow" href="#">Load <i class="fa fa-caret-down"></i></a>
                                 <ul class="dropdown-menu" ng-if="groupList.length > 0">
                                     <li class="x4-menu-item-text" ng-repeat="group in groupList">
                                         <a class="menu-item-link x4-menu-item-link" ng-click="applySubjectGroupFilter(group)">{{group.label}}</a>
                                     </li>
-                                    <%--<li class="x4-menu-item-text">--%>
-                                        <%--<a class="x4-menu-item-link" ng-click="manageSubjectGroups()">Manage groups</a>--%>
-                                    <%--</li>--%>
                                 </ul>
                             </li>
                             <li id="saveMenu" class="dropdown active">
-                                <a class="labkey-text-link no-arrow" href="#">Save <img src="/labkey/_images/text_link_arrow.gif" style="position:relative; background-color:transparent; width:10px; height:auto; top:-1px; right:0;"> </a>
+                                <a class="labkey-text-link no-arrow" href="#">Save <i class="fa fa-caret-down"></i> </a>
                                 <ul class="dropdown-menu">
                                     <li class="x4-menu-item-text" ng-repeat="opt in saveOptions">
                                         <a class="menu-item-link x4-menu-item-link" ng-click="saveSubjectGroup(opt.id)">{{opt.label}}</a>
                                     </li>
                                 </ul>
                             </li>
-                            <%--<li id="manageMenu" class="dropdown active">--%>
-                                <%--<a class="labkey-text-link no-arrow" href="#"><i class="fa fa-cog"></i> </a>--%>
-                                <%--<ul class="dropdown-menu" ng-if="groupList.length > 0">--%>
-                                    <%--<li class="x4-menu-item-text" ng-repeat="group in groupList">--%>
-                                        <%--<a class="x4-menu-item-link" ng-click="deleteSubjectGroup(group)">{{group.label}}</a>--%>
-                                    <%--</li>--%>
-                                <%--</ul>--%>
-                            <%--</li>--%>
                         </ul>
                         <span class="clear-filter active display:inline" ng-show="hasFilters()" ng-click="clearAllFilters();">[clear all]</span>
                     </div>
@@ -483,8 +507,8 @@
             </td>
         </tr>
         <tr>
-            <td class="selection-pane" >
-                <div style="height:100%;overflow-y:auto;">
+            <td class="selection-panel" >
+                <div>
                     <div>
                         <div class="facet">
                             <div class="facet-header"><span class="facet-caption">Summary</span></div>
@@ -504,19 +528,19 @@
                     </div>
                 </div>
             </td>
-            <td valign="top" align="left" style="width:100% height:100%;">
-                <div id="studypanel" style="height:100%; overflow-y:scroll;" ng-class="{'x-hidden':(activeTab!=='Studies')}">
+            <td class="study-panel">
+                <div id="studypanel" ng-class="{'x-hidden':(activeTab!=='Studies')}">
                     <div>
                         <span class="search-box">
                             <i class="fa fa-search"></i>&nbsp;
                             <input placeholder="Studies" id="searchTerms" name="q" class="search-box"  ng-model="searchTerms" ng-change="onSearchTermsChanged()">
                         </span>
-                        <span name="studySubset" class="study-subset" style="position: relative">
+                        <span name="studySubset" class="study-search">
                             <select ng-model="studySubset" name="studySubset" ng-change="onStudySubsetChanged()">
                                 <option ng-repeat="option in subsetOptions" value="{{option.value}}">{{option.name}}</option>
                             </select>
                         </span>
-                        <span style="position: relative">{{searchMessage}}</span>
+                        <span class="study-search">{{searchMessage}}</span>
                     </div>
 
 

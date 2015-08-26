@@ -1,7 +1,5 @@
 /* TODOs and BUGs
 
-BUG the radio button state doesn't seem to be saving and restoring
-
 NOTE for save subject group, it doesn't make sense to save participantid's for non-loaded studies
   need to handle that.
 
@@ -692,7 +690,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             }
 
             if (includeSubjectIds)
-                onRows.arguments.push({level: "[Subject].[Subject]", members: "members"})
+                onRows.arguments.push({level: "[Subject].[Subject]", members: "members"});
 
             var config =
             {
@@ -708,6 +706,10 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                     {
                         config.scope.updateCountsUnion(cellSet);
                     }, 1);
+                },
+                failure : function(response)
+                {
+                    console.log('failure in updateCountsAsync', response);
                 },
                 scope: $scope,
 
