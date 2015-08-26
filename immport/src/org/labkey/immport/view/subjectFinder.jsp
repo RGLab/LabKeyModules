@@ -495,7 +495,7 @@
                                 </ul>
                             </li>
                         </ul>
-                        <span class="clear-filter active display:inline" ng-show="hasFilters()" ng-click="clearAllFilters();">[clear all]</span>
+                        <span class="clear-filter active" ng-show="hasFilters()" ng-click="clearAllFilters(true);">[clear all]</span>
                     </div>
 
                 </div>

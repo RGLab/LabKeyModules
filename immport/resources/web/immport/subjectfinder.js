@@ -188,7 +188,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
 
         $scope.applySubjectGroupFilter = function(group)
         {
-            $scope.clearAllFilters();
+            $scope.clearAllFilters(false);
 
             for (var f in group.filters)
             {
@@ -276,9 +276,12 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             $scope.loadSubjectGroups();
         });
 
-        $scope.$on("filterSelectionCleared", function(event){
-            $scope.currentGroup = $scope.unsavedGroup;
-            $scope.updateSubjectGroupInLocalStorage();
+        $scope.$on("filterSelectionCleared", function(event, hasFilters) {
+            if (!hasFilters)
+            {
+                $scope.currentGroup = $scope.unsavedGroup;
+                $scope.updateSubjectGroupInLocalStorage();
+            }
         });
 
     }]);
@@ -560,7 +563,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 $event.stopPropagation();
         };
 
-        $scope.clearAllFilters = function ()
+        $scope.clearAllFilters = function (updateCounts)
         {
             for (var d in dataspace.dimensions)
             {
@@ -570,8 +573,9 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                     continue;
                 $scope._clearFilter(d);
             }
-            $scope.updateCountsAsync();
-            $scope.$broadcast("filterSelectionCleared");
+            if (updateCounts)
+                $scope.updateCountsAsync();
+            $scope.$broadcast("filterSelectionCleared", false);
         };
 
         $scope._clearFilter = function (dimName)
@@ -581,6 +585,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             for (var m = 0; m < filterMembers.length; m++)
                 filterMembers[m].selected = false;
             dim.filters = [];
+            $scope.$broadcast("filterSelectionCleared", $scope.hasFilters());
         };
 
 
@@ -706,10 +711,6 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                     {
                         config.scope.updateCountsUnion(cellSet);
                     }, 1);
-                },
-                failure : function(response)
-                {
-                    console.log('failure in updateCountsAsync', response);
                 },
                 scope: $scope,
 
