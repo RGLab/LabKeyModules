@@ -303,12 +303,16 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         $scope.mdx = null;
         $scope.searchTerms = '';
         $scope.searchMessage = '';
-        $scope.studySubset = "ImmuneSpace";
+
         $scope.formatNumber = Ext4.util.Format.numberRenderer('0,000');
         $scope.downArrow = LABKEY.contextPath + "/_images/arrow_down.png";
         $scope.rightArrow = LABKEY.contextPath + "/_images/arrow_right.png";
         $scope.activeTab = "Studies";
         $scope.filterByLevel  = "[Subject].[Subject]";
+
+        $scope.studySubset = "ImmuneSpace";
+        if ($scope.localStorageService.isSupported && $scope.localStorageService.get("studySubset") != null)
+            $scope.studySubset = $scope.localStorageService.get("studySubset");
 
         var studies = [];
         var loaded_study_list = [];
@@ -911,6 +915,8 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
 
         $scope.onStudySubsetChanged = function ()
         {
+            if ($scope.localStorageService.isSupported)
+                $scope.localStorageService.add("studySubset", $scope.studySubset);
             // if there are search terms, just act as if the search terms have changed
             if ($scope.searchTerms)
             {

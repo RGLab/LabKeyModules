@@ -149,7 +149,10 @@
     DIV.loaded
     {
         background-color:rgba(81, 158, 218, 0.2);
-        /* background: linear-gradient(to right, rgba(81, 158, 218, 0.8) 0%,rgba(81, 158, 218, 0.3) 50%, rgba(81, 158, 218, 0.8) 100%); */
+    }
+    SPAN.loaded
+    {
+        background-color:rgba(81, 158, 218, 0.2);
     }
     SPAN.hipc-label
     {
@@ -346,12 +349,6 @@
         float:right;
         z-index:2;
     }
-    LI.member .member-action
-    {
-        position:relative;
-        float:right;
-        z-index:2;
-    }
 
     LI.member SPAN.bar-selected
     {
@@ -364,11 +361,6 @@
         background-color:#DEDEDE;
         position:absolute; right:0;
         z-index:0;
-    }
-    /* filter status display */
-    .facet-filterTypeTrigger
-    {
-        font-size:67%;
     }
 
     /* filter type popup */
@@ -537,7 +529,7 @@
                         </span>
                         <span name="studySubset" class="study-search">
                             <select ng-model="studySubset" name="studySubset" ng-change="onStudySubsetChanged()">
-                                <option ng-repeat="option in subsetOptions" value="{{option.value}}">{{option.name}}</option>
+                                <option ng-repeat="option in subsetOptions" value="{{option.value}}" ng-selected="{{option.value == studySubset}}">{{option.name}}</option>
                             </select>
                         </span>
                         <span class="study-search">{{searchMessage}}</span>
@@ -697,7 +689,7 @@ LABKEY.help.Tour.register({
             target: "studypanel",
             title: "Study Panel",
             content: 'This area contains short descriptions of ImmPort studies. ' +
-            'The <span style="background-color:#519ec6;">blue</span> studies have been loaded by the ImmuneSpace team and can be viewed in more detail.<p/>Click on any study card for more information.',
+            'The <span class="loaded">blue</span> studies have been loaded by the ImmuneSpace team and can be viewed in more detail.<p/>Click on any study card for more information.',
             placement: "bottom"
         },
         {
