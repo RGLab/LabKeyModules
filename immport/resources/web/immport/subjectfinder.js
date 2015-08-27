@@ -1,7 +1,5 @@
 /* TODOs and BUGs
 
-BUG the radio button state doesn't seem to be saving and restoring
-
 NOTE for save subject group, it doesn't make sense to save participantid's for non-loaded studies
   need to handle that.
 
@@ -190,7 +188,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
 
         $scope.applySubjectGroupFilter = function(group)
         {
-            $scope.clearAllFilters();
+            $scope.clearAllFilters(false);
 
             for (var f in group.filters)
             {
@@ -278,9 +276,12 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             $scope.loadSubjectGroups();
         });
 
-        $scope.$on("filterSelectionCleared", function(event){
-            $scope.currentGroup = $scope.unsavedGroup;
-            $scope.updateSubjectGroupInLocalStorage();
+        $scope.$on("filterSelectionCleared", function(event, hasFilters) {
+            if (!hasFilters)
+            {
+                $scope.currentGroup = $scope.unsavedGroup;
+                $scope.updateSubjectGroupInLocalStorage();
+            }
         });
 
     }]);
@@ -302,12 +303,16 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         $scope.mdx = null;
         $scope.searchTerms = '';
         $scope.searchMessage = '';
-        $scope.studySubset = "ImmuneSpace";
+
         $scope.formatNumber = Ext4.util.Format.numberRenderer('0,000');
         $scope.downArrow = LABKEY.contextPath + "/_images/arrow_down.png";
         $scope.rightArrow = LABKEY.contextPath + "/_images/arrow_right.png";
         $scope.activeTab = "Studies";
         $scope.filterByLevel  = "[Subject].[Subject]";
+
+        $scope.studySubset = "ImmuneSpace";
+        if ($scope.localStorageService.isSupported && $scope.localStorageService.get("studySubset") != null)
+            $scope.studySubset = $scope.localStorageService.get("studySubset");
 
         var studies = [];
         var loaded_study_list = [];
@@ -562,7 +567,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 $event.stopPropagation();
         };
 
-        $scope.clearAllFilters = function ()
+        $scope.clearAllFilters = function (updateCounts)
         {
             for (var d in dataspace.dimensions)
             {
@@ -572,8 +577,9 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                     continue;
                 $scope._clearFilter(d);
             }
-            $scope.updateCountsAsync();
-            $scope.$broadcast("filterSelectionCleared");
+            if (updateCounts)
+                $scope.updateCountsAsync();
+            $scope.$broadcast("filterSelectionCleared", false);
         };
 
         $scope._clearFilter = function (dimName)
@@ -583,6 +589,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             for (var m = 0; m < filterMembers.length; m++)
                 filterMembers[m].selected = false;
             dim.filters = [];
+            $scope.$broadcast("filterSelectionCleared", $scope.hasFilters());
         };
 
 
@@ -692,7 +699,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             }
 
             if (includeSubjectIds)
-                onRows.arguments.push({level: "[Subject].[Subject]", members: "members"})
+                onRows.arguments.push({level: "[Subject].[Subject]", members: "members"});
 
             var config =
             {
@@ -908,6 +915,8 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
 
         $scope.onStudySubsetChanged = function ()
         {
+            if ($scope.localStorageService.isSupported)
+                $scope.localStorageService.add("studySubset", $scope.studySubset);
             // if there are search terms, just act as if the search terms have changed
             if ($scope.searchTerms)
             {
