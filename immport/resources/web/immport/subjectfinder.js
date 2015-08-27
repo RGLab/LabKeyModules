@@ -974,7 +974,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 }
                 if (!searchStudies.length)
                 {
-                    $scope.clearStudyFilter();
+                    $scope.setStudyFilter(searchStudies);
                     $scope.searchMessage = 'No studies match your search criteria';
                 }
                 else
