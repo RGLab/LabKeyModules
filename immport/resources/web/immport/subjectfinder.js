@@ -298,6 +298,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         $scope.timeout = $timeout;
         $scope.http = $http;
         $scope.localStorageService = localStorageService;
+        $scope.isGuest = LABKEY.user.isGuest;
 
         $scope.cube = null;
         $scope.mdx = null;
