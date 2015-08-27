@@ -982,8 +982,8 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                     $scope.searchMessage = '';
                     // intersect with study subset list
                     var result = $scope.intersect(searchStudies, $scope.getStudySubsetList());
-                    //if (!result.length)
-                    //    $scope.searchMessage = 'No studies match your search criteria';
+                    if (!result.length)
+                        $scope.searchMessage = 'No studies match your search criteria';
                     $scope.setStudyFilter(result);
                 }
             });
