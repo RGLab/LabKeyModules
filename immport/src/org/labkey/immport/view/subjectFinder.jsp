@@ -592,7 +592,7 @@
                 <span ng-show="dim.expanded && dim.filters.length > 1 && dim.filterOptions.length < 2" class="facet-filter">{{dim.filterCaption}}</span>
             </div>
         </div>
-        <ul ng-if="dim.expanded">
+        <ul>
             <li ng-repeat="member in dim.members" id="m_{{dim.name}}_{{member.uniqueName}}" style="position:relative;" class="member"
                  ng-class="{selectedMember:member.selected, emptyMember:(!member.selected && 0==member.count)}"
                  ng-click="selectMember(dim.name,member,$event)">
