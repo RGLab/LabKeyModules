@@ -298,6 +298,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         $scope.timeout = $timeout;
         $scope.http = $http;
         $scope.localStorageService = localStorageService;
+        $scope.isGuest = LABKEY.user.isGuest;
 
         $scope.cube = null;
         $scope.mdx = null;
@@ -974,7 +975,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 }
                 if (!searchStudies.length)
                 {
-                    $scope.clearStudyFilter();
+                    $scope.setStudyFilter(searchStudies);
                     $scope.searchMessage = 'No studies match your search criteria';
                 }
                 else
@@ -982,8 +983,8 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                     $scope.searchMessage = '';
                     // intersect with study subset list
                     var result = $scope.intersect(searchStudies, $scope.getStudySubsetList());
-                    //if (!result.length)
-                    //    $scope.searchMessage = 'No studies match your search criteria';
+                    if (!result.length)
+                        $scope.searchMessage = 'No studies match your search criteria';
                     $scope.setStudyFilter(result);
                 }
             });

@@ -470,7 +470,7 @@
                                     <li class="x4-menu-item-text"><a class="menu-item-link x4-menu-item-link" href="<%=new ActionURL("study", "manageParticipantCategories", getContainer()).toHString()%>">Manage Groups</a></li>
                                 </ul>
                             </li>
-                            <li id="loadMenu" class="dropdown" ng-class="{active : groupList.length > 0}">
+                            <li id="loadMenu" class="dropdown" ng-class="{active : groupList.length > 0 && !isGuest}">
                                 <a class="labkey-text-link no-arrow" href="#">Load <i class="fa fa-caret-down"></i></a>
                                 <ul class="dropdown-menu" ng-if="groupList.length > 0">
                                     <li class="x4-menu-item-text" ng-repeat="group in groupList">
@@ -480,9 +480,14 @@
                             </li>
                             <li id="saveMenu" class="dropdown active">
                                 <a class="labkey-text-link no-arrow" href="#">Save <i class="fa fa-caret-down"></i> </a>
-                                <ul class="dropdown-menu">
+                                <ul class="dropdown-menu" ng-if="!isGuest">
                                     <li class="x4-menu-item-text" ng-repeat="opt in saveOptions">
                                         <a class="menu-item-link x4-menu-item-link" ng-click="saveSubjectGroup(opt.id)">{{opt.label}}</a>
+                                    </li>
+                                </ul>
+                                <ul class="dropdown-menu" ng-if="isGuest">
+                                    <li class="x4-menu-item-text">
+                                        <span class="menu-item-link x4-menu-item-link">You must be logged in to save a group.</span>
                                     </li>
                                 </ul>
                             </li>
@@ -592,7 +597,7 @@
                 <span ng-show="dim.expanded && dim.filters.length > 1 && dim.filterOptions.length < 2" class="facet-filter">{{dim.filterCaption}}</span>
             </div>
         </div>
-        <ul ng-if="dim.expanded">
+        <ul>
             <li ng-repeat="member in dim.members" id="m_{{dim.name}}_{{member.uniqueName}}" style="position:relative;" class="member"
                  ng-class="{selectedMember:member.selected, emptyMember:(!member.selected && 0==member.count)}"
                  ng-click="selectMember(dim.name,member,$event)">
