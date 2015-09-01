@@ -481,7 +481,7 @@
     }
 
     .menu-item-link {
-        padding: 0 0 0 8px;
+        padding: 0 8px 0 8px;
     }
 </style>
 
