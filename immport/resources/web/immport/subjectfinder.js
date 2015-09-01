@@ -133,57 +133,81 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         $scope.groupList = [];
         $scope.unsavedGroup = { id: null, label : "Unsaved Group"};
         $scope.currentGroup = $scope.unsavedGroup;
-        $scope.saveOptions = [ {id: 'update', label : "Update"}, {id : "saveNew", label : "Save New Group"} ];
+        $scope.saveOptions = [ {id: 'update', label : "Save", isActive: false}, {id : "saveNew", label : "Save As", isActive: true} ];
 
         $scope.saveSubjectGroup = function(option) {
 
             var groupLabel = "";
-            var isUpdate = false;
-            if (option == "update" && $scope.currentGroup.id != null) {
-                groupLabel = $scope.currentGroup.label;
-                isUpdate = true;
-            }
-            var win = Ext4.create('Study.window.ParticipantGroup', {
-                subject: {
-                    nounSingular: 'Subject',
-                    nounPlural: 'Subjects',
-                    nounColumnName: 'ParticipantId'
-                },
-                groupLabel: groupLabel,
-                categoryParticipantIds: $scope.subjects,
-                filters: $scope.localStorageService.get("filterSet"),
-                canEdit: !LABKEY.user.isGuest,
-                isAdmin: LABKEY.user.isAdmin,
-                groupRowId : $scope.currentGroup.id,
-                isUpdate: isUpdate
-            });
+            if (option == "update") {
+                if ($scope.currentGroup.id == null)
+                    return;
 
-            // Save the new participant group rowId as the session filter
-            win.on('aftersave', function (data) {
-                $scope.$apply(function() {
-                    if (data.success) {
-                        var group = data.group;
-                        if (group.rowId) {
-                            LABKEY.Ajax.request({
-                                method: "POST",
-                                url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
-                                jsonData: {
-                                    rowId: group.rowId
-                                }
-                            });
-                            group = {
-                                "id" : group.rowId,
-                                "label" : group.label,
-                                "filters" : group.filters,
-                                "selected" : true
-                            };
-                            $scope.groupList.push(group);
-                            $scope.currentGroup = group;
-                        }
+                var groupData = {
+                    label : $scope.currentGroup.label,
+                    participantIds : $scope.subjects,
+                    categoryLabel : '',
+                    categoryType : 'list',
+                    filters: JSON.stringify($scope.localStorageService.get("filterSet")),
+                    rowId : $scope.currentGroup.id
+                };
+                Ext4.Ajax.request({
+                    url: (LABKEY.ActionURL.buildURL("participant-group", 'updateParticipantGroup.api')),
+                    method: 'POST',
+                    jsonData : groupData,
+                    scope : this,
+                    success : function()
+                    {
+                        Ext4.Msg.alert("Group '" + $scope.currentGroup.label + "' successfully updated");
+                    },
+                    failure : function(response, options)
+                    {
+                        LABKEY.Utils.displayAjaxErrorResponse(response, options, false, "An error occurred trying to save:  ");
                     }
                 });
-            });
-            win.show();
+            } else {
+                var win = Ext4.create('Study.window.ParticipantGroup', {
+                    subject: {
+                        nounSingular: 'Subject',
+                        nounPlural: 'Subjects',
+                        nounColumnName: 'ParticipantId'
+                    },
+                    groupLabel: groupLabel,
+                    categoryParticipantIds: $scope.subjects,
+                    filters: $scope.localStorageService.get("filterSet")
+                });
+
+                // Save the new participant group rowId as the session filter
+                win.on('aftersave', function (data)
+                {
+                    $scope.$apply(function ()
+                    {
+                        if (data.success)
+                        {
+                            var group = data.group;
+                            if (group.rowId)
+                            {
+                                LABKEY.Ajax.request({
+                                    method: "POST",
+                                    url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
+                                    jsonData: {
+                                        rowId: group.rowId
+                                    }
+                                });
+                                group = {
+                                    "id": group.rowId,
+                                    "label": group.label,
+                                    "filters": group.filters,
+                                    "selected": true
+                                };
+                                $scope.groupList.push(group);
+                                $scope.currentGroup = group;
+                                $scope.updateSaveOptions();
+                            }
+                        }
+                    });
+                });
+                win.show();
+            }
         };
 
         $scope.applySubjectGroupFilter = function(group)
@@ -219,12 +243,14 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             }
             $scope.updateCountsAsync();
             $scope.saveFilterState();
-            $scope.currentGroup = group;
-            $scope.updateSubjectGroupInLocalStorage();
+            $scope.updateCurrentGroup(group);
         };
 
-        $scope.updateSubjectGroupInLocalStorage = function()
+        $scope.updateCurrentGroup = function(newCurrent)
         {
+            $scope.currentGroup = newCurrent;
+            $scope.updateSaveOptions();
+
             if (!$scope.localStorageService.isSupported)
                 return;
 
@@ -232,7 +258,13 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 $scope.localStorageService.set("group", $scope.currentGroup);
             else
                 $scope.localStorageService.remove("group");
+
         };
+
+        $scope.updateSaveOptions = function()
+        {
+            $scope.saveOptions[0].isActive = ($scope.currentGroup.id != null);
+        }
 
         $scope.loadSubjectGroups = function ()
         {
@@ -267,7 +299,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             });
             var savedGroup = $scope.localStorageService.get("group");
             if (savedGroup != null) {
-                $scope.currentGroup = savedGroup;
+                $scope.updateCurrentGroup(savedGroup);
             }
         };
 
@@ -279,8 +311,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         $scope.$on("filterSelectionCleared", function(event, hasFilters) {
             if (!hasFilters)
             {
-                $scope.currentGroup = $scope.unsavedGroup;
-                $scope.updateSubjectGroupInLocalStorage();
+                $scope.updateCurrentGroup($scope.unsavedGroup);
             }
         });
 

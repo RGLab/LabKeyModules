@@ -53,7 +53,7 @@
         resources.add(ClientDependency.fromPath("angular"));
         resources.add(ClientDependency.fromPath("immport/subjectfinder.js"));
 
-        resources.add(ClientDependency.fromPath("study/ParticipantGroup.js"));
+        resources.add(ClientDependency.fromPath("immport/ParticipantGroup.js"));
         return resources;
     }
 %>
@@ -426,6 +426,12 @@
         color: black;
     }
 
+    .dropdown-menu > li > a.inactive
+    {
+        color: #C0C0C0;
+        cursor: default;
+    }
+
     .dropdown-menu {
         position: absolute;
         display: none;
@@ -482,7 +488,7 @@
                                 <a class="labkey-text-link no-arrow" href="#">Save <i class="fa fa-caret-down"></i> </a>
                                 <ul class="dropdown-menu" ng-if="!isGuest">
                                     <li class="x4-menu-item-text" ng-repeat="opt in saveOptions">
-                                        <a class="menu-item-link x4-menu-item-link" ng-click="saveSubjectGroup(opt.id)">{{opt.label}}</a>
+                                        <a class="menu-item-link x4-menu-item-link" ng-class="{'inactive' : !opt.isActive}" ng-click="saveSubjectGroup(opt.id)">{{opt.label}}</a>
                                     </li>
                                 </ul>
                                 <ul class="dropdown-menu" ng-if="isGuest">
