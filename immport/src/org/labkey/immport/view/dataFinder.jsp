@@ -421,6 +421,10 @@
         display: block;
     }
 
+    .dropdown-menu > li {
+        margin-right : 0px;
+    }
+
     .dropdown-menu > li > a
     {
         color: black;
@@ -432,12 +436,34 @@
         cursor: default;
     }
 
+    .dropdown-menu > li.inactive:hover
+    {
+        color: #C0C0C0;
+        cursor: default;
+        background-color: white;
+        border-style: none;
+        background-image: none;
+    }
+
+    .dropdown-menu > li:hover
+    {
+        background-image: none;
+        background-color: #eaeaea;
+        background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f2f2f2), color-stop(100%, #e0e0e0));
+        background-image: -webkit-linear-gradient(top, #f2f2f2, #e0e0e0);
+        background-image: -moz-linear-gradient(top, #f2f2f2, #e0e0e0);
+        background-image: -o-linear-gradient(top, #f2f2f2, #e0e0e0);
+        background-image: linear-gradient(top, #f2f2f2, #e0e0e0);
+        border-color: #b4b4b4;
+        border-width: 1px;
+        border-style: solid;
+        padding: 0;
+    }
+
     .dropdown-menu {
         position: absolute;
         display: none;
         min-width: 80px;
-        padding-left: 8px;
-        padding-right: 8px;
         margin: 2px 0 0;
         list-style: none;
         background-color: white;
@@ -446,6 +472,7 @@
         border-style: solid;
         box-shadow: rgb(136, 136, 136) 0px 0px 6px;
         z-index: 100;
+        -webkit-padding-start: 0px
     }
 
     #manageMenu > a {
@@ -454,7 +481,7 @@
     }
 
     .menu-item-link {
-        padding: 0;
+        padding: 0 0 0 8px;
     }
 </style>
 
@@ -487,7 +514,7 @@
                             <li id="saveMenu" class="dropdown active">
                                 <a class="labkey-text-link no-arrow" href="#">Save <i class="fa fa-caret-down"></i> </a>
                                 <ul class="dropdown-menu" ng-if="!isGuest">
-                                    <li class="x4-menu-item-text" ng-repeat="opt in saveOptions">
+                                    <li class="x4-menu-item-text" ng-repeat="opt in saveOptions" ng-class="{'inactive' : !opt.isActive}">
                                         <a class="menu-item-link x4-menu-item-link" ng-class="{'inactive' : !opt.isActive}" ng-click="saveSubjectGroup(opt.id)">{{opt.label}}</a>
                                     </li>
                                 </ul>
