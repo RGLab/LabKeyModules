@@ -5,7 +5,7 @@ NOTE for save subject group, it doesn't make sense to save participantid's for n
 
 */
 
-function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
+function dataFinder(studyData, loadedStudies, dataFinderAppId)
 {
 //
 // study detail pop-up window
@@ -121,13 +121,13 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         }
     }
 
-    var subjectFinderApp = angular.module('subjectFinderApp', ['LocalStorageModule'])
+    var dataFinderApp = angular.module('dataFinderApp', ['LocalStorageModule'])
     .config(function (localStorageServiceProvider)
     {
-        localStorageServiceProvider.setPrefix("subjectFinder." + LABKEY.container.id);
+        localStorageServiceProvider.setPrefix("dataFinder." + LABKEY.container.id);
     });
 
-    subjectFinderApp
+    dataFinderApp
             .controller("SubjectGroupController", ['$scope', function($scope) {
 
         $scope.groupList = [];
@@ -318,8 +318,8 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
     }]);
 
 
-    subjectFinderApp
-    .controller('subjectFinder', function ($scope, $timeout, $http, localStorageService)
+    dataFinderApp
+    .controller('dataFinder', function ($scope, $timeout, $http, localStorageService)
     {
         window.debug_scope = $scope;
         $scope.filterChoice = {
@@ -897,13 +897,13 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         {
             if (loadMask)
             {
-                Ext4.get(subjectFinderAppId).removeCls("x-hidden");
+                Ext4.get(dataFinderAppId).removeCls("x-hidden");
                 loadMask.hide();
                 loadMask = null;
-                LABKEY.help.Tour.autoShow('immport.subjectFinder');
+                LABKEY.help.Tour.autoShow('immport.dataFinder');
             }
 
-            LABKEY.Utils.signalWebDriverTest('subjectFinderCountsUpdated');
+            LABKEY.Utils.signalWebDriverTest('dataFinderCountsUpdated');
         };
 
         $scope.clearStudyFilter = function ()
@@ -1266,7 +1266,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
 
     Ext4.onReady(function ()
     {
-        loadMask = new Ext4.LoadMask(Ext4.get(subjectFinderAppId), {msg: "Loading study definitions..."});
+        loadMask = new Ext4.LoadMask(Ext4.get(dataFinderAppId), {msg: "Loading study definitions..."});
         loadMask.show();
     });
 }

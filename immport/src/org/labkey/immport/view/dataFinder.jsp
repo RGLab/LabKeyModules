@@ -34,7 +34,7 @@
 <%@ page import="org.labkey.api.view.template.ClientDependency" %>
 <%@ page import="org.labkey.immport.ImmPortController" %>
 <%@ page import="org.labkey.immport.data.StudyBean" %>
-<%@ page import="org.labkey.immport.view.SubjectFinderWebPart" %>
+<%@ page import="org.labkey.immport.view.DataFinderWebPart" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Collection" %>
 <%@ page import="java.util.Collections" %>
@@ -51,14 +51,14 @@
         resources.add(ClientDependency.fromPath("clientapi/ext4"));
         resources.add(ClientDependency.fromPath("query/olap.js"));
         resources.add(ClientDependency.fromPath("angular"));
-        resources.add(ClientDependency.fromPath("immport/subjectfinder.js"));
+        resources.add(ClientDependency.fromPath("immport/dataFinder.js"));
 
         resources.add(ClientDependency.fromPath("immport/ParticipantGroup.js"));
         return resources;
     }
 %>
 <%
-    SubjectFinderWebPart me = (SubjectFinderWebPart)HttpView.currentView();
+    DataFinderWebPart me = (DataFinderWebPart)HttpView.currentView();
     ViewContext context = HttpView.currentContext();
     ArrayList<StudyBean> studies = new SqlSelector(DbSchema.get("immport"),"SELECT study.*, P.title as program_title, pi.pi_names\n" +
             "FROM immport.study " +
@@ -107,9 +107,9 @@
         cursor:pointer;
     }
 
-    TABLE.subject-finder
+    TABLE.data-finder
     {
-        height:100%;
+        height: 450px;
         width:100%;
         padding:3pt;
     }
@@ -459,10 +459,10 @@
 </style>
 
 
-<div id="subjectFinderOuterDIV" class="outer">
-<div id="subjectFinderAppDIV" class="x-hidden inner" ng-app="subjectFinderApp" ng-controller="subjectFinder">
+<div id="dataFinderOuterDIV" class="outer">
+<div id="dataFinderAppDIV" class="x-hidden inner" ng-app="dataFinderApp" ng-controller="dataFinder">
 
-    <table border=0 class="subject-finder">
+    <table border=0 class="data-finder">
         <tr>
             <td>
                 <div ng-controller="SubjectGroupController">
@@ -690,11 +690,11 @@ if (!c.isRoot())
 };
 
 
-new subjectFinder(studyData, loaded_studies, "subjectFinderAppDIV");
+new dataFinder(studyData, loaded_studies, "dataFinderAppDIV");
 
 
 LABKEY.help.Tour.register({
-    id: "immport.subjectFinder",
+    id: "immport.dataFinder",
     steps: [
         {
             target: "studypanel",
@@ -733,7 +733,7 @@ LABKEY.help.Tour.register({
 
 function start_tutorial()
 {
-    LABKEY.help.Tour.show("immport.subjectFinder");
+    LABKEY.help.Tour.show("immport.dataFinder");
     return false;
 }
 
@@ -749,7 +749,7 @@ function start_tutorial()
     }
     var _resize = function()
     {
-        var componentOuter = Ext4.get("subjectFinderOuterDIV");
+        var componentOuter = Ext4.get("dataFinderOuterDIV");
         if (!componentOuter)
             return;
         var paddingX, paddingY;

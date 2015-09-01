@@ -28,7 +28,7 @@ import org.labkey.api.view.SimpleWebPartFactory;
 import org.labkey.api.view.WebPartFactory;
 import org.labkey.immport.security.ImmPortAdminRole;
 import org.labkey.immport.view.StudyFinderWebPart;
-import org.labkey.immport.view.SubjectFinderWebPart;
+import org.labkey.immport.view.DataFinderWebPart;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,7 +65,7 @@ public class ImmPortModule extends DefaultModule
     protected Collection<WebPartFactory> createWebPartFactories()
     {
         ArrayList<WebPartFactory> list = new ArrayList<>();
-        SimpleWebPartFactory factory = new SimpleWebPartFactory("ImmPort Subject Finder", WebPartFactory.LOCATION_BODY, SubjectFinderWebPart.class, null);
+        SimpleWebPartFactory factory = new SimpleWebPartFactory("ImmPort Data Finder", WebPartFactory.LOCATION_BODY, DataFinderWebPart.class, null);
 //        factory.addLegacyNames("ImmPort Study Finder");
         list.add(factory);
         // current tests work for this web part, not the other one

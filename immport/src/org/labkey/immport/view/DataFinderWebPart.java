@@ -10,7 +10,7 @@ import org.labkey.immport.ImmPortController;
  * Created by matthew on 4/22/15.
  */
 
-public class SubjectFinderWebPart extends JspView
+public class DataFinderWebPart extends JspView
 {
     boolean isAutoResize = false;
 
@@ -24,13 +24,13 @@ public class SubjectFinderWebPart extends JspView
         this.isAutoResize = isAutoResize;
     }
 
-    public SubjectFinderWebPart(Container c)
+    public DataFinderWebPart(Container c)
     {
-        super("/org/labkey/immport/view/subjectFinder.jsp");
-        setTitle("Subject Finder");
-        setTitleHref(new ActionURL(ImmPortController.SubjectFinderAction.class, c));
+        super("/org/labkey/immport/view/dataFinder.jsp");
+        setTitle("Data Finder");
+        setTitleHref(new ActionURL(ImmPortController.DataFinderAction.class, c));
     }
-    public SubjectFinderWebPart(ViewContext v)
+    public DataFinderWebPart(ViewContext v)
     {
         this(v.getContainer());
     }

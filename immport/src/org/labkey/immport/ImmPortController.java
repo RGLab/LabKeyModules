@@ -58,7 +58,7 @@ import org.labkey.immport.data.StudyPersonnelBean;
 import org.labkey.immport.data.StudyPubmedBean;
 import org.labkey.immport.view.StudyFinderWebPart;
 import org.labkey.immport.view.StudyIdForm;
-import org.labkey.immport.view.SubjectFinderWebPart;
+import org.labkey.immport.view.DataFinderWebPart;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
@@ -468,12 +468,12 @@ public class ImmPortController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class SubjectFinderAction extends SimpleViewAction
+    public class DataFinderAction extends SimpleViewAction
     {
         public ModelAndView getView(Object o, BindException errors) throws Exception
         {
-            setTitle("Study Finder");
-            SubjectFinderWebPart wp = new SubjectFinderWebPart(getContainer());
+            setTitle("Data Finder");
+            DataFinderWebPart wp = new DataFinderWebPart(getContainer());
             wp.setIsAutoResize(true);
             return wp;
         }
