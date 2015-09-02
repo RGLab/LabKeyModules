@@ -507,12 +507,20 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
             return (dim.filters && dim.filters.length) ? true : false;
         };
 
+        $scope.toggleFilterChoiceDisplay = function()
+        {
+            $scope.filterChoice.show = !$scope.filterChoice.show;
+        };
+
         $scope.displayFilterChoice = function (dimName, $event)
         {
             var dim = dataspace.dimensions[dimName];
-            if (!dim)
+            if (!dim || dim.filterOptions.length < 2)
                 return;
-            var xy = Ext4.fly($event.target).getXY();
+            var locationElement = $event.target;
+            if ($event.target.className.includes('fa-caret'))
+                locationElement = $event.target.parentElement;
+            var xy = Ext4.fly(locationElement).getXY();
             $scope.filterChoice =
             {
                 show: true,
@@ -525,7 +533,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                 $event.stopPropagation();
         };
 
-        $scope.setFilterType = function (dimName, type, $scope)
+        $scope.setFilterType = function (dimName, type)
         {
             $scope.filterChoice.show = false;
             var dim = dataspace.dimensions[dimName];

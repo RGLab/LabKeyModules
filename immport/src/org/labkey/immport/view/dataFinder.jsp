@@ -244,10 +244,17 @@
         padding:4pt;
         background-color: rgb(240, 240, 240);
     }
+
     DIV.facet-header .facet-caption
     {
         font-weight:400;
     }
+
+    DIV.facet-header .labkey-filter-options
+    {
+        font-size: 11px;
+    }
+
     DIV.facet UL
     {
         list-style-type:none;
@@ -364,22 +371,26 @@
     }
 
     /* filter type popup */
-    DIV.filterPopup
+    DIV.labkey-filter-popup
     {
-        z-index:100; background-color:white; opacity: 1; border:solid 2px black; position:absolute;
+        position: absolute;
+        min-width: 80px;
+        margin: 2px 0 0;
+        list-style: none;
+        background-color: white;
+        border-color:#b4b4b4;
+        border-width: 1px;
+        border-style: solid;
+        box-shadow: rgb(136, 136, 136) 0px 0px 6px;
+        z-index: 100;
+        -webkit-padding-start: 0px
     }
-    DIV.filterPopup UL
+
+
+    .labkey-filter-popup > .dropdown-menu
     {
-        padding:2pt; margin:0;
-    }
-    DIV.filterPopup LI
-    {
-        padding:2pt; margin:2pt; cursor:pointer;
-    }
-    DIV.filterPopup LI
-    {
-        padding:2pt; margin:2pt; cursor:pointer;
-        border: 1px solid #ffffff;
+        display: block;
+        min-width: 130px;
     }
 
     /* menus */
@@ -409,6 +420,12 @@
     .navbar-nav > li > .dropdown-menu
     {
         margin-top : 0;
+    }
+
+    .labkey-filter-options > a.inactive
+    {
+        color: black;
+        cursor: default;
     }
 
     .dropdown:hover > .dropdown-menu
@@ -584,13 +601,13 @@
 
 <div id="studyPopup"></div>
 
-<div id="filterPopup" class="filterPopup" style="top:{{filterChoice.y}}px; left:{{filterChoice.x}}px;" ng-if="filterChoice.show" ng-mouseleave="filterChoice.show=false;">
-    <ul style="list-style: none;">
-        <li ng-click="setFilterType(filterChoice.dimName,filterChoice.options[0].type,$parent)">{{filterChoice.options[0].caption}}</li>
-        <li ng-click="setFilterType(filterChoice.dimName,filterChoice.options[1].type,$parent)">{{filterChoice.options[1].caption}}</li>
+<div id="filterPopup" class="labkey-filter-popup" style="top:{{filterChoice.y}}px; left:{{filterChoice.x}}px;" ng-if="filterChoice.show" ng-mouseleave="filterChoice.show = false">
+    <ul class="dropdown-menu" ng-if="filterChoice.options.length > 1">
+        <li class="x4-menu-item-text" ng-repeat="option in filterChoice.options">
+            <a class="menu-item-link x4-menu-item-link" ng-click="setFilterType(filterChoice.dimName,option.type)">{{option.caption}}</a>
+        </li>
     </ul>
 </div>
-
 
 <!--
 			templates
@@ -615,19 +632,15 @@
     <div id="group_{{dim.name}}" class="facet"
          ng-class="{expanded:dim.expanded, collapsed:!dim.expanded, noneSelected:(0==dim.filters.length)}">
         <div class="facet-header">
-            <div class="facet-caption active" ng-click="dim.expanded=!dim.expanded">
+            <div class="facet-caption active" ng-click="dim.expanded=!dim.expanded" ng-mouseover="filterChoice.show = false">
                 <i class="fa fa-plus-square"></i>
                 <i class="fa fa-minus-square"></i>
                 &nbsp;
                 <span>{{dim.caption || dim.name}}</span>
                 <span ng-if="dim.filters.length" class="clear-filter active" ng-click="selectMember(dim.name,null,$event);">[clear]</span>
             </div>
-            <div class="facet-caption" ng-if="dim.expanded && dim.filters.length > 1 && dim.filterOptions.length > 0">
-                &nbsp;
-                <span ng-show="dim.expanded && dim.filters.length > 1 && dim.filterOptions.length > 1" class="facet-filter active" ng-click="displayFilterChoice(dim.name,$event);">
-                    {{dim.filterCaption}}
-                </span>
-                <span ng-show="dim.expanded && dim.filters.length > 1 && dim.filterOptions.length < 2" class="facet-filter">{{dim.filterCaption}}</span>
+            <div class="labkey-filter-options" ng-if="dim.filters.length > 1 && dim.filterOptions.length > 0" >
+                <a ng-click="displayFilterChoice(dim.name, $event)" ng-mouseover="displayFilterChoice(dim.name,$event);"  class="x4-menu-item-text" ng-class="{inactive: dim.filterOptions.length < 2}" href="#">{{dim.filterCaption}} <i ng-if="dim.filterOptions.length > 1" class="fa fa-caret-down"></i></a>
             </div>
         </div>
         <ul>
