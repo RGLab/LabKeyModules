@@ -34,7 +34,7 @@
 <%@ page import="org.labkey.api.view.template.ClientDependency" %>
 <%@ page import="org.labkey.immport.ImmPortController" %>
 <%@ page import="org.labkey.immport.data.StudyBean" %>
-<%@ page import="org.labkey.immport.view.SubjectFinderWebPart" %>
+<%@ page import="org.labkey.immport.view.DataFinderWebPart" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Collection" %>
 <%@ page import="java.util.Collections" %>
@@ -51,14 +51,14 @@
         resources.add(ClientDependency.fromPath("clientapi/ext4"));
         resources.add(ClientDependency.fromPath("query/olap.js"));
         resources.add(ClientDependency.fromPath("angular"));
-        resources.add(ClientDependency.fromPath("immport/subjectfinder.js"));
+        resources.add(ClientDependency.fromPath("immport/dataFinder.js"));
 
-        resources.add(ClientDependency.fromPath("study/ParticipantGroup.js"));
+        resources.add(ClientDependency.fromPath("immport/ParticipantGroup.js"));
         return resources;
     }
 %>
 <%
-    SubjectFinderWebPart me = (SubjectFinderWebPart)HttpView.currentView();
+    DataFinderWebPart me = (DataFinderWebPart)HttpView.currentView();
     ViewContext context = HttpView.currentContext();
     ArrayList<StudyBean> studies = new SqlSelector(DbSchema.get("immport"),"SELECT study.*, P.title as program_title, pi.pi_names\n" +
             "FROM immport.study " +
@@ -85,42 +85,50 @@
 %>
 
 <style>
-    DIV.outer {
+    DIV.labkey-data-finder-outer {
         min-height:100px;
         min-width:400px;
     }
 
-    .inner
+    .labkey-data-finder-inner
     {
         background-color:#ffffff;
         height:100%;
         width:100%;
     }
 
-    TR.filterMember IMG.delete
+    TABLE.labkey-data-finder
     {
-        visibility:hidden;
-    }
-    TR.filterMember:hover IMG.delete
-    {
-        visibility:visible;
-        cursor:pointer;
-    }
-
-    TABLE.subject-finder
-    {
-        height:100%;
+        height: 450px;
         width:100%;
         padding:3pt;
     }
 
-    /* study-card */
-    .studycard-highlight
+    /* labkey-study-card */
+    .labkey-study-card-highlight
     {
         color:black;
         font-variant:small-caps;
     }
-    DIV.study-card
+
+
+    .labkey-study-card-summary,
+    .labkey-study-card-accession
+    {
+        float:left;
+    }
+
+    .labkey-study-card-goto,
+    .labkey-study-card-pi
+    {
+        float:right;
+    }
+    .labkey-study-card-divider,
+    .labkey-study-card-description
+    {
+        clear:both;
+    }
+    DIV.labkey-study-card
     {
         background-color:#F8F8F8;
         border:1pt solid #AAAAAA;
@@ -133,23 +141,7 @@
         overflow-y:hidden;
     }
 
-    DIV.study-detail
-    {
-        background-color:#EEEEEE;
-        padding: 10pt;
-        width:100%;
-        height:100%;
-    }
-    DIV.hipc
-    {
-        background-image:url('<%=text(hipcImg)%>');
-        background-repeat:no-repeat;
-        background-position:center;
-    }
-    DIV.loaded
-    {
-        background-color:rgba(81, 158, 218, 0.2);
-    }
+    DIV.loaded,
     SPAN.loaded
     {
         background-color:rgba(81, 158, 218, 0.2);
@@ -162,9 +154,18 @@
         padding: 6px;
     }
 
+    DIV.hipc-label
+    {
+        width:100%;
+        position:absolute;
+        bottom:0;
+        left:0;
+        text-align:center;
+    }
+
     TD.study-panel
     {
-        valign: top;
+        vertical-align: top;
     }
 
     TD.study-panel > DIV
@@ -225,10 +226,6 @@
     {
         float:right;
     }
-    .facet-filter
-    {
-        float:left;
-    }
 
     DIV.facet
     {
@@ -244,10 +241,18 @@
         padding:4pt;
         background-color: rgb(240, 240, 240);
     }
+
     DIV.facet-header .facet-caption
     {
         font-weight:400;
     }
+
+    DIV.facet-header .labkey-filter-options
+    {
+        font-size: 11px;
+        padding: 3px 0px 0px 20px;
+    }
+
     DIV.facet UL
     {
         list-style-type:none;
@@ -298,10 +303,6 @@
     {
         background-color:rgba(81, 158, 218, 0.2);
     }
-    /*DIV.facet LI.selectedMember*/
-    /*{*/
-        /*color: #126495*/
-    /*}*/
     DIV.facet LI.emptyMember
     {
         color:#888888;
@@ -364,22 +365,26 @@
     }
 
     /* filter type popup */
-    DIV.filterPopup
+    DIV.labkey-filter-popup
     {
-        z-index:100; background-color:white; opacity: 1; border:solid 2px black; position:absolute;
+        position: absolute;
+        min-width: 80px;
+        margin: 2px 0 0;
+        list-style: none;
+        background-color: white;
+        border-color:#b4b4b4;
+        border-width: 1px;
+        border-style: solid;
+        box-shadow: rgb(136, 136, 136) 0px 0px 6px;
+        z-index: 100;
+        -webkit-padding-start: 0px
     }
-    DIV.filterPopup UL
+
+
+    .labkey-filter-popup > .labkey-dropdown-menu
     {
-        padding:2pt; margin:0;
-    }
-    DIV.filterPopup LI
-    {
-        padding:2pt; margin:2pt; cursor:pointer;
-    }
-    DIV.filterPopup LI
-    {
-        padding:2pt; margin:2pt; cursor:pointer;
-        border: 1px solid #ffffff;
+        display: block;
+        min-width: 130px;
     }
 
     /* menus */
@@ -406,32 +411,65 @@
         margin: 0;
     }
 
-    .navbar-nav > li > .dropdown-menu
+    .navbar-nav > li > .labkey-dropdown-menu
     {
         margin-top : 0;
     }
 
-    .dropdown:hover > .dropdown-menu
+    .labkey-filter-options > a.inactive
+    {
+        color: black;
+        cursor: default;
+    }
+
+    .labkey-dropdown:hover > .labkey-dropdown-menu-active
     {
         display: block;
     }
 
-    .open > .dropdown-menu
-    {
-        display: block;
+    .labkey-dropdown-menu > li {
+        margin-right : 0px;
     }
 
-    .dropdown-menu > li > a
+    .labkey-dropdown-menu > li > a
     {
         color: black;
     }
 
-    .dropdown-menu {
+    .labkey-dropdown-menu > li > a.inactive
+    {
+        color: #C0C0C0;
+        cursor: default;
+    }
+
+    .labkey-dropdown-menu > li.inactive:hover
+    {
+        color: #C0C0C0;
+        cursor: default;
+        background-color: white;
+        border-style: none;
+        background-image: none;
+    }
+
+    .labkey-dropdown-menu > li:hover
+    {
+        background-image: none;
+        background-color: #eaeaea;
+        background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f2f2f2), color-stop(100%, #e0e0e0));
+        background-image: -webkit-linear-gradient(top, #f2f2f2, #e0e0e0);
+        background-image: -moz-linear-gradient(top, #f2f2f2, #e0e0e0);
+        background-image: -o-linear-gradient(top, #f2f2f2, #e0e0e0);
+        background-image: linear-gradient(top, #f2f2f2, #e0e0e0);
+        border-color: #b4b4b4;
+        border-width: 1px;
+        border-style: solid;
+        padding: 0;
+    }
+
+    .labkey-dropdown-menu {
         position: absolute;
         display: none;
         min-width: 80px;
-        padding-left: 8px;
-        padding-right: 8px;
         margin: 2px 0 0;
         list-style: none;
         background-color: white;
@@ -440,6 +478,7 @@
         border-style: solid;
         box-shadow: rgb(136, 136, 136) 0px 0px 6px;
         z-index: 100;
+        -webkit-padding-start: 0px
     }
 
     #manageMenu > a {
@@ -448,15 +487,15 @@
     }
 
     .menu-item-link {
-        padding: 0;
+        padding: 0 8px 0 8px;
     }
 </style>
 
 
-<div id="subjectFinderOuterDIV" class="outer">
-<div id="subjectFinderAppDIV" class="x-hidden inner" ng-app="subjectFinderApp" ng-controller="subjectFinder">
+<div id="dataFinderOuterDIV" class="labkey-data-finder-outer">
+<div id="dataFinderAppDIV" class="x-hidden labkey-data-finder-inner" ng-app="dataFinderApp" ng-controller="dataFinder">
 
-    <table border=0 class="subject-finder">
+    <table border=0 class="labkey-data-finder">
         <tr>
             <td>
                 <div ng-controller="SubjectGroupController">
@@ -464,28 +503,28 @@
                     <div id="toolbar"></div>
                     <div class="navbar navbar-default ">
                         <ul class="nav navbar-nav">
-                            <li id="manageMenu" class="dropdown active">
-                                <a href="#"><i class="fa fa-cog"></i> </a>
-                                <ul class="dropdown-menu" ng-if="groupList.length > 0">
+                            <li id="manageMenu" class="labkey-dropdown active">
+                                <a href="#" ng-mouseover="openMenu($event)"><i class="fa fa-cog"></i> </a>
+                                <ul class="labkey-dropdown-menu" ng-if="groupList.length > 0">
                                     <li class="x4-menu-item-text"><a class="menu-item-link x4-menu-item-link" href="<%=new ActionURL("study", "manageParticipantCategories", getContainer()).toHString()%>">Manage Groups</a></li>
                                 </ul>
                             </li>
-                            <li id="loadMenu" class="dropdown" ng-class="{active : groupList.length > 0 && !isGuest}">
-                                <a class="labkey-text-link no-arrow" href="#">Load <i class="fa fa-caret-down"></i></a>
-                                <ul class="dropdown-menu" ng-if="groupList.length > 0">
+                            <li id="loadMenu" class="labkey-dropdown" ng-class="{active : groupList.length > 0 && !isGuest}" >
+                                <a class="labkey-text-link no-arrow"  href="#" ng-mouseover="openMenu($event)">Load <i class="fa fa-caret-down"></i></a>
+                                <ul class="labkey-dropdown-menu" ng-if="groupList.length > 0" >
                                     <li class="x4-menu-item-text" ng-repeat="group in groupList">
-                                        <a class="menu-item-link x4-menu-item-link" ng-click="applySubjectGroupFilter(group)">{{group.label}}</a>
+                                        <a class="menu-item-link x4-menu-item-link" ng-click="applySubjectGroupFilter(group, $event)">{{group.label}}</a>
                                     </li>
                                 </ul>
                             </li>
-                            <li id="saveMenu" class="dropdown active">
-                                <a class="labkey-text-link no-arrow" href="#">Save <i class="fa fa-caret-down"></i> </a>
-                                <ul class="dropdown-menu" ng-if="!isGuest">
-                                    <li class="x4-menu-item-text" ng-repeat="opt in saveOptions">
-                                        <a class="menu-item-link x4-menu-item-link" ng-click="saveSubjectGroup(opt.id)">{{opt.label}}</a>
+                            <li id="saveMenu" class="labkey-dropdown active">
+                                <a class="labkey-text-link no-arrow" href="#" ng-mouseover="openMenu($event)" ng-mouseleave="closeMenu($event)">Save <i class="fa fa-caret-down"></i> </a>
+                                <ul class="labkey-dropdown-menu" ng-if="!isGuest">
+                                    <li class="x4-menu-item-text" ng-repeat="opt in saveOptions" ng-class="{'inactive' : !opt.isActive}">
+                                        <a class="menu-item-link x4-menu-item-link" ng-class="{'inactive' : !opt.isActive}" ng-click="saveSubjectGroup(opt.id, $event)">{{opt.label}}</a>
                                     </li>
                                 </ul>
-                                <ul class="dropdown-menu" ng-if="isGuest">
+                                <ul class="labkey-dropdown-menu" ng-if="isGuest">
                                     <li class="x4-menu-item-text">
                                         <span class="menu-item-link x4-menu-item-link">You must be logged in to save a group.</span>
                                     </li>
@@ -551,29 +590,29 @@
 
 <div id="studyPopup"></div>
 
-<div id="filterPopup" class="filterPopup" style="top:{{filterChoice.y}}px; left:{{filterChoice.x}}px;" ng-if="filterChoice.show" ng-mouseleave="filterChoice.show=false;">
-    <ul style="list-style: none;">
-        <li ng-click="setFilterType(filterChoice.dimName,filterChoice.options[0].type,$parent)">{{filterChoice.options[0].caption}}</li>
-        <li ng-click="setFilterType(filterChoice.dimName,filterChoice.options[1].type,$parent)">{{filterChoice.options[1].caption}}</li>
+<div id="filterPopup" class="labkey-filter-popup" style="top:{{filterChoice.y}}px; left:{{filterChoice.x}}px;" ng-if="filterChoice.show" ng-mouseleave="filterChoice.show = false">
+    <ul class="labkey-dropdown-menu" ng-if="filterChoice.options.length > 1">
+        <li class="x4-menu-item-text" ng-repeat="option in filterChoice.options">
+            <a class="menu-item-link x4-menu-item-link" ng-click="setFilterType(filterChoice.dimName,option.type)">{{option.caption}}</a>
+        </li>
     </ul>
 </div>
-
 
 <!--
 			templates
  -->
 
 <script type="text/ng-template" id="/studycard.html">
-    <div class="study-card" ng-class="{hipc:study.hipc_funded, loaded:study.loaded}">
-        <span class="studycard-highlight studycard-accession" style="float:left;">{{study.study_accession}}</span>
-        <span class="studycard-highlight studycard-pi" style="float:right;">{{study.pi}}</span>
-        <hr style="clear:both;">
+    <div class="labkey-study-card" ng-class="{hipc:study.hipc_funded, loaded:study.loaded}">
+        <span class="labkey-study-card-highlight labkey-study-card-accession">{{study.study_accession}}</span>
+        <span class="labkey-study-card-highlight labkey-study-card-pi">{{study.pi}}</span>
+        <hr class="labkey-study-card-divider">
         <div>
-            <a class="labkey-text-link" style="float:left;" ng-click="showStudyPopup(study.study_accession)" title="click for more details">view summary</a>
-            <a class="labkey-text-link" ng-if="study.loaded && study.url" style="float:right;" href="{{study.url}}">go to study</a>
+            <a class="labkey-text-link labkey-study-card-summary" ng-click="showStudyPopup(study.study_accession)" title="click for more details">view summary</a>
+            <a class="labkey-text-link labkey-study-card-goto" ng-if="study.loaded && study.url" href="{{study.url}}">go to study</a>
         </div>
-        <div class="studycard-description" style="clear:both;">{{study.title}}</div>
-        <div ng-if="study.hipc_funded" style="width:100%; position:absolute; bottom:0; left:0; text-align:center;"><span class="hipc-label">HIPC</span></div>
+        <div class="labkey-study-card-description">{{study.title}}</div>
+        <div ng-if="study.hipc_funded" class="hipc-label" ><span class="hipc-label">HIPC</span></div>
     </div>
 </script>
 
@@ -582,19 +621,15 @@
     <div id="group_{{dim.name}}" class="facet"
          ng-class="{expanded:dim.expanded, collapsed:!dim.expanded, noneSelected:(0==dim.filters.length)}">
         <div class="facet-header">
-            <div class="facet-caption active" ng-click="dim.expanded=!dim.expanded">
+            <div class="facet-caption active" ng-click="dim.expanded=!dim.expanded" ng-mouseover="filterChoice.show = false">
                 <i class="fa fa-plus-square"></i>
                 <i class="fa fa-minus-square"></i>
                 &nbsp;
                 <span>{{dim.caption || dim.name}}</span>
                 <span ng-if="dim.filters.length" class="clear-filter active" ng-click="selectMember(dim.name,null,$event);">[clear]</span>
             </div>
-            <div class="facet-caption" ng-if="dim.expanded && dim.filters.length > 1 && dim.filterOptions.length > 0">
-                &nbsp;
-                <span ng-show="dim.expanded && dim.filters.length > 1 && dim.filterOptions.length > 1" class="facet-filter active" ng-click="displayFilterChoice(dim.name,$event);">
-                    {{dim.filterCaption}}
-                </span>
-                <span ng-show="dim.expanded && dim.filters.length > 1 && dim.filterOptions.length < 2" class="facet-filter">{{dim.filterCaption}}</span>
+            <div class="labkey-filter-options" ng-if="dim.filters.length > 1 && dim.filterOptions.length > 0" >
+                <a ng-click="displayFilterChoice(dim.name, $event)" ng-mouseover="displayFilterChoice(dim.name,$event);"  class="x4-menu-item-text" ng-class="{inactive: dim.filterOptions.length < 2}" href="#">{{dim.filterCaption}} <i ng-if="dim.filterOptions.length > 1" class="fa fa-caret-down"></i></a>
             </div>
         </div>
         <ul>
@@ -684,11 +719,11 @@ if (!c.isRoot())
 };
 
 
-new subjectFinder(studyData, loaded_studies, "subjectFinderAppDIV");
+new dataFinder(studyData, loaded_studies, "dataFinderAppDIV");
 
 
 LABKEY.help.Tour.register({
-    id: "immport.subjectFinder",
+    id: "immport.dataFinder",
     steps: [
         {
             target: "studypanel",
@@ -727,7 +762,7 @@ LABKEY.help.Tour.register({
 
 function start_tutorial()
 {
-    LABKEY.help.Tour.show("immport.subjectFinder");
+    LABKEY.help.Tour.show("immport.dataFinder");
     return false;
 }
 
@@ -743,7 +778,7 @@ function start_tutorial()
     }
     var _resize = function()
     {
-        var componentOuter = Ext4.get("subjectFinderOuterDIV");
+        var componentOuter = Ext4.get("dataFinderOuterDIV");
         if (!componentOuter)
             return;
         var paddingX, paddingY;

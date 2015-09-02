@@ -5,7 +5,7 @@ NOTE for save subject group, it doesn't make sense to save participantid's for n
 
 */
 
-function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
+function dataFinder(studyData, loadedStudies, dataFinderAppId)
 {
 //
 // study detail pop-up window
@@ -121,73 +121,97 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         }
     }
 
-    var subjectFinderApp = angular.module('subjectFinderApp', ['LocalStorageModule'])
+    var dataFinderApp = angular.module('dataFinderApp', ['LocalStorageModule'])
     .config(function (localStorageServiceProvider)
     {
-        localStorageServiceProvider.setPrefix("subjectFinder." + LABKEY.container.id);
+        localStorageServiceProvider.setPrefix("dataFinder." + LABKEY.container.id);
     });
 
-    subjectFinderApp
+    dataFinderApp
             .controller("SubjectGroupController", ['$scope', function($scope) {
 
         $scope.groupList = [];
         $scope.unsavedGroup = { id: null, label : "Unsaved Group"};
         $scope.currentGroup = $scope.unsavedGroup;
-        $scope.saveOptions = [ {id: 'update', label : "Update"}, {id : "saveNew", label : "Save New Group"} ];
+        $scope.saveOptions = [ {id: 'update', label : "Save", isActive: false}, {id : "saveNew", label : "Save As", isActive: true} ];
 
-        $scope.saveSubjectGroup = function(option) {
+        $scope.saveSubjectGroup = function(option, $event) {
+
+            $scope.closeMenu($event);
 
             var groupLabel = "";
-            var isUpdate = false;
-            if (option == "update" && $scope.currentGroup.id != null) {
-                groupLabel = $scope.currentGroup.label;
-                isUpdate = true;
-            }
-            var win = Ext4.create('Study.window.ParticipantGroup', {
-                subject: {
-                    nounSingular: 'Subject',
-                    nounPlural: 'Subjects',
-                    nounColumnName: 'ParticipantId'
-                },
-                groupLabel: groupLabel,
-                categoryParticipantIds: $scope.subjects,
-                filters: $scope.localStorageService.get("filterSet"),
-                canEdit: !LABKEY.user.isGuest,
-                isAdmin: LABKEY.user.isAdmin,
-                groupRowId : $scope.currentGroup.id,
-                isUpdate: isUpdate
-            });
+            if (option == "update") {
+                if ($scope.currentGroup.id == null)
+                    return;
 
-            // Save the new participant group rowId as the session filter
-            win.on('aftersave', function (data) {
-                $scope.$apply(function() {
-                    if (data.success) {
-                        var group = data.group;
-                        if (group.rowId) {
-                            LABKEY.Ajax.request({
-                                method: "POST",
-                                url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
-                                jsonData: {
-                                    rowId: group.rowId
-                                }
-                            });
-                            group = {
-                                "id" : group.rowId,
-                                "label" : group.label,
-                                "filters" : group.filters,
-                                "selected" : true
-                            };
-                            $scope.groupList.push(group);
-                            $scope.currentGroup = group;
-                        }
+                var groupData = {
+                    label : $scope.currentGroup.label,
+                    participantIds : $scope.subjects,
+                    categoryLabel : '',
+                    categoryType : 'list',
+                    filters: JSON.stringify($scope.localStorageService.get("filterSet")),
+                    rowId : $scope.currentGroup.id
+                };
+                Ext4.Ajax.request({
+                    url: (LABKEY.ActionURL.buildURL("participant-group", 'updateParticipantGroup.api')),
+                    method: 'POST',
+                    jsonData : groupData,
+                    scope : this,
+                    failure : function(response, options)
+                    {
+                        LABKEY.Utils.displayAjaxErrorResponse(response, options, false, "An error occurred trying to save:  ");
                     }
                 });
-            });
-            win.show();
+            } else {
+                var win = Ext4.create('Study.window.ParticipantGroup', {
+                    subject: {
+                        nounSingular: 'Subject',
+                        nounPlural: 'Subjects',
+                        nounColumnName: 'ParticipantId'
+                    },
+                    groupLabel: groupLabel,
+                    categoryParticipantIds: $scope.subjects,
+                    filters: $scope.localStorageService.get("filterSet")
+                });
+
+                // Save the new participant group rowId as the session filter
+                win.on('aftersave', function (data)
+                {
+                    $scope.$apply(function ()
+                    {
+                        if (data.success)
+                        {
+                            var group = data.group;
+                            if (group.rowId)
+                            {
+                                LABKEY.Ajax.request({
+                                    method: "POST",
+                                    url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
+                                    jsonData: {
+                                        rowId: group.rowId
+                                    }
+                                });
+                                group = {
+                                    "id": group.rowId,
+                                    "label": group.label,
+                                    "filters": group.filters,
+                                    "selected": true
+                                };
+                                $scope.groupList.push(group);
+                                $scope.currentGroup = group;
+                                $scope.updateSaveOptions();
+                            }
+                        }
+                    });
+                });
+                win.show();
+            }
         };
 
-        $scope.applySubjectGroupFilter = function(group)
+        $scope.applySubjectGroupFilter = function(group, $event)
         {
+            $scope.closeMenu($event);
+
             $scope.clearAllFilters(false);
 
             for (var f in group.filters)
@@ -219,12 +243,37 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             }
             $scope.updateCountsAsync();
             $scope.saveFilterState();
-            $scope.currentGroup = group;
-            $scope.updateSubjectGroupInLocalStorage();
+            $scope.updateCurrentGroup(group);
         };
 
-        $scope.updateSubjectGroupInLocalStorage = function()
+        $scope.openMenu = function($event)
         {
+            if ($event.target.parentElement.childElementCount < 2)
+                return;
+            var menuElement = $event.target.parentElement.children[1];
+            if (!menuElement.className.includes('labkey-dropdown-menu-active') && menuElement.className.includes('labkey-dropdown-menu') )
+            {
+                menuElement.className = menuElement.className.concat(' labkey-dropdown-menu-active');
+            }
+        };
+
+        $scope.closeMenu = function($event)
+        {
+            var element = $event.target;
+            while (element.parentElement && !element.className.includes('labkey-dropdown-menu-active'))
+                element = element.parentElement;
+
+            while (element.className.includes('labkey-dropdown-menu-active'))
+            {
+                element.className = element.className.replace(' labkey-dropdown-menu-active', '');
+            }
+        };
+
+        $scope.updateCurrentGroup = function(newCurrent)
+        {
+            $scope.currentGroup = newCurrent;
+            $scope.updateSaveOptions();
+
             if (!$scope.localStorageService.isSupported)
                 return;
 
@@ -232,7 +281,13 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 $scope.localStorageService.set("group", $scope.currentGroup);
             else
                 $scope.localStorageService.remove("group");
+
         };
+
+        $scope.updateSaveOptions = function()
+        {
+            $scope.saveOptions[0].isActive = ($scope.currentGroup.id != null);
+        }
 
         $scope.loadSubjectGroups = function ()
         {
@@ -267,7 +322,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             });
             var savedGroup = $scope.localStorageService.get("group");
             if (savedGroup != null) {
-                $scope.currentGroup = savedGroup;
+                $scope.updateCurrentGroup(savedGroup);
             }
         };
 
@@ -279,16 +334,15 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         $scope.$on("filterSelectionCleared", function(event, hasFilters) {
             if (!hasFilters)
             {
-                $scope.currentGroup = $scope.unsavedGroup;
-                $scope.updateSubjectGroupInLocalStorage();
+                $scope.updateCurrentGroup($scope.unsavedGroup);
             }
         });
 
     }]);
 
 
-    subjectFinderApp
-    .controller('subjectFinder', function ($scope, $timeout, $http, localStorageService)
+    dataFinderApp
+    .controller('dataFinder', function ($scope, $timeout, $http, localStorageService)
     {
         window.debug_scope = $scope;
         $scope.filterChoice = {
@@ -476,12 +530,20 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
             return (dim.filters && dim.filters.length) ? true : false;
         };
 
+        $scope.toggleFilterChoiceDisplay = function()
+        {
+            $scope.filterChoice.show = !$scope.filterChoice.show;
+        };
+
         $scope.displayFilterChoice = function (dimName, $event)
         {
             var dim = dataspace.dimensions[dimName];
-            if (!dim)
+            if (!dim || dim.filterOptions.length < 2)
                 return;
-            var xy = Ext4.fly($event.target).getXY();
+            var locationElement = $event.target;
+            if ($event.target.className.includes('fa-caret'))
+                locationElement = $event.target.parentElement;
+            var xy = Ext4.fly(locationElement).getXY();
             $scope.filterChoice =
             {
                 show: true,
@@ -494,7 +556,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
                 $event.stopPropagation();
         };
 
-        $scope.setFilterType = function (dimName, type, $scope)
+        $scope.setFilterType = function (dimName, type)
         {
             $scope.filterChoice.show = false;
             var dim = dataspace.dimensions[dimName];
@@ -866,13 +928,13 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
         {
             if (loadMask)
             {
-                Ext4.get(subjectFinderAppId).removeCls("x-hidden");
+                Ext4.get(dataFinderAppId).removeCls("x-hidden");
                 loadMask.hide();
                 loadMask = null;
-                LABKEY.help.Tour.autoShow('immport.subjectFinder');
+                LABKEY.help.Tour.autoShow('immport.dataFinder');
             }
 
-            LABKEY.Utils.signalWebDriverTest('subjectFinderCountsUpdated');
+            LABKEY.Utils.signalWebDriverTest('dataFinderCountsUpdated');
         };
 
         $scope.clearStudyFilter = function ()
@@ -1235,7 +1297,7 @@ function subjectFinder(studyData, loadedStudies, subjectFinderAppId)
 
     Ext4.onReady(function ()
     {
-        loadMask = new Ext4.LoadMask(Ext4.get(subjectFinderAppId), {msg: "Loading study definitions..."});
+        loadMask = new Ext4.LoadMask(Ext4.get(dataFinderAppId), {msg: "Loading study definitions..."});
         loadMask.show();
     });
 }
