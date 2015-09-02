@@ -135,7 +135,9 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
         $scope.currentGroup = $scope.unsavedGroup;
         $scope.saveOptions = [ {id: 'update', label : "Save", isActive: false}, {id : "saveNew", label : "Save As", isActive: true} ];
 
-        $scope.saveSubjectGroup = function(option) {
+        $scope.saveSubjectGroup = function(option, $event) {
+
+            $scope.closeMenu($event);
 
             var groupLabel = "";
             if (option == "update") {
@@ -155,10 +157,6 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                     method: 'POST',
                     jsonData : groupData,
                     scope : this,
-                    success : function()
-                    {
-                        Ext4.Msg.alert("Group '" + $scope.currentGroup.label + "' successfully updated");
-                    },
                     failure : function(response, options)
                     {
                         LABKEY.Utils.displayAjaxErrorResponse(response, options, false, "An error occurred trying to save:  ");
@@ -210,8 +208,10 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
             }
         };
 
-        $scope.applySubjectGroupFilter = function(group)
+        $scope.applySubjectGroupFilter = function(group, $event)
         {
+            $scope.closeMenu($event);
+
             $scope.clearAllFilters(false);
 
             for (var f in group.filters)
@@ -244,6 +244,29 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
             $scope.updateCountsAsync();
             $scope.saveFilterState();
             $scope.updateCurrentGroup(group);
+        };
+
+        $scope.openMenu = function($event)
+        {
+            if ($event.target.parentElement.childElementCount < 2)
+                return;
+            var menuElement = $event.target.parentElement.children[1];
+            if (!menuElement.className.includes('dropdown-menu-acitve') && menuElement.className.includes('dropdown-menu') )
+            {
+                menuElement.className = menuElement.className.concat(' dropdown-menu-active');
+            }
+        };
+
+        $scope.closeMenu = function($event)
+        {
+            var element = $event.target;
+            while (element.parentElement && !element.className.includes('dropdown-menu-active'))
+                element = element.parentElement;
+
+            while (element.className.includes('dropdown-menu-active'))
+            {
+                element.className = element.className.replace(' dropdown-menu-active', '');
+            }
         };
 
         $scope.updateCurrentGroup = function(newCurrent)

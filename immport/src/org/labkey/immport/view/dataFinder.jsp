@@ -428,12 +428,7 @@
         cursor: default;
     }
 
-    .dropdown:hover > .dropdown-menu
-    {
-        display: block;
-    }
-
-    .open > .dropdown-menu
+    .dropdown:hover > .dropdown-menu-active
     {
         display: block;
     }
@@ -515,24 +510,24 @@
                     <div class="navbar navbar-default ">
                         <ul class="nav navbar-nav">
                             <li id="manageMenu" class="dropdown active">
-                                <a href="#"><i class="fa fa-cog"></i> </a>
+                                <a href="#" ng-mouseover="openMenu($event)"><i class="fa fa-cog"></i> </a>
                                 <ul class="dropdown-menu" ng-if="groupList.length > 0">
                                     <li class="x4-menu-item-text"><a class="menu-item-link x4-menu-item-link" href="<%=new ActionURL("study", "manageParticipantCategories", getContainer()).toHString()%>">Manage Groups</a></li>
                                 </ul>
                             </li>
-                            <li id="loadMenu" class="dropdown" ng-class="{active : groupList.length > 0 && !isGuest}">
-                                <a class="labkey-text-link no-arrow" href="#">Load <i class="fa fa-caret-down"></i></a>
-                                <ul class="dropdown-menu" ng-if="groupList.length > 0">
+                            <li id="loadMenu" class="dropdown" ng-class="{active : groupList.length > 0 && !isGuest}" >
+                                <a class="labkey-text-link no-arrow"  href="#" ng-mouseover="openMenu($event)">Load <i class="fa fa-caret-down"></i></a>
+                                <ul class="dropdown-menu" ng-if="groupList.length > 0" >
                                     <li class="x4-menu-item-text" ng-repeat="group in groupList">
-                                        <a class="menu-item-link x4-menu-item-link" ng-click="applySubjectGroupFilter(group)">{{group.label}}</a>
+                                        <a class="menu-item-link x4-menu-item-link" ng-click="applySubjectGroupFilter(group, $event)">{{group.label}}</a>
                                     </li>
                                 </ul>
                             </li>
                             <li id="saveMenu" class="dropdown active">
-                                <a class="labkey-text-link no-arrow" href="#">Save <i class="fa fa-caret-down"></i> </a>
+                                <a class="labkey-text-link no-arrow" href="#" ng-mouseover="openMenu($event)" ng-mouseleave="closeMenu($event)">Save <i class="fa fa-caret-down"></i> </a>
                                 <ul class="dropdown-menu" ng-if="!isGuest">
                                     <li class="x4-menu-item-text" ng-repeat="opt in saveOptions" ng-class="{'inactive' : !opt.isActive}">
-                                        <a class="menu-item-link x4-menu-item-link" ng-class="{'inactive' : !opt.isActive}" ng-click="saveSubjectGroup(opt.id)">{{opt.label}}</a>
+                                        <a class="menu-item-link x4-menu-item-link" ng-class="{'inactive' : !opt.isActive}" ng-click="saveSubjectGroup(opt.id, $event)">{{opt.label}}</a>
                                     </li>
                                 </ul>
                                 <ul class="dropdown-menu" ng-if="isGuest">
