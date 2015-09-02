@@ -85,42 +85,50 @@
 %>
 
 <style>
-    DIV.outer {
+    DIV.labkey-data-finder-outer {
         min-height:100px;
         min-width:400px;
     }
 
-    .inner
+    .labkey-data-finder-inner
     {
         background-color:#ffffff;
         height:100%;
         width:100%;
     }
 
-    TR.filterMember IMG.delete
-    {
-        visibility:hidden;
-    }
-    TR.filterMember:hover IMG.delete
-    {
-        visibility:visible;
-        cursor:pointer;
-    }
-
-    TABLE.data-finder
+    TABLE.labkey-data-finder
     {
         height: 450px;
         width:100%;
         padding:3pt;
     }
 
-    /* study-card */
-    .studycard-highlight
+    /* labkey-study-card */
+    .labkey-study-card-highlight
     {
         color:black;
         font-variant:small-caps;
     }
-    DIV.study-card
+
+
+    .labkey-study-card-summary,
+    .labkey-study-card-accession
+    {
+        float:left;
+    }
+
+    .labkey-study-card-goto,
+    .labkey-study-card-pi
+    {
+        float:right;
+    }
+    .labkey-study-card-divider,
+    .labkey-study-card-description
+    {
+        clear:both;
+    }
+    DIV.labkey-study-card
     {
         background-color:#F8F8F8;
         border:1pt solid #AAAAAA;
@@ -133,23 +141,7 @@
         overflow-y:hidden;
     }
 
-    DIV.study-detail
-    {
-        background-color:#EEEEEE;
-        padding: 10pt;
-        width:100%;
-        height:100%;
-    }
-    DIV.hipc
-    {
-        background-image:url('<%=text(hipcImg)%>');
-        background-repeat:no-repeat;
-        background-position:center;
-    }
-    DIV.loaded
-    {
-        background-color:rgba(81, 158, 218, 0.2);
-    }
+    DIV.loaded,
     SPAN.loaded
     {
         background-color:rgba(81, 158, 218, 0.2);
@@ -162,9 +154,18 @@
         padding: 6px;
     }
 
+    DIV.hipc-label
+    {
+        width:100%;
+        position:absolute;
+        bottom:0;
+        left:0;
+        text-align:center;
+    }
+
     TD.study-panel
     {
-        valign: top;
+        vertical-align: top;
     }
 
     TD.study-panel > DIV
@@ -225,10 +226,6 @@
     {
         float:right;
     }
-    .facet-filter
-    {
-        float:left;
-    }
 
     DIV.facet
     {
@@ -253,6 +250,7 @@
     DIV.facet-header .labkey-filter-options
     {
         font-size: 11px;
+        padding: 3px 0px 0px 20px;
     }
 
     DIV.facet UL
@@ -305,10 +303,6 @@
     {
         background-color:rgba(81, 158, 218, 0.2);
     }
-    /*DIV.facet LI.selectedMember*/
-    /*{*/
-        /*color: #126495*/
-    /*}*/
     DIV.facet LI.emptyMember
     {
         color:#888888;
@@ -387,7 +381,7 @@
     }
 
 
-    .labkey-filter-popup > .dropdown-menu
+    .labkey-filter-popup > .labkey-dropdown-menu
     {
         display: block;
         min-width: 130px;
@@ -417,7 +411,7 @@
         margin: 0;
     }
 
-    .navbar-nav > li > .dropdown-menu
+    .navbar-nav > li > .labkey-dropdown-menu
     {
         margin-top : 0;
     }
@@ -428,27 +422,27 @@
         cursor: default;
     }
 
-    .dropdown:hover > .dropdown-menu-active
+    .labkey-dropdown:hover > .labkey-dropdown-menu-active
     {
         display: block;
     }
 
-    .dropdown-menu > li {
+    .labkey-dropdown-menu > li {
         margin-right : 0px;
     }
 
-    .dropdown-menu > li > a
+    .labkey-dropdown-menu > li > a
     {
         color: black;
     }
 
-    .dropdown-menu > li > a.inactive
+    .labkey-dropdown-menu > li > a.inactive
     {
         color: #C0C0C0;
         cursor: default;
     }
 
-    .dropdown-menu > li.inactive:hover
+    .labkey-dropdown-menu > li.inactive:hover
     {
         color: #C0C0C0;
         cursor: default;
@@ -457,7 +451,7 @@
         background-image: none;
     }
 
-    .dropdown-menu > li:hover
+    .labkey-dropdown-menu > li:hover
     {
         background-image: none;
         background-color: #eaeaea;
@@ -472,7 +466,7 @@
         padding: 0;
     }
 
-    .dropdown-menu {
+    .labkey-dropdown-menu {
         position: absolute;
         display: none;
         min-width: 80px;
@@ -498,10 +492,10 @@
 </style>
 
 
-<div id="dataFinderOuterDIV" class="outer">
-<div id="dataFinderAppDIV" class="x-hidden inner" ng-app="dataFinderApp" ng-controller="dataFinder">
+<div id="dataFinderOuterDIV" class="labkey-data-finder-outer">
+<div id="dataFinderAppDIV" class="x-hidden labkey-data-finder-inner" ng-app="dataFinderApp" ng-controller="dataFinder">
 
-    <table border=0 class="data-finder">
+    <table border=0 class="labkey-data-finder">
         <tr>
             <td>
                 <div ng-controller="SubjectGroupController">
@@ -509,28 +503,28 @@
                     <div id="toolbar"></div>
                     <div class="navbar navbar-default ">
                         <ul class="nav navbar-nav">
-                            <li id="manageMenu" class="dropdown active">
+                            <li id="manageMenu" class="labkey-dropdown active">
                                 <a href="#" ng-mouseover="openMenu($event)"><i class="fa fa-cog"></i> </a>
-                                <ul class="dropdown-menu" ng-if="groupList.length > 0">
+                                <ul class="labkey-dropdown-menu" ng-if="groupList.length > 0">
                                     <li class="x4-menu-item-text"><a class="menu-item-link x4-menu-item-link" href="<%=new ActionURL("study", "manageParticipantCategories", getContainer()).toHString()%>">Manage Groups</a></li>
                                 </ul>
                             </li>
-                            <li id="loadMenu" class="dropdown" ng-class="{active : groupList.length > 0 && !isGuest}" >
+                            <li id="loadMenu" class="labkey-dropdown" ng-class="{active : groupList.length > 0 && !isGuest}" >
                                 <a class="labkey-text-link no-arrow"  href="#" ng-mouseover="openMenu($event)">Load <i class="fa fa-caret-down"></i></a>
-                                <ul class="dropdown-menu" ng-if="groupList.length > 0" >
+                                <ul class="labkey-dropdown-menu" ng-if="groupList.length > 0" >
                                     <li class="x4-menu-item-text" ng-repeat="group in groupList">
                                         <a class="menu-item-link x4-menu-item-link" ng-click="applySubjectGroupFilter(group, $event)">{{group.label}}</a>
                                     </li>
                                 </ul>
                             </li>
-                            <li id="saveMenu" class="dropdown active">
+                            <li id="saveMenu" class="labkey-dropdown active">
                                 <a class="labkey-text-link no-arrow" href="#" ng-mouseover="openMenu($event)" ng-mouseleave="closeMenu($event)">Save <i class="fa fa-caret-down"></i> </a>
-                                <ul class="dropdown-menu" ng-if="!isGuest">
+                                <ul class="labkey-dropdown-menu" ng-if="!isGuest">
                                     <li class="x4-menu-item-text" ng-repeat="opt in saveOptions" ng-class="{'inactive' : !opt.isActive}">
                                         <a class="menu-item-link x4-menu-item-link" ng-class="{'inactive' : !opt.isActive}" ng-click="saveSubjectGroup(opt.id, $event)">{{opt.label}}</a>
                                     </li>
                                 </ul>
-                                <ul class="dropdown-menu" ng-if="isGuest">
+                                <ul class="labkey-dropdown-menu" ng-if="isGuest">
                                     <li class="x4-menu-item-text">
                                         <span class="menu-item-link x4-menu-item-link">You must be logged in to save a group.</span>
                                     </li>
@@ -597,7 +591,7 @@
 <div id="studyPopup"></div>
 
 <div id="filterPopup" class="labkey-filter-popup" style="top:{{filterChoice.y}}px; left:{{filterChoice.x}}px;" ng-if="filterChoice.show" ng-mouseleave="filterChoice.show = false">
-    <ul class="dropdown-menu" ng-if="filterChoice.options.length > 1">
+    <ul class="labkey-dropdown-menu" ng-if="filterChoice.options.length > 1">
         <li class="x4-menu-item-text" ng-repeat="option in filterChoice.options">
             <a class="menu-item-link x4-menu-item-link" ng-click="setFilterType(filterChoice.dimName,option.type)">{{option.caption}}</a>
         </li>
@@ -609,16 +603,16 @@
  -->
 
 <script type="text/ng-template" id="/studycard.html">
-    <div class="study-card" ng-class="{hipc:study.hipc_funded, loaded:study.loaded}">
-        <span class="studycard-highlight studycard-accession" style="float:left;">{{study.study_accession}}</span>
-        <span class="studycard-highlight studycard-pi" style="float:right;">{{study.pi}}</span>
-        <hr style="clear:both;">
+    <div class="labkey-study-card" ng-class="{hipc:study.hipc_funded, loaded:study.loaded}">
+        <span class="labkey-study-card-highlight labkey-study-card-accession">{{study.study_accession}}</span>
+        <span class="labkey-study-card-highlight labkey-study-card-pi">{{study.pi}}</span>
+        <hr class="labkey-study-card-divider">
         <div>
-            <a class="labkey-text-link" style="float:left;" ng-click="showStudyPopup(study.study_accession)" title="click for more details">view summary</a>
-            <a class="labkey-text-link" ng-if="study.loaded && study.url" style="float:right;" href="{{study.url}}">go to study</a>
+            <a class="labkey-text-link labkey-study-card-summary" ng-click="showStudyPopup(study.study_accession)" title="click for more details">view summary</a>
+            <a class="labkey-text-link labkey-study-card-goto" ng-if="study.loaded && study.url" href="{{study.url}}">go to study</a>
         </div>
-        <div class="studycard-description" style="clear:both;">{{study.title}}</div>
-        <div ng-if="study.hipc_funded" style="width:100%; position:absolute; bottom:0; left:0; text-align:center;"><span class="hipc-label">HIPC</span></div>
+        <div class="labkey-study-card-description">{{study.title}}</div>
+        <div ng-if="study.hipc_funded" class="hipc-label" ><span class="hipc-label">HIPC</span></div>
     </div>
 </script>
 

@@ -251,21 +251,21 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
             if ($event.target.parentElement.childElementCount < 2)
                 return;
             var menuElement = $event.target.parentElement.children[1];
-            if (!menuElement.className.includes('dropdown-menu-acitve') && menuElement.className.includes('dropdown-menu') )
+            if (!menuElement.className.includes('labkey-dropdown-menu-active') && menuElement.className.includes('labkey-dropdown-menu') )
             {
-                menuElement.className = menuElement.className.concat(' dropdown-menu-active');
+                menuElement.className = menuElement.className.concat(' labkey-dropdown-menu-active');
             }
         };
 
         $scope.closeMenu = function($event)
         {
             var element = $event.target;
-            while (element.parentElement && !element.className.includes('dropdown-menu-active'))
+            while (element.parentElement && !element.className.includes('labkey-dropdown-menu-active'))
                 element = element.parentElement;
 
-            while (element.className.includes('dropdown-menu-active'))
+            while (element.className.includes('labkey-dropdown-menu-active'))
             {
-                element.className = element.className.replace(' dropdown-menu-active', '');
+                element.className = element.className.replace(' labkey-dropdown-menu-active', '');
             }
         };
 
