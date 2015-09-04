@@ -81,6 +81,9 @@
 <div id="participant-view"></div>
 <script type="text/javascript">
 
+    var tableName = LABKEY.moduleContext.study && LABKEY.moduleContext.study.subject && LABKEY.moduleContext.study.subject.tableName || 'Participant';
+    var columnName = LABKEY.moduleContext.study && LABKEY.moduleContext.study.subject && LABKEY.moduleContext.study.subject.columnName || (tableName+'Id');
+
     var outer_panel = null;
     var subject_accession = null;
 
@@ -165,9 +168,11 @@
                 "d.species, d.description, d.population_name, d.strain, d.strain_characteristics, " +
                 "s.groups " +
                 "FROM demographics AS d " +
-                "LEFT JOIN (SELECT subject_accession, GROUP_CONCAT(DISTINCT GroupId.Label) AS groups FROM SubjectGroupMap GROUP BY subject_accession) AS s " +
-                "   ON s.subject_accession = d.subject_accession " +
-                "WHERE d.subject_accession='" + subject_accession + "'";
+                "LEFT JOIN (SELECT ${columnName}, GROUP_CONCAT(DISTINCT GroupId.Label) AS groups FROM ${tableName}GroupMap GROUP BY ${columnName}) AS s " +
+                "   ON s.${columnName} = d.${columnName} " +
+                "WHERE d.${columnName}='" + subject_accession + "'";
+        sql = sql.replace(/\${tableName}/g, tableName);
+        sql = sql.replace(/\${columnName}/g, columnName);
 
         var demo_store = Ext4.create('LABKEY.ext4.data.Store', {
             schemaName : 'study',
@@ -263,7 +268,7 @@
                         + "CONVERT('" + row.name + "', SQL_VARCHAR) AS AssayName, "
                         + "CONVERT('" + row.label + "', SQL_VARCHAR) AS AssayLabel, "
                         + "NULL as SubGroupingCol, NULL AS SubGroupingVal, count(*) AS TypeCount "
-        				+ "FROM study." + row.name + " WHERE subject_accession = '" + subject_accession + "')";
+        				+ "FROM study." + row.name + " WHERE ${columnName} = '" + subject_accession + "')";
 
                     if (knownAssayGroupings[row.name])
                     {
@@ -275,13 +280,15 @@
                                 + "CONVERT('" + knownAssayGroupings[row.name] + "', SQL_VARCHAR) AS SubGroupingCol, "
                                 + knownAssayGroupings[row.name] + " as SubGroupingVal, count(*) AS TypeCount "
                                 + "FROM study." + row.name + " "
-                                + "WHERE subject_accession = '" + subject_accession + "' "
+                                + "WHERE ${columnName} = '" + subject_accession + "' "
                                 + "GROUP BY " + knownAssayGroupings[row.name] + ")";
                     }
         		}
 
                 if (unionSql.length > 0)
                 {
+                    unionSql = unionSql.replace(/\${tableName}/g, tableName);
+                    unionSql = unionSql.replace(/\${columnName}/g, columnName);
                     unionSql = "SELECT * FROM (" + unionSql + ") AS AssayUnionQuery WHERE TypeCount > 0 ORDER BY AssayName ASC, SortOrder ASC, TypeCount DESC LIMIT 1000";
 
                     LABKEY.Query.executeSql({
