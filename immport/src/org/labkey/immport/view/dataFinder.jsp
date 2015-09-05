@@ -503,8 +503,8 @@
                     <div id="toolbar"></div>
                     <div class="navbar navbar-default ">
                         <ul class="nav navbar-nav">
-                            <li id="manageMenu" class="labkey-dropdown active">
-                                <a href="#" ng-mouseover="openMenu($event)"><i class="fa fa-cog"></i> </a>
+                            <li id="manageMenu" class="labkey-dropdown active" ng-mouseover="openMenu($event)">
+                                <a href="#"><i class="fa fa-cog"></i></a>
                                 <ul class="labkey-dropdown-menu" ng-if="groupList.length > 0">
                                     <li class="x4-menu-item-text"><a class="menu-item-link x4-menu-item-link" href="<%=new ActionURL("study", "manageParticipantCategories", getContainer()).toHString()%>">Manage Groups</a></li>
                                 </ul>
