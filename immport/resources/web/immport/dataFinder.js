@@ -194,7 +194,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                                 group = {
                                     "id": group.rowId,
                                     "label": group.label,
-                                    "filters": group.filters,
+                                    "filters": group.filters == undefined ? [] : Ext4.decode(group.filters),
                                     "selected": true
                                 };
                                 $scope.groupList.push(group);
