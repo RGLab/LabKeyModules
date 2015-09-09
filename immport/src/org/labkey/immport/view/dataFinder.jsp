@@ -544,7 +544,7 @@
         </tr>
         <tr>
             <td class="selection-panel" >
-                <div>
+                <div id="facetpanel">
                     <div>
                         <div class="facet">
                             <div class="facet-header"><span class="facet-caption">Summary</span></div>
@@ -793,7 +793,7 @@ function start_tutorial()
         var componentSize = resizeToViewport(componentOuter,
                 Math.max(800,vpSize.width), Math.max(600,vpSize.height),
                 paddingX, paddingY);
-        if (componentSize && Ext4.isGecko)
+        if (componentSize)
         {
             var bottom = componentOuter.getXY()[1] + componentOuter.getSize().height;
             Ext4.get("facetpanel").setHeight(bottom - Ext4.get("facetpanel").getXY()[1]);
