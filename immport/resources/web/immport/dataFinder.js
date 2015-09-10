@@ -625,6 +625,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                 {
                     filterMembers.splice(index, 1);
                     member.selected = false;
+                    $scope.$broadcast("filterSelectionCleared", $scope.hasFilters());
                 }
             }
 
