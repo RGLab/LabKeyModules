@@ -290,7 +290,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
         $scope.updateSaveOptions = function()
         {
             $scope.saveOptions[0].isActive = ($scope.currentGroup.id != null);
-        }
+        };
 
         $scope.loadSubjectGroups = function ()
         {

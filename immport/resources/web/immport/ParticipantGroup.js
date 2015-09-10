@@ -135,12 +135,6 @@ Ext4.define('Study.window.ParticipantGroup', {
 
         var groupData = me.getGroupData();
 
-        if (groupData.participantIds.length == 0)
-        {
-            Ext4.Msg.alert("Error", "One or more " + me.subject.nounSingular + " Identifiers required");
-            return false;
-        }
-
         Ext4.Ajax.request({
             url : (LABKEY.ActionURL.buildURL("participant-group", "saveParticipantGroup.api")),
             method : 'POST',
@@ -162,8 +156,8 @@ Ext4.define('Study.window.ParticipantGroup', {
 
     getGroupData : function() {
 
-        var fieldValues = this.queryById('simplePanel').getValues(),
-            ptids = fieldValues['participantIdentifiers'].split(',');
+        var fieldValues = this.queryById('simplePanel').getValues();
+        var ptids = fieldValues['participantIdentifiers'].trim() == "" ? [] : fieldValues['participantIdentifiers'].split(',');
 
         var groupData = {
             label : fieldValues["groupLabel"],
