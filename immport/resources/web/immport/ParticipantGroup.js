@@ -108,7 +108,8 @@ Ext4.define('Study.window.ParticipantGroup', {
         }
         simplePanel.on('closewindow', this.close, this);
         this.callParent(arguments);
-        this.displayQueryWebPart('Demographics');
+        if (this.categoryParticipantIds.length > 0)
+            this.displayQueryWebPart('Demographics');
         //This class exists for testing purposes (e.g. ReportTest)
         this.cls = "doneLoadingTestMarker";
     },
