@@ -248,9 +248,12 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
 
         $scope.openMenu = function($event)
         {
-            if ($event.target.parentElement.childElementCount < 2)
+            var element = $event.target;
+            while (element.parentElement && !element.className.includes('labkey-dropdown'))
+                element = element.parentElement;
+            if (element.childElementCount < 2)
                 return;
-            var menuElement = $event.target.parentElement.children[1];
+            var menuElement = element.children[1];
             if (!menuElement.className.includes('labkey-dropdown-menu-active') && menuElement.className.includes('labkey-dropdown-menu') )
             {
                 menuElement.className = menuElement.className.concat(' labkey-dropdown-menu-active');
