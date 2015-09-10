@@ -170,7 +170,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                         nounColumnName: 'ParticipantId'
                     },
                     groupLabel: groupLabel,
-                    categoryParticipantIds: $scope.subjects,
+                    participantIds: $scope.subjects,
                     filters: $scope.localStorageService.get("filterSet")
                 });
 

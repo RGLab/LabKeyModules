@@ -13,13 +13,13 @@ Ext4.define('Study.window.ParticipantGroup', {
 
         Ext4.applyIf(config, {
             dataRegionName : 'demoDataRegion',
-            width : window.innerWidth < 950 ? window.innerWidth : 950,
-            height : 500,
+            width : config.participantIds.length > 0 ? (window.innerWidth < 950 ? window.innerWidth : 950) : 300,
+            height : config.participantIds.length > 0 ? 500 : 150,
             resizable : false
         });
 
         Ext4.apply(config, {
-            title : 'Define' + Ext4.htmlEncode(config.subject.nounSingular) + ' Group',
+            title : 'Define ' + Ext4.htmlEncode(config.subject.nounSingular) + ' Group',
             layout : 'fit',
             autoScroll : true,
             modal : true,
@@ -39,7 +39,7 @@ Ext4.define('Study.window.ParticipantGroup', {
 
     initComponent : function() {
 
-        var defaultWidth = 880;
+        var defaultWidth = this.participantIds.length > 0 ? 880 : 230;
 
         this.selectionGrid = Ext4.create('Ext.Component', {
             width  :  defaultWidth,
@@ -100,15 +100,15 @@ Ext4.define('Study.window.ParticipantGroup', {
         this.on('afterSave', this.close, this);
         this.items = [simplePanel];
 
-        if (this.categoryParticipantIds) {
-            simplePanel.queryById('participantIdentifiers').setValue(this.categoryParticipantIds);
+        if (this.participantIds) {
+            simplePanel.queryById('participantIdentifiers').setValue(this.participantIds);
         }
         if (this.groupLabel) {
             simplePanel.queryById('groupLabel').setValue(this.groupLabel);
         }
         simplePanel.on('closewindow', this.close, this);
         this.callParent(arguments);
-        if (this.categoryParticipantIds.length > 0)
+        if (this.participantIds.length > 0)
             this.displayQueryWebPart('Demographics');
         //This class exists for testing purposes (e.g. ReportTest)
         this.cls = "doneLoadingTestMarker";
