@@ -246,29 +246,35 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
             $scope.updateCurrentGroup(group);
         };
 
-        $scope.openMenu = function($event)
+        $scope.openMenu = function($event, isConfig)
         {
-            var element = $event.target;
-            while (element.parentElement && !element.className.includes('labkey-dropdown'))
-                element = element.parentElement;
-            if (element.childElementCount < 2)
-                return;
-            var menuElement = element.children[1];
-            if (!menuElement.className.includes('labkey-dropdown-menu-active') && menuElement.className.includes('labkey-dropdown-menu') )
+            if (isConfig || $scope.loadedStudiesShown())
             {
-                menuElement.className = menuElement.className.concat(' labkey-dropdown-menu-active');
+                var element = $event.target;
+                while (element.parentElement && !element.className.includes('labkey-dropdown'))
+                    element = element.parentElement;
+                if (element.childElementCount < 2)
+                    return;
+                var menuElement = element.children[1];
+                if (!menuElement.className.includes('labkey-dropdown-menu-active') && menuElement.className.includes('labkey-dropdown-menu'))
+                {
+                    menuElement.className = menuElement.className.concat(' labkey-dropdown-menu-active');
+                }
             }
         };
 
-        $scope.closeMenu = function($event)
+        $scope.closeMenu = function($event, isConfig)
         {
-            var element = $event.target;
-            while (element.parentElement && !element.className.includes('labkey-dropdown-menu-active'))
-                element = element.parentElement;
-
-            while (element.className.includes('labkey-dropdown-menu-active'))
+            if (isConfig || $scope.loadedStudiesShown())
             {
-                element.className = element.className.replace(' labkey-dropdown-menu-active', '');
+                var element = $event.target;
+                while (element.parentElement && !element.className.includes('labkey-dropdown-menu-active'))
+                    element = element.parentElement;
+
+                while (element.className.includes('labkey-dropdown-menu-active'))
+                {
+                    element.className = element.className.replace(' labkey-dropdown-menu-active', '');
+                }
             }
         };
 
@@ -376,6 +382,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
         var loaded_study_list = [];
         var recent_study_list = [];
         var hipc_study_list = [];
+        var unloaded_study_list = [];
         for (var i = 0; i < studyData.length; i++)
         {
             var name = studyData[i][0];
@@ -402,6 +409,10 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                 if (s.hipc_funded)
                     hipc_study_list.push(s.memberName);
             }
+            else
+            {
+                unloaded_study_list.push(s.memberName);
+            }
             studies.push(s);
         }
 
@@ -412,7 +423,9 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
             $scope.subsetOptions.push({value: 'Recent', name: 'Recently added studies' });
         if (hipc_study_list.length > 0)
             $scope.subsetOptions.push({value: 'HipcFunded', name: 'HIPC funded studies' });
-        $scope.subsetOptions.push({value:'ImmPort',  name:'All ImmPort studies'});
+        if (unloaded_study_list.length > 0)
+            $scope.subsetOptions.push({value: 'UnloadedImmPort', name: 'Unloaded ImmPort Studies'});
+        //$scope.subsetOptions.push({value:'ImmPort',  name:'All ImmPort studies'});
 
 
         $scope.dataspace = dataspace;
@@ -420,6 +433,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
         $scope.loaded_study_list = loaded_study_list;
         $scope.recent_study_list = recent_study_list;
         $scope.hipc_study_list = hipc_study_list;
+        $scope.unloaded_study_list = unloaded_study_list;
 
         // shortcuts
         $scope.dimSubject = dataspace.dimensions.Subject;
@@ -453,7 +467,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
 
                 // init study list according to studySubset
                 if (loaded_study_list.length == 0)
-                    $scope.studySubset = "ImmPort";
+                    $scope.studySubset = "UnloadedImmPort";
                 $scope.onStudySubsetChanged();
                 // doShowAllStudiesChanged() has side-effect of calling updateCountsAsync()
                 //$scope.updateCountsAsync();
@@ -511,6 +525,11 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                 if (members[m].count)
                     return true;
             return false;
+        };
+
+        $scope.loadedStudiesShown = function ()
+        {
+            return $scope.studySubset != 'UnloadedImmPort';
         };
 
         $scope.hasFilters = function ()
@@ -955,6 +974,8 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                 return $scope.recent_study_list;
             if ($scope.studySubset == "HipcFunded")
                 return $scope.hipc_study_list;
+            if ($scope.studySubset == "UnloadedImmPort")
+                return $scope.unloaded_study_list;
             return Ext4.pluck($scope.dimStudy.members, 'uniqueName');
         };
 
@@ -994,7 +1015,6 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                 $scope.clearStudyFilter();
             }
         };
-
 
         $scope.doSearchTermsChanged_promise = null;
 
