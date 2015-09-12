@@ -154,7 +154,7 @@ public class StudyFinderTest extends BaseWebDriverTest implements PostgresOnlyTe
         // Share demographics
         beginAt(WebTestHelper.buildURL("study", getProjectName(), "editType", Maps.of("datasetId", "5001")));
         DatasetDomainEditor datasetDomainEditor = new DatasetDomainEditor(this);
-        datasetDomainEditor.shareDemographics(DatasetDomainEditor.ShareDemographicsBy.PTID);
+//        datasetDomainEditor.shareDemographics(DatasetDomainEditor.ShareDemographicsBy.PTID);
         datasetDomainEditor.save();
 
         for (String studyAccession : STUDY_SUBFOLDERS)
