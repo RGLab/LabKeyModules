@@ -241,7 +241,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                     }
                 }
             }
-            $scope.updateCountsAsync();
+            $scope.updateCountsAsync(true);
             $scope.saveFilterState();
             $scope.updateCurrentGroup(group);
         };
@@ -280,16 +280,24 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
 
         $scope.updateCurrentGroup = function(newCurrent)
         {
+            if ($scope.currentGroup.id == newCurrent.id)
+                return;
+
             $scope.currentGroup = newCurrent;
             $scope.updateSaveOptions();
 
-            if (!$scope.localStorageService.isSupported)
-                return;
-
             if ($scope.currentGroup.id != null)
-                $scope.localStorageService.set("group", $scope.currentGroup);
+            {
+                $scope.saveLoadedGroupInSession($scope.currentGroup.id);
+                if ($scope.localStorageService.isSupported)
+                    $scope.localStorageService.set("group", $scope.currentGroup);
+            }
             else
-                $scope.localStorageService.remove("group");
+            {
+                $scope.saveParticipantIdGroupInSession($scope.subjects);
+                if ($scope.localStorageService.isSupported)
+                    $scope.localStorageService.remove("group");
+            }
 
         };
 
@@ -318,12 +326,15 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                         var groups = [];
                         for (var i = 0; i < json.groups.length; i++)
                         {
-                            groups.push({
-                                "id" : json.groups[i].id,
-                                "label" : json.groups[i].label,
-                                "selected": false,
-                                "filters" : json.groups[i].filters == undefined ? [] : Ext4.decode(json.groups[i].filters)
-                            });
+                            if (json.groups[i].filters != undefined)
+                            {
+                                groups.push({
+                                    "id": json.groups[i].id,
+                                    "label": json.groups[i].label,
+                                    "selected": false,
+                                    "filters": Ext4.decode(json.groups[i].filters)
+                                });
+                            }
                         }
                         $scope.groupList = groups;
                     }
@@ -335,6 +346,44 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
             }
         };
 
+        $scope.saveParticipantIdGroupInSession = function (participantIds)
+        {
+            if ($scope.subjects.length == 0)
+            {
+                LABKEY.Ajax.request({
+                    method: "DELETE",
+                    url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api")
+                });
+            }
+            else
+            {
+                LABKEY.Ajax.request({
+                    method: "POST",
+                    url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
+                    jsonData: {
+                        participantIds: $scope.subjects
+                    }
+                });
+            }
+        };
+
+        $scope.saveLoadedGroupInSession = function(groupId)
+        {
+            if (groupId != null)
+            {
+                LABKEY.Ajax.request({
+                    method: "POST",
+                    url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
+                    jsonData: {
+                        rowId: groupId
+                    }
+                });
+            }
+        };
+
+        $scope.$on("subjectGroupChanged", function(event, participantIds) {
+           $scope.saveParticipantIdGroupInSession(participantIds);
+        });
 
         $scope.$on("cubeReady", function(event) {
             $scope.loadSubjectGroups();
@@ -471,7 +520,6 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                 $scope.onStudySubsetChanged();
                 // doShowAllStudiesChanged() has side-effect of calling updateCountsAsync()
                 //$scope.updateCountsAsync();
-                $scope.$broadcast("cubeReady");
             });
         });
 
@@ -697,9 +745,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
             $scope.updateCountsAsync();
         };
 
-
-
-        $scope.updateCountsAsync = function ()
+        $scope.updateCountsAsync = function (isSavedGroup)
         {
             var intersectFilters = [];
             var d, i, dim;
@@ -799,7 +845,8 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                     //                config.scope.timeout(function(){config.scope.updateCounts(config.dim, cellSet);},1);
                     config.scope.timeout(function ()
                     {
-                        config.scope.updateCountsUnion(cellSet);
+                        config.scope.updateCountsUnion(cellSet, isSavedGroup);
+                        $scope.$broadcast("cubeReady");
                     }, 1);
                 },
                 scope: $scope,
@@ -830,7 +877,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
 
             $scope.saveFilterState();
             $scope.updateContainerFilter();
-            $scope.saveSessionSubjectGroup();
+            $scope.changeSubjectGroup();
             $scope.doneRendering();
         };
 
@@ -871,7 +918,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
 
 
         /* handle query response to update all the member counts with all filters applied */
-        $scope.updateCountsUnion = function (cellSet)
+        $scope.updateCountsUnion = function (cellSet, isSavedGroup)
         {
             var dim, member, d, m;
             // map from hierarchyName to dataspace dimension
@@ -943,7 +990,8 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
 
             $scope.saveFilterState();
             $scope.updateContainerFilter();
-            $scope.saveSessionSubjectGroup();
+            if (!isSavedGroup)
+                $scope.changeSubjectGroup();
             $scope.doneRendering();
         };
 
@@ -1208,33 +1256,16 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
             showPopup(null, 'study', study_accession);
         };
 
-        $scope.saveSessionSubjectGroup = function ()
+        $scope.changeSubjectGroup = function ()
         {
-            // TODO: How to get all subject count with no filters?  I think we may need to get a count of subjects for the ImmPort loaded studies (the radio buttons) when the page is loaded
-            var allSubjectsCount = -1;
-            if ($scope.subjects.length == 0 || $scope.subjects.length == allSubjectsCount)
-            {
-                LABKEY.Ajax.request({
-                    method: "DELETE",
-                    url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api")
-                });
-            }
-            else
-            {
-                LABKEY.Ajax.request({
-                    method: "POST",
-                    url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
-                    jsonData: {
-                        participantIds: $scope.subjects
-                    }
-                });
-            }
+            $scope.$broadcast("subjectGroupChanged", $scope.subjects);
         };
 
         $scope.showCreateStudyDialog = function()
         {
             window.alert("NYI: Create Study Dialog");
         };
+
     });
 
 
