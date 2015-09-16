@@ -10,7 +10,6 @@ import org.labkey.test.components.immport.StudySummaryWindow;
 import org.labkey.test.pages.LabKeyPage;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.LoggedParam;
-import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -27,23 +26,16 @@ public class DataFinderPage extends LabKeyPage
     private static final String CONTROLLER = "immport";
     private static final String ACTION = "dataFinder";
     private static final String COUNT_SIGNAL = "dataFinderCountsUpdated";
-    private String _uuid = "1";
 
     public DataFinderPage(BaseWebDriverTest test)
     {
         super(test);
     }
 
-    public void setUuid(String uuid)
-    {
-//        _uuid = uuid;
-        throw new UnsupportedOperationException("Data Finder doesn't currently support multiple instances.");
-    }
-
     @Override
     protected void waitForPage()
     {
-        _test.waitForElement(Locators.pageSignal(COUNT_SIGNAL));
+        _test.waitForElement(LabKeyPage.Locators.pageSignal(COUNT_SIGNAL));
     }
 
     public static DataFinderPage goDirectlyToPage(BaseWebDriverTest test, String containerPath)
@@ -54,53 +46,65 @@ public class DataFinderPage extends LabKeyPage
 
     public ExportStudyDatasetsPage exportDatasets()
     {
-        _test.clickAndWait(elements().exportDatasets);
+        _test.clickAndWait(Locators.exportDatasets);
         return new ExportStudyDatasetsPage(_test);
     }
 
-    public void showAllImmPortStudies()
+    public void showUnloadedImmPortStudies()
     {
-        _test.doAndWaitForPageSignal(() -> _test.checkRadioButton(elements().showAllRadioButton), COUNT_SIGNAL);
+        selectStudySubset("Unloaded ImmPort studies");
+//        _test.doAndWaitForPageSignal(() -> _test.selectOptionByText(Locators.studySubsetChooser, "Unloaded ImmPort studies"), COUNT_SIGNAL);
     }
 
     public void showAllImmuneSpaceStudies()
     {
-        _test.doAndWaitForPageSignal(() -> _test.checkRadioButton(elements().showAllImmuneSpaceRadioButton), COUNT_SIGNAL);
+        selectStudySubset("ImmuneSpace studies");
+//        _test.doAndWaitForPageSignal(() -> _test.selectOptionByText(Locators.studySubsetChooser, "ImmuneSpace studies"), COUNT_SIGNAL);
      }
+
+    public void selectStudySubset(String text)
+    {
+        String selectedText = _test.getSelectedOptionText(Locators.studySubsetChooser);
+        if (!selectedText.equals(text))
+        {
+            _test.doAndWaitForPageSignal(() -> _test.selectOptionByText(Locators.studySubsetChooser, text), COUNT_SIGNAL);
+        }
+    }
 
     @LogMethod
     public void studySearch(@LoggedParam final String search)
     {
-        _test.doAndWaitForPageSignal(() -> _test.setFormElement(elements().studySearchInput, search), COUNT_SIGNAL);
+        _test.doAndWaitForPageSignal(() -> _test.setFormElement(Locators.studySearchInput, search), COUNT_SIGNAL);
     }
 
     @LogMethod(quiet = true)
     public void clearSearch()
     {
-        if (!_test.getFormElement(elements().studySearchInput).isEmpty())
+        if (!_test.getFormElement(Locators.studySearchInput).isEmpty())
             studySearch(" ");
     }
 
     public Map<Dimension, Integer> getSummaryCounts()
     {
-        List<WebElement> summaryCountRows = elements().summaryCountRow.findElements(_test.getDriver());
+        // FIXME figure out what counts the tests want and create locator for that
+//        List<WebElement> summaryCountRows = Locators.summaryCountRow.findElements(_test.getDriver());
         Map<Dimension, Integer> countMap = new HashMap<>();
 
-        for (WebElement row : summaryCountRows)
-        {
-            List<WebElement> cells = row.findElements(By.cssSelector("td"));
-            Dimension dimension = Dimension.fromString(cells.get(1).getText().trim());
-            Integer count = Integer.parseInt(cells.get(0).getText());
-
-            countMap.put(dimension, count);
-        }
+//        for (WebElement row : summaryCountRows)
+//        {
+//            List<WebElement> cells = row.findElements(By.cssSelector("td"));
+//            Dimension dimension = Dimension.fromString(cells.get(1).getText().trim());
+//            Integer count = Integer.parseInt(cells.get(0).getText());
+//
+//            countMap.put(dimension, count);
+//        }
 
         return countMap;
     }
 
     public List<StudyCard> getStudyCards()
     {
-        List<WebElement> studyCardEls = elements().studyCard.findElements(_test.getDriver());
+        List<WebElement> studyCardEls = Locators.studyCard.findElements(_test.getDriver());
         List<StudyCard> studyCards = new ArrayList<>();
 
         for (WebElement el : studyCardEls)
@@ -113,14 +117,15 @@ public class DataFinderPage extends LabKeyPage
 
     public Map<Dimension, SummaryFilterPanel> getSelectionPanels()
     {
-        List<WebElement> selectionEls = elements().selection.findElements(_test.getDriver());
+        // FIXME figure out what the tests wants and update selectors for that
+//        List<WebElement> selectionEls = Locators.selection.findElements(_test.getDriver());
         Map<Dimension, SummaryFilterPanel> dimensionSelections = new HashMap<>();
 
-        for (WebElement el : selectionEls)
-        {
-            SummaryFilterPanel dimensionSelection = new SummaryFilterPanel(el);
-            dimensionSelections.put(dimensionSelection.getDimension(), dimensionSelection);
-        }
+//        for (WebElement el : selectionEls)
+//        {
+//            SummaryFilterPanel dimensionSelection = new SummaryFilterPanel(el);
+//            dimensionSelections.put(dimensionSelection.getDimension(), dimensionSelection);
+//        }
 
         return dimensionSelections;
     }
@@ -140,7 +145,7 @@ public class DataFinderPage extends LabKeyPage
 
     public Map<Dimension, DimensionPanel> getDimensionPanels()
     {
-        List<WebElement> dimensionPanelEls = elements().dimensionPanel.findElements(_test.getDriver());
+        List<WebElement> dimensionPanelEls = Locators.facet.findElements(_test.getDriver());
         Map<Dimension, DimensionPanel> dimensionPanels = new HashMap<>();
 
         for (WebElement el : dimensionPanelEls)
@@ -157,14 +162,14 @@ public class DataFinderPage extends LabKeyPage
      */
     public SummaryFilterPanel waitForSelection(String value)
     {
-        WebElement selectionEl = elements().selection.containing(value).waitForElement(_test.shortWait());
+        WebElement selectionEl = Locators.selection.containing(value).waitForElement(_test.shortWait());
 
         return new SummaryFilterPanel(selectionEl);
     }
 
     public void clearAllFilters()
     {
-        final WebElement clearAll = elements().clearAll.findElement(_test.getDriver());
+        final WebElement clearAll = Locators.clearAll.findElement(_test.getDriver());
         if (clearAll.isDisplayed())
         {
             _test.doAndWaitForPageSignal(clearAll::click, COUNT_SIGNAL);
@@ -199,30 +204,28 @@ public class DataFinderPage extends LabKeyPage
             }
         });
     }
-
-    protected Elements elements()
-    {
-        return new Elements();
-    }
     
-    protected class Elements
+    public static class Locators
     {
-        public Locator.CssLocator studyFinder = Locator.css("#datafinderAppDIV" + (_uuid == null ? "1" : _uuid));
-        public Locator.XPathLocator exportDatasets = Locator.linkWithText("Export Study Datasets");
-        public Locator.CssLocator studySearchInput = studyFinder.append(Locator.css("#searchTerms"));
-        public Locator.CssLocator searchMessage = studyFinder.append(Locator.css("span.searchMessage"));
-        public Locator.CssLocator searchMessageNotFound = studyFinder.append(Locator.css("span.searchNotFound"));
-        public Locator.XPathLocator showAllRadioButton = Locator.radioButtonByNameAndValue("studySubset", "ImmPort");
-        public Locator.XPathLocator showAllImmuneSpaceRadioButton = Locator.radioButtonByNameAndValue("studySubset","ImmuneSpace");
-        public Locator.CssLocator studyPanel = studyFinder.append(Locator.css("#studypanel"));
-        public Locator.CssLocator studyCard = studyFinder.append(Locator.css(".study-card"));
-        public Locator.CssLocator dimensionsTable = studyFinder.append(Locator.css("table.dimensions"));
-        public Locator.CssLocator dimensionPanel = dimensionsTable.append(Locator.css("fieldset.group-fieldset"));
-        public Locator.CssLocator summaryArea = studyFinder.append(Locator.css("#summaryArea"));
-        public Locator.CssLocator summaryCounts = summaryArea.append(Locator.css("> tbody:first-child"));
-        public Locator.CssLocator summaryCountRow = summaryCounts.append(Locator.css("> tr:not(:first-child):not(:last-child)"));
-        public Locator.CssLocator selection = summaryArea.append(Locator.css("> tbody:not(:first-child)"));
-        public Locator.CssLocator clearAll = summaryArea.append(Locator.css("a[ng-click='clearAllFilters();']"));
+        public static Locator.CssLocator studyFinder = Locator.css("#dataFinderApp");
+        public static Locator.XPathLocator exportDatasets = Locator.linkWithText("Export Study Datasets");
+        public static Locator.CssLocator studySearchInput = studyFinder.append(Locator.css("#searchTerms"));
+        public static Locator.CssLocator searchMessage = studyFinder.append(Locator.css("span.labkey-study-search"));
+
+        public static Locator.NameLocator studySubsetChooser = Locator.name("studySubsetSelect");
+        //        public Locator.XPathLocator showAllRadioButton = Locator.radioButtonByNameAndValue("studySubset", "ImmPort");
+//        public Locator.XPathLocator showAllImmuneSpaceRadioButton = Locator.radioButtonByNameAndValue("studySubset","ImmuneSpace");
+        public static Locator.CssLocator studyPanel = studyFinder.append(Locator.css("#studypanel"));
+        public static Locator.CssLocator studyCard = studyFinder.append(Locator.css(".labkey-study-card"));
+        public static Locator.CssLocator selectionPanel = studyFinder.append(Locator.css(".selection-panel"));
+        public static Locator.CssLocator facetPanel = selectionPanel.append(Locator.css("#facetPanel"));
+        public static Locator.CssLocator facet = facetPanel.append(" .facet");
+        public static Locator.CssLocator emptyMember = facetPanel.append(Locator.css("li.empty-member"));
+        public static Locator.CssLocator summaryArea = selectionPanel.append(Locator.css("#summaryArea"));
+//        public Locator.CssLocator summaryCounts = summaryArea.append(Locator.css("> tbody:first-child"));
+//        public Locator.CssLocator summaryCountRow = summaryCounts.append(Locator.css("> tr:not(:first-child):not(:last-child)"));
+        public static Locator.CssLocator selection = facetPanel.append(Locator.css(".bar-selected"));
+        public static Locator.CssLocator clearAll = summaryArea.append(Locator.css("span[ng-click='clearAllFilters(true);']"));
     }
 
     public enum Dimension
@@ -318,11 +321,6 @@ public class DataFinderPage extends LabKeyPage
             return _test.getTexts(findElements(elements.selectedValue));
         }
 
-        public void selectAll()
-        {
-            _test.doAndWaitForPageSignal(() -> elements.all.findElement(panel).click(), COUNT_SIGNAL);
-            elements.selectedValue.waitForElementToDisappear(panel, BaseWebDriverTest.WAIT_FOR_JAVASCRIPT);
-        }
 
         public String selectFirstIntersectingMeasure()
         {
@@ -378,13 +376,13 @@ public class DataFinderPage extends LabKeyPage
 
         private class Elements
         {
-            public Locator.CssLocator dimension = Locator.css("h3");
-            public Locator.CssLocator all = Locator.css("#m__ALL");
+            // FIXME these elements are probably not correct
+            public Locator.CssLocator dimension = Locator.css(".facet-caption > span");
             public Locator.CssLocator value = Locator.css(".member");
-            public Locator.CssLocator emptyValue = Locator.css(".ng-scope.emptyMember");
-            public Locator.CssLocator nonEmptyValue = Locator.css(".ng-scope.member:not(.emptyMember)");
-            public Locator.CssLocator nonEmptyNonSelectedValue = Locator.css(".ng-scope.member:not(.emptyMember):not(.selectedMember)");
-            public Locator.CssLocator selectedValue = Locator.css(".ng-scope.selectedMember");
+            public Locator.CssLocator emptyValue = Locator.css(".ng-scope.empty-member");
+            public Locator.CssLocator nonEmptyValue = Locator.css(".ng-scope.member:not(.empty-member)");
+            public Locator.CssLocator nonEmptyNonSelectedValue = Locator.css(".ng-scope.member:not(.empty-member):not(.selected-member)");
+            public Locator.CssLocator selectedValue = Locator.css(".ng-scope.selected-member");
         }
     }
 
@@ -437,9 +435,9 @@ public class DataFinderPage extends LabKeyPage
         {
             public Locator viewStudyLink = Locator.linkWithText("view summary");
             public Locator goToStudyLink = Locator.linkWithText("go to study");
-            public Locator name = Locator.css(".studycard-accession");
-            public Locator PI = Locator.css(".studycard-pi");
-            public Locator title = Locator.css(".studycard-description");
+            public Locator name = Locator.css(".labkey-study-card-accession");
+            public Locator PI = Locator.css(".labkey-study-card-pi");
+            public Locator title = Locator.css(".labkey-study-card-description");
         }
     }
 
