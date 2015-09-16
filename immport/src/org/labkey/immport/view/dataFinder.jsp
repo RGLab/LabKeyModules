@@ -808,7 +808,7 @@ function start_tutorial()
         var componentSize = resizeToViewport(componentOuter,
                 Math.max(800,vpSize.width), Math.max(600,vpSize.height),
                 paddingX, paddingY);
-        if (componentSize && Ext4.isGecko)
+        if (componentSize)
         {
             var bottom = componentOuter.getXY()[1] + componentOuter.getSize().height;
             Ext4.get("selectionpanel").setHeight(bottom - Ext4.get("selectionpanel").getXY()[1]);

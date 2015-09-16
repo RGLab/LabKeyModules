@@ -182,7 +182,7 @@ Ext4.onReady(function () {
                     var queryNames = dataStore.collect('name');
                     for(var i = 0; i < queryNames.length; i++)
                     {
-                        var o = { queryName : queryNames[i] };
+                          var o = { queryName : queryNames[i]};
 
                         if (o.queryName == "StudyProperties") {
                             o.filters = studyPropertyFilters;
@@ -192,7 +192,8 @@ Ext4.onReady(function () {
                     }
 
                     LABKEY.Query.exportTables({
-                        schemas: schemaQueries
+                        schemas: schemaQueries,
+                        headerType: "Caption"
                     });
                 }
             },{
