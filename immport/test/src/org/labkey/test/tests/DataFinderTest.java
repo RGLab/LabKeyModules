@@ -577,13 +577,7 @@ public class DataFinderTest extends BaseWebDriverTest implements PostgresOnlyTes
         assertTrue("Expected file name to end in .tables.zip: " + exportedFile.getAbsolutePath(), exportedFile.getName().endsWith(".tables.zip"));
         assertTrue("Exported file does not exist: " + exportedFile.getAbsolutePath(), exportedFile.exists());
 
-        waitFor(new Checker() {
-            @Override
-            public boolean check() {
-                return exportedFile.length() > 0;
-            }
-        }, "Exported file is empty", WAIT_FOR_JAVASCRIPT * 10);
-
+        waitFor(() -> exportedFile.length() > 0, "Exported file is empty: " + exportedFile.getAbsolutePath(), WAIT_FOR_JAVASCRIPT * 10);
 
         log("Validate contents");
         try (FileSystem fs = FileSystems.newFileSystem(exportedFile.toPath(), null)) {
