@@ -13,13 +13,13 @@ Ext4.define('Study.window.ParticipantGroup', {
 
         Ext4.applyIf(config, {
             dataRegionName : 'demoDataRegion',
-            width : window.innerWidth < 950 ? window.innerWidth : 950,
-            height : 500,
+            width : config.participantIds.length > 0 ? (window.innerWidth < 950 ? window.innerWidth : 950) : 300,
+            height : config.participantIds.length > 0 ? 500 : 150,
             resizable : false
         });
 
         Ext4.apply(config, {
-            title : 'Define' + Ext4.htmlEncode(config.subject.nounSingular) + ' Group',
+            title : 'Define ' + Ext4.htmlEncode(config.subject.nounSingular) + ' Group',
             layout : 'fit',
             autoScroll : true,
             modal : true,
@@ -39,7 +39,7 @@ Ext4.define('Study.window.ParticipantGroup', {
 
     initComponent : function() {
 
-        var defaultWidth = 880;
+        var defaultWidth = this.participantIds.length > 0 ? 880 : 230;
 
         this.selectionGrid = Ext4.create('Ext.Component', {
             width  :  defaultWidth,
@@ -100,15 +100,16 @@ Ext4.define('Study.window.ParticipantGroup', {
         this.on('afterSave', this.close, this);
         this.items = [simplePanel];
 
-        if (this.categoryParticipantIds) {
-            simplePanel.queryById('participantIdentifiers').setValue(this.categoryParticipantIds);
+        if (this.participantIds) {
+            simplePanel.queryById('participantIdentifiers').setValue(this.participantIds);
         }
         if (this.groupLabel) {
             simplePanel.queryById('groupLabel').setValue(this.groupLabel);
         }
         simplePanel.on('closewindow', this.close, this);
         this.callParent(arguments);
-        this.displayQueryWebPart('Demographics');
+        if (this.participantIds.length > 0)
+            this.displayQueryWebPart('Demographics');
         //This class exists for testing purposes (e.g. ReportTest)
         this.cls = "doneLoadingTestMarker";
     },
@@ -135,12 +136,6 @@ Ext4.define('Study.window.ParticipantGroup', {
 
         var groupData = me.getGroupData();
 
-        if (groupData.participantIds.length == 0)
-        {
-            Ext4.Msg.alert("Error", "One or more " + me.subject.nounSingular + " Identifiers required");
-            return false;
-        }
-
         Ext4.Ajax.request({
             url : (LABKEY.ActionURL.buildURL("participant-group", "saveParticipantGroup.api")),
             method : 'POST',
@@ -162,8 +157,8 @@ Ext4.define('Study.window.ParticipantGroup', {
 
     getGroupData : function() {
 
-        var fieldValues = this.queryById('simplePanel').getValues(),
-            ptids = fieldValues['participantIdentifiers'].split(',');
+        var fieldValues = this.queryById('simplePanel').getValues();
+        var ptids = fieldValues['participantIdentifiers'].trim() == "" ? [] : fieldValues['participantIdentifiers'].split(',');
 
         var groupData = {
             label : fieldValues["groupLabel"],

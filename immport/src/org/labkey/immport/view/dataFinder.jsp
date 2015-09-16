@@ -104,6 +104,11 @@
         padding:3pt;
     }
 
+    .labkey-filter-message
+    {
+        float:left;
+    }
+
     /* labkey-study-card */
     .labkey-study-card-highlight
     {
@@ -232,6 +237,7 @@
         max-width:200pt;
         border:solid 2pt rgb(220, 220, 220);
     }
+
     .active
     {
         cursor:pointer;
@@ -422,6 +428,12 @@
         cursor: default;
     }
 
+    .labkey-dropdown > a.labkey-disabled-text-link
+    {
+        color: #C0C0C0;
+        cursor: default;
+    }
+
     .labkey-dropdown:hover > .labkey-dropdown-menu-active
     {
         display: block;
@@ -500,26 +512,26 @@
             <td>
                 <div ng-controller="SubjectGroupController">
                     <div>{{currentGroup.id != null ? "Saved group: ": ""}}{{currentGroup.label}}</div>
-                    <div id="toolbar"></div>
+
                     <div class="navbar navbar-default ">
                         <ul class="nav navbar-nav">
-                            <li id="manageMenu" class="labkey-dropdown active" ng-mouseover="openMenu($event)">
+                            <li id="manageMenu" class="labkey-dropdown" ng-mouseover="openMenu($event, true)">
                                 <a href="#"><i class="fa fa-cog"></i></a>
-                                <ul class="labkey-dropdown-menu" ng-if="groupList.length > 0">
+                                <ul class="labkey-dropdown-menu" ng-if="!isGuest && groupList.length > 0">
                                     <li class="x4-menu-item-text"><a class="menu-item-link x4-menu-item-link" href="<%=new ActionURL("study", "manageParticipantCategories", getContainer()).toHString()%>">Manage Groups</a></li>
                                 </ul>
                             </li>
-                            <li id="loadMenu" class="labkey-dropdown" ng-class="{active : groupList.length > 0 && !isGuest}" >
-                                <a class="labkey-text-link no-arrow"  href="#" ng-mouseover="openMenu($event)">Load <i class="fa fa-caret-down"></i></a>
-                                <ul class="labkey-dropdown-menu" ng-if="groupList.length > 0" >
+                            <li id="loadMenu" class="labkey-dropdown" >
+                                <a ng-class="{'labkey-text-link' : loadedStudiesShown(), 'labkey-disabled-text-link': !loadedStudiesShown()} " class="no-arrow" style="margin-right: 0.8em" href="#" ng-mouseover="openMenu($event, false)">Load <i class="fa fa-caret-down"></i></a>
+                                <ul class="labkey-dropdown-menu" ng-if="loadedStudiesShown() && groupList.length > 0" >
                                     <li class="x4-menu-item-text" ng-repeat="group in groupList">
                                         <a class="menu-item-link x4-menu-item-link" ng-click="applySubjectGroupFilter(group, $event)">{{group.label}}</a>
                                     </li>
                                 </ul>
                             </li>
-                            <li id="saveMenu" class="labkey-dropdown active">
-                                <a class="labkey-text-link no-arrow" href="#" ng-mouseover="openMenu($event)" ng-mouseleave="closeMenu($event)">Save <i class="fa fa-caret-down"></i> </a>
-                                <ul class="labkey-dropdown-menu" ng-if="!isGuest">
+                            <li id="saveMenu" class="labkey-dropdown">
+                                <a ng-class="{'labkey-text-link' : loadedStudiesShown(), 'labkey-disabled-text-link': !loadedStudiesShown()} " class="no-arrow" style="margin-right: 0.8em" href="#" ng-mouseover="openMenu($event, false)" ng-mouseleave="closeMenu($event)">Save <i class="fa fa-caret-down"></i> </a>
+                                <ul class="labkey-dropdown-menu" ng-if="!isGuest && loadedStudiesShown()">
                                     <li class="x4-menu-item-text" ng-repeat="opt in saveOptions" ng-class="{'inactive' : !opt.isActive}">
                                         <a class="menu-item-link x4-menu-item-link" ng-class="{'inactive' : !opt.isActive}" ng-click="saveSubjectGroup(opt.id, $event)">{{opt.label}}</a>
                                     </li>
@@ -538,8 +550,9 @@
 
             </td>
             <td class="help-links">
-            <%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%>
-            <%=textLink("Export Study Datasets", ImmPortController.ExportStudyDatasetsAction.class)%><br>
+                <span id="message" class="labkey-filter-message" ng-if="!loadedStudiesShown()">No data are available for participants since you are viewing unloaded studies.</span>
+                <%=textLink("quick help", "#", "start_tutorial()", "showTutorial")%>
+                <%=textLink("Export Study Datasets", ImmPortController.ExportStudyDatasetsAction.class)%><br>
             </td>
         </tr>
         <tr>
@@ -549,11 +562,11 @@
                         <div class="facet">
                             <div class="facet-header"><span class="facet-caption">Summary</span></div>
                             <ul>
-                                <li class="member" style="cursor: auto">
+                                <li class="member" style="cursor: default">
                                     <span class="member-name">Studies</span>
                                     <span class="member-count">{{dimStudy.summaryCount}}</span>
                                 </li>
-                                <li class="member" style="cursor: auto">
+                                <li class="member" style="cursor: default">
                                     <span class="member-name">Subjects</span>
                                     <span class="member-count">{{formatNumber(dimSubject.allMemberCount||0)}}</span>
                                 </li>
@@ -634,7 +647,7 @@
         </div>
         <ul>
             <li ng-repeat="member in dim.members" id="m_{{dim.name}}_{{member.uniqueName}}" style="position:relative;" class="member"
-                 ng-class="{selectedMember:member.selected, emptyMember:(!member.selected && 0==member.count)}"
+                 ng-class="{selectedMember:member.selected, emptyMember:(!member.selected && 0==getSubjectCount(member))}"
                  ng-click="selectMember(dim.name,member,$event)">
                 <span class="active member-indicator" ng-class="{selected:member.selected, 'none-selected':!dim.filters.length, 'not-selected':!member.selected}" ng-click="toggleMember(dim.name,member,$event)">
                 </span>
