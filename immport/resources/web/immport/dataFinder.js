@@ -198,7 +198,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
                                     "selected": true
                                 };
                                 $scope.groupList.push(group);
-                                $scope.currentGroup = group;
+                                $scope.updateCurrentGroup(group);
                                 $scope.updateSaveOptions();
                             }
                         }
@@ -473,7 +473,7 @@ function dataFinder(studyData, loadedStudies, dataFinderAppId)
         if (hipc_study_list.length > 0)
             $scope.subsetOptions.push({value: 'HipcFunded', name: 'HIPC funded studies' });
         if (unloaded_study_list.length > 0)
-            $scope.subsetOptions.push({value: 'UnloadedImmPort', name: 'Unloaded ImmPort Studies'});
+            $scope.subsetOptions.push({value: 'UnloadedImmPort', name: 'Unloaded ImmPort studies'});
         //$scope.subsetOptions.push({value:'ImmPort',  name:'All ImmPort studies'});
 
 

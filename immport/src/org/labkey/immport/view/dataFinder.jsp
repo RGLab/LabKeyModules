@@ -179,7 +179,7 @@
         overflow-y:scroll;
     }
 
-    SPAN.study-search
+    SPAN.labkey-study-search
     {
         position: relative;
     }
@@ -301,7 +301,7 @@
         float:left;
         display:inline;
     }
-    DIV.facet.collapsed LI.member.selectedMember
+    DIV.facet.collapsed LI.member.selected-member
     {
         display:block;
     }
@@ -309,7 +309,7 @@
     {
         background-color:rgba(81, 158, 218, 0.2);
     }
-    DIV.facet LI.emptyMember
+    DIV.facet LI.empty-member
     {
         color:#888888;
     }
@@ -504,8 +504,8 @@
 </style>
 
 
-<div id="dataFinderOuterDIV" class="labkey-data-finder-outer">
-<div id="dataFinderAppDIV" class="x-hidden labkey-data-finder-inner" ng-app="dataFinderApp" ng-controller="dataFinder">
+<div id="dataFinderWrapper" class="labkey-data-finder-outer">
+<div id="dataFinderApp" class="x-hidden labkey-data-finder-inner" ng-app="dataFinderApp" ng-controller="dataFinder">
 
     <table border=0 class="labkey-data-finder">
         <tr>
@@ -556,10 +556,10 @@
             </td>
         </tr>
         <tr>
-            <td class="selection-panel" >
-                <div id="facetpanel">
+            <td class="selection-panel">
+                <div id="selectionPanel">
                     <div>
-                        <div class="facet">
+                        <div class="facet" id="summaryArea" >
                             <div class="facet-header"><span class="facet-caption">Summary</span></div>
                             <ul>
                                 <li class="member" style="cursor: default">
@@ -573,7 +573,9 @@
                             </ul>
                         </div>
 
-                        <div ng-include="'/facet.html'" ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace,dimAge]"></div>
+                        <span id="facetPanel">
+                            <div ng-include="'/facet.html'" ng-repeat="dim in [dimSpecies,dimCondition,dimType,dimCategory,dimAssay,dimTimepoint,dimGender,dimRace,dimAge]"></div>
+                        </span>
                     </div>
                 </div>
             </td>
@@ -584,8 +586,8 @@
                             <i class="fa fa-search"></i>&nbsp;
                             <input placeholder="Studies" id="searchTerms" name="q" class="search-box"  ng-model="searchTerms" ng-change="onSearchTermsChanged()">
                         </span>
-                        <span name="studySubset" class="study-search">
-                            <select ng-model="studySubset" name="studySubset" ng-change="onStudySubsetChanged()">
+                        <span class="labkey-study-search">
+                            <select ng-model="studySubset" name="studySubsetSelect" ng-change="onStudySubsetChanged()">
                                 <option ng-repeat="option in subsetOptions" value="{{option.value}}" ng-selected="{{option.value == studySubset}}">{{option.name}}</option>
                             </select>
                         </span>
@@ -647,7 +649,7 @@
         </div>
         <ul>
             <li ng-repeat="member in dim.members" id="m_{{dim.name}}_{{member.uniqueName}}" style="position:relative;" class="member"
-                 ng-class="{selectedMember:member.selected, emptyMember:(!member.selected && 0==getSubjectCount(member))}"
+                 ng-class="{'selected-member':member.selected, 'empty-member':(!member.selected && member.count == 0)}"
                  ng-click="selectMember(dim.name,member,$event)">
                 <span class="active member-indicator" ng-class="{selected:member.selected, 'none-selected':!dim.filters.length, 'not-selected':!member.selected}" ng-click="toggleMember(dim.name,member,$event)">
                 </span>
@@ -732,7 +734,7 @@ if (!c.isRoot())
 };
 
 
-new dataFinder(studyData, loaded_studies, "dataFinderAppDIV");
+new dataFinder(studyData, loaded_studies, "dataFinderApp");
 
 
 LABKEY.help.Tour.register({
@@ -791,7 +793,7 @@ function start_tutorial()
     }
     var _resize = function()
     {
-        var componentOuter = Ext4.get("dataFinderOuterDIV");
+        var componentOuter = Ext4.get("dataFinderWrapper");
         if (!componentOuter)
             return;
         var paddingX, paddingY;
@@ -809,7 +811,7 @@ function start_tutorial()
         if (componentSize)
         {
             var bottom = componentOuter.getXY()[1] + componentOuter.getSize().height;
-            Ext4.get("facetpanel").setHeight(bottom - Ext4.get("facetpanel").getXY()[1]);
+            Ext4.get("selectionpanel").setHeight(bottom - Ext4.get("selectionpanel").getXY()[1]);
             Ext4.get("studypanel").setHeight(bottom - Ext4.get("studypanel").getXY()[1]);
         }
     };
