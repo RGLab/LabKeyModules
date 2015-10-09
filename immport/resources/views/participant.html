@@ -224,7 +224,7 @@
                         params[groupingFilter.getURLParameterName().replace('query.', 'Dataset.')] = groupingFilter.getURLParameterValue();
                     }
 
-                    var subjectFilter = LABKEY.Filter.create('subject_accession', subject_accession);
+                    var subjectFilter = LABKEY.Filter.create('participantid', subject_accession);
                     params[subjectFilter.getURLParameterName().replace('query.', 'Dataset.')] = subjectFilter.getURLParameterValue();
 
                     return "<a href='" + LABKEY.ActionURL.buildURL('study', 'dataset.view', null, params) + "' target='_blank'"
