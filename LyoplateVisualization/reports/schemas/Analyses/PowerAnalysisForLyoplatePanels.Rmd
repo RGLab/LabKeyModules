@@ -84,6 +84,9 @@ ggplot(CVS[Method%in%c("manual","automated")])+aes(y=CV,x=Population,fill=Method
 CVS_2<-na.omit(CVS)[!Method%in%"automated"]
 CVS_2=CVS_2[,plotlabel:=factor(factor(Experiment):factor(Method),labels=c("Lyophilized PBMC (Central Gating)","Lyophilized PBMC (Local Gating)","Cryopreserved PBMC (Central Gating)"))]
 
+CVS_2[Panel%in%"Treg"&plotlabel%like%"Cryopreserved"&Population%like%"Total",Population:="Total"]
+CVS_2[Panel%in%"Treg"&plotlabel%like%"Cryopreserved"&Population%like%"25",Population:="127lo 25hi"]
+
 
 p1<-ggplot(CVS_2[plotlabel%like%"Lyophilized"])+geom_bar(aes(x=Population,y=CV,fill=plotlabel),position="dodge",stat="identity")+facet_wrap(~Panel,scales="free_x",ncol=3)+scale_fill_manual("Experiment",values=brewer.pal(n = 3,name = "Pastel2")[c(1,2)])+theme_bw()+theme(axis.text.x=element_text(angle=45,hjust=1,size=10),strip.text.x=element_text(size=12),axis.title.x=element_text(size=12),axis.title.y=element_text(size=12),legend.position="right")+scale_y_continuous("Coefficient of Variability (%)")+scale_x_discrete("Cell Population")
 
