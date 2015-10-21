@@ -207,7 +207,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
                     LABKEY.DataRegions = {};
                     qwpDataset = new LABKEY.QueryWebPart({
-                        bodyClass: 'dataset-body',
+                        //bodyClass: 'dataset-body',
                         buttonBar: {
                             items:[
                                 LABKEY.QueryWebPart.standardButtons.exportRows,
@@ -1077,7 +1077,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             title: 'Data'
         });
  
-         pnlTabs = new Ext.TabPanel({
+        var pnlTabs = new Ext.TabPanel({
             activeTab: 0,
             autoHeight: true,
             defaults: {

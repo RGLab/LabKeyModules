@@ -62,13 +62,10 @@ if ( nrow( filter ) == 0 ){
 }
 
 con <- CreateConnection()
-#stop(paste(con$data_cache$GE_matrices$name, collapse = "; "))
 #if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   #No need to read again
 #} else{
-#stop(paste(arrayCohorts, collapse="; "))
   EM <- con$getGEMatrix(cohort = arrayCohorts, summary = TRUE)
-stop("AFTER")
 #}
   PD <- data.table(pData(EM))
   if(any(exprs(EM)>100, na.rm = TRUE)){
