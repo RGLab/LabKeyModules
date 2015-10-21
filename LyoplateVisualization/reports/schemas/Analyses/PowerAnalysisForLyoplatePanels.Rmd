@@ -16,6 +16,8 @@ The power analysis shows that consistent data analysis in the form of careful ce
 ```{r,echo=FALSE, message=FALSE}
 # Load libraries
 library(plyr)
+library(grid)
+library(RColorBrewer)
 library(lme4)
 library(clue)
 library(reshape2)
