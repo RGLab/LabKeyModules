@@ -33,3 +33,5 @@ Create expression matrix using an R pipeline job and import assay into LabKey's 
 ###SDY162, SDY180, SDY212, SDY269, SDY61
 Queries and reports to be transfered to ImmuneSpace
 
+Tested with [BrowserStack][https://www.browserstack.com]
+

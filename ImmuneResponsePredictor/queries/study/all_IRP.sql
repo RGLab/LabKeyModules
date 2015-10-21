@@ -13,8 +13,8 @@ FROM
   FROM
     assay.ExpressionMatrix.matrix.InputSamples
   WHERE
-    Biosample.subject_accession IN
-    (SELECT subject_accession from study.hai)
+    Biosample.participantId IN
+    (SELECT participantId from study.hai)
   ) AS GEM
 LEFT JOIN gene_expression.gene_expression_analysis AS GEA
 ON LCASE(GEA.coefficient)=GEM.coefficient AND GEA.arm_name=GEM.arm_name

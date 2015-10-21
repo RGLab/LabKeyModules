@@ -32,16 +32,23 @@ var GEETour = function(){
             showPrevButton: true,
             showNextButton: true
         },{ 
+            title: 'Data Grid',
+            content: 'After selecting appropriate input parameters, click this tab to see the grid. There, the data can be filtered like in any other data grid and only the selected rows will be shown in the resulting plot.',
+            target: $('.x-tab-strip-inner')[1],
+            placement: 'top',
+            showPrevButton: true,
+            showNextButton: true
+        },{ 
             title: 'About',
             content: 'This tab contains a short description of the module, some technical details and information about the author(s).',
-            target: $('.x-tab-strip-inner')[1],
+            target: $('.x-tab-strip-inner')[2],
             placement: 'top',
             showPrevButton: true,
             showNextButton: true
         },{
             title: 'Help',
             content: 'Finally, for more information and detailed parameter description, click the Help tab.',
-            target: $('.x-tab-strip-inner')[2],
+            target: $('.x-tab-strip-inner')[3],
             placement: 'top',
             showPrevButton: true,
         }]

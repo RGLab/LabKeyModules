@@ -117,11 +117,11 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                         // disable all
                         pnlTabs.getEl().mask('Seems like there are no analyses to visualize, you need to create and import one.' + strngErrorContactWithLink, 'infoMask');
                         cbAnalysis.setDisabled( true );
-                        pnlAnalysis.setDisabledViaClass( true );
+                        pnlAnalysis.setDisabled( true );
                     } else {
                         pnlTabs.getEl().unmask();
                         cbAnalysis.setDisabled( false );
-                        pnlAnalysis.setDisabledViaClass( false );
+                        pnlAnalysis.setDisabled( false );
                     }
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
@@ -436,7 +436,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                         onNoAnalysis();
                     } else {
                         if ( ! flagAnalysisSelect ){
-                            pnlParentPopulation.setDisabledViaClass( false );
+                            pnlParentPopulation.setDisabled( false );
                             cbParentPopulation.setDisabled( false );
 
                             loadData();
@@ -452,7 +452,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 select: function(){
                     flagAnalysisSelect = true;
 
-                    pnlParentPopulation.setDisabledViaClass( false );
+                    pnlParentPopulation.setDisabled( false );
                     cbParentPopulation.setDisabled( false );
 
                     loadData();
@@ -868,17 +868,8 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             style: 'padding-right: 4px; padding-left: 4px;'
         };
 
-        var cnfSetDisabledViaClass = {
-            setDisabledViaClass: function( bool ){
-                if ( bool ){
-                    this.addClass( 'x-item-disabled' );
-                } else {
-                    this.removeClass( 'x-item-disabled' );
-                }
-            }
-        };
-
-        var pnlAnalysis = new Ext.Panel( Ext.apply({
+        var pnlAnalysis = new Ext.Panel({
+            disabledClass: 'x-item-disabled',
             items: Ext.apply({
                 items: cbAnalysis,
                 title: 'Analysis'
@@ -896,19 +887,22 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                     },
                     single: true
                 }
-            }
-        }, cnfSetDisabledViaClass) );
+            },
+            maskDisabled: false
+        });
 
-        var pnlParentPopulation = new Ext.Panel( Ext.apply({
-            cls: 'x-item-disabled',
+        var pnlParentPopulation = new Ext.Panel({
+            disabledClass: 'x-item-disabled',
+            disabled: true, 
             items: Ext.apply({
                 items: cbParentPopulation,
                 title: 'Parent population'
-            }, cnfPanel)
-        }, cnfSetDisabledViaClass) );
+            }, cnfPanel),
+            maskDisabled: false
+        });
 
-        var pnlProjection = new Ext.Panel( Ext.apply({
-            cls: 'x-item-disabled',
+        var pnlProjection = new Ext.Panel({
+            disabledClass: 'x-item-disabled',
             items: {
                 border: false,
                 headerCssClass: 'simple-panel-header',
@@ -922,11 +916,12 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 type: 'vbox',
                 align: 'stretch',
                 pack: 'end'
-            }
-        }, cnfSetDisabledViaClass) );
+            },
+            maskDisabled: false
+        });
 
-        var pnlAxes = new Ext.Panel( Ext.apply({
-            cls: 'x-item-disabled',
+        var pnlAxes = new Ext.Panel({
+            disabledClass: 'x-item-disabled',
             items: {
                 border: false,
                 defaults: {
@@ -962,8 +957,9 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 type: 'vbox',
                 align: 'stretch',
                 pack: 'end'
-            }
-        }, cnfSetDisabledViaClass) );
+            },
+            maskDisabled: false
+        });
 
         var pnlPlotControls = new Ext.Panel({
             bbar: tlbrGraph,
@@ -1544,7 +1540,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
             cbParentPopulation.reset();
 
-            pnlParentPopulation.setDisabledViaClass( true );
+            pnlParentPopulation.setDisabled( true );
             cbParentPopulation.setDisabled( true );
 
             setDisabledControls( true );
@@ -1578,20 +1574,29 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             strProjection.load();
         };
 
-        function setDisabledControls(bool){
+        function setDisabledControls( bool ){
             if ( bool ){
-                cbProjection.clearValue();
-                cbXAxis.clearValue();
-                cbYAxis.clearValue();
+                Ext.each(
+                    [
+                        cbProjection,
+                        cbXAxis,
+                        cbYAxis
+                    ],
+                    function( e ){ e.clearValue(); }
+                );
             }
 
-            pnlProjection.setDisabledViaClass(bool);
-            cbProjection.setDisabled(bool);
-
-            pnlAxes.setDisabledViaClass(bool);
-            cbXAxis.setDisabled(bool);
-            cbYAxis.setDisabled(bool);
-            btnSwap.setDisabled(bool);
+            Ext.each(
+                [
+                    pnlProjection,
+                    cbProjection,
+                    pnlAxes,
+                    cbXAxis,
+                    cbYAxis,
+                    btnSwap
+                ],
+                function( e ){ e.setDisabled( bool ); }
+            );
         };
 
         function loadData(){

@@ -17,16 +17,26 @@
 
 Ext.namespace('LABKEY.ext.ISCore');
 
-//Create an help icon with tooltip and text
-LABKEY.ext.ISCore.helpTooltip = function(title, text){
-  //var field = title + "<a class=\"labkey-help-pop-up\" href=\"#\" onclick=\"return showHelpDiv(this, '" +
-  //            title + "', '" + text + "');\" onmouseout=\"return hideHelpDivDelay();\" onmouseover=\"return showHelpDivDelay(this, '" +
-  //            title + "', '" + text + "');\"><span class=\"labkey-help-pop-up\">?</span></a>";
-  var helpTip = "<a class=\"labkey-help-pop-up\" href=\"#\" onclick=\"return showHelpDiv(this, '" +
-                title + "', '" + text + "');\" onmouseout=\"return hideHelpDivDelay();\" onmouseover=\"return showHelpDivDelay(this, '" +
-                title + "', '" + text + "');\"><div class=\"labkey-help-pop-up\">?</div></a>"
-  return(helpTip);                                                      
-};  
+// Create a help icon with tooltip and text
+LABKEY.ext.ISCore.helpTooltip = function( title, text ){
+    return "<a class=\"labkey-help-pop-up\" href=\"#\" onclick=\"return showHelpDiv(this, '" +
+        title + "', '" + text + "');\" onmouseout=\"return hideHelpDivDelay();\" onmouseover=\"return showHelpDivDelay(this, '" +
+        title + "', '" + text + "');\"><div class=\"labkey-help-pop-up\">?</div></a>";
+};
+
+LABKEY.ext.ISCore.factoryTooltipWrapper = function ( control, title, text, hiddenFlag, hideLabelFlag ){
+    return new Ext.form.CompositeField({
+        hidden: hiddenFlag,
+        hideLabel: hideLabelFlag,
+        items: [
+            control,
+            {
+                border: false,
+                html: LABKEY.ext.ISCore.helpTooltip( title, Ext.util.Format.htmlEncode( text ) )
+            }
+        ]
+    });
+};
 
 LABKEY.ext.ISCore.supportLink =
     'the <a href="' +
@@ -72,7 +82,7 @@ LABKEY.ext.ISCore.renderTempPnl = function( maskMsg, webPartDiv ){
     Ext.EventManager.onWindowResize( resizeModule );
 };
 
-LABKEY.ext.ISCore.simpleInitModule = function( renderModule,webPartDiv ){
+LABKEY.ext.ISCore.simpleInitModule = function( renderModule, webPartDiv ){
     var
         module = renderModule( webPartDiv ),
 

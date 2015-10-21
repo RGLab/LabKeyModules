@@ -96,6 +96,10 @@
 }
 
 /* ************************************************************ */
+.iconShare {
+    background-image: url(../_images/icon_permalink.png);
+}
+
 .iconConfigure {
     background-image: url(../_images/configure.png);
 }
@@ -155,6 +159,11 @@ pre, .ext-mb-text {
     font-weight: bold !important;
 }
 
+/* Underlined text */
+.underlined-text, .ISCore .x-tab-strip-over {
+    text-decoration: underline;
+}
+
 /* Auto margin */
 .centered-table {
     margin: auto;
@@ -195,6 +204,7 @@ pre, .ext-mb-text {
     background-color: white !important;
 }
 
+/* Mask tweaks */
 .ISCore .mask-loading {
     z-index: 999;
 }
@@ -300,10 +310,6 @@ pre, .ext-mb-text {
 
 .ISCore .x-tab-right {
     border-bottom-width: 0px !important;
-}
-
-.ISCore .x-tab-strip-over {
-    text-decoration: underline;
 }
 
 .ISCore .x-tab-strip span.x-tab-strip-text {

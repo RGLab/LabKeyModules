@@ -22,19 +22,13 @@ library(reshape2)
 library(ggthemr)
 library(limma)
 
-add_r2 <- function(data){
-  dt <- data.table(data)
-  dt <- dt[, r2 :=  paste("R^2 ==", round(summary(lm(response ~ value))[['r.squared']], 3)), by = "cohort,gene_symbol"]
-  dt <- dt[, r2x := min(value), by = "cohort,gene_symbol"]
-  dt <- dt[, r2y := max(response), by = "cohort,gene_symbol"]
-  return(data.frame(dt))
+stopcheck <- function(data){
+    stop(paste0(paste(capture.output(str(data)), collapse="\n"), "\nl.u.b: ",labkey.url.base, "\nl.u.p: ",labkey.url.path))
 }
-
-
 
 imageWidth  <- as.numeric(labkey.url.params$imageWidth);
 imageHeight <- as.numeric(labkey.url.params$imageHeight);
-imgfile <- '${imgout:Plot.png}'
+imgfile     <- '${imgout:Plot.png}';
 CairoPNG( filename=imgfile, width = imageWidth, height = imageHeight );
 
 arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
@@ -43,23 +37,39 @@ timePoint           <- as.numeric(labkey.url.params$timePoint);
 timePointUnit       <- as.character(labkey.url.params$timePointUnit);
 normalize           <- as.logical( labkey.url.params$normalize );
 arrayGenes          <- RJSONIO::fromJSON( labkey.url.params$genes );
+filters             <- RJSONIO::fromJSON( labkey.url.params$filters );
 textSize            <- as.numeric( labkey.url.params$textSize );
 facet               <- tolower(labkey.url.params$facet)
 shape               <- tolower(labkey.url.params$shape)
 color               <- tolower(labkey.url.params$color)
 size                <- tolower(labkey.url.params$size)
 alpha               <- tolower(labkey.url.params$alpha)
+#stopcheck(labkey.url.params)
 
-stopcheck <- function(data){
-    stop(paste0(paste(capture.output(str(data)), collapse="\n"), "\nl.u.b: ",labkey.url.base, "\nl.u.p: ",labkey.url.path))
+add_r2 <- function(data){
+  dt <- data.table(data)
+  dt <- dt[, r2 :=  paste("R^2 ==", round(summary(lm(response ~ value))[['r.squared']], 3)), by = "cohort,gene_symbol"]
+  dt <- dt[, r2x := min(value), by = "cohort,gene_symbol"]
+  dt <- dt[, r2y := max(response), by = "cohort,gene_symbol"]
+  return(data.frame(dt))
 }
 
-#stopcheck(labkey.url.params)
+filter <- as.matrix( lapply( filters, function( e ){
+    return( paste0( RCurl::curlEscape( e['fieldKey'] ), '~', e['op'], '=', RCurl::curlEscape( e['value'] ) ) );
+}) );
+if ( nrow( filter ) == 0 ){
+  filter <- NULL;
+}
+
 con <- CreateConnection()
-if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
+#stop(paste(con$data_cache$GE_matrices$name, collapse = "; "))
+#if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
   #No need to read again
-} else{
+#} else{
+#stop(paste(arrayCohorts, collapse="; "))
   EM <- con$getGEMatrix(cohort = arrayCohorts, summary = TRUE)
+stop("AFTER")
+#}
   PD <- data.table(pData(EM))
   if(any(exprs(EM)>100, na.rm = TRUE)){
     dt <- data.table(voom(EM)$E)
@@ -69,22 +79,22 @@ if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
     dt <- dt[, gene_symbol := rownames(exprs(EM))]
   }
   
-  HAI <- con$getDataset("hai", original_view = TRUE)
+  HAI <- con$getDataset("hai", original_view = TRUE, colFilter = filter, reload = TRUE)
   HAI <- HAI[, list(arm_accession, study_time_collected, study_time_collected_unit,
-                    response=value_reported/mean(value_reported[study_time_collected<=0])), by="virus_strain,subject_accession"]
+                    response=value_reported/mean(value_reported[study_time_collected<=0])), by="virus_strain,participant_id"]
   # HAI at peak immunogenicity
   HAI <- HAI[, mr := mean(response), by="study_time_collected"]
   HAI <- HAI[, ma := max(mr), by = "arm_accession"]
   peak <- unique(HAI[mr ==ma, list(study_time_collected, arm_accession)])
   HAI <- merge(HAI, peak, by=c("study_time_collected", "arm_accession"))
-  HAI <- HAI[, list(response=log2(max(response))), by="subject_accession"]
+  HAI <- HAI[, list(response=log2(max(response))), by="participant_id"]
 
-  PD <- merge(PD, HAI, by = "subject_accession")
-  DEMO <- con$getDataset("demographics")[, list(subject_accession, age_reported, gender, race)]
+  PD <- merge(PD, HAI, by = "participant_id")
+  DEMO <- unique(con$getDataset("demographics")[, list(participant_id, age_reported, gender, race)])
   setnames(DEMO, "age_reported", "age")
-  PD <- merge(PD, DEMO, by = "subject_accession")
+  PD <- merge(PD, DEMO, by = "participant_id")
   EM <- EM[, pData(EM)$biosample_accession %in% PD$biosample_accession]
-}
+
 
 # Subset
 ssEM <- EM[arrayGenes, ]
@@ -93,7 +103,7 @@ data <- merge(data, PD, by = "biosample_accession")
 if(normalize){
   data[, value := value[study_time_collected == timePoint & tolower(study_time_collected_unit) == timePointUnit]  -
                   value[study_time_collected == 0 & tolower(study_time_collected_unit) == timePointUnit],
-        by = "subject_accession,gene_symbol"]
+        by = "participant_id,gene_symbol"]
   xlab <- "log expression normalized to baseline"
 } else{
   xlab <- "log expression"

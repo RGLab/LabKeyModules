@@ -1,11 +1,11 @@
 <cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
     <cv:columns>
-        <cv:column name="SUBJECT_ACCESSION">
+        <cv:column name="ParticipantId">
           <cv:properties>
-            <cv:property name="columnTitle" value="Subject Accession"/>
+            <cv:property name="columnTitle" value="Participant ID"/>
           </cv:properties>
         </cv:column>
-        <cv:column name="SUBJECT_ACCESSION/Cohort"/> 
+        <cv:column name="ParticipantId/Cohort"/>
         <cv:column name="phenotype"/> 
         <cv:column name="gender"/>
         <cv:column name="age_reported"/>

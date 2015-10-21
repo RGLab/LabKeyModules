@@ -22,6 +22,8 @@ infostring <- ""
 
 ## Differential expression analysis
 
+Returns genes differentially expressed with an FDR of less than 20%, or top 100 lowest FDR.
+
 study: `r study`  
 contrast: `r contrast`
 
@@ -90,16 +92,15 @@ GEAR_list <- vector("list")
 for(run in runs){
   EM <- con$getGEMatrix(run)
   pd <- data.table(pData(EM))
+  cm <- con$getDataset("cohort_membership")
+  cm <- unique(cm[, list(cohort, arm_accession)])
   pd <- pd[, coef := do.call(paste, .SD), .SDcols = contrast]
   to_drop <- unique(pd[study_time_collected <= 0, coef])
   pd <- pd[coef %in% to_drop, coef := "baseline"]
   pd <- pd[, coef := factor(coef,levels = c("baseline",
     grep("baseline", value = TRUE, invert = TRUE, mixedsort(unique(coef)))))]
-  mm <- model.matrix(formula("~subject_accession + coef"), pd)
-
-
-  #pData(EM)[, contrast] <- factor(pData(EM)[, contrast])
-  #mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
+  #mm <- model.matrix(formula("~ParticipantId + coef"), pd)
+  mm <- model.matrix(formula("~participant_id + coef"), pd)
 
   # Check if it's RNA-seq or microarrays
   if(max(exprs(EM))>100){
@@ -114,14 +115,22 @@ for(run in runs){
   for(coef in coefs){
     analysis_accession <- paste0("GEA", i)
     TP <- gsub("coef", "", coef)
-    arm_name <- unique(pData(EM)$arm_name)
+    arm_name <- unique(pData(EM)$cohort)
+    arm_accession <- cm[cohort == arm_name, arm_accession]
+    if(is.null(arm_name)){ arm_name <- NA }
     description <- paste0("Differential expression in ", run, ", ", TP, " vs. baseline")
 
     GEA_list[[idx]] <- data.table(analysis_accession = analysis_accession,
                                   expression_matrix = run, arm_name = arm_name, 
+                                  arm_accession = arm_accession,
                                   coefficient = gsub("^coef", "", coef), description = description)
     tt <- data.table(topTable(fit, coef = coef, number = Inf))
-    tt <- tt[adj.P.Val < 0.02]
+    ttDE <- tt[adj.P.Val < 0.02]
+    if(nrow(ttDE) < 100){
+      tt <- tt[order(adj.P.Val)][1:min(nrow(tt), 100)]
+    } else{
+      tt <- ttDE
+    }
     if(nrow(tt) > 0){
       tt[, c("analysis_accession", "coefficient") := list(analysis_accession, coef)]
       GEAR_list[[idx]] <- data.table(tt)
@@ -136,7 +145,6 @@ if(length(GEAR_list) == 0){
   opts_chunk$set(eval = FALSE, echo = FALSE)
 } else{
   GEAR <- rbindlist(GEAR_list)
-  print(colnames(GEAR))
   setnames(GEAR, c("FeatureId", "gene_symbol", "adj.P.Val", "AveExpr", "logFC", "P.Value", "t"), c("feature_id", "gene_symbol", "adj_p_val", "ave_expr", "log_fc", "p_value", "statistic"))
 }
 ```

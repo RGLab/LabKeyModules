@@ -3,7 +3,7 @@ var IRPTour = function(){
         id: 'immport-irp-tour',
         steps: [{
             title: 'Immune Response Predictor Tour',
-            content: 'The following few steps will take you through the UI elements of the Immune Response Predictor module',
+            content: 'The following few steps will take you through the UI elements of the Immune Response Predictor module.',
             target: $('.labkey-wp-title-text')[0],
             placement: 'top',
             showNextButton: true
@@ -17,7 +17,7 @@ var IRPTour = function(){
         },{
             title: 'Parameters',
             content: 'Select a timepoint and cohorts. The number of cohorts with gene expression at a given timepoint is indicated in parenthesis.\
-                The ',
+                The response can also be dichotomized to split patients between responders and non-responders.',
             target: $('.x-fieldset-header-text')[0],
             placement: 'top',
             showPrevButton: true,

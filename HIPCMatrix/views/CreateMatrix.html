@@ -24,7 +24,7 @@ function renderPanel()
             queryName: queryName,
             selectionKey: selectionKey,
             showRows: "selected",
-            columns: [ "SUBJECT_ACCESSION", "biosample_accession", "file_info_name", "study_time_collected", "study_time_collected_unit" ],
+            columns: [ "ParticipantId", "biosample_accession", "file_info_name", "study_time_collected", "study_time_collected_unit" ],
             success: function (data) {
                 selectedRows = data.rows;
                 if (selectedRows.length == 0)
@@ -87,7 +87,7 @@ function renderPanel()
         {
             var path = selectedRows[i]["file_info_name"];
             var lsid = selectedRows[i]["lsid"];
-            var subject = selectedRows[i]["SUBJECT_ACCESSION"];
+            var subject = selectedRows[i]["ParticipantId"];
             var biosample = selectedRows[i]["biosample_accession"];
 
             selectedLsids.push(lsid);

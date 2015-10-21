@@ -47,55 +47,81 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         ;
 
         var manageAdditionalOptions = function(){
+            cntPlotMessage.update( '' );
             cntPlot.update( '<div style=\'height: 10px\'></div>' );
-            checkBtnPlotStatus();
 
             var plotType = cbPlotType.getValue();
             if ( plotType == '' ){
-                spnrTextSize.setVisible( false );
-                cfAnnotation.setVisible( false );
-                cbAnnotation.setVisible( false );
-                cbColor.setVisible( false );
-                cbShape.setVisible( false );
-                cbSize.setVisible( false );
-                cbAlpha.setVisible( false );
-                rgFacet.setVisible( false );
+                Ext.each(
+                    [
+                        cfTextSize,
+                        cfAnnotation,
+                        cfFacet,
+                        cfColor,
+                        cfShape,
+                        cfSize,
+                        cfAlpha,
+                        cfAspectRatio
+                    ],
+                    function( e ){ e.setVisible( false ); }
+                );
             } else if ( plotType == 'auto' ){
-                spnrTextSize.setVisible( true );
-                cfAnnotation.setVisible( false );
-                cbAnnotation.setVisible( false );
-                cbColor.setVisible( false );
-                cbShape.setVisible( false );
-                cbAlpha.setVisible( false );
-                cbAlpha.setValue( '' );
-                rgFacet.setVisible( false );
+                Ext.each(
+                    [
+                        cfAnnotation,
+                        cfFacet,
+                        cfColor,
+                        cfShape,
+                        cfSize,
+                        cfAlpha
+                    ],
+                    function( e ){ e.setVisible( false ); }
+                );
+                cfTextSize.setVisible( true );
+                cfAspectRatio.setVisible( true );
 
-                cbAnnotation.setValue( [ 'Age', 'Gender' ].join( this.separator ) );
-                cbColor.setValue( 'Age' );
-                cbShape.setValue( 'Gender' );
-                cbSize.setVisible( false );
-                cbSize.setValue( '' );
+                Ext.each(
+                    [
+                        cbAnnotation,
+                        cbColor,
+                        cbShape,
+                        cbSize,
+                        cbAlpha
+                    ],
+                    function( e ){ e.reset(); }
+                );
             } else if ( plotType == 'heatmap' ){
-                spnrTextSize.setVisible( true );
+                Ext.each(
+                    [
+                        cfFacet,
+                        cfColor,
+                        cfShape,
+                        cfSize,
+                        cfAlpha
+                    ],
+                    function( e ){ e.setVisible( false ); }
+                );
+                cfTextSize.setVisible( true );
                 cfAnnotation.setVisible( true );
-                cbAnnotation.setVisible( true );
-                cbColor.setVisible( false );
-                cbShape.setVisible( false );
-                cbSize.setVisible( false );
-                cbAlpha.setVisible( false );
-                rgFacet.setVisible( false );
+                cfAspectRatio.setVisible( true );
             } else {
-                spnrTextSize.setVisible( true );
+                 Ext.each(
+                    [
+                        cfTextSize,
+                        cfFacet,
+                        cfColor,
+                        cfShape,
+                        cfSize,
+                        cfAlpha,
+                        cfAspectRatio
+                    ],
+                    function( e ){ e.setVisible( true ); }
+                );
                 cfAnnotation.setVisible( false );
-                cbAnnotation.setVisible( false );
-                cbColor.setVisible( true );
-                cbShape.setVisible( true );
-                cbSize.setVisible( true );
-                cbAlpha.setVisible( true );
-                rgFacet.setVisible( true );
-                fsAdditionalOptions.doLayout();
-                cfAnnotation.doLayout();
             }
+
+            checkBtnsStatus();
+            fsAdditionalOptions.doLayout();
         };
 
         var onRender = function(){
@@ -128,7 +154,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                                 ( numRows == '1' ? ' is ' : ' are ' ) + 'selected' 
                             );
 
-                            checkBtnPlotStatus();
+                            checkBtnsStatus();
                         }
                     });
                 }
@@ -168,19 +194,22 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 });
             }
 
+            cntPlotMessage.update( '' );
+            cntPlot.update( '<div style=\'height: 10px\'></div>' );
+
             if ( dataset !== '' ){
                 if (
                     qwpDataset == undefined ||
                     ( qwpDataset != undefined && qwpDataset.queryName != dataset )
                 ){
-                    tlbrPlot.setDisabled( true );
+                    tlbrButtons.setDisabled( true );
                     cmpStatus.update( '' );
 
                     LABKEY.DataRegions = {};
                     qwpDataset = new LABKEY.QueryWebPart({
+                        bodyClass: 'dataset-body',
                         buttonBar: {
                             items:[
-                                LABKEY.QueryWebPart.standardButtons.views,
                                 LABKEY.QueryWebPart.standardButtons.exportRows,
                                 LABKEY.QueryWebPart.standardButtons.pageSize
                             ],
@@ -193,160 +222,184 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         schemaName: schemaName,
                         viewName: viewName
                     });
-                    qwpDataset.on( 'render', onRender );
-                    me.qwpDataset = qwpDataset;
-                    pnlData.removeAll();
-                    qwpDataset.render( pnlData.getLayout().innerCt );
-                }
-                if ( dataset == 'hai' || dataset == 'neut_ab_titer' ){
-                    chShowStrains.setVisible( true );
-                } else {
-                    chShowStrains.setVisible( false );
-                }
-            } else {
-                tlbrPlot.setDisabled( true );
-                cmpStatus.update( '' );
 
+                    me.qwpDataset = qwpDataset;
+
+                    cntEmptyPnlData.setVisible( false );
+                    cntDataset.setVisible( true );
+
+                    qwpDataset.on( 'render', onRender );
+                    qwpDataset.render( cntDataset.getEl() );
+                }
+
+                cfShowStrains.setVisible( dataset == 'hai' || dataset == 'neut_ab_titer' );
+            } else {
+                cmpStatus.update( '' );
+                numVars = undefined;
                 qwpDataset = undefined;
+
                 me.qwpDataset = qwpDataset;
 
-                pnlData.removeAll();
-                pnlData.add([
-                    { html: 'Please, go to the' },
-                    new Ext.Container({
-                        autoEl: 'a',
-                        html: '&nbsp;\'Input / View\'&nbsp;',
-                        listeners: {
-                            afterrender: {
-                                fn: function(){
-                                    this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 0 ); } );
-                                },
-                                single: true
-                            }
-                        }
-                    }),
-                    { html: 'tab to select a dataset to display below. You will then be able to filter this data here before plotting.' },
-                ]);
-                pnlData.doLayout();
+                cntEmptyPnlData.setVisible( true );
+                cntDataset.setVisible( false );
 
-                numVars = undefined;
-
-                cntPlot.update( '<div style=\'height: 10px\'></div>' );
-                checkBtnPlotStatus();
+                checkBtnsStatus();
             }
         };
             
-        var checkBtnPlotStatus = function(){
+        var checkBtnsStatus = function(){
             if (
                 cbDataset.getValue() !== '' &&
                 cbPlotType.getValue() !== '' &&
                 spnrTextSize.isValid( true ) &&
                 spnrHorizontal.isValid( true ) &&
-                spnrVertical.isValid( true )
-
+                spnrVertical.isValid( true ) &&
+                qwpDataset &&
+                qwpDataset.getDataRegion().totalRows
             ){
-                tlbrPlot.setDisabled( false );
+                btnPlot.setDisabled( false );
+                cmpStatus.setDisabled( false );
             } else {
-                tlbrPlot.setDisabled( true );
+                btnPlot.setDisabled( true );
+                cmpStatus.setDisabled( true );
+            }
+
+            if (    cbDataset.getValue() == cbDataset.originalValue &&
+                    cbPlotType.getValue() == cbPlotType.originalValue &&
+                    chNormalize.getValue() == chNormalize.originalValue &&
+                    spnrTextSize.getValue() == spnrTextSize.originalValue &&
+                    cbAnnotation.getValue() == cbAnnotation.originalValue &&
+                    rgFacet.getValue().getGroupValue() == rgFacet.initialConfig.value &&
+                    cbColor.getValue() == cbColor.originalValue &&
+                    cbShape.getValue() == cbShape.originalValue &&
+                    cbSize.getValue() == cbSize.originalValue &&
+                    cbAlpha.getValue() == cbAlpha.originalValue &&
+                    spnrHorizontal.getValue() == spnrHorizontal.originalValue &&
+                    spnrVertical.getValue() == spnrVertical.originalValue &&
+                    fsAdditionalOptions.collapsed
+            ){
+                btnReset.setDisabled( true );
+            } else {
+                btnReset.setDisabled( false );
             }
         };
 
-        //Help strings
-        var dataset_help   = "Select an assay type to visualize. The selected data can be filtered using the grid view under the `Data` tab.";
-        var plottype_help  = "Five different types are available: `Boxplot`, `Violin plots`, `Lines`, `Heatmap`, and `Auto`. `Auto` is the default, in which case the module determines the best plot type for your data.";
-        var normalize_help = "Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.";
-        var strains_help   = "For HAI and neutralizing antibody titer experiments, by default the response is expressed as the average titer fold-change for all virus strains. When this option is enabled, the strains are used for facetting.";
+        // Help strings
+        var dataset_help        = 'Select an assay type to visualize. The selected data can be filtered using the grid view under the "Data" tab.';
+        var plottype_help       = 'Five different types are available: "Boxplot", "Violin plots", "Lines", "Heatmap", and "Auto". "Auto" is the default, in which case the module determines the best plot type for your data.';
+        var normalize_help      = 'Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.';
+        var strains_help        = 'For HAI and neutralizing antibody titer experiments, by default the response is expressed as the average titer fold-change for all virus strains. When this option is enabled, the strains are used for facetting.';
 
-        var textsize_help   = "The size of all the text elements in the plot (including axes, legend and labels).";
-        var annotation_help = "Add a row of annotation based on the demographic data. Applicable to the `Heatmap` plot type only, which does not have the other options.";
-        var facet_help      = "The plot will facet by cohorts on the y axis and genes on the x axis. `Grid` mode - the scales are consistent for a selected response and a cohort. `Wrap` mode - the scales are free. Use `Wrap` if you observe empty spaces in the plots.";
-        var shape_help      = "The shape of the data points.";
-        var color_help      = "The color of the data points (`Age` is selected by default).";
-        var size_help       = "The size of the data points.";
-        var alpha_help      = "The transparency of the data points.";
-
+        var textsize_help       = 'The size of all the text elements in the plot (including axes, legend and labels).';
+        var annotation_help     = 'Add a row of annotation based on the demographic data. Applicable to the "Heatmap" plot type only, which does not have the other options.';
+        var facet_help          = 'The plot will facet by cohorts on the y axis and genes on the x axis. "grid" mode - the scales are consistent for a selected response and a cohort. "wrap" mode - the scales are free. Use "wrap" if you observe empty spaces in the plots.';
+        var shape_help          = 'The shape of the data points.';
+        var color_help          = 'The color of the data points ("Age" is selected by default).';
+        var size_help           = 'The size of the data points.';
+        var alpha_help          = 'The transparency of the data points.';
+        var aspectratio_help    = 'The ratio of width to height of the plot.';
 
         ///////////////////////////////////
         //            Stores             //
         ///////////////////////////////////
 
-        // IF EVER THE 'ShowByDefault' COLUMN OF THE 'Datasets' TABLE DOES NOT REFLECT PROPERLY WHETHER THE DATASET IS ACTUALLY EMPTY
-        // OR NOT, THEN CAN RESORT TO THE DYNAMIC, YET MORE COSTLY APPROACH BELOW
+        var strDataset;
 
-        // var strDataset;
-       
-        // var processDataSets = function( inputArray, outputArray ){
-        //     if ( inputArray.length == 0 ){
-        //         strDataset = new Ext.data.ArrayStore({
-        //             data: outputArray,
-        //             fields: [ 'Name', 'Name' ]
-        //         });
+        var populateStore = function( outputArray ){
+            outputArray.sort();
+            strDataset = new Ext.data.ArrayStore({
+                data: outputArray,
+                fields: [ 'Label', 'Name' ]
+            });
 
-        //         cbDataset.bindStore( strDataset );
-        //     } else {
-        //         var curName = inputArray.pop().Name;
+            cbDataset.bindStore( strDataset );
+            cbDataset.resizeToFitContent();
 
-        //         LABKEY.Query.executeSql({
-        //             sql: 'SELECT COUNT(*) AS Number FROM ' + curName,
-        //             schemaName: 'study',
-        //             success: function( d ){
-        //                 if ( d.rows[0].Number != 0 ){
-        //                     outputArray.push( [ curName, curName ] );
-        //                 }
+            if ( strDataset.getCount() == 0 ){
+                componentsSetDisabled( true );
+                pnlTabs.getEl().mask(
+                    'No data are available for visualization in this study ' +
+                    '(e.g. derived or processed immunological data).</br>' +
+                    'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.supportLink,
+                    'infoMask'
+                );
+            } else {
+                cbDataset.setDisabled( false );
 
-        //                 processDataSets( inputArray, outputArray );
-        //             }
-        //         });               
-        //     }
-        // };
- 
-        // LABKEY.Query.selectRows({
-        //     queryName: 'data_sets',
-        //     schemaName: 'study',
-        //     success: function( d ){
-        //         var toAdd = [];
+                var
+                    params,
+                    valueToSet,
+                    search = window.location.search
+                ;
 
-        //         processDataSets( d.rows, toAdd );
-        //     }
-        // });
-
-        var strDataset = new LABKEY.ext.Store({
-            autoLoad: true,
-            listeners: {
-                load: function( s ){
-                    if ( s.getCount() == 0 ){
-                        componentsSetDisabled( true );
-                        pnlTabs.getEl().mask(
-                            'No data are available for visualization in this study ' +
-                            '(e.g. derived or processed immunological data).</br>' +
-                            'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.supportLink,
-                            'infoMask'
-                        );
-                    } else {
-                        var
-                            params,
-                            valueToSet,
-                            search = window.location.search
-                        ;
-
-                        if ( search && search.charAt( 0 ) == '?' ){
-                            params = Ext.urlDecode( search.substring( 1 ) );
-                            valueToSet = params.dataset;
-                            if ( valueToSet ){
-                                if ( cbDataset.findRecord( cbDataset.valueField, valueToSet ) ){
-                                    cbDataset.setValue( valueToSet );
-                                    loadDataset( params );
-                                } else{
-                                    cbDataset.clearValue();
-                                    cbDataset.markInvalid( '"' + valueToSet + '" in the supplied URL is not a valid value, select from the available choices' );
-                                }
-                            }
+                if ( search && search.charAt( 0 ) == '?' ){
+                    params = Ext.urlDecode( search.substring( 1 ) );
+                    valueToSet = params.dataset;
+                    if ( valueToSet ){
+                        if ( cbDataset.findRecord( cbDataset.valueField, valueToSet ) ){
+                            cbDataset.setValue( valueToSet );
+                            loadDataset( params );
+                        } else{
+                            cbDataset.clearValue();
+                            cbDataset.markInvalid( '"' + valueToSet + '" in the supplied URL is not a valid value, select from the available choices' );
                         }
                     }
                 }
-            },
+            }
+        };
+       
+        var processDataSets = function( inputArray, outputArray ){
+            var flags = [];
+
+            Ext.each( inputArray, function( curEl ){
+                var
+                    curLabel = curEl.Label,
+                    curName = curEl.Name
+                ;
+
+                LABKEY.Query.executeSql({
+                    failure: function(){
+                        flags.push( 1 );
+                        if ( flags.length == inputArray.length ){
+                            populateStore( outputArray );
+                        }
+                    },
+                    sql: 'SELECT COUNT(*) AS Number FROM ' + curName,
+                    schemaName: curName == 'gene_expression_analysis_results' ? 'gene_expression' : 'study',
+                    containerFilter: 'CurrentAndSubfolders',
+                    success: function( d ){
+                        if ( d.rows[0].Number != 0 ){
+                            outputArray.push( [ curLabel, curName ] );
+                        }
+
+                        flags.push( 0 );
+                        if ( flags.length == inputArray.length ){
+                            populateStore( outputArray );
+                        }
+                    }
+                });
+            });
+        };
+
+        LABKEY.Query.selectRows({
             queryName: 'data_sets',
-            schemaName: 'study'
+            schemaName: 'study',
+            success: function( d ){
+                LABKEY.Query.getQueryDetails({
+                    failure: function(){
+                        processDataSets( d.rows, [] );
+                    },
+                    queryName: 'gene_expression_analysis_results',
+                    schemaName: 'gene_expression',
+                    success: function(){
+                        var inputArray = d.rows;
+                        inputArray.push( { Label: 'Gene expression' , Name: 'gene_expression_analysis_results' } );
+                        processDataSets( inputArray, [] );
+
+                    }
+                });
+
+            }
         });
 
         var strPlotType = new Ext.data.ArrayStore({
@@ -410,8 +463,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
         var cbDataset = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
+            disabled: true,
             displayField: 'Label',
-            fieldLabel: 'Choose a dataset',
+            fieldLabel: 'Dataset',
+            id: 'cbDataset',
             lazyInit: false,
             listeners: {
                 change:     loadDataset,
@@ -427,6 +482,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             allowBlank: false,
             displayField: 'display',
             fieldLabel: 'Plot type',
+            id: 'cbPlotType',
             lazyInit: false,
             listeners: {
                 change:     manageAdditionalOptions,
@@ -442,7 +498,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         var cbAnnotation = new Ext.ux.form.ExtendedLovCombo({
             displayField: 'name',
             fieldLabel: 'Annotation',
-            hidden: true,
             lazyInit: false,
             store: strDemographics,
             value: [ 'Age' ].join( this.separator ),
@@ -453,7 +508,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         var cbColor = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Color',
-            hidden: true,
             lazyInit: false,
             store: strDemographics,
             value: 'Age',
@@ -464,7 +518,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
        var cbShape = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Shape',
-            hidden: true,
             lazyInit: false,
             store: strShape,
             valueField: 'value',
@@ -474,7 +527,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         var cbSize = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Size',
-            hidden: true,
             lazyInit: false,
             store: strDemographics,
             valueField: 'value',
@@ -484,7 +536,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         var cbAlpha = new Ext.ux.form.ExtendedComboBox({
             displayField: 'name',
             fieldLabel: 'Alpha',
-            hidden: true,
             lazyInit: false,
             store: strDemographics,
             valueField: 'value',
@@ -497,12 +548,13 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         ///////////////////////////////////////
 
         var chNormalize = new Ext.form.Checkbox({
-            fieldLabel: 'Normalize to baseline'
+            fieldLabel: 'Normalize to baseline',
+            width: fieldWidth
         });
 
         var chShowStrains = new Ext.form.Checkbox({
             fieldLabel: 'Show individual virus strains',
-            hidden: true
+            width: fieldWidth
         })
 
         var spnrTextSize = new Ext.ux.form.SpinnerField({
@@ -510,42 +562,64 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             allowDecimals: false,
             fieldLabel: 'Text size',
             listeners: {
-                invalid:
-                    function(){
-                        tlbrPlot.setDisabled( true );
+                afterrender: {
+                    fn: function(){
+                        this.on( 'valid', checkBtnsStatus );
                     },
-                valid: checkBtnPlotStatus
+                    single: true
+                },
+                invalid: checkBtnsStatus
             },
             maxValue: 30,
             minValue: 0,
             value: 18,
-            width: 40
+            width: fieldWidth
         });
 
-        var rgFacet = new Ext.form.RadioGroup({
-            columns: [ 100, 100 ],
+        var rgFacet = new Ext.Panel({
+            border: false,
+            clearInvalid: Ext.emptyFn,
+            defaults: {
+                border: false,
+                flex: 1,
+                layout: 'fit'
+            },
+            eachItem: function( fn, scope ){
+                if ( this.items && this.items.each ){
+                    this.items.each( function(e){
+                        if ( e.items && e.items.each && e.items.length == 1 ){
+                            e.items.each( fn, scope || this );
+                        }
+                    });
+                }
+            },
             fieldLabel: 'Facet',
-            hidden: true,
+            getValue: Ext.form.RadioGroup.prototype.getValue,
             items: [
-                {
-                    boxLabel: 'Grid',
-                    checked: true,
-                    inputValue: 'Grid',
-                    name: 'facet',
-                    value: 'Grid'
+                { items:
+                    new Ext.form.Radio({
+                        boxLabel: 'grid',
+                        checked: true,
+                        inputValue: 'Grid',
+                        name: 'facet',
+                        value: 'Grid'
+                    })
                 },
-                {
-                    boxLabel: 'Wrap',
-                    inputValue: 'Wrap',
-                    name: 'facet',
-                    value: 'Wrap'
+                { items:
+                    new Ext.form.Radio({
+                        boxLabel: 'wrap',
+                        inputValue: 'Wrap',
+                        name: 'facet',
+                        value: 'Wrap'
+                    })
                 }
             ],
-            listeners: {
-                show: function(){
-                    fsAdditionalOptions.doLayout();
-                }
-            }
+            layout: 'hbox',
+            onDisable: Ext.form.RadioGroup.prototype.onDisable,
+            onEnable: Ext.form.RadioGroup.prototype.onEnable,
+            reset: Ext.form.RadioGroup.prototype.reset,
+            value: 'Grid',
+            width: fieldWidth
         });
 
         var btnPlot = new Ext.Button({
@@ -595,12 +669,68 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             text: 'Plot'
         });
 
+        var btnReset = new Ext.Button({
+            disabled: true,
+            handler: function(){
+                Ext.each(
+                    [
+                        cbDataset,
+                        cbPlotType,
+                        chNormalize,
+                        chShowStrains,
+                        spnrTextSize,
+                        cbAnnotation,
+                        rgFacet,
+                        cbColor,
+                        cbShape,
+                        cbSize,
+                        cbAlpha,
+                        spnrHorizontal,
+                        spnrVertical
+                    ],
+                    function( e ){ e.reset(); }
+                );
+
+                cfShowStrains.setVisible( false );
+                manageAdditionalOptions();  // Hide options
+                loadDataset( '' );          // Clear the Data tab
+
+                checkBtnsStatus();
+
+                fsAdditionalOptions.collapse();
+            },
+            text: 'Reset'
+        });
+
+        var btnShare = new Ext.Button({
+            text: 'Share',
+            disabled: false,
+            handler: function(){
+                var address = window.location.href;
+                var hash = address.indexOf( '#' );
+                if ( hash >= 0 ){ address = address.substring( 0, hash ); }
+                address = address + '#' + encodeParams([ cbDataset, cbPlotType ]);
+                 
+                window.prompt("Link to this report:", address);
+            }
+        });
+
+
+        var dfHorizontal = new Ext.form.DisplayField({
+            style: 'padding-right: 10px;',
+            value: 'horizontal'
+        });
+
         var spnrHorizontal = new Ext.ux.form.SpinnerField({
             allowBlank: false,
-            fieldLabel: 'horizontal',
             listeners: {
-                invalid: function(){ tlbrGraph.setDisabled( true ); },
-                valid: checkBtnPlotStatus
+                afterrender: {
+                    fn: function(){
+                        this.on( 'valid', checkBtnsStatus );
+                    },
+                    single: true
+                },
+                invalid: checkBtnsStatus
             },
             maxValue: 10,
             minValue: 1,
@@ -608,12 +738,21 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             width: 40
         });
 
+        var dfVertical = new Ext.form.DisplayField({
+            style: 'padding-right: 10px;',
+            value: 'vertical'
+        });
+
         var spnrVertical = new Ext.ux.form.SpinnerField({
             allowBlank: false,
-            fieldLabel: 'vertical',
             listeners: {
-                invalid: function(){ tlbrGraph.setDisabled( true ); },
-                valid: checkBtnPlotStatus
+                afterrender: {
+                    fn: function(){
+                        this.on( 'valid', checkBtnsStatus );
+                    },
+                    single: true
+                },
+                invalid: checkBtnsStatus
             },
             maxValue: 10,
             minValue: 1,
@@ -693,7 +832,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
                     p = outputParams[1];
 
-                    if ( p && p.type == 'text'){
+                    if ( p && p.type == 'text' && p.value !== '\n' ){
                         cntPlotMessage.update( '<div class=\'centered-text padding5px\'>' + p.value + '</div>' );
                     }
                 }
@@ -716,90 +855,81 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             cls: 'paddingLeft10px'
         });
 
-        cfAnnotation = new Ext.form.CompositeField({
-            hidden: true,
-            items: [
-                cbAnnotation,
-                {
+        var cfShowStrains   = LABKEY.ext.ISCore.factoryTooltipWrapper( chShowStrains, 'Show strains', strains_help, true );
+        var cfTextSize      = LABKEY.ext.ISCore.factoryTooltipWrapper( spnrTextSize, 'Text size', textsize_help );
+        var cfAnnotation    = LABKEY.ext.ISCore.factoryTooltipWrapper( cbAnnotation, 'Annotation', annotation_help, true );
+        var cfFacet         = LABKEY.ext.ISCore.factoryTooltipWrapper( rgFacet, 'Facet', facet_help, true );
+        var cfColor         = LABKEY.ext.ISCore.factoryTooltipWrapper( cbColor, 'Color', color_help, true );
+        var cfShape         = LABKEY.ext.ISCore.factoryTooltipWrapper( cbShape, 'Shape', shape_help, true );
+        var cfSize          = LABKEY.ext.ISCore.factoryTooltipWrapper( cbSize, 'Size', size_help, true );
+        var cfAlpha         = LABKEY.ext.ISCore.factoryTooltipWrapper( cbAlpha, 'Alpha', alpha_help, true );
+        var cfAspectRatio   = LABKEY.ext.ISCore.factoryTooltipWrapper(
+            {
+                border: false,
+                defaults: {
                     border: false,
-                    html: LABKEY.ext.ISCore.helpTooltip( 'Annotation', 'test' )
-                }
-            ]
-        });
+                    flex: 1,
+                    layout: 'hbox'
+                },
+                fieldLabel: 'Aspect ratio',
+                items: [
+                    {
+                        items: [
+                            dfHorizontal,
+                            spnrHorizontal,
+                        ]
+                    },{
+                        items: [
+                            dfVertical,
+                            spnrVertical,
+                        ]
+                    }
+                ],
+                layout: 'hbox',
+                width: fieldWidth
+            },
+            'Aspect ratio', aspectratio_help
+        );
 
         var fsAdditionalOptions = new Ext.form.FieldSet({
             autoScroll: true,
             collapsed: true,
             collapsible: true,
             items: [
-                new Ext.form.CompositeField({
-                    items: [
-                        spnrTextSize,
-                        {
-                            border: false,
-                            html: LABKEY.ext.ISCore.helpTooltip( 'Text size', textsize_help )
-                        }
-                    ]
-                }),
+                cfTextSize,
                 cfAnnotation,
-                rgFacet,
-                cbColor,
-                cbShape,
-                cbSize,
-                cbAlpha,
-                new Ext.form.CompositeField({
-                    fieldLabel: 'Aspect ratio',
-                    items: [
-                        new Ext.form.DisplayField({
-                            value: 'horizontal'
-                        }),
-                        spnrHorizontal,
-                        new Ext.Toolbar.Spacer({
-                            width: 30
-                        }),
-                        new Ext.form.DisplayField({
-                            value: 'vertical'
-                        }),
-                        spnrVertical
-                    ]
-                }),
+                cfFacet,
+                cfColor,
+                cfShape,
+                cfSize,
+                cfAlpha,
+                cfAspectRatio
             ],
             labelWidth: labelWidth,
+            listeners: {
+                afterrender: {
+                    fn: function(){
+                        this.on( 'collapse', checkBtnsStatus );
+                    },
+                    single: true
+                },
+                expand: checkBtnsStatus
+            },
             title: 'Additional options',
             titleCollapse: true
         });
 
-        var tlbrPlot = new Ext.Toolbar({
+        var tlbrButtons = new Ext.Toolbar({
             border: true,
             defaults: {
-                style: 'padding-top: 1px; padding-bottom: 1px;'
+                style: 'padding-top: 1px; padding-bottom: 1px;',
+                width: 45
             },
-            disabled: true,
             enableOverflow: true,
             items: [
                 btnPlot,
-                new Ext.Button({
-                    handler: function(){
-                        cbDataset.reset();
-                        cbPlotType.reset();
-                        chNormalize.reset();
-                        chShowStrains.reset();
-                        chShowStrains.setVisible( false );
-                        spnrTextSize.reset();
-                        cbAnnotation.reset();
-                        rgFacet.reset();
-                        cbColor.reset();
-                        cbShape.reset();
-                        cbSize.reset();
-                        cbAlpha.reset();
-                        spnrHorizontal.reset();
-                        spnrVertical.reset();
-                        manageAdditionalOptions();  // Hide options
-                        loadDataset('');            // Clear the Data tab
-                        checkBtnPlotStatus();       // Disable run
-                    },
-                    text: 'Reset'
-                }),
+                //btnShare,
+                btnReset,
                 cmpStatus
             ],
             style: 'padding-right: 2px; padding-left: 2px;'
@@ -868,38 +998,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
-                       // new Ext.Spacer({
-                       //     height: 20,
-                       //     html: '&nbsp'
-                       // }),
-                        new Ext.form.CompositeField({
-                            items: [
-                                cbDataset,
-                                {
-                                    border: false,
-                                    html: LABKEY.ext.ISCore.helpTooltip( 'Dataset', dataset_help )
-                                }
-                            ]
-                        }),
-                        new Ext.form.CompositeField({
-                            items: [
-                                cbPlotType,
-                                {
-                                    border: false,
-                                    html: LABKEY.ext.ISCore.helpTooltip( 'Plot type', plottype_help )
-                                }
-                            ]
-                        }),
-                        new Ext.form.CompositeField({
-                            items: [
-                                chNormalize,
-                                {
-                                    border: false,
-                                    html: LABKEY.ext.ISCore.helpTooltip( 'Normalize', normalize_help )
-                                }
-                            ]
-                        }),
-                        chShowStrains
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbDataset, 'Dataset', dataset_help ),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbPlotType, 'Plot type', plottype_help ),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( chNormalize, 'Normalize', normalize_help ),
+                        cfShowStrains
                     ],
                     labelWidth: labelWidth,
                     title: 'Parameters'
@@ -908,7 +1010,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 new Ext.Panel({
                     border: true,
                     items: [
-                        tlbrPlot,
+                        tlbrButtons,
                         cntPlotMessage,
                         cntPlot
                     ],
@@ -919,16 +1021,24 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             title: 'Input / View'
         });
 
-        var pnlData = new Ext.Panel({
-            autoScroll: true,
-            bodyStyle: 'padding: 1px;',
+        var getParamString = function( el ){
+            return el.getValue();
+        };
+
+        var encodeParams = function( arrayToProcess ){
+            var obj = {};
+            Ext.each( arrayToProcess, function( e ){
+                obj[ e.getId() ] = getParamString( e );
+            });
+            return Ext.urlEncode( obj );
+        };
+
+        var cntEmptyPnlData = new Ext.Container({
             defaults: {
-                autoHeight: true,
-                border: false,
-                hideMode: 'offsets'
+                border: false
             },
             items: [
-                { html: 'Please, go to the' },
+                { html: 'Go to the' },
                 new Ext.Container({
                     autoEl: 'a',
                     html: '&nbsp;\'Input / View\'&nbsp;',
@@ -941,14 +1051,33 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         }
                     }
                 }),
-                { html: 'tab to select a dataset to display below. You will then be able to filter this data here before plotting.' },
+                { html: 'tab to select a dataset to display below. You will then be able to filter this data here before plotting.' }
             ],
-            layout: 'hbox',
+            layout: 'hbox'
+        });
+
+        var cntDataset = new Ext.Container({
+            defaults: {
+                border: false
+            },
+            items: [],
+            layout: 'fit'
+        });
+
+        var pnlData = new Ext.Panel({
+            autoScroll: true,
+            bodyStyle: 'padding: 1px;',
+            defaults: {
+                autoHeight: true,
+                border: false,
+                hideMode: 'offsets'
+            },
+            items: [ cntEmptyPnlData, cntDataset ],
             tabTip: 'Data',
             title: 'Data'
         });
  
-        var pnlTabs = new Ext.TabPanel({
+         pnlTabs = new Ext.TabPanel({
             activeTab: 0,
             autoHeight: true,
             defaults: {
@@ -1001,10 +1130,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: '<b>Choose a dataset</b>: ' + dataset_help + '</br></br>' +
-                                '<b>Plot type</b>: ' + plottype_help + '</br></br>' +
-                                '<b>Normalize to baseline</b>: ' + normalize_help + '<br><br>' +
-                                '<b>Show individual virus strains</b>: ' + strains_help,
+                            html:   '<b>Dataset</b>: ' + dataset_help + '</br></br>' +
+                                    '<b>Plot type</b>: ' + plottype_help + '</br></br>' +
+                                    '<b>Normalize to baseline</b>: ' + normalize_help + '<br><br>' +
+                                    '<b>Show individual virus strains</b>: ' + strains_help,
                             style: 'margin-top: 5px;',
                             title: 'Parameters'
                         }),
@@ -1012,13 +1141,14 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             text: 'Parameters in the "Additional options" section can be used to customize the plot and modify it based on the demographics. Available choices are Age, Gender, and Race.'
                         }),
                         new Ext.form.FieldSet({
-                            html: '<b>Text size:</b> ' + textsize_help + '</br></br>' +
-                                '<b>Annotation:</b> ' + annotation_help + '</br></br>' +
-                                '<b>Facet:</b> ' + facet_help + '</br></br>' +
-                                '<b>Shape:</b> ' + shape_help + '</br></br>' +
-                                '<b>Color:</b> ' + color_help + '</br></br>' +
-                                '<b>Size:</b> ' + size_help + '</br></br>' +
-                                '<b>Alpha:</b> ' + alpha_help,
+                            html:   '<b>Text size:</b> ' + textsize_help + '</br></br>' +
+                                    '<b>Annotation:</b> ' + annotation_help + '</br></br>' +
+                                    '<b>Facet:</b> ' + facet_help + '</br></br>' +
+                                    '<b>Shape:</b> ' + shape_help + '</br></br>' +
+                                    '<b>Color:</b> ' + color_help + '</br></br>' +
+                                    '<b>Size:</b> ' + size_help + '</br></br>' +
+                                    '<b>Alpha:</b> ' + alpha_help + '</br></br>' +
+                                    '<b>Aspect ratio:</b> ' + aspectratio_help,
                             style: 'margin-top: 5px;',
                             title: 'Additional options'
                         })
@@ -1063,8 +1193,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 height  = width * spnrVertical.getValue() / spnrHorizontal.getValue()
             ;
 
-            cntPlotMessage.update('');
-            cntPlot.update('<div style=\'height: 10px\'></div>'); 
+            cntPlotMessage.update( '' );
+            cntPlot.update( '<div style=\'height: 10px\'></div>' );
 
             cnfPlot.inputParams = {
                 datasetName:        cbDataset.getValue(),
@@ -1099,18 +1229,30 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         };
 
         var componentsSetDisabled = function( bool ){
-            tlbrPlot.setDisabled( bool );
-            cbDataset.setDisabled( bool );
-            cbPlotType.setDisabled( bool );
-            chNormalize.setDisabled( bool );
-            chShowStrains.setDisabled( bool );
-            spnrTextSize.setDisabled( bool );
-            cbAnnotation.setDisabled( bool );
-            rgFacet.setDisabled( bool );
-            cbColor.setDisabled( bool );
-            cbShape.setDisabled( bool );
-            cbSize.setDisabled( bool );
-            cbAlpha.setDisabled( bool );
+            Ext.each(
+                [
+                    cbDataset,
+                    cbPlotType,
+                    chNormalize,
+                    chShowStrains,
+                    spnrTextSize,
+                    cbAnnotation,
+                    rgFacet,
+                    cbColor,
+                    cbShape,
+                    cbSize,
+                    cbAlpha,
+                    spnrHorizontal,
+                    spnrVertical,
+                    dfHorizontal,
+                    dfVertical,
+                    btnPlot,
+                    btnShare,
+                    btnReset,
+                    cmpStatus
+                ],
+                function( e ){ e.setDisabled( bool ); }
+            );
         };
 
         $('#' + config.webPartDivId)
@@ -1167,6 +1309,14 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         this.cntPlot = cntPlot;
 
         LABKEY.ext.DataExplorer.superclass.constructor.apply(this, arguments);
+
+        var hashParams = window.location.hash.substr(1).split('&');
+        if(hashParams != ""){
+            for(var i = 0; i < hashParams.length; i++){
+                var p = hashParams[i].split('=');
+                document.getElementById(p[0]).value = decodeURIComponent(p[1]);
+            }
+        }
 
     }, // end constructor
 

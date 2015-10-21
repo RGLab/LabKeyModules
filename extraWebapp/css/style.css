@@ -1,112 +1,113 @@
 
 /* html, body {
-	width: 100%;
-	height: 100%;
+    width: 100%;
+    height: 100%;
 } */
 
 html {
-	background: #387aba; /* Old browsers */
-	background: -moz-linear-gradient(top,  #387aba 0%, #ffffff 100%); /* FF3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#387aba), color-stop(100%,#ffffff)); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top,  #387aba 0%,#ffffff 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top,  #387aba 0%,#ffffff 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top,  #387aba 0%,#ffffff 100%); /* IE10+ */
-	background: linear-gradient(to bottom,  #387aba 0%,#ffffff 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#387aba', endColorstr='#ffffff',GradientType=0 ); /* IE 6-9 */
+    background: #387aba; /* Old browsers */
+    background: -moz-linear-gradient(top,  #387aba 0%, #ffffff 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#387aba), color-stop(100%,#ffffff)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #387aba 0%,#ffffff 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #387aba 0%,#ffffff 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #387aba 0%,#ffffff 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  #387aba 0%,#ffffff 100%); /* W3C */
+    background-repeat: no-repeat;
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#387aba', endColorstr='#ffffff',GradientType=0 ); /* IE 6-9 */
 }
 
 body {
-	margin: 0;
-	padding: 0;
-	height: 840px;
-	text-align: center;
-	font-family: "Lucida Grande", "Lucida Sans Unicode", sans serif;
-	background: url(../images/vman.png) no-repeat top center;
+    margin: 0;
+    padding: 0;
+    height: 840px;
+    text-align: center;
+    font-family: "Lucida Grande", "Lucida Sans Unicode", sans serif;
+    background: url(../images/vman.png) no-repeat top center;
 }
 
 .page {
-	position: relative;
-	margin: 0 auto;
-	width: 980px;
-	text-align: left;
+    position: relative;
+    margin: 0 auto;
+    width: 980px;
+    text-align: left;
 }
 
 .left {
-	float: left;
-	width: 400px;
-	padding-top: 60px;
+    float: left;
+    width: 400px;
+    padding-top: 60px;
 }
 
 .right {
-	width: 540px;
-	float: right;
-	padding: 30px 10px 0px 0;
-	
+    width: 540px;
+    float: right;
+    padding: 30px 10px 0px 0;
+    
 }
 
 .right img {
-	display: block;
+    display: block;
 }
 
 
 h2 {
-	color: #f1f5de;
-	font-size: 110%;
+    color: #f1f5de;
+    font-size: 110%;
 }
 
 .left h2 {
-	margin-left: 30px;
-	margin-top: 38px;
+    margin-left: 30px;
+    margin-top: 25px;
 }
 
 p {
-	font-size: 80%;
-	line-height: 140%;
-	margin-top: 0;
+    font-size: 80%;
+    line-height: 140%;
+    margin-top: 0;
 }
 
 p.tagline {
-	font-size: 190%;
-	line-height: 130%;
-	margin-top: 19px;
-	margin-bottom: 10px;
-	color: #e8e8d2;
+    font-size: 190%;
+    line-height: 130%;
+    margin-top: 19px;
+    margin-bottom: 10px;
+    color: #e8e8d2;
 }
 
 p.intro {
-	line-height: 150%;
-	font-size: 90%;
-	margin-bottom: 20px;
+    line-height: 150%;
+    font-size: 90%;
+    margin-bottom: 20px;
 }
 
 a, a:visited {
-	color: #e8e8d2;
-	text-decoration: none;
+    color: #e8e8d2;
+    text-decoration: none;
 }
 
 a:hover {
-	color: #cee9fe;
+    color: #cee9fe;
 }
 
 p.intro a {
-	cursor: default;
-	font-weight: bold;
+    cursor: default;
+    font-weight: bold;
 }
 
 table {
-	width: 80%;
-	font-size: 80%;
-	margin-left: 30px;
+    width: 80%;
+    font-size: 80%;
+    margin-left: 30px;
 }
 
 
 td {
-	/* background: rgba(241, 245, 222, 0.4); */
-	background: rgba(255, 255, 255, 0.5);
+    /* background: rgba(241, 245, 222, 0.4); */
+    background: rgba(255, 255, 255, 0.5);
 }
 
 td.nobg {
-	background: none;
+    background: none;
 }
 
 .numberColumn {
@@ -117,16 +118,16 @@ td.nobg {
 }
 
 .news {
-	width: 260px;
-	margin-right: 35px;
-	float: left;
-	padding-bottom: 40px;
+    width: 260px;
+    margin-right: 35px;
+    float: left;
+    padding-bottom: 40px;
 }
 
 .news h2 span {
-	/* float: right; */
-	margin: 6px 12px;
-	font-size: 70%;	
+    /* float: right; */
+    margin: 6px 12px;
+    font-size: 70%; 
 }
 
 .news-text .mask-loading {
@@ -134,106 +135,106 @@ td.nobg {
 }
 
 .news-text {
-	height: 230px;
-	overflow-y: auto;
+    height: 230px;
+    overflow-y: auto;
 }
 
 .signin {
-	position: relative;
-	width: 245px;
-	float: left;
+    position: relative;
+    width: 245px;
+    float: left;
 }
 
 label {
-	font-size: 85%;
+    font-size: 85%;
 }
 
 label.user {
-	position: absolute;
-	top: 70px;
-	left: 10px;
-	font-size: 85%;
+    position: absolute;
+    top: 70px;
+    left: 10px;
+    font-size: 85%;
 }
 
 label.pw {
-	position: absolute;
-	top: 117px;
-	left: 10px;
-	font-size: 85%;
+    position: absolute;
+    top: 117px;
+    left: 10px;
+    font-size: 85%;
 }
 
 input[type="text"],
 input[type="password"] {
-	width: 210px;
-	height: 25px;
-	border: 0;
-	background-color: #fff;
-	margin-top: 5px;
-	padding-left: 10px;
-	display: inline;
+    width: 210px;
+    height: 25px;
+    border: 0;
+    background-color: #fff;
+    margin-top: 5px;
+    padding-left: 10px;
+    display: inline;
 }
 
 input[type="button"],
 a.labkey-button {
-	background-color: #519eda;
-	color: #fff;
-	padding: 8px 10px;
-	border: 0;
-	font-size: 90%;
-	margin-top: 15px;
-	cursor: pointer;
-	border-radius: 5px;
+    background-color: #519eda;
+    color: #fff;
+    padding: 8px 10px;
+    border: 0;
+    font-size: 90%;
+    margin-top: 15px;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
 input[type="button"]:hover,
 a.labkey-button:hover {
-	background-color: #333;
+    background-color: #333;
 }
 
 a.labkey-button {
-	display: block;
-	width: 75px;
-	text-align: center;
+    display: block;
+    width: 75px;
+    text-align: center;
 }
 
 a.forgotpw {
-	display: inline-block;
-	color: #519eda;
-	font-weight: bold;
-	padding: 5px;
+    display: inline-block;
+    color: #519eda;
+    font-weight: bold;
+    padding: 5px;
 }
 
 a.forgotpw:hover {
-	color: #333;
+    color: #333;
 }
 
 .signin h2 input[type="button"] {
-	float: right;
-	padding: 5px;
-	font-size: 60%;
-	margin-top: -7px;
-	border-radius: 3px;
+    float: right;
+    padding: 5px;
+    font-size: 60%;
+    margin-top: -7px;
+    border-radius: 3px;
 }
 
 .footer {
-	position: absolute;
-	bottom: -50px;
-	width: 980px;
-	margin: 0 auto;
-	font-size: 70%;
-	text-align: center;
-	color: #888;
-	border-top: 1px solid #ddd;
-	padding: 10px 0;
+    border-top: 1px solid #ddd;
+    bottom: -80px;
+    color: #888;
+    font-size: 70%;
+    margin: 0 auto;
+    padding: 10px 0;
+    position: absolute;
+    text-align: center;
+    width: 980px;
 }
 
 .footer a, .footer a:visited {
-	color: #888;
+    color: #888;
     text-decoration: underline;
 }
 
 .footer a:hover {
-	color: #333;
+    color: #333;
 }
 
 .roundedCorners {
@@ -246,32 +247,31 @@ a.forgotpw:hover {
     font-size: 90%;
     padding: 5px 10px;
     background-color: #F1F5DE;
-    margin-bottom: 10px;
-	line-height: 145%;
+    line-height: 145%;
 }
 
 .message-banner a, a:visited {
-	/* color: black;
+    /* color: black;
     text-decoration: underline; */
-	color: #519eda;
-	font-weight: bold;
+    color: #519eda;
+    font-weight: bold;
 }
 
 .message-banner a:hover {
     text-decoration: none;
-	color: #333;
+    color: #333;
 }
 
 .news-text a, a:visited {
-	/* color: black;
+    /* color: black;
     text-decoration: underline; */
-	color: #2e84c7;
-	font-weight: bold;
+    color: #2e84c7;
+    font-weight: bold;
 }
 
 .news-text a:hover {
     text-decoration: none;
-	color: #333;
+    color: #333;
 }
 
 

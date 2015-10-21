@@ -8,11 +8,11 @@ function goToDataExplorer( dataRegion ) {
                     }
     ;
 
-    Ext.each( filters, function(e){
-        params[e.getURLParameterName()] = e.getURLParameterValue()
+    Ext.each( filters, function( e ){
+        params[ e.getURLParameterName() ] = e.getURLParameterValue();
     });
 
-    window.location = LABKEY.ActionURL.buildURL('DataExplorer', 'begin.view', null, params );
+    window.location = LABKEY.ActionURL.buildURL( 'DataExplorer', 'begin.view', null, params );
 }
 
 function goToView( dataRegion, view ) {

@@ -11,7 +11,7 @@ FROM
     FROM
      assay.ExpressionMatrix.matrix.InputSamples
     WHERE
-     Biosample.subject_accession IN ( SELECT subject_accession from study.hai )
+     Biosample.participantId IN ( SELECT participantId from study.hai )
 )
 GROUP BY
  timepoint, timepointUnit
