@@ -46,7 +46,7 @@ td.labkey-main-icon { padding: 4px 4px 6px 116px;}
     /* ************************************************************ */
 
     div.hopscotch-bubble .hopscotch-bubble-number {
-        background-color: #0c5d9c !important;
+        background-color: #0c5d9c !important; /* THE THEME COLOR */
         background-image: none !important;
         -webkit-border-radius: 15px;
         -moz-border-radius: 15px;
