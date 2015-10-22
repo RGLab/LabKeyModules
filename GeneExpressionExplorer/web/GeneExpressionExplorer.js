@@ -26,29 +26,150 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var
-            me              = this,
-            maskPlot        = undefined,
-            reportSessionId = undefined,
-            fieldWidth      = 400,
-            labelWidth      = 130
+            me                  = this,
+            qwpResponse         = undefined,
+            maskPlot            = undefined,
+            reportSessionId     = undefined,
+            cohortsCache        = undefined,
+            flagTimePontSelect  = undefined
+            fieldWidth          = 400,
+            labelWidth          = 130
             ;
 
-        var checkBtnPlotStatus = function(){
+        var handleTimepointSelection = function(){
+            if ( cbTimePoint.getSelectedField( 'timepoint' ) <= 0 ){
+                chNormalize.setDisabled( true );
+                chNormalize.setValue( false );
+            } else{
+                chNormalize.setDisabled( false );
+            }
+
+            cbCohorts.reset();
+            cbGenes.reset();
+            cbGenes.setDisabled( true );
+
+            if ( cbTimePoint.getValue() == '' ){
+                cbCohorts.setDisabled( true );
+                cbCohorts.reset();
+
+                checkBtnsStatus();
+            } else {
+                strCohort.setUserFilters([
+                    LABKEY.Filter.create(
+                        'timepoint',
+                        cbTimePoint.getSelectedField( 'timepoint' ),
+                        LABKEY.Filter.Types.EQUAL
+                    ),
+                    LABKEY.Filter.create(
+                        'timepointUnit',
+                        cbTimePoint.getSelectedField( 'timepointUnit' ),
+                        LABKEY.Filter.Types.EQUAL
+                    )
+                ]);
+                strCohort.load();
+            }
+        };
+
+        var loadResponse = function(){
+            var
+                response = cbResponse.getValue(),
+                cohorts = cbCohorts.getValue()
+            ;
+
+            cntPlot.update( '<div style=\'height: 10px\'></div>' );
+
+            if ( response !== '' && cbTimePoint.getValue() !== '' && cohorts !== '' ){
+                if (
+                    ! qwpResponse ||
+                    ( qwpResponse && ( qwpResponse.queryName != response || cohortsCache != cohorts ) )
+                ){
+                    cohortsCache = cohorts;
+
+                    LABKEY.DataRegions = {};
+                    qwpResponse = new LABKEY.QueryWebPart({
+                        buttonBar: {
+                            items:[
+                                LABKEY.QueryWebPart.standardButtons.exportRows,
+                                LABKEY.QueryWebPart.standardButtons.pageSize
+                            ],
+                            position: 'top',
+                            showUpdateColumn: false
+                        },
+                        filters: [
+                            LABKEY.Filter.create(
+                                'arm_accession/name',
+                                cohorts,
+                                LABKEY.Filter.Types.IN
+                            )
+                        ],
+                        frame: 'none',
+                        queryName: response,
+                        schemaName: 'study',
+                        viewName: 'GEE'
+                    });
+
+                    me.qwpResponse = qwpResponse;
+                    pnlData.removeAll( false );
+                    $('.suwala-doubleScroll-scroll-wrapper').remove();
+                    $('.labkey-data-region-wrap').remove();
+
+                    pnlData.add( cntGrid );
+                    pnlData.doLayout();
+
+                    qwpResponse.on( 'render', onRender );
+                    qwpResponse.render( cntGrid.getEl() );
+                }
+            } else {
+                qwpResponse = undefined;
+
+                me.qwpResponse = qwpResponse;
+                pnlData.removeAll( false );
+                $('.suwala-doubleScroll-scroll-wrapper').remove();
+                $('.labkey-data-region-wrap').remove();
+
+                pnlData.add( cntEmptyPnlData );
+
+                checkBtnsStatus();
+            }
+        };
+
+        var checkBtnsStatus = function(){
             cfGenes.doLayout();
 
             if (    cbResponse.isValid( true ) &&
-                    cbCohorts.isValid( true ) &&
                     cbTimePoint.isValid( true ) &&
+                    cbCohorts.isValid( true ) &&
                     cbGenes.isValid( true ) &&
-                    spnrTextSize.isValid( true )
+                    spnrTextSize.isValid( true ) &&
+                    qwpResponse &&
+                    qwpResponse.getDataRegion().totalRows
             ){
                 btnPlot.setDisabled( false );
             } else {
                 btnPlot.setDisabled( true );
             }
+
+            if (    cbResponse.getValue() == cbResponse.originalValue &&
+                    cbTimePoint.getValue() == cbTimePoint.originalValue &&
+                    cbCohorts.getValue() == cbCohorts.originalValue &&
+                    chNormalize.getValue() == chNormalize.originalValue &&
+                    spnrTextSize.getValue() == spnrTextSize.originalValue &&
+                    rgFacet.getValue().getGroupValue() == rgFacet.initialConfig.value &&
+                    cbShape.getValue() == cbShape.originalValue &&
+                    cbColor.getValue() == cbColor.originalValue &&
+                    cbSize.getValue() == cbSize.originalValue &&
+                    cbAlpha.getValue() == cbAlpha.originalValue &&
+                    fsAdditionalOptions.collapsed
+            ){
+                btnReset.setDisabled( true );
+            } else {
+                btnReset.setDisabled( false );
+            }
         };
 
         var manageCbGenesState = function(){
+            loadResponse();
+
             var tempSQL = '',
                 tempArray = cbCohorts.getCheckedArray( 'featureSetId' ),
                 len = tempArray.length
@@ -68,25 +189,27 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 }
             } else {
                 cbGenes.clearValue();
+                cbGenes.clearInvalid();
                 cbGenes.setDisabled( true );
             }
             strGene.setSql( tempSQL );
+            cbGenes.lastQuery = null;
 
-            checkBtnPlotStatus();
+            checkBtnsStatus();
         };
 
-        //Help text
-        var response_help  = "The variable to plot against the expression of selected genes. For HAI, the timepoint of peak immunogenicity is selected.";
-        var timepoint_help = "The gene-expression time point to plot.";
-        var cohort_help    = "The cohorts with subjects of interest. Some cohorts might only be available at specific timepoints.";
-        var normalize_help = "Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.";
-        var genes_help     = "The genes to plot.";
-        var textsize_help  = "The size of all text elements on the plot (Including axis, legend and labels)";
-        var facet_help     = "The plot will facet by cohorts on the y axis and genes on the x axis. In `grid` mode, the scales are consistent for a gene and for a cohort. In `wrap` mode, the scales are free.<br> Use wrap if you observe empty spaces in the plots. `wrap` is also more appropriate when plotting many genes and a single cohort.";
-        var shape_help     = "The shape of the data points.";
-        var color_help     = "The color of the data points. (Age is selected by default)";
-        var size_help      = "The size of the data points.";
-        var alpha_help     = "The transparency of the data points.";
+        // Help text
+        var response_help  = 'The variable to plot against the expression of selected genes. For HAI, the timepoint of peak immunogenicity is selected.';
+        var timepoint_help = 'The gene-expression time point to plot.';
+        var cohort_help    = 'The cohorts with subjects of interest. Some cohorts might only be available at specific timepoints.';
+        var normalize_help = 'Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.';
+        var genes_help     = 'The genes to plot.';
+        var textsize_help  = 'The size of all text elements on the plot (Including axis, legend and labels).';
+        var facet_help     = 'The plot will facet by cohorts on the y axis and genes on the x axis. In "grid" mode, the scales are consistent for a gene and for a cohort. In "wrap" mode, the scales are free.<br> Use wrap if you observe empty spaces in the plots. "wrap" is also more appropriate when plotting many genes and a single cohort.';
+        var shape_help     = 'The shape of the data points.';
+        var color_help     = 'The color of the data points. (Age is selected by default)';
+        var size_help      = 'The size of the data points.';
+        var alpha_help     = 'The transparency of the data points.';
 
 
         ///////////////////////////////////
@@ -95,13 +218,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var strCohort = new LABKEY.ext.Store({
             autoLoad: false,
+            containerFilter: 'CurrentAndSubfolders',
             listeners: {
                 load: function(){
-                    if ( this.getCount() > 0 ){
-                        cbCohorts.setDisabled( false );
-                    } else {
-                        cbCohorts.setDisabled( true );
-                    }
+                    cbCohorts.setDisabled( this.getCount() === 0 );
+                    checkBtnsStatus();
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
@@ -111,25 +232,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var strTimePoint = new LABKEY.ext.Store({
             autoLoad: true,
-            listeners: {
-                load: function(){
-                    if ( this.getCount() > 0 ){
-                        cbTimePoint.setDisabled( false );
-
-                        var num, unit,
-                            field = new Ext.data.Field({ name: 'displayTimepoint' });
-                        this.recordType.prototype.fields.replace(field);
-                        this.each( function(r){
-                            if ( r.data[field.name] == undefined ){
-                                num                 = r.data['timepoint'];
-                                unit                = r.data['timepointUnit'];
-                                r.data[field.name]  = num + ' ' + ( num != 1 ? unit : unit.slice( 0, unit.length - 1 ) );
-                            }
-                        });
-
-                        cbTimePoint.bindStore( this );
-                    }
-                },
+            listeners: { 
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'timepoints_GEE',
@@ -137,16 +240,22 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         });
 
         var strngSqlStartGenes      =   'SELECT' +
-                                        ' DISTINCT GeneSymbol as gene_symbol' +
+                                        ' DISTINCT GeneSymbol AS gene_symbol' +
                                         ' FROM featureannotation',
             strngSqlWhereGenes      =   ' WHERE featureannotationsetid = ',
             strngSqlIntersectGenes  =   ' INTERSECT '
         ; 
 
         var strGene = new LABKEY.ext.Store({
+            //containerFilter: 'CurrentAndSubfolders',
+            hasMultiSort: true,
             listeners: {
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
+            multiSortInfo: {
+                sorters: [{ field: 'gene_symbol', direction: 'ASC' }]
+            },
+            remoteSort: false,
             schemaName: 'Microarray',
             sql: strngSqlStartGenes
         });
@@ -205,9 +314,9 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             fieldLabel: 'Response',
             lazyInit: false,
             listeners: {
-                change:     checkBtnPlotStatus,
-                cleared:    checkBtnPlotStatus,
-                select:     checkBtnPlotStatus
+                change: checkBtnsStatus,
+                cleared: checkBtnsStatus,
+                select: checkBtnsStatus
             },
             store: new Ext.data.ArrayStore({
                 data: [ [ 'HAI', 'HAI' ] ],
@@ -217,6 +326,55 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             valueField: 'name',
             width: fieldWidth
         });
+
+        var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
+            allowBlank: false,
+            disabled: true,
+            displayField: 'displayTimepoint',
+            fieldLabel: 'Time point',
+            lazyInit: false,
+            listeners: {
+                change: function(){
+                    if ( ! flagTimePointSelect ){
+                        handleTimepointSelection();
+                    }
+                },
+                cleared: handleTimepointSelection,
+                focus: function(){
+                    flagTimePointSelect = false;
+                },
+                select: function(){
+                    flagTimePointSelect = true;
+
+                    handleTimepointSelection();
+                }     
+            },
+            store: strTimePoint,
+            valueField: 'displayTimepoint',
+            width: fieldWidth
+        });
+
+        strTimePoint.on(
+            'load',
+            function(){
+                if ( this.getCount() > 0 ){
+                    cbTimePoint.setDisabled( false );
+
+                    var num, unit,
+                        field = new Ext.data.Field({ name: 'displayTimepoint' });
+                    this.recordType.prototype.fields.replace(field);
+                    this.each( function(r){
+                        if ( ! r.data[field.name] ){
+                            num                 = r.data['timepoint'];
+                            unit                = r.data['timepointUnit'];
+                            r.data[field.name]  = num + ' ' + ( num != 1 ? unit : unit.slice( 0, unit.length - 1 ) );
+                        }
+                    });
+
+                    cbTimePoint.bindStore( this );
+                }
+            }
+        );
 
         var cbCohorts = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
@@ -229,94 +387,46 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 cleared:    manageCbGenesState,
                 select:     manageCbGenesState
             },
-            separator: ';',
+            separator: ';', // IMPORTANT FOR LABKEY FILTERING
             store: strCohort,
             valueField: 'cohort',
             width: fieldWidth
         });
 
-        var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
+        var cbGenes = new Ext.ux.form.SuperBoxSelect({
             allowBlank: false,
-            disabled: true,
-            displayField: 'displayTimepoint',
-            fieldLabel: 'Time point',
-            lazyInit: false,
-            listeners: {
-                change: function(){
-                    handleTimepointSelection();
-                },
-                cleared: function(){
-                    handleTimepointSelection();
-                },
-                select: function(){
-                    handleTimepointSelection();
-                }
-            },
-            store: strTimePoint,
-            valueField: 'displayTimepoint',
-            width: fieldWidth
-        });
-
-         cbGenes = new Ext.ux.form.SuperBoxSelect({
-            allowBlank: false,
+            backspaceDeletesLastItem: false,
             disabled: true,
             displayField: 'gene_symbol',
+            extraItemCls : 'x-panel-header',
             fieldLabel: 'Genes',
-            getParams: function(q){
-                var params = {},
-                    paramNames = this.store.paramNames;
-                if ( this.pageSize ){
-                    params[ paramNames.start ] = 0;
-                    params[ paramNames.limit ] = this.pageSize;
-                }
-
-                strGene.setUserFilters([
+            getParams: function( q ){
+                this.store.setUserFilters([
                     LABKEY.Filter.create(
-                        'gene_symbol',
+                        this.valueField,
                         q,
                         LABKEY.Filter.Types.CONTAINS
                     )
                 ]);
 
-                return params;
+                return Ext.ux.form.SuperBoxSelect.prototype.getParams.call( this, q );
             },
+            itemFocusCls: 'x-window-tc',
+            itemHoverCls: 'underlined-text',
+            lastQuery: null,
             lazyInit: false,
             listeners: {
-                additem:    checkBtnPlotStatus,
-                clear:      checkBtnPlotStatus,
-                removeItem: checkBtnPlotStatus,
-                focus: function (){
-                    if ( this.disabled ) {
-                        return;
-                    }
-                    if ( this.isExpanded() ) {
-                        this.multiSelectMode = false;
-                    } else if ( this.pinList ) {
-                        this.multiSelectMode = true;
-                    }
-
-                    this.initList();
-                    if( this.triggerAction == 'all' ) {
-                        this.doQuery( this.allQuery, true );
-                    } else {
-                        this.doQuery( this.getRawValue() );
-                    }
-                }
+                additem: checkBtnsStatus,
+                clear: checkBtnsStatus,
+                removeItem: checkBtnsStatus
             },
+            markComboMatchCls: 'underlined-text',
             mode: 'remote',
             pageSize: 10,
             store: strGene,
-            triggerAction: 'query',
+            supressClearValueRemoveEvents: true,
+            triggerAction: this.queryParam,
             valueField: 'gene_symbol',
-            width: fieldWidth
-        });
-
-        var cbShape = new Ext.ux.form.ExtendedComboBox({
-            displayField: 'name',
-            fieldLabel: 'Shape',
-            lazyInit: false,
-            store: strShape,
-            valueField: 'name',
             width: fieldWidth
         });
 
@@ -326,6 +436,15 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             lazyInit: false,
             store: strDemographics,
             value: 'Age',
+            valueField: 'name',
+            width: fieldWidth
+        });
+
+        var cbShape = new Ext.ux.form.ExtendedComboBox({
+            displayField: 'name',
+            fieldLabel: 'Shape',
+            lazyInit: false,
+            store: strShape,
             valueField: 'name',
             width: fieldWidth
         });
@@ -354,7 +473,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         ///////////////////////////////////////
 
         var chNormalize = new Ext.form.Checkbox({
-            fieldLabel: 'Normalize to baseline'
+            fieldLabel: 'Normalize to baseline',
+            width: fieldWidth
         });
 
         var btnPlot = new Ext.Button({
@@ -369,6 +489,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     timePointUnit:      cbTimePoint.getSelectedField( 'timepointUnit' ),
                     normalize:          chNormalize.getValue(),
                     genes:              Ext.encode( cbGenes.getValuesAsArray() ),
+                    filters:            Ext.encode( qwpResponse.getDataRegion().getUserFilter() ),
                     textSize:           spnrTextSize.getValue(),
                     facet:              rgFacet.getValue().getGroupValue(),
                     shape:              cbShape.getValue(),
@@ -386,39 +507,116 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             text: 'Plot'
         });
 
+        var btnReset = new Ext.Button({
+            disabled: true,
+            handler: function(){
+                Ext.each(
+                    [
+                        cbResponse,
+                        cbTimePoint,
+                        cbCohorts,
+                        chNormalize,
+                        cbGenes,
+                        spnrTextSize,
+                        rgFacet,
+                        cbShape,
+                        cbColor,
+                        cbSize,
+                        cbAlpha
+                    ],
+                    function( e ){ e.reset(); }
+                );
+
+                cbCohorts.setDisabled( true );
+                cbGenes.setDisabled( true );
+                loadResponse();
+
+                fsAdditionalOptions.collapse();
+            },
+            text: 'Reset'
+        });
 
         var spnrTextSize = new Ext.ux.form.SpinnerField({
             allowBlank: false,
             allowDecimals: false,
             fieldLabel: 'Text size',
             listeners: {
-                invalid:    function(){ btnPlot.setDisabled( true ); },
-                valid:      checkBtnPlotStatus
+                afterrender: {
+                    fn: function(){
+                        this.on( 'valid', checkBtnsStatus );
+                    },
+                    single: true
+                },
+                invalid: checkBtnsStatus
             },
             maxValue: 30,
             minValue: 0,
             value: 18,
-            width: 40
+            width: fieldWidth
         });
 
-        var rgFacet = new Ext.form.RadioGroup({
-            columns: [ 100, 100 ],
+        var rgFacet = new Ext.Panel({
+            border: false,
+            clearInvalid: Ext.emptyFn,
+            defaults: {
+                border: false,
+                flex: 1,
+                layout: 'fit'
+            },
+            eachItem: function( fn, scope ){
+                if ( this.items && this.items.each ){
+                    this.items.each( function(e){
+                        if ( e.items && e.items.each && e.items.length == 1 ){
+                            e.items.each( fn, scope || this );
+                        }
+                    });
+                }
+            },
+            fieldLabel: 'Facet',
+            getValue: Ext.form.RadioGroup.prototype.getValue,
+            items: [
+                { items:
+                    new Ext.form.Radio({
+                        boxLabel: 'grid',
+                        checked: true,
+                        inputValue: 'Grid',
+                        name: 'facet',
+                        value: 'Grid'
+                    })
+                },
+                { items:
+                    new Ext.form.Radio({
+                        boxLabel: 'wrap',
+                        inputValue: 'Wrap',
+                        name: 'facet',
+                        value: 'Wrap'
+                    })
+                }
+            ],
+            layout: 'hbox',
+            onDisable: Ext.form.RadioGroup.prototype.onDisable,
+            onEnable: Ext.form.RadioGroup.prototype.onEnable,
+            reset: Ext.form.RadioGroup.prototype.reset,
+            value: 'Grid',
+            width: fieldWidth
+        });
+        var rg = new Ext.form.RadioGroup({
             fieldLabel: 'Facet',
             items: [
                 {
-                    boxLabel: 'Grid',
+                    boxLabel: 'grid',
                     checked: true,
                     inputValue: 'Grid',
                     name: 'facet',
                     value: 'Grid'
-                },
-                {
-                    boxLabel: 'Wrap',
+                },{
+                    boxLabel: 'wrap',
                     inputValue: 'Wrap',
                     name: 'facet',
                     value: 'Wrap'
                 }
-            ]
+            ],
+            value: 'Grid'
         });
 
 
@@ -501,41 +699,46 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             html: '<div style=\'height: 10px\'></div>'
         });
 
-        var tlbrPlot = new Ext.Toolbar({
+        var tlbrButtons = new Ext.Toolbar({
             border: true,
             defaults: {
-                style: 'padding-top: 1px; padding-bottom: 1px;'
+                style: 'padding-top: 1px; padding-bottom: 1px;',
+                width: 45
             },
-            //disabled: true,
             enableOverflow: true,
             items: [
                 btnPlot,
-                new Ext.Button({
-                    handler: function(){
-                        cbTimePoint.reset();
-                        cbCohorts.reset();
-                        chNormalize.reset();
-                        cbGenes.reset(); //TODO: This shouldn't open the dropdown
-                        cbShape.reset();
-                        cbColor.reset();
-                        cbSize.reset();
-                        cbAlpha.reset();
-                        checkBtnPlotStatus();
-                    },
-                    text: 'Reset'
-                })
+                btnReset
             ],
             style: 'padding-right: 2px; padding-left: 2px;'
         });
 
-        var cfGenes = new Ext.form.CompositeField({
+        var cfGenes = LABKEY.ext.ISCore.factoryTooltipWrapper( cbGenes, 'Genes', genes_help );
+
+        var fsAdditionalOptions = new Ext.form.FieldSet({
+            autoScroll: true,
+            collapsed: true,
+            collapsible: true,
             items: [
-                cbGenes,
-                {
-                    border: false,
-                    html: LABKEY.ext.ISCore.helpTooltip( 'Genes', genes_help )
-                }
-            ]
+                LABKEY.ext.ISCore.factoryTooltipWrapper( spnrTextSize, 'Text size', textsize_help ),
+                LABKEY.ext.ISCore.factoryTooltipWrapper( rgFacet, 'Facet', facet_help ),
+                LABKEY.ext.ISCore.factoryTooltipWrapper( cbColor, 'Color', color_help ),
+                LABKEY.ext.ISCore.factoryTooltipWrapper( cbShape, 'Shape', shape_help ),
+                LABKEY.ext.ISCore.factoryTooltipWrapper( cbSize, 'Size', size_help ),
+                LABKEY.ext.ISCore.factoryTooltipWrapper( cbAlpha, 'Alpha', alpha_help )
+            ],
+            labelWidth: labelWidth,
+            listeners: {
+                afterrender: {
+                    fn: function(){
+                        this.on( 'collapse', checkBtnsStatus );
+                    },
+                    single: true
+                },
+                expand: checkBtnsStatus
+            },
+            title: 'Additional options',
+            titleCollapse: true
         });
 
         var pnlInputView = new Ext.form.FormPanel({
@@ -580,7 +783,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                                 }
                             }
                         }),
-                        { html: 'and</br></br>' },
+                        { html: 'and' },
                         new Ext.Container({
                             autoEl: 'a',
                             html: '&nbsp;\'Help\'&nbsp;',
@@ -593,101 +796,74 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                                 }
                             }
                         }),
-                        { html: 'tabs above.' }
+                        { html: 'tabs above.</br></br>' }
                     ],
                     layout: 'hbox'
                 },
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
-                        new Ext.form.CompositeField({
-                            items: [
-                                cbResponse,
-                                {
-                                    border: false,
-                                    html: LABKEY.ext.ISCore.helpTooltip( 'Response', response_help )
-                                }
-                            ]
-                        }),
-                        new Ext.Spacer({
-                            height: 20,
-                            html: '&nbsp'
-                        }),
-                        new Ext.form.CompositeField({
-                            items: [
-                                cbTimePoint,
-                                {
-                                    border: false,
-                                    html: LABKEY.ext.ISCore.helpTooltip( 'Time point', timepoint_help )
-                                }
-                            ]
-                        }),
-                        new Ext.form.CompositeField({
-                            items: [
-                                cbCohorts,
-                                {
-                                    border: false,
-                                    html: LABKEY.ext.ISCore.helpTooltip( 'Cohorts', cohort_help )
-                                }
-                            ]
-                        }),
-                        new Ext.form.CompositeField({
-                            items: [
-                                chNormalize,
-                                {
-                                    border: false,
-                                    html: LABKEY.ext.ISCore.helpTooltip( 'Normalize to baseline', normalize_help )
-                                }
-                            ]
-                        }),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbResponse, 'Response', response_help ),
+                        new Ext.Spacer({ height: 10, html: '&nbsp' }),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoint, 'Time point', timepoint_help ),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbCohorts, 'Cohorts', cohort_help ),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( chNormalize, 'Normalize to baseline', normalize_help ),
                         cfGenes
                     ],
                     labelWidth: labelWidth,
                     title: 'Parameters'
                 }),
-                new Ext.form.FieldSet({
-                    autoScroll: true,
-                    collapsed: true,
-                    collapsible: true,
-                    items: [
-                        new Ext.form.CompositeField({
-                            items: [
-                                spnrTextSize,
-                                {
-                                    border: false,
-                                    html: LABKEY.ext.ISCore.helpTooltip( 'Text size', textsize_help )
-                                }
-                            ]
-                        }),
-                        new Ext.form.CompositeField({
-                            items: [
-                                rgFacet,
-                                {
-                                    border: false,
-                                    html: LABKEY.ext.ISCore.helpTooltip( 'Facet', facet_help )
-                                }
-                            ]
-                        }),
-                        cbShape,
-                        cbColor,
-                        cbSize,
-                        cbAlpha
-                    ],
-                    labelWidth: labelWidth,
-                    title: 'Additional options',
-                    titleCollapse: true
-                }),
-                new Ext.Panel({
+                fsAdditionalOptions,
+                {
                     border: true,
                     items: [
-                        tlbrPlot,
+                        tlbrButtons,
                         cntPlot
                     ],
                     style: 'padding-right: 2px; padding-left: 2px;'
-                })
+                }
             ],
             tabTip: 'Input / View',
             title: 'Input / View'
+        });
+
+        var cntEmptyPnlData = new Ext.Container({
+            defaults: {
+                border: false
+            },
+            items: [
+                { html: 'Go to the' },
+                new Ext.Container({
+                    autoEl: 'a',
+                    html: '&nbsp;\'Input / View\'&nbsp;',
+                    listeners: {
+                        afterrender: {
+                            fn: function(){
+                                this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 0 ); } );
+                            },
+                            single: true
+                        }
+                    }
+                }),
+                { html: 'tab to select a response to display below. You will then be able to filter this data here before plotting.' }
+            ],
+            layout: 'hbox'
+        });
+
+        var cntGrid = new Ext.Container({});
+
+        var pnlData = new Ext.Panel({
+            autoScroll: true,
+            bodyStyle: 'padding: 1px;',
+            defaults: {
+                autoHeight: true,
+                border: false,
+                hideMode: 'offsets'
+            },
+            items: cntEmptyPnlData,
+            layout: 'fit',
+            tabTip: 'Data',
+            title: 'Data'
         });
 
         var pnlTabs = new Ext.TabPanel({
@@ -705,18 +881,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             forceLayout: true,
             items: [
                 pnlInputView,
-                new Ext.Panel({
-                    defaults: {
-                        autoHeight: true,
-                        bodyStyle: 'padding-bottom: 1px;',
-                        hideMode: 'offsets'
-                    },
-                    items: [],
-                    layout: 'fit',
-                    tabTip: 'Data',
-                    title: 'Data'
-                }),
-                new Ext.Panel({
+                pnlData,
+                {
                     defaults: {
                         autoHeight: true,
                         bodyStyle: 'padding-bottom: 1px;',
@@ -743,8 +909,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     layout: 'fit',
                     tabTip: 'About',
                     title: 'About'
-                }),
-                new Ext.Panel({
+                },
+                {
                     defaults: {
                         autoHeight: true,
                         bodyStyle: 'padding-bottom: 1px;',
@@ -755,11 +921,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             text: 'The following parameters are required to generate the plot. Note that the valid inputs are dynamically generated and always depends on the data. Some cohorts might not have gene-expression data and some might not be available at all timepoints.'
                         }),
                         new Ext.form.FieldSet({
-                            html: '<b>Response:</b> '  + response_help + '<br><br>' + 
-                              '<b>Time point:</b> ' + timepoint_help + '<br><br>' +
-                              '<b>Cohorts:</b> ' + cohort_help + '<br><br>' +
-                              '<b>Normalize to baseline:</b> ' + normalize_help + '<br><br>' +
-                              '<b>Genes:</b> ' + genes_help,
+                            html:   '<b>Response:</b> '  + response_help + '<br><br>' + 
+                                    '<b>Time point:</b> ' + timepoint_help + '<br><br>' +
+                                    '<b>Cohorts:</b> ' + cohort_help + '<br><br>' +
+                                    '<b>Normalize to baseline:</b> ' + normalize_help + '<br><br>' +
+                                    '<b>Genes:</b> ' + genes_help,
                               style: 'margin-top: 5px;',
                             title: 'Parameters'
                         }),
@@ -767,12 +933,12 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             text: 'Parameters in the "Additional options" section can be used to customize the plot and modify it based on the demographic data. Available choices are Age, Gender, and Race.'
                         }),
                         new Ext.form.FieldSet({
-                            html: '<b>Text size:</b> ' + textsize_help + '<br><br>' +
-                                '<b>Facet:</b> ' + facet_help + '<br><br>' +
-                                '<b>Shape:</b> ' + shape_help + '<br><br>' +
-                                '<b>Color:</b> ' + color_help + '<br><br>' +
-                                '<b>Size:</b> ' + size_help + '<br><br>' +
-                                '<b>Alpha:</b> ' + alpha_help,
+                            html:   '<b>Text size:</b> ' + textsize_help + '<br><br>' +
+                                    '<b>Facet:</b> ' + facet_help + '<br><br>' +
+                                    '<b>Shape:</b> ' + shape_help + '<br><br>' +
+                                    '<b>Color:</b> ' + color_help + '<br><br>' +
+                                    '<b>Size:</b> ' + size_help + '<br><br>' +
+                                    '<b>Alpha:</b> ' + alpha_help,
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Additional options'
                         })
@@ -780,7 +946,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     layout: 'fit',
                     tabTip: 'Help',
                     title: 'Help'
-                })
+                }
             ],
             layoutOnTabChange: true,
             listeners: {
@@ -795,6 +961,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         );
                     },   
                     single: true 
+                },
+                tabchange: function( tabPanel, activeTab ){
+                    if ( activeTab.title == 'Data' ){
+                        $('.labkey-data-region-wrap').doubleScroll( 'refresh' );
+                    }
                 }
             },
             minTabWidth: 100,
@@ -805,33 +976,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //             Functions           //
         /////////////////////////////////////
-        
-        var handleTimepointSelection = function(){
-            cbCohorts.clearValue( true );
-            if ( cbTimePoint.getSelectedField( 'timepoint' ) <= 0){
-                chNormalize.setDisabled( true );
-                chNormalize.setValue( false );
-            } else{
-                chNormalize.setDisabled( false );
-            }
-            if ( cbTimePoint.getValue == '' ){
-                cbCohorts.setDisabled( true );
-            } else {
-                strCohort.setUserFilters([
-                    LABKEY.Filter.create(
-                        'timepoint',
-                        cbTimePoint.getSelectedField( 'timepoint' ),
-                        LABKEY.Filter.Types.EQUAL
-                    ),
-                    LABKEY.Filter.create(
-                        'timepointUnit',
-                        cbTimePoint.getSelectedField( 'timepointUnit' ),
-                        LABKEY.Filter.Types.EQUAL
-                    )
-                ]);
-                strCohort.load();
-            }
-            checkBtnPlotStatus();
+
+        var onRender = function(){
+            checkBtnsStatus();
+
+            $('.labkey-data-region-wrap').doubleScroll();
         };
 
         var setPlotRunning = function( bool ){
@@ -840,11 +989,25 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             } else {
                 maskPlot.hide();
             }
-            btnPlot.setDisabled( bool );
-            cbResponse.setDisabled( bool );
-            cbCohorts.setDisabled( bool );
-            cbTimePoint.setDisabled( bool );
-            cbGenes.setDisabled( bool );
+
+            Ext.each(
+                [
+                    cbResponse,
+                    cbTimePoint,
+                    cbCohorts,
+                    chNormalize,
+                    cbGenes,
+                    spnrTextSize,
+                    rgFacet,
+                    cbColor,
+                    cbShape,
+                    cbSize,
+                    cbAlpha,
+                    btnPlot,
+                    btnReset
+                ],
+                function( e ){ e.setDisabled( bool ); }
+            )
         };
 
 
@@ -910,7 +1073,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
     },   
 
     resize : function(){
-        if ( this.resizableImage != undefined ){
+        if ( this.qwpResponse ){
+            this.qwpResponse.render();
+        }
+
+        if ( this.resizableImage ){
             var width = Math.min( this.cntPlot.getWidth(), 800 );
             this.resizableImage.resizeTo( width, width * this.resizableImage.height / this.resizableImage.width );
         }

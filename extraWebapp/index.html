@@ -104,7 +104,9 @@
                             <a class='forgotpw' href='/login/home/resetPassword.view' title='Reset password'>?</a>
                         </li>
                         <li>
-                            <a id='submitButton' class='labkey-button' onclick='document.getElementById("loginForm").submit();' href='javascript:void(0);'>Sign In</a>
+                            <a id='submitButton' class='labkey-button left' onclick='document.getElementById("loginForm").submit();' href='javascript:void(0);'>Sign In</a>
+                            <span class='left' style='width: 30px !important;'></span>
+                            <a id='registerButton' class='labkey-button left' onclick='window.location = LABKEY.ActionURL.buildURL("login","login-register");' href='javascript:void(0);'>Register</a>
                         </li>
                     </ul>
                 </form>
@@ -123,8 +125,8 @@
 
     <div class='footer'>
         <a href='https://twitter.com/immunespace' class='twitter-follow-button' data-show-count='true'>Follow @immunespace</a>
-        <a href='https://twitter.com/share' class='twitter-share-button' data-url='http://immunespace.org' data-via='immunespace'>Tweet</a>
-        ImmuneSpace is supported by <a href='http://www.immuneprofiling.org' target='_blank'>HIPC</a> and <a href='http://www.niaid.nih.gov' target='_blank'>NIAID</a> &#8226; <a href='mailto:webmaster@immunespace.org'>Contact Us</a>
+        <a href='https://twitter.com/share' class='twitter-share-button' data-url='http://immunespace.org' data-via='immunespace'>Tweet</a></br>
+        ImmuneSpace is supported by <a href='http://www.immuneprofiling.org' target='_blank'>HIPC</a> and <a href='http://www.niaid.nih.gov' target='_blank'>NIAID</a>, tested with <a href='https://www.browserstack.com' target='_blank'>BrowserStack</a> &#8226; <a href='mailto:webmaster@immunespace.org'>Contact Us</a>
     </div>
 
 </div>

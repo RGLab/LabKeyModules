@@ -91,13 +91,13 @@ EM <- con$getGEMatrix(cohort = cohort, summary = TRUE)
 ```{r camera, cache = TRUE, dependson="EM;modules"}
 indices <- ids2indices(gene_sets, fData(EM)$gene_symbol)
 pData(EM)[, contrast] <- as.factor(pData(EM)[, contrast])
-mm <- model.matrix(formula(paste("~subject_accession +", contrast)), EM)
+mm <- model.matrix(formula(paste("~participant_id +", contrast)), EM)
 colnames(mm) <- make.names(colnames(mm))
 ```
 
 ## Gene set enrichment analysis of `r cohort`
 
-```{r byDay,  cache = TRUE, dependson="camera"}
+```{r byDay,  cache = TRUE, dependson="camera", echo = FALSE}
 lev <- levels(pData(EM)[, contrast])
 lev_label <- paste0(contrast, lev[2:length(lev)])
 lev <- make.names(lev_label)
@@ -113,7 +113,6 @@ for(i in 1:length(lev)){
   dt <- data.table(res) 
   dt[, Module := rownames(res)]
   dt[, Coefficient := lev_label[[i]]]
-  #dt[, PValue := 10*log10(PValue)]
   dt[, PValue := ifelse(Direction=="Up", -10*log10(PValue), 10*log10(PValue))]
   cam_list[[i]] <- dt
 }
@@ -128,16 +127,18 @@ if(contrast == "study_time_collected"){
 
 ```{r heatmap-matrix, cache = TRUE, dependson="byDay"}
 PValThresh <- 30
-#palette <- rev(brewer.pal(name="PiYG", n=11))
-#palette <- rev(brewer.pal(name="RdPu", n=11))
 palette <- colorpanel(20, low = "#268bd2", mid = "#fdf6e3", high = "#dc322f")
 DEM <- unique(table[abs(PValue)>PValThresh, Module])
+if(length(DEM) > 20){
+    DEM <- table[1:20, Module]
+}
+
 draw_heatmap <- FALSE
 infostring <- ""
 if(length(DEM) > 0){
   DEM <- table[Module %in% DEM, list(Module, Coefficient, PValue)]
-  DEM <- dcast(DEM, formula = Module ~ Coefficient, value.var = "PValue")[, c("Module", mixedsort(unique(table$Coefficient)))]
-  mat <- as.matrix(DEM[, -1])
+  DEM <- dcast(DEM, formula = Module ~ Coefficient, value.var = "PValue")[, c("Module", mixedsort(unique(table$Coefficient))), with = FALSE]
+  mat <- as.matrix(DEM[, 2:ncol(DEM), with = FALSE])
   rownames(mat) <- DEM$Module
   draw_heatmap <- TRUE
 } else{
@@ -153,15 +154,15 @@ setnames(table, "PValue", "10log10(p)")
 format_table(table)
 ```
 
-```{r pheatmap, cache=TRUE, dependson="heatmap-matrix"}
+```{r pheatmap, cache=TRUE, dependson="heatmap-matrix", fig.width=10}
 if(draw_heatmap){
   max <- max(abs(mat))
   if(nrow(mat) > 0){
-    rownames(mat) <- ifelse(nchar(rownames(mat))>15, paste(substr(rownames(mat), 1, 8),
+    rownames(mat) <- ifelse(nchar(rownames(mat))>15, paste(substr(rownames(mat), 1, 12),
                      substr(rownames(mat), nchar(rownames(mat))-10, nchar(rownames(mat))), sep =" ... "),
                      rownames(mat))
     clust_rows <- ifelse(nrow(mat) < 2, FALSE, TRUE)
-    pheatmap(mat, cluster_cols = FALSE, cluster_rows = clust_rows,
+    pheatmap(mat, cluster_cols = FALSE, cluster_rows = clust_rows, fontsize = 12,
       breaks = seq(-max, max, length.out = length(palette)+1), color = palette)
   }
 }

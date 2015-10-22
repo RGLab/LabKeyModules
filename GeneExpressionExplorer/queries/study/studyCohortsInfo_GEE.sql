@@ -2,7 +2,8 @@ SELECT DISTINCT
     GEM.arm_name AS cohort,
     GEM.study_time_collected AS timepoint,
     LCASE( GEM.study_time_collected_unit ) AS timepointUnit,
-    GEM.Run.DataOutputs.Name AS expression_matrix_accession,
+    --GEM.Run.DataOutputs.Name AS expression_matrix_accession,
+    GEM.Run AS expression_matrix_accession,
     GEM.Run.featureSet.RowId AS featureSetId
 FROM
     (   SELECT DISTINCT
@@ -13,7 +14,6 @@ FROM
         FROM
             assay.ExpressionMatrix.matrix.InputSamples
         WHERE
-            Biosample.subject_accession IN
-        (   SELECT subject_accession from study.hai )
+            Biosample.participantId IN ( SELECT participantId from study.hai )
     ) AS GEM
 

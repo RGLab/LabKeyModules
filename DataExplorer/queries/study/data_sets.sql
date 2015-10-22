@@ -1,29 +1,10 @@
 SELECT
- *
-FROM
-(
- SELECT
   Name,
   Label
- FROM
+FROM
   DataSets
- WHERE
+WHERE
   CategoryId.Label = 'Assays' AND
   ShowByDefault = TRUE AND
   Name != 'hla_typing'
-
-UNION ALL
-
-SELECT
-  CASE 
-    WHEN COUNT(*) > 0  THEN 'gene_expression_analysis_results'
-  END as name,
-  CASE
-    WHEN COUNT(*) > 0  THEN 'Gene expression'
-  END as label
-FROM
-  assay.ExpressionMatrix.matrix.Runs
-AS GE
-)
-WHERE Name IS NOT NULL
 

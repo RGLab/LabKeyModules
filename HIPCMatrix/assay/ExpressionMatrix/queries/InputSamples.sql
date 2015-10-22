@@ -8,4 +8,5 @@ FROM exp.MaterialInputs MI
 WHERE
   MI.TargetProtocolApplication.Type = 'ExperimentRun'
   -- only show Runs for the current protocol
-  AND MI.TargetProtocolApplication.Run.RowId IN (SELECT RowId FROM Runs)
+  --AND MI.TargetProtocolApplication.Run.RowId IN (SELECT RowId FROM Runs)
+  AND EXISTS (SELECT RowId FROM Runs Where RowId=MI.TargetProtocolApplication.Run.RowId)

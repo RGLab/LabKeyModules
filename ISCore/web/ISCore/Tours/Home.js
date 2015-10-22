@@ -30,27 +30,44 @@ var homeTour = function(){
             showPrevButton: true,
             showNextButton: true
         },{
+            title: 'Tools',
+            content: 'Clicking on this tab will take you to the "Tools" page where you can learn about analyses tools available on ImmuneSpace and external tools developed by the HIPC community.',
+            target: $('#ToolsTab').parent()[0],
+            yOffset: -15,
+            placement: 'left',
+            showPrevButton: true,
+            showNextButton: true
+        },{
             title: 'Tutorials',
-            content: 'Clicking on this tab will take you to the "Tutorials" page. Clicking "Next" will take you there as part of this tour.',
+            content: 'Clicking on this tab will take you to the "Tutorials" page where you can find some information to get you started with ImmuneSpace, e.g. video tutorials.',
             target: $('#TutorialsTab').parent()[0],
             yOffset: -15,
             placement: 'left',
             showPrevButton: true,
-            showNextButton: true,
-            multipage: true,
-            onNext: function(){
-                LABKEY.help.Tour.continueAtLocation('/project/home/begin.view?pageId=Tutorials');
-            }
+            showNextButton: true//,
+            //multipage: true,
+            //onNext: function(){
+            //    LABKEY.help.Tour.continueAtLocation('/project/home/begin.view?pageId=Tutorials');
+            //}
         },{
-            title: 'Video Tutorials',
-            content: 'Here is a list of screencasts made by the ImmuneSpace development team to help you get started.',
-            target: $('#VideoTutorials')[0],
-            placement: 'top',
+        //    title: 'Video Tutorials',
+        //    content: 'Here is a list of screencasts made by the ImmuneSpace development team to help you get started.',
+        //    target: $('#VideoTutorials')[0],
+        //    placement: 'top',
+        //    showPrevButton: true,
+        //    showNextButton: true,
+        //    onPrev: function(){
+        //        LABKEY.help.Tour.continueAtLocation('/project/home/begin.view?');
+        //    }
+        //},{
+        },{
+            title: 'About',
+            content: 'Clicking on this tab will take you to the "About" page which provides information about the goal of ImmuneSpace and its place within the HIPC program.',
+            target: $('#AboutTab').parent()[0],
+            yOffset: -15,
+            placement: 'left',
             showPrevButton: true,
-            showNextButton: true,
-            onPrev: function(){
-                LABKEY.help.Tour.continueAtLocation('/project/home/begin.view?');
-            }
+            showNextButton: true
         },{
             title: 'Video Tutorials Menu',
             content: 'Video tutorials quick access list, available on every page.',
@@ -94,6 +111,7 @@ var homeTour = function(){
                 $('#WikiMenu12-Header_menu').css('visibility', 'hidden');
 
                 LABKEY.help.Tour.continueAtLocation('/immport/Studies/studyFinder.view?');
+                LABKEY.help.Tour.continueAtLocation('/project/Studies/begin.view?');
             },
             onPrev: function(){
                 $('#WikiMenu12-Header').removeClass('selected');

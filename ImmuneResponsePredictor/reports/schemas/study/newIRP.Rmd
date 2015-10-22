@@ -1,0 +1,274 @@
+```{r dev, echo = FALSE, eval = FALSE}
+#labkey.url.base <- "test.immunespace.org"
+#labkey.url.path <- "Studies/SDY269"
+#labkey.file.root <- "~/Downloads/"
+```
+
+```{r knitr-opts, echo = FALSE, message = FALSE, cache = FALSE}
+library(knitr)
+opts_chunk$set(cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE,
+               fig.width=8, fig.height=4, dpi=100, fig.align="center",
+               cache.path=file.path(labkey.file.root, "cache/ImmuneResponsePredictor/", labkey.user.email, ""))
+```
+
+```{r libraries, echo = FALSE, message = FALSE, cache = FALSE}
+library(data.table)
+library(Rlabkey)
+library(ggplot2)
+library(glmnet)
+library(pheatmap)
+library(RColorBrewer)
+library(RJSONIO)
+library(ImmuneSpaceR)
+library(Biobase)
+```
+
+```{r plot-styles, echo = FALSE, cache = TRUE}
+palette <- ISpalette(20)
+```
+
+```{r envir-var, echo = FALSE, cache=FALSE}
+param <- list(
+  timepoint       = as.numeric(labkey.url.params$timePoint),
+  timepointUnit   = labkey.url.params$timePointUnit,
+  cohortsTraining = fromJSON(labkey.url.params$cohortsTraining),
+  cohortsTesting  = fromJSON(labkey.url.params$cohortsTesting),
+
+  dichotomize     = as.logical(labkey.url.params$dichotomize),
+  dichValue       = as.numeric(labkey.url.params$dichotomizeValue),
+  FC_thresh       = as.numeric(labkey.url.params$fcThreshold),
+  FDR_thresh      = as.logical(labkey.url.params$fdr)
+)
+```
+
+```{r param, cache=TRUE, cache.extra=digest::digest(param)}
+```
+
+```{r functions, echo = FALSE, cache = TRUE}
+format_table <- function(x, ...){
+  require(knitr)
+  require(data.table)
+  if(!is(x,"data.table")){
+    #This is to make sure that we don't have issues with row names in data.frames
+    stop("This function only works on data.tables")
+  }
+  out <- kable(x, format="html", digits=4, table.attr = 'class="display" id="res_table"', output = FALSE, escape = FALSE, ...)
+  footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
+  out_new <- gsub("</thead>",footer,out)
+  cat(out_new)
+}
+```
+
+```{r funcs2, echo = FALSE}
+# Get the hai response at peak immunogenicity for a subject list
+# @value A data.table with response and participant_id, ordered by subject (i.e: same order as FC or matrix)
+getHAI <- function(con, subjects, dichotomize, dichValue){
+  hai <- con$getDataset("hai", original_view = TRUE, reload = TRUE)
+  hai <- hai[participant_id %in% subjects]
+  hai <- hai[, list(arm_accession, study_time_collected, study_time_collected_unit,
+                    response = value_reported/mean(value_reported[study_time_collected<=0])),
+               by = "virus_strain,participant_id"]
+  hai <- hai[, mr := mean(response), by="study_time_collected"]
+  hai <- hai[, ma := max(mr), by = "arm_accession"]
+  peak <- unique(hai[mr ==ma, list(study_time_collected, arm_accession)])
+  hai <- merge(hai, peak, by=c("study_time_collected", "arm_accession"))
+  hai <- hai[, list(response=log2(max(response))), by="participant_id"]
+  if(dichotomize){
+    hai <- hai[,response:=ifelse(response>=log2(dichValue), TRUE,  FALSE)]
+  }
+  hai <- hai[order(participant_id)]
+  return(hai)
+}
+
+getGenes <- function(con, param, FDR_thresh, FC_thresh){
+  if(FDR_thresh){
+    cf <- makeFilter(c("analysis_accession/arm_name", "IN",
+                        paste(c(param$cohortsTraining, param$cohortsTesting), collapse = ";")),
+                     c("analysis_accession/coefficient", "EQUAL", paste(param$timepoint, param$timepointUnit)))
+    DEG <- con$getGEAnalysis(colFilter = cf)
+    setnames(DEG, "log_fold-change", "log_fc")
+    DEG <- DEG[abs(log_fc) > FC_thresh]
+    DEG <- unique(DEG$gene_symbol)
+    if(length(DEG) == 0){
+      opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
+      stop("\n\nThere are 0 genes selected. Try removing the filter on differentially expressed probes in 'Additional options' or lower the log fold-change threshold.")
+    }
+  } else{
+    DEG <- NULL
+  }
+  return(DEG)
+}
+```
+
+
+```{r main, cache = FALSE}
+con <- CreateConnection()
+EM <- con$getGEMatrix(cohort = c(param$cohortsTraining, param$cohortsTesting), summary = TRUE, reload = TRUE)
+DEG <- NULL
+```
+```{r main2, echo = FALSE, cache = FALSE}
+# Subset the EM
+# - Get only subject that have both, the requested timepoint and baseline
+EM <- EM[, EM$study_time_collected %in% c(0,  param$timepoint) & tolower(EM$study_time_collected_unit) == param$timepointUnit]
+pd <- data.table(pData(EM))
+if(!is.null(DEG)){
+  EM <- EM[DEG,]
+}
+if(param$timepoint > 0){
+  pids <- pd[, .N, by = participant_id][N > 1, participant_id]
+  pd  <- pd[participant_id %in% pids]
+  pd  <- pd[order(participant_id, study_time_collected)]
+  EM <- EM[, pd$biosample_accession]
+  # Calculate fold-change
+  FC <- exprs(EM[, pd[study_time_collected == param$timepoint, biosample_accession]]) -
+        exprs(EM[, pd[study_time_collected == 0, biosample_accession]])
+  FC <- t(FC)
+} else{
+  pids <- pd$participant_id
+  pd  <- pd[order(participant_id, study_time_collected)]
+  EM <- EM[, pd$biosample_accession]
+  FC <- t(exprs(EM))
+}
+rownames(FC) <- pd[match(rownames(FC), pd$biosample_accession), participant_id]
+response <- getHAI(con, pids, param$dichotomize, param$dichValue)
+response_pids <- unique(response$participant_id)
+FC <- FC[rownames(FC) %in% response_pids,]
+pd <- unique(pd[participant_id %in% rownames(FC), list(participant_id, cohort)])
+
+pd <- pd[, cohort_label := ifelse(cohort %in% param$cohortsTesting,
+                                  paste("b:", cohort, "(Testing)"),
+                                  paste("a:", cohort, "(Training)"))]
+
+```
+
+```{r subset-train, echo = FALSE, cache = FALSE}
+#At this point, we have HAI for all patient and FC for all patients.
+train_pids <- pd[cohort %in% param$cohortsTraining, participant_id]
+# Select trainingset patients
+FC_train <- FC[train_pids,]
+# filter features on training set
+if(param$timepoint > 0){
+  if(is.null(DEG) & param$FC_thresh > 0){ #i.e: not using the GEAR but using a FC thresh on the matrix
+    FC_train <- FC_train[, log(apply(abs(FC_train), 2, max)) > param$FC_thresh, drop = FALSE]
+    if(ncol(FC_train) <= 1){
+      opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
+      stop("\n\nAt least two genes are required for prediction. Try lowering or diabling the log fold-change filter in the 'Additional options' section to increase the number of selected genes.")
+    }
+  }
+}
+response_train <- response[participant_id %in% train_pids, response]
+```
+
+```{r elastic-net, echo = FALSE, cache = FALSE}
+# Elastic net
+if(param$dichotomize){
+  fit <- glmnet(FC_train, as.factor(response_train), alpha = 0.5, family = "binomial")
+} else{
+  fit <- glmnet(FC_train, response_train, alpha = 0.5)
+}
+cv_fit <- cv.glmnet(FC_train, response_train)
+coef <- predict(fit, s = cv_fit$lambda.min, type = "coefficients")
+
+selected_features <- names(which(abs(coef[,1]) > 0))
+selected_features <- grep("Intercept", selected_features, invert = TRUE, value = TRUE)
+print(selected_features)
+if(length(selected_features) < 2){
+  opts_chunk$set(eval=FALSE, cache=FALSE)
+  stop("No features were selected as predictive. You may try to remove the fold change filtering under 'Additional options'.")
+}
+# Need more obs than features
+nFeatures <- length(selected_features)
+nObs <- length(response_train)
+if(nObs <= nFeatures){
+  cat("You selected as many or more features (", nFeatures, ") than observations (", nObs, ").\nThe", nObs-2, "most significant features will be kept.\n")
+  selected_features <- names(sort(coef[selected_features,])[1:(nObs-2)])
+}
+```
+
+```{r lasso, echo = FALSE, cache = FALSE}
+FC <- FC[, selected_features]
+FC_train <- FC_train[, selected_features]
+
+#lasso #IN FC_train, dichotomize, selected_features #OUT predictor_table
+FC_train <- data.frame(FC_train, check.names = FALSE)
+form <- as.formula(paste0("outcome~`", paste(colnames(FC_train), collapse="`+`"), sep="`"))
+FC_train$outcome <- response_train
+if(param$dichotomize){
+     relasso <- glm(form, FC_train, family="binomial")
+} else{
+     relasso <- lm(form, FC_train)
+}
+FC_train$outcome <- NULL
+sum_relasso <- summary(relasso)
+sum_relasso_coef <- sum_relasso$coefficients
+pred_cIdx <- grep("value|Pr", colnames(sum_relasso_coef))
+predictor_table <- sum_relasso_coef[,pred_cIdx][-1,]
+colnames(predictor_table) <- c("statistic", "p-value")
+```
+
+```{r make-predictor-table, echo = FALSE, cache = FALSE}
+predictor_table <- data.table(cbind(selected_features, predictor_table))
+predictor_table <- predictor_table[, `:=`(c("statistic", "p-value"), list(as.numeric(statistic), as.numeric(`p-value`)))]
+predictor_table <- predictor_table[, gene_symbol := selected_features]
+predictor_table <- predictor_table[, gene_symbol := sapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0('<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=immune_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
+predictor_table <- predictor_table[, selected_features := NULL]
+setcolorder(predictor_table,  c("gene_symbol", "statistic", "p-value"))
+```
+
+```{r subset-test, echo = FALSE, cache = FALSE}
+if(length(param$cohortsTesting) > 0){
+  test_pids <- pd[cohort %in% param$cohortsTesting, participant_id]
+  FC_test <- FC[test_pids,]
+  response_test <- response[participant_id %in% test_pids, response]
+}
+```
+<br><br>
+
+## Predicted response vs. observed response per subject
+```{r prediction, echo=FALSE, dev='CairoPNG'}
+if(length(param$cohortsTesting) == 0){
+  data <- data.frame(observed = response$response, fitted = relasso$fitted.values)
+  p <- ggplot(data, aes(x = observed, y = fitted)) + geom_point() + geom_smooth(method = "lm")
+} else{
+  data_test <- data.frame(FC_test)
+  predicted_values <- predict(relasso, newdata = data_test, type = "response") 
+  data <- data.frame(observed = c(response_train, response_test),
+                     fitted = c(relasso$fitted.values, predicted_values))
+  data$cohort_label <- pd[match(rownames(data), participant_id), cohort_label]
+  p <- ggplot(data, aes(x = observed, y = fitted)) + geom_point() + geom_smooth(method = "lm") +
+              facet_wrap(~cohort_label, scale="free") + xlab("Observed HAI response") + ylab("Predicted HAI response")
+}
+ggthemr('solarized')
+plot(p)
+```
+
+## Heatmap of selected features
+```{r heatmap, echo = FALSE}
+mat <- t(FC)
+data$participant_id <- rownames(data)
+anno <- merge(pd, data, by = "participant_id")
+anno <- anno[, set := ifelse(cohort %in% param$cohortsTesting, "Testing set", "Training set")]
+anno <- anno[, response := observed]
+anno <- anno[order(response, cohort)]
+anno <- anno[order(set, decreasing = TRUE)]
+anno <- data.frame(anno[, list(response, cohort, set)], row.names = anno$participant_id)
+if(param$dichotomize){
+  annotation$response <- as.factor(annotation$response)
+  anno_col <- list(response=c(`FALSE`="white", `TRUE`="black"))
+} else{
+  anno_col <- list(response=grey(10:0/10))
+}
+
+mat <- mat[, rownames(anno)]
+rownames(mat) <- ifelse(nchar(rownames(mat)) > 15, paste0(substr(rownames(mat), 1, 15), "..."), rownames(mat))
+pheatmap(mat, annotation = anno, annotation_colors = anno_col,
+         scale = "row", color = palette, cluster_rows = TRUE,
+         cluster_distance = "correlation", cluster_method = "ward",
+         dendrogram = "none", cluster_cols = FALSE, show_colnames = FALSE)
+```
+
+
+## Table of genes selected by the elastic net
+```{r kable, results = 'asis'}
+format_table(predictor_table)
+```

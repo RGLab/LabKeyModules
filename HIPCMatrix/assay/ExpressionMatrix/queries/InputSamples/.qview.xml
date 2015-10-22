@@ -1,8 +1,8 @@
-<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" containerFilter="CurrentAndSubfolders">
     <cv:columns>
         <cv:column name="Run"/>
         <cv:column name="Biosample/biosample_accession"/>
-        <cv:column name="Biosample/subject_accession"/>
+        <cv:column name="Biosample/ParticipantId"/>
         <cv:column name="Biosample/arm_name">
          <cv:properties>
             <cv:property name="columnTitle" value="Cohort"/>

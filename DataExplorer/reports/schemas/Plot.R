@@ -53,10 +53,10 @@ if( color == '' )  color   <- NULL;
 if( shape == '' )  shape   <- NULL;
 if( size == '' )   size    <- NULL;
 if( alpha == '' )  alpha   <- NULL;
-if(legend == ""){
-  legend <- NULL
+if( legend == '' ){
+  legend <- NULL;
 } else{
-  legend <- unlist(strsplit(legend, ","))
+  legend <- unlist( strsplit( legend, ',' ) );
 }
 
 

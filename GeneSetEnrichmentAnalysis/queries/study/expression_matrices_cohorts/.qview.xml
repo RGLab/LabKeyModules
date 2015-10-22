@@ -1,0 +1,5 @@
+<customView xmlns="http://labkey.org/data/xml/queryCustomView" containerFilter="CurrentAndSubfolders">
+  <columns>
+    <column name="Cohort"/>
+  </columns>
+</customView>

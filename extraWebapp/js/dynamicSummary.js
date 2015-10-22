@@ -65,7 +65,7 @@ $(document).ready(function() {
                                 success: function(d){
                                     me.maskSummary.hide();
 
-                                    $('.left').append(
+                                    $('#slideshow > div.left').append(
                                             '<table cellpadding=\'2\' cellspacing=\'2\' border=\'0\'>' +
                                                     '<tbody>' +
                                                     '<tr>' +
@@ -75,13 +75,13 @@ $(document).ready(function() {
                                                     '<td>Participants</td>' +
                                                     '<td style=\'white-space: nowrap;\' align=\'right\'>' + subjectCount + '</td>' +
                                                     '</tr><tr>' +
-                                                    '<td class=\'nobg\'>&nbsp;</td>' +
-                                                    '<td class=\'nobg\'>&nbsp;</td>' +
+                                                    '<td style=\'font-size: 0\' class=\'nobg\'>&nbsp;</td>' +
+                                                    '<td style=\'font-size: 0\' class=\'nobg\'>&nbsp;</td>' +
                                                     '</tr>'
                                     );
 
                                     Ext.each( d.rows, function(row){
-                                        $('.left tbody').append(
+                                        $('#slideshow > div.left tbody').append(
                                                 '<tr>' +
                                                         '<td>' + row.assay_type + '</td>' +
                                                         '<td class=\'numberColumn\' align=\'right\'>' + row.subject_count + '</td>' +
@@ -108,23 +108,28 @@ $(document).ready(function() {
             me.maskNews.hide();
 
             if ( d && d.rows ){
-                Ext.each( d.rows, function(row){
-                    $('#News').append(
-                        '<div class=\'fixed-height\'><strong>' + row.Date + '. <a href=\'' +
-                            LABKEY.ActionURL.buildURL(
-                                'announcements',
-                                'thread',
-                                null,
-                                {
-                                    rowId: row.RowId
-                                }
-                            ) +
-                            '\' target=\'_blank\'>' + row.Title + '.</a></strong>' +
-                        '</br>' + row.FormattedBody + '</div></br>'
-                    );
-                });
+                if ( d.rows.length > 0 ){
+                    Ext.each( d.rows, function(row){
+                        $('#News').append(
+                            '<div class=\'fixed-height\'><strong>' + row.Date + '. <a href=\'' +
+                                LABKEY.ActionURL.buildURL(
+                                    'announcements',
+                                    'thread',
+                                    null,
+                                    {
+                                        rowId: row.RowId
+                                    }
+                                ) +
+                                '\' target=\'_blank\'>' + row.Title + '.</a></strong>' +
+                            '</br>' + row.FormattedBody + '</div></br>'
+                        );
+                    });
+                } else {
+                    $('#News').append( '<div style="font-size: 80%;">No recent announcements</div>' );
+                }
             }
         }
     });
 
 });
+
