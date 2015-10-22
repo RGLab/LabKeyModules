@@ -72,8 +72,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var loadResponse = function(){
             var
-                response = cbResponse.getValue(),
-                cohorts = cbCohorts.getValue()
+                response    = cbResponse.getValue(),
+                cohorts     = cbCohorts.getValue()
             ;
 
             cntPlot.update( '<div style=\'height: 10px\'></div>' );
@@ -109,25 +109,20 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     });
 
                     me.qwpResponse = qwpResponse;
-                    pnlData.removeAll( false );
-                    $('.suwala-doubleScroll-scroll-wrapper').remove();
-                    $('.labkey-data-region-wrap').remove();
 
-                    pnlData.add( cntGrid );
-                    pnlData.doLayout();
+                    cntEmptyPnlData.setVisible( false );
+                    cntResponse.setVisible( true );
 
                     qwpResponse.on( 'render', onRender );
-                    qwpResponse.render( cntGrid.getEl() );
+                    qwpResponse.render( cntResponse.getEl() );
                 }
             } else {
                 qwpResponse = undefined;
 
                 me.qwpResponse = qwpResponse;
-                pnlData.removeAll( false );
-                $('.suwala-doubleScroll-scroll-wrapper').remove();
-                $('.labkey-data-region-wrap').remove();
 
-                pnlData.add( cntEmptyPnlData );
+                cntEmptyPnlData.setVisible( true );
+                cntResponse.setVisible( false );
 
                 checkBtnsStatus();
             }
@@ -149,16 +144,16 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 btnPlot.setDisabled( true );
             }
 
-            if (    cbResponse.getValue() == cbResponse.originalValue &&
-                    cbTimePoint.getValue() == cbTimePoint.originalValue &&
-                    cbCohorts.getValue() == cbCohorts.originalValue &&
-                    chNormalize.getValue() == chNormalize.originalValue &&
+            if (    cbResponse.getValue()   == cbResponse.originalValue &&
+                    cbTimePoint.getValue()  == cbTimePoint.originalValue &&
+                    cbCohorts.getValue()    == cbCohorts.originalValue &&
+                    chNormalize.getValue()  == chNormalize.originalValue &&
                     spnrTextSize.getValue() == spnrTextSize.originalValue &&
+                    cbShape.getValue()      == cbShape.originalValue &&
+                    cbColor.getValue()      == cbColor.originalValue &&
+                    cbSize.getValue()       == cbSize.originalValue &&
+                    cbAlpha.getValue()      == cbAlpha.originalValue &&
                     rgFacet.getValue().getGroupValue() == rgFacet.initialConfig.value &&
-                    cbShape.getValue() == cbShape.originalValue &&
-                    cbColor.getValue() == cbColor.originalValue &&
-                    cbSize.getValue() == cbSize.originalValue &&
-                    cbAlpha.getValue() == cbAlpha.originalValue &&
                     fsAdditionalOptions.collapsed
             ){
                 btnReset.setDisabled( true );
@@ -247,7 +242,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         ; 
 
         var strGene = new LABKEY.ext.Store({
-            //containerFilter: 'CurrentAndSubfolders',
             hasMultiSort: true,
             listeners: {
                 loadexception: LABKEY.ext.ISCore.onFailure
@@ -347,7 +341,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     flagTimePointSelect = true;
 
                     handleTimepointSelection();
-                }     
+                }
             },
             store: strTimePoint,
             valueField: 'displayTimepoint',
@@ -416,8 +410,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             lastQuery: null,
             lazyInit: false,
             listeners: {
-                additem: checkBtnsStatus,
-                clear: checkBtnsStatus,
+                additem:    checkBtnsStatus,
+                clear:      checkBtnsStatus,
                 removeItem: checkBtnsStatus
             },
             markComboMatchCls: 'underlined-text',
@@ -850,7 +844,13 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             layout: 'hbox'
         });
 
-        var cntGrid = new Ext.Container({});
+        var cntResponse = new Ext.Container({
+            defaults: {
+                border: false
+            },
+            items: [],
+            layout: 'fit'
+        });
 
         var pnlData = new Ext.Panel({
             autoScroll: true,
@@ -860,7 +860,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 border: false,
                 hideMode: 'offsets'
             },
-            items: cntEmptyPnlData,
+            items: [ cntEmptyPnlData, cntResponse ],
             layout: 'fit',
             tabTip: 'Data',
             title: 'Data'

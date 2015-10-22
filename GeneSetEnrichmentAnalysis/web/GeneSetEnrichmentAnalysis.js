@@ -42,8 +42,8 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 btnRun.setDisabled( true );
             }
 
-            if (    cbModules.getValue() == cbModules.originalValue &&
-                    cbCohort.getValue() == cbCohort.originalValue
+            if (    cbModules.getValue()    == cbModules.originalValue &&
+                    cbCohort.getValue()     == cbCohort.originalValue
             ){
                 btnReset.setDisabled( true );
             } else {
@@ -152,11 +152,10 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         });
 
         var cntShare = new Ext.Container({
-            autoEl: 'span', //'a',
-            cls: 'button-icon', //'labkey-text-link bold-text iconShare',
+            autoEl: 'a',
+            cls: 'labkey-text-link bold-text',
             hidden: true,
-            html: '<a id="permalink_vis"><img src="/_images/icon_permalink.png">Share</img></a>',
-//<img src="/_images/icon_permalink.png">Share</img>',
+            html: 'Share',
             listeners: {
                 afterrender: {
                     fn: function(){
@@ -485,12 +484,11 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             Ext.each( arrayToProcess, function( e ){
                 obj[ e.getId() ] = getParamString( e );
             });
-            obj[ 'Graphic' ] = pnlView.items.length == 2; 
             return Ext.urlEncode( obj, '#' );
         };
 
         var decodeParams = function( hash ){
-            var toProcess, arrayToProcess, e, generateGraphic;
+            var toProcess, arrayToProcess, e;
             if ( hash && hash.charAt( 0 ) == '#' && hash.charAt( 1 ) == '&' ){
                 toProcess = Ext.urlDecode( hash.substring( 2 ) );
                 $.each( toProcess, function( k, v ){
@@ -502,15 +500,11 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                             e.clearValue();
                             e.markInvalid( '"' + v + '" in the supplied URL is not a valid value, select from the available choices' );
                         }
-                    } else {
-                        if ( k == 'Graphic' ){
-                            generateGraphic = v == 'true';
-                        }
                     }
                 });
 
                 checkBtnsStatus();
-                if ( generateGraphic && ! btnRun.disabled ){ btnRun.handler(); }
+                if ( ! btnRun.disabled ){ btnRun.handler(); }
             }
         };
 

@@ -2,8 +2,7 @@ SELECT DISTINCT
     GEM.arm_name AS cohort,
     GEM.study_time_collected AS timepoint,
     LCASE( GEM.study_time_collected_unit ) AS timepointUnit,
-    --GEM.Run.DataOutputs.Name AS expression_matrix_accession,
-    GEM.Run AS expression_matrix_accession,
+    GEM.Run AS expression_matrix_accession, --necessary for project level
     GEM.Run.featureSet.RowId AS featureSetId
 FROM
     (   SELECT DISTINCT

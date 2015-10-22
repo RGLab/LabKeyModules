@@ -98,7 +98,7 @@ var homeTour = function(){
             }
         },{
             title: 'Studies Navigation',
-            content: 'Use the search box to quickly find the study accession number you want, then click on it to go to its overview page. </br> Click on the "Study Finder" link to find studies of interest using the Study Finder. </br> Clicking "Next" will take you there directly.',
+            content: 'Use the search box to quickly find the study accession number you want, then click on it to go to its overview page. </br> Click on the "Data Finder" link to find studies of interest using the Data Finder. </br> Clicking "Next" will take you there directly.',
             target: $('.labkey-main-menu-item')[0],
             xOffset: 70,
             yOffset: 0,
@@ -110,7 +110,6 @@ var homeTour = function(){
                 $('#WikiMenu12-Header').removeClass('selected');
                 $('#WikiMenu12-Header_menu').css('visibility', 'hidden');
 
-                LABKEY.help.Tour.continueAtLocation('/immport/Studies/studyFinder.view?');
                 LABKEY.help.Tour.continueAtLocation('/project/Studies/begin.view?');
             },
             onPrev: function(){

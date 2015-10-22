@@ -236,6 +236,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             } else {
                 cmpStatus.update( '' );
                 numVars = undefined;
+
                 qwpDataset = undefined;
 
                 me.qwpDataset = qwpDataset;
@@ -264,18 +265,18 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 cmpStatus.setDisabled( true );
             }
 
-            if (    cbDataset.getValue() == cbDataset.originalValue &&
-                    cbPlotType.getValue() == cbPlotType.originalValue &&
-                    chNormalize.getValue() == chNormalize.originalValue &&
-                    spnrTextSize.getValue() == spnrTextSize.originalValue &&
-                    cbAnnotation.getValue() == cbAnnotation.originalValue &&
+            if (    cbDataset.getValue()        == cbDataset.originalValue &&
+                    cbPlotType.getValue()       == cbPlotType.originalValue &&
+                    chNormalize.getValue()      == chNormalize.originalValue &&
+                    spnrTextSize.getValue()     == spnrTextSize.originalValue &&
+                    cbAnnotation.getValue()     == cbAnnotation.originalValue &&
+                    cbColor.getValue()          == cbColor.originalValue &&
+                    cbShape.getValue()          == cbShape.originalValue &&
+                    cbSize.getValue()           == cbSize.originalValue &&
+                    cbAlpha.getValue()          == cbAlpha.originalValue &&
+                    spnrHorizontal.getValue()   == spnrHorizontal.originalValue &&
+                    spnrVertical.getValue()     == spnrVertical.originalValue &&
                     rgFacet.getValue().getGroupValue() == rgFacet.initialConfig.value &&
-                    cbColor.getValue() == cbColor.originalValue &&
-                    cbShape.getValue() == cbShape.originalValue &&
-                    cbSize.getValue() == cbSize.originalValue &&
-                    cbAlpha.getValue() == cbAlpha.originalValue &&
-                    spnrHorizontal.getValue() == spnrHorizontal.originalValue &&
-                    spnrVertical.getValue() == spnrVertical.originalValue &&
                     fsAdditionalOptions.collapsed
             ){
                 btnReset.setDisabled( true );
@@ -466,7 +467,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             disabled: true,
             displayField: 'Label',
             fieldLabel: 'Dataset',
-            id: 'cbDataset',
             lazyInit: false,
             listeners: {
                 change:     loadDataset,
@@ -482,7 +482,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             allowBlank: false,
             displayField: 'display',
             fieldLabel: 'Plot type',
-            id: 'cbPlotType',
             lazyInit: false,
             listeners: {
                 change:     manageAdditionalOptions,
@@ -702,20 +701,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             text: 'Reset'
         });
 
-        var btnShare = new Ext.Button({
-            text: 'Share',
-            disabled: false,
-            handler: function(){
-                var address = window.location.href;
-                var hash = address.indexOf( '#' );
-                if ( hash >= 0 ){ address = address.substring( 0, hash ); }
-                address = address + '#' + encodeParams([ cbDataset, cbPlotType ]);
-                 
-                window.prompt("Link to this report:", address);
-            }
-        });
-
-
         var dfHorizontal = new Ext.form.DisplayField({
             style: 'padding-right: 10px;',
             value: 'horizontal'
@@ -928,7 +913,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             enableOverflow: true,
             items: [
                 btnPlot,
-                //btnShare,
                 btnReset,
                 cmpStatus
             ],
@@ -1020,18 +1004,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             tabTip: 'Input / View',
             title: 'Input / View'
         });
-
-        var getParamString = function( el ){
-            return el.getValue();
-        };
-
-        var encodeParams = function( arrayToProcess ){
-            var obj = {};
-            Ext.each( arrayToProcess, function( e ){
-                obj[ e.getId() ] = getParamString( e );
-            });
-            return Ext.urlEncode( obj );
-        };
 
         var cntEmptyPnlData = new Ext.Container({
             defaults: {
@@ -1247,7 +1219,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     dfHorizontal,
                     dfVertical,
                     btnPlot,
-                    btnShare,
                     btnReset,
                     cmpStatus
                 ],
@@ -1309,14 +1280,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         this.cntPlot = cntPlot;
 
         LABKEY.ext.DataExplorer.superclass.constructor.apply(this, arguments);
-
-        var hashParams = window.location.hash.substr(1).split('&');
-        if(hashParams != ""){
-            for(var i = 0; i < hashParams.length; i++){
-                var p = hashParams[i].split('=');
-                document.getElementById(p[0]).value = decodeURIComponent(p[1]);
-            }
-        }
 
     }, // end constructor
 

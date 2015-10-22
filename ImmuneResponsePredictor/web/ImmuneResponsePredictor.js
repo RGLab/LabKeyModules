@@ -48,14 +48,14 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 btnRun.setDisabled( true );
             }
 
-            if (    cbVariable.getValue() == cbVariable.originalValue &&
-                    cbTimePoint.getValue() == cbTimePoint.originalValue &&
-                    cbCohortTraining.getValue() == cbCohortTraining.originalValue &&
-                    cbCohortTesting.getValue() == cbCohortTesting.originalValue &&
-                    chDichotomize.getValue() == chDichotomize.originalValue &&
-                    nfDichotomize.getValue() == nfDichotomize.originalValue &&
-                    chFoldChange.getValue() == chFoldChange.originalValue &&
-                    nfFoldChange.getValue() == nfFoldChange.originalValue &&
+            if (    cbVariable.getValue()           == cbVariable.originalValue &&
+                    cbTimePoint.getValue()          == cbTimePoint.originalValue &&
+                    cbCohortTraining.getValue()     == cbCohortTraining.originalValue &&
+                    cbCohortTesting.getValue()      == cbCohortTesting.originalValue &&
+                    chDichotomize.getValue()        == chDichotomize.originalValue &&
+                    nfDichotomize.getValue()        == nfDichotomize.originalValue &&
+                    chFoldChange.getValue()         == chFoldChange.originalValue &&
+                    nfFoldChange.getValue()         == nfFoldChange.originalValue &&
                     chFalseDiscoveryRate.getValue() == chFalseDiscoveryRate.originalValue &&
                     fsAdditionalOptions.collapsed
             ){
@@ -400,8 +400,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     function( e ){ e.setDisabled( false ); }
                 );
 
-                pnlView.update( '' );
-                pnlView.add( cntEmptyPnlView );
+                cntEmptyPnlView.setVisible( true );
+                cntReport.setVisible( false );
 
                 checkBtnsStatus();
 
@@ -435,8 +435,9 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 } else {
                     var p = outputParams[0];
 
-                    pnlView.removeAll( false );
-                    pnlView.update( p.value );
+                    cntReport.update( p.value );
+                    cntEmptyPnlView.setVisible( false );
+                    cntReport.setVisible( true );
 
                     $('#res_table').dataTable();
 
@@ -667,13 +668,21 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             layout: 'hbox'
         });
 
+        var cntReport = new Ext.Container({
+            defaults: {
+                border: false
+            },
+            items: [],
+            layout: 'fit'
+        });
+
         var pnlView = new Ext.Panel({
             bodyStyle: 'padding: 1px;',
             defaults: {
                 autoHeight: true,
                 hideMode: 'offsets'
             },
-            items: cntEmptyPnlView,
+            items: [ cntEmptyPnlView, cntReport ],
             layout: 'fit',
             tabTip: 'View',
             title: 'View'
