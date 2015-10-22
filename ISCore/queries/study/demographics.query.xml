@@ -4,7 +4,6 @@
         <tables xmlns='http://labkey.org/data/xml'>
             <table tableName='demographics' tableDbType='TABLE'>
                 <buttonBarOptions position='both' includeStandardButtons='false'>
-                <!--<buttonBarOptions position='both' includeStandardButtons='true'>-->
                     <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
                     <item text='Views' insertPosition='end'>
                         <item text='Default'>
