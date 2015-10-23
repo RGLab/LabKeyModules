@@ -34,8 +34,8 @@ var studyTour = function(){
                 LABKEY.help.Tour.continueAtLocation('/project' + LABKEY.container.path + '/begin.view?pageId=study.PARTICIPANTS');
             }
         },{
-            title: 'Subject List',
-            content: 'Lists all study participants. Clicking one of the subjects ID brings up information about the selected subject.',
+            title: 'Demographics Table',
+            content: 'Table of basic demographics. It can be sorted and filtered to explore demographic data for all subjects enrolled in the study.',
             target: $('.labkey-wp')[0],
             placement: 'top',
             showPrevButton: true,
@@ -43,13 +43,6 @@ var studyTour = function(){
             onPrev: function(){
                 LABKEY.help.Tour.continueAtLocation('/project' + LABKEY.container.path + '/begin.view?');
             }
-        },{
-            title: 'Demographics Table',
-            content: 'Table of basic demographics. It can be sorted and filtered to explore demographic data for all subjects enrolled in the study.',
-            target: $('.labkey-wp')[1],
-            placement: 'top',
-            showPrevButton: true,
-            showNextButton: true
         },{
             title: 'Clinical and Assay Data',
             content: 'Click on this tab to find out more about the datasets generated in this study. Clicking "Next" will take you there as part of this tour',
