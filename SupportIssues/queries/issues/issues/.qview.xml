@@ -1,0 +1,10 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+    <cv:columns>
+        <cv:column name="IssueId"/>
+        <cv:column name="Title"/>
+        <cv:column name="AssignedTo"/>
+        <cv:column name="Pri"/>
+        <cv:column name="Status"/>
+    </cv:columns>
+</cv:customView>
+

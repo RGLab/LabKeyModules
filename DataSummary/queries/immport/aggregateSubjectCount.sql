@@ -1,19 +1,20 @@
 SELECT
- assay AS assay_type,
- CAST( SUM( subject_count ) AS INTEGER ) AS subject_count
+  assay AS assay_type,
+  COUNT( DISTINCT subjectid ) AS subject_count
 FROM
 (
-  SELECT
-   assay,
-   study_accession,
-   COUNT( DISTINCT subject_accession ) AS subject_count
+  SELECT 
+    assay,
+    dimassay.subjectid AS subjectid,
+    study
   FROM
-   summarySubjectAssayStudy, study.studies
+    immport.dimassay,
+    immport.dimdemographic,
+    lists.Studies
   WHERE
-   Name = study_accession
-  GROUP BY
-   assay,
-   study_accession
-  ) a
+    Name = study AND 
+    dimdemographic.subjectid = dimassay.subjectid
+) a
 GROUP BY
- assay
+  assay_type
+

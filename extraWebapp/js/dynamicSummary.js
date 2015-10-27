@@ -40,8 +40,8 @@ $(document).ready(function() {
 
     LABKEY.Query.selectRows({
         failure: me.onFailureSummary.bind( me ),
-        queryName: 'studies',
-        schemaName: 'study',
+        queryName: 'Studies',
+        schemaName: 'lists',
         success: function(d){
             if ( d ){
                 var numStudies = d.rows.length, filterString = [];

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<tables xmlns="http://labkey.org/data/xml"> 
+  <table tableName="Issues" tableDbType="NOT_IN_DB"> 
+    <buttonBarOptions position='none' includeStandardButtons='false'>
+    </buttonBarOptions> 
+  </table> 
+</tables>

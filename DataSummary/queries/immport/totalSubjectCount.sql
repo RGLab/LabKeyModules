@@ -1,6 +1,8 @@
 SELECT
- COUNT( DISTINCT subject_accession ) AS subject_count
+COUNT( DISTINCT subjectid) AS subject_count
 FROM
- summarySubjectAssayStudy, study.studies
+  immport.dimdemographic,
+  lists.Studies
 WHERE
- Name = study_accession
+  Name = study
+
