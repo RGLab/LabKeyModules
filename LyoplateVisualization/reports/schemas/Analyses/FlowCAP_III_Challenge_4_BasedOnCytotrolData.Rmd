@@ -81,7 +81,7 @@ ggplot(cb)+
   scale_y_discrete()+
   facet_wrap(~Population,ncol=3,scales="free_x")+
   theme(axis.text.y=element_blank(),axis.title.y=element_blank(),axis.ticks.y=element_blank(),legend.position="bottom",legend.direction="horizontal")+
-  scale_color_brewer(type="qual")+ggtitle("Bias for B-cell Panel")+xlim(c(0,0.5))
+  scale_color_brewer(type="qual")+ggtitle("Bias for B-cell Panel (FlowCAP III)")+xlim(c(0,0.5))
 
 ```
              
@@ -110,6 +110,10 @@ ggplot(subset(vc,!is.nan(value)))+
 mert<-.fitMerBias(as.data.frame(fulldata[Panel%in%"Tcell"]))
 ct<-.getCI(mert)
 ct<-cytotrol_transci(ct)
+ct$StdPop = factor(ct$Population)
+levels(ct$StdPop) = c("CD4 Activated","CD8 Activated","CD4 Central Memory", "CD8 Central Memory","CD4 Effector","CD8 Effector", "CD4 Effector Memory","CD8 Effector Memory","CD4 Naive","CD8 Naive")
+ct$Population = ct$StdPop
+
 ggplot(ct)+
   geom_point(aes(x=mean,y=Sample:Method,col=Sample,shape=Method),size=3)+
   geom_segment(aes(x=lower,xend=upper,y=Sample:Method,yend=Sample:Method,col=Sample),lineend="round",lwd=1)+
@@ -118,6 +122,6 @@ ggplot(ct)+
   scale_y_discrete()+
   facet_wrap(~Population,ncol=3,scales="free_x")+
   theme(axis.text.y=element_blank(),axis.title.y=element_blank(),axis.ticks.y=element_blank(),legend.position="bottom",legend.direction="horizontal")+
-  scale_color_brewer(type="qual")+ggtitle("Bias for T-cell Panel")+xlim(c(0,0.7))
+  scale_color_brewer(type="qual")+ggtitle("Bias for T-cell Panel  (FlowCAP III)")+xlim(c(0,0.7))
 ```
 
