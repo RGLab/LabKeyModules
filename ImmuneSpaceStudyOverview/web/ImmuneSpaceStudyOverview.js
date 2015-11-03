@@ -218,6 +218,11 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
         $( '.show'.wpdi() ).click(
             function(){
                 $( '#' + this.id ).next().toggleClass( 'hidden' );
+                if(this.textContent == 'show'){
+                    this.textContent = 'hide';
+                } else{
+                    this.textContent = 'show';
+                }
             }
         );
       

@@ -8,7 +8,7 @@
                     <item text='Filter' insertPosition='end'>
                         <originalText>Filter</originalText>
                     </item>
-                    <item text='ViewsX' insertPosition='end'>
+                    <item text='Views' insertPosition='end'>
                         <item text='Default'>
                             <onClick>goToView(dataRegion, ''); return false;</onClick>
                         </item>

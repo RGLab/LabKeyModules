@@ -47,10 +47,10 @@ Ext.ux.form.ExtendedLovCombo = Ext.extend( Ext.ux.form.LovCombo, {
                     target: this.getEl(),
                     html: this.getValue(),
                     listeners: {
-                        beforeshow: function(tip) {
+                        beforeshow: function( tip ) {
                             var msg = this.getRawValue();
                             tip.update( Ext.util.Format.htmlEncode( msg ) );
-                            return (msg.length > 0);
+                            return ( msg.length > 0 );
                         },
                         scope: this
                     },

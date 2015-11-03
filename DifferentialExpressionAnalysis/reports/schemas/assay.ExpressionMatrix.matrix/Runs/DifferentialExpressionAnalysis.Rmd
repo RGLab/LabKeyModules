@@ -4,7 +4,7 @@ opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Di
 opts_chunk$set(echo = FALSE, message = FALSE)
 ```
 
-```{r libraries, message = FALSE, echo = FALSE}
+```{r libraries, message = FALSE, echo = FALSE, warning = FALSE}
 library(Rlabkey)
 library(ImmuneSpaceR)
 library(limma)

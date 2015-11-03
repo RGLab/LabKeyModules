@@ -8,6 +8,7 @@ if [ $1 ] ; then
   mkdir ${folder}protocols
   mkdir ${folder}rawdata
   mkdir ${folder}rawdata/gene_expression
+  mkdir ${folder}rawdata/flow_cytometry
   mkdir ${folder}analysis
   mkdir ${folder}analysis/exprs_matrices
 else

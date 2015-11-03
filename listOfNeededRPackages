@@ -1,4 +1,3 @@
-affy
 arm
 Biobase
 Cairo
@@ -17,6 +16,7 @@ ggplot2
 ggthemr
 glmnet
 gplots
+grid
 gridExtra
 gtools
 ImmuneSpaceData
@@ -26,7 +26,6 @@ knitr
 languageR
 limma
 lme4
-lumi
 multcomp
 ncdfFlow
 openCyto
