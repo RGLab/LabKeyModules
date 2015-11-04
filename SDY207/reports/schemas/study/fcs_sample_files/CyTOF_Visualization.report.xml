@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ReportDescriptor>
+    <category>FCS sample files</category>
+    <description></description>
+    <hidden>false</hidden>
+    <label>CyTOF Visualization</label>
+    <reportType>
+      <R>
+        <dependencies>
+          <dependency path='ISCore/Common/jquery-1.11.1.min.js'/>
+        </dependencies>
+      </R>
+    </reportType>
+</ReportDescriptor>
+

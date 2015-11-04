@@ -23,7 +23,7 @@ var homeTour = function(){
             showNextButton: true
         },{
             title: 'Quick Links',
-            content: 'Direct access to useful places on ImmuneSpace as well as external resources and documentation.',
+            content: 'Direct access to useful external resources.',
             target: $('.labkey-wp')[3],
             yOffset: -15,
             placement: 'left',
@@ -44,22 +44,7 @@ var homeTour = function(){
             yOffset: -15,
             placement: 'left',
             showPrevButton: true,
-            showNextButton: true//,
-            //multipage: true,
-            //onNext: function(){
-            //    LABKEY.help.Tour.continueAtLocation('/project/home/begin.view?pageId=Tutorials');
-            //}
-        },{
-        //    title: 'Video Tutorials',
-        //    content: 'Here is a list of screencasts made by the ImmuneSpace development team to help you get started.',
-        //    target: $('#VideoTutorials')[0],
-        //    placement: 'top',
-        //    showPrevButton: true,
-        //    showNextButton: true,
-        //    onPrev: function(){
-        //        LABKEY.help.Tour.continueAtLocation('/project/home/begin.view?');
-        //    }
-        //},{
+            showNextButton: true
         },{
             title: 'About',
             content: 'Clicking on this tab will take you to the "About" page which provides information about the goal of ImmuneSpace and its place within the HIPC program.',

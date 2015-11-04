@@ -33,7 +33,7 @@ getCitationCount <- function(x){
 }
 
 if(length(id) ==0){
-   citationtxt <- "No article references (PMIDs) could be found for this study. If you think this is an error, please post a message on the <a href='https://www.immunespace.org/project/home/support/begin.view', target='_blank'>support board</a> and the ImmuneSpace team will update this information as soon as possible."
+   citationtxt <- "No article references (PMIDs) could be found for this study. If you think this is an error, please post a message on the <a href='https://www.immunespace.org/project/home/support/begin.view', target='_blank'>support page</a> and the ImmuneSpace team will update this information as soon as possible."
 } else{
   study_citation <- lapply(id, get_reference)
   ncitation <- sapply(id, getCitationCount)

@@ -1,8 +1,8 @@
 SELECT
 COUNT( DISTINCT subjectid) AS subject_count
 FROM
-  dimdemographic,
-  lists.Studies
+  immport.dimdemographic,
+  study.allStudies
 WHERE
   Name = study
 

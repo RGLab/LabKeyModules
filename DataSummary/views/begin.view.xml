@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<view xmlns='http://labkey.org/data/xml/view' title='Data Summary'>
+<view xmlns='http://labkey.org/data/xml/view' title='Public Data Summary'>
     <dependencies>
         <dependency path='ISCore/Common'/>
 

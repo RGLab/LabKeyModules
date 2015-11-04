@@ -1,6 +1,6 @@
 SELECT
-  assay AS assay_type,
-  COUNT( DISTINCT subjectid ) AS subject_count
+    assay AS assay_type,
+    COUNT( DISTINCT subjectid ) AS subject_count
 FROM
 (
   SELECT 
@@ -8,13 +8,13 @@ FROM
     dimassay.subjectid AS subjectid,
     study
   FROM
-    immport.dimassay,
-    immport.dimdemographic,
+    dimassay,
+    dimdemographic,
     lists.Studies
   WHERE
     Name = study AND 
     dimdemographic.subjectid = dimassay.subjectid
 ) a
 GROUP BY
-  assay_type
+    assay
 

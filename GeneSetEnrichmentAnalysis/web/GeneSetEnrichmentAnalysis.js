@@ -53,7 +53,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
 
 
         // Help text
-        var cohort_help  = 'The cohorts with subjects of interest.';
+        var cohort_help  = 'The cohorts with participants of interest.';
         var modules_help = 'The modules used for grouping genes, currently the following are available:<br><ul><li><a href="http://www.interactivefigures.com/meni/meni-paper/btm-landing.gsp" target="_blank">Blood transcription</a>: Set of transcription modules in blood.</li><li><a href="http://www.broadinstitute.org/gsea/msigdb/collections.jsp" target="_blank">MSigDB c7</a>: Gene sets that represent cell states and perturbations within the immune system.</li><li><a href="http://www.biir.net/public_wikis/module_annotation/G2_Trial_8_Modules" target="_blank">G2 (Trial 8) Modules</a>: Repertoire of co-clustering genes.</li></ul>';
 
 

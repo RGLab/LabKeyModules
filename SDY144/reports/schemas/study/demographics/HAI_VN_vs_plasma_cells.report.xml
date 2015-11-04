@@ -4,13 +4,4 @@
     <category>Custom Analysis</category>
     <label>Correlation of HAI/VN and plasma cell counts</label>
     <description>This report reproduces Figure 2 of the paper published with SDY144.</description>
-    <reportType>
-      <R>
-        <dependencies>
-          <dependency path="https://code.jquery.com/jquery-1.11.1.min.js"/>
-          <dependency path="https://cdn.datatables.net/1.10.1/js/jquery.dataTables.min.js"/>
-          <dependency path="https://cdn.datatables.net/1.10.1/css/jquery.dataTables.css"/>
-        </dependencies>
-      </R>
-    </reportType>
 </ReportDescriptor>

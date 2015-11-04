@@ -38,7 +38,7 @@ Then we select the cell populations of intereset.
 ```{r subset}
 pb <- flow[population_name_reported %in% c("Plasma cells,Freq. of,B lym CD27+", "Plasmablast + Plasma Cells Abs#", "Plasmablast,Freq. of,Q3: CD19+, CD20-")]
 pb <- pb[, population_cell_number := as.numeric(population_cell_number)]
-pb <- pb[study_time_collected == 7 & study_time_collected_unit == "Days"] #13 subjects
+pb <- pb[study_time_collected == 7 & study_time_collected_unit == "Days"] #13 participants
 pb <- pb[, list(participant_id, population_cell_number, population_name_reported)]
 ```
 

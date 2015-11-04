@@ -13,9 +13,6 @@
                             <onClick>goToView(dataRegion, 'full'); return false;</onClick>
                         </item>
                     </item>
-                    <item text='Subject groups' insertPosition='end'>
-                        <originalText>Subject groups</originalText>
-                    </item>
                     <item text='Export' insertPosition='end'>
                         <originalText>Export</originalText>
                     </item>

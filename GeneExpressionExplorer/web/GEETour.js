@@ -26,7 +26,7 @@ var GEETour = function(){
             showNextButton: true
         },{
             title: 'Additional Options',
-            content: 'Customize the plot using additional options. This also lets you map aesthetics of the plot to demographics (e.g: color based on the age of the subjects).', 
+            content: 'Customize the plot using additional options. This also lets you map aesthetics of the plot to demographics (e.g: color based on the age of the participants).', 
             target: $('.x-fieldset-header-text')[1],
             placement: 'top',
             showPrevButton: true,

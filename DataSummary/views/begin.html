@@ -22,7 +22,8 @@ vim: ts=4:sw=4:nu:fdc=4:spell
         LABKEY.ext.ISCore.initModule.createCallback(
             function( webPartDiv ){ return new LABKEY.ext.DataSummary({ webPartDivId: webPartDiv }); },
             <%=webpartContext%>.wrapperDivId,
-            'studies'
+            'Studies',
+            'lists'
         )
     );
 </script>

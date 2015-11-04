@@ -70,7 +70,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var timepoint_help          = 'The gene expression time point used to predict the variable.';
         var training_help           = 'The cohort(s) used to train the model. Some cohorts are only available at specific time points.';
         var testing_help            = 'The cohort(s) used to test the model (optional).';
-        var dicho_help              = 'If checked, the predicted response is dichotomized using the specified threshold.<br> Every subject with a value above the selected threshold will be considered a responder.';
+        var dicho_help              = 'If checked, the predicted response is dichotomized using the specified threshold.<br> Every participant with a value above the selected threshold will be considered a responder.';
         var foldchange_help         = 'Features with an absolute fold change to baseline <u>lower</u> than the threshold will be excluded.';
         var falsediscoveryrate_help = 'If checked, only genes differentially expressed over time are selected (as opposed to the entire array).';
 
@@ -764,7 +764,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         new Ext.form.FieldSet({
                             html: '\
                                 The first figure in the view tab is a plot of the predicted response vs. the observed response\
-                                where each point  represents a subject. Each panel represents a cohort and indicates whether\
+                                where each point represents a participant. Each panel represents a cohort and indicates whether\
                                 it was used for\
                                 training (i.e: selecting predictive features) or testing. The heatmap of selected features\
                                 shows the expression of the genes selected\

@@ -23,7 +23,7 @@ var DETour = function(){
             showNextButton: true
         },{
             title: 'Additional Options',
-            content: 'Customize the plot using additional options. This also lets you map aesthetics of the plot to demographics (e.g: color based on the age of the subjects). Options are dynamicaly generated depending on the plot type.', 
+            content: 'Customize the plot using additional options. This also lets you map aesthetics of the plot to demographics (e.g: color based on the age of the participants). Options are dynamically generated depending on the plot type.', 
             target: $('.x-fieldset-header-text')[1],
             placement: 'top',
             showPrevButton: true,

@@ -22,8 +22,8 @@ var studyTour = function(){
             showPrevButton: true,
             showNextButton: true
         },{
-            title: 'Subjects',
-            content: 'Click on this tab to find out more about the subjects enrolled in this study. Clicking "Next" will take you there as part of this tour',
+            title: 'Participants',
+            content: 'Click on this tab to find out more about the participants enrolled in this study. Clicking "Next" will take you there as part of this tour',
             target: $('.tab-nav-inactive')[0],
             placement: 'left',
             yOffset: -15,
@@ -35,7 +35,7 @@ var studyTour = function(){
             }
         },{
             title: 'Demographics Table',
-            content: 'Table of basic demographics. It can be sorted and filtered to explore demographic data for all subjects enrolled in the study.',
+            content: 'Table of basic demographics. It can be sorted and filtered to explore demographic data for all participants enrolled in the study.',
             target: $('.labkey-wp')[0],
             placement: 'top',
             showPrevButton: true,

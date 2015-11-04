@@ -196,7 +196,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         // Help text
         var response_help  = 'The variable to plot against the expression of selected genes. For HAI, the timepoint of peak immunogenicity is selected.';
         var timepoint_help = 'The gene-expression time point to plot.';
-        var cohort_help    = 'The cohorts with subjects of interest. Some cohorts might only be available at specific timepoints.';
+        var cohort_help    = 'The cohorts with participants of interest. Some cohorts might only be available at specific timepoints.';
         var normalize_help = 'Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.';
         var genes_help     = 'The genes to plot.';
         var textsize_help  = 'The size of all text elements on the plot (Including axis, legend and labels).';

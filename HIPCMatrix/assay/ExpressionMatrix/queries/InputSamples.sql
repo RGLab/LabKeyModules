@@ -3,7 +3,8 @@ SELECT
   MI.TargetProtocolApplication,
   MI.Material,
   MI.Material.Name AS Biosample,
-  MI.Role
+  MI.Role,
+  MI.TargetProtocolApplication.Run.Folder as Container
 FROM exp.MaterialInputs MI
 WHERE
   MI.TargetProtocolApplication.Type = 'ExperimentRun'

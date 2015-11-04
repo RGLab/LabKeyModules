@@ -7,6 +7,9 @@ contrast
 data.table
 digest
 extrafont
+FactoMineR
+flowClust
+flowCore
 flowDensity
 flowViz
 flowWorkspace
@@ -27,6 +30,7 @@ languageR
 limma
 lme4
 multcomp
+mvtnorm
 ncdfFlow
 openCyto
 pheatmap
@@ -36,6 +40,7 @@ RCurl
 rentrez
 reshape
 reshape2
+rgl
 RJSONIO
 Rlabkey
 Rlibstree

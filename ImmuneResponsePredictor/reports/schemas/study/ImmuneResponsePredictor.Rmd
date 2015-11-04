@@ -60,8 +60,8 @@ format_table <- function(x, ...){
 ```
 
 ```{r funcs2, echo = FALSE}
-# Get the hai response at peak immunogenicity for a subject list
-# @value A data.table with response and participant_id, ordered by subject (i.e: same order as FC or matrix)
+# Get the hai response at peak immunogenicity for a participant list
+# @value A data.table with response and participant_id, ordered by participant (i.e: same order as FC or matrix)
 getHAI <- function(con, subjects, dichotomize, dichValue){
   hai <- con$getDataset("hai", original_view = TRUE, reload = TRUE)
   hai <- hai[participant_id %in% subjects]
@@ -226,7 +226,7 @@ if(length(param$cohortsTesting) > 0){
 ```
 <br><br>
 
-## Predicted response vs. observed response per subject
+## Predicted response vs. observed response per Participant
 ```{r prediction, echo=FALSE, dev='CairoPNG'}
 if(length(param$cohortsTesting) == 0){
   data <- data.frame(observed = response$response, fitted = relasso$fitted.values)

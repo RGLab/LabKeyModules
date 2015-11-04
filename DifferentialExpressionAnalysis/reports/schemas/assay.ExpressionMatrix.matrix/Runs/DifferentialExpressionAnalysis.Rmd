@@ -69,8 +69,7 @@ if(is.null(con$data_cache[["GE_matrices"]])){
 
 ```{r infostring-set, echo = FALSE}
 if(nCoefs == 0){
-  #infostring <- "This analysis has already been run. Click on the 'Data' tab for a summary of the anlysis. You can visualize the results using the Heatmap report."
-  infostring <- "This analysis has already been run. You can visualize the results using the Heatmap report."
+  infostring <- "This analysis has already been run. You can visualize the results using the Data Explorer module."
 } else if(nCoefs > 0){
   infostring <- paste("There will be", nCoefs, "new differential expression analysis.")
 }

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <query name='studyCohortsInfo_GEE' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
     <description>
-        List all gene expression analyses for cohorts with subjects that have HAI data.
+        List all gene expression analyses for cohorts with participants that have HAI data.
     </description>
 </query>
