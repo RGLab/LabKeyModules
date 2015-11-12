@@ -77,7 +77,7 @@ out <- capture.output(suppressMessages(openCyto::registerPlugins(fun=.dnaGate,me
 ```{r load_data, echo=FALSE, cache=TRUE, echo=FALSE}
        dt<-data.table(labkey.data)
        setnames(dt,tolower(colnames(dt)))
-       path<-gsub("@files","@files/Flow/@files/flow_data/",labkey.file.root)
+       path <- gsub("@files", "@files/rawdata/flow_cytometry/", labkey.file.root)
        dt=dt[,link:=paste0(path,file_info_name)]
      
 #Grab a list of all the FCS files

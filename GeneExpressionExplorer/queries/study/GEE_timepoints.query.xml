@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<query name='timepoints_GEE' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+<query name='GEE_timepoints' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
     <description>
         List unique timepoints corresponding to the parameterized cohort.
     </description>

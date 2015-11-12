@@ -19,18 +19,5 @@ apt-get -y install openmpi-bin
 apt-get -y install openmpi-common
 apt-get -y install xorg-dev
 apt-get -y install xvfb
-#apt-get -y install protobuf-compiler CAN ENABLE ONCE 2.6
-#apt-get -y install libprotobuf-dev   MAKES IT TO REPOSITORY
 apt-get -y autoremove
-
-# USE MANUAL INSTALL BELOW INSTEAD
-mkdir -p /home/immunespace/builtLibraries
-cd /home/immunespace/builtLibraries
-wget https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.bz2
-tar -xf ./protobuf-2.6.1.tar.bz2
-cd protobuf-2.6.1/
-./configure
-make
-make install
-# END MANUAL INSTALL
 

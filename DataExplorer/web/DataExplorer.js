@@ -291,7 +291,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         var normalize_help      = 'Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.';
         var strains_help        = 'For HAI and neutralizing antibody titer experiments, by default the response is expressed as the average titer fold-change for all virus strains. When this option is enabled, the strains are used for facetting.';
 
-        var textsize_help       = 'The size of all the text elements in the plot (including axes, legend and labels).';
+        var textsize_help       = 'The size of all the text elements in the plot (including axes, legend, and labels).';
         var annotation_help     = 'Add a row of annotation based on the demographic data. Applicable to the "Heatmap" plot type only, which does not have the other options.';
         var facet_help          = 'The plot will facet by cohorts on the y axis and genes on the x axis. "grid" mode - the scales are consistent for a selected response and a cohort. "wrap" mode - the scales are free. Use "wrap" if you observe empty spaces in the plots.';
         var shape_help          = 'The shape of the data points.';
@@ -1074,12 +1074,12 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to quickly plot a selected immunological response variable (e.g. HAI) in one or more cohorts across multiple analytes (when applicable). Several graphical options are made available including lines, boxplots, violin plots and heatmaps. Demographics such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
+                            html: 'This module can be used to quickly plot a selected immunological response variable (e.g. HAI) in one or more cohorts across multiple analytes (when applicable). Several graphical options are made available including lines, boxplots, violin plots, and heatmaps. Demographics such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: 'For boxplots violin plots and lines, the visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. The heatmap are drawn using the <a href="http://cran.r-project.org/web/packages/pheatmap/index.html" targe="_blank">pheatmap</a> package.',
+                            html: 'For boxplots, violin plots, and lines the visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. The heatmap are drawn using the <a href="http://cran.r-project.org/web/packages/pheatmap/index.html" targe="_blank">pheatmap</a> package.',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),

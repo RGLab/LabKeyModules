@@ -1,20 +1,20 @@
 SELECT DISTINCT
-  GEM.arm_name AS cohort,
-  GEM.timepoint,
-  LCASE( GEM.timepointunit ) AS timepointUnit,
+  GEM.cohort AS cohort,
+  GEM.timepoint AS timepoint,
+  LCASE( GEM.timepointUnit ) AS timepointUnit,
   analysis_accession
 FROM
-  (SELECT DISTINCT
-    Biosample.arm_name AS arm_name,
-    Biosample.study_time_collected AS timepoint,
-    Biosample.study_time_collected_unit AS timepointunit,
-    CAST(Biosample.study_time_collected AS VARCHAR(100)) || ' ' || LCASE(Biosample.study_time_collected_unit) AS coefficient,
+(
+  SELECT DISTINCT
+    cohort,
+    study_time_collected AS timepoint,
+    study_time_collected_unit AS timepointUnit,
+    CAST(study_time_collected AS VARCHAR(100)) || ' ' || LCASE(study_time_collected_unit) AS coefficient,
     Run
   FROM
-    assay.ExpressionMatrix.matrix.InputSamples
+    study.HM_InputSamplesQuerySnapshot
   WHERE
-    Biosample.participantId IN
-    (SELECT participantId from study.hai)
-  ) AS GEM
+    participantid IN ( SELECT participantid FROM study.hai )
+) AS GEM
 LEFT JOIN gene_expression.gene_expression_analysis AS GEA
-ON LCASE(GEA.coefficient)=GEM.coefficient AND GEA.arm_name=GEM.arm_name
+ON LCASE(GEA.coefficient) = GEM.coefficient AND GEA.arm_name = GEM.cohort

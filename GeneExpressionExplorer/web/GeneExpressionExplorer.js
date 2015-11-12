@@ -221,7 +221,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'studyCohortsInfo_GEE',
+            queryName: 'GEE_studyCohortsInfo',
             schemaName: 'study'
         });
 
@@ -230,7 +230,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             listeners: { 
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'timepoints_GEE',
+            queryName: 'GEE_timepoints',
             schemaName: 'study'
         });
 

@@ -71,7 +71,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'expression_matrices_cohorts',
+            queryName: 'GSEA_expression_matrices_cohorts',
             schemaName: 'study'
         });
 
