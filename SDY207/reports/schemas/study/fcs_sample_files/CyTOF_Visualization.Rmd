@@ -118,16 +118,12 @@ fileinfo=fileinfo[,name:=as.character(name)]
 ```{r construct_gating_sets,cache=FALSE,message=FALSE}
 #Construct a gating set from the flow data
 if(file.exists(paste0(path,"gating_set"))){
-   suppressMessages(gs<-load_gs(paste0(path,"gating_set")))
+    suppressMessages(gs<-load_gs(paste0(path,"gating_set")))
 }else{
     suppressMessages(gs<-GatingSet(fs[[1]]))
     pd <- as.data.frame( fileinfo[1:length(gs),] );
     rownames( pd ) <- pd[ , 'name' ]; 
     pData( gs ) <- pd;
-    res <- unlink( paste0(path,"gating_set"), force = T, recursive = T );
-    if ( res != 0 ){
-        stop( 'Removal of the existing ungated gating set from the file system failed' );
-    }
     cat('Saving ungated data\n');
     save_gs(gs,path=paste0(path,"gating_set"))
 }          
@@ -168,22 +164,24 @@ flowData(gs)<-fd
 The data is gated by applying the template to the data set. Gate coordinates are derived in a data-driven manner for each sample.  
    
 ```{r gating, echo=FALSE,eval=TRUE,message=FALSE,warning=FALSE,cache=FALSE}
-if(file.exists(paste0(path,"gating_set_gated"))&&!regate){
-   gs<-load_gs(paste0(path,"gating_set_gated"))
-}else{
+if ( file.exists( paste0( path,"gating_set_gated" ) ) && !regate ){
+    gs<-load_gs(paste0(path,"gating_set_gated"))
+} else{
     gs<-gs[include]
     cat("Gating\n")
     gating(template,gs)
-    res <- unlink( paste0(path,"gating_set_gated"), force = T, recursive = T );
-    if ( res != 0 ){
-        stop( 'Removal of the existing gated gating set from the file system failed' );
+
+    if ( file.exists( paste0( path, 'gating_set_gated' ) ) ){
+        res <- unlink( paste0(path,"gating_set_gated"), force = T, recursive = T );
+        if ( res != 0 ){
+            stop( 'Removal of the existing gated gating set from the file system failed' );
+        }
     }
     cat("Saving gated data\n")
     save_gs(gs,path=paste0(path,"gating_set_gated"),overwrite=TRUE)
 }
 ```
-          
-          
+
 ```{r pcaplot,echo=FALSE}
 .pcaPlot<-function(i,size){
    ii<-include[i]

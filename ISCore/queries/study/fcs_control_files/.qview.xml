@@ -10,16 +10,8 @@
         <cv:column name="biosample_accession/subject_accession/race"/>
         <cv:column name="study_time_collected"/>
         <cv:column name="study_time_collected_unit"/>
-        <cv:column name="sample_file/File Info Name">
-          <cv:properties>
-            <cv:property name="columnTitle" value="Sample file"/>
-          </cv:properties>
-        </cv:column>
-        <cv:column name="control_file/File Info Name">
-          <cv:properties>
-            <cv:property name="columnTitle" value="Control file"/>
-          </cv:properties>
-        </cv:column>
+        <cv:column name="sample_file"/>
+        <cv:column name="control_file"/>
         <cv:column name="arm_accession/name">
           <cv:properties>
             <cv:property name="columnTitle" value="Cohort"/>
