@@ -30,7 +30,7 @@ It uses penalized linear or logistic multivariate regression as implemented in t
 ###HIPCMatrix
 Create expression matrix using an R pipeline job and import assay into LabKey's microarray ExpressionMatrix assay
 
-###SDY162, SDY180, SDY212, SDY269, SDY61
+###SDY144, SDY180, SDY207, SDY269
 Queries and reports to be transfered to ImmuneSpace
 
 Tested with [BrowserStack](https://www.browserstack.com)
