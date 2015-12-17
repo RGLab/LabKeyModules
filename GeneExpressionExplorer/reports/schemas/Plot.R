@@ -17,6 +17,7 @@ suppressMessages( library( RJSONIO ) );
 library(ggplot2)
 library(Biobase)
 library(data.table)
+library(Rlabkey)
 library(ImmuneSpaceR)
 library(reshape2)
 library(ggthemr)
@@ -31,13 +32,17 @@ imageHeight <- as.numeric(labkey.url.params$imageHeight);
 imgfile     <- '${imgout:Plot.png}';
 CairoPNG( filename=imgfile, width = imageWidth, height = imageHeight );
 
-arrayCohorts        <- RJSONIO::fromJSON( labkey.url.params$cohorts );
+
+# Input parameters
 response            <- as.character( labkey.url.params$response );
+input_cohorts       <- RJSONIO::fromJSON( labkey.url.params$cohorts );
+input_genes         <- RJSONIO::fromJSON( labkey.url.params$genes );
 timePoint           <- as.numeric(labkey.url.params$timePoint);
 timePointUnit       <- as.character(labkey.url.params$timePointUnit);
 normalize           <- as.logical( labkey.url.params$normalize );
-arrayGenes          <- RJSONIO::fromJSON( labkey.url.params$genes );
+# Data grid
 filters             <- RJSONIO::fromJSON( labkey.url.params$filters );
+# Additional options
 textSize            <- as.numeric( labkey.url.params$textSize );
 facet               <- tolower(labkey.url.params$facet)
 shape               <- tolower(labkey.url.params$shape)
@@ -60,22 +65,43 @@ filter <- as.matrix( lapply( filters, function( e ){
 if ( nrow( filter ) == 0 ){
   filter <- NULL;
 }
+xlab <- "XLAB"
 
-con <- CreateConnection()
-#if(exists("loadedCohorts") && all(loadedCohorts == arrayCohorts)){
-  #No need to read again
-#} else{
-  EM <- con$getGEMatrix(cohort = arrayCohorts, summary = TRUE)
-#}
-  PD <- data.table(pData(EM))
-  if(any(exprs(EM)>100, na.rm = TRUE)){
-    dt <- data.table(voom(EM)$E)
-    dt <- dt[, gene_symbol := rownames(exprs(EM))]
-  } else{
-    dt <- data.table(exprs(EM))
-    dt <- dt[, gene_symbol := rownames(exprs(EM))]
-  }
-  
+# Get the participants
+# Check that con exist and that ithas the same participants as the Rlabkey version
+# Check that cohorts exists and are the same
+DF_pids <- labkey.selectRows(
+    baseUrl = "https://test.immunespace.org", folderPath = "/Studies",
+    schemaName = "study", queryName = "demographics", viewName="",
+    colFilter=NULL, containerFilter=NULL, colNameOpt = "rname")$participantid
+
+# Reload everything when DataFinder filters are updated
+if(!exists("con") || !all(con$getDataset("demographics")$participant_id %in% DF_pids)){
+  con <- CreateConnection()
+  if(exists("loaded_cohorts")) rm(loaded_cohorts)
+  if(exists("loaded_genes")) rm(loaded_genes)
+  xlab <- paste(xlab, "re-con")
+} else{
+  xlab <- paste(xlab, "no-con")
+}
+
+# Re-download EM and demographics when the selected cohorts change
+if(!exists("loaded_cohorts") || length(loaded_cohorts) != length(input_cohorts) || !all(loaded_cohorts %in% input_cohorts)){
+ EM <- con$getGEMatrix(cohort = input_cohorts, summary = TRUE, reload = TRUE)
+ if(any(exprs(EM)>100, na.rm = TRUE)){
+   dt <- data.table(voom(EM)$E)
+   dt <- dt[, gene_symbol := rownames(exprs(EM))]
+ } else{
+   dt <- data.table(exprs(EM))
+   dt <- dt[, gene_symbol := rownames(exprs(EM))]
+ }
+ DEMO <- unique(con$getDataset("demographics")[, list(participant_id, age_reported, gender, race)])
+ setnames(DEMO, "age_reported", "age")
+ xlab <- paste(xlab, "re-cohort")
+} else{
+ xlab <- paste(xlab, "no-cohort")
+}
+
   HAI <- con$getDataset("hai", original_view = TRUE, colFilter = filter, reload = TRUE)
   HAI <- HAI[, list(arm_accession, study_time_collected, study_time_collected_unit,
                     response=value_reported/mean(value_reported[study_time_collected<=0])), by="virus_strain,participant_id"]
@@ -86,24 +112,26 @@ con <- CreateConnection()
   HAI <- merge(HAI, peak, by=c("study_time_collected", "arm_accession"))
   HAI <- HAI[, list(response=log2(max(response))), by="participant_id"]
 
+  PD <- data.table(pData(EM))
   PD <- merge(PD, HAI, by = "participant_id")
-  DEMO <- unique(con$getDataset("demographics")[, list(participant_id, age_reported, gender, race)])
-  setnames(DEMO, "age_reported", "age")
   PD <- merge(PD, DEMO, by = "participant_id")
-  EM <- EM[, pData(EM)$biosample_accession %in% PD$biosample_accession]
+  #EM <- EM[, pData(EM)$biosample_accession %in% PD$biosample_accession]
+  dt <- dt[, c("gene_symbol", PD$biosample_accession), with = FALSE]
 
 
 # Subset
-ssEM <- EM[arrayGenes, ]
-data <- data.table(melt(exprs(ssEM), varnames = c("gene_symbol", "biosample_accession")))
+#ssEM <- EM[input_genes, ]
+#data <- data.table(melt(exprs(ssEM), varnames = c("gene_symbol", "biosample_accession")))
+ssdt <- dt[gene_symbol %in% input_genes,]
+data <- melt(ssdt, variable.name="biosample_accession", id.vars="gene_symbol")
 data <- merge(data, PD, by = "biosample_accession")
 if(normalize){
   data[, value := value[study_time_collected == timePoint & tolower(study_time_collected_unit) == timePointUnit]  -
                   value[study_time_collected == 0 & tolower(study_time_collected_unit) == timePointUnit],
         by = "participant_id,gene_symbol"]
-  xlab <- "log expression normalized to baseline"
+  #xlab <- "log expression normalized to baseline"
 } else{
-  xlab <- "log expression"
+  #xlab <- "log expression"
 }
 data <- data[study_time_collected == timePoint & tolower(study_time_collected_unit) == timePointUnit]
   
@@ -123,6 +151,8 @@ if(facet == "grid"){
 ggthemr("solarized")
 print(p)
 
-loadedCohorts <- arrayCohorts
+# Variables used for caching
+loaded_cohorts <- input_cohorts
+loaded_genes   <- input_genes
 dev.off();
 

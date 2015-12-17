@@ -34,14 +34,14 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             schemaName      = undefined,
             fieldWidth      = 330,
             labelWidth      = 170,
-            tableToVarMap   = {
-                'hai': 'virus_strain',
-                'neut_ab_titer': 'virus_strain',
-                'mbaa': 'analyte',
-                'elisa': 'analyte',
-                'elispot': 'analyte',
-                'pcr': 'entrez_gene_id',
-                'fcs_analyzed_result': 'population_name_reported',
+            datasetToVarMap   = {
+                'hai':                              'virus_strain',
+                'neut_ab_titer':                    'virus_strain',
+                'mbaa':                             'analyte',
+                'elisa':                            'analyte',
+                'elispot':                          'analyte',
+                'pcr':                              'entrez_gene_id',
+                'fcs_analyzed_result':              'population_name_reported',
                 'gene_expression_analysis_results': 'gene_symbol'
             }
         ;
@@ -131,13 +131,15 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
             LABKEY.Query.selectDistinctRows({
                 column: dataset == 'gene_expression_analysis_results' ? 'analysis_accession/arm_name' : 'arm_accession',
+                containerFilter: 'CurrentAndSubfolders',
                 failure: LABKEY.ext.ISCore.onFailure,
                 filterArray: dataregion.getUserFilterArray(),
                 queryName: dataset,
                 schemaName: schemaName,
                 success: function( cohorts ){
                     LABKEY.Query.selectDistinctRows({
-                        column: tableToVarMap[ dataset ],
+                        column: datasetToVarMap[ dataset ],
+                        containerFilter: 'CurrentAndSubfolders',
                         failure: LABKEY.ext.ISCore.onFailure,
                         filterArray: dataregion.getUserFilterArray(),
                         queryName: dataset,
@@ -155,9 +157,11 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             );
 
                             checkBtnsStatus();
-                        }
+                        },
+                        viewName: dataset == 'gene_expression_analysis_results' ? 'DGEAR' : undefined
                     });
-                }
+                },
+                viewName: dataset == 'gene_expression_analysis_results' ? 'DGEAR' : undefined
             });
 
             $('.labkey-data-region-wrap').doubleScroll();

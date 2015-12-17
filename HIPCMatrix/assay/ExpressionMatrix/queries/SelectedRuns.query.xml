@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns='http://labkey.org/data/xml/query'>
+    <metadata>
+        <tables xmlns='http://labkey.org/data/xml'>
+            <table tableName='SelectedRuns' tableDbType='TABLE'>
+                <buttonBarOptions position='both' includeStandardButtons='true'>
+                    <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
+                    <item text='Filter' insertPosition='end'>
+                        <originalText>Filter</originalText>
+                    </item>
+                    <!--
+                    <item text='ViewsX' insertPosition='end'>
+                        <item text='Default'>
+                            <onClick>goToView(dataRegion, ''); return false;</onClick>
+                        </item>
+                        <item text='Gene expression matrices'>
+                            <onClick>goToView(dataRegion, 'expression_matrices'); return false;</onClick>
+                        </item>
+                    </item>
+                    -->
+                    <item text='Export' insertPosition='end'>
+                        <originalText>Export</originalText>
+                    </item>
+                    <item text='Page size' insertPosition='end'>
+                        <originalText>Page size</originalText>
+                    </item>
+                    <item text='Insert new' insertPosition='end'>
+                        <originalText>Insert new</originalText>
+                    </item>
+                    <item text='Manage dataset' insertPosition='end'>
+                        <originalText>Manage dataset</originalText>
+                    </item>
+                    <item text='Import data' insertPosition='end'>
+                        <originalText>Import data</originalText>
+                    </item>
+                </buttonBarOptions>
+                <columns>
+                  <column columnName="Name">
+                    <url></url>
+                  </column>
+                </columns>
+            </table>
+        </tables>
+    </metadata>
+</query>
+

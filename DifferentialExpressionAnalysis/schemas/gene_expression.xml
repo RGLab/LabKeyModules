@@ -39,6 +39,7 @@
     </ns:table>
 
     <ns:table tableName='gene_expression_analysis_results' tableDbType='TABLE'>
+        <ns:tableTitle>Differential gene expression analysis</ns:tableTitle>
         <ns:description>
             The 'gene_expression_analysis_results' table stores the results of the DifferentialExpressionAnalysis.
         </ns:description>

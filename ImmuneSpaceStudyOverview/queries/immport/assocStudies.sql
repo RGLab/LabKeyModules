@@ -1,7 +1,8 @@
 PARAMETERS($STUDY VARCHAR DEFAULT NULL)
 SELECT DISTINCT
-  study_accession
+  study_pubmed.study_accession
 FROM
+  study.studyproperties AS SP,
   study_pubmed,
   (
   SELECT
@@ -15,4 +16,5 @@ FROM
 AS curr
 WHERE
   curr.cpid = study_pubmed.pubmed_id AND
-  study_pubmed.study_accession != curr.csa
+  study_pubmed.study_accession != curr.csa AND
+  SP.label = study_pubmed.study_accession

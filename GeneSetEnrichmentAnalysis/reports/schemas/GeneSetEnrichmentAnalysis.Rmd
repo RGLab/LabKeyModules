@@ -4,23 +4,22 @@ opts_chunk$set(message = FALSE, echo = FALSE, warning=FALSE)
 opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/GeneSetEnrichmentAnalysis/", labkey.user.email, ""))
 ```
 
-```{r lib, cache = FALSE, message = FALSE, echo = FALSE, warning = FALSE}
+```{r lib, cache = FALSE, message = FALSE, echo = FALSE}
+library(Rlabkey)
 library(ImmuneSpaceR)
 library(ImmuneSpaceData)
 library(Biobase)
 library(limma)
 library(pheatmap)
-library(RColorBrewer)
 library(reshape2)
 library(gplots)
 library(gtools)
 library(data.table)
+library(digest)
 ```
 
-```{r param-caching, cache=TRUE, cache.extra=digest::digest(labkey.url.params), echo=FALSE}
-```
 
-```{r funcs, echo = FALSE, cache = TRUE}
+```{r functions, echo = FALSE, cache = TRUE}
 msig_rnames <- function(rnames){
   rnames <- paste0('<a href="http://www.broadinstitute.org/gsea/msigdb/cards/',
                    rnames, '.html" target="_blank">', rnames, '</a>')
@@ -52,24 +51,30 @@ format_table <- function(x, ...){
 }
 ```
 
-```{r params, cache = TRUE, dependson="param-caching"}
+```{r DataFinder-cache, cache = FALSE}
+cached_pids <- labkey.selectRows(
+    baseUrl = "https://test.immunespace.org", folderPath = "/Studies",
+    schemaName = "study", queryName = "demographics", viewName="",
+    colFilter=NULL, containerFilter=NULL, colNameOpt = "rname")$participantid
+```
+
+```{r connection, cache = TRUE, dependson="functions", cache.extra=digest(cached_pids)}
+# When the list of patient_ids change, recreate the connection
+con <- CreateConnection()
+```
+
+```{r params, cache = FALSE}
 cohort <- labkey.url.params$cohort
 set <- labkey.url.params$signature
-#FDRthresh <- labkey.url.params$FDRthresh
-study <- basename(labkey.url.path)
 contrast <- "study_time_collected"
 ```
 
-```{r prints, eval = FALSE}
-print(labkey.url.params)
-print(cohort)
-print(set)
-print(labkey.url.base)
-print(labkey.url.path)
-cat("labkey.file.root <- ",'"', labkey.file.root, '"', sep = "")
+```{r cache-cohort, cache = TRUE, cache.extra=cohort, dependson="connection"}
+# When the cohort changes, we need to re-download the EM
+EM <- con$getGEMatrix(cohort = cohort, summary = TRUE)
 ```
-
-```{r modules, cache = TRUE, dependson="param-caching"}
+```{r cache-modules, cache = TRUE, cache.extra=set, dependson="connection"}
+# When the modules/set changes, we need to re-assign these values
 switch(set,
           `MSigDB c7` = {data(msigdb_immunologic_signatures);
                          gene_sets <- msigdb_immunologic_signatures;
@@ -82,13 +87,7 @@ switch(set,
                       func_rnames <- baylor_rnames})
 ```
 
-
-```{r EM, cache = TRUE, dependson="params;funcs"}
-con <- CreateConnection()
-EM <- con$getGEMatrix(cohort = cohort, summary = TRUE)
-```
-
-```{r camera, cache = TRUE, dependson="EM;modules"}
+```{r camera, cache = TRUE, dependson="cache-cohort;cache-modules"}
 indices <- ids2indices(gene_sets, fData(EM)$gene_symbol)
 pData(EM)[, contrast] <- as.factor(pData(EM)[, contrast])
 mm <- model.matrix(formula(paste("~participant_id +", contrast)), EM)

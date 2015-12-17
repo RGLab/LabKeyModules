@@ -477,19 +477,23 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 var width = Math.min( cntPlot.getWidth(), 800 );
 
                 cnfPlot.inputParams = {
+                    //Input parameters
                     response:           cbResponse.getValue(),
                     cohorts:            Ext.encode( cbCohorts.getCheckedArray() ),
                     timePoint:          cbTimePoint.getSelectedField( 'timepoint' ),
                     timePointUnit:      cbTimePoint.getSelectedField( 'timepointUnit' ),
                     normalize:          chNormalize.getValue(),
                     genes:              Ext.encode( cbGenes.getValuesAsArray() ),
+                    //Data grid
                     filters:            Ext.encode( qwpResponse.getDataRegion().getUserFilter() ),
                     textSize:           spnrTextSize.getValue(),
+                    //Additional parameters
                     facet:              rgFacet.getValue().getGroupValue(),
                     shape:              cbShape.getValue(),
                     color:              cbColor.getValue(),
                     size:               cbSize.getValue(),
                     alpha:              cbAlpha.getValue(),
+
                     imageWidth:         width,
                     imageHeight:        width
                 };
@@ -971,7 +975,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             minTabWidth: 100,
             resizeTabs: true
         });
-
 
         /////////////////////////////////////
         //             Functions           //

@@ -21,6 +21,7 @@ library(RColorBrewer)
 library(RJSONIO)
 library(ImmuneSpaceR)
 library(Biobase)
+library(digest)
 ```
 
 ```{r plot-styles, echo = FALSE, cache = TRUE}
@@ -41,10 +42,7 @@ param <- list(
 )
 ```
 
-```{r param, cache=FALSE, cache.extra=digest::digest(param)}
-```
-
-```{r functions, echo = FALSE, cache = FALSE}
+```{r functions, echo = FALSE, cache = TRUE}
 format_table <- function(x, ...){
   require(knitr)
   require(data.table)
@@ -57,9 +55,7 @@ format_table <- function(x, ...){
   out_new <- gsub("</thead>",footer,out)
   cat(out_new)
 }
-```
 
-```{r funcs2, echo = FALSE}
 # Get the hai response at peak immunogenicity for a participant list
 # @value A data.table with response and participant_id, ordered by participant (i.e: same order as FC or matrix)
 getHAI <- function(con, subjects, dichotomize, dichValue){
@@ -102,14 +98,26 @@ getGenes <- function(con, param){
 }
 ```
 
+```{r DataFinder-cache, cache = FALSE}
+cached_pids <- labkey.selectRows(
+    baseUrl = "https://test.immunespace.org", folderPath = "/Studies",
+    schemaName = "study", queryName = "demographics", viewName="",
+    colFilter=NULL, containerFilter=NULL, colNameOpt = "rname")$participantid
+```
 
-```{r main, cache = FALSE}
+
+```{r main, cache = TRUE, cache.extra=digest(cached_pids)}
+# When the list of patient_ids change, recreate the connection
 con <- CreateConnection()
-con$clear_cache()
-EM <- con$getGEMatrix(cohort = c(param$cohortsTraining, param$cohortsTesting), summary = TRUE, reload = TRUE)
+#print(paste("nPIDS:", length(cached_pids)))
+```
+
+```{r EMs, cache = TRUE, dependson="main", cache.extra=digest(param)}
+# When the input parameters change, re-download the EMs
+EM <- con$getGEMatrix(cohort = c(param$cohortsTraining, param$cohortsTesting), summary = TRUE)
 DEG <- getGenes(con, param)
 ```
-```{r main2, echo = FALSE, cache = FALSE}
+```{r main2, echo = FALSE, cache = TRUE, dependson="EMs;functions"}
 # Subset the EM
 # - Get only subject that have both, the requested timepoint and baseline
 EM <- EM[, EM$study_time_collected %in% c(0,  param$timepoint) & tolower(EM$study_time_collected_unit) == param$timepointUnit]
@@ -144,7 +152,7 @@ pd <- pd[, cohort_label := ifelse(cohort %in% param$cohortsTesting,
 
 ```
 
-```{r subset-train, echo = FALSE, cache = FALSE}
+```{r subset-train, echo = FALSE, cache = TRUE, dependson="main2"}
 #At this point, we have HAI for all patient and FC for all patients.
 train_pids <- pd[cohort %in% param$cohortsTraining, participant_id]
 # Select trainingset patients
@@ -162,7 +170,7 @@ if(param$timepoint > 0){
 response_train <- response[participant_id %in% train_pids, response]
 ```
 
-```{r elastic-net, echo = FALSE, cache = FALSE}
+```{r elastic-net, echo = FALSE, cache = TRUE, dependson="subset-train"}
 # Elastic net
 if(param$dichotomize){
   fit <- glmnet(FC_train, as.factor(response_train), alpha = 0.5, family = "binomial")
@@ -187,7 +195,7 @@ if(nObs <= nFeatures){
 }
 ```
 
-```{r lasso, echo = FALSE, cache = FALSE}
+```{r lasso, echo = FALSE, cache = TRUE, dependson="elastic-net"}
 FC <- FC[, selected_features]
 FC_train <- FC_train[, selected_features]
 
