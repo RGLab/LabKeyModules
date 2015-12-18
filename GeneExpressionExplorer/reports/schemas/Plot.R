@@ -65,7 +65,6 @@ filter <- as.matrix( lapply( filters, function( e ){
 if ( nrow( filter ) == 0 ){
   filter <- NULL;
 }
-xlab <- "XLAB"
 
 # Get the participants
 # Check that con exist and that ithas the same participants as the Rlabkey version
@@ -80,9 +79,6 @@ if(!exists("con") || !all(con$getDataset("demographics")$participant_id %in% DF_
   con <- CreateConnection()
   if(exists("loaded_cohorts")) rm(loaded_cohorts)
   if(exists("loaded_genes")) rm(loaded_genes)
-  xlab <- paste(xlab, "re-con")
-} else{
-  xlab <- paste(xlab, "no-con")
 }
 
 # Re-download EM and demographics when the selected cohorts change
@@ -97,9 +93,6 @@ if(!exists("loaded_cohorts") || length(loaded_cohorts) != length(input_cohorts) 
  }
  DEMO <- unique(con$getDataset("demographics")[, list(participant_id, age_reported, gender, race)])
  setnames(DEMO, "age_reported", "age")
- xlab <- paste(xlab, "re-cohort")
-} else{
- xlab <- paste(xlab, "no-cohort")
 }
 
   HAI <- con$getDataset("hai", original_view = TRUE, colFilter = filter, reload = TRUE)
@@ -129,9 +122,9 @@ if(normalize){
   data[, value := value[study_time_collected == timePoint & tolower(study_time_collected_unit) == timePointUnit]  -
                   value[study_time_collected == 0 & tolower(study_time_collected_unit) == timePointUnit],
         by = "participant_id,gene_symbol"]
-  #xlab <- "log expression normalized to baseline"
+  xlab <- "log expression normalized to baseline"
 } else{
-  #xlab <- "log expression"
+  xlab <- "log expression"
 }
 data <- data[study_time_collected == timePoint & tolower(study_time_collected_unit) == timePointUnit]
   
