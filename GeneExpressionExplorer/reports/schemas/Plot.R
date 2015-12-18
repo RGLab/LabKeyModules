@@ -71,7 +71,7 @@ xlab <- "XLAB"
 # Check that con exist and that ithas the same participants as the Rlabkey version
 # Check that cohorts exists and are the same
 DF_pids <- labkey.selectRows(
-    baseUrl = "https://test.immunespace.org", folderPath = "/Studies",
+    baseUrl = labkey.url.base, folderPath = labkey.url.path,
     schemaName = "study", queryName = "demographics", viewName="",
     colFilter=NULL, containerFilter=NULL, colNameOpt = "rname")$participantid
 
