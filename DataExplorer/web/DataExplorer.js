@@ -34,7 +34,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             schemaName      = undefined,
             fieldWidth      = 330,
             labelWidth      = 170,
-            datasetToVarMap   = {
+            datasetToVarMap = {
                 'hai':                              'virus_strain',
                 'neut_ab_titer':                    'virus_strain',
                 'mbaa':                             'analyte',
@@ -42,8 +42,11 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 'elispot':                          'analyte',
                 'pcr':                              'entrez_gene_id',
                 'fcs_analyzed_result':              'population_name_reported',
-                'gene_expression_analysis_results': 'gene_symbol'
-            }
+                'DGEA_filteredGEAR': 'gene_symbol'
+            },
+            isStudyFolder   =   LABKEY.moduleContext.study &&
+                                LABKEY.moduleContext.study.timepointType &&
+                                ( LABKEY.ActionURL.getContainer().search( '/Studies/SDY' ) != -1 )
         ;
 
         var manageAdditionalOptions = function(){
@@ -125,21 +128,25 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         };
 
         var onRender = function(){
-            var dataset = cbDataset.getValue();
+            var
+                dataset = cbDataset.getValue(),
+                isGE = dataset == 'DGEA_filteredGEAR'
+            ;
 
             dataregion = qwpDataset.getDataRegion();
 
             LABKEY.Query.selectDistinctRows({
-                column: dataset == 'gene_expression_analysis_results' ? 'analysis_accession/arm_name' : 'arm_accession',
-                containerFilter: 'CurrentAndSubfolders',
+                column: isGE ? 'cohort' : 'arm_accession',
+                containerFilter: isStudyFolder ? '' : 'CurrentAndSubfolders',
                 failure: LABKEY.ext.ISCore.onFailure,
                 filterArray: dataregion.getUserFilterArray(),
                 queryName: dataset,
                 schemaName: schemaName,
                 success: function( cohorts ){
+                    //Get the number of data points, cohorts and variables
                     LABKEY.Query.selectDistinctRows({
                         column: datasetToVarMap[ dataset ],
-                        containerFilter: 'CurrentAndSubfolders',
+                        containerFilter: isStudyFolder ? '' : 'CurrentAndSubfolders',
                         failure: LABKEY.ext.ISCore.onFailure,
                         filterArray: dataregion.getUserFilterArray(),
                         queryName: dataset,
@@ -158,10 +165,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
                             checkBtnsStatus();
                         },
-                        viewName: dataset == 'gene_expression_analysis_results' ? 'DGEAR' : undefined
+                        viewName: isGE ? 'DGEAR' : undefined
                     });
                 },
-                viewName: dataset == 'gene_expression_analysis_results' ? 'DGEAR' : undefined
+                viewName: isGE ? 'DGEAR' : undefined
             });
 
             $('.labkey-data-region-wrap').doubleScroll();
@@ -171,10 +178,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             var
                 dataset = cbDataset.getValue(),
                 filters = [],
-                viewName = dataset == 'gene_expression_analysis_results' ? 'DGEAR' : undefined
+                viewName = dataset == 'DGEA_filteredGEAR' ? 'DGEAR' : undefined
             ;
 
-            schemaName = dataset == 'gene_expression_analysis_results' ? 'gene_expression' : 'study';
+            schemaName = dataset == 'DGEA_filteredGEAR' ? 'gene_expression' : 'study';
 
             if ( params.dataset ){
                 var
@@ -291,9 +298,9 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
         // Help strings
         var dataset_help        = 'Select an assay type to visualize. The selected data can be filtered using the grid view under the "Data" tab.';
-        var plottype_help       = 'Five different types are available: "Boxplot", "Violin plots", "Lines", "Heatmap", and "Auto". "Auto" is the default, in which case the module determines the best plot type for your data.';
-        var normalize_help      = 'Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the un-normalized data.';
-        var strains_help        = 'For HAI and neutralizing antibody titer experiments, by default the response is expressed as the average titer fold-change for all virus strains. When this option is enabled, the strains are used for facetting.';
+        var plottype_help       = 'Five different types are available: "Boxplot", "Violin plot", "Heatmap", "Lineplot", and "Auto". "Auto" is the default, in which case the module determines the best plot type for your data.';
+        var normalize_help      = 'Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the unnormalized data.';
+        var strains_help        = 'For HAI and neutralizing antibody titer experiments, by default the response is expressed as the average titer fold-change for all virus strains. When this option is enabled, the strains are used for faceting.';
 
         var textsize_help       = 'The size of all the text elements in the plot (including axes, legend, and labels).';
         var annotation_help     = 'Add a row of annotation based on the demographic data. Applicable to the "Heatmap" plot type only, which does not have the other options.';
@@ -370,7 +377,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         }
                     },
                     sql: 'SELECT COUNT(*) AS Number FROM ' + curName,
-                    schemaName: curName == 'gene_expression_analysis_results' ? 'gene_expression' : 'study',
+                    schemaName: curName == 'DGEA_filteredGEAR' ? 'gene_expression' : 'study',
                     containerFilter: 'CurrentAndSubfolders',
                     success: function( d ){
                         if ( d.rows[0].Number != 0 ){
@@ -386,6 +393,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             });
         };
 
+        //Get the list of datasets for the input combobox
         LABKEY.Query.selectRows({
             queryName: 'data_sets',
             schemaName: 'study',
@@ -394,13 +402,12 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     failure: function(){
                         processDataSets( d.rows, [] );
                     },
-                    queryName: 'gene_expression_analysis_results',
+                    queryName: 'DGEA_filteredGEAR',
                     schemaName: 'gene_expression',
                     success: function(){
                         var inputArray = d.rows;
-                        inputArray.push( { Label: 'Gene expression' , Name: 'gene_expression_analysis_results' } );
+                        inputArray.push( { Label: 'Gene expression' , Name: 'DGEA_filteredGEAR' } );
                         processDataSets( inputArray, [] );
-
                     }
                 });
 

@@ -36,21 +36,22 @@ var IRPTour = function(){
             title: 'View',
             content: 'After hitting the <b>RUN</b> button, the report will be rendered here.',
             target: $('.x-tab-strip-inner')[1],
-            placement: 'bottom',
+            placement: 'top',
             showPrevButton: true,
             showNextButton: true
         },{
             title: 'About',
             content: 'This tab contains a short description of the module, some technical details and information about the author(s).',
             target: $('.x-tab-strip-inner')[2],
-            placement: 'bottom',
+            placement: 'top',
             showPrevButton: true,
             showNextButton: true
         },{
             title: 'Help',
             content: 'Finally, for more information and a detailed description of the parameters and the output, click the Help tab',
             target: $('.x-tab-strip-inner')[3],
-            placement: 'bottom'
+            placement: 'top',
+            showPrevButton: true
         }]
     }); 
 };
