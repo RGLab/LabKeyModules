@@ -16,5 +16,6 @@ gene_expression_analysis,
 gene_expression_analysis_results
 WHERE
 gene_expression_analysis_results.container IN (SELECT Container FROM study.participant)
+AND gene_expression_analysis.arm_name IN (SELECT name FROM study.cohort_membership)
 AND gene_expression_analysis_results.analysis_accession = gene_expression_analysis.analysis_accession
 AND gene_expression_analysis_results.container = gene_expression_analysis.container
