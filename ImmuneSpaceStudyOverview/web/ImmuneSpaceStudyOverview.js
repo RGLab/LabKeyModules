@@ -394,7 +394,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
         };
 
         function onSuccessGEO(results){
-            if (results.rows.length > 0){
+            if ( results.rows.length > 0 ){
                 var GEO = [],
                     GEOlink,
                     GEOacc
@@ -407,6 +407,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                     GEO.push( GEOacc.link( GEOlink ) );
                 }
                 $('#GEO'.wpdi())[0].innerHTML = GEO.join(' ');
+                $('#GEO'.wpdi() + ' a').attr('target', '_blank');
             }
         };
 
