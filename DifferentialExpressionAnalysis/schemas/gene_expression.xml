@@ -20,6 +20,7 @@
             </ns:column>
             <ns:column columnName='arm_name'>
                 <ns:columnTitle>Cohort</ns:columnTitle>
+                <ns:facetingBehavior>ALWAYS_ON</ns:facetingBehavior>
             </ns:column>
             <ns:column columnName='arm_accession'>
                 <ns:columnTitle>Cohort accession</ns:columnTitle>
