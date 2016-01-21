@@ -17,6 +17,11 @@
 
 Ext.namespace('LABKEY.ext.ISCore');
 
+LABKEY.ext.ISCore.isStudyFolder =
+    LABKEY.moduleContext.study &&
+    LABKEY.moduleContext.study.timepointType &&
+    ( LABKEY.ActionURL.getContainer().search( '/Studies/SDY' ) != -1 );
+
 // Create a help icon with tooltip and text
 LABKEY.ext.ISCore.helpTooltip = function( title, text ){
     return "<a class=\"labkey-help-pop-up\" href=\"#\" onclick=\"return showHelpDiv(this, '" +

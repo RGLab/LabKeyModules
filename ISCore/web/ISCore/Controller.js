@@ -51,8 +51,10 @@ ga('send', 'pageview');
         }
     }); // end onReady
 
+
     // BROWSER DETECTION: SHOULD SUPPORT ECMA5 AND LOCALSTORAGE
-    function storageAvailable(type) {
+
+    function storageAvailable( type ){
         try {
             var storage = window[type],
                 x = '__storage_test__';

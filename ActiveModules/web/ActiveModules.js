@@ -28,7 +28,7 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
             listeners: {
                 afterrender: {
                     fn: function(){
-                         var myMask = new Ext.LoadMask(
+                        var myMask = new Ext.LoadMask(
                             cntMain.getEl(),
                             {
                                 msg: 'Please, wait, while the list of active modules is loading',
@@ -41,80 +41,88 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                             LABKEY.ext.ISCore.onFailure( a, b, c);
                         };
 
+                        var generateActiveModules = function(){
+                            var filters = [
+                                LABKEY.Filter.create(
+                                    'Name',
+                                    LABKEY.container.activeModules.join(';'),
+                                    LABKEY.Filter.Types.IN
+                                ),
+                                LABKEY.Filter.create(
+                                    'Name',
+                                    [
+                                        'DataExplorer',
+                                        'GeneExpressionExplorer',
+                                        'GeneSetEnrichmentAnalysis',
+                                        'ImmuneResponsePredictor'
+                                    ].join(';'),
+                                    LABKEY.Filter.Types.IN
+                                )
+                            ];
+
+                            LABKEY.Query.selectRows({
+                                columns: [ 'Name', 'Label', 'Description' ],
+                                failure: onFailure,
+                                filterArray: filters,
+                                queryName: 'modules',
+                                schemaName: 'core',
+                                success: function( d ){
+                                    myMask.hide();
+
+                                    if ( d.rows.length == 0 ){
+                                        cntMain.getEl().mask(
+                                            'There are no active modules enabled in this study.', 'infoMask'
+                                        );
+                                    } else {
+                                        cntMain.update('');
+
+                                        Ext.each(
+                                            d.rows,
+                                            function( e ){
+                                                cntMain.add(
+                                                    new Ext.Container({
+                                                        html:
+                                                            '<div>' +
+                                                                '<div class=\'bold-text\'><a href=\"' +
+                                                                    LABKEY.ActionURL.buildURL( e.Name, 'begin' ) +
+                                                                '\">' + e.Label + '</a></div>' +
+                                                                (
+                                                                    e.Description == null ?
+                                                                    '' :
+                                                                    '<div class=\'padding5px\'>' + e.Description + '</div>'
+                                                                ) +
+                                                            '</div>',
+                                                        style: 'padding-bottom: 4px; padding-top: 4px;'
+                                                    })
+                                                );
+                                            }
+                                        );
+
+                                        cntMain.doLayout();
+                                    }
+                                }
+                            });
+                        };
+
                         myMask.show();
 
-                        LABKEY.Ajax.request({
-                            failure: onFailure,
-                            method: 'GET',
-                            success: function( request ){
-                                var response = JSON.parse( request.response );
-                                if ( response.data && response.data.containers.length ){
-                                    var filters = [
-                                        LABKEY.Filter.create(
-                                            'Name',
-                                            LABKEY.container.activeModules.join(';'),
-                                            LABKEY.Filter.Types.IN
-                                        ),
-                                        LABKEY.Filter.create(
-                                            'Name',
-                                            [
-                                                'DataExplorer',
-                                                'GeneExpressionExplorer',
-                                                'GeneSetEnrichmentAnalysis',
-                                                'ImmuneResponsePredictor'
-                                            ].join(';'),
-                                            LABKEY.Filter.Types.IN
-                                        )
-                                    ];
-
-                                    LABKEY.Query.selectRows({
-                                        columns: [ 'Name', 'Label', 'Description' ],
-                                        failure: onFailure,
-                                        filterArray: filters,
-                                        queryName: 'modules',
-                                        schemaName: 'core',
-                                        success: function( d ){
-                                            myMask.hide();
-
-                                            if ( d.rows.length == 0 ){
-                                                cntMain.getEl().mask(
-                                                    'There are no active modules enabled in this study.', 'infoMask'
-                                                );
-                                            } else {
-                                                cntMain.update('');
-
-                                                Ext.each(
-                                                    d.rows,
-                                                    function( e ){
-                                                        cntMain.add(
-                                                            new Ext.Container({
-                                                                html:
-                                                                    '<div>' +
-                                                                        '<div class=\'bold-text\'><a href=\"' +
-                                                                            LABKEY.ActionURL.buildURL( e.Name, 'begin' ) +
-                                                                        '\">' + e.Label + '</a></div>' +
-                                                                        (
-                                                                            e.Description == null ?
-                                                                            '' :
-                                                                            '<div class=\'padding5px\'>' + e.Description + '</div>'
-                                                                        ) +
-                                                                    '</div>',
-                                                                style: 'padding-bottom: 4px; padding-top: 4px;'
-                                                            })
-                                                        );
-                                                    }
-                                                );
-
-                                                cntMain.doLayout();
-                                            }
-                                        }
-                                    });
-                                } else {
-                                    cntMain.update( '<div class=\'placeholder\' style=\'height: 40px;\'>No data available</div>' );
-                                }
-                            },
-                            url: LABKEY.ActionURL.buildURL( 'study-shared', 'sharedStudyContainerFilter.api' )
-                        });
+                        if ( ! LABKEY.ext.ISCore.isStudyFolder ){
+                            LABKEY.Ajax.request({
+                                failure: onFailure,
+                                method: 'GET',
+                                success: function( request ){
+                                    var response = JSON.parse( request.response );
+                                    if ( response.data && response.data.containers.length ){
+                                        generateActiveModules();
+                                    } else {
+                                        cntMain.update( '<div class=\'placeholder\' style=\'height: 40px;\'>No data available</div>' );
+                                    }
+                                },
+                                url: LABKEY.ActionURL.buildURL( 'study-shared', 'sharedStudyContainerFilter.api' )
+                            });
+                        } else{
+                            generateActiveModules();
+                        }
                     },
                     single: true
                 }

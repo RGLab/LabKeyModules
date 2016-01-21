@@ -43,10 +43,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 'pcr':                              'entrez_gene_id',
                 'fcs_analyzed_result':              'population_name_reported',
                 'DGEA_filteredGEAR': 'gene_symbol'
-            },
-            isStudyFolder   =   LABKEY.moduleContext.study &&
-                                LABKEY.moduleContext.study.timepointType &&
-                                ( LABKEY.ActionURL.getContainer().search( '/Studies/SDY' ) != -1 )
+            }
         ;
 
         var manageAdditionalOptions = function(){
@@ -137,7 +134,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
             LABKEY.Query.selectDistinctRows({
                 column: isGE ? 'cohort' : 'arm_accession',
-                containerFilter: isStudyFolder ? '' : 'CurrentAndSubfolders',
+                containerFilter: LABKEY.ext.ISCore.isStudyFolder ? '' : 'CurrentAndSubfolders',
                 failure: LABKEY.ext.ISCore.onFailure,
                 filterArray: dataregion.getUserFilterArray(),
                 queryName: dataset,
@@ -146,7 +143,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     //Get the number of data points, cohorts and variables
                     LABKEY.Query.selectDistinctRows({
                         column: datasetToVarMap[ dataset ],
-                        containerFilter: isStudyFolder ? '' : 'CurrentAndSubfolders',
+                        containerFilter: LABKEY.ext.ISCore.isStudyFolder ? '' : 'CurrentAndSubfolders',
                         failure: LABKEY.ext.ISCore.onFailure,
                         filterArray: dataregion.getUserFilterArray(),
                         queryName: dataset,
