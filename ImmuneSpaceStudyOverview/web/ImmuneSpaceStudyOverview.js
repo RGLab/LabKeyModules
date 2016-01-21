@@ -249,7 +249,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
         LABKEY.Query.selectRows({
             requiredVersion: 12.3,
             schemaName: 'study',
-            queryName: 'datasets_ISSO',
+            queryName: 'ISSO_datasets',
             columns: 'Label',
             sort: 'Label',
             success: onSuccessDS,
