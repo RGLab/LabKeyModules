@@ -16,10 +16,10 @@ var GEETour = function(){
             showNextButton: true
         },{
             title: 'Parameters',
-            content: 'Select a timepoint, a cohort and <b>one or more genes</b> from the dropdowns.\
+            content: 'Select a timepoint, cohorts and <b>one or more genes</b> from the dropdowns.\
                 Only timepoints and cohorts with both HAI and gene expression data will show up in the dropdown.<br>\
                 Note that the dropdowns are searchable, e.g: typing "IFNG" in the Genes field will return the matching genes available on the array.<br>\
-                Normalize to baseline will substract Day 0 response after log transformation.',
+                Normalize to baseline will substract day 0 response after log transformation.',
             target: $('.x-fieldset-header-text')[0],
             placement: 'top',
             showPrevButton: true,

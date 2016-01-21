@@ -25,7 +25,7 @@ ga('send', 'pageview');
         isMainTabOrCont = ( window.location.hash != '' ) ||                                     // Indicates tour continuation regardless of the tab
                           ( ( Object.keys( LABKEY.ActionURL.getParameters() ).length == 0 ) &&  // No params, so it's the first tab
                             ( window.location.hash == '' ) ),                                   // Direct hit, no tour implied
-        isStudyFolder   = LABKEY.moduleContext.study && LABKEY.moduleContext.study.timepointType && ( LABKEY.ActionURL.getContainer() != '/Studies' ) && isMainTabOrCont && (LABKEY.ActionURL.getContainer().search("/SDY") != -1),
+        isStudyFolder   = LABKEY.moduleContext.study && LABKEY.moduleContext.study.timepointType && ( LABKEY.ActionURL.getContainer().search( '/Studies/SDY' ) != -1 ) && isMainTabOrCont,
         isHomePage      = ( LABKEY.ActionURL.getContainer() == '/home' ) && isMainTabOrCont
     ;
 

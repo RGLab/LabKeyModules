@@ -2,17 +2,19 @@
 <query xmlns='http://labkey.org/data/xml/query'>
     <metadata>
         <tables xmlns='http://labkey.org/data/xml'>
-            <table tableName='hai' tableDbType='TABLE'>
-                <buttonBarOptions position='both' includeStandardButtons='false'> <!--'true'>-->
+            <table tableName='GEA_filteredGEAR' tableDbType='TABLE'>
+                <buttonBarOptions position='both' includeStandardButtons='false'>
                     <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
-                    <!--<item text='Views2' insertPosition='end'>-->
                     <item text='Views' insertPosition='end'>
                         <item text='Default'>
                             <onClick>goToView(dataRegion, ''); return false;</onClick>
                         </item>
-                        <item text='Full'>
-                            <onClick>goToView(dataRegion, 'full'); return false;</onClick>
+                        <item text='Differential gene expression analysis results'>
+                            <onClick>goToView(dataRegion, 'DGEAR'); return false;</onClick>
                         </item>
+                    </item>
+                    <item text='Manage' insertPosition='end'>
+                        <originalText>Manage</originalText>
                     </item>
                     <item text='Export' insertPosition='end'>
                         <originalText>Export</originalText>

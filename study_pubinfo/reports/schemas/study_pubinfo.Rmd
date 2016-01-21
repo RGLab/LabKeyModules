@@ -28,7 +28,7 @@ get_reference <- function(id){
   return(paste(reference, pubmed_link))
 }
 getCitationCount <- function(x){
-  count <- length(entrez_link(db = "all", dbfrom = "pubmed", id = x)$pubmed_pubmed_citedin)
+  count <- length(entrez_link(db = "all", dbfrom = "pubmed", id = x)$links$pubmed_pubmed_citedin)
   return(count)
 }
 

@@ -1,2 +1,18 @@
-<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" containerFilter="CurrentAndSubfolders" label="Selected Gene expression matrices" category="Assays" showInDataViews="true">
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" containerFilter="CurrentAndSubfolders" label="Gene expression matrices" category="Assays" showInDataViews="true">
+    <cv:columns>
+        <cv:column name="Name">
+            <cv:properties>
+                <cv:property name="columnTitle" value="Name"/>
+            </cv:properties>
+        </cv:column>
+        <cv:column name="Comments"/>
+        <cv:column name="featureSet"/>
+        <cv:column name="DataOutputs/DownloadLink"/>
+        <cv:column name="Cohort"/>
+        <cv:column name="Folder/Name">
+            <cv:properties>
+                <cv:property name="columnTitle" value="Study"/>
+            </cv:properties>
+        </cv:column>
+    </cv:columns>
 </cv:customView>
