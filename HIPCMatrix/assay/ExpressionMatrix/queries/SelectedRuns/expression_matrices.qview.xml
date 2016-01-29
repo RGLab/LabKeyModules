@@ -7,12 +7,12 @@
         </cv:column>
         <cv:column name="Comments"/>
         <cv:column name="featureSet"/>
-        <cv:column name="DataOutputs/DownloadLink"/>
         <cv:column name="Cohort"/>
         <cv:column name="Folder/Name">
             <cv:properties>
                 <cv:property name="columnTitle" value="Study"/>
             </cv:properties>
         </cv:column>
+        <cv:column name="download_link"/>
     </cv:columns>
 </cv:customView>

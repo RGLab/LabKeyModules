@@ -35,8 +35,8 @@
                     </item>
                 </buttonBarOptions>
                 <columns>
-                  <column columnName="Name">
-                    <url></url>
+                  <column columnName="download_link">
+                    <url>https://test.immunespace.org/_webdav/Studies/${folder/name}/%40files/analysis/exprs_matrices/${name}.tsv</url>
                   </column>
                 </columns>
             </table>

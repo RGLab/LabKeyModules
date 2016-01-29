@@ -1,4 +1,6 @@
-SELECT *
+SELECT
+*,
+Name || '.tsv' AS download_link
 FROM
 Runs
 WHERE
