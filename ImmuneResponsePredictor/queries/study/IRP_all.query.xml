@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<query name='all_IRP' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+<query name='IRP_all' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
     <description>
         Query that gets all information relevant to IRP
     </description>

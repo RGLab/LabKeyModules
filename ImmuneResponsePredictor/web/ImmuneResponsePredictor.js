@@ -86,7 +86,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'all_IRP',
+            queryName: 'IRP_all',
             schemaName: 'study'
         });
 
@@ -97,7 +97,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'all_IRP',
+            queryName: 'IRP_all',
             schemaName: 'study'
         });
 
@@ -110,12 +110,12 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
                         var num, unit,
                             field = new Ext.data.Field({ name: 'displayTimepoint' });
-                        this.recordType.prototype.fields.replace(field);
-                        this.each( function(r){
-                            if ( r.data[field.name] == undefined ){
-                                num                 = r.data['timepoint'];
-                                unit                = r.data['timepointUnit'];
-                                r.data[field.name]  = num + ' ' + ( num != 1 ? unit : unit.slice( 0, unit.length - 1 ) );
+                        this.recordType.prototype.fields.replace( field );
+                        this.each( function( r ){
+                            if ( r.data[ field.name ] == undefined ){
+                                num                     = r.data[ 'timepoint' ];
+                                unit                    = r.data[ 'timepointUnit' ];
+                                r.data[ field.name ]    = Ext.util.Format.plural( num, unit.slice( 0, unit.length - 1 ) );
                             }
                         });
 
@@ -124,7 +124,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'timepoints_IRP',
+            queryName: 'IRP_timepoints',
             schemaName: 'study'
         });
 
@@ -159,8 +159,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 '</div>',
             '</tpl>',
             {
-                pluralCohort : function( v ) {
-                    return Ext.util.Format.plural( v, 'cohort' );
+                pluralCohort : function( count ) {
+                    return Ext.util.Format.plural( count, 'cohort' );
                 },
                 process : function( value ) { 
                     return value === '' ? '&nbsp;' : Ext.util.Format.htmlEncode( value );

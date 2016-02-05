@@ -15,7 +15,7 @@
         </cv:column>
         <cv:column name="study_time_collected"/>
         <cv:column name="study_time_collected_unit"/>
-        <cv:column name="virus_strain"/>
+        <cv:column name="virus"/>
         <cv:column name="value_reported"/>
     </cv:columns>
 </cv:customView>

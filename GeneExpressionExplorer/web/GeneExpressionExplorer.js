@@ -321,6 +321,22 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             width: fieldWidth
         });
 
+        var customTemplate = new Ext.XTemplate(
+            '<tpl for=".">',
+                '<div class =\'x-combo-list-item\'>',
+                    '{displayTimepoint:this.process} ({cohortCount:this.pluralCohort})',
+                '</div>',
+            '</tpl>',
+            {
+                pluralCohort : function( count ) {
+                    return Ext.util.Format.plural( count, 'cohort' );
+                },
+                process : function( value ) { 
+                    return value === '' ? '&nbsp;' : Ext.util.Format.htmlEncode( value );
+                }
+            }   
+        );
+
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
             disabled: true,
@@ -344,6 +360,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 }
             },
             store: strTimePoint,
+            tpl: customTemplate,
             valueField: 'displayTimepoint',
             width: fieldWidth
         });
@@ -356,12 +373,12 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
                     var num, unit,
                         field = new Ext.data.Field({ name: 'displayTimepoint' });
-                    this.recordType.prototype.fields.replace(field);
-                    this.each( function(r){
-                        if ( ! r.data[field.name] ){
-                            num                 = r.data['timepoint'];
-                            unit                = r.data['timepointUnit'];
-                            r.data[field.name]  = num + ' ' + ( num != 1 ? unit : unit.slice( 0, unit.length - 1 ) );
+                    this.recordType.prototype.fields.replace( field );
+                    this.each( function( r ){
+                        if ( r.data[ field.name ] == undefined ){
+                            num                     = r.data[ 'timepoint' ];
+                            unit                    = r.data[ 'timepointUnit' ];
+                            r.data[ field.name ]    = Ext.util.Format.plural( num, unit.slice( 0, unit.length - 1 ) );
                         }
                     });
 

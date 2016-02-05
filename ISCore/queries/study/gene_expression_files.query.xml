@@ -39,6 +39,15 @@
                         </onClick>
                     </item>
                 </buttonBarOptions>
+                <columns>
+                  <column columnName="file_info_name">
+                    <url>/_webdav/Studies/${study_accession}/%40files/rawdata/gene_expression/${file_info_name}</url>
+                  </column>
+                  <column columnName="geo_accession">
+                    <url>http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=${geo_accession}</url>
+                    <urlTarget>_blank</urlTarget>
+                  </column>
+                </columns>
             </table>
         </tables>
     </metadata>
