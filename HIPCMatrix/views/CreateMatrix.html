@@ -24,7 +24,7 @@ function renderPanel()
             queryName: queryName,
             selectionKey: selectionKey,
             showRows: "selected",
-            columns: [ "ParticipantId", "biosample_accession", "file_info_name", "study_time_collected", "study_time_collected_unit" ],
+            columns: [ "ParticipantId", "biosample_accession", "name", "file_info_name", "geo_accession",  "study_time_collected", "study_time_collected_unit" ],
             success: function (data) {
                 selectedRows = data.rows;
                 if (selectedRows.length == 0)
@@ -83,9 +83,11 @@ function renderPanel()
         var selectedLsids = [];
         var selectedSubjects = [];
         var selectedBiosamples = [];
+        var selectedGEOs = [];
         for (var i = 0; i < selectedRows.length; i++)
         {
             var path = selectedRows[i]["file_info_name"];
+            var geo_acc = selectedRows[i]["geo_accession"];
             var lsid = selectedRows[i]["lsid"];
             var subject = selectedRows[i]["ParticipantId"];
             var biosample = selectedRows[i]["biosample_accession"];
@@ -93,6 +95,7 @@ function renderPanel()
             selectedLsids.push(lsid);
             selectedSubjects.push(subject);
             selectedBiosamples.push(biosample);
+            selectedGEOs.push(geo_acc);
 
             if (seen[path])
                 continue;
@@ -121,6 +124,7 @@ function renderPanel()
 
                 'selected-lsids': selectedLsids.join(','),
                 'selected-subjects': selectedSubjects.join(','),
+                'selected-GEOs': selectedGEOs.join(','),
                 'selected-biosamples': selectedBiosamples.join(',')
             },
             saveProtocol: false,
