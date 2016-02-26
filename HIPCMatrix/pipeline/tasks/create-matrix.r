@@ -36,8 +36,10 @@ normalizeMatrix <- function(labkey.url.base, labkey.url.path, inputFiles, select
   filter <- makeFilter(c("biosample_accession", "IN", gsub(",", ";", selectedBiosamples)))
   gef <- con$getDataset("gene_expression_files", colFilter = filter, original_view = TRUE, reload = TRUE)
   gef <- gef[file_info_name %in% basename(inputFiles) | geo_accession %in% GEOs]
+  # TEMPORARY list of studies where GEO should be avoided
+  noGEO <- c("SDY224")
   # Decide whether we use GEO or the files
-  if(all(GEOs %in% gef$geo_accession)){
+  if(all(GEOs %in% gef$geo_accession) & !con$study %in% noGEO){
     isGEO <- TRUE
   } else if(all(basename(inputFiles) %in% gef$file_info_name)){
     isGEO <- FALSE
