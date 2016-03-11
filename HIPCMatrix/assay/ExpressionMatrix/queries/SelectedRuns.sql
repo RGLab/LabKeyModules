@@ -1,7 +1,8 @@
 SELECT
 *,
 Name || '.tsv' AS download_link,
-Folder.EntityId AS Container
+Folder.EntityId AS Container,
+Folder.DisplayName AS Study
 FROM
 Runs
 WHERE
