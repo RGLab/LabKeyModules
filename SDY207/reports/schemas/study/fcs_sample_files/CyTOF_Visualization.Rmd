@@ -77,8 +77,9 @@ out <- capture.output(suppressMessages(openCyto::registerPlugins(fun=.dnaGate,me
 ```{r load_data, echo=FALSE, cache=TRUE, echo=FALSE}
        dt<-data.table(labkey.data)
        setnames(dt,tolower(colnames(dt)))
-       path <- gsub("@files", "@files/rawdata/flow_cytometry/", labkey.file.root)
-       dt=dt[,link:=paste0(path,file_info_name)]
+       path <- paste0(labkey.file.root, "/")
+       rawdata_path <- gsub("@files", "@files/rawdata/flow_cytometry/", labkey.file.root)
+       dt=dt[,link:=paste0(rawdata_path,file_info_name)]
      
 #Grab a list of all the FCS files
 fcsfiles<-as.character(dt$link)
@@ -117,15 +118,15 @@ fileinfo=fileinfo[,name:=as.character(name)]
           
 ```{r construct_gating_sets,cache=FALSE,message=FALSE}
 #Construct a gating set from the flow data
-if(file.exists(paste0(path,"gating_set"))){
-    suppressMessages(gs<-load_gs(paste0(path,"gating_set")))
+if(file.exists(paste0(path,"analysis/gating_set"))){
+    suppressMessages(gs<-load_gs(paste0(path,"analysis/gating_set")))
 }else{
     suppressMessages(gs<-GatingSet(fs[[1]]))
     pd <- as.data.frame( fileinfo[1:length(gs),] );
     rownames( pd ) <- pd[ , 'name' ]; 
     pData( gs ) <- pd;
     cat('Saving ungated data\n');
-    save_gs(gs,path=paste0(path,"gating_set"))
+    save_gs(gs,path=paste0(path,"analysis/gating_set"))
 }          
 ```
 
@@ -146,9 +147,9 @@ if("subject" %in% names(labkey.url.params)){
 ## Automated Gating   
 We load a gating template definition for the CyTOF panel used in this study into openCyto.
 
-```{r echo=FALSE, templates,cache=FALSE, message=FALSE}
+```{r templates, echo=FALSE, cache=FALSE, message=FALSE}
 #load gating template
-capture.output(template<-gatingTemplate(list.files(path=path,pattern="csv",full=TRUE)),file="/dev/null")
+capture.output(template<-gatingTemplate(list.files(path=paste0(path, "analysis/"),pattern="csv",full=TRUE)),file="/dev/null")
 fd<-flowData(gs)
 colnames(fd)<-c("Time","Cell_length","DNA1","DNA2","CD3","CD3(Cd108)Dd","CD3(Cd110)Dd",
 "CD3(Cd111)Dd",      "CD3(Cd112)Dd",      "CD3(Cd113)Dd",      "CD3(Cd114)Dd",
@@ -164,21 +165,21 @@ flowData(gs)<-fd
 The data is gated by applying the template to the data set. Gate coordinates are derived in a data-driven manner for each sample.  
    
 ```{r gating, echo=FALSE,eval=TRUE,message=FALSE,warning=FALSE,cache=FALSE}
-if ( file.exists( paste0( path,"gating_set_gated" ) ) && !regate ){
-    gs<-load_gs(paste0(path,"gating_set_gated"))
+if ( file.exists( paste0( path,"analysis/gating_set_gated" ) ) && !regate ){
+    gs<-load_gs(paste0(path,"analysis/gating_set_gated"))
 } else{
     gs<-gs[include]
     cat("Gating\n")
     gating(template,gs)
 
-    if ( file.exists( paste0( path, 'gating_set_gated' ) ) ){
-        res <- unlink( paste0(path,"gating_set_gated"), force = T, recursive = T );
+    if ( file.exists( paste0( path, 'analysis/gating_set_gated' ) ) ){
+        res <- unlink( paste0(path,"analysis/gating_set_gated"), force = T, recursive = T );
         if ( res != 0 ){
             stop( 'Removal of the existing gated gating set from the file system failed' );
         }
     }
     cat("Saving gated data\n")
-    save_gs(gs,path=paste0(path,"gating_set_gated"),overwrite=TRUE)
+    save_gs(gs,path=paste0(path,"analysis/gating_set_gated"),overwrite=TRUE)
 }
 ```
 
