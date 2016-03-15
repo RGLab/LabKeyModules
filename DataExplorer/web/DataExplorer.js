@@ -150,6 +150,9 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         schemaName: schemaName,
                         success: function( variables ){
                             var numRows = dataregion.totalRows;
+                            if ( numRows == undefined ){
+                                numRows = dataregion.table.dom.rows.length - 4;
+                            }
 
                             numVars = variables.values.length;
 
@@ -167,6 +170,24 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 },
                 viewName: isGE ? 'DGEAR' : undefined
             });
+
+            if ( isGE ){
+                chNormalize.setDisabled( false );
+            } else {
+                LABKEY.Query.selectDistinctRows({
+                    column: 'study_time_collected',
+                    containerFilter: LABKEY.ext.ISCore.isStudyFolder ? '' : 'CurrentAndSubfolders',
+                    failure: LABKEY.ext.ISCore.onFailure,
+                    filterArray: dataregion.getUserFilterArray(),
+                    queryName: dataset,
+                    schemaName: schemaName,
+                    success: function( data ){
+                        var rows = data.values, len = rows.length;
+                        chNormalize.setDisabled( !( rows[0] <= 0 && rows[len-1] > 0 ) );
+                    },
+                    viewName: isGE ? 'DGEAR' : undefined
+                });
+            }
 
             $('.labkey-data-region-wrap').doubleScroll();
         };
@@ -212,6 +233,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 ){
                     tlbrButtons.setDisabled( true );
                     cmpStatus.update( '' );
+                    chNormalize.setDisabled( true );
 
                     LABKEY.DataRegions = {};
                     qwpDataset = new LABKEY.QueryWebPart({
@@ -264,7 +286,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 spnrHorizontal.isValid( true ) &&
                 spnrVertical.isValid( true ) &&
                 qwpDataset &&
-                qwpDataset.getDataRegion().totalRows
+                (
+                    qwpDataset.getDataRegion().totalRows !== 0 ||
+                    qwpDataset.getDataRegion().table.dom.rows.length > 5
+                )
             ){
                 btnPlot.setDisabled( false );
                 cmpStatus.setDisabled( false );
@@ -348,7 +373,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         if ( cbDataset.findRecord( cbDataset.valueField, valueToSet ) ){
                             cbDataset.setValue( valueToSet );
                             loadDataset( params );
-                        } else{
+                        } else {
                             cbDataset.clearValue();
                             cbDataset.markInvalid( '"' + valueToSet + '" in the supplied URL is not a valid value, select from the available choices' );
                         }
@@ -669,7 +694,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             }    
                         }    
                     });  
-                }  else {
+                } else {
                     renderPlot();
                 }
             },

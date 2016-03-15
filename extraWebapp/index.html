@@ -99,8 +99,10 @@
                             <label>Password</label>
                         </li>
                         <li>
-                            <input class='roundedCorners' id='password' type='password' name='password' onkeydown='if (event.keyCode == 13) document.getElementById("submitButton").click();'>
-                            <a class='forgotpw' href='/login/home/resetPassword.view' title='Reset password'>?</a>
+                            <div class='nowrap'>
+                                <input class='roundedCorners' id='password' type='password' name='password' onkeydown='if (event.keyCode == 13) document.getElementById("submitButton").click();'>
+                                <a class='forgotpw' href='/login/home/resetPassword.view' title='Reset password'>?</a>
+                            </div>
                         </li>
                         <li>
                             <a id='submitButton' class='labkey-button left' onclick='document.getElementById("loginForm").submit();' href='javascript:void(0);'>Sign In</a>
