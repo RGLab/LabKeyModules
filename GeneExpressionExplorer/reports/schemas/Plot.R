@@ -20,7 +20,6 @@ library(data.table)
 library(Rlabkey)
 library(ImmuneSpaceR)
 library(reshape2)
-library(ggthemr)
 library(limma)
 
 stopcheck <- function(data){
@@ -97,7 +96,7 @@ if(!exists("loaded_cohorts") || length(loaded_cohorts) != length(input_cohorts) 
 
   HAI <- con$getDataset("hai", original_view = TRUE, colFilter = filter, reload = TRUE)
   HAI <- HAI[, list(arm_accession, study_time_collected, study_time_collected_unit,
-                    response=value_reported/mean(value_reported[study_time_collected<=0])), by="virus_strain,participant_id"]
+                    response=value_reported/mean(value_reported[study_time_collected<=0])), by="virus,participant_id"]
   # HAI at peak immunogenicity
   HAI <- HAI[, mr := mean(response), by="study_time_collected"]
   HAI <- HAI[, ma := max(mr), by = "arm_accession"]
@@ -135,13 +134,16 @@ if(size=="") size <- NULL
 if(alpha=="") alpha <- NULL
 
 data <- add_r2(data)
-p <- ggplot(data=data, aes(x=value, y=response)) + geom_point(aes_string(size=size, color=color, alpha=alpha, shape=shape)) + geom_smooth(method="lm") + ylab(response) + xlab(xlab) + geom_text(aes(x=r2x, y=r2y, label = r2), hjust = 0, vjust = 1, data = data, parse = TRUE) + theme(text=element_text(size=textSize)) 
+p <- ggplot(data=data, aes(x=value, y=response)) +
+  geom_point(aes_string(size=size, color=color, alpha=alpha, shape=shape)) +
+  geom_smooth(method="lm") + ylab(response) + xlab(xlab) +
+  geom_text(aes(x=r2x, y=r2y, label = r2), hjust = 0, vjust = 1, data = data, parse = TRUE) +
+  theme_IS(base_size = textSize) #theme(text=element_text(size=textSize)) 
 if(facet == "grid"){
   p <- p + facet_grid(aes(cohort, gene_symbol), scales="free")
 } else{
   p <- p + facet_wrap(~cohort + gene_symbol, scales="free")
 }
-ggthemr("solarized")
 print(p)
 
 # Variables used for caching

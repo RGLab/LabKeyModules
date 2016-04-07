@@ -17,11 +17,6 @@ opts_chunk$set(message = FALSE, fig.align = "center", fig.width = 10, fig.height
 library(ImmuneSpaceR)
 library(data.table)
 library(ggplot2)
-library(ggthemr)
-```
-ImmuneSpace uses the *solarized* theme for plots.
-```{r}
-ggthemr('solarized')
 ```
 
 ### Initialize the connection to SDY144 and get data
@@ -63,7 +58,7 @@ to day 30 after vaccination.
 ```{r HAI, dev='CairoPNG'}
 ggplot(dat_hai, aes(x = population_cell_number, y = response)) +
   geom_point() + geom_smooth(method = "lm") +
-  facet_grid(virus~population_name_reported, scale = "free")
+  facet_grid(virus~population_name_reported, scale = "free") + theme_IS()
   
 ```
 
@@ -73,5 +68,5 @@ to day 30 after vaccination.
 ```{r VN, dev='CairoPNG'}
 ggplot(dat_vn, aes(x = population_cell_number, y = response)) +
   geom_point() + geom_smooth(method = "lm") +
-  facet_grid(virus~population_name_reported, scale = "free")
+  facet_grid(virus~population_name_reported, scale = "free") + theme_IS()
 ```

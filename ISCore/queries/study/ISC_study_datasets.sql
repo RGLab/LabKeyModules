@@ -1,126 +1,128 @@
---List the datasets available (is also properly filtered by the Data Finder)
+-- List the datasets available (is also properly filtered by the Data Finder)
 SELECT
-dataset_n.Name,
-dataset_n.Label,
-DataSets.CategoryId AS Category
-FROM (
-   SELECT
-   COUNT( file_info_name ) AS n,
-   'fcs_sample_files' AS Name,
-   'FCS sample files' AS Label
-   FROM
-   fcs_sample_files
+    dataset_n.Name,
+    dataset_n.Label,
+    DataSets.CategoryId AS Category,
+    DataSets.DataSetId AS Id
+FROM
+    (
+       SELECT
+       COUNT( file_info_name ) AS n,
+       'fcs_sample_files' AS Name,
+       'FCS sample files' AS Label
+       FROM
+       fcs_sample_files
 
-   UNION
+       UNION
 
-   SELECT
-   COUNT( control_file ) AS n,
-   'fcs_control_files' AS Name,
-   'FCS control files' AS Label
-   FROM
-   fcs_control_files
+       SELECT
+       COUNT( control_file ) AS n,
+       'fcs_control_files' AS Name,
+       'FCS control files' AS Label
+       FROM
+       fcs_control_files
 
-   UNION
+       UNION
 
-   SELECT
-   COUNT( participantid ) AS n,
-   'gene_expression_files' AS Name,
-   'Gene expression files' AS Label
-   FROM
-   gene_expression_files
+       SELECT
+       COUNT( participantid ) AS n,
+       'gene_expression_files' AS Name,
+       'Gene expression files' AS Label
+       FROM
+       gene_expression_files
 
-   UNION 
+       UNION
 
-   SELECT
-   COUNT( participantid ) AS n,
-   'fcs_analyzed_result' AS Name,
-   'Flow cytometry analyzed results' AS Label
-   FROM
-   fcs_analyzed_result
+       SELECT
+       COUNT( participantid ) AS n,
+       'fcs_analyzed_result' AS Name,
+       'Flow cytometry analyzed results' AS Label
+       FROM
+       fcs_analyzed_result
 
-   UNION
+       UNION
 
-   SELECT
-   COUNT( participantid ) AS n,
-   'mbaa' AS Name,
-   'Multiplex bead array asssay' AS Label
-   FROM
-   mbaa
+       SELECT
+       COUNT( participantid ) AS n,
+       'mbaa' AS Name,
+       'Multiplex bead array asssay' AS Label
+       FROM
+       mbaa
 
-   UNION
+       UNION
 
-   SELECT
-   COUNT( participantid ) AS n,
-   'kir_typing' AS Name,
-   'Killer cell immunoglobulin-like receptors (KIR) typing' AS Label
-   FROM
-   kir_typing
+       SELECT
+       COUNT( participantid ) AS n,
+       'kir_typing' AS Name,
+       'Killer cell immunoglobulin-like receptors (KIR) typing' AS Label
+       FROM
+       kir_typing
 
-   UNION
+       UNION
 
-   SELECT
-   COUNT( participantid ) AS n,
-   'elisa' AS Name,
-   'Enzyme-linked immunosorbent assay (ELISA)' AS Label
-   FROM
-   elisa
+       SELECT
+       COUNT( participantid ) AS n,
+       'elisa' AS Name,
+       'Enzyme-linked immunosorbent assay (ELISA)' AS Label
+       FROM
+       elisa
 
-   UNION
+       UNION
 
-   SELECT
-   COUNT( participantid ) AS n,
-   'elispot' AS Name,
-   'Enzyme-Linked ImmunoSpot (ELISPOT)' AS Label
-   FROM
-   elispot
+       SELECT
+       COUNT( participantid ) AS n,
+       'elispot' AS Name,
+       'Enzyme-Linked ImmunoSpot (ELISPOT)' AS Label
+       FROM
+       elispot
 
-   UNION
+       UNION
 
-   SELECT
-   COUNT( participantid ) AS n,
-   'hai' AS Name,
-   'Hemagglutination inhibition (HAI)' AS Label
-   FROM
-   hai
+       SELECT
+       COUNT( participantid ) AS n,
+       'hai' AS Name,
+       'Hemagglutination inhibition (HAI)' AS Label
+       FROM
+       hai
 
-   UNION
+       UNION
 
-   SELECT
-   COUNT( participantid ) AS n,
-   'neut_ab_titer' AS Name,
-   'Neutralizing antibody titer' AS Label
-   FROM
-   neut_ab_titer
+       SELECT
+       COUNT( participantid ) AS n,
+       'neut_ab_titer' AS Name,
+       'Neutralizing antibody titer' AS Label
+       FROM
+       neut_ab_titer
 
-   UNION
+       UNION
 
-   SELECT
-   COUNT( participantid ) AS n,
-   'pcr' AS Name,
-   'Polymerisation chain reaction (PCR)' AS Label
-   FROM
-   pcr
+       SELECT
+       COUNT( participantid ) AS n,
+       'pcr' AS Name,
+       'Polymerisation chain reaction (PCR)' AS Label
+       FROM
+       pcr
 
-   UNION
+       UNION
 
-   SELECT
-   COUNT( participantid ) AS n,
-   'demographics' AS Name,
-   'Demographics' AS Label
-   FROM
-   demographics
+       SELECT
+       COUNT( participantid ) AS n,
+       'demographics' AS Name,
+       'Demographics' AS Label
+       FROM
+       demographics
 
-   UNION
+       UNION
 
-   SELECT
-   COUNT( participantid ) AS n,
-   'cohort_membership' AS Name,
-   'Cohort membership' AS Label
-   FROM
-   cohort_membership
-) AS dataset_n,
-DataSets
+       SELECT
+       COUNT( participantid ) AS n,
+       'cohort_membership' AS Name,
+       'Cohort membership' AS Label
+       FROM
+       cohort_membership
+    ) AS dataset_n,
+    DataSets
 WHERE
-Datasets.Name = dataset_n.Name AND
-dataset_n.n > 0
+    Datasets.Name = dataset_n.Name AND
+    dataset_n.n > 0
 

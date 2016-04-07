@@ -29,8 +29,6 @@ opts_chunk$set(cache=TRUE, echo=FALSE, message=FALSE, warning=FALSE,
 library(ImmuneSpaceR)
 library(ggplot2)
 library(data.table)
-library(ggthemr)
-ggthemr('solarized')
 ```
 
 
@@ -73,7 +71,6 @@ ggplot(dt_fcs19, aes(x=as.factor(study_time_collected), y=as.double(population_c
   geom_boxplot() + geom_jitter() + scale_y_log10() + facet_grid(cohort~population_name_reported, scale="free") +
   xlab("Time") + ylab(expression(paste("Number of cells/", mu, "l"))) +
   geom_line(data = dt_fcs19_median, aes(x=as.factor(study_time_collected), y=as.double(median_cell_reported),
-    group=1), color="black",size=1.2) +
-  labs(title="Plasma cell abundance after vaccination")
+    group=1), color="black",size=1.2) + labs(title="Plasma cell abundance after vaccination") + theme_IS()
 ```
 

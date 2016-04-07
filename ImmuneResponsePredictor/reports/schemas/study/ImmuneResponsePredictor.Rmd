@@ -15,7 +15,6 @@ opts_chunk$set(cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE,
 library(data.table)
 library(Rlabkey)
 library(ggplot2)
-library(ggthemr)
 library(glmnet)
 library(pheatmap)
 library(RColorBrewer)
@@ -239,7 +238,7 @@ if(length(param$cohortsTesting) > 0){
 ```{r prediction, echo=FALSE, dev='CairoPNG'}
 if(length(param$cohortsTesting) == 0){
   data <- data.frame(observed = response$response, fitted = relasso$fitted.values)
-  p <- ggplot(data, aes(x = observed, y = fitted)) + geom_point() + geom_smooth(method = "lm")
+  p <- ggplot(data, aes(x = observed, y = fitted)) + geom_point() + geom_smooth(method = "lm") + theme_IS()
 } else{
   data_test <- data.frame(FC_test)
   colnames(data_test) <- colnames(FC_test) #
@@ -248,9 +247,9 @@ if(length(param$cohortsTesting) == 0){
                      fitted = c(relasso$fitted.values, predicted_values))
   data$cohort_label <- pd[match(rownames(data), participant_id), cohort_label]
   p <- ggplot(data, aes(x = observed, y = fitted)) + geom_point() + geom_smooth(method = "lm") +
-              facet_wrap(~cohort_label, scale="free") + xlab("Observed HAI response") + ylab("Predicted HAI response")
+              facet_wrap(~cohort_label, scale="free") + xlab("Observed HAI response") + 
+              ylab("Predicted HAI response") + theme_IS()
 }
-ggthemr('solarized')
 plot(p)
 ```
 
