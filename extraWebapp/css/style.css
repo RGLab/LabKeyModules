@@ -199,6 +199,10 @@ a.forgotpw:hover {
     color: #333;
 }
 
+div.nowrap {
+    white-space: nowrap;
+}
+
 .signin h2 input[type="button"] {
     float: right;
     padding: 5px;

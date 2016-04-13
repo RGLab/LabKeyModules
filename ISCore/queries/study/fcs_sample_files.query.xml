@@ -32,6 +32,11 @@
                         <originalText>Delete</originalText>
                     </item>
                 </buttonBarOptions>
+                <columns>
+                    <column columnName="file_info_name">
+                        <url>/_webdav/Studies/${study_accession}/%40files/rawdata/flow_cytometry/${file_info_name}</url>
+                    </column>
+                </columns>
             </table>
         </tables>
     </metadata>

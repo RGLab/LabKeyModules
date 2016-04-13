@@ -250,8 +250,6 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             requiredVersion: 12.3,
             schemaName: 'study',
             queryName: 'ISSO_datasets',
-            columns: 'Label',
-            sort: 'Label',
             success: onSuccessDS,
             failure: onError
         });
@@ -344,14 +342,18 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             $('#PI'.wpdi())[0].innerHTML = PI.join(', ');
         };
 
-        function onSuccessDS(results){
+        function onSuccessDS( results ){
             var
                 rows = results.rows,
                 length = rows.length,
                 datasets = [];
-            for(var idxRow = 0; idxRow < length; idxRow++){
-                var row = rows[idxRow];
-                datasets.push(row['Label'].value);
+            for ( var idxRow = 0; idxRow < length; idxRow ++ ){
+                var row = rows[ idxRow ];
+                datasets.push(
+                    '<a href=\"' +
+                    LABKEY.ActionURL.buildURL( 'study', 'dataset', null, { datasetId: row['Id'].value } ) +
+                    '\">' + row['Label'].value + '</a>'
+                );
             }
             $('#datasets'.wpdi())[0].innerHTML = datasets.join(', ');
         };

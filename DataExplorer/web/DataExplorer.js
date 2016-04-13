@@ -28,7 +28,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             me              = this,
             qwpDataset      = undefined,
             dataregion      = undefined,
-            maskPlot        = undefined,
+            maskTabs        = undefined,
             numVars         = undefined,
             reportSessionId = undefined,
             schemaName      = undefined,
@@ -42,7 +42,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 'elispot':                          'analyte',
                 'pcr':                              'entrez_gene_id',
                 'fcs_analyzed_result':              'population_name_reported',
-                'DGEA_filteredGEAR': 'gene_symbol'
+                'DGEA_filteredGEAR':                'gene_symbol'
             }
         ;
 
@@ -150,15 +150,29 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         schemaName: schemaName,
                         success: function( variables ){
                             var numRows = dataregion.totalRows;
+                            if ( numRows == undefined ){
+                                numRows = dataregion.table.dom.rows.length - 4;
+                            }
 
                             numVars = variables.values.length;
 
+                            maskTabs.hide();
                             cmpStatus.update(
                                 Ext.util.Format.plural( numRows, 'data point' ) + 
                                 ' across ' + Ext.util.Format.plural( cohorts.values.length, 'cohort' ) +
                                 ' and ' + Ext.util.Format.plural( numVars, 'variable' ) +
                                 ( numRows == '1' ? ' is ' : ' are ' ) + 'selected' 
                             );
+
+                            if ( numRows == 0 ){
+                                Ext.Msg.show({
+                                    closable: false,
+                                    msg: 'The data was probably filtered via the Data Finder after this page was loaded and so the selected dataset is no longer valid, click OK to reload the currently available datasets.',
+                                    buttons: Ext.Msg.OK,
+                                    icon: Ext.Msg.WARNING,
+                                    fn: btnReset.handler
+                                });
+                            }
 
                             checkBtnsStatus();
                         },
@@ -167,6 +181,24 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 },
                 viewName: isGE ? 'DGEAR' : undefined
             });
+
+            if ( isGE ){
+                chNormalize.setDisabled( false );
+            } else {
+                LABKEY.Query.selectDistinctRows({
+                    column: 'study_time_collected',
+                    containerFilter: LABKEY.ext.ISCore.isStudyFolder ? '' : 'CurrentAndSubfolders',
+                    failure: LABKEY.ext.ISCore.onFailure,
+                    filterArray: dataregion.getUserFilterArray(),
+                    queryName: dataset,
+                    schemaName: schemaName,
+                    success: function( data ){
+                        var rows = data.values, len = rows.length;
+                        chNormalize.setDisabled( !( rows[0] <= 0 && rows[len-1] > 0 ) );
+                    },
+                    viewName: isGE ? 'DGEAR' : undefined
+                });
+            }
 
             $('.labkey-data-region-wrap').doubleScroll();
         };
@@ -212,6 +244,11 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 ){
                     tlbrButtons.setDisabled( true );
                     cmpStatus.update( '' );
+
+                    maskTabs.msg = 'Loading data';
+                    maskTabs.show();
+
+                    chNormalize.setDisabled( true );
 
                     LABKEY.DataRegions = {};
                     qwpDataset = new LABKEY.QueryWebPart({
@@ -264,7 +301,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 spnrHorizontal.isValid( true ) &&
                 spnrVertical.isValid( true ) &&
                 qwpDataset &&
-                qwpDataset.getDataRegion().totalRows
+                (
+                    qwpDataset.getDataRegion().totalRows !== 0 ||
+                    qwpDataset.getDataRegion().table.dom.rows.length > 5
+                )
             ){
                 btnPlot.setDisabled( false );
                 cmpStatus.setDisabled( false );
@@ -312,16 +352,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         //            Stores             //
         ///////////////////////////////////
 
-        var strDataset;
-
-        var populateStore = function( outputArray ){
-            outputArray.sort();
-            strDataset = new Ext.data.ArrayStore({
-                data: outputArray,
-                fields: [ 'Label', 'Name' ]
-            });
-
-            cbDataset.bindStore( strDataset );
+        var onLoad = function(){
             cbDataset.resizeToFitContent();
 
             if ( strDataset.getCount() == 0 ){
@@ -348,7 +379,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         if ( cbDataset.findRecord( cbDataset.valueField, valueToSet ) ){
                             cbDataset.setValue( valueToSet );
                             loadDataset( params );
-                        } else{
+                        } else {
                             cbDataset.clearValue();
                             cbDataset.markInvalid( '"' + valueToSet + '" in the supplied URL is not a valid value, select from the available choices' );
                         }
@@ -356,59 +387,28 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 }
             }
         };
-       
-        var processDataSets = function( inputArray, outputArray ){
-            var flags = [];
 
-            Ext.each( inputArray, function( curEl ){
-                var
-                    curLabel = curEl.Label,
-                    curName = curEl.Name
-                ;
-
-                LABKEY.Query.executeSql({
-                    failure: function(){
-                        flags.push( 1 );
-                        if ( flags.length == inputArray.length ){
-                            populateStore( outputArray );
+        var strDataset = new LABKEY.ext.Store({
+            autoLoad: true,
+            listeners: {
+                load: function( s ){
+                    LABKEY.Query.getQueryDetails({
+                        failure: function(){
+                            onLoad();
+                        },
+                        queryName: 'DGEA_filteredGEAR',
+                        schemaName: 'gene_expression',
+                        success: function(){
+                            var dsRecord = Ext.data.Record.create(['Label', 'Name']);
+                            s.addSorted( new dsRecord({ Label: 'Gene expression' , Name: 'DGEA_filteredGEAR' }) );
+                            onLoad();
                         }
-                    },
-                    sql: 'SELECT COUNT(*) AS Number FROM ' + curName,
-                    schemaName: curName == 'DGEA_filteredGEAR' ? 'gene_expression' : 'study',
-                    containerFilter: 'CurrentAndSubfolders',
-                    success: function( d ){
-                        if ( d.rows[0].Number != 0 ){
-                            outputArray.push( [ curLabel, curName ] );
-                        }
-
-                        flags.push( 0 );
-                        if ( flags.length == inputArray.length ){
-                            populateStore( outputArray );
-                        }
-                    }
-                });
-            });
-        };
-
-        //Get the list of datasets for the input combobox
-        LABKEY.Query.selectRows({
-            queryName: 'data_sets',
-            schemaName: 'study',
-            success: function( d ){
-                LABKEY.Query.getQueryDetails({
-                    failure: function(){
-                        processDataSets( d.rows, [] );
-                    },
-                    queryName: 'DGEA_filteredGEAR',
-                    schemaName: 'gene_expression',
-                    success: function(){
-                        var inputArray = d.rows;
-                        inputArray.push( { Label: 'Gene expression' , Name: 'DGEA_filteredGEAR' } );
-                        processDataSets( inputArray, [] );
-                    }
-                });
-
-            }
+                    });
+                },
+                loadexception: LABKEY.ext.ISCore.onFailure
+            },
+            queryName: 'DE_data_sets',
+            schemaName: 'study'
         });
 
         var strPlotType = new Ext.data.ArrayStore({
@@ -448,14 +448,14 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             success: function( responseObj ){
                 var i, array = responseObj.reportSessions, length = array.length;
                 for ( i = 0; i < length; i ++ ){
-                    if ( array[i].clientContext == 'DataExplorer' ){
+                    if ( array[i].clientContext == 'DataExplorer' + LABKEY.ActionURL.getContainer() ){
                         reportSessionId = array[i].reportSessionId;
                         i = length;
                     }
                 }
                 if ( i == length ){
                     LABKEY.Report.createSession({
-                        clientContext : 'DataExplorer',
+                        clientContext : 'DataExplorer' + LABKEY.ActionURL.getContainer(),
                         failure: LABKEY.ext.ISCore.onFailure,
                         success: function(data){
                             reportSessionId = data.reportSessionId;
@@ -669,7 +669,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             }    
                         }    
                     });  
-                }  else {
+                } else {
                     renderPlot();
                 }
             },
@@ -701,6 +701,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 cfShowStrains.setVisible( false );
                 manageAdditionalOptions();  // Hide options
                 loadDataset( '' );          // Clear the Data tab
+                strDataset.reload();
 
                 checkBtnsStatus();
 
@@ -781,7 +782,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         });
                     } else {
                         LABKEY.Report.createSession({
-                            clientContext : 'DataExplorer',
+                            clientContext : 'DataExplorer' + LABKEY.ActionURL.getContainer(),
                             failure: LABKEY.ext.ISCore.onFailure,
                             success: function(data){
                                 reportSessionId = data.reportSessionId;
@@ -844,7 +845,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
         var cntPlotMessage = new Ext.Container();
         
-        var cmpStatus = new Ext.Component({
+        var cmpStatus = new Ext.Container({
             cls: 'paddingLeft10px'
         });
 
@@ -1142,7 +1143,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             listeners: {
                 afterrender: {
                     fn: function(){
-                        maskPlot = new Ext.LoadMask(
+                        maskTabs = new Ext.LoadMask(
                             this.getEl(),
                             {
                                 msg: LABKEY.ext.ISCore.generatingMessage,
@@ -1201,9 +1202,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         
         var setPlotRunning = function( bool ){
             if ( bool ){
-                maskPlot.show();
+                maskTabs.msg = LABKEY.ext.ISCore.generatingMessage;
+                maskTabs.show();
             } else {
-                maskPlot.hide();
+                maskTabs.hide();
             }
             componentsSetDisabled( bool );
         };
