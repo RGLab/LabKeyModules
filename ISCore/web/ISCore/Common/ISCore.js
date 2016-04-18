@@ -344,8 +344,8 @@ LABKEY.ext.Utils.resizeToViewport = function( extContainer, width, height, paddi
 
 
 /*
- * Set Tab titles centered (should be able to do any other customizations by setting the tabStripInnerStyle config)
- * Custom class added for inactive-tab-on-hover behavior
+ * Set Tab titles centered (should be able to do any other customizations by setting the 'tabStripInnerStyle' config)
+ * Custom class 'x-tab-strip-over' added for inactive tab on hover behavior
  */
 Ext.TabPanel.override({
     tabStripInnerStyle : 'text-align: center;',

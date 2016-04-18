@@ -1251,9 +1251,9 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
             listeners: {
                 selectionchange: function(){
                     if ( smCheckBoxAnalyses.getCount() > 0 ){
-                        btnDelete.setDisabled(false);
+                        btnDelete.setDisabled( false );
                     } else {
-                        btnDelete.setDisabled(true);
+                        btnDelete.setDisabled( true );
                     }
                 }
             },
@@ -1633,7 +1633,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
                 var listAxes = [];
 
                 LABKEY.Query.selectRows({
-                    columns: ['Display', 'Key', 'AnalysisId'],
+                    columns: [ 'Display', 'Key', 'AnalysisId' ],
                     failure: function(e, r, o){
                         flagAnalysisLoadedFromDB = false;
                         onNoAnalysis();
@@ -1663,7 +1663,7 @@ LABKEY.ext.LyoplateVisualization = Ext.extend( Ext.Panel, {
 
                         // Filter sample file names by analysis id
                         LABKEY.Query.selectRows({
-                            columns: ['name, AnalysisId'],
+                            columns: [ 'name, AnalysisId' ],
                             failure: function(e, r, o){
                                 flagAnalysisLoadedFromDB = false;
                                 onNoAnalysis();

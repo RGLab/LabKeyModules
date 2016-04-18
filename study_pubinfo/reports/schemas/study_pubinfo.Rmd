@@ -19,7 +19,7 @@ ds_pubmed <- dat[dat$study_accession == SDY, ]
 
 ```{r get-pubmed-info, results='asis', dependson="filter", error=FALSE, cache.extra=format(Sys.time(),'%Y-%m')}
 id <- ds_pubmed$pubmed_id
-id <- id[id != "PMC"]
+id <- id[grep("^[0-9]", id)]
 
 get_reference <- function(id){
   x <- entrez_summary(db="pubmed", id=id)

@@ -156,7 +156,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
                             numVars = variables.values.length;
 
-                            maskTabs.hide();
                             cmpStatus.update(
                                 Ext.util.Format.plural( numRows, 'data point' ) + 
                                 ' across ' + Ext.util.Format.plural( cohorts.values.length, 'cohort' ) +
@@ -243,10 +242,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     ( qwpDataset != undefined && qwpDataset.queryName != dataset )
                 ){
                     tlbrButtons.setDisabled( true );
-                    cmpStatus.update( '' );
 
-                    maskTabs.msg = 'Loading data';
-                    maskTabs.show();
+                    cmpStatus.update( '<span class=loading-indicator></span>' );
 
                     chNormalize.setDisabled( true );
 
