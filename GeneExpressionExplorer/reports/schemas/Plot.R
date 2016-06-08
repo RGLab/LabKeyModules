@@ -33,12 +33,13 @@ CairoPNG( filename=imgfile, width = imageWidth, height = imageHeight );
 
 
 # Input parameters
-response            <- as.character( labkey.url.params$response );
-input_cohorts       <- RJSONIO::fromJSON( labkey.url.params$cohorts );
-input_genes         <- RJSONIO::fromJSON( labkey.url.params$genes );
+response            <- as.character(labkey.url.params$response);
+ems                 <- RJSONIO::fromJSON(labkey.url.params$ema)
+input_cohorts       <- RJSONIO::fromJSON(labkey.url.params$cohorts);
+input_genes         <- RJSONIO::fromJSON(labkey.url.params$genes);
 timePoint           <- as.numeric(labkey.url.params$timePoint);
 timePointUnit       <- as.character(labkey.url.params$timePointUnit);
-normalize           <- as.logical( labkey.url.params$normalize );
+normalize           <- as.logical(labkey.url.params$normalize);
 # Data grid
 filters             <- RJSONIO::fromJSON( labkey.url.params$filters );
 # Additional options
@@ -48,7 +49,8 @@ shape               <- tolower(labkey.url.params$shape)
 color               <- tolower(labkey.url.params$color)
 size                <- tolower(labkey.url.params$size)
 alpha               <- tolower(labkey.url.params$alpha)
-#stopcheck(labkey.url.params)
+#stop(dput(labkey.url.params))
+stopcheck(labkey.url.params)
 
 add_r2 <- function(data){
   dt <- data.table(data)

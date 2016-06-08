@@ -1,9 +1,16 @@
 <!-- CreateMatrix.html -->
-
+<div id="help">
+  <p>
+    <li><b>Name:</b> should be unique and reflect the data that is being processed (Cohort, type, subtype, year of study, year of vaccination). This is what shows up in module dropdowns and ImmuneSpaceR connections so keep it short.</li>
+    <li><b>Comments:</b> If the Name isn't descriptive enough, add details here. Or if a specific normalization was used, indicate it here.</li>
+    <li><b>Feature Annotation Set:</b> If you cannot find the one you are looking for, add it <a href="/query/Studies/executeQuery.view?schemaName=Microarray&query.queryName=FeatureAnnotationSet">here</a>.
+    <li><b>Pipeline:</b> No choice.</li>
+  </p>
+</div>
 <div id='analysisForm'></div>
 
 <script>
-
+var SDY = LABKEY.container.title;
 function renderPanel()
 {
     var schemaName = LABKEY.ActionURL.getParameter("schemaName");
@@ -158,7 +165,8 @@ function renderPanel()
             xtype: 'textfield',
             name: 'name',
             fieldLabel: 'Name',
-            allowBlank: false
+            allowBlank: false,
+            value: SDY
         },{
             xtype: 'textfield',
             name: 'comments',

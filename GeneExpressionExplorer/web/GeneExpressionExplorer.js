@@ -33,7 +33,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             cohortsCache        = undefined,
             flagTimePontSelect  = undefined
             fieldWidth          = 400,
-            labelWidth          = 130
+            labelWidth          = 150
             ;
 
         var handleTimepointSelection = function(){
@@ -73,7 +73,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var loadResponse = function(){
             var
                 response    = cbResponse.getValue(),
-                cohorts     = cbCohorts.getValue()
+                cohorts     = cbCohorts.getCheckedValue( 'cohort' )
             ;
 
             cntPlot.update( '<div style=\'height: 10px\'></div>' );
@@ -132,9 +132,9 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             cfGenes.doLayout();
 
             if (    cbResponse.isValid( true ) &&
-                    cbTimePoint.isValid( true ) &&
-                    cbCohorts.isValid( true ) &&
-                    cbGenes.isValid( true ) &&
+                    cfTimePoint.isValid( true ) &&
+                    cfCohorts.isValid( true ) &&
+                    cfGenes.isValid( true ) &&
                     spnrTextSize.isValid( true ) &&
                     qwpResponse &&
                     qwpResponse.getDataRegion().totalRows
@@ -189,6 +189,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             }
             strGene.setSql( tempSQL );
             cbGenes.lastQuery = null;
+            cbGenes.reset();
 
             checkBtnsStatus();
         };
@@ -218,6 +219,9 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 load: function(){
                     cbCohorts.setDisabled( this.getCount() === 0 );
                     checkBtnsStatus();
+                    cbTimePoint.triggerBlur();
+                    cbCohorts.focus( 100 );
+                    cbCohorts.expand();
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
@@ -321,22 +325,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             width: fieldWidth
         });
 
-        var customTemplate = new Ext.XTemplate(
-            '<tpl for=".">',
-                '<div class =\'x-combo-list-item\'>',
-                    '{displayTimepoint:this.process} ({cohortCount:this.pluralCohort})',
-                '</div>',
-            '</tpl>',
-            {
-                pluralCohort : function( count ) {
-                    return Ext.util.Format.plural( count, 'cohort' );
-                },
-                process : function( value ) { 
-                    return value === '' ? '&nbsp;' : Ext.util.Format.htmlEncode( value );
-                }
-            }   
-        );
-
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
             disabled: true,
@@ -360,7 +348,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 }
             },
             store: strTimePoint,
-            tpl: customTemplate,
             valueField: 'displayTimepoint',
             width: fieldWidth
         });
@@ -371,14 +358,16 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 if ( this.getCount() > 0 ){
                     cbTimePoint.setDisabled( false );
 
-                    var num, unit,
+                    var value, unit, cohort
                         field = new Ext.data.Field({ name: 'displayTimepoint' });
                     this.recordType.prototype.fields.replace( field );
                     this.each( function( r ){
                         if ( r.data[ field.name ] == undefined ){
-                            num                     = r.data[ 'timepoint' ];
+                            value                   = r.data[ 'timepoint' ];
                             unit                    = r.data[ 'timepointUnit' ];
-                            r.data[ field.name ]    = Ext.util.Format.plural( num, unit.slice( 0, unit.length - 1 ) );
+                            cohort                  = r.data[ 'cohortCount' ];
+                            r.data[ field.name ]    = Ext.util.Format.plural( value, unit.slice( 0, unit.length - 1 ) ) +
+                                                        ' (' + Ext.util.Format.plural( cohort, 'cohort' ) + ')';
                         }
                     });
 
@@ -389,18 +378,22 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var cbCohorts = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
-            displayField: 'cohort',
+            displayField: 'display',
             fieldLabel: 'Cohorts',
             lazyInit: false,
             disabled: true,
             listeners: {
+                blur:       function(){
+                    cbGenes.focus( 100 );
+                    cbGenes.onTriggerClick();
+                },
                 change:     manageCbGenesState,
                 cleared:    manageCbGenesState,
                 select:     manageCbGenesState
             },
             separator: ';', // IMPORTANT FOR LABKEY FILTERING
             store: strCohort,
-            valueField: 'cohort',
+            valueField: 'display',
             width: fieldWidth
         });
 
@@ -491,18 +484,26 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var btnPlot = new Ext.Button({
             disabled: true,
             handler: function(){
-                var width = Math.min( cntPlot.getWidth(), 800 );
+                var
+                    width = Math.min( cntPlot.getWidth(), 800 ),
+                    filters = []
+                ;
+
+                Ext.each( qwpResponse.getDataRegion().getUserFilterArray(), function( f ){
+                    filters.push({ fieldKey: f.getColumnName(), op: f.getFilterType().getURLSuffix(), value: f.getValue() });
+                });
 
                 cnfPlot.inputParams = {
                     //Input parameters
                     response:           cbResponse.getValue(),
-                    cohorts:            Ext.encode( cbCohorts.getCheckedArray() ),
+                    cohorts:            Ext.encode( cbCohorts.getCheckedArray( 'cohort' ) ),
+                    ema:                Ext.encode( cbCohorts.getCheckedArray( 'expression_matrix_accession' ) ),
                     timePoint:          cbTimePoint.getSelectedField( 'timepoint' ),
                     timePointUnit:      cbTimePoint.getSelectedField( 'timepointUnit' ),
                     normalize:          chNormalize.getValue(),
                     genes:              Ext.encode( cbGenes.getValuesAsArray() ),
                     //Data grid
-                    filters:            Ext.encode( qwpResponse.getDataRegion().getUserFilter() ),
+                    filters:            Ext.encode( filters ),
                     textSize:           spnrTextSize.getValue(),
                     //Additional parameters
                     facet:              rgFacet.getValue().getGroupValue(),
@@ -728,7 +729,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             style: 'padding-right: 2px; padding-left: 2px;'
         });
 
-        var cfGenes = LABKEY.ext.ISCore.factoryTooltipWrapper( cbGenes, 'Genes', genes_help );
+        var
+            cfTimePoint = LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoint, 'Time point', timepoint_help ),
+            cfCohorts = LABKEY.ext.ISCore.factoryTooltipWrapper( cbCohorts, 'Cohorts', cohort_help ),
+            cfGenes = LABKEY.ext.ISCore.factoryTooltipWrapper( cbGenes, 'Genes', genes_help )
+        ;
 
         var fsAdditionalOptions = new Ext.form.FieldSet({
             autoScroll: true,
@@ -820,8 +825,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbResponse, 'Response', response_help ),
                         new Ext.Spacer({ height: 10, html: '&nbsp' }),
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoint, 'Time point', timepoint_help ),
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbCohorts, 'Cohorts', cohort_help ),
+                        cfTimePoint,
+                        cfCohorts,
                         LABKEY.ext.ISCore.factoryTooltipWrapper( chNormalize, 'Normalize to baseline', normalize_help ),
                         cfGenes
                     ],

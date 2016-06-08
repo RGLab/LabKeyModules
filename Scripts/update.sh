@@ -11,7 +11,7 @@ if [ `whoami` = 'root' ] ; then
         else
             if [ ${LOC} != /labkey/src/labkey/${NAME} ] ; then
                 if [ -f `echo /labkey/src/labkey/${NAME}` ] ; then
-                    echo 'File with name /labkey/src/labkey/'${NAME} 'already exists, please, remove it first'
+                    echo 'FYI: file with name /labkey/src/labkey/'${NAME} 'already exists'
                     # mv -i ${LOC} /labkey/src/labkey
                 else
                     mv ${LOC} /labkey/src/labkey

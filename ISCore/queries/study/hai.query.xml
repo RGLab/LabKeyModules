@@ -16,20 +16,15 @@
                     <item text='Export' insertPosition='end'>
                         <originalText>Export</originalText>
                     </item>
-                    <item text='Page size' insertPosition='end'>
-                        <originalText>Page size</originalText>
-                    </item>
-                    <item text='Insert new' insertPosition='end'>
+                    <item text='Paging' insertPosition='end'/> </item>
+                    <item text='Insert' permission='ADMIN' insertPosition='end' suppressWarning='true'>
                         <originalText>Insert new</originalText>
                     </item>
-                    <item text='Manage dataset' insertPosition='end'>
-                        <originalText>Manage dataset</originalText>
+                    <item text='Manage' permission='ADMIN' insertPosition='end' suppressWarning='true'>
+                        <originalText>Manage</originalText>
                     </item>
-                    <item text='Import data' insertPosition='end'>
-                        <originalText>Import data</originalText>
-                    </item>
-                    <item text='Delete' insertPosition='end'>
-                        <originalText>Delete</originalText>
+                    <item text='Grid views' permission='ADMIN' insertPosition='end'>
+                        <originalText>Grid views</originalText>
                     </item>
                     <item text='Data Explorer' insertPosition='end'>
                         <onClick>goToDataExplorer(dataRegion); return false;</onClick>

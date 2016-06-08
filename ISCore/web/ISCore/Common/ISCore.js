@@ -24,7 +24,7 @@ LABKEY.ext.ISCore.isStudyFolder =
 
 // Create a help icon with tooltip and text
 LABKEY.ext.ISCore.helpTooltip = function( title, text ){
-    return "<a class=\"labkey-help-pop-up\" href=\"#\" onclick=\"return showHelpDiv(this, '" +
+    return "<a href=\"#\" onclick=\"return showHelpDiv(this, '" +
         title + "', '" + text + "');\" onmouseout=\"return hideHelpDivDelay();\" onmouseover=\"return showHelpDivDelay(this, '" +
         title + "', '" + text + "');\"><div class=\"labkey-help-pop-up\">?</div></a>";
 };
@@ -39,7 +39,9 @@ LABKEY.ext.ISCore.factoryTooltipWrapper = function ( control, title, text, hidde
                 border: false,
                 html: LABKEY.ext.ISCore.helpTooltip( title, Ext.util.Format.htmlEncode( text ) )
             }
-        ]
+        ],
+        msgFx: 'normal',
+        msgTarget: 'under'
     });
 };
 

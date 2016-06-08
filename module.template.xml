@@ -9,6 +9,7 @@
         <property name='buildOS' value='@@BuildOS@@'/>
         <property name='buildPath' value='@@BuildPath@@'/>
         <property name='buildTime' value='@@BuildTime@@'/>
+        <property name='buildType' value='@@BuildType@@'/>
         <property name='buildUser' value='@@BuildUser@@'/>
         <property name='description' value='@@Description@@'/>
         <property name='enlistmentId' value='@@EnlistmentId@@'/>
@@ -23,8 +24,8 @@
         <property name='requiredServerVersion' value='@@RequiredServerVersion@@'/>
         <property name='sourcePath' value='@@SourcePath@@'/>
         <property name='svnRevision' value='@@Revision@@'/>
-        <property name='url' value='@@InfoURL@@'/>
         <property name='svnUrl' value='@@URL@@'/>
+        <property name='url' value='@@InfoURL@@'/>
         <property name='version' value='@@Version@@'/>
     </bean>
 </beans>

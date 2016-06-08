@@ -1,11 +1,12 @@
+-- Make a dataset tables with all files
 PARAMETERS($STUDY VARCHAR DEFAULT NULL)
 SELECT DISTINCT
-ge_links.name AS file_info_name,
-ge_links.file_link AS file_link,
-ge_links.geo_link AS geo_link,
-ge_links.expsample_accession,
+file_info.name AS file_info_name,
+file_info.purpose,
+file_info.filesize_bytes AS filesize,
+biosample_2_expsample.expsample_accession,
 biosample.biosample_accession,
-biosample.subject_accession || '.' || SUBSTRING(biosample.study_accession,4) as participantid,
+biosample.subject_accession || '.' || SUBSTRING(biosample.study_accession,4) AS participantid,
 COALESCE(biosample.study_time_collected,9999.0000) as sequencenum,
 biosample.biosampling_accession,
 biosample.description,
@@ -19,60 +20,18 @@ biosample.study_time_t0_event_specify,
 biosample.study_accession,
 arm_or_cohort.arm_accession,
 arm_or_cohort.name AS arm_name
-FROM (
-  SELECT
-  (CASE WHEN (gef_name IS NULL OR gef_name = '') THEN gel_name ELSE gef_name END) AS name,
-  (CASE WHEN (gef_es IS NULL OR gef_es = '') THEN gel_es ELSE gef_es END) AS expsample_accession,
-  file_link,
-  geo_link
-  FROM (
-    -- Both in GEF and GEO
-    SELECT
-    AAgefiles.expsample_accession AS gef_es,
-    AAgefiles.name AS gef_name,
-    AAgefiles.file_link,
-    AAgelinks.expsample_accession AS gel_es,
-    AAgelinks.name AS gel_name,
-    AAgelinks.geo_link,
-    FROM AAgefiles INNER JOIN AAgelinks ON AAgefiles.name = AAgelinks.name
-                                       AND AAgefiles.expsample_accession = AAgelinks.expsample_accession
-    
-    UNION ALL
-    
-    -- Only on GEF
-    SELECT
-    AAgefiles.expsample_accession AS gef_es,
-    AAgefiles.name AS gef_name,
-    AAgefiles.file_link,
-    CAST( NULL AS VARCHAR(50)),
-    CAST( NULL AS VARCHAR(50)),
-    CAST( NULL AS VARCHAR(50))
-    FROM
-    AAgefiles
-    WHERE NOT EXISTS ( SELECT * FROM AAgelinks WHERE AAgefiles.name = AAgelinks.name
-                                                 AND AAgefiles.expsample_accession = AAgelinks.expsample_accession)
-    
-    UNION ALL
-    
-    -- Only on GEO
-    SELECT
-    CAST( NULL AS VARCHAR(50)),
-    CAST( NULL AS VARCHAR(50)),
-    CAST( NULL AS VARCHAR(50)),
-    AAgelinks.expsample_accession AS gel_es,
-    AAgelinks.name AS gel_name,
-    AAgelinks.geo_link
-    FROM
-    AAgelinks
-    WHERE NOT EXISTS ( SELECT * FROM AAgefiles WHERE AAgefiles.name = AAgelinks.name
-                                                 AND AAgefiles.expsample_accession = AAgelinks.expsample_accession)
-  ) AS ge_links
-) AS ge_links,
-biosample, biosample_2_expsample, arm_2_subject, arm_or_cohort
+FROM
+biosample,
+file_info,
+biosample_2_expsample,
+expsample_2_file_info,
+arm_2_subject,
+arm_or_cohort
 WHERE
+expsample_2_file_info.file_info_id = file_info.file_info_id AND
+biosample_2_expsample.expsample_accession = expsample_2_file_info.expsample_accession AND
 biosample.biosample_accession = biosample_2_expsample.biosample_accession AND
-biosample_2_expsample.expsample_accession = ge_links.expsample_accession AND
-biosample.subject_accession = arm_2_subject.subject_accession AND
 arm_2_subject.arm_accession = arm_or_cohort.arm_accession AND
-biosample.study_accession = arm_or_cohort.study_accession
+biosample.study_accession = arm_or_cohort.study_accession AND
+file_info.purpose IN ('Other', 'Clinical data', 'Archived', '')
 AND ($STUDY IS NULL OR $STUDY = biosample.study_accession)

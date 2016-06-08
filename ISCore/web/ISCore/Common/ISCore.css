@@ -403,6 +403,35 @@ pre, .ext-mb-text {
 .ISCore .x-toolbar .x-btn-bc {
     background-position: 0 -15px;
 }
+
+/**********************************/
+/* Modules help pop-up */
+.ISCore div.labkey-help-pop-up {
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    align-items: center;
+    background-color: gray !important;
+    border-radius: 50%;
+    color: white;
+    cursor: help;
+    display: inline-flex;
+    font-size: small;
+    font-weight: bold;
+    justify-content: center;
+    line-height: 1.1em;
+    width: 1.1em;
+    height: 1.1em;
+    min-width: 1em;
+    text-decoration: none;
+    vertical-align: middle;
+}
+
+.ISCore div.labkey-help-pop-up:before {
+    content:'';
+    float: left;
+    padding-bottom: 100%;
+    width: auto;
+}
 /**********************************/
 
 .padding5px {
@@ -434,39 +463,11 @@ pre, .ext-mb-text {
 }
 
 
-.ISCore a.labkey-help-pop-up {
-    width: 10px !important;
+.ISCore .button-icon {
+    opacity: 1;
 }
 
-.ISCore span.labkey-help-pop-up {
-    background-color: gray;
-    border-radius: 6px;
-    color: white;
-    cursor: help;
-    font-size: small;
-    font-weight: bold;
-    text-decoration: none;
-    margin-left: 5pt;
-    padding-left: 2pt;
-    padding-right: 2pt;
-    vertical-align: top;
-    -webkit-border-radius: 6px;
-    -moz-border-radius: 6px;
-    height: 10pt !important;
-}
-
-.ISCore div.labkey-help-pop-up {
-    background-color: gray;
-    border-radius: 8px;
-    color: white;
-    cursor: help;
-    font-size: small;
-    font-weight: bold;
-    text-decoration: none;
-    padding-left: 3px;
-    padding-right: 3px;
-    vertical-align: top;
-    -webkit-border-radius: 6px;
-    -moz-border-radius: 6px;
+.ISCore .button-icon:hover {
+    background-color: #000000;
 }
 

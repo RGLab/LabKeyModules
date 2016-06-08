@@ -1,24 +1,38 @@
 #!/bin/bash
-   for f in ./* ; do
-        if [ -d $f ] ; then
-            cd $f
-            t=`basename $f`
-            if [ "$t" != "Scripts" ] ; then
-                if [ "$t" = "extraWebapp" ] ; then
-                    echo '===================================================================================='
-                    echo $t 'is the splash page - copied where appropriate'
-                    cp -r ../extraWebapp/ `dirname $MODULES_DIR`
+t=$1
+if [ $# -eq 0 ] ; then
+    if [ `hostname` = 'immunetestweb' ] ; then
+        t='dev'
+    else
+        if [ `hostname` = 'immuneprodweb' ] ; then
+            t='prod'
+        else
+            echo 'Uknown host, exiting...'
+            exit -1
+        fi
+    fi
+fi
+
+for f in ./* ; do
+    if [ -d $f ] ; then
+        cd $f
+        b=`basename $f`
+        if [ "$b" != "Scripts" ] ; then
+            if [ "$b" = "extraWebapp" ] ; then
+                echo '===================================================================================='
+                echo $b 'is the splash page - copied where appropriate'
+                cp -r ../extraWebapp/ `dirname $MODULES_DIR`
+            else
+                echo '===================================================================================='
+                if [ -f build.xml ] ; then
+                    echo $b 'has a build file - attempting to deploy it with' $t 'target'
+                    ant $t > /dev/null
                 else
-                    echo '===================================================================================='
-                    if [ -f build.xml ] ; then
-                        echo $t 'has a build file - attempting to deploy it'
-                        ant > /dev/null
-                    else
-                        echo $t 'does not have a build.xml file - automatic deployment is not possible'
-                    fi
+                    echo $b 'does not have a build.xml file - automatic deployment is not possible'
                 fi
             fi
-            cd ..
         fi
-    done
+        cd ..
+    fi
+done
 

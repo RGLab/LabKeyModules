@@ -152,10 +152,12 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         });
 
         var cntShare = new Ext.Container({
-            autoEl: 'a',
-            cls: 'labkey-text-link bold-text',
-            hidden: true,
-            html: 'Share',
+            hidden: false, //true,
+            html: 
+'<a class="labkey-text-link bold-text" style="margin-bottom: 20px;">' +
+'<span class="button-icon""><img src="/_images/icon_permalink.png"></span>' +
+'Share' + '</a>'
+,
             listeners: {
                 afterrender: {
                     fn: function(){
@@ -331,7 +333,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     style: 'padding-right: 2px; padding-left: 2px;'
                 }
             ],
-            labelWidth: 50,
+            labelWidth: 60,
             tabTip: 'Input',
             title: 'Input'
         });

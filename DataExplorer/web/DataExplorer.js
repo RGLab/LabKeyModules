@@ -163,7 +163,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                                 ( numRows == '1' ? ' is ' : ' are ' ) + 'selected' 
                             );
 
-                            if ( numRows == 0 ){
+                            if ( numRows == 0 && dataregion.getUserFilterArray().length == 0 ){
                                 Ext.Msg.show({
                                     closable: false,
                                     msg: 'The data was probably filtered via the Data Finder after this page was loaded and so the selected dataset is no longer valid, click OK to reload the currently available datasets.',
@@ -198,6 +198,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     viewName: isGE ? 'DGEAR' : undefined
                 });
             }
+            cbDataset.setDisabled( false );
 
             $('.labkey-data-region-wrap').doubleScroll();
         };
@@ -243,9 +244,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 ){
                     tlbrButtons.setDisabled( true );
 
-                    cmpStatus.update( '<span class=loading-indicator></span>' );
+                    cmpStatus.update( '<div class="loading-indicator" style="height: 16px;"></div>' );
 
                     chNormalize.setDisabled( true );
+                    cbDataset.setDisabled( true );
 
                     LABKEY.DataRegions = {};
                     qwpDataset = new LABKEY.QueryWebPart({
@@ -300,7 +302,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 qwpDataset &&
                 (
                     qwpDataset.getDataRegion().totalRows !== 0 ||
-                    qwpDataset.getDataRegion().table.dom.rows.length > 5
+                    (
+                        qwpDataset.getDataRegion().table &&
+                        qwpDataset.getDataRegion().table.dom.rows.length > 5
+                    )
                 )
             ){
                 btnPlot.setDisabled( false );
@@ -349,13 +354,13 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         //            Stores             //
         ///////////////////////////////////
 
-        var onLoad = function(){
+        var onLoadStrDataset = function(){
             cbDataset.resizeToFitContent();
 
             if ( strDataset.getCount() == 0 ){
                 componentsSetDisabled( true );
                 pnlTabs.getEl().mask(
-                    'No data are available for visualization in this study ' +
+                    'No data are available for visualization ' +
                     '(e.g. derived or processed immunological data).</br>' +
                     'If you think this is an error, please, post a message on ' + LABKEY.ext.ISCore.supportLink,
                     'infoMask'
@@ -389,16 +394,17 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             autoLoad: true,
             listeners: {
                 load: function( s ){
-                    LABKEY.Query.getQueryDetails({
-                        failure: function(){
-                            onLoad();
-                        },
-                        queryName: 'DGEA_filteredGEAR',
+                    LABKEY.Query.executeSql({
+                        failure: onLoadStrDataset,
+                        sql: 'SELECT COUNT(*) AS Number FROM DGEA_filteredGEAR',
                         schemaName: 'gene_expression',
-                        success: function(){
-                            var dsRecord = Ext.data.Record.create(['Label', 'Name']);
-                            s.addSorted( new dsRecord({ Label: 'Gene expression' , Name: 'DGEA_filteredGEAR' }) );
-                            onLoad();
+                        containerFilter: 'CurrentAndSubfolders',
+                        success: function( d ){
+                            if ( d.rows[0].Number != 0 ){ 
+                                var dsRecord = Ext.data.Record.create(['Label', 'Name']);
+                                s.addSorted( new dsRecord({ Label: 'Gene expression' , Name: 'DGEA_filteredGEAR' }) );
+                            }
+                            onLoadStrDataset();
                         }
                     });
                 },
@@ -703,6 +709,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 checkBtnsStatus();
 
                 fsAdditionalOptions.collapse();
+
+                pnlTabs.setActiveTab( 0 );
             },
             text: 'Reset'
         });
