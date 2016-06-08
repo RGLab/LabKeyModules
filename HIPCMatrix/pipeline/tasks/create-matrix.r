@@ -102,8 +102,11 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
     exprs <- preprocessCore::normalize.quantiles(exprs(es))
     colnames(exprs) <- cnames
     rownames(exprs) <- rnames
-    if(max(exprs) > 100)
+    if(max(exprs) > 100){
       norm_exprs <- log2(pmax(exprs, 1))
+    } else{
+      norm_exprs <- pmax(exprs, 1)
+    }
     norm_exprs <- data.table(norm_exprs)
     norm_exprs <- norm_exprs[, feature_id := featureNames(es)]
     setcolorder(norm_exprs, c("feature_id", cnames))
@@ -161,8 +164,11 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
     colnames(exprs) <- cnames 
     rownames(exprs) <- rnames 
     
-    if(max(exprs) > 100)
+    if(max(exprs) > 100){
       norm_exprs <- log2(pmax(exprs, 1))
+    } else{
+      norm_exprs <- pmax(exprs, 1)
+    }
     norm_exprs <- norm_exprs[, c(colnames(norm_exprs) %in% gef[[EorB]])]
   }
   return(norm_exprs)
@@ -207,8 +213,11 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
   colnames(exprs) <- cnames
   rownames(exprs) <- rnames
   
-  if(max(exprs) > 100)
+  if(max(exprs) > 100){
     norm_exprs <- log2(pmax(exprs, 1))
+  } else{
+    norm_exprs <- pmax(exprs, 1)
+  }
   norm_exprs <- norm_exprs[, c(colnames(norm_exprs) %in% gef$expsample_accession)]
   return(norm_exprs)
 }
