@@ -375,7 +375,11 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 autoHeight: true,
                 hideMode: 'offsets'
             },
-            items: [ cntEmptyPnlView, cntShare, cntReport ],
+            items: [
+                cntEmptyPnlView,
+           //     cntShare,
+                cntReport
+            ],
             tabTip: 'View',
             title: 'View'
         });

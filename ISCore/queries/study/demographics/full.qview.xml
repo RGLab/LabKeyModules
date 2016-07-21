@@ -1,22 +1,22 @@
-<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+<cv:customView xmlns:cv='http://labkey.org/data/xml/queryCustomView'>
     <cv:columns>
-        <cv:column name="ParticipantId">
+        <cv:column name='ParticipantId'>
           <cv:properties>
-            <cv:property name="columnTitle" value="Participant ID"/>
+            <cv:property name='columnTitle' value='Participant ID'/>
           </cv:properties>
         </cv:column>
-        <cv:column name="phenotype"/> 
-        <cv:column name="gender"/>
-        <cv:column name="age_reported"/>
-        <cv:column name="age_unit"/>
-        <cv:column name="age_event"/>
-        <cv:column name="age_event_specify"/>
-        <cv:column name="ethnicity"/>
-        <cv:column name="race"/>
-        <cv:column name="race_specify"/>
-        <cv:column name="species"/>
-        <cv:column name="strain"/>
-        <cv:column name="strain_characteristics"/>
-        <cv:column name="description"/>
+        <cv:column name='phenotype'/> 
+        <cv:column name='gender'/>
+        <cv:column name='age_reported'/>
+        <cv:column name='age_unit'/>
+        <cv:column name='age_event'/>
+        <cv:column name='age_event_specify'/>
+        <cv:column name='ethnicity'/>
+        <cv:column name='race'/>
+        <cv:column name='race_specify'/>
+        <cv:column name='species'/>
+        <cv:column name='strain'/>
+        <cv:column name='strain_characteristics'/>
+        <cv:column name='description'/>
     </cv:columns>
 </cv:customView>

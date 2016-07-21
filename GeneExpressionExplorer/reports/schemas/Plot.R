@@ -49,14 +49,21 @@ shape               <- tolower(labkey.url.params$shape)
 color               <- tolower(labkey.url.params$color)
 size                <- tolower(labkey.url.params$size)
 alpha               <- tolower(labkey.url.params$alpha)
-#stop(dput(labkey.url.params))
-stopcheck(labkey.url.params)
+#stopcheck(labkey.url.params)
 
 add_r2 <- function(data){
   dt <- data.table(data)
   dt <- dt[, r2 :=  paste("R^2 ==", round(summary(lm(response ~ value))[['r.squared']], 3)), by = "cohort,gene_symbol"]
   dt <- dt[, r2x := min(value), by = "cohort,gene_symbol"]
   dt <- dt[, r2y := max(response), by = "cohort,gene_symbol"]
+  return(data.frame(dt))
+}
+check_cohorts <- function(data){
+  # Add study_accession information to the cohorts that are shared accross studies
+  dt <- data.table(data)
+  dt <- dt[, study_accession := paste0("SDY", gsub("^.*\\.", "", participant_id))]
+  uc <- unique(dt[, study_accession, by ="cohort"])[, .N, by = "cohort"][N >1, cohort]
+  dt[cohort == uc, cohort := paste0(cohort, " (", study_accession, ")")]
   return(data.frame(dt))
 }
 
@@ -78,13 +85,13 @@ DF_pids <- labkey.selectRows(
 # Reload everything when DataFinder filters are updated
 if(!exists("con") || !all(con$getDataset("demographics")$participant_id %in% DF_pids)){
   con <- CreateConnection()
-  if(exists("loaded_cohorts")) rm(loaded_cohorts)
+  if(exists("loaded_ems")) rm(loaded_ems)
   if(exists("loaded_genes")) rm(loaded_genes)
 }
 
 # Re-download EM and demographics when the selected cohorts change
-if(!exists("loaded_cohorts") || length(loaded_cohorts) != length(input_cohorts) || !all(loaded_cohorts %in% input_cohorts)){
- EM <- con$getGEMatrix(cohort = input_cohorts, summary = TRUE, reload = TRUE)
+if(!exists("loaded_ems") || length(loaded_ems) != length(input_cohorts) || !all(loaded_ems %in% ems)){
+ EM <- con$getGEMatrix(x = ems, summary = TRUE, reload = TRUE)
  if(any(exprs(EM)>100, na.rm = TRUE)){
    dt <- data.table(voom(EM)$E)
    dt <- dt[, gene_symbol := rownames(exprs(EM))]
@@ -128,6 +135,8 @@ if(normalize){
   xlab <- "log expression"
 }
 data <- data[study_time_collected == timePoint & tolower(study_time_collected_unit) == timePointUnit]
+data <- add_r2(data)
+data <- check_cohorts(data)
   
 # Plot
 if(color=="") color <- NULL
@@ -135,7 +144,6 @@ if(shape=="") shape <- NULL
 if(size=="") size <- NULL
 if(alpha=="") alpha <- NULL
 
-data <- add_r2(data)
 p <- ggplot(data=data, aes(x=value, y=response)) +
   geom_point(aes_string(size=size, color=color, alpha=alpha, shape=shape)) +
   geom_smooth(method="lm") + ylab(response) + xlab(xlab) +
@@ -149,7 +157,7 @@ if(facet == "grid"){
 print(p)
 
 # Variables used for caching
-loaded_cohorts <- input_cohorts
+loaded_ems <- ems
 loaded_genes   <- input_genes
 dev.off();
 

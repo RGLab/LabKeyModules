@@ -88,10 +88,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     LABKEY.DataRegions = {};
                     qwpResponse = new LABKEY.QueryWebPart({
                         buttonBar: {
-                            items:[
-                                LABKEY.QueryWebPart.standardButtons.exportRows,
-                                LABKEY.QueryWebPart.standardButtons.pageSize
-                            ],
+                            items:[ 'export', 'paging' ],
                             position: 'top',
                             showUpdateColumn: false
                         },

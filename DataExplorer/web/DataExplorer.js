@@ -253,10 +253,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     qwpDataset = new LABKEY.QueryWebPart({
                         //bodyClass: 'dataset-body',
                         buttonBar: {
-                            items:[
-                                LABKEY.QueryWebPart.standardButtons.exportRows,
-                                LABKEY.QueryWebPart.standardButtons.pageSize
-                            ],
+                            items:[ 'export', 'paging' ],
                             position: 'top',
                             showUpdateColumn: false
                         },

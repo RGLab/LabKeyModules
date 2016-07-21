@@ -23,3 +23,18 @@ apt-get -y install xorg-dev
 apt-get -y install xvfb
 apt-get -y autoremove
 
+# apt-get -y pandoc
+# apt-get -y pandoc-citeproc
+
+# use manual way below till
+# pandoc version 1.12.3 or higher makes it
+# must install R package 'rmarkdown' before hand as well
+PANDOC_VER='1.17.2'
+wget https://hackage.haskell.org/package/pandoc-${PANDOC_VER}/pandoc-${PANDOC_VER}.tar.gz
+tar xvzf pandoc-${PANDOC_VER}.tar.gz
+cd pandoc-${PANDOC_VER}
+wget -qO- https://get.haskellstack.org/ | sh
+stack setup
+stack install
+mv /root/.local/bin/pandoc /usr/bin
+

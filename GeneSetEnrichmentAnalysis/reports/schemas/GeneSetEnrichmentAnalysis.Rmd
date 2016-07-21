@@ -146,14 +146,14 @@ if(length(DEM) > 0){
 ```
 
 
-```{r kable, cache = TRUE, dependson="byDay", results='asis', fig.heigth = 4, fig.width = 8}
+```{r kable, cache = TRUE, dependson="byDay", results='asis'}
 table <- table[, Module := func_rnames(Module)]
 table <- table[, PValue := abs(PValue)]
 setnames(table, "PValue", "10log10(p)")
 format_table(table)
 ```
 
-```{r pheatmap, cache=TRUE, dependson="heatmap-matrix", fig.width=10}
+```{r pheatmap, cache=TRUE, dependson="heatmap-matrix", fig.width=10, fig.align = "center"}
 if(draw_heatmap){
   max <- max(abs(mat))
   if(nrow(mat) > 0){

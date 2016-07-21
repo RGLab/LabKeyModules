@@ -7,9 +7,12 @@ gef.arm_name AS cohort,
 gef.biosample_accession as biosample_accession @title='biosample_accession',
 mat.container.entityid as container,
 mat.Run,
+runs.Name AS expression_matrix_accession,
 mat.Run.featureset as featureset
 FROM
 assay.ExpressionMatrix.matrix.InputSamples AS mat,
-study.gene_expression_files AS gef
+study.gene_expression_files AS gef,
+assay.ExpressionMatrix.matrix.Runs AS runs
 WHERE
-mat.biosample = gef.biosample_accession
+mat.biosample = gef.biosample_accession AND
+mat.run = runs.rowId

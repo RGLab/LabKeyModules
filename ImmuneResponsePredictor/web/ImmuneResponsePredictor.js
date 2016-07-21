@@ -38,8 +38,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var checkBtnsStatus = function(){
             if (
                 cbVariable.isValid( true ) &&
-                cbTimePoint.isValid( true ) &&
-                cbCohortTraining.isValid( true ) && ! cbCohortTraining.disabled &&
+                cfTimePoint.isValid( true ) &&
+                cfCohortTraining.isValid( true ) && ! cbCohortTraining.disabled &&
                 ( nfDichotomize.isValid( true ) || ! chDichotomize.getValue() ) &&
                 nfFoldChange.isValid( true )
             ){
@@ -536,6 +536,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             style: 'padding-right: 2px; padding-left: 2px;'
         });
 
+        var
+            cfTimePoint         = LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoint, 'Time point', timepoint_help ),
+            cfCohortTraining    = LABKEY.ext.ISCore.factoryTooltipWrapper( cbCohortTraining, 'Training', training_help )
+        ;
+         
         var fsAdditionalOptions = new Ext.form.FieldSet({
             autoScroll: true,
             collapsed: true,
@@ -620,11 +625,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     autoScroll: true,
                     items: [
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbVariable, 'Variable', variable_help ),
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoint, 'Time point', timepoint_help ),
+                        cfTimePoint,
                         new Ext.Spacer({ height: 20 }),
                         new Ext.form.Label({ cls: 'x-form-item', text: 'Select cohorts' }),
                         new Ext.Spacer({ height: 7 }),
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbCohortTraining, 'Training', training_help ),
+                        cfCohortTraining,
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbCohortTesting, 'Testing', testing_help ),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( chDichotomize, 'Dichotomize', dicho_help ),
                         nfDichotomize,

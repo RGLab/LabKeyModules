@@ -1,23 +1,23 @@
-<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+<cv:customView xmlns:cv='http://labkey.org/data/xml/queryCustomView'>
     <cv:columns>
-        <cv:column name="ParticipantId">
+        <cv:column name='ParticipantId'>
           <cv:properties>
-            <cv:property name="columnTitle" value="Participant ID"/>
+            <cv:property name='columnTitle' value='Participant ID'/>
           </cv:properties>
         </cv:column>
-        <cv:column name="biosample_accession/subject_accession/age_reported"/>
-        <cv:column name="biosample_accession/subject_accession/gender"/> 
-        <cv:column name="biosample_accession/subject_accession/race"/>
-        <cv:column name="study_time_collected"/>
-        <cv:column name="study_time_collected_unit"/>
-        <cv:column name="name"/>
-        <cv:column name="file_info_name"/>
-        <cv:column name="geo_accession"/>
-        <cv:column name="type"/>
-        <cv:column name="subtype"/>
-        <cv:column name="arm_name">
+        <cv:column name='biosample_accession/subject_accession/age_reported'/>
+        <cv:column name='biosample_accession/subject_accession/gender'/> 
+        <cv:column name='biosample_accession/subject_accession/race'/>
+        <cv:column name='study_time_collected'/>
+        <cv:column name='study_time_collected_unit'/>
+        <cv:column name='name'/>
+        <cv:column name='file_info_name'/>
+        <cv:column name='geo_accession'/>
+        <cv:column name='type'/>
+        <cv:column name='subtype'/>
+        <cv:column name='arm_name'>
           <cv:properties>
-            <cv:property name="columnTitle" value="Cohort"/>
+            <cv:property name='columnTitle' value='Cohort'/>
           </cv:properties>
         </cv:column>
     </cv:columns>

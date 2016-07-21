@@ -1,16 +1,16 @@
-<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView">
+<cv:customView xmlns:cv='http://labkey.org/data/xml/queryCustomView'>
     <cv:columns>
-        <cv:column name="ParticipantId">
+        <cv:column name='ParticipantId'>
           <cv:properties>
-            <cv:property name="columnTitle" value="Participant ID"/>
+            <cv:property name='columnTitle' value='Participant ID'/>
           </cv:properties>
         </cv:column>
-        <cv:column name="biosample_accession"/>
-        <cv:column name="expsample_accession"/>
-        <cv:column name="study_time_collected"/>
-        <cv:column name="study_time_collected_unit"/>
-        <cv:column name="sample_file"/>
-        <cv:column name="control_file"/>
-        <cv:column name="arm_accession"/>
+        <cv:column name='biosample_accession'/>
+        <cv:column name='expsample_accession'/>
+        <cv:column name='study_time_collected'/>
+        <cv:column name='study_time_collected_unit'/>
+        <cv:column name='sample_file'/>
+        <cv:column name='control_file'/>
+        <cv:column name='arm_accession'/>
     </cv:columns>
 </cv:customView>

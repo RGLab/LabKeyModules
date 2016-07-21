@@ -1,0 +1,66 @@
+```{r knitr, echo = FALSE}
+knitr::opts_chunk$set(message = FALSE, echo = FALSE, fig.align = "center", fig.width = 12)
+```
+```{r libs, message = FALSE}
+library(data.table)
+library(Rlabkey)
+library(ImmuneSpaceR)
+library(DT)
+library(ggplot2)
+```
+
+
+```{r funcs}
+getUsers <- function(active = FALSE, extra = FALSE){
+  users <- data.table(labkey.selectRows(
+    baseUrl=labkey.url.base,
+    folderPath="/",
+    schemaName="core",
+    queryName="SiteUsers",
+    viewName="",
+    colFilter=NULL,
+    containerFilter=NULL
+  ))
+  setnames(users, tolower(chartr(" ", "_", colnames(users))))
+  if(active){
+    users <- users[active == TRUE]
+  }
+  users <- users[, created := as.Date(created)]
+  users <- users[, last_login := as.Date(last_login)]
+  if(extra){
+    users <- users[, ext := gsub(".*@.*\\.", "", email)]
+    users <- users[, domain := gsub("\\..*$", "", gsub(".*@", "", email))]
+  }
+  return(users)
+}
+```
+```{r users}
+users <- getUsers()
+users <- users[created > "2016-01-01"]
+df <- users[, N := .N, by = created]
+df <- unique(df[, list(created, N)])
+ggplot(df, aes(x = created, y = N)) + geom_line() + ggtitle("New accounts over time") + 
+  xlab("Date") + ylab("New accounts") + scale_x_date(date_breaks = "1 month") + theme_IS(base_size = 18)
+```
+
+```{r studycount}
+folders <- labkey.selectRows(
+    baseUrl=labkey.url.base, folderPath="/", schemaName = "auditLog",
+    queryName="ContainerAuditEvent", colNameOpt = "rname", containerFilter = "AllFolders"
+)
+sdys <- data.table(folders)
+sdys <- sdys[container != "NA", list(created, comment)]
+sdys <- sdys[grep("Folder SDY[0-9].*created$", comment)]
+sdys <- sdys[, study := gsub("\\s.*$", "", gsub("^.*SDY", "SDY", sdys$comment))]
+sdys <- sdys[order(created)]
+sdys[, count := 1:nrow(sdys)]
+sdys <- sdys[created >= "2016-01-01"]
+sdys <- sdys[,list(created, count)]
+sdys <- rbind(list(created = as.Date("2016-01-01"), count = min(sdys$count)), sdys, list(created = Sys.Date(), count = max(sdys$count)))
+# Based on folder creation -> counts private studies
+ggplot(sdys, aes(x=created)) + geom_step(aes(y = count)) +
+  xlab("Date") + ylab("Studies") + ggtitle("Number of studies available since public release") +
+  scale_x_date(date_breaks = "1 month") + theme_IS(base_size = 18)
+```
+
+
