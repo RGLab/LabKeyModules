@@ -3,31 +3,7 @@
     <metadata>
         <tables xmlns='http://labkey.org/data/xml'>
             <table tableName='Data Updates' tableDbType='TABLE'>
-                <buttonBarOptions position='both' includeStandardButtons='false'> <!-- buttons are hidden by the webpart anyway -->
-                    <item text='Views' insertPosition='end'>
-                        <originalText>Views</originalText>
-                    </item>
-                    <item text='Insert new' insertPosition='end'>
-                        <originalText>Insert new</originalText>
-                    </item>
-                    <item text='Import data' insertPosition='end'>
-                        <originalText>Import data</originalText>
-                    </item>
-                    <item text='Export' insertPosition='end'>
-                        <originalText>Export</originalText>
-                    </item>
-                    <item text='Page size' insertPosition='end'>
-                        <originalText>Page size</originalText>
-                    </item>
-                    <item text='View design' insertPosition='end'>
-                        <originalText>View design</originalText>
-                    </item>
-                    <item text='Delete' insertPosition='end'>
-                        <originalText>Delete</originalText>
-                    </item>
-                    <item text='Delete all rows' insertPosition='end'>
-                        <originalText>Delete all rows</originalText>
-                    </item>
+                <buttonBarOptions position='both' includeStandardButtons='true'> <!-- buttons are hidden by the webpart anyway -->
                 </buttonBarOptions>
             </table>
         </tables>
