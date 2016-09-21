@@ -206,10 +206,18 @@ A selected sample is visualized in 3-D using *webGL* technology. Individual poin
     });
 </script>
 <form id="filesFCS" method="GET">
-    <select name="subject">
-        <option value="1">`r basename(include[1])`</option>
-        <option value="2">`r basename(include[2])`</option>
-    </select>
+<select name="subject">
+```{r results='asis'}
+cat(
+    paste0(
+        lapply( 1:length(include), function( e ){
+            return( paste0( '<option ', if (e == subject){ 'selected="selected"' }, ' value="', e, '">', basename( include[ e ] ), '</option>' ) )
+        }),
+        collapse=''
+    )
+)
+```
+</select>
     <input type="hidden" name="pageId" value="Visualization">
     <input type="hidden" name="regate" value="FALSE">
     <input type="submit" value="View">
