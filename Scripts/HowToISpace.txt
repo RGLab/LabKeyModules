@@ -5,13 +5,12 @@ Where is stuff?
 /share/files
 
 ## R
-blackrhino.fhcrc.org  
 
 ## LabKey modules
 Staging:  
-posey.fhcrc.org:/labkey/labkey/externalModules  
+test.immunespace.org:/labkey/labkey/externalModules
 Production:  
-gedney.fhcrc.org:/labkey/labkey/externalModules  
+immunespace.org:/labkey/labkey/externalModules
 
 
 # Tasks
@@ -48,26 +47,21 @@ In each study folder:
  > Select newly created subject group > next  
  > Select all datasets > Leave study_membership unchecked > finish  
 
-## Bounce posey
-On posey.fhcrc.org:
-    sudo /etc/init.d/tomcat stop
-    sudo /etc/init.d/tomcat start
-## Bounce gedney
-    sudo /etc/init.d/tomcat stop
-    sudo /etc/init.d/tomcat start
+## Turn the server on / off
+On WebServer as root:
+    /etc/init.d/tomcat stop
+    /etc/init.d/tomcat start
 
 ## Install R package
-On blackrhino.fhcrc.org:
-    sudo su - gottweb
+    sudo su - immunespace
     R CMD INSTALL package.tar.gz
 
 ## Restart persistent R session
 log out and log in again
 
 ## Copy data
-On blackrhino.fhcrc.org:  
-Get read/write access with gottweb user:  
-    sudo su - gottweb  
+Get read/write access with immunespace user:
+    sudo su - immunespace
 
 ## HIPCMatrix module
 Enable the module in the selected folder
@@ -89,5 +83,5 @@ Add Feature Annotation Set web part > Import Feature Annotation Set (Must have 2
  > lists.Studies > Insert new > "SDYaccession"
 
 ## Clear reports cache
-cd /share/github/LabKeyModules/scripts/rmcache.sh
+cd /share/github/LabKeyModules/Scripts/rmcache.sh
 
