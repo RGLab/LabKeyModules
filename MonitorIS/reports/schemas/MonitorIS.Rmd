@@ -40,10 +40,8 @@ users <- getUsers()
 users <- users[created > "2016-01-01"]
 df <- users[, N := .N, by = created]
 df <- unique(df[, list(created, N)])
-new_accounts <- ggplot(df, aes(x = created, y = N)) + geom_line() + ggtitle("New Accounts Over Time") + 
-  xlab("Date") + ylab("New Accounts") + theme_IS(base_size = 18)
-new_accounts + scale_x_date(labels = date_format("%m/%Y"))
-ggsave("New_Accounts.pdf", width = 5, height = 5)
+ggplot(df, aes(x = created, y = N)) + geom_line() + ggtitle("New accounts over time") + 
+  xlab("Date") + ylab("New accounts") + scale_x_date(labels = date_format("%m/%Y")) + theme_IS(base_size = 18)
 ```
 
 ```{r studycount}
@@ -60,11 +58,11 @@ sdys[, count := 1:nrow(sdys)]
 sdys <- sdys[created >= "2016-01-01"]
 sdys <- sdys[,list(created, count)]
 sdys <- rbind(list(created = as.Date("2016-01-01"), count = min(sdys$count)), sdys, list(created = Sys.Date(), count = max(sdys$count)))
+
 # Based on folder creation -> counts private studies
-studies <- ggplot(sdys, aes(x=created)) + geom_step(aes(y = count)) +
-  xlab("Date") + ylab("Studies") + ggtitle("Number of Studies Available") + theme_IS(base_size = 18)
-studies +  scale_x_date(labels = date_format("%m/%Y"))
-ggsave("Studies.pdf", width = 5, height = 5)
+ggplot(sdys, aes(x=created)) + geom_step(aes(y = count)) +
+  xlab("Date") + ylab("Studies") + ggtitle("Number of studies available") +
+  scale_x_date(labels = date_format("%m/%Y")) + theme_IS(base_size = 18)
 ```
 
 
