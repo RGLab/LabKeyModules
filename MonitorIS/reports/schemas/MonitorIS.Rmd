@@ -8,6 +8,8 @@ library(ImmuneSpaceR)
 library(DT)
 library(ggplot2)
 library(scales)
+
+labkey.url.base = "https://www.immunespace.org"
 ```
 
 
