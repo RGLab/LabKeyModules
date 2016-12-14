@@ -109,7 +109,7 @@ if(!exists("loaded_ems") || length(loaded_ems) != length(input_cohorts) || !all(
   # HAI at peak immunogenicity
   HAI <- HAI[, mr := mean(response), by="study_time_collected"]
   HAI <- HAI[, ma := max(mr), by = "arm_accession"]
-  peak <- unique(HAI[mr ==ma, list(study_time_collected, arm_accession)])
+  peak <- unique(HAI[mr == ma, list(study_time_collected, arm_accession)])
   HAI <- merge(HAI, peak, by=c("study_time_collected", "arm_accession"))
   HAI <- HAI[, list(response=log2(max(response))), by="participant_id"]
 

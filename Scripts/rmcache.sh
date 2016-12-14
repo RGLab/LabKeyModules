@@ -1,4 +1,4 @@
-# remove cache folde in all studies
+# remove cache folder in all studies
 for study in /share/files/Studies/SDY*
 do
   if [ -d "${study}/@files/cache" ]; then

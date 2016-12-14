@@ -37,12 +37,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             ;
 
         var handleTimepointSelection = function(){
-            if ( cbTimePoint.getSelectedField( 'timepoint' ) <= 0 ){
-                chNormalize.setDisabled( true );
-                chNormalize.setValue( false );
-            } else{
-                chNormalize.setDisabled( false );
-            }
+            chNormalize.setDisabledBasedOnFlag( cbTimePoint.getSelectedField( 'timepoint' ) <= 0 );
 
             cbCohorts.reset();
             cbGenes.reset();
@@ -474,6 +469,14 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         ///////////////////////////////////////
 
         var chNormalize = new Ext.form.Checkbox({
+            setDisabledBasedOnFlag: function( flag ){
+                if ( flag ){
+                    this.setDisabled( true );
+                    this.setValue( false );
+                } else{
+                    this.setDisabled( false );
+                }
+            },
             fieldLabel: 'Normalize to baseline',
             width: fieldWidth
         });
@@ -914,7 +917,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to quickly plot the expression level of one or more genes against a selected immunological response variable (currently limited to HAI) in one or more cohorts.</br>Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape, etc.',
+                            html: 'This module can be used to quickly plot the expression level of one or more genes against a selected immunological response variable (currently limited to HAI) in one or more cohorts.</br>Demographics variables such as gender and age can be added to the plot using aesthetic variables such as color, shape etc.',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
@@ -1017,7 +1020,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     cbResponse,
                     cbTimePoint,
                     cbCohorts,
-                    chNormalize,
                     cbGenes,
                     spnrTextSize,
                     rgFacet,
@@ -1030,6 +1032,12 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 ],
                 function( e ){ e.setDisabled( bool ); }
             )
+
+            if ( bool ){
+                chNormalize.setDisabled( bool );
+            } else{
+                chNormalize.setDisabledBasedOnFlag( cbTimePoint.getSelectedField( 'timepoint' ) <= 0 );
+            }
         };
 
 

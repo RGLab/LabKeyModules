@@ -1,3 +1,4 @@
+affy
 arm
 Biobase
 Cairo
@@ -6,6 +7,7 @@ clue
 contrast
 data.table
 digest
+DT
 extrafont
 FactoMineR
 flowClust
@@ -15,10 +17,10 @@ flowViz
 flowWorkspace
 formatR
 gdata
+GEOquery
 ggplot2
 glmnet
 gplots
-grid
 gridExtra
 gtools
 ImmuneSpaceData
@@ -34,6 +36,7 @@ ncdfFlow
 openCyto
 pheatmap
 plyr
+preprocessCore
 RColorBrewer
 RCurl
 rentrez
@@ -43,3 +46,4 @@ rgl
 RJSONIO
 Rlabkey
 Rlibstree
+scales

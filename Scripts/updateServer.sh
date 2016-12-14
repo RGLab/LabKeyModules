@@ -24,7 +24,7 @@ if [ `whoami` = 'root' ] ; then
         fi
 
         tar xzf ${NAME}
-        ./${NAME%.*.*}/manual-upgrade.sh -l /labkey/labkey -d ./${NAME%.*.*} -c /labkey/apps/tomcat -u immunespace --service
+        ./${NAME%.*.*}/manual-upgrade.sh -l /labkey/labkey -d ./${NAME%.*.*} -c /labkey/apps/tomcat -u immunespace --service --noPrompt
     else
         echo 'The web address or path of the server build tar file must be specified as the argument'
     fi

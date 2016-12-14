@@ -8,10 +8,7 @@ library(ImmuneSpaceR)
 library(DT)
 library(ggplot2)
 library(scales)
-
-labkey.url.base = "https://www.immunespace.org"
 ```
-
 
 ```{r funcs}
 getUsers <- function(active = FALSE, extra = FALSE){
@@ -56,7 +53,7 @@ sdys <- sdys[container != "NA", list(created, comment)]
 sdys <- sdys[grep("Folder SDY[0-9].*created$", comment)]
 sdys <- sdys[, study := gsub("\\s.*$", "", gsub("^.*SDY", "SDY", sdys$comment))]
 sdys <- sdys[order(created)]
-sdys[, count := 1:nrow(sdys)]
+sdys <- sdys[, count := 1:nrow(sdys)]
 sdys <- sdys[created >= "2016-01-01"]
 sdys <- sdys[,list(created, count)]
 sdys <- rbind(list(created = as.Date("2016-01-01"), count = min(sdys$count)), sdys, list(created = Sys.Date(), count = max(sdys$count)))
