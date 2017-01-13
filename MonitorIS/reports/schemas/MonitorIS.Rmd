@@ -26,7 +26,7 @@ getUsers <- function(active = FALSE, extra = FALSE){
     users <- users[active == TRUE]
   }
   users <- users[, created := as.Date(created)]
-  users <- users[, last_login := as.Date(last_login)]
+  users <- users[, last_login := as.Date(unlist(last_login))]
   if(extra){
     users <- users[, ext := gsub(".*@.*\\.", "", email)]
     users <- users[, domain := gsub("\\..*$", "", gsub(".*@", "", email))]
