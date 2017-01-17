@@ -65,4 +65,7 @@ ggplot(sdys, aes(x=created)) + geom_step(aes(y = count)) +
   scale_x_date(labels = date_format("%m/%Y")) + theme_IS(base_size = 18)
 ```
 
+```{r datatable}
+datatable(users)
+```
 
