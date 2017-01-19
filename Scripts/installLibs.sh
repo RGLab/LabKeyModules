@@ -24,15 +24,17 @@ apt-get -y install openmpi-common
 apt-get -y install protobuf-compiler
 apt-get -y install xorg-dev
 apt-get -y install xvfb
+
 apt-get -y autoremove
+
 
 # install PCRE at least 8.32
 add-apt-repository -y 'ppa:edd/misc'
 apt-get update
 apt-get install libpcre3-dev
 
-# apt-get -y pandoc
-# apt-get -y pandoc-citeproc
+# apt-get -y install pandoc
+# apt-get -y install pandoc-citeproc
 
 # use manual way below till
 # pandoc version 1.12.3 or higher makes it
@@ -42,7 +44,7 @@ apt-get install libpcre3-dev
 # tar xvzf pandoc-${PANDOC_VER}.tar.gz
 # cd pandoc-${PANDOC_VER}
 # wget -qO- https://get.haskellstack.org/ | sh
+# stack init
 # stack setup
 # stack install
 # mv /root/.local/bin/pandoc /usr/bin
-
