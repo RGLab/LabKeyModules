@@ -10,7 +10,6 @@ apt-get -y install graphviz-dev
 apt-get -y install g++
 apt-get -y install libbz2-dev
 apt-get -y install libcairo2-dev
-# sudo apt-get install libssl1.0.0/trusty libssl-dev/trusty openssl/trusty
 apt-get -y install libcurl4-openssl-dev
 apt-get -y install libgsl0-dev
 apt-get -y install libhdf5-serial-dev
@@ -18,9 +17,12 @@ apt-get -y install liblzma-dev
 apt-get -y install libnetcdf-dev
 apt-get -y install libprotobuf-dev
 apt-get -y install libreadline-dev
+apt-get -y install libssl1.0.0/trusty
+apt-get -y install libssl-dev/trusty
 apt-get -y install libxml2-dev
 apt-get -y install openmpi-bin
 apt-get -y install openmpi-common
+apt-get -y install openssl/trusty
 apt-get -y install protobuf-compiler
 apt-get -y install xorg-dev
 apt-get -y install xvfb
