@@ -39,12 +39,6 @@ apt-get install libpcre3-dev
 # use manual way below till
 # pandoc version 1.12.3 or higher makes it
 # must install R package 'rmarkdown' before hand as well
-# PANDOC_VER='1.17.2'
-# wget https://hackage.haskell.org/package/pandoc-${PANDOC_VER}/pandoc-${PANDOC_VER}.tar.gz
-# tar xvzf pandoc-${PANDOC_VER}.tar.gz
-# cd pandoc-${PANDOC_VER}
-# wget -qO- https://get.haskellstack.org/ | sh
-# stack init
-# stack setup
-# stack install
-# mv /root/.local/bin/pandoc /usr/bin
+PANDOC_VER='1.19.1'
+wget https://github.com/jgm/pandoc/releases/download/${PANDOC_VER}/pandoc-${PANDOC_VER}-1-amd64.deb
+dpkg -i pandoc-${PANDOC_VER}-1-amd64.deb
