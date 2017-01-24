@@ -69,3 +69,6 @@ ggplot(sdys, aes(x=created)) + geom_step(aes(y = count)) +
 datatable(users)
 ```
 
+<script>
+window.HTMLWidgets.staticRender();
+</script>
