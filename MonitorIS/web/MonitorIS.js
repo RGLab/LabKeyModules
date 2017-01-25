@@ -96,6 +96,8 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
                     cntReport.setVisible( true );
 
                     pnlTabs.setActiveTab( 1 );
+                    
+                    window.HTMLWidgets.staticRender();
                 }
             }
         };
