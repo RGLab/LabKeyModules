@@ -2,6 +2,15 @@
 <view xmlns='http://labkey.org/data/xml/view' title='MonitorIS'>
     <dependencies>
         <dependency path='ISCore/Common'/>
+        <dependency path='ISCore/R/htmlwidgets-0.8/htmlwidgets.js'/>
+        <dependency path='ISCore/R/jquery-1.12.4/jquery.min.js'/>
+        <dependency path='ISCore/R/datatables-binding-0.2/datatables.js'/>
+        <dependency path='ISCore/R/dt-core-1.10.12/css/jquery.dataTables.min.css'/>
+        <dependency path='ISCore/R/dt-core-1.10.12/css/jquery.dataTables.extra.css'/>
+        <dependency path='ISCore/R/dt-core-1.10.12/js/jquery.dataTables.min.js'/>
+        <dependency path='ISCore/R/plotlyjs-1.16.3/plotly-htmlwidgets.css'/>
+        <dependency path='ISCore/R/plotlyjs-1.16.3/plotly-latest.min.js'/>
+        <dependency path='ISCore/R/plotly-binding-4.5.6/plotly.js'/>
         <dependency path='MonitorIS.js'/>
     </dependencies>
 </view>
