@@ -13,7 +13,6 @@
     </inputs>
     <outputs>
         <file name='output.tsv' useProtocolNameAsBaseName="true"/>
-        <!--<file name='output.tsv' useProtocolNameAsBaseName="true" outputDir="/analysis/exprs_matrices"/>-->
     </outputs>
     <script file='create-matrix.r'/>
 </task>

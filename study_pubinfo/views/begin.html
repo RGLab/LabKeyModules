@@ -7,9 +7,20 @@
         },
         reportId: 'module:study_pubinfo/study_pubinfo.Rmd',
         success: function(result){
+            var errors = result.errors;
             var outputParams = result.outputParams;
-            var p = outputParams[0];
-            document.getElementById('reportdiv').innerHTML = p.value;
+            if ( errors && errors.length > 0 ){
+                LABKEY.ext.ISCore.onFailure({
+                    exception: errors.join('\n')
+                });
+            } else if ( outputParams && outputParams.length > 0 ){
+                var p = outputParams[0];
+                document.getElementById('reportdiv').innerHTML = p.value;
+            } else{
+                LABKEY.ext.ISCore.onFailure({
+                    exception: 'Strange situation: there are no reported errors, but also no output to show'
+                });
+            }
         }
     };
     LABKEY.Report.execute(cnfReport);

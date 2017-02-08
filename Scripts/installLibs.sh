@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# install PCRE at least 8.32
+add-apt-repository -y 'ppa:edd/misc'
+apt-get update
+apt-get -y install libpcre3-dev
+
+
 # install the required libraries
 apt-get -y install build-essential
 apt-get -y install cfortran
@@ -30,11 +36,6 @@ apt-get -y install xvfb
 apt-get -y autoremove
 
 
-# install PCRE at least 8.32
-add-apt-repository -y 'ppa:edd/misc'
-apt-get update
-apt-get install libpcre3-dev
-
 # apt-get -y install pandoc
 # apt-get -y install pandoc-citeproc
 
@@ -42,5 +43,9 @@ apt-get install libpcre3-dev
 # pandoc version 1.12.3 or higher makes it
 # must install R package 'rmarkdown' before hand as well
 PANDOC_VER='1.19.1'
-wget https://github.com/jgm/pandoc/releases/download/${PANDOC_VER}/pandoc-${PANDOC_VER}-1-amd64.deb
-dpkg -i pandoc-${PANDOC_VER}-1-amd64.deb
+if [ ! -f /usr/bin/pandoc || [[ `pandoc --version | head -n1 | cut -c8-` < ${PANDOc_VER} ]] ] ; then
+    wget https://github.com/jgm/pandoc/releases/download/${PANDOC_VER}/pandoc-${PANDOC_VER}-1-amd64.deb
+    dpkg -i pandoc-${PANDOC_VER}-1-amd64.deb
+else
+    echo 'pandoc seems to be up-to-date'
+fi
