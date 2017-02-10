@@ -1,4 +1,4 @@
-source("https://bioconductor.org/biocLite.R")
-
-c( scan('/share/github/LabKeyModules/listOfNeededRPackages', what = 'character' ), 'rmarkdown' )
+remove.packages( 'BiocInstaller' )
+source( 'https://bioconductor.org/biocLite.R' )
+biocLite( c( scan('listOfNeededRPackages', what = 'character' ), 'rmarkdown' ) )
 

@@ -6,11 +6,11 @@ if [ `whoami` = 'root' ] ; then
             LK_MODULES_PATH=~
             BUILD_TYPE=$2
             INTERACTIVE=no
-        else if [ `hostname` = 'immunetestrserve' ] ; then
+        elif [ `hostname` = 'immunetestrserve' ] ; then
             LK_MODULES_PATH=/share/github/
             BUILD_TYPE=master
             INTERACTIVE=yes
-        else if [ `hostname` = 'immuneprodrserve' ] ; then
+        elif [ `hostname` = 'immuneprodrserve' ] ; then
             LK_MODULES_PATH=/share/github/
             BUILD_TYPE=release
             INTERACTIVE=yes
@@ -21,18 +21,31 @@ if [ `whoami` = 'root' ] ; then
 
         cd ${LK_MODULES_PATH}
         if [ ! -d LabKeyModules ] ; then
+            echo
+            echo '=============================================='
+            echo 'Downloading the LabKeyModules repo from GitHub'
+            echo '=============================================='
             git clone https://github.com/RGLab/LabKeyModules.git
         fi
+
+        echo
+        echo '==============================================================='
+        echo 'Switching to an appropriate branch and updating the source code'
+        echo '==============================================================='
         cd ${LK_MODULES_PATH}/LabKeyModules
         git checkout $BUILD_TYPE
         git pull
 
         ./Scripts/installLibs.sh
 
+        echo
+        echo '================================================================='
+        echo 'Downloading, unpacking, configuring, and building R version '${1}
+        echo '================================================================='
         cd ~
         wget https://cran.r-project.org/src/base/R-$( echo ${1} | head -c1 )/R-${1}.tar.gz
         tar -xzf R-${1}.tar.gz
-        cd R-${1}.tar.gz
+        cd R-${1}
         if [ ${INTERACTIVE} = 'yes' ] ; then
             ./configure --enable-R-shlib --prefix=/usr
             echo " Press [Enter] to start the upgrade. "
@@ -43,9 +56,13 @@ if [ `whoami` = 'root' ] ; then
         make
         make install
 
-        cd ${Lk_MODULES_PATH}/LabKeyModules
+        echo
+        echo '========================================================'
+        echo 'Figuring out and installing the set of needed R packages'
+        echo '========================================================'
+        cd ${LK_MODULES_PATH}/LabKeyModules
         ./Scripts/getRpkgs.sh
-        Rscript installR.R
+        Rscript ./Scripts/installR.R
 
         export R_VERSION=$1
     else

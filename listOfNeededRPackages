@@ -35,6 +35,7 @@ mvtnorm
 ncdfFlow
 openCyto
 pheatmap
+plotly
 plyr
 preprocessCore
 RColorBrewer
