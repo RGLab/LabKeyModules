@@ -29,7 +29,7 @@ knit_hooks$set(webgl=rgl::hook_webgl)
 ```
 
 ```{r webgl,results='asis'}
-cat('<script type="text/javascript">', readLines(system.file('htmlwidgets/lib/CanvasMatrix', 'CanvasMatrix.src.js', package = 'rgl', mustWork=TRUE)), '</script>', sep = '\n')
+cat('<script type="text/javascript">', readLines(system.file('doc', 'CanvasMatrix.js', package = 'rgl', mustWork=TRUE)), '</script>', sep = '\n')
 ```
 
 ```{r params,echo=FALSE}
