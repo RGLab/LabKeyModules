@@ -105,9 +105,9 @@ for(i in 1:length(lev)){
   contrasti <- lev[[i]]
     # Check if it's RNA-seq or microarrays
   if(max(exprs(EM))>100)
-    res <- camera(voom(EM), index = indices, design = mm, contrast = makeContrasts(contrasti, levels=mm))
+    res <- camera(voom(EM), index = indices, design = mm, contrast = makeContrasts(contrasti, levels=mm), allow.neg.cor = TRUE, inter.gene.cor = NULL)
   else
-    res <- camera(EM, index = indices, design = mm, contrast = makeContrasts(contrasti, levels=mm))
+    res <- camera(EM, index = indices, design = mm, contrast = makeContrasts(contrasti, levels=mm), allow.neg.cor = TRUE, inter.gene.cor = NULL)
 
   dt <- data.table(res) 
   dt[, Module := rownames(res)]

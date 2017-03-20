@@ -120,6 +120,15 @@ FROM
        'Cohort membership' AS Label
        FROM
        cohort_membership
+
+       UNION
+
+       SELECT
+       COUNT( participantid ) AS n,
+       'hla_typing' AS Name,
+       'Human leukocyte antigen (HLA) typing' AS Label,
+       FROM
+       hla_typing
     ) AS dataset_n,
     DataSets
 WHERE

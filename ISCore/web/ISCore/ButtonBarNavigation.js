@@ -3,10 +3,13 @@ function goToDataExplorer( dataRegion ) {
         filters = dataRegion.getUserFilterArray(),
         params =    {
                         dataset:    dataRegion.queryName,
-                        schema:     dataRegion.schemaName,
-                        view:       dataRegion.viewName
+                        schema:     dataRegion.schemaName
                     }
     ;
+
+    if ( dataRegion.viewName ){
+        params[ 'view' ] = dataRegion.viewName
+    }
 
     Ext.each( filters, function( e ){
         params[ e.getURLParameterName() ] = e.getURLParameterValue();
