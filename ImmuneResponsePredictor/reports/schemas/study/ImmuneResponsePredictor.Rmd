@@ -63,7 +63,7 @@ getHAI <- function(con, subjects, dichotomize, dichValue){
   hai <- hai[participant_id %in% subjects]
   hai <- hai[, list(arm_accession, study_time_collected, study_time_collected_unit,
                     response = value_reported/mean(value_reported[study_time_collected<=0])),
-               by = "virus_strain,participant_id"]
+               by = "virus,participant_id"]
   hai <- hai[, mr := mean(response), by="study_time_collected"]
   hai <- hai[, ma := max(mr), by = "arm_accession"]
   peak <- unique(hai[mr ==ma, list(study_time_collected, arm_accession)])

@@ -1,0 +1,106 @@
+/* ************************************************************ */
+/* ******************** Main General Styling ****************** */
+/* ************************************************************ */
+#header {
+    background: #519eda url(/images/vman_app.png) top left no-repeat !important;
+}
+
+li.labkey-app-bar-tab-inactive {
+    background-color: #fff;
+}
+
+td.labkey-main-icon {
+    padding: 4px 4px 6px 116px;
+}
+
+#headerDiv {
+    top: 25px;
+    right: 20px;
+}
+
+.lk-input input.hdr-search-input {
+    border: none; padding-left: 25px;
+}
+
+#labkey-main-title {
+    display: none;
+}
+/* ************************************************************ */
+
+/* ************************************************************ */
+/* ***************** Top Bar Item Link Styling **************** */
+/* ************************************************************ */
+.labkey-main-menu li.labkey-main-menu-item {
+    background: url(/images/Arrow.png) no-repeat top right;
+    background-color: rgba(0,0,0,0.3);
+    padding: 6px 18px 6px 10px;
+    border-left: 1px solid rgba(255,255,255,0.3);
+    border-right: 1px solid rgba(255,255,255,0.3);
+}
+
+.labkey-main-menu-item:hover a {
+    color: #FFFFFF;
+}
+
+.labkey-main-menu li.labkey-main-menu-item.selected {
+    background: url(/images/Arrow_over.png) no-repeat top right;
+    padding: 6px 18px 6px 10px;
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+}
+/* ************************************************************ */
+
+/* ************************************************************ */
+/* ***************** Top Bar Menu Items Styling *************** */
+/* ************************************************************ */
+.wiki-list li:hover {
+    white-space: nowrap; background-color: #ededdf;
+}
+
+.wiki-list li {
+    padding: 5px;
+}
+
+.wiki-list ul {
+    list-style-type: none;
+}
+/* ************************************************************ */
+
+/* ************************************************************ */
+/* *********************** Tours Styling ********************** */
+/* ************************************************************ */
+div.hopscotch-bubble .hopscotch-bubble-number {
+    background-color: #0c5d9c !important; /* THE THEME COLOR */
+    background-image: none !important;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    padding: 0px !important;
+}
+/* ************************************************************ */
+
+/* ************************************************************ */
+/* ******************* Footer Icons Styling ******************* */
+/* ************************************************************ */
+.labkey-wiki, div.labkey-wiki {
+   /* font-size: 14px;
+    letter-spacing: .3px;
+    line-height: 1.25;
+    margin: 0px; */
+}
+
+.iconLink svg {
+    height: 10pt;
+    margin: 0 0 -0.125rem 0;
+    padding: 0.25rem 0.25rem 0;
+    width: 10pt;
+}
+
+.iconLink svg path {
+    fill: #0c5d9c; /* THE THEME COLOR */
+}
+
+.iconLink svg:hover path {
+    fill: #000000;
+}
+

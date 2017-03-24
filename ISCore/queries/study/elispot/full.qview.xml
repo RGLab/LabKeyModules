@@ -13,7 +13,6 @@
         <cv:column name='analyte'/>
         <cv:column name='comments'/>
         <cv:column name='cell_number_reported'/>
-        <cv:column name='cell_type'/>
         <cv:column name='spot_number_reported'/>
         <cv:column name='study_time_collected'/>
         <cv:column name='study_time_collected_unit'/>

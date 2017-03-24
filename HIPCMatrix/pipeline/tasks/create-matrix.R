@@ -32,7 +32,7 @@ library(tools)
 
 
 #' makeMatrix
-#' 
+#'
 #' Create a standard expression matrix from a given set of files or GEO
 #' accession numbers.
 #'
@@ -42,12 +42,12 @@ library(tools)
 #'  for the selected cohort and relvant files or accession numbers.
 #' @param isGEO A \code{logical}. Set to TRUE if the Matrix should be generated
 #'  from GEO accession numbers instead of data on disk.
-#' 
-#' @name makeMatrix 
+#'
+#' @name makeMatrix
 #' @importFrom tools file_ext
 #' @importFrom GEOquery getGEO
 #' @export
-#' 
+#'
 makeMatrix <- function(con, gef, isGEO = FALSE){
   cohort <- unique(gef$arm_name)
   if(length(cohort) > 1){
@@ -124,9 +124,9 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
 # @return A \code{matrix} with biosample_accession as cols and feature_id as rownames
 #' @importFrom affy ReadAffy rma
 .process_CEL <- function(con, gef, inputFiles){
-  affybatch <- ReadAffy(filenames = inputFiles)                                 
-  eset <- rma(affybatch)                                                        
-  norm_exprs <- exprs(eset)                                                     
+  affybatch <- ReadAffy(filenames = inputFiles)
+  eset <- rma(affybatch)
+  norm_exprs <- exprs(eset)
   if (all(file_ext(colnames(norm_exprs)) == "CEL")) {#If filenames used as samplenames
     colnames(norm_exprs) <- gef[match(colnames(norm_exprs), gef$file_info_name), biosample_accession]
   }
@@ -161,9 +161,9 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
     cnames <- colnames(exprs)
     rnames <- rownames(exprs)
     exprs <- preprocessCore::normalize.quantiles(exprs)
-    colnames(exprs) <- cnames 
-    rownames(exprs) <- rnames 
-    
+    colnames(exprs) <- cnames
+    rownames(exprs) <- rnames
+
     if(max(exprs) > 100){
       norm_exprs <- log2(pmax(exprs, 1))
     } else{
@@ -178,7 +178,7 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
 #Works for SDY212 & 162
 #' @importFrom preprocessCore normalize.quantiles
 .process_others <- function(gef, inputFiles){
-  
+
   if(length(inputFiles) > 1){
     lf <- lapply(inputFiles, fread)
     names(lf) <- basename(inputFiles)
@@ -189,7 +189,7 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
     file2sample <- unique(gef[, list(file_info_name, expsample_accession)])
     exprs[, sample := file2sample[match(.id, file_info_name), expsample_accession]]
     exprs <- exprs[, list(sample, probe_id, gene_symbol, expression_value)]
-    
+
     exprs <- dcast.data.table(exprs, formula = "probe_id ~ sample", value.var="expression_value")
     rnames <- exprs[, probe_id]
     exprs <- exprs[, probe_id := NULL]
@@ -206,13 +206,13 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
       stop("Unknown format: check data and add code if needed.")
     }
   }
-  
+
   cnames <- colnames(exprs)
   exprs <- as.matrix(exprs)
   exprs <- preprocessCore::normalize.quantiles(exprs)
   colnames(exprs) <- cnames
   rownames(exprs) <- rnames
-  
+
   if(max(exprs) > 100){
     norm_exprs <- log2(pmax(exprs, 1))
   } else{
@@ -221,7 +221,7 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
   norm_exprs <- norm_exprs[, c(colnames(norm_exprs) %in% gef$expsample_accession)]
   return(norm_exprs)
 }
-  
+
 .clean_colnames <- function(table){
   setnames(table, tolower(chartr(" ", "_", names(table))))
 }
@@ -233,7 +233,7 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
     esFilter <- makeFilter(c("expsample_accession", "IN", paste0(ess, collapse = ";")))
     bs2es <- data.table(labkey.selectRows(con$config$labkey.url.base,
                                           con$config$labkey.url.path,
-                                          "immport", "biosample_2_expsample",
+                                          "immport", "expsample_2_biosample",
                                           colFilter = esFilter,
                                           colNameOpt = "rname"))
     bss <- bs2es[match(ess, bs2es$expsample_accession), biosample_accession]
@@ -267,9 +267,9 @@ normalizeMatrix <- function(labkey.url.base, labkey.url.path, inputFiles, select
   return(norm_exprs)
 }
 
-summarizeMatrix <- function(exprs, f2g){ 
+summarizeMatrix <- function(exprs, f2g){
   em <- data.table(exprs)
-  em[, gene_symbol := f2g[match(em$feature_id, f2g$featureid), genesymbol]]     
+  em[, gene_symbol := f2g[match(em$feature_id, f2g$featureid), genesymbol]]
 
   em <- em[!is.na(gene_symbol) & gene_symbol != "NA"]
   em <- em[,lapply(.SD, mean), by="gene_symbol", .SDcols = grep("^BS", colnames(em))]
@@ -292,7 +292,7 @@ cohort <- NULL
 # PIPELINE
 #-------------------------------
 co <- labkey.setCurlOptions(ssl.verifyhost = 2, sslversion=1)
-FAS_filter <- makeFilter(c("FeatureAnnotationSetId/RowId", "IN", "${assay run property, featureSet}")) 
+FAS_filter <- makeFilter(c("FeatureAnnotationSetId/RowId", "IN", "${assay run property, featureSet}"))
 f2g <- data.table(labkey.selectRows(baseUrl = labkey.url.base,
                                     folderPath= "/Studies/",
                                     schemaName="Microarray",

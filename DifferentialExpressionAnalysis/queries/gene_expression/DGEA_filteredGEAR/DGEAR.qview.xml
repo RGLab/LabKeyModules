@@ -1,8 +1,6 @@
 <cv:customView xmlns:cv='http://labkey.org/data/xml/queryCustomView'  containerFilter='CurrentAndSubfolders' label='Differential gene expression analysis results' category='Assays' showInDataViews='true'>
     <cv:columns>
         <cv:column name='analysis_accession'/>
-        <!--<cv:column name='analysis_accession/arm_name'/>-->
-        <!--<cv:column name='analysis_accession/coefficient'/>-->
         <cv:column name='cohort'/>
         <cv:column name='coefficient'/>
         <cv:column name='feature_id'/>

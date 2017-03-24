@@ -25,11 +25,14 @@ library(flowClust)
 library(mvtnorm)
 library(rgl)
 library(FactoMineR)
+library(threejs)
+library(plotly)
 knit_hooks$set(webgl=rgl::hook_webgl)
 ```
 
 ```{r webgl,results='asis'}
-#cat('<script type="text/javascript">', readLines(system.file('htmlwidgets/lib/CanvasMatrix', 'CanvasMatrix.src.js', package = 'rgl', mustWork=TRUE)), '</script>', sep = '\n')
+cat('<script type="text/javascript">', readLines(system.file('doc', 'CanvasMatrix.js', package = 'rgl', mustWork=TRUE)), '</script>', sep = '\n')
+#cat('<script type="text/javascript">', readLines(system.file('htmlwidgets/lib/CanvasMatrix', 'CanvasMatrix.src.js', package = 'rgl', mustWork=TRUE)), '</script>', sep = '\n') # for latest version of 'rgl'
 ```
 
 ```{r params,echo=FALSE}
@@ -190,9 +193,12 @@ if ( file.exists( paste0( path,"analysis/gating_set_gated" ) ) && !regate ){
     target_pops<-flowSet(getData(gs[[ii]],"TN"),getData(gs[[ii]],"TCM"),getData(gs[[ii]],"TEM"),getData(gs[[ii]],"TEF"))
     topca<-fsApply(target_pops,exprs)[,getNodes(gs[[ii]],path="auto")[c(9,10,11,12,13,14,15,16,17,18,19)]]
     #topca<-fsApply(target_pops,exprs)
-    colors<-rep(1:4,as.vector(fsApply(target_pops,nrow)))
+    colors<-rep(c("black","red","green","blue"),as.vector(fsApply(target_pops,nrow)))
     pr<-PCA(topca,graph=FALSE)
-    plot3d(pr$ind$coord,col=colors,xlab="PC1",ylab="PC2",zlab="PC3",type="s",size=size,box=F)
+    x <- as.data.frame(pr$ind$coord)
+    #plot3d(pr$ind$coord,col=colors,xlab="PC1",ylab="PC2",zlab="PC3",type="s",size=size,box=F)
+    #scatterplot3js(pr$ind$coord[, 1:3], color = colors, size = 0.3, grid = F, axisLabels = c("PC1", "PC3", "PC2"))
+    plot_ly(x, x = ~Dim.1, y = ~Dim.2, z = ~Dim.3, text = row.names(x), mode = "markers", marker = list(size = 2, opacity = 0.5, color = colors), type = "scatter3d") %>% layout(scene = list(xaxis = list(title = "PC1"), yaxis = list(title = "PC2"), zaxis = list(title = "PC3")))
 }
           
 
@@ -225,7 +231,7 @@ cat(
 
 Viewing: `r basename(include[subject])`  
 
-Black: Naive  
+Naive: Black  
 Central Memory: Red  
 Effector Memory: Green  
 Effector: Blue
@@ -240,3 +246,6 @@ Effector: Blue
 }
 </style>
 
+<script>
+window.HTMLWidgets.staticRender();
+</script>

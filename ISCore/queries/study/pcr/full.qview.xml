@@ -16,7 +16,6 @@
         <cv:column name='study_accession'/>
         <cv:column name='study_time_collected'/>
         <cv:column name='study_time_collected_unit'/>
-        <cv:column name='threshold_cycles'/>
         <cv:column name='value_reported'/>
         <cv:column name='unit_reported'/>
         <cv:column name='value_preferred'/>

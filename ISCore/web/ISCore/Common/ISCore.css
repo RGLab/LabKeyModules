@@ -2,7 +2,7 @@
     vim: ts=4:sw=4:nu:fdc=4:nospell
 */
 /*
-    Copyright 2014 Fred Hutchinson Cancer Research Center
+    Copyright 2017 Fred Hutchinson Cancer Research Center
 
     Licensed under the Apache License, Version 2.0 (the 'License');
     you may not use this file except in compliance with the License.
@@ -19,118 +19,24 @@
 
 @charset 'utf-8';
 
-
-.labkey-knitr #fw_container {
-    width: 80%;
-    margin: 0 auto;
-}
-
-.labkey-knitr .caption {
-    font-weight: bold;
-    font-size: 100%;
-    text-align: center;
-}
-
-.labkey-knitr .knitr_table {
-    margin: 0px auto;
-}
-
-.labkey-knitr .knitr_table table {
-    border-collapse: collapse;
-    border-spacing: 0px;
-    margin: 0px;
-}
-.labkey-knitr .knitr_table th {
-    padding: 5px;
-    font-weight: bold;
-    background-color: #ccc;
-}
-.labkey-knitr .knitr_table td {
-    padding: 5px;
-}
-
-.labkey-knitr .knitr_table tr:nth-child(odd) {
-    background-color:#fff;
-}
-
-.labkey-knitr .knitr_table tr:nth-child(even) {
-    background-color:#eee;
-}
-
-.labkey-knitr p {
-    clear: both;
-}
-
-.labkey-knitr body {
-    width: 800px;
-    margin: auto;
-}
-
-.labkey-knitr pre, .labkey-knitr img {
-    max-width: 100%;
-}
-
-.labkey-knitr img {
-    display: block;
-    margin: auto;
-}
-
-/* ************************************************************ */
-.ISCore legend {
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    border-radius: 5px;
-    font: 12px verdana, arial, helvetica, sans-serif;
-}
-
-.ISCore .x-tool-toggle {
-    margin-top: 2px;
-}
-
-.ISCore .x-fieldset-header {
-    padding-top: 2px;
-}
-
-.ISCore .labkey-data-region-wrap {
-    overflow: auto;
-}
-
-/* ************************************************************ */
-.iconConfigure {
-    background-image: url(../_images/configure.png);
-}
-
-.iconDelete {
-    background-image: url(../_images/delete.png);
-}
-
-.iconExport {
-    background-image: url(../_images/download.png);
-}
-
-.iconImport {
-    background-image: url(../_images/upload.png);
-}
-
-.iconNew {
-    background-image: url(../_images/folder_new.png);
-}
-
-.iconReload {
-    background-image: url(../_images/reload.png);
-}
-
-.iconUpdate {
-    background-image: url(../_images/editprops.png);
-}
-
-
 /* Error code from R */
 pre, .ext-mb-text {
     white-space: pre-wrap;
 }
 
-/* Class specs */
+/* Generic class specs */
+
+.padding5px {
+    padding: 5px !important;
+}
+
+.paddingLeft10px {
+    padding-left: 10px !important;
+}
+
+.paddingRight25px {
+    padding-right: 25px !important;
+}
 
 .right-text {
     text-align: right;
@@ -200,6 +106,72 @@ pre, .ext-mb-text {
     background-color: white !important;
 }
 
+#fancybox-buttons ul {
+    width: 74px !important;
+}
+
+.full-width {
+    width: 100%;
+}
+
+/* ************************************************************ */
+/* Knitr tweaks for LabKey */
+.labkey-knitr #fw_container {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.labkey-knitr .caption {
+    font-weight: bold;
+    font-size: 100%;
+    text-align: center;
+}
+
+.labkey-knitr .knitr_table {
+    margin: 0px auto;
+}
+
+.labkey-knitr .knitr_table table {
+    border-collapse: collapse;
+    border-spacing: 0px;
+    margin: 0px;
+}
+.labkey-knitr .knitr_table th {
+    padding: 5px;
+    font-weight: bold;
+    background-color: #ccc;
+}
+.labkey-knitr .knitr_table td {
+    padding: 5px;
+}
+
+.labkey-knitr .knitr_table tr:nth-child(odd) {
+    background-color:#fff;
+}
+
+.labkey-knitr .knitr_table tr:nth-child(even) {
+    background-color:#eee;
+}
+
+.labkey-knitr p {
+    clear: both;
+}
+
+.labkey-knitr body {
+    width: 800px;
+    margin: auto;
+}
+
+.labkey-knitr pre, .labkey-knitr img {
+    max-width: 100%;
+}
+
+.labkey-knitr img {
+    display: block;
+    margin: auto;
+}
+/* ************************************************************ */
+
 /* Mask tweaks */
 .ISCore .mask-loading {
     z-index: 999;
@@ -251,7 +223,7 @@ pre, .ext-mb-text {
     line-height: 1.2em;
 }
 
-.ui-sortable-helper, .sortable-list, .ulList, .ISCore .x-tree-node, .ISCore .x-tree-node-ct {
+.ui-sortable-helper, .sortable-list, .ulList {
     list-style-type: none;
 }
 
@@ -272,6 +244,11 @@ pre, .ext-mb-text {
 
 /**********************************/
 /* Ext Tree Fixes */
+
+.ISCore .x-tree-node, .ISCore .x-tree-node-ct {
+    list-style-type: none;
+}
+
 .ISCore .x-tree-node,
 .ISCore .x-tree-node-ct,
 .ISCore .x-tree-root-ct {
@@ -279,11 +256,14 @@ pre, .ext-mb-text {
     -webkit-padding-start: 0px;
 }
 
-.ISCore .x-tree-root-ct {
-    margin: 0;
-    -webkit-margin-before: 0em;
-    -webkit-margin-after: 0em;
-    -moz-padding-start: 0px;
+.ISCore .x-tree-root-ct,
+.ISCore img.x-tree-ec-icon,
+.ISCore img.x-tree-elbow-line,
+.ISCore li.x-tree-node {
+    margin: 0 !important;
+    -webkit-margin-before: 0em !important;
+    -webkit-margin-after: 0em !important;
+    -moz-padding-start: 0px !important;
 }
 
 .ISCore .x-tree-selected {
@@ -434,34 +414,13 @@ pre, .ext-mb-text {
 }
 /**********************************/
 
-.padding5px {
-    padding: 5px !important;
-}
-
-.paddingLeft10px {
-    padding-left: 10px !important;
-}
-
-.paddingRight25px {
-    padding-right: 25px !important;
-}
-
-.overview-spacing {
+.ISCore .overview-spacing {
     padding-bottom: 0.5em;
-}
-
-#fancybox-buttons ul {
-    width: 74px !important;
 }
 
 .ISCore div.labkey-pagination {
     margin-right: 25px;
 }
-
-.full-width {
-    width: 100%;
-}
-
 
 .ISCore .button-icon {
     opacity: 1;
@@ -470,4 +429,25 @@ pre, .ext-mb-text {
 .ISCore .button-icon:hover {
     background-color: #000000;
 }
+
+.ISCore legend {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    font: 12px verdana, arial, helvetica, sans-serif;
+}
+
+.ISCore .x-tool-toggle {
+    margin-top: 2px;
+}
+
+.ISCore .x-fieldset-header {
+    padding-top: 2px;
+}
+
+.ISCore .labkey-data-region-wrap {
+    overflow: auto;
+}
+
+/* ************************************************************ */
 

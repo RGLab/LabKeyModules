@@ -115,6 +115,12 @@ if(!exists("loaded_ems") || length(loaded_ems) != length(input_cohorts) || !all(
 
   PD <- data.table(pData(EM))
   PD <- merge(PD, HAI, by = "participant_id")
+
+  # Fail gracefully if PD empty due to non-overlap in participant ids, issue num 21
+  if(nrow(PD) == 0){
+    stop("Participant IDs in the requested HAI dataset do not overlap with those in the requested pheno data")
+  }
+
   PD <- merge(PD, DEMO, by = "participant_id")
   #EM <- EM[, pData(EM)$biosample_accession %in% PD$biosample_accession]
   dt <- dt[, c("gene_symbol", PD$biosample_accession), with = FALSE]

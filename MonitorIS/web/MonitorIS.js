@@ -25,6 +25,15 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
             ],
             fields: [ 'display', 'value' ]
         });
+        var strByTime = new Ext.data.ArrayStore({
+            data: [
+                [ 'Day', 'day' ],
+                [ 'Week', 'week' ],
+                [ 'Month', 'month' ],
+                [ 'Year', 'year' ]
+            ],
+            fields: [ 'display', 'value']
+        });
 
         // Dropdown
         var cbPlotType = new Ext.ux.form.ExtendedComboBox({
@@ -47,6 +56,17 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
             width: fieldWidth,
             value: new Date()
         });
+        var byTime = new Ext.ux.form.ExtendedComboBox({
+            allowBlank: false,
+            displayField: 'display',
+            fieldLabel: 'By',
+            id: 'byTime',
+            lazyInit: false,
+            store: strByTime,
+            value: 'day',
+            valueField: 'value',
+            width: fieldWidth
+        });
 
         /////////////////////////////////////
         //    Buttons and Radio Groups     //
@@ -58,7 +78,8 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
                 cnfReport.inputParams = {
                     plotType: cbPlotType.getValue(),
                     from: startDate.getValue(),
-                    to: endDate.getValue()
+                    to: endDate.getValue(),
+                    by: byTime.getValue()
                 };
                 setReportRunning( true );
                 LABKEY.Report.execute( cnfReport );
@@ -169,7 +190,8 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
                     items: [
                         startDate,
                         endDate,
-                        LABKEY.ext.ISCore.factoryTooltipWrapper(cbPlotType, 'Plot type', plotType_help)
+                        LABKEY.ext.ISCore.factoryTooltipWrapper(cbPlotType, 'Plot type', plotType_help),
+                        byTime
                     ],
                     title: 'Parameters'
                 }),
@@ -365,6 +387,7 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
                     cbPlotType,
                     startDate,
                     endDate,
+                    byTime,
                     btnRun
                 ],
                 function( e ){ e.setDisabled( bool ); }

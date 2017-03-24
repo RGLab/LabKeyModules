@@ -275,7 +275,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             requiredVersion: 12.3,
             containerFilter: 'AllFolders',
             schemaName: 'immport',
-            queryName: 'assocStudies',
+            queryName: 'ISSO_assoc_studies',
             columns:  'study_accession',
             parameters: {$STUDY: SDY},
             success: onSuccessPubmedAssoc,

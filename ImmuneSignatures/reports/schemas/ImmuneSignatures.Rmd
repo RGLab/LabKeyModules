@@ -1,0 +1,155 @@
+
+***
+## HIPC ImmuneSignatures Meta-Analysis
+#### Created: January 2017
+#### Study Authors: HIPC ImmuneSignature Collaborators
+#### Report Developer: Evan Henrich (Gottardo Lab - FHCRC)
+#### Contact: ehenrich@fredhutch.org
+#### Date: "`r Sys.Date()`"
+#### Ran by: `r labkey.user.email`
+
+***
+
+## GENERAL NOTES:
+This markdown file outputs the results of the HIPC ImmuneSignatures Project Meta-Analysis using the original 
+manuscript parameters with refactored code and data coming directly from ImmuneSpace. To use the code for this report, users may install it via install_github("ehfhcrc/ImmSig2"). The package does include an expressionSet object for SDY67 because the gene expression normalization procedure was different than the other studies due to a difference in chip.  Pre-packaging the data saves the time spent normalizing the data and allows the report to be served faster.  Also it should be noted that SDY80 receives special treatment in the adjustment of its HAI data due to differences in the proportion of subjects having zero-value titers at different timepoints.  To see the differences please view the adjust_hai.R script within the package.
+
+The results of this report differ from the results of the project's manuscript due to a difference in how the studies 63, 400, and 404 have the probe names mapped to gene symbols.  The original work used a mapping created by the machine reading the IlluminHumanv4 chip, while the create_matrix() in ImmuneSpace uses the bioconductor package "illuminaHumanv4.db". Mapping using the bioconductor package results in fewer probes being mapped to gene symbols and therefore different values for gene expression per gene symbol.
+
+Interested users may re-run the full pipeline with the same parameters as the manuscript or variations using the 'hipc_full_pipeline()' method in the "ImmSigPkg" available on github via install_github("ehfhcrc/ImmSigPkg"). For example, the pipeline can be run with the different gene annotation methods to compare results.  The ImmSigPkg also outputs intermediate files similar to the original study, allowing for easier comparison throughout the pipeline.
+
+```{r set-options, include=FALSE}
+library(ImmSig2) # to load data and helper functions
+library(Rlabkey)
+library(Biobase)
+library(stringr)
+library(hash)
+library(dplyr)
+library(qusage)
+
+options(width = 999)
+knitr::opts_chunk$set(echo=FALSE,
+               cache.path=paste(labkey.file.root, "cache/pubmed_report_cache/", sep="/"),
+               cache=TRUE,
+               warning=FALSE,
+               message=FALSE,
+               tidy=TRUE,
+               fig.height=7,
+               fig.width=7,
+               fig.align = "center")
+```
+
+```{r include=FALSE}
+# 1. Create expressionSet object using data from ImmuneSpace
+studies <- c("SDY212","SDY63","SDY404","SDY400","SDY67","SDY80")
+eset_list <- list()
+
+for(sdy in studies){
+  labkey.url.path <- paste0("/Studies/", sdy, "/")
+  con <- CreateConnection(sdy)
+
+  # Get expressionSet object with normalized gene expression values, use highest expression
+  # probe for each gene_symbol and remove others. Finally map SampleNames.
+  # Mapping done with "biosmpl2sub" object generated from ImmuneSpace Schema Browser.
+  # NOTE 1: SDY67 was normalized using DEseq method. See ImmSigPkg code for details.
+  if(sdy != "SDY67"){ # SDY67 not able to run through HIPCmatrix
+    mats <- con$GeneExpressionMatrices()
+    eset <- con$getGEMatrix(mats$name, summary = F)
+    tmp_pData <- pData(eset)
+    adj_em <- adjust_GE(eset)
+    new_fData <- data.frame(rownames(adj_em))
+    rownames(new_fData) <- rownames(adj_em)
+    colnames(new_fData) <- c("gene_symbol")
+    eset <- ExpressionSet(assayData = as.matrix(adj_em),
+                          featureData = AnnotatedDataFrame(new_fData),
+                          phenoData = AnnotatedDataFrame(tmp_pData))
+    if(sdy == "SDY212"){ eset <- eset[ , -which(sampleNames(eset) == "BS694717") ] } # Remove dup biosamples
+    sampleNames(eset) <- unname(hashmap(biosmpl2sub$Biosample, biosmpl2sub$GE_ID, sampleNames(eset)))
+  }else{
+    eset <- get(paste0(sdy, "_min_eset"))
+  }
+
+  # # Parse Subject IDs and Limit expression data to baseline (d0) only
+  factored_ids <- str_match(sampleNames(eset), "(((SUB)|(sub))_?[0-9]+)(\\.[0-9])?_(.*)")
+  eset$Condition <- factor(factored_ids[, 7L])
+  eset <- eset[ , grep("^d0", eset$Condition) ]
+
+  # Get baseline eset Subjects
+  factored_ids <- str_match(sampleNames(eset), "(((SUB)|(sub))_?[0-9]+)(\\.[0-9])?_(.*)")
+  eset_subs <- factored_ids[, 2L]
+
+  # Get raw HAI data from Immunespace where feasible and adjust according to Yuri Kotliarov code.
+  # NOTE: SDY80 raw data in ImmuneSpace differs, therefore using preloaded.
+  if(sdy != "SDY80"){
+    raw_hai <- con$getDataset("hai")
+  }else{
+    raw_hai <- SDY80_rawtiterdata_v2
+  }
+
+  adj_hai <- adjust_hai(sdy, raw_hai)
+
+  # Age needed for SDY80 to remove subjects over 36 years old
+  if(sdy == "SDY80"){
+    demo <- con$getDataset("demographics")
+    adj_hai$Age <- sapply(adj_hai$subject, FUN = function(x){
+      trg <- demo[ which(demo$participant_id == paste0(x, ".80"))]
+      return(trg$age_reported)
+    })
+    adj_hai <- adj_hai[ which(adj_hai$Age < 36), ]
+  }
+
+  # Ensure HAI and eset contain same subjects in same order, then push to pData
+  eset <- eset[ , which(eset_subs %in% adj_hai$subject) ]
+  adj_hai <- adj_hai[ which(adj_hai$subject %in% eset_subs), ]
+  adj_hai <- adj_hai[ order(match(adj_hai$subject, eset_subs)), ]
+  rownames(adj_hai) <- sampleNames(eset)
+  pData(eset) <- droplevels(adj_hai)
+
+  eset_list[[sdy]] <- eset
+}
+```
+
+## META-ANALYSIS
+
+### YOUNG COHORT RESULTS
+```{r include=TRUE, results="markup"}
+yng_res <- meta_analysis(eset_list = eset_list,
+                         cohort = "young")
+```
+
+#### Discovery Group Significant Pathways Data
+``` {r include=TRUE}
+DT::datatable(yng_res$dsc)
+```
+
+#### Validation Study Significant Pathways Data
+``` {r include=TRUE}
+DT::datatable(yng_res$val)
+```
+
+***
+
+### OLD COHORT RESULTS
+
+```{r include=TRUE, results="markup"}
+old_res <- meta_analysis(eset_list = eset_list,
+                         cohort = "old")
+```
+
+#### Discovery Group Significant Pathways Data
+``` {r}
+DT::datatable(old_res$dsc)
+```
+
+#### Validation Study Significant Pathways Data
+``` {r}
+DT::datatable(old_res$val)
+```
+
+***
+
+### PARAMETERS:
+- **FDR.cutoff: ** 0.5
+- **pvalue.cutoff: ** 0.01
+- **endPoint: ** fc_res_max_d30
+- **geneSetDB: ** BTM_for_GSEA_20131008.gmt
