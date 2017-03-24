@@ -5,7 +5,7 @@
             <cv:property name='columnTitle' value='Participant ID'/>
           </cv:properties>
         </cv:column>
-        <cv:column name='biosample_accession/subject_accession/age_reported'/>
+        <cv:column name='DataSets/demographics/age_reported'/>
         <cv:column name='biosample_accession/subject_accession/gender'/> 
         <cv:column name='biosample_accession/subject_accession/race'/>
         <cv:column name='arm_accession/name'>
@@ -16,7 +16,6 @@
         <cv:column name='entrez_gene_id'/>
         <cv:column name='study_time_collected'/>
         <cv:column name='study_time_collected_unit'/>
-        <cv:column name='threshold_cycles'/>
         <cv:column name='value_reported'/>
         <cv:column name='unit_reported'/>
     </cv:columns>

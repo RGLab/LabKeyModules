@@ -4,7 +4,8 @@ SELECT
   MI.Material,
   MI.Material.Name AS Biosample,
   MI.Role,
-  MI.TargetProtocolApplication.Run.Folder as Container
+  MI.TargetProtocolApplication.Run.Folder as Container,
+  MI.TargetProtocolApplication.Run.Folder as Folder
 FROM exp.MaterialInputs MI
 WHERE
   MI.TargetProtocolApplication.Type = 'ExperimentRun'

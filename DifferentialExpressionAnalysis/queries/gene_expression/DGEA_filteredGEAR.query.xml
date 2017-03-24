@@ -2,7 +2,8 @@
 <query xmlns='http://labkey.org/data/xml/query'>
     <metadata>
         <tables xmlns='http://labkey.org/data/xml'>
-            <table tableName='GEA_filteredGEAR' tableDbType='TABLE'>
+            <table tableDbType='TABLE'>
+                <tableTitle>Differential gene expression analysis results</tableTitle>
                 <buttonBarOptions position='both' includeStandardButtons='false'>
                     <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
                     <item text='Grid Views' permission='ADMIN' insertPosition='end'>

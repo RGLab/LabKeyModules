@@ -1,9 +1,13 @@
 #!/bin/bash
 
+export DEBIAN_FRONTEND=noninteractive
+
 echo
 echo '========================================='
 echo 'Installing the necessary system libraries'
 echo '========================================='
+
+apt-get -y install software-properties-common
 
 # install PCRE at least 8.32
 add-apt-repository -y 'ppa:edd/misc'
@@ -17,19 +21,20 @@ apt-get -y install cfortran
 apt-get -y install f2c
 apt-get -y install fort77
 apt-get -y install freeglut3-dev
-apt-get -y install graphviz-dev
 apt-get -y install g++
+apt-get -y install graphviz-dev
 apt-get -y install libbz2-dev
 apt-get -y install libcairo2-dev
 apt-get -y install libcurl4-openssl-dev
 apt-get -y install libgsl0-dev
 apt-get -y install libhdf5-serial-dev
+apt-get -y install libicu-devel
 apt-get -y install liblzma-dev
 apt-get -y install libnetcdf-dev
 apt-get -y install libprotobuf-dev
 apt-get -y install libreadline-dev
-apt-get -y install libssl1.0.0/trusty
 apt-get -y install libssl-dev/trusty
+apt-get -y install libssl1.0.0/trusty
 apt-get -y install libxml2-dev
 apt-get -y install openmpi-bin
 apt-get -y install openmpi-common

@@ -16,3 +16,4 @@ assay.ExpressionMatrix.matrix.Runs AS runs
 WHERE
 mat.biosample = gef.biosample_accession AND
 mat.run = runs.rowId
+

@@ -5,7 +5,7 @@
             <cv:property name='columnTitle' value='Participant ID'/>
           </cv:properties>
         </cv:column>
-        <cv:column name='biosample_accession/subject_accession/age_reported'/>
+        <cv:column name='DataSets/demographics/age_reported'/>
         <cv:column name='biosample_accession/subject_accession/gender'/> 
         <cv:column name='biosample_accession/subject_accession/race'/>
         <cv:column name='arm_accession/name'>

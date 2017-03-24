@@ -35,8 +35,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             fieldWidth      = 330,
             labelWidth      = 170,
             datasetToVarMap = {
-                'hai':                              'virus_strain',
-                'neut_ab_titer':                    'virus_strain',
+                'hai':                              'virus',
+                'neut_ab_titer':                    'virus',
                 'mbaa':                             'analyte',
                 'elisa':                            'analyte',
                 'elispot':                          'analyte',
@@ -1178,12 +1178,21 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             cntPlotMessage.update( '' );
             cntPlot.update( '<div style=\'height: 10px\'></div>' );
 
+            var userFilter = [];
+            $.each( dataregion.getUserFilterArray(), function(i, filter){
+                userFilter.push({
+                    fieldKey: filter.getColumnName(),
+                    op: filter.getFilterType().getURLSuffix(),
+                    value: filter.getValue()
+                });
+            });
+
             cnfPlot.inputParams = {
                 datasetName:        cbDataset.getValue(),
                 datasetDisplay:     cbDataset.getRawValue(),
                 plotType:           cbPlotType.getValue(),
                 normalize:          chNormalize.getValue(),
-                filters:            Ext.encode( dataregion.getUserFilter() ),
+                filters:            Ext.encode( userFilter ),
                 textSize:           spnrTextSize.getValue(),
                 show_strains:       chShowStrains.getValue(),
                 facet:              rgFacet.getValue().getGroupValue(),

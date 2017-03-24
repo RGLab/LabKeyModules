@@ -13,10 +13,7 @@
         <cv:column name='base_parent_population'/>
         <cv:column name='file_info_id'/>
         <cv:column name='gating_parameter_statistics'/>
-        <cv:column name='other_population_statistics'/>
         <cv:column name='population_cell_number'/>
-        <cv:column name='population_cell_number_unit'/>
-        <cv:column name='population_cell_number_unit_preferred'/>
         <cv:column name='cell_number_unit'/>
         <cv:column name='population_definition_reported'/>
         <cv:column name='population_definition_preferred'/>

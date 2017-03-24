@@ -120,7 +120,7 @@ $(document).ready(function() {
                                         rowId: row.RowId
                                     }
                                 ) +
-                                '\' target=\'_blank\'>' + row.Title + '.</a></strong>' +
+                                '\' target=\'_blank\'>' + row.Title + '</a></strong>' +
                             '</br>' + row.FormattedBody + '</div></br>'
                         );
                     });

@@ -4,5 +4,6 @@ SELECT
 FROM
   ISC_study_datasets
 WHERE
-  Category.Label = 'Assays'
+  Category.Label = 'Assays' AND
+  Name != 'hla_typing'
 

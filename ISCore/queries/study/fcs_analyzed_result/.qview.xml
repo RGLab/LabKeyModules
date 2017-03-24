@@ -5,7 +5,7 @@
             <cv:property name='columnTitle' value='Participant ID'/>
           </cv:properties>
         </cv:column>
-        <cv:column name='biosample_accession/subject_accession/age_reported'/>
+        <cv:column name='DataSets/demographics/age_reported'/>
         <cv:column name='biosample_accession/subject_accession/gender'/> 
         <cv:column name='biosample_accession/subject_accession/race'/>
         <cv:column name='arm_accession/name'>
@@ -18,13 +18,9 @@
         <cv:column name='population_cell_number'/>
         <cv:column name='cell_number_unit'/>
         <cv:column name='population_definition_reported'/>
-        <!--<cv:column name='population_definition_preferred'/> always NA in DR12-->
         <cv:column name='population_name_reported'/>
-        <!--<cv:column name='population_name_preferred'/> always NA in DR12-->
         <cv:column name='population_percent'/>
         <cv:column name='comments'/>
         <cv:column name='base_parent_population'/>
-        <!--<cv:column name='gating_parameter_statistics'/> always NA in DR12-->
-        <cv:column name='other_population_statistics'/>
     </cv:columns>
 </cv:customView>

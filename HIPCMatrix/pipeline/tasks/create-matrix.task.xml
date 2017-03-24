@@ -14,5 +14,5 @@
     <outputs>
         <file name='output.tsv' useProtocolNameAsBaseName="true"/>
     </outputs>
-    <script file='create-matrix.r'/>
+    <script file='create-matrix.R'/>
 </task>

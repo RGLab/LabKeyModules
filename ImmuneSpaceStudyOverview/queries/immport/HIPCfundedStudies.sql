@@ -1,12 +1,10 @@
 SELECT
-study_accession
-FROM 
-study, 
-workspace, 
-contract_grant, 
-program 
-WHERE 
-study.workspace_id = workspace.workspace_id AND 
-workspace.contract_id = contract_grant.contract_grant_id AND 
-contract_grant.program_id = program.program_id AND 
-program.title = 'Human Immunology Project Consortium (HIPC)'
+    study.study_accession
+FROM
+    study
+    LEFT OUTER JOIN contract_grant_2_study CG2S ON study.study_accession = CG2S.study_accession
+    LEFT OUTER JOIN contract_grant CG ON CG2S.contract_grant_id = CG.contract_grant_id
+    LEFT OUTER JOIN program P on CG.program_id = P.program_id
+WHERE
+    P.name LIKE '%HIPC%'
+
