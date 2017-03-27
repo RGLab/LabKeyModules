@@ -1,3 +1,6 @@
+# This URL will consistently get you the latest 17.1 installer:
+# http://teamcity.labkey.org/httpAuth/repository/download/LabKey_171Release_LabkeyPremiumTrunk_Installers/lastSuccessful/immunespace/LabKey17.1-{build.number}-IMMUNESPACE-bin.tar.gz
+
 if [ `whoami` = 'root' ] ; then
     if [ $1 ] ; then
         LOC=$1 # customized location
