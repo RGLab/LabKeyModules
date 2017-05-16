@@ -1,6 +1,6 @@
-```{r init,echo=FALSE,eval=TRUE, message=FALSE}
-    library(knitr)
-    opts_chunk$set( dev='CairoPNG' ) #, fig.width=10, fig.height=7 )
+```{r init, echo = FALSE, eval = TRUE, message = FALSE}
+library(knitr)
+opts_chunk$set(dev = "CairoPNG", fig.align = "left", fig.width = 15, fig.height = 15)
 ```
 
 # Power analysis for Lyoplate panels
@@ -13,7 +13,7 @@ The goal of this report is to assess the power gained by standardizing flow data
 The power analysis shows that consistent data analysis in the form of careful centralized gating (whether automated or manual) can increase the power to detect differences across nearly all cell populations in the Lyoplate panels. Center-to-center variability has a significant impact on statistical power, but it is not a major contributor for all cell populations across all panels. 
 <hr>   
 
-```{r,echo=FALSE, message=FALSE}
+```{r,echo = FALSE, message = FALSE, warning = FALSE}
 # Load libraries
 library(plyr)
 library(grid)
@@ -31,6 +31,7 @@ library(Rlabkey)
 library(RColorBrewer)
 co <- labkey.setCurlOptions(sslversion = 1)
 library(ggplot2)
+library(plotly)
 library(utils)
 knit_hooks$set(htmlcap = function(before, options, envir) {
   if(!before) {
@@ -45,68 +46,116 @@ We read the data for the Seracare, Cytotrol FlowCAP III, and Local vs Central ma
 
 ```{r,warning=FALSE,message=FALSE,cache=TRUE,echo=TRUE,results='hide'}
 #' Read in the data sets
-seracare = data.table(labkey.selectRows(labkey.url.base,folderPath = "HIPC/Lyoplate","study","cell_population_statistics"))
-cytotrol = data.table(labkey.selectRows(labkey.url.base,folderPath  = "HIPC/Lyoplate", "lists","cytotrol statistics for power analysis"))
-local_central = data.table(labkey.selectRows(labkey.url.base,folderPath="HIPC/Lyoplate","lists","Local vs. Central Manual Gating - Cytotrol Data"))
+seracare <- data.table(labkey.selectRows(labkey.url.base, 
+                                         folderPath = "HIPC/Lyoplate",
+                                         "study",
+                                         "cell_population_statistics"))
+cytotrol <- data.table(labkey.selectRows(labkey.url.base, 
+                                         folderPath  = "HIPC/Lyoplate", "lists","cytotrol statistics for power analysis"))
+local_central <- data.table(labkey.selectRows(labkey.url.base, 
+                                              folderPath = "HIPC/Lyoplate","lists","Local vs. Central Manual Gating - Cytotrol Data"))
 
 #' Subset common columns
-seracare = seracare[,c("Population","Center","Sample","Proportion","Panel","Method"),with=FALSE]
-seracare$Experiment = "Seracare"
+seracare <- seracare[, c("Population", "Center", "Sample", "Proportion","Panel","Method"),with=FALSE]
+seracare$Experiment <- "Seracare"
    
 #' Merge the data sets
-data = rbind(seracare,cytotrol,local_central)
+data = rbind(seracare, cytotrol, local_central)
 ```
    
 We are interested in comparing the coefficients of variation between the manual central gating and the local manual gating in the Cytotrol data set. We calculate these and show a plot.
-```{r, eval=TRUE,echo=1:2,results='hide',message=FALSE,warning=FALSE}
+```{r, eval = TRUE, echo = 1:2, results = 'hide', message = FALSE, warning=FALSE}
 #Compute CVs for each Lyoplate panel, cell population, method and center, report the average CV across centers.
-CVS<-data[Method%in%c("local","central"),CV:=100*sd(Proportion,na.rm=TRUE)/mean(Proportion,na.rm=TRUE),list(Experiment,Panel,Population,Method,Center)][,list(CV=mean(CV,na.rm=TRUE)),list(Experiment,Panel,Population,Method)]
-CVS<-data[Method%in%c("manual","automated"),CV:=100*sd(Proportion,na.rm=TRUE)/mean(Proportion,na.rm=TRUE),list(Experiment,Panel,Population,Method,Sample,Center)][,list(CV=mean(CV,na.rm=TRUE)),list(Experiment,Panel,Population,Method)]
-CVS=CVS[CVS[,Population%like%"^Na.+ve"],Population:='Naive']
+CVS <- data[Method %in% c("local", "central"), CV := 100 * sd(Proportion, na.rm = TRUE) / mean(Proportion, na.rm = TRUE), list(Experiment, Panel, Population, Method, Center)][, list(CV = mean(CV, na.rm = TRUE)), list(Experiment, Panel, Population, Method)]
+CVS <- data[Method %in% c("manual", "automated"), CV := 100 * sd(Proportion,na.rm=TRUE)/mean(Proportion,na.rm=TRUE),list(Experiment,Panel,Population,Method,Sample,Center)][,list(CV=mean(CV,na.rm=TRUE)),list(Experiment,Panel,Population,Method)]
+CVS <- CVS[CVS[, Population %like% "^Na.+ve"], Population := 'Naive']
 ```
 
-```{r,warning=FALSE,message=FALSE,cache=FALSE,fig.width=10,fig.height=5,echo=FALSE,include=TRUE,htmlcap='Coefficients of variability for cell populations identified in the Lyoplate panles on the Cytotrol data, comparing local vs central manual gating. The CVs are equivalen or lower for all cell populations across panels with the exception of the Memory IgD+ cell population in the B-cell panel. The IgD stain was known to be problematic for the Lyplate panels in the Cytotrol data set.'}
+```{r,warning=FALSE,message=FALSE,cache=FALSE,echo=FALSE,fig.height=5,include=TRUE,htmlcap='Coefficients of variability for cell populations identified in the Lyoplate panles on the Cytotrol data, comparing local vs central manual gating. The CVs are equivalen or lower for all cell populations across panels with the exception of the Memory IgD+ cell population in the B-cell panel. The IgD stain was known to be problematic for the Lyplate panels in the Cytotrol data set.'}
 #Plot Cytotrol
-#ggplot(CVS[Method%in%c("local","central")])+aes(y=CV,x=Population,fill=Method)+facet_wrap(~Panel,scales="free")+geom_bar(position="dodge",stat="identity")+theme(axis.text.x=element_text(angle=45,hjust=1))+ggtitle("Cytotrol Cells")+scale_fill_brewer(type = "qual")
-ggplot(CVS[Method%in%c("local","central")])+aes(y=CV,x=Population,fill=Method)+facet_wrap(~Panel,scales="free")+geom_bar(position="dodge",stat="identity")+scale_fill_brewer(type = "qual",palette = 5,labels=c("Lyophilized Cells\n(Central gating)","Lyophilized Cells\n(Local gating)"))+theme_bw()+theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")
-
+#ggplot(CVS[Method %in% c("local", "central")]) + 
+#  aes(y = CV, x = Population, fill = Method) + 
+#  facet_wrap(~Panel, scales = "free") + 
+#  geom_bar(position = "dodge", stat = "identity") + 
+#  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+#  ggtitle("Cytotrol Cells") + 
+#  scale_fill_brewer(type = "qual")
+p <- ggplot(CVS[Method %in% c("local", "central")]) + 
+  aes(y = CV, x = Population, fill = Method) + 
+  facet_wrap(~Panel, scales = "free") + 
+  geom_bar(position = "dodge", stat = "identity") + 
+  scale_fill_brewer(type = "qual", 
+                    palette = 5, 
+                    labels = c("Lyophilized Cells\n(Central gating)", 
+                               "Lyophilized Cells\n(Local gating)")) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom") + xlab("<br><br><br>Population")
+p
+ggplotly(p)
 ```
 
-```{r,warning=FALSE,message=FALSE,cache=FALSE,fig.width=10,fig.height=5,echo=FALSE,include=FALSE}
+```{r,warning=FALSE,message=FALSE,cache=FALSE,echo=FALSE,include=FALSE}
 #Plot SeraCare
 #ggplot(CVS[Method%in%c("manual","automated")])+aes(y=CV,x=Population,fill=Method)+facet_grid(~Panel,scales="free")+geom_bar(position="dodge",stat="identity")+theme(axis.text.x=element_text(angle=45,hjust=1))+ggtitle("SeraCare Cells")+scale_fill_brewer(type="qual")
-ggplot(CVS[Method%in%c("manual","automated")])+aes(y=CV,x=Population,fill=Method)+facet_wrap(~Panel,scales="free",ncol=2)+geom_bar(position="dodge",stat="identity")+scale_fill_brewer(type="qual",palette = 5,labels=c("Lyophilized Cells\n(automated gating)","Lyophilized Cells\n(central manual gating)"))+theme_bw()+theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")
-
+p <- ggplot(CVS[Method %in% c("manual", "automated")]) + 
+  aes(y = CV, x = Population, fill = Method) + 
+  facet_wrap(~Panel, scales = "free", ncol = 2) + 
+  geom_bar(position = "dodge", stat = "identity") + 
+  scale_fill_brewer(type = "qual", 
+                    palette = 5, 
+                    labels = c("Lyophilized Cells\n(automated gating)", 
+                               "Lyophilized Cells\n(central manual gating)")) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "bottom")
+p
+ggplotly(p)
 ```
 
 ### Figure 1 and 2 - Intra and inter-site variability 
-```{r combined_cv,fig.width=15,fig.height=8}
-CVS_2<-na.omit(CVS)[!Method%in%"automated"]
-CVS_2=CVS_2[,plotlabel:=factor(factor(Experiment):factor(Method),labels=c("Lyophilized PBMC (Central Gating)","Lyophilized PBMC (Local Gating)","Cryopreserved PBMC (Central Gating)"))]
+```{r combined_cv,fig.width=15}
+CVS_2 <- na.omit(CVS)[!Method %in% "automated"]
+CVS_2 <- CVS_2[, plotlabel := factor(factor(Experiment):factor(Method),labels=c("Lyophilized PBMC (Central Gating)","Lyophilized PBMC (Local Gating)","Cryopreserved PBMC (Central Gating)"))]
 
-CVS_2[Panel%in%"Treg"&plotlabel%like%"Cryopreserved"&Population%like%"Total",Population:="Total"]
-CVS_2[Panel%in%"Treg"&plotlabel%like%"Cryopreserved"&Population%like%"25",Population:="127lo 25hi"]
+CVS_2[Panel %in% "Treg" & plotlabel %like% "Cryopreserved" & Population%like%"Total",Population:="Total"]
+CVS_2[Panel %in% "Treg" & plotlabel %like% "Cryopreserved" & Population%like%"25",Population:="127lo 25hi"]
 
 #Merge in the DC panel CVs which we did not initially include
-central_manual_cvs = data.table(labkey.selectRows(labkey.url.base,folderPath = "HIPC/Lyoplate","lists","central_manual_cvs"))
-setnames(central_manual_cvs,"Plotlabel","plotlabel")
-CVS_2 = rbind(CVS_2,central_manual_cvs)
+central_manual_cvs <- data.table(labkey.selectRows(labkey.url.base,folderPath = "HIPC/Lyoplate","lists","central_manual_cvs"))
+setnames(central_manual_cvs, "Plotlabel", "plotlabel")
+CVS_2 <- rbind(CVS_2, central_manual_cvs)
 
 
-p1<-ggplot(CVS_2[plotlabel%like%"Lyophilized"])+geom_bar(aes(x=Population,y=CV,fill=plotlabel),position="dodge",stat="identity")+facet_wrap(~Panel,scales="free_x",ncol=3)+scale_fill_manual("Experiment",values=brewer.pal(n = 3,name = "Pastel2")[c(1,2)])+theme_bw()+theme(axis.text.x=element_text(angle=45,hjust=1,size=10),strip.text.x=element_text(size=12),axis.title.x=element_text(size=12),axis.title.y=element_text(size=12),legend.position="right")+scale_y_continuous("Coefficient of Variability (%)")+scale_x_discrete("Cell Population")
+p1 <- ggplot(CVS_2[plotlabel %like% "Lyophilized"]) + 
+  geom_bar(aes(x = Population, y = CV, fill = plotlabel), 
+           position = "dodge", 
+           stat = "identity") + 
+  facet_wrap(~Panel, scales = "free_x", ncol = 3) + 
+  scale_fill_manual("Experiment", 
+                    values = brewer.pal(n = 3, name = "Pastel2")[c(1, 2)]) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10), 
+        strip.text.x = element_text(size = 12), 
+        axis.title.x = element_text(size = 12), 
+        axis.title.y = element_text(size = 12), 
+        legend.position = "right") + 
+  scale_y_continuous("Coefficient of Variability (%)") + 
+  scale_x_discrete("Cell Population")
 
-p2<-ggplot(merge(CVS_2,CVS_2[plotlabel%like%"Central",.N==2,list(Panel,Population)][V1==TRUE,Panel,Population],by=c("Population","Panel"))[plotlabel%in%c("Lyophilized PBMC (Central Gating)","Cryopreserved PBMC (Central Gating)")])+geom_bar(aes(x=Population,y=CV,fill=plotlabel),position="dodge",stat="identity")+facet_wrap(~Panel,scales="free",ncol=3)+scale_fill_manual("Experiment",labels=c("Lyophilized PBMC (Central Gating)","Cryopreserved PBMC (Central Gating)"),values=brewer.pal(n = 3,name = "Pastel2")[c(1,3)])+theme_bw()+theme(axis.text.x=element_text(angle=45,hjust=1,size=10),strip.text.x=element_text(size=12),axis.title.x=element_text(size=12),axis.title.y=element_text(size=12),legend.position="right")+scale_y_continuous("Coefficient of Variability (%)")+scale_x_discrete("Cell Population")
-layout<-matrix(rep(c(1,2),each=30*20/2),ncol=30,nrow=20,byrow=TRUE)
+p2 <- ggplot(merge(CVS_2, CVS_2[plotlabel %like% "Central", .N == 2, list(Panel,Population)][V1==TRUE,Panel,Population],by=c("Population","Panel"))[plotlabel%in%c("Lyophilized PBMC (Central Gating)","Cryopreserved PBMC (Central Gating)")])+geom_bar(aes(x=Population,y=CV,fill=plotlabel),position="dodge",stat="identity")+facet_wrap(~Panel,scales="free",ncol=3)+scale_fill_manual("Experiment",labels=c("Lyophilized PBMC (Central Gating)","Cryopreserved PBMC (Central Gating)"),values=brewer.pal(n = 3,name = "Pastel2")[c(1,3)])+theme_bw()+theme(axis.text.x=element_text(angle=45,hjust=1,size=10),strip.text.x=element_text(size=12),axis.title.x=element_text(size=12),axis.title.y=element_text(size=12),legend.position="right")+scale_y_continuous("Coefficient of Variability (%)")+scale_x_discrete("Cell Population")
+layout <- matrix(rep(c(1, 2), each = 30 * 20 / 2), ncol = 30, nrow = 20, byrow = TRUE)
 grid.newpage()
-pushViewport(viewport(layout=grid.layout(nrow = nrow(layout),ncol=ncol(layout))))
-ind<-which(layout==1,T)
-vp<-viewport(layout.pos.row = ind[,1],layout.pos.col=ind[,2])
-print(p1,vp=vp)
-ind<-which(layout==2,T)
-vp<-viewport(layout.pos.row = ind[,1],layout.pos.col=ind[,2])
-print(p2,vp=vp)
-grid.text("A",x=0.01,y=0.99)
-grid.text("B",x=0.01,y=0.50)
+pushViewport(viewport(layout = grid.layout(nrow = nrow(layout), ncol = ncol(layout))))
+ind <- which(layout == 1, T)
+vp <- viewport(layout.pos.row = ind[, 1], layout.pos.col = ind[, 2])
+print(p1, vp = vp)
+ind <- which(layout == 2, T)
+vp <- viewport(layout.pos.row = ind[, 1], layout.pos.col = ind[, 2])
+print(p2, vp = vp)
+grid.text("A", x = 0.01, y = 0.99)
+grid.text("B", x = 0.01, y = 0.50)
+ggplotly()
 ```
 
 
@@ -115,120 +164,132 @@ The ratio of CVs between the local and manual gating is used to rescale the cent
 
 ```{r,warning=FALSE,message=FALSE,cache=TRUE,echo=1:2,results='hide'}
 #' CV scaling factor for each cell population and panel between local and central gating
-cv.ratio<-CVS[Experiment%in%"Local_vs_Central"&Method%in%c("local","central"),list(ratio=CV[Method%in%"local"]/CV[Method%in%"central"]),list(Panel,Population)]
-setnames(cv.ratio,c("panel","Population","ratio"))
+cv.ratio <- CVS[Experiment %in% "Local_vs_Central" & Method %in% c("local", "central"), list(ratio = CV[Method %in% "local"] / CV[Method %in% "central"]), list(Panel, Population)]
+setnames(cv.ratio, c("panel", "Population", "ratio"))
 
 #Now do the power analysis.
-panel=labkey.selectRows(labkey.url.base,"HIPC/Lyoplate","lists","Populations For Power Analysis")
-mapping<-solve_LSAP(adist(cv.ratio$Population,panel$Population))
-cv.ratio=cbind(cv.ratio[,list(panel,ratio)],Population=panel$Population[mapping])
-path<-"/share/files/HIPC/Lyoplate/@files"
-source(file.path(path,"scripts/helperFunctions.r"))
-data<-data.table(labkey.selectRows(labkey.url.base,folderPath = "HIPC/Lyoplate","study","cell_population_statistics"))
-data = data[,lp:=car::logit(Proportion,adjust=1e-5)]
-data = data[,Method:=factor(Method)]
-data=data[,Sample:=relevel(factor(Sample),"12828")]           
+panel <- labkey.selectRows(labkey.url.base, "HIPC/Lyoplate","lists","Populations For Power Analysis")
+mapping <- solve_LSAP(adist(cv.ratio$Population, panel$Population))
+cv.ratio <- cbind(cv.ratio[, list(panel, ratio)], Population = panel$Population[mapping])
+path <- "/share/files/HIPC/Lyoplate/@files"
+source(file.path(path, "scripts/helperFunctions.r"))
+data <- data.table(labkey.selectRows(labkey.url.base, folderPath = "HIPC/Lyoplate", "study", "cell_population_statistics"))
+data <- data[, lp := car::logit(Proportion, adjust = 1e-5)]
+data <- data[, Method := factor(Method)]
+data <- data[, Sample := relevel(factor(Sample), "12828")]
 ```
 
 ```{r,warning=FALSE,message=FALSE,cache=TRUE,results='hide',echo=FALSE}
 #Fit B-cells
-merb <- .fitMer(as.data.frame(data[Panel=="Bcell"]))
-vc2 <- .extractVcomp(merb,sd=FALSE)
-vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
-vc <- .extractVcomp(merb,sd=TRUE)
+merb <- .fitMer(as.data.frame(data[Panel == "Bcell"]))
+vc2 <- .extractVcomp(merb, sd = FALSE)
+vc2 <- ddply(vc2,.(Method, Population), function(x) with(x, data.frame(variable, value = value / sum(value))))
+vc <- .extractVcomp(merb, sd = TRUE)
 vc2 <- .reorder.factor(vc2)
 vc <- .reorder.factor(vc)
-vcb<-vc2
-merb<-.fitMerBias(as.data.frame(data[Panel%in%"Bcell"]))
-cb<-.getCI(merb)
-cb<-.transCI(cb)
-levels(cb$Method)<-c("Automated","Manual")
-levels(vcb$Method)<-c("Automated","Manual")
+vcb <- vc2
+merb <- .fitMerBias(as.data.frame(data[Panel %in% "Bcell"]))
+cb <- .getCI(merb)
+cb <- .transCI(cb)
+levels(cb$Method) <- c("Automated", "Manual")
+levels(vcb$Method) <- c("Automated", "Manual")
 
 
 #Fit T-cells
-mert <- .fitMer(as.data.frame(data[Panel=="Tcell"]))
-vc2 <- .extractVcomp(mert,sd=FALSE)
-vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
-vc <- .extractVcomp(mert,sd=TRUE)
+mert <- .fitMer(as.data.frame(data[Panel == "Tcell"]))
+vc2 <- .extractVcomp(mert, sd = FALSE)
+vc2 <- ddply(vc2, 
+             .(Method, Population), 
+             function(x) with(x, data.frame(variable, value = value / sum(value))))
+vc <- .extractVcomp(mert, sd = TRUE)
 vc2 <- .reorder.factor(vc2)
 vc <- .reorder.factor(vc)
-vct<-vc2
-mert<-.fitMerBias(as.data.frame(data[Panel%in%"Tcell"]))
-ct<-.getCI(mert)
-ct<-.transCI(ct)
-levels(ct$Method)<-c("Automated","Manual")
-levels(vct$Method)<-c("Automated","Manual")
+vct <- vc2
+mert <- .fitMerBias(as.data.frame(data[Panel %in% "Tcell"]))
+ct <- .getCI(mert)
+ct <- .transCI(ct)
+levels(ct$Method) <- c("Automated","Manual")
+levels(vct$Method) <- c("Automated","Manual")
 
 #Fit T-reg
-mertr <- .fitMer(as.data.frame(data[Panel=="Treg"]))
-vc2 <- .extractVcomp(mertr,sd=FALSE)
-vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
-vc <- .extractVcomp(mertr,sd=TRUE)
+mertr <- .fitMer(as.data.frame(data[Panel == "Treg"]))
+vc2 <- .extractVcomp(mertr, sd = FALSE)
+vc2 <- ddply(vc2, 
+             .(Method,Population), 
+             function(x) with(x, data.frame(variable, value = value / sum(value))))
+vc <- .extractVcomp(mertr, sd = TRUE)
 vc2 <- .reorder.factor(vc2)
 vc <- .reorder.factor(vc)
-vctr<-vc2
-mertr<-.fitMerBias(as.data.frame(data[Panel%in%"Treg"]))
-ctr<-.getCI(mertr)
-ctr<-.transCI(ctr)
-levels(ctr$Method)<-c("Automated","Manual")
-levels(vctr$Method)<-c("Automated","Manual")
+vctr <- vc2
+mertr <- .fitMerBias(as.data.frame(data[Panel %in% "Treg"]))
+ctr <- .getCI(mertr)
+ctr <- .transCI(ctr)
+levels(ctr$Method) <- c("Automated", "Manual")
+levels(vctr$Method) <- c("Automated", "Manual")
 
 #Fit DC
-merdc <- .fitMer(as.data.frame(data[Panel=="DC"]))
-vc2 <- .extractVcomp(merdc,sd=FALSE)
-vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
-vc <- .extractVcomp(merdc,sd=TRUE)
+merdc <- .fitMer(as.data.frame(data[Panel == "DC"]))
+vc2 <- .extractVcomp(merdc, sd = FALSE)
+vc2 <- ddply(vc2, 
+             .(Method, Population), 
+             function(x) with(x, data.frame(variable, value = value / sum(value))))
+vc <- .extractVcomp(merdc, sd = TRUE)
 vc2 <- .reorder.factor(vc2)
 vc <- .reorder.factor(vc)
-vcdc<-vc2
-merdc<-.fitMerBias(as.data.frame(data[Panel%in%"DC"]))
-cdc<-.getCI(merdc)
-cdc<-.transCI(cdc)
-levels(cdc$Method)<-c("Automated","Manual")
-levels(vcdc$Method)<-c("Automated","Manual")
+vcdc <- vc2
+merdc <- .fitMerBias(as.data.frame(data[Panel %in% "DC"]))
+cdc <- .getCI(merdc)
+cdc <- .transCI(cdc)
+levels(cdc$Method) <- c("Automated", "Manual")
+levels(vcdc$Method) <- c("Automated", "Manual")
 ```
    
 ```{r,warning=FALSE,message=FALSE,cache=TRUE,echo=FALSE,results='hide'}
-.matchPops<-function(p1,p2,weight=c(1,1,1)){
-  d<-adist(p1,p2,costs = list(insertions=weight[1],deletions=weight[2],substitutions=weight[3]))
-  trans<-FALSE
-  if(ncol(d)<=nrow(d))
-    trans<-TRUE
-  if(trans){
-    d<-t(d)
+.matchPops <- function(p1, p2, weight = c(1, 1, 1)) {
+  d <- adist(p1, p2, costs = list(insertions = weight[1], deletions = weight[2], substitutions = weight[3]))
+  trans <- FALSE
+  if(ncol(d) <= nrow(d))
+    trans <- TRUE
+  if(trans) {
+    d <- t(d)
   }
-  mapping<-solve_LSAP(d)
-  if(trans){
-    l<-as.list(p2)
-    names(l)<-p1[mapping]
-  }else{
-    l<-as.list(p2[mapping])
-    names(l)<-p1
+  mapping <- solve_LSAP(d)
+  if(trans) {
+    l <- as.list(p2)
+    names(l) <- p1[mapping]
+  } else {
+    l <- as.list(p2[mapping])
+    names(l) <- p1
   }
   l
 }
 ```
    
 ```{r,warning=FALSE,message=FALSE,cache=TRUE,echo=FALSE,results='hide'}
-plots<-mapply(function(pnl,V,CC){
-  mapping = .matchPops(levels(factor(subset(cv.ratio,panel==pnl)$Population)),levels(factor(V$Population)),weight=c(1,1,10))
-  ratio = subset(cv.ratio,panel==pnl)
-  ratio$Population = factor(ratio$Population)
-  ratio$Population = factor(mapvalues(as.character(ratio$Population),from=names(mapping),to=unlist(mapping)))
-  setnames(ratio,"ratio","var.ratio")
-  foo<-.prepDF(V,CC,ratio=ratio)
-  list(ggplot(foo)+geom_line(aes(x=SampleSize.value,y=effects,lty=S.cat,col=S.cat),lwd=1)+scale_x_continuous("Sample Size")+scale_y_continuous("Detectable Effect Size")+ggtitle(Kmisc::wrap(paste0("Effect Size Detected at 80% Power: ",pnl),35))+facet_wrap(~Population,scales="free_y")+scale_linetype("Variability",labels=c("Central: - Cross-Center","Central: Within-Center","Local Gating"))+theme_bw()+theme(legend.position="bottom")+scale_color_brewer("Variability",type="qual",labels=c("Central: - Cross-Center","Central: Within-Center","Local Gating")))
-},pnl=as.list(levels(factor(cv.ratio$panel))),V=list(vcb,vct,vctr),CC=list(cb,ct,ctr))
+plots <- mapply(function(pnl, V, CC) {
+  mapping <- .matchPops(levels(factor(subset(cv.ratio ,panel == pnl)$Population)), levels(factor(V$Population)), weight = c(1, 1, 10))
+  ratio <- subset(cv.ratio,panel == pnl)
+  ratio$Population <- factor(ratio$Population)
+  ratio$Population <- factor(mapvalues(as.character(ratio$Population), from = names(mapping), to = unlist(mapping)))
+  setnames(ratio, "ratio", "var.ratio")
+  foo <- .prepDF(V, CC, ratio = ratio)
+  list(ggplot(foo) + geom_line(aes(x = SampleSize.value, y = effects, lty=S.cat,col=S.cat),lwd=1)+scale_x_continuous("Sample Size")+scale_y_continuous("Detectable Effect Size")+ggtitle(Kmisc::wrap(paste0("Effect Size Detected at 80% Power: ",pnl),35))+facet_wrap(~Population,scales="free")+scale_linetype("Variability",labels=c("Central: - Cross-Center","Central: Within-Center","Local Gating"))+theme_bw()+theme(legend.position="bottom")+scale_color_brewer("Variability",type="qual",labels=c("Central: - Cross-Center", "Central: Within-Center", "Local Gating")))
+},pnl = as.list(levels(factor(cv.ratio$panel))), V = list(vcb, vct, vctr), CC = list(cb, ct, ctr))
 ```
    
 ```{r,echo=FALSE, htmlcap='Power analysis for the Lyoplate B-cell panel.'}
- plots[[1]]
+plots[[1]]
+ggplotly(plots[[1]])
 ```
 ```{r,echo=FALSE, htmlcap='Power analysis for the Lyoplate T-cell panel.'}
 plots[[2]]
+ggplotly(plots[[2]])
 ```
 ```{r,echo=FALSE, htmlcap='Power analysis for the Lyoplate T-regulatory cell panel.'}
 plots[[3]]
+ggplotly(plots[[3]])
 ```
 
+<script>
+window.HTMLWidgets.staticRender();
+</script>

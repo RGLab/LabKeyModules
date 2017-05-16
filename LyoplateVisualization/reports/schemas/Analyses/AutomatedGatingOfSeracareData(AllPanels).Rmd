@@ -52,7 +52,7 @@ The manually gated `GatingSet` is available for download [here](/filecontent/HIP
 The *OpenCyto* gated `GatingSet` is available [here](/filecontent/HIPC/Lyoplate/sendFile.view?fileName=gated_data/pop_renamed/auto-gslist-tcell.tar.gz).  
    
 ```{r paths, eval=TRUE, echo=FALSE,results='hide'}
-path <- "/share/files/HIPC/Lyoplate/@files/"
+path <- "/share/files/HIPC/Lyoplate/@files"
 scriptPath <- file.path(path,"scripts")
 
 source(file.path(scriptPath, "wrapper-functions.r"))

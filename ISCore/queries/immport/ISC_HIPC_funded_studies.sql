@@ -1,5 +1,6 @@
 SELECT
-    study.study_accession
+    study.study_accession,
+    P.name LIKE '%HIPC%' AS hipc_funded
 FROM
     study
     LEFT OUTER JOIN contract_grant_2_study CG2S ON study.study_accession = CG2S.study_accession

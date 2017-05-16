@@ -1,0 +1,28 @@
+<div id='reportdiv'>Retrieving R session info, please wait...</div>
+<script type='text/javascript'>
+    var cnfReport = {
+        failure: function(){
+            document.getElementById('reportdiv').innerHTML = 'Unknown error.';
+        },
+        reportId: 'module:RSessionInfo/RSessionInfo.Rmd',
+        success: function(result){
+            var errors = result.errors;
+            var outputParams = result.outputParams;
+            if ( errors && errors.length > 0 ){
+                LABKEY.ext.ISCore.onFailure({
+                    exception: errors.join('\n')
+                });
+            } else if ( outputParams && outputParams.length > 0 ){
+                var p = outputParams[0];
+                $('#reportdiv').html(p.value);
+                window.HTMLWidgets.staticRender();
+            } else{
+                LABKEY.ext.ISCore.onFailure({
+                    exception: 'Strange situation: there are no reported errors, but also no output to show'
+                });
+            }
+        }
+    };
+    LABKEY.Report.execute(cnfReport);
+</script>
+

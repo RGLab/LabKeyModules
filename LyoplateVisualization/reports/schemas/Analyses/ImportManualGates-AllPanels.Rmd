@@ -1,6 +1,13 @@
 ```{r init,echo=FALSE,eval=TRUE, message=FALSE}
-    library(knitr)
-    opts_chunk$set( dev='CairoPNG', cache=FALSE, echo=FALSE, results='hide', message=TRUE, warning=FALSE, error=TRUE )
+library(knitr)
+opts_chunk$set(dev = "CairoPNG",
+               fig.align = "left",
+               cache = FALSE,
+               echo = FALSE,
+               results = "hide",
+               message = TRUE,
+               warning = FALSE,
+               error = TRUE)
 ```
 
 ### Import Manual Gates for Lyoplate Panel Data from FlowJo Workspaces (XML) and FCS Files

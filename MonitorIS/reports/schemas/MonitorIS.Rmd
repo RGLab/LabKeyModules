@@ -1,6 +1,11 @@
 ```{r knitr, echo = FALSE}
-knitr::opts_chunk$set(message = FALSE, echo = FALSE, fig.align = "left", fig.width = 12)
+knitr::opts_chunk$set(message = FALSE, 
+                      echo = FALSE, 
+                      warning = FALSE, 
+                      fig.align = 'left', 
+                      fig.width = 12)
 ```
+
 ```{r libs, message = FALSE}
 library(Rlabkey)
 library(ImmuneSpaceR)
@@ -11,6 +16,8 @@ library(plotly)
 library(tidytext)
 library(wordcloud)
 library(lubridate)
+library(readr)
+library(stringr)
 ```
 
 ```{r preprocess}
@@ -45,6 +52,8 @@ extras <- labkey.selectRows(baseUrl = labkey.url.base,
                             containerFilter = NULL)
 exclusion_list <- paste0(unique(c(admins$`Display Name`, extras$`Display Name`)), collapse = ";")
 ```
+
+
 
 # Users
 ```{r newusers}
@@ -83,8 +92,8 @@ if (plotType == "line") {
 ggplotly(p)
 ``` 
 
-## We gained `r round(mean(users$N), 2)` new users per `r dateBy` on average from `r from` to `r to`.
-<br/>
+We gained **`r round(mean(users$N), 2)` new users** per *`r dateBy`* on average from `r from` to `r to`.
+<br>
 
 
 ```{r activeusers}
@@ -122,8 +131,8 @@ if (plotType == "line") {
 ggplotly(p)
 ```
 
-## We have `r round(mean(active_by$n), 2)` active users per `r dateBy` on average from `r from` to `r to`.
-<br/>   
+We had **`r round(mean(active_by$n), 2)` active users** per *`r dateBy`* on average from `r from` to `r to`.
+<br>
 
 
 ```{r logins}
@@ -145,8 +154,8 @@ if (nrow(logins_by) > 0) {
   ggplotly(p)
 }
 ```
-<br/>
-   
+<br>
+
 
 ```{r vs}
 #vs <- full_join(df, logins_byday, by = c("created" = "Date")) %>% 
@@ -172,7 +181,7 @@ p <- users %>%
   theme_IS(base_size = 18)
 ggplotly(p)
 ```
-<br/>
+<br>
 
 
 ## Table of users
@@ -184,7 +193,11 @@ topusers <- left_join(users_all, logins_byuser, by = c("user_id" = "Created By")
   arrange(desc(n))
 datatable(topusers)
 ```
-<br/>
+<br>
+
+
+
+***
 
 
 
@@ -227,14 +240,19 @@ if (nrow(freq) > 0) {
   wordcloud(words = "no search", freq = 1)
 }
 ```
-<br/>
+<br>
 
 
 ## Table of search queries
 ```{r wordtable}
-datatable(freq)
+datatable(freq, width = 600)
 ```
-<br/>
+<br>
+
+
+
+***
+
 
 
 # Studies and Modules
@@ -269,14 +287,217 @@ p <- ggplot(sdys, aes(x = created)) +
   theme_IS(base_size = 18)
 ggplotly(p)
 ```
-<br/>
+<br>
 
 
-## Google Analytics page views
-Work in progress...
+```{r tomcat-logs}
+# These logs are actually `/labkey/apps/tomcat/logs/` created by tomcat.
+# Since they cannot be access by the r server, we need to copy them to `/share`
+# Set up a cron job on `wsP/T` as `immunespace`
+# crontab -e
+# Add this line
+# 00 0-23/6 * * * rsync -a -v /labkey/apps/tomcat/logs/localhost_access_log.* /share/tomcat-logs/
+# This will sync logs to `/share/tomcat-logs/` every six hour.
+read_log <- function(date) {
+  if (Sys.info()["nodename"] == "immunetestrserve" & date > "2016-08-08") {
+    file_name <- paste0("/share/tomcat-logs/localhost_access_log..", date, ".txt")
+  } else {
+    file_name <- paste0("/share/tomcat-logs/localhost_access_log.", date, ".txt")
+  }
+  if (file.exists(file_name)) {
+    read_delim(file = file_name, 
+               delim = " - ",
+               escape_double = TRUE,
+               col_names = FALSE,
+               trim_ws = TRUE) %>% 
+      mutate(date = date, 
+             study = str_extract(X6, "SDY\\d+"), 
+             schema = grepl("schemaName=study?", X14), 
+             query = str_extract(X14, "(?<=queryName=)\\w+"))
+  } else {
+    NULL
+  }
+}
+logs_dt <- lapply(from_to$date, read_log) %>% bind_rows()
+```
 
 
-# ImmuneSpaceR Usage
-Work in progress...
+## Pageviews: Study
+```{r study-views}
+log_study <- logs_dt %>% 
+  mutate(folder = str_extract(X6, "(/project/Studies/SDY\\d+/begin.view\\?? |/project/Studies/begin.view\\?? )")) %>% 
+  filter(!is.na(folder)) %>% 
+  mutate(study = ifelse(is.na(study), "Data Finder", study)) %>% 
+  select(study) %>% 
+  count(study) %>% 
+  arrange(desc(n))
+datatable(log_study, 
+          colnames = c("Study", "Unique pageviews"), 
+          caption = paste0("From ", from, " to ", to), 
+          width = 600)
+```
 
 
+## Pageviews: Module
+```{r module-views}
+log_module <- logs_dt %>% 
+  mutate(module = str_extract(X6, "(?<=GET /)(DataExplorer|GeneExpressionExplorer|GeneSetEnrichmentAnalysis|ImmuneResponsePredictor)(?=/\\w+)")) %>% 
+  filter(!is.na(module)) %>% 
+  select(module) %>% 
+  count(module) %>% 
+  arrange(desc(n))
+datatable(log_module, 
+          colnames = c("Module", "Unique pageviews"), 
+          caption = paste0("From ", from, " to ", to), 
+          width = 600)
+```
+
+
+***
+
+
+
+# ImmuneSpaceR
+
+```{r isr}
+ISR <- logs_dt %>% 
+  filter(grepl("ImmuneSpaceR", X12)) %>% 
+  mutate(study = ifelse(is.na(study), "All", study))
+ISR_inits <- ISR %>% 
+  filter(query == "ISC_study_datasets")
+```
+
+## Connections
+
+```{r isr-study}
+ISR_study <- ISR_inits %>%
+  select(study) %>%
+  count(study) %>%
+  arrange(desc(n))
+datatable(ISR_study,
+          colnames = c("Study", "ISR connections"),
+          caption = paste0("From ", from, " to ", to), 
+          width = 600)
+```
+<br>
+
+
+```{r isr-con}
+ISR_con <- ISR_inits %>% 
+  select(date) %>% 
+  count(date) %>% 
+  right_join(from_to, by = "date") %>% 
+  mutate(n = replace(n, is.na(n), 0)) %>% 
+  mutate(date = floor_date(date, dateBy)) %>%
+  group_by(date) %>%
+  summarise(N = sum(n))
+p <- ggplot(ISR_con, aes(x = date, y = N)) +
+  xlab(paste0("By ", dateBy)) +
+  ylab("# of connections") +
+  ggtitle("Number of ISR connections over time") +
+  scale_x_date(limits = c(from, to)) +
+  theme_IS(base_size = 18)
+if (plotType == "line") {
+  p <- p + geom_line()
+} else {
+  p <- p + geom_bar(stat = "identity")
+}
+ggplotly(p)
+```
+
+We had **`r round(mean(ISR_con$N), 2)` connections** per *`r dateBy`* on average from `r from` to `r to`.
+<br>
+
+
+```{r isr-user}
+ISR_user <- ISR_inits %>% 
+  select(date, X13) %>% 
+  filter(X13 != "-") %>% 
+  distinct() %>% 
+  select(date) %>% 
+  count(date) %>% 
+  right_join(from_to, by = "date") %>% 
+  mutate(n = replace(n, is.na(n), 0)) %>% 
+  mutate(date = floor_date(date, dateBy)) %>%
+  group_by(date) %>%
+  summarise(N = sum(n))
+p <- ggplot(ISR_user, aes(x = date, y = N)) +
+  xlab(paste0("By ", dateBy)) +
+  ylab("# of users") +
+  ggtitle("Number of ISR users over time") +
+  scale_x_date(limits = c(from, to)) +
+  theme_IS(base_size = 18)
+if (plotType == "line") {
+  p <- p + geom_line()
+} else {
+  p <- p + geom_bar(stat = "identity")
+}
+ggplotly(p)
+```
+
+We had **`r round(mean(ISR_user$N), 2)` ISR users** per *`r dateBy`* on average from `r from` to `r to`.
+<br>
+
+
+## Downloads
+
+```{r isr-bioc}
+BIOC <- read.table("https://www.bioconductor.org/packages/stats/bioc/ImmuneSpaceR/ImmuneSpaceR_stats.tab", header = T)
+BIOC <- BIOC %>% 
+  filter(Month != "all") %>% 
+  mutate(date = as.Date(paste(Year, Month, "01", sep = "-"), "%Y-%b-%d")) %>% 
+  arrange(date) %>% 
+  filter(date <= Sys.Date()) %>% 
+  select(date, Nb_of_downloads)
+
+p <- ggplot(BIOC, aes(x = date, y = Nb_of_downloads)) +
+  xlab("By Month") +
+  ylab("Number of downloads") +
+  ggtitle("Number of downloads in Bioconductor over time") +
+  scale_x_date(limits = c(from, to)) +
+  theme_IS(base_size = 18)
+if (plotType == "line") {
+  p <- p + geom_line()
+} else {
+  p <- p + geom_bar(stat = "identity")
+}
+ggplotly(p)
+```
+<br>
+
+
+```{r isr-github}
+```
+
+
+***
+
+# RStudio
+```{r rstudio}
+log_rstudio <- logs_dt %>% 
+  filter(grepl("GET /_rstudio/ HTTP/1.1", X6))
+
+
+session_rstudio <- log_rstudio %>% 
+  select(date) %>% 
+  count(date) %>% 
+  right_join(from_to, by = "date") %>% 
+  mutate(n = replace(n, is.na(n), 0)) %>% 
+  mutate(date = floor_date(date, dateBy)) %>%
+  group_by(date) %>%
+  summarise(N = sum(n))
+p <- ggplot(session_rstudio, aes(x = date, y = N)) +
+  xlab(paste0("By ", dateBy)) +
+  ylab("# of sessions") +
+  ggtitle("RStudio sessions over time") +
+  scale_x_date(limits = c(from, to)) +
+  theme_IS(base_size = 18)
+if (plotType == "line") {
+  p <- p + geom_line()
+} else {
+  p <- p + geom_bar(stat = "identity")
+}
+ggplotly(p)
+```
+
+We had **`r round(mean(session_rstudio$N), 2)` RStudio sessions** per *`r dateBy`* on average from `r from` to `r to`.

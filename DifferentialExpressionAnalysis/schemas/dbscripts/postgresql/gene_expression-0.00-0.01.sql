@@ -35,3 +35,4 @@ CREATE TABLE gene_expression.gene_expression_analysis_results
         REFERENCES gene_expression.gene_expression_analysis (analysis_accession, Container)
         ON DELETE CASCADE
 );
+

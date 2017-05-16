@@ -1,6 +1,6 @@
 ```{r init,echo=FALSE,eval=TRUE, message=FALSE}
-    library(knitr)
-    opts_chunk$set( dev='CairoPNG', fig.width=10, fig.height=7 )
+library(knitr)
+opts_chunk$set(dev = "CairoPNG", fig.align = "left", fig.width = 10, fig.height = 7)
 ```
 
 # Lyoplate automated and manual gating evaluation of variability and bias

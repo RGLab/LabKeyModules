@@ -172,6 +172,18 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                             cn: [
                                     {
                                         cls: 'bold-text',
+                                        html: 'Available raw data files: ',
+                                        tag: 'span'
+                                    },{
+                                        id: 'rawFiles'.wpdi(),
+                                        tag: 'span'
+                                    }
+                            ]
+                        },{
+                            cls: 'overview-spacing',
+                            cn: [
+                                    {
+                                        cls: 'bold-text',
                                         html: 'Sponsoring organization: ',
                                         tag: 'span'
                                     },{
@@ -256,6 +268,14 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
 
         LABKEY.Query.selectRows({
             requiredVersion: 12.3,
+            schemaName: 'study',
+            queryName: 'ISSO_raw_files',
+            success: onSuccessRF,
+            failure: onError
+        });
+
+        LABKEY.Query.selectRows({
+            requiredVersion: 12.3,
             schemaName: 'immport',
             queryName: 'study',
             columns:  'brief_title, type, condition_studied, brief_description, actual_start_date, ' +
@@ -321,7 +341,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 LABKEY.Query.selectRows({
                     requiredVersion: 12.3,
                     schemaName: 'immport',
-                    queryName: 'HIPCfundedStudies',
+                    queryName: 'ISC_HIPC_funded_studies',
                     columns:  'study_accession',
                     filterArray: [LABKEY.Filter.create('study_accession', SDY, LABKEY.Filter.Types.EQUAL)],
                     success: onSuccessHIPCfund,
@@ -355,7 +375,31 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                     '\">' + row['Label'].value + '</a>'
                 );
             }
-            $('#datasets'.wpdi())[0].innerHTML = datasets.join(', ');
+            if ( length == 0 ){
+                $('#datasets'.wpdi())[0].innerHTML = 'None'
+            } else{
+                $('#datasets'.wpdi())[0].innerHTML = datasets.join(', ');
+            }
+        };
+
+        function onSuccessRF( results ){
+            var
+                rows = results.rows,
+                length = rows.length,
+                datasets = [];
+            for ( var idxRow = 0; idxRow < length; idxRow ++ ){
+                var row = rows[ idxRow ];
+                datasets.push(
+                    '<a href=\"' +
+                    LABKEY.ActionURL.buildURL( 'study', 'dataset', null, { datasetId: row['Id'].value } ) +
+                    '\">' + row['Label'].value + '</a>'
+                );
+            }
+            if ( length == 0 ){
+                $('#rawFiles'.wpdi())[0].innerHTML = 'None'
+            } else{
+                $('#rawFiles'.wpdi())[0].innerHTML = datasets.join(', ');
+            }
         };
 
         function onSuccessHIPCfund(results){
