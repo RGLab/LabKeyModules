@@ -27,7 +27,7 @@ FROM
        SELECT
        COUNT( participantid ) AS n,
        'gene_expression_files' AS Name,
-       'Gene expression files' AS Label
+       'Gene expression microarray data files' AS Label
        FROM
        gene_expression_files
 

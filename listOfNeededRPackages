@@ -7,6 +7,7 @@ clue
 contrast
 data.table
 digest
+dplyr
 DT
 extrafont
 FactoMineR
@@ -23,6 +24,9 @@ glmnet
 gplots
 gridExtra
 gtools
+hash
+heatmaply
+ImmSig2
 ImmuneSpaceData
 ImmuneSpaceR
 Kmisc
@@ -30,6 +34,7 @@ knitr
 languageR
 limma
 lme4
+lubridate
 multcomp
 mvtnorm
 ncdfFlow
@@ -38,13 +43,16 @@ pheatmap
 plotly
 plyr
 preprocessCore
+qusage
 RColorBrewer
 RCurl
+readr
 rentrez
 reshape
 reshape2
-rgl
 RJSONIO
 Rlabkey
 Rlibstree
-scales
+stringr
+tidytext
+wordcloud

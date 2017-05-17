@@ -1,0 +1,19 @@
+```{r echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+RSessionInfo <- devtools::session_info(pkgs = rownames(installed.packages()), include_base = TRUE)
+```
+
+## Session Info
+```{r}
+RSessionInfo$platform
+```
+
+## Pandoc Version
+```{r}
+rmarkdown::pandoc_version()
+```
+
+## Available R Packages
+```{r}
+DT::datatable(RSessionInfo$packages)
+```

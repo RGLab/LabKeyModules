@@ -13,15 +13,19 @@ opts_chunk$set(message = FALSE, fig.align = "center", fig.width = 10, fig.height
 ```
 
 ### Load ImmuneSpaceR
+
 ```{r}
 library(ImmuneSpaceR)
 library(data.table)
 library(ggplot2)
+library(plotly)
 ```
 
 ### Initialize the connection to SDY144 and get data
+
 First we initialize the connection to the selected study using `CreateConnection`.
 Then we grab the datasets of interests with the `getDataset` method.
+
 ```{r}
 con <- CreateConnection("SDY144")
 flow <- con$getDataset("fcs_analyzed_result")
@@ -30,6 +34,7 @@ vn   <- con$getDataset("neut_ab_titer")
 ```
 
 Then we select the cell populations of intereset.
+
 ```{r subset}
 pb <- flow[population_name_reported %in% c("Plasma cells,Freq. of,B lym CD27+", "Plasmablast + Plasma Cells Abs#", "Plasmablast,Freq. of,Q3: CD19+, CD20-")]
 pb <- pb[, population_cell_number := as.numeric(population_cell_number)]
@@ -38,35 +43,49 @@ pb <- pb[, list(participant_id, population_cell_number, population_name_reported
 ```
 
 We compute the HI and VN titer as the fold-increase between baseline and day 30.
+
 ```{r FC}
 # HAI
-hai <- hai[,response:=value_reported/value_reported[study_time_collected==0],
-                 by="virus,cohort,participant_id"][study_time_collected==30]
+hai <- hai[, response := value_reported / value_reported[study_time_collected==0],
+                 by = "virus,cohort,participant_id"][study_time_collected==30]
 hai <- hai[, list(participant_id, virus, response)]
 dat_hai <- merge(hai, pb, by = "participant_id", allow.cartesian = TRUE)
+
 # VN
-vn <- vn[, response:=value_reported/value_reported[study_time_collected==0],
-                 by="virus,cohort,participant_id"][study_time_collected==30]
+vn <- vn[, response := value_reported / value_reported[study_time_collected==0],
+                 by = "virus,cohort,participant_id"][study_time_collected==30]
 vn <- vn[, list(participant_id, virus, response)]
 dat_vn <- merge(vn, pb, by = "participant_id", allow.cartesian = TRUE)
 ```
 
-### Plot using `ggplot2`
+### Plot using `ggplot2` and `plotly`
+
 Figure 2 A: Correlation between the absolute number of plasmablasts and plasma
 Bcells 7 days after vaccination with and fold-increase of HI titers from baseline
 to day 30 after vaccination.
-```{r HAI, dev='CairoPNG'}
-ggplot(dat_hai, aes(x = population_cell_number, y = response)) +
-  geom_point() + geom_smooth(method = "lm") +
-  facet_grid(virus~population_name_reported, scale = "free") + theme_IS()
-  
+```{r HAI}
+p <- ggplot(dat_hai, aes(x = population_cell_number, y = response)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_grid(virus ~ population_name_reported, scale = "free") +
+  theme_IS()
+ggplotly(p)
 ```
 
 Figure 2 B: Correlation between the absolute number of plasmablasts and plasma
 Bcells 7 days after vaccination with and fold-increase of VN titers from baseline
 to day 30 after vaccination.
-```{r VN, dev='CairoPNG'}
-ggplot(dat_vn, aes(x = population_cell_number, y = response)) +
-  geom_point() + geom_smooth(method = "lm") +
-  facet_grid(virus~population_name_reported, scale = "free") + theme_IS()
+
+```{r VN}
+p <- ggplot(dat_vn, aes(x = population_cell_number, y = response)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_grid(virus ~ population_name_reported, scale = "free") +
+  theme_IS()
+ggplotly(p)
 ```
+
+<script>
+window.HTMLWidgets.staticRender();
+</script>
+

@@ -103,14 +103,14 @@ $(document).ready(function() {
     LABKEY.Query.executeSql({
         failure: me.onFailureNews.bind( me ),
         schemaName: 'announcement',
-        sql: 'SELECT RowId, Title, FormattedBody, to_char( Created, \'Month FMDD, YYYY\' ) AS Date FROM Announcement WHERE Expires IS NULL OR TIMESTAMPDIFF(\'SQL_TSI_DAY\', NOW(), Expires ) >= 0 ORDER BY Created DESC',
+        sql: 'SELECT RowId, Title, FormattedBody, to_char( Created, \'Month FMDD, YYYY\' ) AS Date FROM Announcement WHERE Expires IS NULL OR TIMESTAMPDIFF(\'SQL_TSI_DAY\', NOW(), Expires ) >= 0',
         success: function(d){
             me.maskNews.hide();
 
             if ( d && d.rows ){
                 if ( d.rows.length > 0 ){
                     Ext.each( d.rows, function(row){
-                        $('#News').append(
+                        $('#News').prepend(
                             '<div class=\'fixed-height\'><strong>' + row.Date + '. <a href=\'' +
                                 LABKEY.ActionURL.buildURL(
                                     'announcements',

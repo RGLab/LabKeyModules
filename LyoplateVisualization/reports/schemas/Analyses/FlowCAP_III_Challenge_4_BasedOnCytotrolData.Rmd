@@ -12,10 +12,14 @@ the two algorithms were combined as an OpenCyto pipeline, which was then used to
    compared to manual analysis can be found [here](/study/HIPC/Lyoplate/dataset.view?Dataset.reportId=db%3A159&datasetId=5001).
 
 <hr>
-   
+
+```{r knitr-opts, echo = FALSE, message = FALSE, cache = FALSE}
+library(knitr)
+opts_chunk$set(fig.align = "left", fig.width = 12, fig.height = 12)
+```
 
 ```{r echo=FALSE,eval=TRUE}
-path<-"/share/files/HIPC/Lyoplate/@files/scripts"
+path <- "/share/files/HIPC/Lyoplate/@files/scripts"
 suppressPackageStartupMessages({
     library(data.table)
     library(car)
@@ -26,102 +30,184 @@ suppressPackageStartupMessages({
     co <- labkey.setCurlOptions(sslversion = 1)
     library(reshape)
     library(ggplot2)
+    library(plotly)
 })
 
-source(file.path(path,"helperFunctions.r"))
-fulldata=data.table(labkey.selectRows(labkey.url.base,"HIPC/Lyoplate","study","Cytotrol FlowCAP III Data (T-cell and B-cell Panels)"))
-
-fulldata=fulldata[,lp:=logit(Proportion,adjust=0)]
-fulldata=fulldata[,Method:=factor(Method)]
+source(file.path(path, "helperFunctions.r"))
+fulldata <- labkey.selectRows(baseUrl = labkey.url.base, 
+                              folderPath = "HIPC/Lyoplate", 
+                              schemaName = "study", 
+                              queryName = "Cytotrol FlowCAP III Data (T-cell and B-cell Panels)")
+fulldata <- data.table(fulldata)
+fulldata <- fulldata[, lp := logit(Proportion, adjust = 0)]
+fulldata <- fulldata[, Method := factor(Method)]
 ```
 
 
 ## B-cell Panel
 
-```{r bcell, eval=TRUE,fig.width=9,warning=FALSE,message=FALSE}
-mer<-.fitMer(fulldata[Panel=="Bcell"])
-vc2 <- .extractVcomp(mer,sd=FALSE)
-vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
-vc <- .extractVcomp(mer,sd=TRUE)
+```{r bcell, eval = TRUE, warning = FALSE, message = FALSE}
+mer <- .fitMer(fulldata[Panel == "Bcell"])
+vc2 <- .extractVcomp(mer, sd = FALSE)
+vc2 <- ddply(vc2, 
+             .(Method, Population), 
+             function(x) with(x, data.frame(variable, value = value / sum(value))))
+vc <- .extractVcomp(mer, sd = TRUE)
 
 vc2 <- .reorder.factor(vc2)
 vc <- .reorder.factor(vc)
-ggplot(subset(vc,!is.nan(value)))+
-  geom_bar(aes(x=Method,y=value,fill=variable),stat="identity",position="stack")+
-  ggtitle("Variability per Method for B-Cell Panel")+
-  facet_wrap(~Population,scales="free_y",nrow=2)+
-  theme_bw()+
-  theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")+
-  scale_y_continuous("Standard Deviation")+
-  scale_fill_brewer("Source of Variability",type = "qual")
+p <- ggplot(subset(vc, !is.nan(value))) +
+  geom_bar(aes(x = Method, 
+               y = value, 
+               fill = variable), 
+           stat = "identity", 
+           position = "stack") +
+  ggtitle("Variability per Method for B-Cell Panel") +
+  facet_wrap(~Population, 
+             scales = "free_y", labeller = label_both) +
+  xlab("<br><br><br><br><br><br><br>Method") + 
+  theme_bw() +
+  theme(axis.title.x = element_text(size = 10, hjust = 0, vjust = 5),
+        axis.title.y = element_text(size = 10),
+        axis.text.x = element_text(angle = 45,vjust = 10),
+        legend.position = "bottom") +
+  scale_y_continuous("Standard Deviation") +
+  scale_fill_brewer("Source of Variability", 
+                    type = "qual")
+p
+ggplotly(p)
 
 
 
+merb <- .fitMerBias(as.data.frame(fulldata[Panel %in% "Bcell"]))
 
-merb<-.fitMerBias(as.data.frame(fulldata[Panel%in%"Bcell"]))
 
-
-cb<-.getCI(merb)
-cytotrol_transci<-function(bar){
-  foo<-ddply(cast(melt(bar),Method+Population+variable~Sample),.(Method,Population,variable),function(x)with(x,data.frame(Sample1 = `(Intercept)`,Sample2=`(Intercept)`+Sample2,Sample3=`(Intercept)`+Sample3,Sample4=`(Intercept)`+Sample4)))
-  setnames(foo,"variable","ci")
-  foo<-melt(foo)
-  foo$value<-arm::invlogit(foo$value)
-  foo<-setnames(foo,"variable","Sample")
-  foo<-(cast(foo,Method+Population+Sample~ci))
+cb <- .getCI(merb)
+cytotrol_transci <- function(bar) {
+  foo <- ddply(cast(melt(bar), 
+                    Method + Population + variable ~ Sample), 
+               .(Method, Population, variable), 
+               function(x) with(x,
+                                data.frame(Sample1 = `(Intercept)`, 
+                                           Sample2 = `(Intercept)` + Sample2, Sample3 = `(Intercept)` + Sample3, Sample4 = `(Intercept)` + Sample4)))
+  setnames(foo, "variable", "ci")
+  foo <- melt(foo)
+  foo$value <- arm::invlogit(foo$value)
+  foo <- setnames(foo, "variable", "Sample")
+  foo <- (cast(foo, Method + Population + Sample ~ ci))
   foo
 }
 
-cb<-cytotrol_transci(cb)
-ggplot(cb)+
-  geom_point(aes(x=mean,y=Sample:Method,col=Sample,shape=Method),size=3)+
-  geom_segment(aes(x=lower,xend=upper,y=Sample:Method,yend=Sample:Method,col=Sample),lineend="round",lwd=1)+
-  theme_bw()+
-  scale_x_continuous("Proportion")+
-  scale_y_discrete()+
-  facet_wrap(~Population,ncol=3,scales="free_x")+
-  theme(axis.text.y=element_blank(),axis.title.y=element_blank(),axis.ticks.y=element_blank(),legend.position="bottom",legend.direction="horizontal")+
-  scale_color_brewer(type="qual")+ggtitle("Bias for B-cell Panel (FlowCAP III)")+xlim(c(0,0.5))
-
+cb <- cytotrol_transci(cb)
+p <- ggplot(cb) +
+  geom_point(aes(x = mean, 
+                 y = Sample:Method, 
+                 col = Sample, 
+                 shape = Method) , 
+             size = 3) +
+  geom_segment(aes(x = lower, 
+                   xend = upper, 
+                   y = Sample:Method, 
+                   yend = Sample:Method,
+                   col = Sample), 
+               lineend = "round", 
+               lwd = 1) +
+  theme_bw() +
+  scale_x_continuous("Proportion") +
+  scale_y_discrete() +
+  facet_wrap(~Population, 
+             ncol = 3, 
+             scales = "free_x") +
+  theme(axis.text.y = element_blank(), 
+        axis.title.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        legend.position = "bottom",
+        legend.direction = "horizontal") +
+  scale_color_brewer(type = "qual") + 
+  ggtitle("Bias for B-cell Panel (FlowCAP III)") + 
+  xlim(c(0, 0.5))
+p
+ggplotly(p)
 ```
              
              
 ## T-cell Panel
              
-```{r tcell, eval=TRUE,fig.width=9,warning=FALSE,message=FALSE}
+```{r tcell, eval = TRUE, warning = FALSE, message = FALSE}
 
-mer<-.fitMer(fulldata[Panel=="Tcell"])
-vc2 <- .extractVcomp(mer,sd=FALSE)
-vc2 <- ddply(vc2,.(Method,Population),function(x)with(x,data.frame(variable,value=value/sum(value))))
-vc <- .extractVcomp(mer,sd=TRUE)
+mer <- .fitMer(fulldata[Panel == "Tcell"])
+vc2 <- .extractVcomp(mer, sd = FALSE)
+vc2 <- ddply(vc2, 
+             .(Method, Population), 
+             function(x) with(x, data.frame(variable, value = value / sum(value))))
+vc <- .extractVcomp(mer, sd = TRUE)
 
 vc2 <- .reorder.factor(vc2)
 vc <- .reorder.factor(vc)
-ggplot(subset(vc,!is.nan(value)))+
-  geom_bar(aes(x=Method,y=value,fill=variable),stat="identity",position="stack")+
-  ggtitle("Variability per Method for T-Cell Panel")+
-  facet_wrap(~Population,scales="free_y",nrow=2)+
-  theme_bw()+
-  theme(axis.text.x=element_text(angle=45,hjust=1),legend.position="bottom")+
-  scale_y_continuous("Standard Deviation")+
-  scale_fill_brewer("Source of Variability",type = "qual")
+p <- ggplot(subset(vc, !is.nan(value))) +
+  geom_bar(aes(x = Method, 
+               y = value, 
+               fill = variable), 
+           stat = "identity", 
+           position = "stack") +
+  ggtitle("Variability per Method for T-Cell Panel") +
+  facet_wrap(~Population, 
+#             scales = "free_y") + 
+             nrow = 2) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "bottom") +
+  scale_y_continuous("Standard Deviation") +
+  scale_fill_brewer("Source of<br> Variability", 
+                    type = "qual")
+p
+ggplotly(p)
 
+mert <- .fitMerBias(as.data.frame(fulldata[Panel %in% "Tcell"]))
+ct <- .getCI(mert)
+ct <- cytotrol_transci(ct)
+ct$StdPop <- factor(ct$Population)
+levels(ct$StdPop) <- c("CD4 Activated", 
+                       "CD8 Activated", 
+                       "CD4 Central Memory", 
+                       "CD8 Central Memory", 
+                       "CD4 Effector", 
+                       "CD8 Effector", 
+                       "CD4 Effector Memory", 
+                       "CD8 Effector Memory", 
+                       "CD4 Naive", 
+                       "CD8 Naive")
+ct$Population <- ct$StdPop
 
-mert<-.fitMerBias(as.data.frame(fulldata[Panel%in%"Tcell"]))
-ct<-.getCI(mert)
-ct<-cytotrol_transci(ct)
-ct$StdPop = factor(ct$Population)
-levels(ct$StdPop) = c("CD4 Activated","CD8 Activated","CD4 Central Memory", "CD8 Central Memory","CD4 Effector","CD8 Effector", "CD4 Effector Memory","CD8 Effector Memory","CD4 Naive","CD8 Naive")
-ct$Population = ct$StdPop
-
-ggplot(ct)+
-  geom_point(aes(x=mean,y=Sample:Method,col=Sample,shape=Method),size=3)+
-  geom_segment(aes(x=lower,xend=upper,y=Sample:Method,yend=Sample:Method,col=Sample),lineend="round",lwd=1)+
-  theme_bw()+
-  scale_x_continuous("Proportion")+
-  scale_y_discrete()+
-  facet_wrap(~Population,ncol=3,scales="free_x")+
-  theme(axis.text.y=element_blank(),axis.title.y=element_blank(),axis.ticks.y=element_blank(),legend.position="bottom",legend.direction="horizontal")+
-  scale_color_brewer(type="qual")+ggtitle("Bias for T-cell Panel  (FlowCAP III)")+xlim(c(0,0.7))
+p <- ggplot(ct) +
+  geom_point(aes(x = mean, 
+                 y = Sample:Method, 
+                 col = Sample, 
+                 shape = Method)) +
+  geom_segment(aes(x = lower, 
+                   xend = upper,
+                   y = Sample:Method, 
+                   yend = Sample:Method, 
+                   col = Sample), 
+               lineend = "round") +
+  theme_bw() +
+  scale_x_continuous("Proportion") +
+  scale_y_discrete() +
+  facet_wrap(~Population, 
+             scales = "free_x", 
+             ncol = 3) +
+  theme(axis.text.y = element_blank(), 
+        axis.title.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        legend.position = "bottom", 
+        legend.direction = "horizontal")+
+  scale_color_brewer(type = "qual") + 
+  ggtitle("Bias for T-cell Panel  (FlowCAP III)") + 
+  xlim(c(0, 0.7))
+p
+ggplotly(p)
 ```
 
+<script>
+window.HTMLWidgets.staticRender();
+</script>

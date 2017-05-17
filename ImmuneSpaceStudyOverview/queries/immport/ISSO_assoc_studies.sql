@@ -18,3 +18,4 @@ WHERE
   curr.cpid = study_pubmed.pubmed_id AND
   study_pubmed.study_accession != curr.csa AND
   SP.label = study_pubmed.study_accession
+

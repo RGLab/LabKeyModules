@@ -3,5 +3,5 @@ SELECT
 FROM
  ISC_study_datasets
 WHERE
- Category.Label IN ('Assays')
+ Category.Label IN ('Raw data files')
 

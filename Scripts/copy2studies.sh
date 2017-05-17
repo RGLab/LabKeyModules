@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # This script copies the files into each studies
-# It should be run by the immunespace user in the rserve machine
+# It should be run by the immunespace user on the RServe machine
+# For multiple studies, input it as a space separated list enclosed with quotes
 
 user=`whoami`
 if [ $user != 'immunespace' ];then
@@ -46,7 +47,7 @@ do
   if [ ! -d ${dir_ge} ];then
     mkdir ${dir_ge}
   else
-    rm -f ${dir_ge}/*
+    rm -rf ${dir_ge}/*
   fi
   if [ ! -d ${dir_flow} ];then
     mkdir ${dir_flow} 

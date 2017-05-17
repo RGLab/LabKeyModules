@@ -4,10 +4,7 @@
         <cv:column name='cohort'/>
         <cv:column name='coefficient'/>
         <cv:column name='feature_id'/>
-        <cv:column name='gene_symbol'>
-            <!--<facetingBehavior>'ALWAYS_ON'</facetingBehavior>-->
-            <!--<cv:columnType name='FacetingBehaviorType' value='ALWAYS_ON'/>-->
-        </cv:column>
+        <cv:column name='gene_symbol'/>
         <cv:column name='adj_p_val'/>
         <cv:column name='ave_expr'/>
         <cv:column name='log_fc'/>

@@ -83,6 +83,29 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
                 };
                 setReportRunning( true );
                 LABKEY.Report.execute( cnfReport );
+
+/*
+     var reportWebpart = LABKEY.WebPart.createReportWebpart({
+         schemaName:"reports",
+         reportName: cnfReport.reportId,
+         renderTo: cntReport.id,
+         webPartConfig: {
+            title: 'Example Report',
+            suppressRenderErrors: false
+         },
+         reportProperties: cnfReport.inputParams,
+         success : function()
+            {
+                setReportRunning( false );
+                cntEmptyPnlView.setVisible( false );
+                cntReport.setVisible( true );
+                pnlTabs.setActiveTab( 1 );
+            }
+     });
+     reportWebpart.render();
+*/
+
+
             },
             text: 'Run'
         });
@@ -98,7 +121,7 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
 
                 LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
             },
-            reportId: 'module:MonitorIS/MonitorIS.Rmd',
+            reportId: 'module:MonitorIS/reports/schemas/MonitorIS.Rmd',
             success: function( result ){
                 setReportRunning( false );
 
@@ -112,7 +135,9 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
                 } else {
                     var p = outputParams[0];
 
-                    cntReport.update( p.value );
+                    //cntReport.update( p.value, true, function(){console.log("here");} );
+                    jQuery('#'+cntReport.id).html(p.value); 
+
                     cntEmptyPnlView.setVisible( false );
                     cntReport.setVisible( true );
 
