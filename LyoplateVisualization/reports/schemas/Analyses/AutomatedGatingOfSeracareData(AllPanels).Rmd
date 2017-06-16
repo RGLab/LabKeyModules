@@ -53,7 +53,7 @@ The *OpenCyto* gated `GatingSet` is available [here](/filecontent/HIPC/Lyoplate/
    
 ```{r paths, eval=TRUE, echo=FALSE,results='hide'}
 path <- "/share/files/HIPC/Lyoplate/@files"
-scriptPath <- file.path(path,"scripts")
+scriptPath <- "/share/github/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
 
 source(file.path(scriptPath, "wrapper-functions.r"))
 
@@ -211,7 +211,7 @@ Gating templates for [T-cells](/filecontent/HIPC/Lyoplate/sendFile.view?fileName
     
 ```{r bcell, eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
 path <- "/share/files/HIPC/Lyoplate/@files/"
-scriptPath <- file.path(path,"scripts")
+scriptPath <- "/share/github/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
 
 source(file.path(scriptPath, "wrapper-functions.r"))
 
@@ -233,7 +233,7 @@ source(file.path(scriptPath,"settings-bcell.r"))
    
 ```{r treg, eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
 path <- "/share/files/HIPC/Lyoplate/@files/"
-scriptPath <- file.path(path,"scripts")
+scriptPath <- "/share/github/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
 
 source(file.path(scriptPath, "wrapper-functions.r"))
 
@@ -256,7 +256,7 @@ source(file.path(scriptPath,"settings-treg.r"))
 
 ```{r dc, eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
 path <- "/share/files/HIPC/Lyoplate/@files/"
-scriptPath <- file.path(path,"scripts")
+scriptPath <- "/share/github/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
 
 source(file.path(scriptPath, "wrapper-functions.r"))
 

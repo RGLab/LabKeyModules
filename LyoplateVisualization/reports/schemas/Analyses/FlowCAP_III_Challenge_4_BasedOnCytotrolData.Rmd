@@ -13,13 +13,14 @@ the two algorithms were combined as an OpenCyto pipeline, which was then used to
 
 <hr>
 
-```{r knitr-opts, echo = FALSE, message = FALSE, cache = FALSE}
+```{r knitr-opts, echo=FALSE, message=FALSE, cache=FALSE}
 library(knitr)
 opts_chunk$set(fig.align = "left", fig.width = 12, fig.height = 12)
 ```
 
-```{r echo=FALSE,eval=TRUE}
-path <- "/share/files/HIPC/Lyoplate/@files/scripts"
+```{r echo=FALSE, eval=TRUE}
+path <- "/share/files/HIPC/Lyoplate/@files"
+scriptPath <- "/share/github/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
 suppressPackageStartupMessages({
     library(data.table)
     library(car)
@@ -33,7 +34,7 @@ suppressPackageStartupMessages({
     library(plotly)
 })
 
-source(file.path(path, "helperFunctions.r"))
+source(file.path(scriptPath, "helperFunctions.r"))
 fulldata <- labkey.selectRows(baseUrl = labkey.url.base, 
                               folderPath = "HIPC/Lyoplate", 
                               schemaName = "study", 
@@ -46,7 +47,7 @@ fulldata <- fulldata[, Method := factor(Method)]
 
 ## B-cell Panel
 
-```{r bcell, eval = TRUE, warning = FALSE, message = FALSE}
+```{r bcell, eval=TRUE, warning=FALSE, message=FALSE}
 mer <- .fitMer(fulldata[Panel == "Bcell"])
 vc2 <- .extractVcomp(mer, sd = FALSE)
 vc2 <- ddply(vc2, 
@@ -74,13 +75,11 @@ p <- ggplot(subset(vc, !is.nan(value))) +
   scale_y_continuous("Standard Deviation") +
   scale_fill_brewer("Source of Variability", 
                     type = "qual")
-p
+# p
 ggplotly(p)
 
 
-
 merb <- .fitMerBias(as.data.frame(fulldata[Panel %in% "Bcell"]))
-
 
 cb <- .getCI(merb)
 cytotrol_transci <- function(bar) {
@@ -88,8 +87,10 @@ cytotrol_transci <- function(bar) {
                     Method + Population + variable ~ Sample), 
                .(Method, Population, variable), 
                function(x) with(x,
-                                data.frame(Sample1 = `(Intercept)`, 
-                                           Sample2 = `(Intercept)` + Sample2, Sample3 = `(Intercept)` + Sample3, Sample4 = `(Intercept)` + Sample4)))
+                                data.frame(Sample1 = `(Intercept)`,
+                                           Sample2 = `(Intercept)` + Sample2,
+                                           Sample3 = `(Intercept)` + Sample3,
+                                           Sample4 = `(Intercept)` + Sample4)))
   setnames(foo, "variable", "ci")
   foo <- melt(foo)
   foo$value <- arm::invlogit(foo$value)
@@ -104,14 +105,14 @@ p <- ggplot(cb) +
                  y = Sample:Method, 
                  col = Sample, 
                  shape = Method) , 
-             size = 3) +
+             size = 1) +
   geom_segment(aes(x = lower, 
                    xend = upper, 
                    y = Sample:Method, 
                    yend = Sample:Method,
                    col = Sample), 
                lineend = "round", 
-               lwd = 1) +
+               lwd = 0.5) +
   theme_bw() +
   scale_x_continuous("Proportion") +
   scale_y_discrete() +
@@ -125,8 +126,9 @@ p <- ggplot(cb) +
         legend.direction = "horizontal") +
   scale_color_brewer(type = "qual") + 
   ggtitle("Bias for B-cell Panel (FlowCAP III)") + 
-  xlim(c(0, 0.5))
-p
+  xlim(c(0, 0.5)) +
+  theme(legend.position = "none")
+# p
 ggplotly(p)
 ```
              
@@ -160,7 +162,7 @@ p <- ggplot(subset(vc, !is.nan(value))) +
   scale_y_continuous("Standard Deviation") +
   scale_fill_brewer("Source of<br> Variability", 
                     type = "qual")
-p
+# p
 ggplotly(p)
 
 mert <- .fitMerBias(as.data.frame(fulldata[Panel %in% "Tcell"]))
@@ -203,8 +205,9 @@ p <- ggplot(ct) +
         legend.direction = "horizontal")+
   scale_color_brewer(type = "qual") + 
   ggtitle("Bias for T-cell Panel  (FlowCAP III)") + 
-  xlim(c(0, 0.7))
-p
+  xlim(c(0, 0.7)) +
+  theme(legend.position = "none")
+# p
 ggplotly(p)
 ```
 

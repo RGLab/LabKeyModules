@@ -33,7 +33,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             reportSessionId = undefined,
             schemaName      = undefined,
             fieldWidth      = 330,
-            labelWidth      = 170,
+            labelWidth      = 190,
             datasetToVarMap = {
                 'hai':                              'virus',
                 'neut_ab_titer':                    'virus',
@@ -314,6 +314,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             if (    cbDataset.getValue()        == cbDataset.originalValue &&
                     cbPlotType.getValue()       == cbPlotType.originalValue &&
                     chNormalize.getValue()      == chNormalize.originalValue &&
+                    chInteractive.getValue()    == chInteractive.originalValue &&
                     spnrTextSize.getValue()     == spnrTextSize.originalValue &&
                     cbAnnotation.getValue()     == cbAnnotation.originalValue &&
                     cbColor.getValue()          == cbColor.originalValue &&
@@ -337,6 +338,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         var normalize_help      = 'Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the unnormalized data.';
         var strains_help        = 'For HAI and neutralizing antibody titer experiments, by default the response is expressed as the average titer fold-change for all virus strains. When this option is enabled, the strains are used for faceting.';
 
+        var interactive_help    = 'If checked, an interactive plot will be displayed (created by plotly and heatmaply).';
         var textsize_help       = 'The size of all the text elements in the plot (including axes, legend, and labels).';
         var annotation_help     = 'Add a row of annotation based on the demographic data. Applicable to the "Heatmap" plot type only, which does not have the other options.';
         var facet_help          = 'The plot will facet by cohorts on the y axis and genes on the x axis. "grid" mode - the scales are consistent for a selected response and a cohort. "wrap" mode - the scales are free. Use "wrap" if you observe empty spaces in the plots.';
@@ -482,7 +484,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             },
             store: strDataset,
             valueField: 'Name',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-dataset'
         });
 
         var cbPlotType = new Ext.ux.form.ExtendedComboBox({
@@ -498,7 +501,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             store: strPlotType,
             value: 'auto',
             valueField: 'value',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-plottype'
         });
 
         var cbAnnotation = new Ext.ux.form.ExtendedLovCombo({
@@ -508,7 +512,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             store: strDemographics,
             value: [ 'Age' ].join( this.separator ),
             valueField: 'value',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-annotation'
         });
 
         var cbColor = new Ext.ux.form.ExtendedComboBox({
@@ -518,7 +523,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             store: strDemographics,
             value: 'Age',
             valueField: 'value',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-color'
        });
 
        var cbShape = new Ext.ux.form.ExtendedComboBox({
@@ -527,7 +533,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             lazyInit: false,
             store: strShape,
             valueField: 'value',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-shape'
         });
 
         var cbSize = new Ext.ux.form.ExtendedComboBox({
@@ -536,7 +543,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             lazyInit: false,
             store: strDemographics,
             valueField: 'value',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-size'
         });
 
         var cbAlpha = new Ext.ux.form.ExtendedComboBox({
@@ -545,7 +553,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             lazyInit: false,
             store: strDemographics,
             valueField: 'value',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-alpha'
         });
 
 
@@ -555,13 +564,21 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
         var chNormalize = new Ext.form.Checkbox({
             fieldLabel: 'Normalize to baseline',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-normalize'
         });
 
         var chShowStrains = new Ext.form.Checkbox({
             fieldLabel: 'Show individual virus strains',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-showstrains'
         })
+
+        var chInteractive = new Ext.form.Checkbox({
+            fieldLabel: 'Interactive visualization',
+            width: fieldWidth,
+            cls: 'ui-test-interactive'
+        });
 
         var spnrTextSize = new Ext.ux.form.SpinnerField({
             allowBlank: false,
@@ -579,7 +596,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             maxValue: 30,
             minValue: 0,
             value: 18,
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-textsize'
         });
 
         var rgFacet = new Ext.Panel({
@@ -672,7 +690,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     renderPlot();
                 }
             },
-            text: 'Plot'
+            text: 'Plot',
+            cls: 'ui-test-plot'
         });
 
         var btnReset = new Ext.Button({
@@ -684,6 +703,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         cbPlotType,
                         chNormalize,
                         chShowStrains,
+                        chInteractive,
                         spnrTextSize,
                         cbAnnotation,
                         rgFacet,
@@ -708,7 +728,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
                 pnlTabs.setActiveTab( 0 );
             },
-            text: 'Reset'
+            text: 'Reset',
+            cls: 'ui-test-reset'
         });
 
         var dfHorizontal = new Ext.form.DisplayField({
@@ -730,7 +751,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             maxValue: 10,
             minValue: 1,
             value: 2,
-            width: 40
+            width: 40,
+            cls: 'ui-test-horizontal'
         });
 
         var dfVertical = new Ext.form.DisplayField({
@@ -752,7 +774,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             maxValue: 10,
             minValue: 1,
             value: 1,
-            width: 40
+            width: 40,
+            cls: 'ui-test-vertical'
         });
 
 
@@ -768,7 +791,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
 
                 LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
             },
-            reportId: 'module:DataExplorer/Plot.R',
+            reportId: 'module:DataExplorer/DataExplorer.Rmd',
             success: function( result ){
                 setPlotRunning( false );
 
@@ -824,7 +847,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             text: 'Click on the generated plot to see it in full screen'
                         });
                     }
-
+                    if (p && p.type == 'html'){
+                        $('#'+cntPlot.id).html(p.value);
+                        window.HTMLWidgets.staticRender();
+                    }
                     p = outputParams[1];
 
                     if ( p && p.type == 'text' && p.value !== '\n' ){
@@ -847,10 +873,11 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         var cntPlotMessage = new Ext.Container();
         
         var cmpStatus = new Ext.Container({
-            cls: 'paddingLeft10px'
+            cls: 'paddingLeft10px ui-test-cmpstatus'
         });
 
         var cfShowStrains   = LABKEY.ext.ISCore.factoryTooltipWrapper( chShowStrains, 'Show strains', strains_help, true );
+        var cfInteractive   = LABKEY.ext.ISCore.factoryTooltipWrapper( chInteractive, 'Interactive visualization', interactive_help );
         var cfTextSize      = LABKEY.ext.ISCore.factoryTooltipWrapper( spnrTextSize, 'Text size', textsize_help );
         var cfAnnotation    = LABKEY.ext.ISCore.factoryTooltipWrapper( cbAnnotation, 'Annotation', annotation_help, true );
         var cfFacet         = LABKEY.ext.ISCore.factoryTooltipWrapper( rgFacet, 'Facet', facet_help, true );
@@ -891,6 +918,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             collapsed: true,
             collapsible: true,
             items: [
+                cfInteractive,
                 cfTextSize,
                 cfAnnotation,
                 cfFacet,
@@ -911,7 +939,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 expand: checkBtnsStatus
             },
             title: 'Additional options',
-            titleCollapse: true
+            titleCollapse: true,
+            cls: 'ui-test-additional-options'
         });
 
         var tlbrButtons = new Ext.Toolbar({
@@ -926,7 +955,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 btnReset,
                 cmpStatus
             ],
-            style: 'padding-right: 2px; padding-left: 2px;'
+            style: 'padding-right: 2px; padding-left: 2px;',
+            cls: 'ui-test-buttons'
         });
 
         var pnlInputView = new Ext.form.FormPanel({
@@ -998,7 +1028,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         cfShowStrains
                     ],
                     labelWidth: labelWidth,
-                    title: 'Parameters'
+                    title: 'Parameters',
+                    cls: 'ui-test-parameters'
                 }),
                 fsAdditionalOptions,
                 new Ext.Panel({
@@ -1089,7 +1120,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: 'For boxplots, violin plots, and lines the visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. The heatmap are drawn using the <a href="http://cran.r-project.org/web/packages/pheatmap/index.html" targe="_blank">pheatmap</a> package.',
+                            html: 'For boxplots, violin plots, and lines the visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package. Heatmaps are drawn using the <a href="http://cran.r-project.org/web/packages/pheatmap/index.html" target="_blank">pheatmap</a> package. Interactive visualizations are achieved using the <a href="https://cran.r-project.org/web/packages/plotly/index.html", target="_blank">plotly</a> and <a href="https://cran.r-project.org/web/packages/heatmaply/index.html", target="_blank">heatmaply</a> packages.',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),
@@ -1123,7 +1154,8 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                             text: 'Parameters in the "Additional options" section can be used to customize the plot and modify it based on the demographics. Available choices are Age, Gender, and Race.'
                         }),
                         new Ext.form.FieldSet({
-                            html:   '<b>Text size:</b> ' + textsize_help + '</br></br>' +
+                            html:   '<b>Interactive visualization:</b> ' + interactive_help + '</br></br>' +
+                                    '<b>Text size:</b> ' + textsize_help + '</br></br>' +
                                     '<b>Annotation:</b> ' + annotation_help + '</br></br>' +
                                     '<b>Facet:</b> ' + facet_help + '</br></br>' +
                                     '<b>Shape:</b> ' + shape_help + '</br></br>' +
@@ -1192,6 +1224,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 datasetDisplay:     cbDataset.getRawValue(),
                 plotType:           cbPlotType.getValue(),
                 normalize:          chNormalize.getValue(),
+                interactive:        chInteractive.getValue(),
                 filters:            Ext.encode( userFilter ),
                 textSize:           spnrTextSize.getValue(),
                 show_strains:       chShowStrains.getValue(),
@@ -1227,6 +1260,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     cbPlotType,
                     chNormalize,
                     chShowStrains,
+                    chInteractive,
                     spnrTextSize,
                     cbAnnotation,
                     rgFacet,
@@ -1257,7 +1291,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     'runReport',
                     null,
                     {
-                        reportId: 'module:DataExplorer/reports/schemas/Plot.R',
+                        reportId: 'module:DataExplorer/reports/schemas/DataExplorer.Rmd',
                         tabId: 'Source'
                     }
                 ) +

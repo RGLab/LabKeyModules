@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<view xmlns='http://labkey.org/data/xml/view' title='Quick Links'>
+    <dependencies>
+        <dependency path='ISCore/Common/ISCore.css'/>
+        <dependency path='QuickLinks.js'/>
+    </dependencies>
+</view>
+

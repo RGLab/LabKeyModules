@@ -3,7 +3,7 @@ SELECT
     COUNT( DISTINCT subjectid ) AS subject_count
 FROM
 (
-  SELECT 
+  SELECT
     assay,
     dimassay.subjectid AS subjectid,
     study
@@ -12,7 +12,7 @@ FROM
     dimdemographic,
     lists.Studies
   WHERE
-    Name = study AND 
+    Name = study AND
     dimdemographic.subjectid = dimassay.subjectid
 ) a
 GROUP BY

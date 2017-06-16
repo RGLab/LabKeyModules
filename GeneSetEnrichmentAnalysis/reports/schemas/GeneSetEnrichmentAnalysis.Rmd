@@ -16,6 +16,8 @@ library(gplots)
 library(gtools)
 library(data.table)
 library(digest)
+library(heatmaply)
+library(DT)
 ```
 
 
@@ -146,26 +148,30 @@ if(length(DEM) > 0){
 ```
 
 
-```{r kable, cache = TRUE, dependson="byDay", results='asis'}
+```{r kable, cache = TRUE, dependson="byDay"}
 table <- table[, Module := func_rnames(Module)]
 table <- table[, PValue := abs(PValue)]
 setnames(table, "PValue", "10log10(p)")
-format_table(table)
+#format_table(table)
+datatable(table, escape = 1)
 ```
 
-```{r pheatmap, cache=TRUE, dependson="heatmap-matrix", fig.width=10, fig.align = "center"}
+<div align='center'>
+```{r pheatmap, cache=TRUE, dependson="heatmap-matrix", fig.width=15, fig.align = "center"}
 if(draw_heatmap){
   max <- max(abs(mat))
   if(nrow(mat) > 0){
+    mat2 <- mat
     rownames(mat) <- ifelse(nchar(rownames(mat))>15, paste(substr(rownames(mat), 1, 12),
                      substr(rownames(mat), nchar(rownames(mat))-10, nchar(rownames(mat))), sep =" ... "),
                      rownames(mat))
     clust_rows <- ifelse(nrow(mat) < 2, FALSE, TRUE)
-    pheatmap(mat, cluster_cols = FALSE, cluster_rows = clust_rows, fontsize = 12,
-      breaks = seq(-max, max, length.out = length(palette)+1), color = palette)
+    #pheatmap(mat, cluster_cols = FALSE, cluster_rows = clust_rows, fontsize = 12,
+    #  breaks = seq(-max, max, length.out = length(palette)+1), color = palette)
+    heatmaply(x = mat2, dendrogram = ifelse(nrow(mat2) >= 2, "row", "none"), colors = palette)
   }
 }
 ```
-
+</div>
 
 `r infostring`

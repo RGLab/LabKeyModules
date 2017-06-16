@@ -2,15 +2,17 @@
 set -e
 if [ `whoami` = 'root' ] ; then
     if [ $1 ] ; then
+        START_TIME=$SECONDS
+
         if [ $2 ] ; then
             LK_MODULES_PATH=~
             BUILD_TYPE=$2
             INTERACTIVE=no
-        elif [ `hostname` = 'immunetestrserve' ] ; then
+        elif [ `hostname | head -c10` = 'immunetest' ] ; then
             LK_MODULES_PATH=/share/github/
             BUILD_TYPE=master
             INTERACTIVE=yes
-        elif [ `hostname` = 'immuneprodrserve' ] ; then
+        elif [ `hostname | head -c10` = 'immuneprod' ] ; then
             LK_MODULES_PATH=/share/github/
             BUILD_TYPE=release
             INTERACTIVE=yes
@@ -20,6 +22,9 @@ if [ `whoami` = 'root' ] ; then
         fi
 
         cd ${LK_MODULES_PATH}
+        if [ ! -e `which git` ] ; then
+            apt-get install git
+        fi
         if [ ! -d LabKeyModules ] ; then
             echo
             echo '=============================================='
@@ -42,6 +47,13 @@ if [ `whoami` = 'root' ] ; then
         echo '================================================================='
         echo 'Downloading, unpacking, configuring, and building R version '${1}
         echo '================================================================='
+
+        if hash Rscript 2>/dev/null ; then
+            R_LIBS=`Rscript -e 'cat( .libPaths() )'`
+        else
+            R_LIBS=/usr/lib/R/library
+        fi
+        rm -rf ${R_LIBS}
         cd ~
         wget https://cran.r-project.org/src/base/R-$( echo ${1} | head -c1 )/R-${1}.tar.gz
         tar -xzf R-${1}.tar.gz
@@ -57,14 +69,17 @@ if [ `whoami` = 'root' ] ; then
         make install
 
         echo
-        echo '========================================================'
-        echo 'Figuring out and installing the set of needed R packages'
-        echo '========================================================'
+        echo '======================================================='
+        echo 'Determining and installing the set of needed R packages'
+        echo '======================================================='
         cd ${LK_MODULES_PATH}/LabKeyModules
         ./Scripts/getRpkgs.sh
-        Rscript ./Scripts/installR.R
+        Rscript ./Scripts/installR.R ${BUILD_TYPE}
 
-        export R_VERSION=$1
+        ELAPSED_TIME=$(($SECONDS - $START_TIME))
+        echo
+        echo 'Completed in' `date -d "1970-01-01 ${ELAPSED_TIME} sec" +'%k:%M:%S'`
+
     else
         echo 'The R version must be specified as the argument'
     fi

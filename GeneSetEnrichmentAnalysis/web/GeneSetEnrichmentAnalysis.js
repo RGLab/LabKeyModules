@@ -231,14 +231,17 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                 } else {
                     var p = outputParams[0];
 
-                    cntReport.update( p.value );
+                    //cntReport.update( p.value, true );
+                    $('#'+cntReport.id).html(p.value);
                     cntEmptyPnlView.setVisible( false );
                     if ( LABKEY.ActionURL.getContainer() !== '/Studies' ){ cntShare.setVisible( true ); }
                     cntReport.setVisible( true );
 
-                    $('#res_table_GSEA').dataTable();
+                    //$('#res_table_GSEA').dataTable();
 
                     pnlTabs.setActiveTab( 1 );
+
+                    window.HTMLWidgets.staticRender();
                 }
             }
         };

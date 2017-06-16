@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<webpart xmlns='http://labkey.org/data/xml/webpart' title='Data Summary'>
-    <view name='begin'/>
+<webpart title='QuickLinks' xmlns='http://labkey.org/data/xml/webpart'>
+    <view name='QuickLinks'/>
     <locations>
         <location name='right'/>
     </locations>
 </webpart>
+
