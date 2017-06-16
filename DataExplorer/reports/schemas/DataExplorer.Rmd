@@ -1,0 +1,76 @@
+```{r knitr-opts, echo = FALSE}
+library(knitr)
+opts_chunk$set(message = FALSE, echo = FALSE, warning = FALSE)
+opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/DataExplorer/", labkey.user.email, ""))
+```
+
+```{r setup}
+suppressMessages(library(Cairo))
+suppressMessages(library(RJSONIO))
+suppressMessages(library(RCurl))
+suppressMessages(library(ImmuneSpaceR))
+
+stopcheck <- function(data) {
+    stop(paste0(paste(capture.output(str(data)), collapse='\n'), '\nl.u.b: ',labkey.url.base, '\nl.u.p: ',labkey.url.path))
+}
+imageWidth  <- as.numeric(labkey.url.params$imageWidth)
+imageHeight <- as.numeric(labkey.url.params$imageHeight)
+
+dataset        <- labkey.url.params$datasetName
+datasetDisplay <- labkey.url.params$datasetLabel
+plotType       <- labkey.url.params$plotType
+interactive    <- as.logical(labkey.url.params$interactive)
+normalize      <- as.logical(labkey.url.params$normalize)
+show_strains   <- as.logical(labkey.url.params$show_strains)
+filters        <- RJSONIO::fromJSON(labkey.url.params$filters)
+textSize       <- as.numeric(labkey.url.params$textSize)
+facet          <- tolower(labkey.url.params$facet)
+legend         <- labkey.url.params$legend
+color          <- labkey.url.params$color
+shape          <- labkey.url.params$shape
+size           <- labkey.url.params$size
+alpha          <- labkey.url.params$alpha
+#stopcheck(labkey.url.params)
+
+filter <- as.matrix(lapply(filters, function(e) {
+    return(paste0(curlEscape(e['fieldKey']), '~', e['op'], '=', curlEscape(e['value'])))
+}))
+if (nrow(filter) == 0) {
+  filter <- NULL
+}
+
+if(color  == '') color <- NULL
+if(shape  == '') shape <- NULL
+if(size   == '') size  <- NULL
+if(alpha  == '') alpha <- NULL
+if(legend == '') {
+  legend <- NULL
+} else{
+  legend <- unlist(strsplit(legend, ','))
+}
+
+imageWidthR <- 10 # 5 * imageWidth / min(c(imageWidth, imageHeight))
+imageHeightR <- 10 # 5 * imageHeight / min(c(imageWidth, imageHeight))
+```
+
+<div align='center'>
+```{r visualize, fig.width = imageWidthR, fig.height = imageHeightR}
+con <- CreateConnection()
+if (!interactive | tolower(dataset) == "pcr") CairoPNG(filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight)
+m_out <- con$quick_plot(dataset,
+                        normalize_to_baseline = normalize,
+                        type                  = plotType,
+                        filter                = filter,
+                        facet                 = facet,
+                        text_size             = textSize,
+                        color                 = color,
+                        size                  = size,
+                        shape                 = shape,
+                        alpha                 = alpha,
+                        legend                = legend,
+                        show_virus_strain     = show_strains,
+                        interactive           = interactive)
+if (!interactive) dev.off()
+m_out
+```
+</div>

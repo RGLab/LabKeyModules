@@ -30,6 +30,7 @@ apt-get -y install libgsl0-dev
 apt-get -y install libhdf5-serial-dev
 apt-get -y install libicu-devel
 apt-get -y install liblzma-dev
+apt-get -y install libmysqlclient-dev
 apt-get -y install libnetcdf-dev
 apt-get -y install libprotobuf-dev
 apt-get -y install libreadline-dev
@@ -59,3 +60,4 @@ if [[ ! -f /usr/bin/pandoc || `pandoc --version | head -n1 | cut -c8-` < ${PANDO
 else
     echo 'pandoc seems to be up-to-date'
 fi
+

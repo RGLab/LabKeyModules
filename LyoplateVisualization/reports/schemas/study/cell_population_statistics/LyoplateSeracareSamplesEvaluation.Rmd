@@ -12,9 +12,8 @@ opts_chunk$set(dev = "CairoPNG", fig.align = "left", fig.width = 10, fig.height 
 <hr>
 
 ```{r load_libraries,echo=FALSE,eval=TRUE,message=FALSE}
-    path<-"/share/files/HIPC/Lyoplate/@files/scripts"
-    library(tools);
-    library(data.table)
+library(tools)
+library(data.table)
 library(reshape)
 library(plyr)
 library(lme4)
@@ -28,7 +27,9 @@ library(multcomp)
 library(Rlabkey)
 co <- labkey.setCurlOptions(sslversion = 1)
 library(formatR)
-source(file.path(path,"helperFunctions.r"))
+
+scriptPath <- "/share/github/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
+source(file.path(scriptPath,"helperFunctions.r"))
 knit_hooks$set(htmlcap = function(before, options, envir) {
     if(!before) {
         paste('<p class="caption">',options$htmlcap,"</p>",sep="")

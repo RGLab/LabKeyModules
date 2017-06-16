@@ -192,6 +192,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var cohort_help    = 'The cohorts with participants of interest. Some cohorts might only be available at specific timepoints.';
         var normalize_help = 'Should the data be normalized to baseline (i.e. subtract the day 0 response after log transformation), or simply plot the unnormalized data.';
         var genes_help     = 'The genes to plot.';
+        var interactive_help = 'If checked, an interactive plot will be displayed (created by plotly).';
         var textsize_help  = 'The size of all text elements on the plot (Including axis, legend and labels).';
         var facet_help     = 'The plot will facet by cohorts on the y axis and genes on the x axis. In "grid" mode, the scales are consistent for a gene and for a cohort. In "wrap" mode, the scales are free.<br> Use wrap if you observe empty spaces in the plots. "wrap" is also more appropriate when plotting many genes and a single cohort.';
         var shape_help     = 'The shape of the data points.';
@@ -314,7 +315,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             }),
             value: 'HAI',
             valueField: 'name',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-response'
         });
 
         var cbTimePoint = new Ext.ux.form.ExtendedComboBox({
@@ -341,7 +343,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             },
             store: strTimePoint,
             valueField: 'displayTimepoint',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-timepoint'
         });
 
         strTimePoint.on(
@@ -386,7 +389,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             separator: ';', // IMPORTANT FOR LABKEY FILTERING
             store: strCohort,
             valueField: 'display',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-cohorts'
         });
 
         var cbGenes = new Ext.ux.form.SuperBoxSelect({
@@ -423,7 +427,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             supressClearValueRemoveEvents: true,
             triggerAction: this.queryParam,
             valueField: 'gene_symbol',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-genes'
         });
 
         var cbColor = new Ext.ux.form.ExtendedComboBox({
@@ -433,7 +438,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             store: strDemographics,
             value: 'Age',
             valueField: 'name',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-color'
         });
 
         var cbShape = new Ext.ux.form.ExtendedComboBox({
@@ -442,7 +448,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             lazyInit: false,
             store: strShape,
             valueField: 'name',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-shape'
         });
 
         var cbSize = new Ext.ux.form.ExtendedComboBox({
@@ -451,7 +458,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             lazyInit: false,
             store: strDemographics,
             valueField: 'name',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-size'
         });
 
         var cbAlpha = new Ext.ux.form.ExtendedComboBox({
@@ -460,13 +468,19 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             lazyInit: false,
             store: strDemographics,
             valueField: 'name',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-alpha'
         });
 
 
         ///////////////////////////////////////
         // Buttons, Radio Groups, Checkboxes //
         ///////////////////////////////////////
+        var chInteractive = new Ext.form.Checkbox({
+            fieldLabel: 'Interactive visualization',
+            width: fieldWidth,
+            cls: 'ui-test-interactive'
+        });
 
         var chNormalize = new Ext.form.Checkbox({
             setDisabledBasedOnFlag: function( flag ){
@@ -478,7 +492,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 }
             },
             fieldLabel: 'Normalize to baseline',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-normalize'
         });
 
         var btnPlot = new Ext.Button({
@@ -502,6 +517,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     timePointUnit:      cbTimePoint.getSelectedField( 'timepointUnit' ),
                     normalize:          chNormalize.getValue(),
                     genes:              Ext.encode( cbGenes.getValuesAsArray() ),
+                    interactive:        chInteractive.getValue(),
                     //Data grid
                     filters:            Ext.encode( filters ),
                     textSize:           spnrTextSize.getValue(),
@@ -520,7 +536,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 cnfPlot.reportSessionId = reportSessionId;
                 LABKEY.Report.execute( cnfPlot );
             },
-            text: 'Plot'
+            text: 'Plot',
+            cls: 'ui-test-plot'
         });
 
         var btnReset = new Ext.Button({
@@ -533,6 +550,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         cbCohorts,
                         chNormalize,
                         cbGenes,
+                        chInteractive,
                         spnrTextSize,
                         rgFacet,
                         cbShape,
@@ -549,7 +567,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
                 fsAdditionalOptions.collapse();
             },
-            text: 'Reset'
+            text: 'Reset',
+            cls: 'ui-test-reset'
         });
 
         var spnrTextSize = new Ext.ux.form.SpinnerField({
@@ -568,7 +587,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             maxValue: 30,
             minValue: 0,
             value: 18,
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-textsize'
         });
 
         var rgFacet = new Ext.Panel({
@@ -597,7 +617,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         checked: true,
                         inputValue: 'Grid',
                         name: 'facet',
-                        value: 'Grid'
+                        value: 'Grid',
+                        cls: 'ui-test-facet-grid'
                     })
                 },
                 { items:
@@ -605,7 +626,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         boxLabel: 'wrap',
                         inputValue: 'Wrap',
                         name: 'facet',
-                        value: 'Wrap'
+                        value: 'Wrap',
+                        cls: 'ui-test-facet-wrap'
                     })
                 }
             ],
@@ -614,7 +636,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             onEnable: Ext.form.RadioGroup.prototype.onEnable,
             reset: Ext.form.RadioGroup.prototype.reset,
             value: 'Grid',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-facet'
         });
         var rg = new Ext.form.RadioGroup({
             fieldLabel: 'Facet',
@@ -648,7 +671,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
                 LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
             },
-            reportId: 'module:GeneExpressionExplorer/Plot.R',
+            reportId: 'module:GeneExpressionExplorer/GeneExpressionExplorer.Rmd',
             success: function( result ){
                 setPlotRunning( false );
 
@@ -701,6 +724,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             text: 'Click on the generated plot to see it in full screen'
                         });
                     }
+
+                    if (p && p.type == 'html'){
+                        $('#'+cntPlot.id).html(p.value);
+                        window.HTMLWidgets.staticRender();
+                    }
                 }
             }
         };
@@ -740,6 +768,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             collapsed: true,
             collapsible: true,
             items: [
+                LABKEY.ext.ISCore.factoryTooltipWrapper( chInteractive, 'Interactive visualization', interactive_help ),
                 LABKEY.ext.ISCore.factoryTooltipWrapper( spnrTextSize, 'Text size', textsize_help ),
                 LABKEY.ext.ISCore.factoryTooltipWrapper( rgFacet, 'Facet', facet_help ),
                 LABKEY.ext.ISCore.factoryTooltipWrapper( cbColor, 'Color', color_help ),
@@ -758,7 +787,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 expand: checkBtnsStatus
             },
             title: 'Additional options',
-            titleCollapse: true
+            titleCollapse: true,
+            cls: 'ui-test-additional-options'
         });
 
         var pnlInputView = new Ext.form.FormPanel({
@@ -831,7 +861,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         cfGenes
                     ],
                     labelWidth: labelWidth,
-                    title: 'Parameters'
+                    title: 'Parameters',
+                    cls: 'ui-test-parameters'
                 }),
                 fsAdditionalOptions,
                 {
@@ -922,7 +953,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: 'Visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> R package.',
+                            html: 'Visualization is achieved using the <a href="http://cran.r-project.org/web/packages/ggplot2/index.html" target="_blank">ggplot2</a> and <a href="https://cran.r-project.org/web/packages/plotly/index.html" target="_blank">plotly</a> R packages.',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),
@@ -959,7 +990,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                             text: 'Parameters in the "Additional options" section can be used to customize the plot and modify it based on the demographic data. Available choices are Age, Gender, and Race.'
                         }),
                         new Ext.form.FieldSet({
-                            html:   '<b>Text size:</b> ' + textsize_help + '<br><br>' +
+                            html:   '<b>Interactive visualization:</b> ' + interactive_help + '<br><br>' +
+                                    '<b>Text size:</b> ' + textsize_help + '<br><br>' +
                                     '<b>Facet:</b> ' + facet_help + '<br><br>' +
                                     '<b>Shape:</b> ' + shape_help + '<br><br>' +
                                     '<b>Color:</b> ' + color_help + '<br><br>' +
@@ -995,7 +1027,8 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 }
             },
             minTabWidth: 100,
-            resizeTabs: true
+            resizeTabs: true,
+            cls: 'uitest-tabs'
         });
 
         /////////////////////////////////////
@@ -1021,6 +1054,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     cbTimePoint,
                     cbCohorts,
                     cbGenes,
+                    chInteractive,
                     spnrTextSize,
                     rgFacet,
                     cbColor,
@@ -1052,7 +1086,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     'runReport',
                     null,
                     {
-                        reportId: 'module:GeneExpressionExplorer/reports/schemas/Plot.R',
+                        reportId: 'module:GeneExpressionExplorer/reports/schemas/GeneExpressionExplorer.Rmd',
                         tabId: 'Source'
                     }
                 ) +

@@ -79,6 +79,52 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                                         Ext.each(
                                             d.rows,
                                             function( e ){
+                                                if ( ! LABKEY.ext.ISCore.isStudyFolder ){
+                                                    LABKEY.Ajax.request({
+                                                        method: 'GET',
+                                                        url: LABKEY.ActionURL.buildURL(
+                                                            'immport',
+                                                            'containersformodule.api',
+                                                            null,
+                                                            {
+                                                                name: e.Name
+                                                            }
+                                                        ),
+                                                        failure: onFailure,
+                                                        success: function(request){
+                                                            var
+                                                                data = JSON.parse( request.response ),
+                                                                studies = Ext.pluck( data.result, 'name' ),
+                                                                linkedStudies = []
+                                                            ;
+                                                            studies = studies.filter( function( study ){
+                                                                if ( study === 'Studies' || study === 'SDY_template' ){
+                                                                    return false;
+                                                                } else{
+                                                                    return true;
+                                                                }
+                                                            });
+                                                            studies.sort( function( a, b ){
+                                                                a = a.replace('SDY', '');
+                                                                b = b.replace('SDY', '');
+                                                                return Number(a)-Number(b)
+                                                            });
+
+                                                            var linkedStudies = [];
+                                                            studies.forEach( function( study ){
+                                                                linkedStudies.push(
+                                                                    '<a href=\'' +
+                                                                    LABKEY.ActionURL.buildURL(
+                                                                        e.Name,
+                                                                        'begin',
+                                                                        LABKEY.ActionURL.getContainer() + '/' + study
+                                                                    ) +
+                                                                    '\'>' + study + '</a>');
+                                                            });
+                                                            $('.studies-' + e.Name).html( linkedStudies.length + ' available studies:</br>' +  linkedStudies.join(', '));
+                                                        }
+                                                    });
+                                                }
                                                 cntMain.add(
                                                     new Ext.Container({
                                                         html:
@@ -89,10 +135,12 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                                                                 (
                                                                     e.Description == null ?
                                                                     '' :
-                                                                    '<div class=\'padding5px\'>' + e.Description + '</div>'
+                                                                    LABKEY.ext.ISCore.isStudyFolder ?
+                                                                    '<div class=\'padding5px\'>' + e.Description + '</div>' :
+                                                                    '<div style=\'padding: 5px 5px 0px 5px;\'>' + e.Description + '</div>' + '<div class=\'padding5px studies-' + e.Name  + '\'></div>' 
                                                                 ) +
                                                             '</div>',
-                                                        style: 'padding-bottom: 4px; padding-top: 4px;'
+                                                        style: 'padding-bottom: 5px; padding-top: 5px;'
                                                     })
                                                 );
                                             }

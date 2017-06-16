@@ -255,7 +255,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             ],
             sort: 'study_accession',
             success: onSuccessPI,
-            failure: onError
+            failure: LABKEY.ext.ISCore.onFailure
         });
 
         LABKEY.Query.selectRows({
@@ -263,7 +263,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             schemaName: 'study',
             queryName: 'ISSO_datasets',
             success: onSuccessDS,
-            failure: onError
+            failure: LABKEY.ext.ISCore.onFailure
         });
 
         LABKEY.Query.selectRows({
@@ -271,7 +271,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             schemaName: 'study',
             queryName: 'ISSO_raw_files',
             success: onSuccessRF,
-            failure: onError
+            failure: LABKEY.ext.ISCore.onFailure
         });
 
         LABKEY.Query.selectRows({
@@ -288,7 +288,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 )
             ],
             success: onSuccessStudy,
-            failure: onError
+            failure: LABKEY.ext.ISCore.onFailure
         });
 
         LABKEY.Query.selectRows({
@@ -299,7 +299,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             columns:  'study_accession',
             parameters: {$STUDY: SDY},
             success: onSuccessPubmedAssoc,
-            failure: onError
+            failure: LABKEY.ext.ISCore.onFailure
         });
 
         LABKEY.Query.selectRows({
@@ -320,7 +320,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 )
             ],
             success: onSuccessGEO,
-            failure: onError
+            failure: LABKEY.ext.ISCore.onFailure
         });
 
  
@@ -345,7 +345,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                     columns:  'study_accession',
                     filterArray: [LABKEY.Filter.create('study_accession', SDY, LABKEY.Filter.Types.EQUAL)],
                     success: onSuccessHIPCfund,
-                    failure: onError
+                    failure: LABKEY.ext.ISCore.onFailure
                 });
             }
         };
@@ -455,10 +455,6 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 $('#GEO'.wpdi())[0].innerHTML = GEO.join(' ');
                 $('#GEO'.wpdi() + ' a').attr('target', '_blank');
             }
-        };
-
-        function onError(errorInfo) {
-            alert(errorInfo.exception);
         };
 
         me.border         = false;                                                                                                         

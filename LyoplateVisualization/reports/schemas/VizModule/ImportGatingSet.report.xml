@@ -2,6 +2,6 @@
 <ReportDescriptor>
     <hidden>true</hidden>
     <category>LyoplateVisualization module script</category>
-    <category>A script that can be used manually for importing existing gating sets into the Lyoplate Visualization module framework</category>
+    <description>A script that can be used manually for importing existing gating sets into the Lyoplate Visualization module framework</description>
 </ReportDescriptor>
 

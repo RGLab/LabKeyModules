@@ -1,0 +1,54 @@
+<p>
+    <span class="bold-text">
+    <a class="labkey-text-link" onclick="LABKEY.help.Tour.show('immport-home-tour')" href="#">
+        quick help
+    </a>
+    </span>
+</p>
+<p>
+<strong>ImmuneSpace</strong>&nbsp;is the central database and analysis engine of the&nbsp;<a href="http://www.immuneprofiling.org/hipc/page/show" target="_blank">Human Immunology Project Consortium</a>&nbsp;(HIPC) funded by the&nbsp;<a href="http://www.niaid.nih.gov/Pages/default.aspx" target="_blank">National Institute of Allergy and Infectious Diseases (NIAID)</a>.&nbsp;It can be used to find and explore studies, integrate and analyze data across assays, and perform custom analyses leveraging the&nbsp;<a href="http://www.r-project.org/" target="_blank">R statistical language</a>. To support the wide range of immunological experiments, ImmuneSpace is taking advantage of the considerable infrastructure already developed as part of the NIAID Immunology Database and Analysis Portal (<a href="http://immport.org/" target="_BLANK">ImmPort</a>) system. You can find out more about ImmuneSpace and&nbsp;<a href="http://www.immuneprofiling.org/hipc/page/show" target="_blank">HIPC</a>&nbsp;by visiting the&nbsp;<a href="/project/home/begin.view?pageId=About">About</a>&nbsp;tab.
+</p>
+
+<script type='text/javascript'>
+    var webPartDiv = <%=webpartContext%>.wrapperDivId;
+    var target = document.getElementById(webPartDiv);
+    var SQL =
+        'SELECT ' +
+        '       StudyProperties.Label, ' +
+        '       CAST( REPLACE( StudyProperties.Label, \'SDY\', \'\' ) AS INTEGER ) AS Num, ' +
+        '   hipc.hipc_funded IS NOT NULL AS hipc_funded ' +
+        'FROM ' +
+        '   study.StudyProperties ' +
+        '   LEFT OUTER JOIN immport.ISC_HIPC_funded_studies hipc ON ' +
+        '   StudyProperties.Label = hipc.study_accession ' +
+        'WHERE ' +
+        '   StudyProperties.highlight_until > now()';
+
+    if ( ! LABKEY.user.isGuest && LABKEY.user.isSignedIn ){
+        var data_updates_url = LABKEY.ActionURL.buildURL('project', 'begin', '/home/support', {pageId: "Data changes"})
+
+        LABKEY.Query.executeSql({
+            containerFilter: 'CurrentAndSubfolders',
+            containerPath: '/Studies',
+            schemaName: 'study',
+            sql: SQL,
+            success: function(d){
+                if ( d.rows.length > 0 ){
+                    var toAdd = [];
+
+                    Ext.each( d.rows, function(row, i){
+                        toAdd.push( '<a href=\'' + row._labkeyurl_Label + '\'>' + row.Label + ( row.hipc_funded ? '*' : '' ) + '</a>' );
+                    });
+
+                    var output = '<span class=\'bold-text\'>New and recently updated studies:</span> ' + toAdd.join(', ') + ' (see <a href=' + data_updates_url + '>release notes</a> for details)' + '<div><i>* HIPC funded</i></div>';
+
+                    var outNode = document.createElement("P");
+                    outNode.innerHTML = output;
+                    target.appendChild(outNode);
+                }
+            }
+        });
+    }
+
+</script>
+

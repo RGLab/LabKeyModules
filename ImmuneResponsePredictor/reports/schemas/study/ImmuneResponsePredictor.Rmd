@@ -7,7 +7,7 @@
 ```{r knitr-opts, echo = FALSE, message = FALSE, cache = FALSE}
 library(knitr)
 opts_chunk$set(cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE,
-               fig.width=8, fig.height=4, dpi=100, fig.align="center",
+               fig.width=12, fig.height=10, fig.align="center",
                cache.path=file.path(labkey.file.root, "cache/ImmuneResponsePredictor/", labkey.user.email, ""))
 ```
 
@@ -22,6 +22,9 @@ library(RJSONIO)
 library(ImmuneSpaceR)
 library(Biobase)
 library(digest)
+library(plotly)
+library(heatmaply)
+library(DT)
 ```
 
 ```{r plot-styles, echo = FALSE, cache = TRUE}
@@ -43,22 +46,22 @@ param <- list(
 ```
 
 ```{r functions, echo = FALSE, cache = TRUE}
-format_table <- function(x, ...){
+format_table <- function(x, ...) {
   require(knitr)
   require(data.table)
-  if(!is(x,"data.table")){
+  if(!is(x,"data.table")) {
     #This is to make sure that we don't have issues with row names in data.frames
     stop("This function only works on data.tables")
   }
-  out <- kable(x, format="html", digits=4, table.attr = 'class="display" id="res_table"', output = FALSE, escape = FALSE, ...)
+  out <- kable(x, format = "html", digits = 4, table.attr = 'class="display" id="res_table"', output = FALSE, escape = FALSE, ...)
   footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
-  out_new <- gsub("</thead>",footer,out)
+  out_new <- gsub("</thead>", footer,out)
   cat(out_new)
 }
 
 # Get the hai response at peak immunogenicity for a participant list
 # @value A data.table with response and participant_id, ordered by participant (i.e: same order as FC or matrix)
-getHAI <- function(con, subjects, dichotomize, dichValue){
+getHAI <- function(con, subjects, dichotomize, dichValue) {
   hai <- con$getDataset("hai", original_view = TRUE, reload = TRUE)
   hai <- hai[participant_id %in% subjects]
   hai <- hai[, list(arm_accession, study_time_collected, study_time_collected_unit,
@@ -69,15 +72,15 @@ getHAI <- function(con, subjects, dichotomize, dichValue){
   peak <- unique(hai[mr ==ma, list(study_time_collected, arm_accession)])
   hai <- merge(hai, peak, by=c("study_time_collected", "arm_accession"))
   hai <- hai[, list(response=log2(max(response))), by="participant_id"]
-  if(dichotomize){
+  if(dichotomize) {
     hai <- hai[,response:=ifelse(response>=log2(dichValue), TRUE,  FALSE)]
   }
   hai <- hai[order(participant_id)]
   return(hai)
 }
 
-getGenes <- function(con, param){
-  if(param$FDR_thresh){
+getGenes <- function(con, param) {
+  if(param$FDR_thresh) {
     tpu <- param$timepointUnit
     tpu <- paste0(toupper(substr(tpu, 1, 1)), substr(tpu, 2, nchar(tpu)))
     cf <- makeFilter(c("analysis_accession/arm_name", "IN",
@@ -87,7 +90,7 @@ getGenes <- function(con, param){
     setnames(DEG, "log_fold-change", "log_fc")
     DEG <- DEG[abs(log_fc) > param$FC_thresh]
     DEG <- unique(DEG$gene_symbol)
-    if(length(DEG) == 0){
+    if(length(DEG) == 0) {
       opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
       stop("\n\nThere are 0 genes selected. Try removing the filter on differentially expressed probes in 'Additional options' or lower the log fold-change threshold.")
     }
@@ -100,9 +103,14 @@ getGenes <- function(con, param){
 
 ```{r DataFinder-cache, cache = FALSE}
 cached_pids <- labkey.selectRows(
-    baseUrl = labkey.url.base, folderPath = labkey.url.path,
-    schemaName = "study", queryName = "demographics", viewName="",
-    colFilter=NULL, containerFilter=NULL, colNameOpt = "rname")$participantid
+    baseUrl = labkey.url.base,
+    folderPath = labkey.url.path,
+    schemaName = "study",
+    queryName = "demographics",
+    viewName="",
+    colFilter=NULL,
+    containerFilter=NULL,
+    colNameOpt = "rname")$participantid
 ```
 
 
@@ -203,8 +211,8 @@ FC_train <- FC_train[, selected_features]
 FC_train <- data.frame(FC_train, check.names = FALSE)
 form <- as.formula(paste0("outcome~`", paste(colnames(FC_train), collapse="`+`"), sep="`"))
 FC_train$outcome <- response_train
-if(param$dichotomize){
-     relasso <- glm(form, FC_train, family="binomial")
+if(param$dichotomize) {
+     relasso <- glm(form, FC_train, family = "binomial")
 } else{
      relasso <- lm(form, FC_train)
 }
@@ -212,7 +220,7 @@ FC_train$outcome <- NULL
 sum_relasso <- summary(relasso)
 sum_relasso_coef <- sum_relasso$coefficients
 pred_cIdx <- grep("value|Pr", colnames(sum_relasso_coef))
-predictor_table <- sum_relasso_coef[,pred_cIdx][-1,]
+predictor_table <- sum_relasso_coef[,pred_cIdx][-1, ]
 colnames(predictor_table) <- c("statistic", "p-value")
 ```
 
@@ -226,9 +234,9 @@ setcolorder(predictor_table,  c("gene_symbol", "statistic", "p-value"))
 ```
 
 ```{r subset-test, echo = FALSE, cache = FALSE}
-if(length(param$cohortsTesting) > 0){
+if(length(param$cohortsTesting) > 0) {
   test_pids <- pd[cohort %in% param$cohortsTesting, participant_id]
-  FC_test <- FC[test_pids,]
+  FC_test <- FC[test_pids, ]
   response_test <- response[participant_id %in% test_pids, response]
 }
 ```
@@ -236,10 +244,10 @@ if(length(param$cohortsTesting) > 0){
 
 ## Predicted response vs. observed response per Participant
 ```{r prediction, echo=FALSE, dev='CairoPNG'}
-if(length(param$cohortsTesting) == 0){
+if(length(param$cohortsTesting) == 0) {
   data <- data.frame(observed = response$response, fitted = relasso$fitted.values)
   p <- ggplot(data, aes(x = observed, y = fitted)) + geom_point() + geom_smooth(method = "lm") + theme_IS()
-} else{
+} else {
   data_test <- data.frame(FC_test)
   colnames(data_test) <- colnames(FC_test) #
   predicted_values <- predict(relasso, newdata = data_test, type = "response") 
@@ -250,7 +258,8 @@ if(length(param$cohortsTesting) == 0){
               facet_wrap(~cohort_label, scale="free") + xlab("Observed HAI response") + 
               ylab("Predicted HAI response") + theme_IS()
 }
-plot(p)
+#plot(p)
+ggplotly(p)
 ```
 
 ## Heatmap of selected features
@@ -263,23 +272,38 @@ anno <- anno[, response := observed]
 anno <- anno[order(response, cohort)]
 anno <- anno[order(set, decreasing = TRUE)]
 anno <- data.frame(anno[, list(response, cohort, set)], row.names = anno$participant_id)
-if(param$dichotomize){
+if(param$dichotomize) {
   anno$response <- as.factor(anno$response)
-  anno_col <- list(response=c(`FALSE`="white", `TRUE`="black"))
+  anno_col <- list(response = c(`FALSE` = "white", `TRUE` = "black"))
 } else{
-  anno_col <- list(response=grey(10:0/10))
+  anno_col <- list(response = grey(10:0/10))
 }
 
 mat <- mat[, rownames(anno)]
+mat2 <- mat
 rownames(mat) <- ifelse(nchar(rownames(mat)) > 15, paste0(substr(rownames(mat), 1, 15), "..."), rownames(mat))
-pheatmap(mat, annotation = anno, annotation_colors = anno_col,
-         scale = "row", color = palette, cluster_rows = TRUE,
-         cluster_distance = "correlation", cluster_method = "ward",
-         dendrogram = "none", cluster_cols = FALSE, show_colnames = FALSE)
+#pheatmap(mat,
+#         annotation = anno,
+#         annotation_colors = anno_col,
+#         scale = "row",
+#         color = palette,
+#         cluster_rows = TRUE,
+#         cluster_distance = "correlation",
+#         cluster_method = "ward",
+#         dendrogram = "none",
+#         cluster_cols = FALSE,
+#         show_colnames = FALSE)
+heatmaply(x = mat2,
+          dendrogram = "row",
+          scale = "row",
+          distfun = function(x) as.dist(1 - cor(t(x))),
+          hclust_method = "ward.D",
+          colors = palette,
+          col_side_colors = anno)
 ```
 
 
 ## Table of genes selected by the elastic net
-```{r kable, results = 'asis'}
-format_table(predictor_table)
+```{r kable}
+datatable(predictor_table, escape = 1, width = 600)
 ```

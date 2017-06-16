@@ -149,7 +149,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             }),
             value: 'HAI',
             valueField: 'name',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-response'
         });
 
         var customTemplate = new Ext.XTemplate(
@@ -206,7 +207,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             store: strTimePoint,
             tpl: customTemplate,
             valueField: 'displayTimepoint',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-timepoint'
         });
 
         var cbCohortTraining = new Ext.ux.form.ExtendedLovCombo({
@@ -240,7 +242,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             separator: ';', // important for Labkey filters
             store: strCohortTraining,
             valueField: 'cohort',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-training'
         });
 
         var cbCohortTesting = new Ext.ux.form.ExtendedLovCombo({
@@ -255,7 +258,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             },
             store: strCohortTesting,
             valueField: 'cohort',
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-testing'
         });
 
         var chDichotomize = new Ext.form.Checkbox({
@@ -270,7 +274,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
                 checkBtnsStatus();
             },
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-dichotomize'
         });
 
         var nfDichotomize = new Ext.form.NumberField({
@@ -318,7 +323,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 }
             },
             value: 4,
-            width: fieldWidth
+            width: fieldWidth,
+            cls: 'ui-test-dichotomize-value'
         });
 
         var nfFoldChange = new Ext.form.NumberField({
@@ -340,7 +346,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             },
             minValue: 0,
             value: 0.58,
-            width: 40
+            width: 40,
+            cls: 'ui-test-foldchange-value'
         });
 
 
@@ -435,13 +442,15 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 } else {
                     var p = outputParams[0];
 
-                    cntReport.update( p.value );
+                    //cntReport.update( p.value );
+                    $('#'+cntReport.id).html(p.value);
                     cntEmptyPnlView.setVisible( false );
                     cntReport.setVisible( true );
 
-                    $('#res_table').dataTable();
+                    //$('#res_table').dataTable();
 
                     pnlTabs.setActiveTab( 1 );
+                    window.HTMLWidgets.staticRender();
                 }
             }
         };
@@ -459,7 +468,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 nfFoldChange.setValue( s ? foldChangeValue : 0 );
 
                 checkBtnsStatus();
-            }
+            },
+            cls: 'ui-test-foldchange'
         });
 
         var dfFoldChange = new Ext.form.DisplayField({
@@ -469,7 +479,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var chFalseDiscoveryRate = new Ext.form.Checkbox({
             checked: false,
-            handler: checkBtnsStatus
+            handler: checkBtnsStatus,
+            cls: 'ui-test-falsediscoveryrate'
         });
 
         var dfFalseDiscoveryRate = new Ext.form.DisplayField({
@@ -559,7 +570,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 }
             },
             title: 'Additional options',
-            titleCollapse: true
+            titleCollapse: true,
+            cls: 'ui-test-additional-options'
         });
 
         var pnlInput = new Ext.form.FormPanel({
@@ -634,7 +646,8 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         LABKEY.ext.ISCore.factoryTooltipWrapper( chDichotomize, 'Dichotomize', dicho_help ),
                         nfDichotomize,
                     ],
-                    title: 'Parameters'
+                    title: 'Parameters',
+                    cls: 'ui-test-parameters'
                 }),
                 fsAdditionalOptions,
                 {

@@ -92,25 +92,25 @@ var homeTour = function(){
             showNextButton: true,
             multipage: true,
             onNext: function(){
-                $('#WikiMenu12-Header').removeClass('selected');
-                $('#WikiMenu12-Header_menu').css('visibility', 'hidden');
+                $('#StudiesMenu12-Header').removeClass('selected');
+                $('#StudiesMenu12-Header_menu').css('visibility', 'hidden');
 
                 LABKEY.help.Tour.continueAtLocation('/project/Studies/begin.view?');
             },
             onPrev: function(){
-                $('#WikiMenu12-Header').removeClass('selected');
-                $('#WikiMenu12-Header_menu').css('visibility', 'hidden');
+                $('#StudiesMenu12-Header').removeClass('selected');
+                $('#StudiesMenu12-Header_menu').css('visibility', 'hidden');
             },
             onShow: function(){
-                $('#WikiMenu12-Header')[0].dispatchEvent(
+                $('#StudiesMenu12-Header')[0].dispatchEvent(
                     new MouseEvent( 'click', {
                         'view': window,
                         'bubbles': true,
                         'cancelable': true
                     })
                 );
-                $('#WikiMenu12-Header').addClass('selected');
-                $('#WikiMenu12-Header_menu').css('visibility', 'visible');
+                $('#StudiesMenu12-Header').addClass('selected');
+                $('#StudiesMenu12-Header_menu').css('visibility', 'visible');
             }
         },{
             title: 'Dummy last step to make the previous step show the NEXT button'
