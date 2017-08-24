@@ -7,7 +7,7 @@
     <reportType>
       <R>
         <dependencies>
-          <dependency path='ISCore/Common/jquery-1.11.1.min.js'/>
+          <dependency path='ISCore/Common/jquery.min.js'/>
           <dependency path='https://cdn.datatables.net/1.10.1/js/jquery.dataTables.min.js'/>
           <dependency path='https://cdn.datatables.net/1.10.1/css/jquery.dataTables.css'/>
         </dependencies>

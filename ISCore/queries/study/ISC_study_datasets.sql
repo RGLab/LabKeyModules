@@ -132,6 +132,7 @@ FROM
     ) AS dataset_n,
     DataSets
 WHERE
-    Datasets.Name = dataset_n.Name AND
+    DataSets.Name = dataset_n.Name AND
+    DataSets.ShowByDefault = True AND
     dataset_n.n > 0
 

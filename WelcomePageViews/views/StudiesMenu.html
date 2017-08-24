@@ -5,15 +5,16 @@
 <script type="text/javascript">
     SQL =
     'SELECT ' +
-    '       StudyProperties.Label, ' +
-    '       CAST( REPLACE( StudyProperties.Label, \'SDY\', \'\' ) AS INTEGER ) AS Num, ' +
-    '   hipc.hipc_funded IS NOT NULL AS hipc_funded ' +
+    '    StudyProperties.Label, ' +
+    '    CAST( REPLACE( StudyProperties.Label, \'SDY\', \'\' ) AS INTEGER ) AS Num, ' +
+    '    hipc.hipc_funded IS NOT NULL AS hipc_funded ' +
     'FROM ' +
-    '   study.StudyProperties ' +
-    '   LEFT OUTER JOIN immport.ISC_HIPC_funded_studies hipc ON ' +
-    '   StudyProperties.Label = hipc.study_accession ' +
+    '    study.StudyProperties ' +
+    '    LEFT OUTER JOIN immport.ISC_HIPC_funded_studies hipc ON ' +
+    //'    LEFT OUTER JOIN immport.public.ISC_HIPC_funded_studies hipc ON ' +
+    '    StudyProperties.Label = hipc.study_accession ' +
     'WHERE ' +
-    '   StudyProperties.Label NOT IN (\'Studies\', \'SDY_template\')';
+    '    StudyProperties.Label NOT IN (\'Studies\', \'SDY_template\')';
 
     if ( ! LABKEY.user.isGuest && LABKEY.user.isSignedIn ){
     LABKEY.Query.executeSql({

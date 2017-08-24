@@ -2,16 +2,20 @@
 
 # This script copies the files into each studies
 # It should be run by the immunespace user on the RServe machine
-# For multiple studies, input it as a space separated list enclosed with quotes
+# For multiple studies, input them as a space separated list enclosed with quotes
 
-user=`whoami`
-if [ $user != 'immunespace' ];then
+
+if [ `whoami` != 'immunespace' ];then
   echo "ERROR: This script should be executed by the 'immunespace' user."
   exit 1
 fi
 
+if [ `hostname | tail -c3` != 've' ];then # RServe machine
+  echo "ERROR: This script should be executed on the RServe machine."
+  exit 1
+fi
 
-aspera_files="/share/aspera_files/" #where the files from immport are stored
+aspera_files="/share/aspera_files/" # where the files from immport are stored
 copy_logs=${aspera_files}/copy_logs.txt
 studies=$1
 if [ "$studies" == "" ];then

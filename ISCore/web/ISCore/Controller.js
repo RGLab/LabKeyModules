@@ -21,19 +21,21 @@ ga('send', 'pageview');
 
     // TOURS LOGIC
     var
-        isPortalPage    = ( LABKEY.ActionURL.getController() + '-' + LABKEY.ActionURL.getAction() ).toLowerCase() == 'project-begin',
-        isMainTabOrCont = ( window.location.hash != '' ) ||                                     // Indicates tour continuation regardless of the tab
-                          ( ( Object.keys( LABKEY.ActionURL.getParameters() ).length == 0 ) &&  // No params, so it's the first tab
-                            ( window.location.hash == '' ) ),                                   // Direct hit, no tour implied
-        isStudyFolder   = LABKEY.moduleContext.study && LABKEY.moduleContext.study.timepointType && ( LABKEY.ActionURL.getContainer().search( '/Studies/SDY' ) != -1 ) && isMainTabOrCont,
-        isHomePage      = ( LABKEY.ActionURL.getContainer() == '/home' ) && isMainTabOrCont
+        isPortalPage    =   ( LABKEY.ActionURL.getController() + '-' + LABKEY.ActionURL.getAction() ).toLowerCase() == 'project-begin',
+        isMainTabOrCont =   ( window.location.hash != '' ) ||                                       // Indicates tour continuation regardless of the tab
+                            (   ( Object.keys( LABKEY.ActionURL.getParameters() ).length == 0 ) &&  // No params, so it's the first tab
+                                ( window.location.hash == '' ) ),                                   // Direct hit, no tour implied
+        isStudyFolder   =   LABKEY.container.folderType &&
+                            ( LABKEY.ActionURL.getContainer().search( '/Studies/SDY' ) != -1 ) &&
+                            isMainTabOrCont,
+        isHomePage      =   ( LABKEY.ActionURL.getContainer() == '/home' ) && isMainTabOrCont
     ;
 
     LABKEY.Utils.onReady( function(){
         if ( isPortalPage && isStudyFolder ){ // 'Home page' of a study subfolder
             LABKEY.requiresScript(
                 [
-                    'ISCore/Common/jquery-1.11.1.min.js',
+                    'ISCore/Common/jquery.min.js',
                     'ISCore/Tours/Study.js'
                 ],
                 true, function(){ studyTour(); }, this, true
@@ -43,7 +45,7 @@ ga('send', 'pageview');
         if ( isPortalPage && isHomePage ){
             LABKEY.requiresScript(
                 [
-                    'ISCore/Common/jquery-1.11.1.min.js',
+                    'ISCore/Common/jquery.min.js',
                     'ISCore/Tours/Home.js'
                 ],
                 true, function(){ homeTour(); }, this, true

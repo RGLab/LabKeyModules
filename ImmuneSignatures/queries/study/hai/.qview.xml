@@ -5,14 +5,10 @@
             <cv:property name='columnTitle' value='Participant ID'/>
           </cv:properties>
         </cv:column>
-        <cv:column name='DataSets/demographics/age_reported'/>
-        <cv:column name='biosample_accession/subject_accession/gender'/> 
+        <cv:column name='age_reported'/>
+        <cv:column name='biosample_accession/subject_accession/gender'/>
         <cv:column name='biosample_accession/subject_accession/race'/>
-        <cv:column name='arm_accession/name'>
-          <cv:properties>
-            <cv:property name='columnTitle' value='Cohort'/>
-          </cv:properties>
-        </cv:column>
+        <cv:column name='cohort'/>
         <cv:column name='study_time_collected'/>
         <cv:column name='study_time_collected_unit'/>
         <cv:column name='virus'/>

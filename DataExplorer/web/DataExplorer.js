@@ -398,7 +398,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         schemaName: 'gene_expression',
                         containerFilter: 'CurrentAndSubfolders',
                         success: function( d ){
-                            if ( d.rows[0].Number != 0 ){ 
+                            if ( d.rows[0].Number != 0 ){
                                 var dsRecord = Ext.data.Record.create(['Label', 'Name']);
                                 s.addSorted( new dsRecord({ Label: 'Gene expression' , Name: 'DGEA_filteredGEAR' }) );
                             }

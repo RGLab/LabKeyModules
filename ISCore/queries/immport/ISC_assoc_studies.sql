@@ -3,13 +3,13 @@ SELECT DISTINCT
   study_pubmed.study_accession
 FROM
   study.studyproperties AS SP,
-  study_pubmed,
+  immport.study_pubmed, -- TEMPORARY SCHEMA QUALIFICATION
   (
   SELECT
     pubmed_id AS cpid,
     study_accession AS csa
   FROM
-    study_pubmed
+    immport.study_pubmed -- TEMPORARY SCHEMA QUALIFICATION
   WHERE
     study_accession = $STUDY
   )

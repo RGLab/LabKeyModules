@@ -18,9 +18,11 @@
 Ext.namespace('LABKEY.ext.ISCore');
 
 LABKEY.ext.ISCore.isStudyFolder =
-    LABKEY.moduleContext.study &&
-    LABKEY.moduleContext.study.timepointType &&
-    ( LABKEY.ActionURL.getContainer().search( '/Studies/SDY' ) != -1 );
+    LABKEY.container.folderType == 'Study' &&
+    (
+        ( LABKEY.ActionURL.getContainer().search( '/Studies/SDY' ) != -1 ) ||   // regular studies
+        ( LABKEY.ActionURL.getContainer().search( '/HIPC/IS' ) != -1 )          // published meta-studies
+    );
 
 // Create a help icon with tooltip and text
 LABKEY.ext.ISCore.helpTooltip = function( title, text ){

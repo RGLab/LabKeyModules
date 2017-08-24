@@ -11,12 +11,13 @@ library(limma)
 library(Biobase)
 library(data.table)
 library(gtools)
+library(DT)
 ```
 
 ```{r parameters}
 contrast <- c("study_time_collected", "study_time_collected_unit")
 study <- basename(labkey.url.path)
-i <- 1 #analysis accession key
+i <- 1 # analysis accession key
 infostring <- ""
 ```
 
@@ -30,9 +31,9 @@ contrast: `r contrast`
 ```{r getData, warning = FALSE}
 con <- CreateConnection(study)
 con$GeneExpressionInputs()
-getAllCoefs <- function(con){
+getAllCoefs <- function(con) {
   runs <- con$data_cache$GE_matrices$name
-  if(is.null(runs)){
+  if (is.null(runs)) {
     stop("This study does not have gene-expression data")
   }
   coefs <- con$data_cache$GE_inputs
@@ -42,7 +43,7 @@ getAllCoefs <- function(con){
 }
 
 
-if(is.null(con$data_cache[["GE_matrices"]])){
+if (is.null(con$data_cache[["GE_matrices"]])) {
   nCoefs <- -1
   infostring <- "There is no HIPCMatrix run in this study"
 } else{
@@ -52,7 +53,7 @@ if(is.null(con$data_cache[["GE_matrices"]])){
   allCoefs[, coefficient := do.call(paste, .SD), .SDcols = contrast]
   existGEA <- data.table(labkey.selectRows(labkey.url.base, labkey.url.path, "gene_expression", 
                                            "gene_expression_analysis", colNameOpt = "rname"))
-  if(nrow(existGEA) > 0){
+  if (nrow(existGEA) > 0) {
     q1 <- quote(arm_name)
     q2 <- quote(coefficient)
     existGEA[, key := paste0(eval(q1), eval(q2))]
@@ -68,16 +69,16 @@ if(is.null(con$data_cache[["GE_matrices"]])){
 ```
 
 ```{r infostring-set, echo = FALSE}
-if(nCoefs == 0){
+if (nCoefs == 0) {
   infostring <- "This analysis has already been run. You can visualize the results using the Data Explorer module."
-} else if(nCoefs > 0){
+} else if(nCoefs > 0) {
   infostring <- paste("There will be", nCoefs, "new differential expression analysis.")
 }
 ```
 
 `r infostring`
 ```{r stop, echo = FALSE}
-if(nCoefs == 0){
+if (nCoefs == 0) {
  opts_chunk$set(eval = FALSE, echo = FALSE)
 }
 ```
@@ -86,9 +87,7 @@ if(nCoefs == 0){
 idx <- 1
 GEA_list <- vector("list")
 GEAR_list <- vector("list")
-#GEA_list <- vector("list", nCoefs)
-#GEAR_list <- vector("list", nCoefs)
-for(run in runs){
+for (run in runs) {
   EM <- con$getGEMatrix(run)
   pd <- data.table(pData(EM))
   cm <- con$getDataset("cohort_membership")
@@ -98,86 +97,77 @@ for(run in runs){
   pd <- pd[coef %in% to_drop, coef := "baseline"]
   pd <- pd[, coef := factor(coef,levels = c("baseline",
     grep("baseline", value = TRUE, invert = TRUE, mixedsort(unique(coef)))))]
-  #mm <- model.matrix(formula("~ParticipantId + coef"), pd)
   mm <- model.matrix(formula("~participant_id + coef"), pd)
 
   # Check if it's RNA-seq or microarrays
-  if(max(exprs(EM))>100){
+  if (max(exprs(EM)) > 100) {
     fit <- lmFit(voom(EM), mm)
-  } else{
+  } else {
     fit <- lmFit(EM, mm)
   }
 
   fit <- eBayes(fit)
 
   coefs <- grep("^coef", colnames(mm), value = TRUE)
-  for(coef in coefs){
+  for (coef in coefs) {
     analysis_accession <- paste0("GEA", i)
     TP <- gsub("coef", "", coef)
     arm_name <- unique(pData(EM)$cohort)
     arm_accession <- cm[cohort == arm_name, arm_accession]
-    if(is.null(arm_name)){ arm_name <- NA }
+    if (is.null(arm_name)) arm_name <- NA
     description <- paste0("Differential expression in ", run, ", ", TP, " vs. baseline")
 
     GEA_list[[idx]] <- data.table(analysis_accession = analysis_accession,
-                                  expression_matrix = run, arm_name = arm_name, 
+                                  expression_matrix = run,
+                                  arm_name = arm_name,
                                   arm_accession = arm_accession,
-                                  coefficient = gsub("^coef", "", coef), description = description)
+                                  coefficient = gsub("^coef", "", coef),
+                                  description = description)
     tt <- data.table(topTable(fit, coef = coef, number = Inf))
     ttDE <- tt[adj.P.Val < 0.02]
-    if(nrow(ttDE) < 100){
+    if (nrow(ttDE) < 100) {
       tt <- tt[order(adj.P.Val)][1:min(nrow(tt), 100)]
-    } else{
+    } else {
       tt <- ttDE
     }
-    if(nrow(tt) > 0){
+    if (nrow(tt) > 0) {
       tt[, c("analysis_accession", "coefficient") := list(analysis_accession, coef)]
       GEAR_list[[idx]] <- data.table(tt)
     }
     i <- i + 1
-    idx <- idx+1
+    idx <- idx + 1
   }
 }
 GEA <- rbindlist(GEA_list)
-if(length(GEAR_list) == 0){
+if (length(GEAR_list) == 0) {
   warning("No feature was found to be differentially expressed at any timepoint.")
   opts_chunk$set(eval = FALSE, echo = FALSE)
-} else{
+} else {
   GEAR <- rbindlist(GEAR_list)
-  setnames(GEAR, c("FeatureId", "gene_symbol", "adj.P.Val", "AveExpr", "logFC", "P.Value", "t"), c("feature_id", "gene_symbol", "adj_p_val", "ave_expr", "log_fc", "p_value", "statistic"))
+  setnames(GEAR,
+           c("FeatureId", "gene_symbol", "adj.P.Val", "AveExpr", "logFC", "P.Value", "t"),
+           c("feature_id", "gene_symbol", "adj_p_val", "ave_expr", "log_fc", "p_value", "statistic"))
 }
 ```
 
 ```{r write}
-res_GEA <- labkey.importRows(labkey.url.base, labkey.url.path, "gene_expression", 
-                         "gene_expression_analysis", toImport = GEA)
-res_GEAR <- labkey.importRows(labkey.url.base, labkey.url.path, "gene_expression",
-                              "gene_expression_analysis_results", toImport = GEAR)
+res_GEA <- labkey.importRows(labkey.url.base,
+                             labkey.url.path,
+                             "gene_expression",
+                             "gene_expression_analysis",
+                             toImport = GEA)
+res_GEAR <- labkey.importRows(labkey.url.base,
+                              labkey.url.path,
+                              "gene_expression",
+                              "gene_expression_analysis_results",
+                              toImport = GEAR)
 ```
 
-```{r functions, echo = FALSE}
-format_table <- function(x, ...){
-  require(knitr)
-  require(data.table)
-  if(!is(x,"data.table"))
-  {
-    # This is to make sure that we don't have issues with row names in data.frames
-    stop("This function only works on data.tables")
-  }
-  out <- kable(x, "html", table.attr = 'class="display" id="res_table"', output = FALSE, ...)
-  footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
-  out_new <- gsub("</thead>",footer,out)
-  cat(out_new)
-
-  #cat("\n<script type='text/javascript' charset='utf-8'>\n$(document).ready(function() {\n $('#res_table').dataTable();\n} );\n</script>\n")
-}
+```{r new-analysis}
+datatable(GEA)
 ```
 
-```{r new-analysis, results='asis'}
-format_table(data.table(GEA))
+```{r staticRender, results='asis'}
+cat("<script>window.HTMLWidgets.staticRender();</script>")
 ```
-<script type="text/javascript" charset="utf-8">
-    $(document).ready(function() {
-        $('#res_table').dataTable();
-    } );
-</script>
+

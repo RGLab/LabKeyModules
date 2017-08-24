@@ -114,7 +114,6 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                                     },{
                                         cls: 'show'.wpdi(),
                                         html: 'show',
-                                        id: 'showdesc'.wpdi(),
                                         tag: 'a'
                                     },{
                                         cls: 'hidden',
@@ -131,7 +130,6 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                                     },{
                                         cls: 'show'.wpdi(),
                                         html: 'show',
-                                        id: 'showobj'.wpdi(),
                                         tag: 'a'
                                     },{
                                         cls: 'hidden',
@@ -148,7 +146,6 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                                     },{
                                         cls: 'show'.wpdi(),
                                         html: 'show',
-                                        id: 'showend'.wpdi(),
                                         tag: 'a'
                                     },{
                                         cls: 'hidden',
@@ -175,7 +172,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                                         html: 'Available raw data files: ',
                                         tag: 'span'
                                     },{
-                                        id: 'rawFiles'.wpdi(),
+                                        id: 'raw_files'.wpdi(),
                                         tag: 'span'
                                     }
                             ]
@@ -258,20 +255,15 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             failure: LABKEY.ext.ISCore.onFailure
         });
 
-        LABKEY.Query.selectRows({
-            requiredVersion: 12.3,
-            schemaName: 'study',
-            queryName: 'ISSO_datasets',
-            success: onSuccessDS,
-            failure: LABKEY.ext.ISCore.onFailure
-        });
 
-        LABKEY.Query.selectRows({
-            requiredVersion: 12.3,
-            schemaName: 'study',
-            queryName: 'ISSO_raw_files',
-            success: onSuccessRF,
-            failure: LABKEY.ext.ISCore.onFailure
+        Ext.each( [ 'datasets', 'raw_files' ], function( t ){
+            LABKEY.Query.selectRows({
+                requiredVersion: 12.3,
+                schemaName: 'study',
+                queryName: 'ISC_' + t,
+                success: function( results ){ onSuccessTbls( results, '#' + t ) },
+                failure: LABKEY.ext.ISCore.onFailure
+            });
         });
 
         LABKEY.Query.selectRows({
@@ -295,7 +287,8 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             requiredVersion: 12.3,
             containerFilter: 'AllFolders',
             schemaName: 'immport',
-            queryName: 'ISSO_assoc_studies',
+            //schemaName: 'immport.public',
+            queryName: 'ISC_assoc_studies',
             columns:  'study_accession',
             parameters: {$STUDY: SDY},
             success: onSuccessPubmedAssoc,
@@ -341,6 +334,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 LABKEY.Query.selectRows({
                     requiredVersion: 12.3,
                     schemaName: 'immport',
+                    //schemaName: 'immport.public',
                     queryName: 'ISC_HIPC_funded_studies',
                     columns:  'study_accession',
                     filterArray: [LABKEY.Filter.create('study_accession', SDY, LABKEY.Filter.Types.EQUAL)],
@@ -362,7 +356,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             $('#PI'.wpdi())[0].innerHTML = PI.join(', ');
         };
 
-        function onSuccessDS( results ){
+        function onSuccessTbls( results, target ){
             var
                 rows = results.rows,
                 length = rows.length,
@@ -375,31 +369,8 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                     '\">' + row['Label'].value + '</a>'
                 );
             }
-            if ( length == 0 ){
-                $('#datasets'.wpdi())[0].innerHTML = 'None'
-            } else{
-                $('#datasets'.wpdi())[0].innerHTML = datasets.join(', ');
-            }
-        };
 
-        function onSuccessRF( results ){
-            var
-                rows = results.rows,
-                length = rows.length,
-                datasets = [];
-            for ( var idxRow = 0; idxRow < length; idxRow ++ ){
-                var row = rows[ idxRow ];
-                datasets.push(
-                    '<a href=\"' +
-                    LABKEY.ActionURL.buildURL( 'study', 'dataset', null, { datasetId: row['Id'].value } ) +
-                    '\">' + row['Label'].value + '</a>'
-                );
-            }
-            if ( length == 0 ){
-                $('#rawFiles'.wpdi())[0].innerHTML = 'None'
-            } else{
-                $('#rawFiles'.wpdi())[0].innerHTML = datasets.join(', ');
-            }
+            $(target.wpdi())[0].innerHTML = length == 0 ? 'None' : datasets.join(', ');
         };
 
         function onSuccessHIPCfund(results){
@@ -410,31 +381,13 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
 
         function onSuccessPubmedAssoc(results){
             if ( results.rows.length > 0 ){
-                var
-                    assoc_SDY =  null,
-                    toBuild =
-                        [
-                            {
-                                cls: 'bold-text',
-                                html: 'Associated ImmuneSpace studies:',
-                                tag: 'span'
-                            }
-                        ]
-                ;
+                var toBuild = [];
 
-                for ( var i = 0; i < results.rows.length; i ++ ){
-                    assoc_SDY = results.rows[i]['study_accession'].value;
-
-                    toBuild.push({
-                        href: '/project/Studies/' + assoc_SDY + '/begin.view',
-                        html: ' ' + assoc_SDY,
-                        tag: 'a'
-                    });
-                }
-                dh.append(
-                    'assoc_studies'.wpdi(),
-                    toBuild
-                );
+                Ext.each( results.rows, function( e ){
+                    assoc_SDY = e['study_accession'].value;
+                    toBuild.push( assoc_SDY.link( '/project/Studies/' + assoc_SDY + '/begin.view' ) );
+                });
+                $('#assoc_studies'.wpdi())[0].innerHTML = 'Associated ImmuneSpace studies: '.bold() + toBuild.join(', ');
                 $('#assoc_studies'.wpdi()).addClass( 'overview-spacing' );
             }
         };
@@ -446,13 +399,12 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                     GEOacc
                 ;
 
-                GEO.push('GEO accession:'.bold());
-                for ( var idxRow = 0; idxRow < results.rows.length; idxRow ++ ){
-                    GEOlink = results.rows[idxRow]['value'].value;
+                Ext.each( results.rows, function( e ){
+                    GEOlink = e['value'].value;
                     GEOacc = GEOlink.split("=")[1];
                     GEO.push( GEOacc.link( GEOlink ) );
-                }
-                $('#GEO'.wpdi())[0].innerHTML = GEO.join(' ');
+                });
+                $('#GEO'.wpdi())[0].innerHTML = 'GEO accession: '.bold() + GEO.join(', ');
                 $('#GEO'.wpdi() + ' a').attr('target', '_blank');
             }
         };
@@ -468,5 +420,5 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
 
         LABKEY.ext.ImmuneSpaceStudyOverview.superclass.constructor.apply(this, arguments);
     } // end constructor
-}); // end ImmuneSpaceStudyOverviewDataSummary Panel class
+}); // end ImmuneSpaceStudyOverview Panel class
 

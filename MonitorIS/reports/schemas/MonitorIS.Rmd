@@ -24,31 +24,45 @@ library(stringr)
 #str(labkey.url.params)
 
 # labkey parameters
-from <- ifelse(labkey.url.params$from == "", as.Date("2016-01-01"), as.Date(labkey.url.params$from))
-to <- ifelse(labkey.url.params$to == "", Sys.Date(), as.Date(labkey.url.params$to))
+from <- ifelse(labkey.url.params$from == "",
+               as.Date("2016-01-01"),
+               as.Date(labkey.url.params$from))
+to <- ifelse(labkey.url.params$to == "",
+             Sys.Date(),
+             as.Date(labkey.url.params$to))
 class(from) <- "Date"
 class(to) <- "Date"
-from <- ifelse(from > to, as.Date("2016-01-01"), from)
+from <- ifelse(from > to,
+               as.Date("2016-01-01"),
+               from)
 class(from) <- "Date"
 from_to <- tibble(date = seq(from, to, by = "1 day"))
 
-plotType <- ifelse(labkey.url.params$plotType %in% c("bar", "line"), labkey.url.params$plotType, "bar")
-dateBy <- ifelse(labkey.url.params$by %in% c("day", "week", "month", "year"), labkey.url.params$by, "day")
+plotType <- ifelse(labkey.url.params$plotType %in% c("bar", "line"),
+                   labkey.url.params$plotType,
+                   "bar")
+dateBy <- ifelse(labkey.url.params$by %in% c("day", "week", "month", "year"),
+                 labkey.url.params$by,
+                 "day")
 
 # exclude admins and support accounts
 admins <- labkey.selectRows(baseUrl = labkey.url.base,
-                            folderPath = "/home", 
-                            schemaName = "core", 
-                            queryName = "SiteUsers", 
-                            viewName = "", 
-                            colFilter = makeFilter(c("Groups/Group$SName", "CONTAINS_ONE_OF", "Developers;Administrators")), 
+                            folderPath = "/home",
+                            schemaName = "core",
+                            queryName = "SiteUsers",
+                            viewName = "",
+                            colFilter = makeFilter(c("Groups/Group$SName",
+                                                     "CONTAINS_ONE_OF",
+                                                     "Developers;Administrators")),
                             containerFilter = NULL)
 extras <- labkey.selectRows(baseUrl = labkey.url.base,
-                            folderPath = "/home", 
-                            schemaName = "core", 
-                            queryName = "SiteUsers", 
-                            viewName = "", 
-                            colFilter = makeFilter(c("Email", "CONTAINS_ONE_OF", "rglab.org;immunespace.org")), 
+                            folderPath = "/home",
+                            schemaName = "core",
+                            queryName = "SiteUsers",
+                            viewName = "",
+                            colFilter = makeFilter(c("Email",
+                                                     "CONTAINS_ONE_OF",
+                                                     "rglab.org;immunespace.org")),
                             containerFilter = NULL)
 exclusion_list <- paste0(unique(c(admins$`Display Name`, extras$`Display Name`)), collapse = ";")
 ```
@@ -65,32 +79,31 @@ users_all <- labkey.selectRows(baseUrl = labkey.url.base,
                                colFilter = NULL,
                                containerFilter = NULL)
 colnames(users_all) <- tolower(chartr(" ", "_", colnames(users_all)))
-users_all <- users_all %>% 
-  mutate(created = as.Date(created), 
+users_all <- users_all %>%
+  mutate(created = as.Date(created),
          last_login = as.Date(last_login))
 
-users <- users_all %>% 
-  filter(created >= from & created <= to) %>% 
-  select(created) %>% 
-  count(created) %>% 
-  right_join(from_to, by = c("created" = "date")) %>% 
-  mutate(n = replace(n, is.na(n), 0)) %>% 
-  mutate(created = floor_date(created, dateBy)) %>% 
-  group_by(created) %>% 
+users <- users_all %>%
+  filter(created >= from & created <= to) %>%
+  select(created) %>%
+  count(created) %>%
+  right_join(from_to, by = c("created" = "date")) %>%
+  mutate(n = replace(n, is.na(n), 0)) %>%
+  mutate(created = floor_date(created, dateBy)) %>%
+  group_by(created) %>%
   summarise(N = sum(n))
-p <- ggplot(users, aes(x = created, y = N)) + 
-  xlab(paste0("By ", dateBy)) + 
-  ylab("New users") + 
-  ggtitle("New users over time") + 
-  scale_x_date(limits = c(from, to)) + 
-  theme_IS(base_size = 18)
+p <- users %>%
+  plot_ly(x = ~created,
+          y = ~N) %>%
+  layout(xaxis = list(title = paste0("By ", dateBy)),
+         yaxis = list(title = "New users"),
+         title = "New users over time")
 if (plotType == "line") {
-  p <- p + geom_line()
+  p %>% add_lines()
 } else {
-  p <- p + geom_bar(stat = "identity")
+  p %>% add_bars()
 }
-ggplotly(p)
-``` 
+```
 
 We gained **`r round(mean(users$N), 2)` new users** per *`r dateBy`* on average from `r from` to `r to`.
 <br>
@@ -102,33 +115,36 @@ logins <- labkey.selectRows(baseUrl = labkey.url.base,
                             schemaName = "auditLog",
                             queryName = "UserAuditEvent",
                             viewName = "",
-                            colFilter = makeFilter(c("CreatedBy/DisplayName", "NOT_IN", exclusion_list), 
-                                                   c("Comment", "CONTAINS", "Database authentication")),
+                            colFilter = makeFilter(c("CreatedBy/DisplayName",
+                                                     "NOT_IN",
+                                                     exclusion_list),
+                                                   c("Comment",
+                                                     "CONTAINS",
+                                                     "Database authentication")),
                             containerFilter= "AllFolders")
-logins <- logins %>% 
-  mutate(Date = as.Date(Date)) %>% 
-  select(Date, `Created By`) %>% 
+logins <- logins %>%
+  mutate(Date = as.Date(Date)) %>%
+  select(Date, `Created By`) %>%
   filter(Date >= from & Date <= to)
-active_by <- logins %>% 
+active_by <- logins %>%
   distinct() %>%
-  count(Date) %>% 
+  count(Date) %>%
   right_join(from_to, by = c("Date" = "date")) %>%
   mutate(n = replace(n, is.na(n), 0)) %>%
   mutate(Date = floor_date(Date, dateBy)) %>%
   group_by(Date) %>%
   summarise(n = sum(n))
-p <- ggplot(active_by, aes(x = Date, y = n)) + 
-  xlab(paste0("By ", dateBy)) + 
-  ylab("Active users") + 
-  ggtitle("Active users over time") + 
-  scale_x_date(limits = c(from, to)) + 
-  theme_IS(base_size = 18)
+p <- active_by %>%
+  plot_ly(x = ~Date,
+          y = ~n) %>%
+  layout(xaxis = list(title = paste0("By ", dateBy)),
+         yaxis = list(title = "Active users"),
+         title = "Active users over time")
 if (plotType == "line") {
-  p <- p + geom_line()
+  p %>% add_lines()
 } else {
-  p <- p + geom_bar(stat = "identity")
+  p %>% add_bars()
 }
-ggplotly(p)
 ```
 
 We had **`r round(mean(active_by$n), 2)` active users** per *`r dateBy`* on average from `r from` to `r to`.
@@ -136,60 +152,71 @@ We had **`r round(mean(active_by$n), 2)` active users** per *`r dateBy`* on aver
 
 
 ```{r logins}
-logins_by <- logins %>% 
-  mutate(Date = floor_date(as.Date(Date), dateBy)) %>% 
-  count(Date, `Created By`) %>% 
-  left_join(select(users_all, user_id, display_name), by = c("Created By" =  "user_id")) %>% 
-  mutate(display_name = ifelse(is.na(display_name), as.character(`Created By`), display_name)) %>% 
+logins_by <- logins %>%
+  mutate(Date = floor_date(as.Date(Date), dateBy)) %>%
+  count(Date, `Created By`) %>%
+  left_join(select(users_all, user_id, display_name),
+            by = c("Created By" =  "user_id")) %>%
+  mutate(display_name = ifelse(is.na(display_name),
+                               as.character(`Created By`),
+                               display_name)) %>%
   select(Date, display_name, n)
+
 if (nrow(logins_by) > 0) {
-  p <- ggplot(logins_by, aes(x = Date, y = n, colour = display_name)) + 
+  p <- ggplot(logins_by, aes(x = Date, y = n, colour = display_name)) +
     geom_line(alpha = 0.3) +
-    xlab(paste0("By ", dateBy)) + 
-    ylab("# of logins") + 
-    ggtitle("Number of logins by users over time") + 
+    xlab(paste0("By ", dateBy)) +
+    ylab("# of logins") +
+    ggtitle("# of logins by users over time") +
     scale_x_date(limits = c(from, to)) +
-    theme(legend.position = "none") +
-    theme_IS(base_size = 18)
+    theme_minimal() +
+    theme(legend.position = "none")
   ggplotly(p)
+#  logins_by %>%
+#    plot_ly(x = ~Date, y = ~n, color = ~display_name) %>%
+#    layout(xaxis = list(title = paste0("By ", dateBy)),
+#           yaxis = list(title = "# of logins"),
+#           title = "# of logins by users over time",
+#           showlegend = FALSE) %>%
+#    add_lines(alpha = 0.3)
 }
 ```
 <br>
 
 
 ```{r vs}
-#vs <- full_join(df, logins_byday, by = c("created" = "Date")) %>% 
-#  select(created, N, n) %>% 
+#vs <- full_join(df, logins_byday, by = c("created" = "Date")) %>%
+#  select(create#n) %>%
 #  mutate(N = ifelse(is.na(N), 0, N), n = ifelse(is.na(n), 0, n), surp = n - N)
-#p <- ggplot(vs, aes(x = N, y = n)) + 
-#  geom_point(aes(col = surp, label = created)) + 
-#  geom_abline(intercept = 0) + 
+#p <- ggplot(vs, aes(x = N, y = n)) +
+#  geom_point(aes(col = surp, label = created)) +
+#  geom_abline(intercept = 0) +
 #  theme_IS(base_size = 18)
 #ggplotly(p)
 ```
 
 
 ```{r totalusers}
-p <- users %>% 
-  arrange(created) %>% 
-  ggplot(aes(x = created, y = cumsum(N))) + 
-  geom_step() + 
-  xlab(paste0("By ", dateBy)) + 
-  ylab("Total # of users") + 
-  ggtitle("Total number of users over time") + 
-  scale_x_date(limits = c(from, to)) + 
-  theme_IS(base_size = 18)
-ggplotly(p)
+total_users <- mutate(users, cumsum = cumsum(N))
+
+total_users %>%
+  plot_ly(x = ~created, y = ~cumsum) %>%
+  layout(xaxis = list(title = paste0("By ", dateBy)),
+         yaxis = list(title = "Total # of users"),
+         title = "Total # of users over time") %>%
+  add_lines(line = list(shape = "hv"))
 ```
 <br>
 
 
 ## Table of users
 ```{r usertable}
-logins_byuser <- logins %>% 
+logins_byuser <- logins %>%
   count(`Created By`)
-topusers <- left_join(users_all, logins_byuser, by = c("user_id" = "Created By")) %>% 
-  filter(!is.na(n)) %>% 
+topusers <- users_all %>%
+  left_join(logins_byuser,
+            by = c("user_id" = "Created By")) %>%
+  filter(!is.na(n)) %>%
   arrange(desc(n))
 datatable(topusers)
 ```
@@ -203,41 +230,48 @@ datatable(topusers)
 
 # Searches Queries
 ```{r searches}
-searches <- labkey.selectRows(baseUrl = labkey.url.base, 
-                              folderPath = "/home", 
-                              schemaName = "auditLog", 
-                              queryName = "SearchAuditEvent", 
-                              viewName = "", 
-                              colSort = "Created", 
-                              colFilter = makeFilter(c("Query", "DOES_NOT_CONTAIN", "\\"), 
-                                                     c("Query", "DOES_NOT_CONTAIN", "1234"), 
-                                                     c("CreatedBy/DisplayName", "NOT_IN", exclusion_list)), 
-                              containerFilter=NULL)
+searches <- labkey.selectRows(baseUrl = labkey.url.base,
+                              folderPath = "/home",
+                              schemaName = "auditLog",
+                              queryName = "SearchAuditEvent",
+                              viewName = "",
+                              colSort = "Created",
+                              colFilter = makeFilter(c("Query",
+                                                       "DOES_NOT_CONTAIN",
+                                                       "\\"),
+                                                     c("Query",
+                                                       "DOES_NOT_CONTAIN",
+                                                       "1234"),
+                                                     c("CreatedBy/DisplayName",
+                                                       "NOT_IN",
+                                                       exclusion_list)),
+                              containerFilter = NULL)
 
-searches <- searches %>% 
-  filter(`Created By` != 0, 
-         Date >= from & Date <= to) %>% 
-  mutate(id = paste(Date, `Created By`, sep = "-")) %>% 
+searches <- searches %>%
+  filter(`Created By` != 0,
+         Date >= from & Date <= to) %>%
+  mutate(id = paste(Date, `Created By`, sep = "-")) %>%
   select(id, Query)
 ```
 
 ## Word cloud
 ```{r wordcloud}
-freq <- searches %>% 
+freq <- searches %>%
   unnest_tokens(output = word, input = Query) %>%
   count(word, sort = T)
 pal <- brewer.pal(9,"YlGnBu")
 pal <- pal[-(1:4)]
 
 if (nrow(freq) > 0) {
-  wordcloud(words = freq$word, 
+  wordcloud(words = freq$word,
             freq = freq$n,
             max.words = 30,
             rot.per = 0,
             random.order = FALSE,
             colors = pal)
 } else {
-  wordcloud(words = "no search", freq = 1)
+  wordcloud(words = "no search",
+            freq = 1)
 }
 ```
 <br>
@@ -263,29 +297,29 @@ folders <- labkey.selectRows(baseUrl = labkey.url.base,
                              queryName ="ContainerAuditEvent",
                              colNameOpt = "rname",
                              containerFilter = "AllFolders")
-sdys <- folders %>% 
-  filter(!is.na(container)) %>% 
-  select(created, comment) %>% 
-  filter(grepl("Folder SDY[0-9].*created$", comment)) %>% 
-  mutate(study = gsub("\\s.*$", "", gsub("^.*SDY", "SDY", comment))) %>% 
-  arrange(created) %>% 
-  mutate(count = 1:nrow(.)) %>% 
-  filter(created >= "2016-01-01") %>% 
-  select(created, count) %>% 
+sdys <- folders %>%
+  filter(!is.na(container)) %>%
+  select(created, comment) %>%
+  filter(grepl("Folder SDY[0-9].*created$", comment)) %>%
+  mutate(study = gsub("\\s.*$", "", gsub("^.*SDY", "SDY", comment))) %>%
+  arrange(created) %>%
+  mutate(count = 1:nrow(.)) %>%
+  filter(created >= "2016-01-01") %>%
+  select(created, count) %>%
   mutate(created = as.Date(created))
-sdys <- bind_rows(tibble(created = as.Date("2016-01-01"), count = min(sdys$count)), 
-                   sdys, 
-                   tibble(created = Sys.Date(), count = max(sdys$count)))
+sdys <- bind_rows(tibble(created = as.Date("2016-01-01"),
+                         count = min(sdys$count)),
+                  sdys,
+                  tibble(created = Sys.Date(),
+                         count = max(sdys$count)))
 
 # Based on folder creation -> counts private studies
-p <- ggplot(sdys, aes(x = created)) +
-  geom_step(aes(y = count)) +
-  xlab("Date") + 
-  ylab("Studies") + 
-  ggtitle("Number of studies available") +
-  scale_x_date() + 
-  theme_IS(base_size = 18)
-ggplotly(p)
+sdys %>%
+  plot_ly(x = ~created, y = ~count) %>%
+  layout(xaxis = list(title = "Date"),
+         yaxis = list(title = "Studies"),
+         title = "Number of studies available") %>%
+  add_lines(line = list(shape = "hv"))
 ```
 <br>
 
@@ -305,14 +339,15 @@ read_log <- function(date) {
     file_name <- paste0("/share/tomcat-logs/localhost_access_log.", date, ".txt")
   }
   if (file.exists(file_name)) {
-    read_delim(file = file_name, 
+    read_delim(file = file_name,
                delim = " - ",
                escape_double = TRUE,
                col_names = FALSE,
-               trim_ws = TRUE) %>% 
-      mutate(date = date, 
-             study = str_extract(X6, "SDY\\d+"), 
-             schema = grepl("schemaName=study?", X14), 
+               trim_ws = TRUE,
+               col_types = cols(.default = col_character())) %>%
+      mutate(date = date,
+             study = str_extract(X6, "SDY\\d+"),
+             schema = grepl("schemaName=study?", X14),
              query = str_extract(X14, "(?<=queryName=)\\w+"))
   } else {
     NULL
@@ -324,31 +359,31 @@ logs_dt <- lapply(from_to$date, read_log) %>% bind_rows()
 
 ## Pageviews: Study
 ```{r study-views}
-log_study <- logs_dt %>% 
-  mutate(folder = str_extract(X6, "(/project/Studies/SDY\\d+/begin.view\\?? |/project/Studies/begin.view\\?? )")) %>% 
-  filter(!is.na(folder)) %>% 
-  mutate(study = ifelse(is.na(study), "Data Finder", study)) %>% 
-  select(study) %>% 
-  count(study) %>% 
+log_study <- logs_dt %>%
+  mutate(folder = str_extract(X6, "(/project/Studies/SDY\\d+/begin.view\\?? |/project/Studies/begin.view\\?? )")) %>%
+  filter(!is.na(folder)) %>%
+  mutate(study = ifelse(is.na(study), "Data Finder", study)) %>%
+  select(study) %>%
+  count(study) %>%
   arrange(desc(n))
-datatable(log_study, 
-          colnames = c("Study", "Unique pageviews"), 
-          caption = paste0("From ", from, " to ", to), 
+datatable(log_study,
+          colnames = c("Study", "Unique pageviews"),
+          caption = paste0("From ", from, " to ", to),
           width = 600)
 ```
 
 
 ## Pageviews: Module
 ```{r module-views}
-log_module <- logs_dt %>% 
-  mutate(module = str_extract(X6, "(?<=GET /)(DataExplorer|GeneExpressionExplorer|GeneSetEnrichmentAnalysis|ImmuneResponsePredictor)(?=/\\w+)")) %>% 
-  filter(!is.na(module)) %>% 
-  select(module) %>% 
-  count(module) %>% 
+log_module <- logs_dt %>%
+  mutate(module = str_extract(X6, "(?<=GET /)(DataExplorer|GeneExpressionExplorer|GeneSetEnrichmentAnalysis|ImmuneResponsePredictor)(?=/\\w+)")) %>%
+  filter(!is.na(module)) %>%
+  select(module) %>%
+  count(module) %>%
   arrange(desc(n))
-datatable(log_module, 
-          colnames = c("Module", "Unique pageviews"), 
-          caption = paste0("From ", from, " to ", to), 
+datatable(log_module,
+          colnames = c("Module", "Unique pageviews"),
+          caption = paste0("From ", from, " to ", to),
           width = 600)
 ```
 
@@ -360,10 +395,12 @@ datatable(log_module,
 # ImmuneSpaceR
 
 ```{r isr}
-ISR <- logs_dt %>% 
-  filter(grepl("ImmuneSpaceR", X12)) %>% 
-  mutate(study = ifelse(is.na(study), "All", study))
-ISR_inits <- ISR %>% 
+ISR <- logs_dt %>%
+  filter(grepl("ImmuneSpaceR", X12)) %>%
+  mutate(study = ifelse(is.na(study),
+                        "All",
+                        study))
+ISR_inits <- ISR %>%
   filter(query == "ISC_study_datasets")
 ```
 
@@ -376,33 +413,33 @@ ISR_study <- ISR_inits %>%
   arrange(desc(n))
 datatable(ISR_study,
           colnames = c("Study", "ISR connections"),
-          caption = paste0("From ", from, " to ", to), 
+          caption = paste0("From ", from, " to ", to),
           width = 600)
 ```
 <br>
 
 
 ```{r isr-con}
-ISR_con <- ISR_inits %>% 
-  select(date) %>% 
-  count(date) %>% 
-  right_join(from_to, by = "date") %>% 
-  mutate(n = replace(n, is.na(n), 0)) %>% 
+ISR_con <- ISR_inits %>%
+  select(date) %>%
+  count(date) %>%
+  right_join(from_to, by = "date") %>%
+  mutate(n = replace(n, is.na(n), 0)) %>%
   mutate(date = floor_date(date, dateBy)) %>%
   group_by(date) %>%
   summarise(N = sum(n))
-p <- ggplot(ISR_con, aes(x = date, y = N)) +
-  xlab(paste0("By ", dateBy)) +
-  ylab("# of connections") +
-  ggtitle("Number of ISR connections over time") +
-  scale_x_date(limits = c(from, to)) +
-  theme_IS(base_size = 18)
+
+p <- ISR_con %>%
+  plot_ly(x = ~date,
+          y = ~N) %>%
+  layout(xaxis = list(title = paste0("By ", dateBy)),
+         yaxis = list(title = "# of connections"),
+         title = "# of connections over time")
 if (plotType == "line") {
-  p <- p + geom_line()
+  p %>% add_lines()
 } else {
-  p <- p + geom_bar(stat = "identity")
+  p %>% add_bars()
 }
-ggplotly(p)
 ```
 
 We had **`r round(mean(ISR_con$N), 2)` connections** per *`r dateBy`* on average from `r from` to `r to`.
@@ -410,29 +447,29 @@ We had **`r round(mean(ISR_con$N), 2)` connections** per *`r dateBy`* on average
 
 
 ```{r isr-user}
-ISR_user <- ISR_inits %>% 
-  select(date, X13) %>% 
-  filter(X13 != "-") %>% 
-  distinct() %>% 
-  select(date) %>% 
-  count(date) %>% 
-  right_join(from_to, by = "date") %>% 
-  mutate(n = replace(n, is.na(n), 0)) %>% 
+ISR_user <- ISR_inits %>%
+  select(date, X13) %>%
+  filter(X13 != "-") %>%
+  distinct() %>%
+  select(date) %>%
+  count(date) %>%
+  right_join(from_to, by = "date") %>%
+  mutate(n = replace(n, is.na(n), 0)) %>%
   mutate(date = floor_date(date, dateBy)) %>%
   group_by(date) %>%
   summarise(N = sum(n))
-p <- ggplot(ISR_user, aes(x = date, y = N)) +
-  xlab(paste0("By ", dateBy)) +
-  ylab("# of users") +
-  ggtitle("Number of ISR users over time") +
-  scale_x_date(limits = c(from, to)) +
-  theme_IS(base_size = 18)
+
+p <- ISR_user %>%
+  plot_ly(x = ~date,
+          y = ~N) %>%
+  layout(xaxis = list(title = paste0("By ", dateBy)),
+         yaxis = list(title = "# of users"),
+         title = "# of ISR users over time")
 if (plotType == "line") {
-  p <- p + geom_line()
+  p %>% add_lines()
 } else {
-  p <- p + geom_bar(stat = "identity")
+  p %>% add_bars()
 }
-ggplotly(p)
 ```
 
 We had **`r round(mean(ISR_user$N), 2)` ISR users** per *`r dateBy`* on average from `r from` to `r to`.
@@ -443,25 +480,25 @@ We had **`r round(mean(ISR_user$N), 2)` ISR users** per *`r dateBy`* on average 
 
 ```{r isr-bioc}
 BIOC <- read.table("https://www.bioconductor.org/packages/stats/bioc/ImmuneSpaceR/ImmuneSpaceR_stats.tab", header = T)
-BIOC <- BIOC %>% 
-  filter(Month != "all") %>% 
-  mutate(date = as.Date(paste(Year, Month, "01", sep = "-"), "%Y-%b-%d")) %>% 
-  arrange(date) %>% 
-  filter(date <= Sys.Date()) %>% 
+BIOC <- BIOC %>%
+  filter(Month != "all") %>%
+  mutate(date = as.Date(paste(Year, Month, "01", sep = "-"), "%Y-%b-%d")) %>%
+  arrange(date) %>%
+  filter(date <= Sys.Date()) %>%
   select(date, Nb_of_downloads)
 
-p <- ggplot(BIOC, aes(x = date, y = Nb_of_downloads)) +
-  xlab("By Month") +
-  ylab("Number of downloads") +
-  ggtitle("Number of downloads in Bioconductor over time") +
-  scale_x_date(limits = c(from, to)) +
-  theme_IS(base_size = 18)
+p <- BIOC %>%
+  plot_ly(x = ~date,
+          y = ~Nb_of_downloads) %>%
+  layout(xaxis = list(title = paste0("By ", dateBy)),
+         yaxis = list(title = "# of downloads"),
+         title = "# of downloads in Bioconductor over time")
 if (plotType == "line") {
-  p <- p + geom_line()
+  p %>% add_lines()
 } else {
-  p <- p + geom_bar(stat = "identity")
+  p %>% add_bars()
 }
-ggplotly(p)
+
 ```
 <br>
 
@@ -474,30 +511,29 @@ ggplotly(p)
 
 # RStudio
 ```{r rstudio}
-log_rstudio <- logs_dt %>% 
+log_rstudio <- logs_dt %>%
   filter(grepl("GET /_rstudio/ HTTP/1.1", X6))
 
-
-session_rstudio <- log_rstudio %>% 
-  select(date) %>% 
-  count(date) %>% 
-  right_join(from_to, by = "date") %>% 
-  mutate(n = replace(n, is.na(n), 0)) %>% 
+session_rstudio <- log_rstudio %>%
+  select(date) %>%
+  count(date) %>%
+  right_join(from_to, by = "date") %>%
+  mutate(n = replace(n, is.na(n), 0)) %>%
   mutate(date = floor_date(date, dateBy)) %>%
   group_by(date) %>%
   summarise(N = sum(n))
-p <- ggplot(session_rstudio, aes(x = date, y = N)) +
-  xlab(paste0("By ", dateBy)) +
-  ylab("# of sessions") +
-  ggtitle("RStudio sessions over time") +
-  scale_x_date(limits = c(from, to)) +
-  theme_IS(base_size = 18)
+
+p <- session_rstudio %>%
+  plot_ly(x = ~date,
+          y = ~N) %>%
+  layout(xaxis = list(title = paste0("By ", dateBy)),
+         yaxis = list(title = "# of sessions"),
+         title = "# of RStudio sessions over time")
 if (plotType == "line") {
-  p <- p + geom_line()
+  p %>% add_lines()
 } else {
-  p <- p + geom_bar(stat = "identity")
+  p %>% add_bars()
 }
-ggplotly(p)
 ```
 
 We had **`r round(mean(session_rstudio$N), 2)` RStudio sessions** per *`r dateBy`* on average from `r from` to `r to`.

@@ -2,19 +2,11 @@
 <query xmlns='http://labkey.org/data/xml/query'>
     <metadata>
         <tables xmlns='http://labkey.org/data/xml'>
-            <table tableName='gene_expression_analysis_results' tableDbType='TABLE'>
+            <table tableName='demographics' tableDbType='TABLE'>
                 <buttonBarOptions position='both' includeStandardButtons='false'>
                     <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
                     <item text='Grid Views' permission='ADMIN' insertPosition='end'>
                         <originalText>Grid Views</originalText>
-                    </item>
-                    <item text='Views' insertPosition='end'>
-                        <item text='Default'>
-                            <onClick>goToView(dataRegion, ''); return false;</onClick>
-                        </item>
-                        <item text='Differential gene expression analysis results'>
-                            <onClick>goToView(dataRegion, 'DGEAR'); return false;</onClick>
-                        </item>
                     </item>
                     <item text='Export' insertPosition='end'>
                         <originalText>Export</originalText>
@@ -28,13 +20,15 @@
                     <item text='Manage' permission='ADMIN' insertPosition='end' suppressWarning='true'>
                         <originalText>Manage</originalText>
                     </item>
-                    <item text='Import' permission='ADMIN' insertPosition='end' suppressWarning='true'>
-                        <originalText>Import</originalText>
-                    </item>
                     <item text='Delete' permission='ADMIN' insertPosition='end' suppressWarning='true'>
                         <originalText>Delete</originalText>
                     </item>
-               </buttonBarOptions>
+                </buttonBarOptions>
+                <columns>
+                    <column columnName="study">
+                        <url>/project/Studies/${study}/begin.view</url>
+                    </column>
+                </columns>
             </table>
         </tables>
     </metadata>

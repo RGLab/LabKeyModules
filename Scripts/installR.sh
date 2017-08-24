@@ -53,7 +53,7 @@ if [ `whoami` = 'root' ] ; then
         else
             R_LIBS=/usr/lib/R/library
         fi
-        rm -rf ${R_LIBS}
+        rm -rf ${R_LIBS} # deleting existing R libraries
         cd ~
         wget https://cran.r-project.org/src/base/R-$( echo ${1} | head -c1 )/R-${1}.tar.gz
         tar -xzf R-${1}.tar.gz
@@ -75,6 +75,10 @@ if [ `whoami` = 'root' ] ; then
         cd ${LK_MODULES_PATH}/LabKeyModules
         ./Scripts/getRpkgs.sh
         Rscript ./Scripts/installR.R ${BUILD_TYPE}
+
+        if [ ${INTERACTIVE} = 'yes' ] ; then
+            ./Scripts/rmcache.sh # delete cached resources that relied on the old installation
+        fi
 
         ELAPSED_TIME=$(($SECONDS - $START_TIME))
         echo

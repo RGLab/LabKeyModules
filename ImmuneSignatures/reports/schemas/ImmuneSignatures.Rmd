@@ -5,29 +5,28 @@ output: rmarkdown::html_document
 ***
 
 ## PUBLICATION INFO
-**Title:** Multi-cohort analysis reveals baseline transcriptional predictors of influenza vaccination responses  
-**Publication Date:**
-**Journal:** Science Immunology
-**Authors:** The HIPC-CHI Signatures Project Team and the HIPC-I Consortium
-**Manuscript Link:**
-**Contact Name:**
-**Contact Email:**
+* **Title:** Multi-cohort analysis reveals baseline transcriptional predictors of influenza vaccination responses  
+* **Publication Date:** August 24, 2017
+* **Journal:** Science Immunology
+* **Authors:** The HIPC-CHI Signatures Project Team and the HIPC-I Consortium
+* **Manuscript Link:**
+* **Contact Name:** Dr. Steven Kleinstein
+* **Contact Email:** steven.kleinstein@yale.edu
 
-## PACKAGE INFO
-**Name:** ImmSig2
-**Created:** May 2017
-**GitHub Repo:** <https://github.com/ehfhcrc/ImmSig2>
-**Package Developer:** Evan Henrich (Gottardo Lab - FHCRC)
-**Contact:** ehenrich@fredhutch.org
+## ANALYSIS INFO
+* **Created:** May 2017
+* **GitHub Repo:** <https://github.com/rglab/ImmuneSignatures>
+* **Developer:** Evan Henrich (Gottardo Lab - FHCRC)
+* **Contact:** ehenrich@fredhutch.org
 
 ***
 
 ## OVERVIEW
-This markdown file outputs the results of the HIPC ImmuneSignatures Project using the original parameters and data coming directly from <https://www.immunespace.org> unless noted. This markdown uses heavily refactored code to improve efficiency.  However, all original code developed for the production of the manuscript is included in the /OrigCode folder within the package for reference.  This can be viewed at <https://github.com/ehfhcrc/ImmSig2>. 
+This markdown file outputs the results of the HIPC ImmuneSignatures Project using the original parameters and data coming directly from <https://www.immunespace.org> unless noted. This markdown uses heavily refactored code to improve efficiency.  However, all original code developed for the production of the manuscript is included in the /OrigCode folder within the package for reference.  This can be viewed at <https://github.com/rglab/ImmuneSignatures/tree/master/OrigCode>. 
 
 #### Figure 1 - Analysis Workflow
-As seen in the figure below, the analysis first starts by extracting data from ImmuneSpace for four "Discovery" studies (SDY212, SDY63, SDY404, and SDY400) and processing that data based on two age cohorts (younger <= 35 years and older > 60 years).  Meta-Analysis are run on these datasets to identify individual and sets of genes that predict immune system response to an influenza vaccine based on day zero transcriptional data.  These signature genes and modules are then validated on one study per age cohort.
-<center>![](fig1.png)</center>
+As seen in the figure below, the analysis first starts by extracting data from ImmuneSpace for four "Discovery" studies (SDY212, SDY63, SDY404, and SDY400) and processing that data based on two age cohorts (younger <= 35 years and old > 60 years).  Meta-Analysis are run on these datasets to identify individual and sets of genes that predict immune system response to an influenza vaccine based on day zero transcriptional data.  These signature genes and modules are then validated on one study per age cohort.
+<center>![](/ImmuneSignatures/images/fig1.png)</center>
 
 #### Data Notes:
 To save time, the gene expression matrices are pre-loaded as data within the package.  The code to generate these expression matrices from ImmuneSpace / GEO can be found in the `R/get_GE.R` script within the package.There is also one case where data from ImmuneSpace could not be used: SDY80 (hai).
@@ -37,12 +36,12 @@ The SDY80 hai data available on ImmuneSpace is not incorporated into the analysi
 Finally, the results for the "old" cohort using SDY67 data are slightly different ( <0.5% Relative Error ).  This is due to rounding that occurs from a transformation from one kind of data structure to another.
 
 #### Package Notes:
-In order to run this vignette locally, you would first need to install the following Bioconductor packages by hand: Biobase, qusage, and MetaIntegrator. Then install `ImmSig2` via `devtools::install_github("ehfhcrc/ImmSig2", build_vignettes=T)` and view the vignette with `vignette("ImmSig_Pipeline_demo", package="ImmSig2")`.  
+In order to run this vignette locally, you would first need to install the following Bioconductor packages by hand: Biobase, qusage, and MetaIntegrator. Then install `ImmuneSignatures` via `devtools::install_github("rglab/ImmuneSignatures", build_vignettes=T)` and view the vignette with `browseVignettes(package="ImmuneSignatures")`.  
 
 
 ```{r set-options, include=FALSE}
 # Eset prep
-library(ImmSig2) # to load data and helper functions
+library(ImmuneSignatures) # to load data and helper functions
 library(Rlabkey)
 library(Biobase) # biocLite
 library(stringr)
@@ -81,7 +80,7 @@ library(grid)
 
 #options(width = 700) # must be > 675 for 9.5in wide pdf
 knitr::opts_chunk$set(echo=FALSE,
-               cache.path=paste(labkey.file.root, "cache/pubmed_report_cache/", sep="/"), # for IS Report
+               cache.path=paste0(labkey.file.root, "/cache/"),
                cache=TRUE,
                warning=FALSE,
                message=FALSE,
@@ -989,7 +988,7 @@ print(plot_grid(top_row,
 
 ***
 #### Figure 8 - Gene / Modules Effect Sizes
-Figure 8A compares p-values of each gene in older and younger cohorts.  The dark squares are genes that were found to be significant in the young cohort, either up or down-regulated. Figure 8B does the same for pathway-activity of the gene set modules from the discovery studies.  Each gene or pathway is coded into non-significant (grey circle), significant for the young cohort (black square), or significant for the old cohort (black triangle). 
+Figure 8A compares p-values of each gene in old and younger cohorts.  The dark squares are genes that were found to be significant in the young cohort, either up or down-regulated. Figure 8B does the same for pathway-activity of the gene set modules from the discovery studies.  Each gene or pathway is coded into non-significant (grey circle), significant for the young cohort (black square), or significant for the old cohort (black triangle). 
 ```{r old-vs-young-gene-effect, fig.height=4, fig.width=8}
 # Single Gene --------------------------------------------------------------------
 # input
@@ -1018,7 +1017,7 @@ effCorrSGA <- ggplot(sga,
              color = 'gray20',
              size  = 3,
              shape = 15) +
-  xlab("Gene effect size (young)") + ylab("Gene effect size (older)")
+  xlab("Gene effect size (younger)") + ylab("Gene effect size (old)")
 
 
 # Gene Module --------------------------------------------------------------------

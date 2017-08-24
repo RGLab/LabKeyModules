@@ -14,8 +14,9 @@ if ( length( args ) == 0 ){
 source( 'https://bioconductor.org/biocLite.R' )
 biocLite( c( scan('listOfNeededRPackages', what = 'character' ), 'rmarkdown' ) )
 
-library(devtools)
+library( devtools )
 install_github( 'RGLab/ImmuneSpaceR', ref = branch )
-install_github( 'RGLab/ImmuneSpaceData' )
-install_github( 'ehfhcrc/ImmSig2', ref = 'dev' )
+
+install_github( 'RGLab/UpdateAnno' )
+install_github( 'RGLab/ImmuneSignatures' )
 
