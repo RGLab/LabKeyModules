@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<query name='aggregateSubjectCount' schemaName='immport' xmlns='http://labkey.org/data/xml/query'>
-    <description>
-        Participants counts for the available assay types in the available studies.
-    </description>
-</query>

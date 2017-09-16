@@ -55,6 +55,7 @@ admins <- labkey.selectRows(baseUrl = labkey.url.base,
                                                      "CONTAINS_ONE_OF",
                                                      "Developers;Administrators")),
                             containerFilter = NULL)
+
 extras <- labkey.selectRows(baseUrl = labkey.url.base,
                             folderPath = "/home",
                             schemaName = "core",
@@ -64,7 +65,9 @@ extras <- labkey.selectRows(baseUrl = labkey.url.base,
                                                      "CONTAINS_ONE_OF",
                                                      "rglab.org;immunespace.org")),
                             containerFilter = NULL)
+
 exclusion_list <- paste0(unique(c(admins$`Display Name`, extras$`Display Name`)), collapse = ";")
+exclusion_email <- unique(c(admins$Email, extras$Email))
 ```
 
 
@@ -213,11 +216,13 @@ total_users %>%
 ```{r usertable}
 logins_byuser <- logins %>%
   count(`Created By`)
+
 topusers <- users_all %>%
   left_join(logins_byuser,
             by = c("user_id" = "Created By")) %>%
   filter(!is.na(n)) %>%
   arrange(desc(n))
+
 datatable(topusers)
 ```
 <br>
@@ -297,6 +302,7 @@ folders <- labkey.selectRows(baseUrl = labkey.url.base,
                              queryName ="ContainerAuditEvent",
                              colNameOpt = "rname",
                              containerFilter = "AllFolders")
+
 sdys <- folders %>%
   filter(!is.na(container)) %>%
   select(created, comment) %>%
@@ -307,6 +313,7 @@ sdys <- folders %>%
   filter(created >= "2016-01-01") %>%
   select(created, count) %>%
   mutate(created = as.Date(created))
+
 sdys <- bind_rows(tibble(created = as.Date("2016-01-01"),
                          count = min(sdys$count)),
                   sdys,
@@ -332,40 +339,41 @@ sdys %>%
 # Add this line
 # 00 0-23/6 * * * rsync -a -v /labkey/apps/tomcat/logs/localhost_access_log.* /share/tomcat-logs/
 # This will sync logs to `/share/tomcat-logs/` every six hour.
-read_log <- function(date) {
+read_log2 <- function(date) {
   if (Sys.info()["nodename"] == "immunetestrserve" & date > "2016-08-08") {
     file_name <- paste0("/share/tomcat-logs/localhost_access_log..", date, ".txt")
   } else {
     file_name <- paste0("/share/tomcat-logs/localhost_access_log.", date, ".txt")
   }
   if (file.exists(file_name)) {
-    read_delim(file = file_name,
-               delim = " - ",
-               escape_double = TRUE,
-               col_names = FALSE,
-               trim_ws = TRUE,
-               col_types = cols(.default = col_character())) %>%
+     read_log(file = file_name,
+              col_types = cols(.default = col_character())) %>%
       mutate(date = date,
-             study = str_extract(X6, "SDY\\d+"),
-             schema = grepl("schemaName=study?", X14),
-             query = str_extract(X14, "(?<=queryName=)\\w+"))
+             study = str_extract(X5, "SDY\\d+|IS\\d+|Lyoplate"),
+             schema = grepl("schemaName=study?", X5),
+             query = str_extract(X5, "(?<=queryName=)\\w+")) %>%
+      filter(!X12 %in% exclusion_email)
   } else {
     NULL
   }
 }
-logs_dt <- lapply(from_to$date, read_log) %>% bind_rows()
+
+logs_dt <- lapply(from_to$date, read_log2) %>% bind_rows()
 ```
 
 
 ## Pageviews: Study
 ```{r study-views}
+string <- "(/project/Studies/SDY\\d+/begin.view\\?? | /project/Studies/begin.view\\?? | /project/HIPC/IS\\d+/begin.view\\?? | /project/HIPC/Lyoplate/begin.view\\??)"
+
 log_study <- logs_dt %>%
-  mutate(folder = str_extract(X6, "(/project/Studies/SDY\\d+/begin.view\\?? |/project/Studies/begin.view\\?? )")) %>%
+  mutate(folder = str_extract(X5, string)) %>%
   filter(!is.na(folder)) %>%
   mutate(study = ifelse(is.na(study), "Data Finder", study)) %>%
   select(study) %>%
   count(study) %>%
   arrange(desc(n))
+
 datatable(log_study,
           colnames = c("Study", "Unique pageviews"),
           caption = paste0("From ", from, " to ", to),
@@ -375,14 +383,48 @@ datatable(log_study,
 
 ## Pageviews: Module
 ```{r module-views}
+string <- "(?<=GET /)(DataExplorer|GeneExpressionExplorer|GeneSetEnrichmentAnalysis|ImmuneResponsePredictor)(?=/\\w+)"
+
 log_module <- logs_dt %>%
-  mutate(module = str_extract(X6, "(?<=GET /)(DataExplorer|GeneExpressionExplorer|GeneSetEnrichmentAnalysis|ImmuneResponsePredictor)(?=/\\w+)")) %>%
+  mutate(module = str_extract(X5, string)) %>%
   filter(!is.na(module)) %>%
   select(module) %>%
   count(module) %>%
   arrange(desc(n))
+
 datatable(log_module,
           colnames = c("Module", "Unique pageviews"),
+          caption = paste0("From ", from, " to ", to),
+          width = 600)
+```
+
+
+## Pageviews: Reports
+```{r reports-views}
+strings <- c(
+  "GET /reports/Studies/SDY144/runReport.view\\?reportId=module%3ASDY144%2Freports%2Fschemas%2Fstudy%2Fdemographics%2FHAI_VN_vs_plasma_cells.Rmd HTTP/1.1",
+  "GET /reports/Studies/SDY180/runReport.view\\?reportId=module%3ASDY180%2Freports%2Fschemas%2Fstudy%2Fdemographics%2Fplasmablast_abundance.Rmd HTTP/1.1",
+  "GET /reports/Studies/SDY207/runReport.view\\?reportId=module%3ASDY207%2Freports%2Fschemas%2Fstudy%2Ffcs_sample_files%2FCyTOF_Visualization.Rmd HTTP/1.1",
+  "GET /project/Studies/SDY207/begin.view\\?pageId=Report HTTP/1.1",
+  "GET /reports/Studies/SDY269/runReport.view\\?reportId=module%3ASDY269%2Freports%2Fschemas%2Fhai_flow_elispot.Rmd HTTP/1.1",
+  "GET /project/HIPC/IS1/begin.view\\?pageId=Report HTTP/1.1")
+
+log_reports <- logs_dt %>%
+  mutate(report = X5,
+         report = str_replace(report, strings[1], "SDY144"),
+         report = str_replace(report, strings[2], "SDY180"),
+         report = str_replace(report, strings[3], "SDY207"),
+         report = str_replace(report, strings[4], "SDY207"),
+         report = str_replace(report, strings[5], "SDY269"),
+         report = str_replace(report, strings[6], "IS1")) %>%
+  filter(!is.na(report)) %>%
+  filter(report %in% c("SDY144", "SDY180", "SDY207", "SDY269", "IS1")) %>%
+  select(report) %>%
+  count(report) %>%
+  arrange(desc(n))
+
+datatable(log_reports,
+          colnames = c("Report", "Unique pagesviews"),
           caption = paste0("From ", from, " to ", to),
           width = 600)
 ```
@@ -396,10 +438,13 @@ datatable(log_module,
 
 ```{r isr}
 ISR <- logs_dt %>%
-  filter(grepl("ImmuneSpaceR", X12)) %>%
+  filter(grepl("ImmuneSpaceR", X11)) %>%
+  filter(!is.na(X12)) %>%
+  filter(X6 == 200) %>%
   mutate(study = ifelse(is.na(study),
                         "All",
                         study))
+
 ISR_inits <- ISR %>%
   filter(query == "ISC_study_datasets")
 ```
@@ -411,6 +456,7 @@ ISR_study <- ISR_inits %>%
   select(study) %>%
   count(study) %>%
   arrange(desc(n))
+
 datatable(ISR_study,
           colnames = c("Study", "ISR connections"),
           caption = paste0("From ", from, " to ", to),
@@ -448,8 +494,8 @@ We had **`r round(mean(ISR_con$N), 2)` connections** per *`r dateBy`* on average
 
 ```{r isr-user}
 ISR_user <- ISR_inits %>%
-  select(date, X13) %>%
-  filter(X13 != "-") %>%
+  select(date, X12) %>%
+  filter(!is.na(X12)) %>%
   distinct() %>%
   select(date) %>%
   count(date) %>%
@@ -475,11 +521,23 @@ if (plotType == "line") {
 We had **`r round(mean(ISR_user$N), 2)` ISR users** per *`r dateBy`* on average from `r from` to `r to`.
 <br>
 
+## Table of ISR users
+
+```{r isr-top-users}
+ISR_top_user <- ISR_inits %>%
+  mutate(email = X12) %>%
+  count(email) %>%
+  arrange(desc(n))
+datatable(ISR_top_user, width = 800)
+```
+
+<br>
+
 
 ## Downloads
 
 ```{r isr-bioc}
-BIOC <- read.table("https://www.bioconductor.org/packages/stats/bioc/ImmuneSpaceR/ImmuneSpaceR_stats.tab", header = T)
+BIOC <- read.table("https://www.bioconductor.org/packages/stats/bioc/ImmuneSpaceR/ImmuneSpaceR_stats.tab", header = TRUE)
 BIOC <- BIOC %>%
   filter(Month != "all") %>%
   mutate(date = as.Date(paste(Year, Month, "01", sep = "-"), "%Y-%b-%d")) %>%
@@ -512,7 +570,7 @@ if (plotType == "line") {
 # RStudio
 ```{r rstudio}
 log_rstudio <- logs_dt %>%
-  filter(grepl("GET /_rstudio/ HTTP/1.1", X6))
+  filter(grepl("GET /_rstudio/ HTTP/1.1", X5))
 
 session_rstudio <- log_rstudio %>%
   select(date) %>%
@@ -537,3 +595,4 @@ if (plotType == "line") {
 ```
 
 We had **`r round(mean(session_rstudio$N), 2)` RStudio sessions** per *`r dateBy`* on average from `r from` to `r to`.
+

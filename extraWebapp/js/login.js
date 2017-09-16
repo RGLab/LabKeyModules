@@ -38,7 +38,12 @@ function newLogin(){
         }, this),
         failure: LABKEY.Utils.getCallbackWrapper(function (response) {
             if(document.getElementById('errors') && response && response.exception) {
-               document.getElementById('errors').innerHTML = 'Invalid Username or Password.<br> You can reset your password via the question mark link above.';
+                // Want special point to password reset not given by LK response
+                if(response.exception.includes('did not match')){
+                    document.getElementById('errors').innerHTML = 'Invalid Username or Password.<br> You can reset your password via the question mark link above.';
+                } else {
+                    document.getElementById('errors').innerHTML = response.exception;
+                }
             }
             if(response && response.returnUrl){
                 window.location = response.returnUrl;

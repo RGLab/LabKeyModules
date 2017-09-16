@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<query name='allStudies' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
-    <description>
-        List all of the studies available starting with 'SDY'.
-    </description>
-</query>

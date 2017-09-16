@@ -88,7 +88,7 @@ idx <- 1
 GEA_list <- vector("list")
 GEAR_list <- vector("list")
 for (run in runs) {
-  EM <- con$getGEMatrix(run)
+  EM <- con$getGEMatrix(matrixName = run)
   pd <- data.table(pData(EM))
   cm <- con$getDataset("cohort_membership")
   cm <- unique(cm[, list(cohort, arm_accession)])

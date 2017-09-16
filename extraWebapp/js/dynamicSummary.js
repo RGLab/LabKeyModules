@@ -53,8 +53,7 @@ $(document).ready(function() {
                     LABKEY.Query.selectRows({
                         failure: me.onFailureSummary.bind( me ),
                         queryName: 'totalSubjectCount',
-                        schemaName: 'immport',
-                        //schemaName: 'immport.public',
+                        schemaName: 'immport.public',
                         success: function(d){
 
                             var subjectCount = d.rows[0].subject_count;
@@ -62,8 +61,7 @@ $(document).ready(function() {
                             LABKEY.Query.selectRows({
                                 failure: me.onFailureSummary.bind( me ),
                                 queryName: 'aggregateSubjectCount',
-                                schemaName: 'immport',
-                                //schemaName: 'immport.public',
+                                schemaName: 'immport.public',
                                 success: function(d){
                                     me.maskSummary.hide();
 

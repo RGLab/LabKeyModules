@@ -1,0 +1,14 @@
+<cv:customView xmlns:cv='http://labkey.org/data/xml/queryCustomView'>
+    <cv:columns>
+        <cv:column name='ParticipantId'>
+          <cv:properties>
+            <cv:property name='columnTitle' value='Participant ID'/>
+          </cv:properties>
+        </cv:column>
+        <cv:column name='arm_accession'/>
+        <cv:column name='cohort'/>
+        <cv:column name='age_reported'/>
+        <cv:column name='description'/>
+    </cv:columns>
+</cv:customView>
+

@@ -23,7 +23,6 @@ selectedGEOs <- "${selected-GEOs}"
 
 library(ImmuneSpaceR)
 library(Biobase)
-library(tools)
 
 
 #-------------------------------
@@ -140,10 +139,12 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
 #' @importFrom reshape2 acast
 .process_TSV <- function(gef, inputFiles){
   exprs <- fread(inputFiles, header = TRUE)
-  if(min(exprs[, lapply(.SD, min), .SDcols = grep("^BS", names(exprs))]) == 0 &
-     max(exprs[, lapply(.SD, max), .SDcols = grep("^BS", names(exprs))]) > 100){
-    #RNA-Seq data. Assume it is already count base.
-  } else{
+  if( any(grep("^BS", names(exprs))) ){
+    if(min(exprs[, lapply(.SD, min), .SDcols = grep("^BS", names(exprs))]) == 0 &
+       max(exprs[, lapply(.SD, max), .SDcols = grep("^BS", names(exprs))]) > 100){
+		#RNA-seq, assume in count base and do not normalize
+    }
+  }else{
     exprs <- .clean_colnames(exprs)
     if(!all(c("target_id", "raw_signal") %in% colnames(exprs))){
       stop("The file does not follow HIPC standards.")
@@ -157,7 +158,7 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
     } else{
       stop("The input file must contain either biosample_accession or expsample_accession")
     }
-    exprs <- acast(exprs, formula = paste("feature_id ~", EorB), value.var = "raw_signal")
+    exprs <- reshape2::acast(exprs, formula = paste("feature_id ~", EorB), value.var = "raw_signal")
     cnames <- colnames(exprs)
     rnames <- rownames(exprs)
     exprs <- preprocessCore::normalize.quantiles(exprs)
@@ -179,46 +180,72 @@ makeMatrix <- function(con, gef, isGEO = FALSE){
 #' @importFrom preprocessCore normalize.quantiles
 .process_others <- function(gef, inputFiles){
 
-  if(length(inputFiles) > 1){
+  # Generating Raw Expression Values Matrix
+  if( length(inputFiles) > 1 ){
     lf <- lapply(inputFiles, fread)
     names(lf) <- basename(inputFiles)
     exprs <- rbindlist(lf, idcol = TRUE)
     exprs <- .clean_colnames(exprs)
-    try(setnames(exprs, "target_id", "probe_id"))
-    try(setnames(exprs, "raw_signal", "expression_value"))
+    keepCols <- c("sample", "gene_symbol", "expression_value")
+
+    if(labkey.url.path != "/Studies/SDY67"){
+      try(setnames(exprs, "target_id", "probe_id"))
+      try(setnames(exprs, "raw_signal", "expression_value"))
+      keepCols <- c(keepCols, "probe_id")
+      formula <- "probe_id ~ sample"
+      rNamesCol <- "probe_id"
+    }else{
+      library(DESeq)
+      formula <- "gene_symbol ~ sample"
+      rNamesCol <- "gene_symbol"
+    }
+
     file2sample <- unique(gef[, list(file_info_name, expsample_accession)])
     exprs[, sample := file2sample[match(.id, file_info_name), expsample_accession]]
-    exprs <- exprs[, list(sample, probe_id, gene_symbol, expression_value)]
-
-    exprs <- dcast.data.table(exprs, formula = "probe_id ~ sample", value.var="expression_value")
-    rnames <- exprs[, probe_id]
-    exprs <- exprs[, probe_id := NULL]
-  } else{
+    exprs <- exprs[, keepCols, with=FALSE ]
+    exprs <- dcast.data.table(exprs, formula = formula, value.var="expression_value")
+    rnames <- exprs[, rNamesCol, with=FALSE]
+    exprs <- exprs[, (rNamesCol) := NULL]
+  } else {
     exprs <- fread(inputFiles, header = TRUE)
     sigcols <- grep("Signal", colnames(exprs), value = TRUE)
     rnames <- exprs[, PROBE_ID]
     if(length(sigcols) > 0){
       exprs <- exprs[, sigcols, with = FALSE]
       setnames(exprs, gsub(".AVG.*$", "", colnames(exprs)))
-    } else if(all(gef$biosample_accession %in% colnames(exprs))){
+    } else if( all(gef$biosample_accession %in% colnames(exprs)) ){
       exprs <- exprs[, gef$biosample_accession, with = FALSE]
     } else{
       stop("Unknown format: check data and add code if needed.")
     }
   }
 
-  cnames <- colnames(exprs)
-  exprs <- as.matrix(exprs)
-  exprs <- preprocessCore::normalize.quantiles(exprs)
-  colnames(exprs) <- cnames
-  rownames(exprs) <- rnames
+  # Normalization
+  if(labkey.url.path == "/Studies/SDY67"){
+    colnames(exprs) <- gef$biosample_accession[ match(colnames(exprs), gef$expsample_accession)]
+    countTable <- exprs
+    condition <- colnames(exprs)
+    cds <- newCountDataSet(countTable, condition)
+    cds <- estimateSizeFactors(cds) ## estimate size factor
+    cdsBlind <- estimateDispersions(cds, method="blind" )
+    vsd <- varianceStabilizingTransformation(cdsBlind)
+    norm_exprs <- exprs(vsd)
+    rownames(norm_exprs) <- unname(unlist(rnames))
+  }else{
+    cnames <- colnames(exprs)
+    exprs <- as.matrix(exprs)
+    exprs <- preprocessCore::normalize.quantiles(exprs)
+    colnames(exprs) <- cnames
+    rownames(exprs) <- rnames
 
-  if(max(exprs) > 100){
-    norm_exprs <- log2(pmax(exprs, 1))
-  } else{
-    norm_exprs <- pmax(exprs, 1)
+    if(max(exprs) > 100){
+      norm_exprs <- log2(pmax(exprs, 1))
+    } else{
+      norm_exprs <- pmax(exprs, 1)
+    }
   }
-  norm_exprs <- norm_exprs[, c(colnames(norm_exprs) %in% gef$expsample_accession)]
+
+  norm_exprs <- norm_exprs[, c(colnames(norm_exprs) %in% gef$biosample_accession)]
   return(norm_exprs)
 }
 
@@ -291,6 +318,12 @@ cohort <- NULL
 #-------------------------------
 # PIPELINE
 #-------------------------------
+# Check that output filepath exists before starting run
+outPath <- file.path(pipeline.root, "analysis/exprs_matrices")
+if(!dir.exists(outPath)){
+    stop(paste0("file path ", outPath, " does not exist. Please correct and re-run"))
+}
+
 co <- labkey.setCurlOptions(ssl.verifyhost = 2, sslversion=1)
 FAS_filter <- makeFilter(c("FeatureAnnotationSetId/RowId", "IN", "${assay run property, featureSet}"))
 f2g <- data.table(labkey.selectRows(baseUrl = labkey.url.base,
@@ -298,7 +331,8 @@ f2g <- data.table(labkey.selectRows(baseUrl = labkey.url.base,
                                     schemaName="Microarray",
                                     queryName="FeatureAnnotation",
                                     colFilter=FAS_filter,
-                                    colNameOpt="rname", colSelect = c("featureid", "genesymbol")))
+                                    colNameOpt="rname",
+                                    colSelect=c("featureid","genesymbol"))) #rm colselect b/c causes error
 if(nrow(f2g) == 0){
   stop("The downloaded feature annotation set has 0 rows.")
 }

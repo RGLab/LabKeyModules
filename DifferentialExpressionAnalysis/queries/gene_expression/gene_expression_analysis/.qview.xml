@@ -1,2 +1,13 @@
-<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView"  containerFilter="CurrentAndSubfolders">
+<cv:customView xmlns:cv='http://labkey.org/data/xml/queryCustomView'  containerFilter='CurrentAndSubfolders'>
+    <cv:columns>
+        <cv:column name='analysis_accession'/>
+        <cv:column name='expression_matrix'/>
+        <cv:column name='arm_name'/>
+        <cv:column name='coefficient'/>
+        <cv:column name='description'/>
+        <cv:column name='arm_accession'/>
+        <cv:column name='created'/>
+        <cv:column name='container'/>
+    </cv:columns>
 </cv:customView>
+

@@ -69,8 +69,7 @@ LABKEY.ext.DataSummary = Ext.extend( Ext.Panel, {
                     LABKEY.Query.selectRows({
                         failure: me.onFailure.bind( me ),
                         queryName: 'totalSubjectCount',
-                        schemaName: 'immport',
-                        //schemaName: 'immport.public',
+                        schemaName: 'immport.public',
                         success: function(d){
 
                             var subjectCount = d.rows[0].subject_count;
@@ -78,8 +77,7 @@ LABKEY.ext.DataSummary = Ext.extend( Ext.Panel, {
                             LABKEY.Query.selectRows({
                                 failure: me.onFailure.bind( me ),
                                 queryName: 'aggregateSubjectCount',
-                                schemaName: 'immport',
-                                //schemaName: 'immport.public',
+                                schemaName: 'immport.public',
                                 success: function(d){
                                     me.myMask.hide();
 

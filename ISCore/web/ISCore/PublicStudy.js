@@ -1,6 +1,6 @@
 // vim: sw=4:ts=4:nu:nospell
 /*
- Copyright 2014 Fred Hutchinson Cancer Research Center
+ Copyright 2017 Fred Hutchinson Cancer Research Center
 
  Licensed under the Apache License, Version 2.0 (the 'License');
  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 
 Ext.namespace('LABKEY.ext');
 
-LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
+LABKEY.ext.PublicStudyOverview = Ext.extend( Ext.Panel, {
 
     constructor : function(config) {
 
@@ -26,7 +26,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
 
         var
-            SDY = LABKEY.container.title,
+            SDY = LABKEY.ActionURL.getParameter( 'SDY' ),
             dh  = Ext.DomHelper
         ;
 
@@ -34,21 +34,11 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
 
         var
             me = this,
-            spec =
+            spec = SDY ?
                 {
-                    id: 'ImmuneSpaceStudyOverview'.wpdi(),
+                    id: 'PublicStudyOverview'.wpdi(),
                     cn: [
                         {
-                            cls: 'overview-spacing',
-                            cn: [
-                                {
-                                    cls: 'labkey-text-link bold-text',
-                                    html: 'quick help',
-                                    onClick: 'LABKEY.help.Tour.show(\'immport-study-tour\')',
-                                    tag: 'a'
-                                }
-                            ]
-                        },{
                             cls: 'overview-spacing',
                             cn: [
                                 {
@@ -210,13 +200,29 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                         },{
                             id: 'assoc_studies'.wpdi()
                         },{
-                            cls: 'bold-text',
-                            html: 'Protocol documents: ',
-                            tag: 'span'
-                        },{
-                            href: '/_webdav/Studies/' + SDY + '/%40files/protocols/' + SDY + '_protocol.zip',
-                            html: 'protocol.zip',
-                            tag: 'a'
+                            cn: [
+                                {
+                                    cls: 'labkey-text-link bold-text',
+                                    html: 'proceed to study data (login required)',
+                                    href: '/project/Studies/' + SDY + '/begin.view?',
+                                    tag: 'a'
+                                }
+                            ]
+                        }
+                    ]
+                } :
+                {
+                    id: 'PublicStudyOverview'.wpdi(),
+                    cn: [
+                        {
+                            cls: 'overview-spacing',
+                            cn: [
+                                {
+                                    cls: 'bold-text',
+                                    html: 'This page requires a study accession parameter in order to be functional.',
+                                    tag: 'span'
+                                }
+                            ]
                         }
                     ]
                 }
@@ -231,91 +237,106 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 e.text( e.text() == 'show' ? 'hide' : 'show' );
             }
         );
-      
+
         // QUERIES
-        LABKEY.Query.selectRows({
-            requiredVersion: 12.3,
-            schemaName: 'immport',
-            queryName: 'study_personnel',
-            columns: 'first_name, last_name',
-            filterArray: [
-                LABKEY.Filter.create(
-                    'role_in_study',
-                    'Principal Investigator',
-                    LABKEY.Filter.Types.EQUAL
-                ),
-                LABKEY.Filter.create(
-                    'study_accession',
-                    SDY,
-                    LABKEY.Filter.Types.EQUAL
-                )
-            ],
-            sort: 'study_accession',
-            success: onSuccessPI,
-            failure: LABKEY.ext.ISCore.onFailure
-        });
-
-
-        Ext.each( [ 'datasets', 'raw_files' ], function( t ){
+        if ( SDY ){
             LABKEY.Query.selectRows({
                 requiredVersion: 12.3,
-                schemaName: 'study',
-                queryName: 'ISC_' + t,
-                success: function( results ){ onSuccessTbls( results, '#' + t ) },
+                schemaName: 'immport.public',
+                queryName: 'study_personnel',
+                columns: 'first_name, last_name',
+                filterArray: [
+                    LABKEY.Filter.create(
+                        'role_in_study',
+                        'Principal Investigator',
+                        LABKEY.Filter.Types.EQUAL
+                    ),
+                    LABKEY.Filter.create(
+                        'study_accession',
+                        SDY,
+                        LABKEY.Filter.Types.EQUAL
+                    )
+                ],
+                sort: 'study_accession',
+                success: onSuccessPI,
                 failure: LABKEY.ext.ISCore.onFailure
             });
-        });
 
-        LABKEY.Query.selectRows({
-            requiredVersion: 12.3,
-            schemaName: 'immport',
-            queryName: 'study',
-            columns:  'brief_title, type, condition_studied, brief_description, actual_start_date, ' +
-                      'description, objectives, endpoints, actual_enrollment, sponsoring_organization',
-            filterArray: [
-                LABKEY.Filter.create(
-                    'study_accession',
-                    SDY,
-                    LABKEY.Filter.Types.EQUAL
-                )
-            ],
-            success: onSuccessStudy,
-            failure: LABKEY.ext.ISCore.onFailure
-        });
 
-        LABKEY.Query.selectRows({
-            requiredVersion: 12.3,
-            containerFilter: 'AllFolders',
-            schemaName: 'immport.public',
-            queryName: 'ISC_assoc_studies',
-            columns:  'study_accession',
-            parameters: {$STUDY: SDY},
-            success: onSuccessPubmedAssoc,
-            failure: LABKEY.ext.ISCore.onFailure
-        });
+            Ext.each( [ 'datasets', 'raw_files' ], function( t ){
+                 LABKEY.Query.selectRows({
+                    requiredVersion: 12.3,
+                    schemaName: 'immport.public',
+                    queryName: 'dimstudyassay',
+                    columns: 'label',
+                    filterArray: [
+                        LABKEY.Filter.create(
+                            'study',
+                            SDY,
+                            LABKEY.Filter.Types.EQUAL
+                        ),
+                        LABKEY.Filter.create(
+                            'categorylabel',
+                            'Raw data files',
+                            t == 'raw_files' ? LABKEY.Filter.Types.EQUALS : LABKEY.Filter.Types.NOT_EQUAL
+                        )
+                    ],
+                    success: function( results ){ onSuccessTbls( results, '#' + t ); } ,
+                    failure: LABKEY.ext.ISCore.onFailure
+                });
+            });
 
-        LABKEY.Query.selectRows({
-            requiredVersion: 12.3,
-            schemaName: 'immport',
-            queryName: 'study_link',
-            columns:  'value',
-            filterArray: [
-                LABKEY.Filter.create(
-                    'study_accession',
-                    SDY,
-                    LABKEY.Filter.Types.EQUAL
-                ),
-                LABKEY.Filter.create(
-                    'value',
-                    'ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE',
-                    LABKEY.Filter.Types.CONTAINS
-                )
-            ],
-            success: onSuccessGEO,
-            failure: LABKEY.ext.ISCore.onFailure
-        });
+            LABKEY.Query.selectRows({
+                requiredVersion: 12.3,
+                schemaName: 'immport.public',
+                queryName: 'study',
+                columns:  'brief_title, type, condition_studied, brief_description, actual_start_date, ' +
+                          'description, objectives, endpoints, actual_enrollment, sponsoring_organization',
+                filterArray: [
+                    LABKEY.Filter.create(
+                        'study_accession',
+                        SDY,
+                        LABKEY.Filter.Types.EQUAL
+                    )
+                ],
+                success: onSuccessStudy,
+                failure: LABKEY.ext.ISCore.onFailure
+            });
 
- 
+            LABKEY.Query.selectRows({
+                requiredVersion: 12.3,
+                containerFilter: 'AllFolders',
+                schemaName: 'immport.public',
+                queryName: 'ISC_assoc_studies',
+                columns:  'study_accession',
+                parameters: {$STUDY: SDY},
+                success: onSuccessPubmedAssoc,
+                failure: LABKEY.ext.ISCore.onFailure
+            });
+
+            LABKEY.Query.selectRows({
+                requiredVersion: 12.3,
+                schemaName: 'immport.public',
+                queryName: 'study_link',
+                columns:  'value',
+                filterArray: [
+                    LABKEY.Filter.create(
+                        'study_accession',
+                        SDY,
+                        LABKEY.Filter.Types.EQUAL
+                    ),
+                    LABKEY.Filter.create(
+                        'value',
+                        'ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE',
+                        LABKEY.Filter.Types.CONTAINS
+                    )
+                ],
+                success: onSuccessGEO,
+                failure: LABKEY.ext.ISCore.onFailure
+            });
+        }
+
+
         //FUNCTIONS
         function onSuccessStudy(results) {
             if ( results.rows.length > 0 ){
@@ -360,12 +381,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 length = rows.length,
                 datasets = [];
             for ( var idxRow = 0; idxRow < length; idxRow ++ ){
-                var row = rows[ idxRow ];
-                datasets.push(
-                    '<a href=\"' +
-                    LABKEY.ActionURL.buildURL( 'study', 'dataset', null, { datasetId: row['Id'].value } ) +
-                    '\">' + row['Label'].value + '</a>'
-                );
+                datasets.push( rows[ idxRow ][ 'label' ].value );
             }
 
             $(target.wpdi())[0].innerHTML = length == 0 ? 'None' : datasets.join(', ');
@@ -384,9 +400,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                 Ext.each( results.rows, function( e ){
                     assoc_SDY = e['study_accession'].value;
                     toBuild.push(
-                        '<a href="/project/Studies/' +
-                        assoc_SDY +
-                        '/begin.view">' +
+                        '<a href="/project/home/Public/begin.view?SDY=' + assoc_SDY + '">' +
                         assoc_SDY +
                         '</a>'
                     );
@@ -416,16 +430,22 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             }
         };
 
+        $('#' + config.webPartDivId)
+            .parents('div')
+            .prev()
+            .find( '.labkey-folder-title' )
+            .html( SDY )
+
         me.border         = false;
         me.cls            = 'ISCore';
-        me.contentEl      = 'ImmuneSpaceStudyOverview'.wpdi();
+        me.contentEl      = 'PublicStudyOverview'.wpdi();
         me.frame          = false;
         me.layout         = 'fit';
         me.renderTo       = config.webPartDivId;
         me.webPartDivId   = config.webPartDivId;
         me.width          = document.getElementById(config.webPartDivId).offsetWidth;
 
-        LABKEY.ext.ImmuneSpaceStudyOverview.superclass.constructor.apply(this, arguments);
+        LABKEY.ext.PublicStudyOverview.superclass.constructor.apply(this, arguments);
     } // end constructor
-}); // end ImmuneSpaceStudyOverview Panel class
+}); // end PublicStudyOverview Panel class
 
