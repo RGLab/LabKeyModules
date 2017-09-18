@@ -19,8 +19,7 @@
         '   hipc.hipc_funded IS NOT NULL AS hipc_funded ' +
         'FROM ' +
         '   study.StudyProperties ' +
-        '   LEFT OUTER JOIN immport.ISC_HIPC_funded_studies hipc ON ' +
-        //'   LEFT OUTER JOIN immport.public.ISC_HIPC_funded_studies hipc ON ' +
+        '   LEFT OUTER JOIN immport.public.ISC_HIPC_funded_studies hipc ON ' +
         '   StudyProperties.Label = hipc.study_accession ' +
         'WHERE ' +
         '   StudyProperties.highlight_until > now()';

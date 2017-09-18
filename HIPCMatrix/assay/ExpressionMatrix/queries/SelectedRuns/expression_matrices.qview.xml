@@ -14,5 +14,8 @@
             </cv:properties>
         </cv:column>
         <cv:column name='download_link'/>
+        <cv:column name='created'/>
+        <cv:column name='createdby'/>
     </cv:columns>
 </cv:customView>
+

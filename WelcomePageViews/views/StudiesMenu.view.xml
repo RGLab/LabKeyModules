@@ -2,5 +2,6 @@
 <view xmlns='http://labkey.org/data/xml/view' title='Studies'>
     <dependencies>
         <dependency path='ISCore/Common'/>
+        <dependency path='StudiesMenu.js'/>
     </dependencies>
 </view>

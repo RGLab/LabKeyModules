@@ -15,11 +15,6 @@
  *  limitations under the License.
  */
 
-/* Mimicking DataSummary.js in order to ensure that a separate
-webpart is created each time for QuickLinks and it doesn't interfere
-with other webparts by looking for div tags as done previously. */
-
-
 makeNavTree = function (webPartDiv){
 
     Ext.QuickTips.init();
@@ -30,8 +25,15 @@ makeNavTree = function (webPartDiv){
         href: "/project/HIPC/Lyoplate/begin.view?",
         hrefTarget: "_blank",
         leaf: true,
-        qtip: "Lyoplate study",
-        text: "Lyoplate study"
+        qtip: "Lyoplate Study",
+        text: "Lyoplate Study"
+        },{
+        cls: "file",
+        href: "/project/HIPC/IS1/begin.view?",
+        hrefTarget: "_blank",
+        leaf: true,
+        qtip: "ImmuneSignatures Study",
+        text: "ImmuneSignatures Study"
         }],
         cls: "folder",
         expanded: true,

@@ -5,24 +5,17 @@
             <cv:property name='columnTitle' value='Participant ID'/>
           </cv:properties>
         </cv:column>
-        <cv:column name='arm_accession'/>
-        <cv:column name='biosample_accession'/>
-        <cv:column name='expsample_accession'/>
-        <cv:column name='study_accession'/>
+        <cv:column name='age_reported'/>
+        <cv:column name='biosample_accession/subject_accession/gender'/>
+        <cv:column name='biosample_accession/subject_accession/race'/>
         <cv:column name='study_time_collected'/>
         <cv:column name='study_time_collected_unit'/>
         <cv:column name='name'/>
         <cv:column name='file_info_name'/>
         <cv:column name='geo_accession'/>
-        <cv:column name='description'/>
         <cv:column name='type'/>
         <cv:column name='subtype'/>
-        <cv:column name='study_time_t0_event'/>
-        <cv:column name='arm_name'>
-          <cv:properties>
-            <cv:property name='columnTitle' value='Cohort'/>
-          </cv:properties>
-        </cv:column>
+        <cv:column name='cohort'/>
     </cv:columns>
 </cv:customView>
 

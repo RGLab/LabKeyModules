@@ -7,7 +7,7 @@ opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Ge
 ```{r lib, cache = FALSE, message = FALSE, echo = FALSE}
 library(Rlabkey)
 library(ImmuneSpaceR)
-library(ImmuneSpaceData)
+library(UpdateAnno)
 library(Biobase)
 library(limma)
 library(pheatmap)
@@ -73,7 +73,7 @@ contrast <- "study_time_collected"
 
 ```{r cache-cohort, cache = TRUE, cache.extra=cohort, dependson="connection"}
 # When the cohort changes, we need to re-download the EM
-EM <- con$getGEMatrix(cohort = cohort, summary = TRUE)
+EM <- con$getGEMatrix(cohort = cohort)
 ```
 ```{r cache-modules, cache = TRUE, cache.extra=set, dependson="connection"}
 # When the modules/set changes, we need to re-assign these values
