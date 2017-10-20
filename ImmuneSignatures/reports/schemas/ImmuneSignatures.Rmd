@@ -256,12 +256,12 @@ for(sdy in studies){
   # Adjust according to Yuri Kotliarov code.
   # NOTE: SDY80 raw HAI data in ImmuneSpace not available yet, therefore using preloaded.
   # labkey.url.path <- paste0("/Studies/", sdy, "/") # for IS site only
-  rawHai <- if(sdy != "SDY80"){ con$getDataset("hai") }else{ SDY80_rawtiterdata_v2 }
+  rawHai <- if(sdy != "SDY80"){ con$getDataset("hai", maxRows = 10000) }else{ SDY80_rawtiterdata_v2 }
   adjHai <- adjust_hai(sdy, rawHai)
 
   # Age needed for figure 2 and SDY80 filtering
   dotNum <- gsub("SDY", ".", sdy, fixed = T)
-  demo <- con$getDataset("demographics")
+  demo <- con$getDataset("demographics", maxRows = 10000)
   adjHai$Age <- sapply(adjHai$subject, FUN = function( sub ){
     trg <- demo[ which(demo$participant_id == paste0(sub, dotNum))]
     return( trg$age_reported )
@@ -284,8 +284,8 @@ Before filtering the expressionSets into "young" (<= 35 years old) and "old" (> 
 ```{r age-distribution, fig.width=6, fig.height=8}
 pd <- rbindlist(lapply(studies, function(sdy) {
                         con <- CreateConnection(sdy)
-                        demo <- con$getDataset("demographics")
-                        ge <- con$getDataset("gene_expression_files")
+                        demo <- con$getDataset("demographics", maxRows = 10000)
+                        ge <- con$getDataset("gene_expression_files", maxRows = 10000)
                         ge <- ge[ ge$study_time_collected == 0, ]
                         demo$ge <- sapply(demo$participant_id,
                                           FUN = function(x){x %in% unique(ge$participant_id)})
@@ -345,7 +345,7 @@ To provide a more detailed understanding how the hai data adjustment affects the
 ```{r adjMFC-prep, include=FALSE, fig.width=11, fig.height=9}
 # Get raw data from ImmuneSpace and select only young subjects -------------------------------
 con <- CreateConnection("SDY404")
-rawHai <- con$getDataset("hai")
+rawHai <- con$getDataset("hai", maxRows = 10000)
 adjHai <- adjust_hai("SDY404", rawHai)
 pd <- adjHai[ adjHai$Age.class == "young", ]
 
