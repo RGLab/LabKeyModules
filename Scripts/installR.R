@@ -15,8 +15,9 @@ source( 'https://bioconductor.org/biocLite.R' )
 biocLite( c( scan('listOfNeededRPackages', what = 'character' ), 'rmarkdown' ) )
 
 library( devtools )
-install_github( 'RGLab/ImmuneSpaceR', ref = branch )
-
-install_github( 'RGLab/UpdateAnno' )
-install_github( 'RGLab/ImmuneSignatures' )
+install_github(
+    paste0( 'RGLab/ImmuneSpaceR@', branch ),
+    'RGLab/UpdateAnno',
+    'RGLab/ImmuneSignatures'
+)
 

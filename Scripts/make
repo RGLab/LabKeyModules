@@ -1,0 +1,14 @@
+#!/bin/bash
+./getRpkgs.sh
+if [ $1 ] ; then
+    BUILD_TYPE=$1
+elif [ `hostname | head -c10` = 'immunetest' ] ; then
+    BUILD_TYPE=master
+elif [ `hostname | head -c10` = 'immuneprod' ] ; then
+    BUILD_TYPE=release
+else
+    echo 'Build type cannot be detected, must be specified'
+    exit 1
+fi
+docker build $* -t immunespace/rstudio:3.4.0 --build-arg build_type=${BUILD_TYPE} .
+
