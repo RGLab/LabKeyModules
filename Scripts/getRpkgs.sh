@@ -5,6 +5,6 @@ grep -v '#.*library(\|#.*require(' | \
 sed -e 's/.*[library, require](\s*//' | \
 sed -e 's/[[:space:],),].*//' | \
 sort | \
-grep -v '^tools$\|^utils$\|^grid$\|^parallel$\|^ImmuneSpace.*$\|^ImmSig2$' | \
+grep -v '^tools$\|^utils$\|^grid$\|^parallel$\|^ImmuneSpaceR$\|^ImmuneSignatures$\|^UpdateAnno$' | \
 uniq > ./listOfNeededRPackages
 
