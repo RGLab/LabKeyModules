@@ -332,7 +332,7 @@ f2g <- data.table(labkey.selectRows(baseUrl = labkey.url.base,
                                     queryName="FeatureAnnotation",
                                     colFilter=FAS_filter,
                                     colNameOpt="rname",
-                                    colSelect=c("featureid","genesymbol"))) #rm colselect b/c causes error
+                                    colSelect=c("featureid","genesymbol")))
 if(nrow(f2g) == 0){
   stop("The downloaded feature annotation set has 0 rows.")
 }
