@@ -38,7 +38,7 @@ if [ `whoami` = 'root' ] ; then
         echo 'Switching to an appropriate branch and updating the source code'
         echo '==============================================================='
         cd ${LK_MODULES_PATH}/LabKeyModules
-        git checkout $BUILD_TYPE
+        git checkout ${BUILD_TYPE}
         git pull
 
         ./Scripts/installLibs.sh
@@ -72,12 +72,12 @@ if [ `whoami` = 'root' ] ; then
         echo '======================================================='
         echo 'Determining and installing the set of needed R packages'
         echo '======================================================='
-        cd ${LK_MODULES_PATH}/LabKeyModules
-        ./Scripts/getRpkgs.sh
-        Rscript ./Scripts/installR.R ${BUILD_TYPE}
+        cd ${LK_MODULES_PATH}/LabKeyModules/Scripts
+        ./getRpkgs.sh
+        Rscript ./installR.R ${BUILD_TYPE}
 
         if [ ${INTERACTIVE} = 'yes' ] ; then
-            ./Scripts/rmcache.sh # delete cached resources that relied on the old installation
+            ./rmcache.sh # delete cached resources that relied on the old installation
         fi
 
         ELAPSED_TIME=$(($SECONDS - $START_TIME))

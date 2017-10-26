@@ -1,6 +1,7 @@
 affy
 arm
 Biobase
+boot
 Cairo
 car
 clinfun
@@ -8,6 +9,7 @@ clue
 contrast
 cowplot
 data.table
+DESeq
 devtools
 digest
 dplyr
@@ -29,6 +31,7 @@ gridExtra
 gtools
 hash
 heatmaply
+ImmuneSignatures
 Kmisc
 knitr
 languageR
@@ -59,4 +62,5 @@ Rlabkey
 Rlibstree
 stringr
 tidytext
+UpdateAnno
 wordcloud
