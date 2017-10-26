@@ -7,7 +7,7 @@ if ( length( args ) == 0 ){
     if ( args[1] == 'master' ){
         branch = 'trunk'
     } else {
-        branch = 'dev' # args[1] should be 'release'
+        branch = 'master' # args[1] should be 'release'
     }
 }
 
