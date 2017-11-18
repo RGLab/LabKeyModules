@@ -1,0 +1,157 @@
+/* removeEMs.js */
+
+function removeEMs( dataRegion ) {
+
+    // HELPER FN -----------------------------------------------------
+    /* Not sure why, but following needs to be done for this to work:
+    1. .listFiles() must be called first to populate "grid" - per M.Bellew
+    2. API rec of .on('ready', fn) was tripping things up so not using
+    3. Must save to a global var via setter because returning a var will happen
+    before success or failure is finished ... even when embedded in success
+    or failure. */
+    function checkRm( emObj ){
+        var fileSystem = new LABKEY.FileSystem.WebdavFileSystem({
+                baseUrl: "/_webdav/Studies/" + emObj["folder"] + "/@files"
+            });
+
+        fileSystem.listFiles({
+            path: '/analysis/exprs_matrices',
+            success: function( fileSystem, path, records ){
+                var tsvRec = fileSystem.recordFromCache( emObj["path"] );
+                var tsv = fileSystem.canDelete( tsvRec );
+                var sumRec = fileSystem.recordFromCache( emObj["path"] + ".summary" );
+                if( tsv & sum ){
+                    rmLKrow(emObj);
+                } else {
+                    notAllowedPaths.push(emObj["path"]);
+                    doneCheck.update(2);
+                }
+
+            },
+            failure: function( response, options ){
+                notAllowedPaths.push(emObj["path"]);
+                doneCheck.update(2);
+            },
+            scope: this
+        }, this);
+    }
+
+    /* Only need Primary Key = "RowId", but must update containerPath with folder
+    name. Default view in selectRows for this query is currentAndSubfolders, which
+    is why it's not needed there. */
+    function rmLKrow( emObj ) {
+        selRows.responseJSON.rows.forEach( function(row) {
+            if( emObj["name"] == row.Name){
+                LABKEY.Query.deleteRows({
+                    "schemaName": schemaName,
+                    "queryName": queryName,
+                    "containerPath": containerPath + emObj["folder"],
+                    "rows": [ { "RowId" : row.RowId } ],
+                    success: function ( data ) {
+                        rmLkFiles(emObj);
+                    },
+                    failure: function( errorInfo, options, responseObj ) {
+                        notDeletedNames.push ( emObj["name"] );
+                        doneCheck.upate(2);
+                    }
+                });
+            }
+        });
+    }
+
+    // Rm .summary.orig files may fail if they are not present b/c update
+    // has not occured yet via UpdateAnno::UpdateAnno().
+    function fileRm( fileSystem, rmPath){
+        fileSystem.deletePath({
+                    path: rmPath,
+                    isFile: true,
+                    success: function(fileSystem, path){
+                        removedFiles.push( rmPath );
+                        doneCheck.update(1);
+                    },
+                    failure: function(response, options){
+                        notRemovedFiles.push( rmPath );
+                        doneCheck.update(1);
+                    },
+                    scope: this
+                });
+    }
+
+    function rmLkFiles(emObj){
+        var fileSystem = new LABKEY.FileSystem.WebdavFileSystem({
+            baseUrl: "/_webdav/Studies/" + emObj["folder"] + "/@files"
+        });
+
+        fileSystem.listFiles({
+            path: '/analysis/exprs_matrices',
+            success: function(fileSys, path, records){
+                fileRm(fileSystem, emObj["path"]); // rm tsv
+                fileRm(fileSystem, emObj["path"] + ".summary"); // rm summary
+		fileRm(fileSystem, emObj["path"] + ".summary.orig"); // rm orig
+            },
+            scope: this
+        }, this);
+    }
+
+    function goToView(){
+        if( doneCheck["count"] / 2 == selRows.responseJSON.rowCount ){
+            window.location = LABKEY.ActionURL.buildURL("HIPCMatrix",
+                                                        "RemoveEMs.view",
+                                                        null,
+                                                        {
+                                                        notAllowedPaths: notAllowedPaths,
+                                                        dbNotRemoved: notDeletedDb,
+                                                        rmFail: notRemovedFiles,
+                                                        rmSuccess: removedFiles,
+                                                        returnUrl: window.location
+                                                        });
+        }
+        setTimeout(goToView, 1000)
+    }
+
+
+    // global vars
+    var notAllowedPaths = [];
+    var notDeletedDb = [];
+    var notRemovedFiles = [];
+    var removedFiles = [];
+    var doneCheck = {
+        count: 0,
+        update: function(num){
+            this["count"] = this["count"] + num;
+        }
+    }
+
+    // MAIN FN -----------------------------------------------------------
+    function onSuccess( data ) {
+        var counter = 0;
+        data.rows.forEach( function(row){
+            var emObj = {};
+            emObj["name"] = row['Name'];
+            emObj["folder"] = row['Folder/Name'];
+            emObj["path"] = "/analysis/exprs_matrices/" +
+                                    row['Name'] + ".tsv";
+            checkRm( emObj );
+            counter++;
+            if(counter === data.rows.length){
+                goToView();
+            }
+        });
+    }
+
+    // get Selected Rows and try to remove -------------------------------
+    var schemaName = "assay.ExpressionMatrix.matrix";
+    var queryName = "Runs";
+    var selectionKey = dataRegion.selectionKey;
+    var containerPath = "/Studies/";
+
+    var selRows = LABKEY.Query.selectRows({
+        schemaName: schemaName,
+        queryName: queryName,
+        containerPath: containerPath,
+        showRows: "selected", // must be set for selectionKey to be used"
+        selectionKey: selectionKey,
+        success: onSuccess
+    });
+}
+

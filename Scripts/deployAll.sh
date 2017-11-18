@@ -1,4 +1,10 @@
 #!/bin/bash
+
+if [ `whoami` != 'immunespace' ];then
+  echo "ERROR: This script should be executed by the 'immunespace' user."
+  exit 1
+fi
+
 t=$1
 if [ $# -eq 0 ] ; then
     if [ `hostname` = 'immunetestweb' ] ; then
@@ -7,8 +13,8 @@ if [ $# -eq 0 ] ; then
         if [ `hostname` = 'immuneprodweb' ] ; then
             t='prod'
         else
-            echo 'Uknown host, exiting...'
-            exit -1
+            echo 'Script must be run on one of the web server machines. Unknown host, exiting...'
+            exit 1
         fi
     fi
 fi

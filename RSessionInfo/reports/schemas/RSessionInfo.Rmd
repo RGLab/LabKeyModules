@@ -15,5 +15,6 @@ rmarkdown::pandoc_version()
 
 ## Available R Packages
 ```{r}
-DT::datatable(RSessionInfo$packages)
+DT::datatable(RSessionInfo$packages,
+              colnames = c("package", "attached", "version", "date", "source"))
 ```

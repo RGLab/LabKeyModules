@@ -47,9 +47,9 @@ if [ `hostname | tail -c7` != 'rserve' ];then # RServe machine
   echo "ERROR: This script should be executed on the RServe machine."
   exit 1
 fi
-asperaClient="$HOME/immport-data-download-client-1.0.0.RELEASE/bin/downloadImmportData.sh"
+asperaClient="$HOME/immport-data-download-tool/bin/downloadImmportData.sh"
 if [ ! -e "$asperaClient" ] ; then echo "ERROR: $asperaClient not found." ; exit 1 ; fi
-copy2study="`dirname $0`/copy2studies.sh"
+copy2study="/share/github/LabKeyModules/Scripts/copy2studies.sh"
 if [ ! -e "$copy2study" ] ; then echo "ERROR: $copy2study not found." ; exit 1 ; fi
 if [ $IMMPORT_USER = "" ] ; then echo "ERROR: IMMPORT_USER environment variable not found."; exit 1 ; fi
 if [ $IMMPORT_PWD = "" ] ; then echo "ERROR: IMMPORT_PWD environment variable not found."; exit 1 ; fi

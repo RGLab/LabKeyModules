@@ -10,11 +10,11 @@ if [ `whoami` = 'root' ] ; then
             INTERACTIVE=no
         elif [ `hostname | head -c10` = 'immunetest' ] ; then
             LK_MODULES_PATH=/share/github/
-            BUILD_TYPE=master
+            BUILD_TYPE=dev
             INTERACTIVE=yes
         elif [ `hostname | head -c10` = 'immuneprod' ] ; then
             LK_MODULES_PATH=/share/github/
-            BUILD_TYPE=release
+            BUILD_TYPE=master
             INTERACTIVE=yes
         else
             echo 'Build type cannot be detected, must be specified'
@@ -86,8 +86,10 @@ if [ `whoami` = 'root' ] ; then
 
     else
         echo 'The R version must be specified as the argument'
+        exit 1
     fi
 else
     echo 'You must be the root user in order to run this update script'
+    exit 1
 fi
 

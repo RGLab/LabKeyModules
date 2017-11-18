@@ -11,40 +11,124 @@
 
 <script>
 var SDY = LABKEY.container.title;
-function renderPanel()
-{
-    var schemaName = LABKEY.ActionURL.getParameter("schemaName");
-    var queryName = LABKEY.ActionURL.getParameter("queryName");
-    var selectionKey = LABKEY.ActionURL.getParameter("selectionKey");
-    if (!schemaName || !queryName || !selectionKey) {
-        alert("schemaName and queryName parameters required");
-        return;
-    }
+var schemaName = LABKEY.ActionURL.getParameter("schemaName");
+var queryName = LABKEY.ActionURL.getParameter("queryName");
+var selectionKey = LABKEY.ActionURL.getParameter("selectionKey");
 
-    var selectedRows = [];
+if (!schemaName || !queryName || !selectionKey) {
+    alert("schemaName and queryName parameters required");
+}
 
-    function getSelectedSamples() {
-        // get selected sample names from dataregion
-        // CONSIDER: render a QWP grid of the selected rows or maybe an Ext grid
-        LABKEY.Query.selectRows({
-            schemaName: schemaName,
-            queryName: queryName,
-            selectionKey: selectionKey,
-            showRows: "selected",
-            columns: [ "ParticipantId", "biosample_accession", "name", "file_info_name", "geo_accession",  "study_time_collected", "study_time_collected_unit" ],
-            success: function (data) {
-                selectedRows = data.rows;
-                if (selectedRows.length == 0)
-                {
-                    Ext4.Msg.alert("No samples selected", "No samples selected");
-                }
-                panel.setTitle( 'Number of rows selected: ' + selectedRows.length );
+var selectedRows = [];
+
+function getSelectedSamples() {
+    // get selected sample names from dataregion
+    // CONSIDER: render a QWP grid of the selected rows or maybe an Ext grid
+    LABKEY.Query.selectRows({
+        schemaName: schemaName,
+        queryName: queryName,
+        selectionKey: selectionKey,
+        showRows: "selected",
+        columns: [ "ParticipantId", "biosample_accession", "name", "file_info_name", "    geo_accession",  "study_time_collected", "study_time_collected_unit" ],
+        success: function (data) {
+            selectedRows = data.rows;
+            if (selectedRows.length == 0){
+                Ext4.Msg.alert("No samples selected", "No samples selected");
+            } else {
+                Ext4.onReady(function () {
+                     renderPanel();
+                });
             }
-        });
-    }
+        }
+    });
+}
 
-    getSelectedSamples();
+function renderPanel(){
 
+    var panel = Ext4.create('Ext.form.Panel', {
+            title: 'Number of rows selected: ' + selectedRows.length,
+            renderTo: 'analysisForm',
+            border: false,
+            bodyStyle: 'background-color: transparent;',
+            bodyPadding: 10,
+            width: 700,
+            defaults: {
+                width: 580,
+                labelWidth: 200
+            },
+            items: [{
+                xtype: 'textfield',
+                name: 'name',
+                fieldLabel: 'Name',
+                allowBlank: false,
+                value: SDY
+            },{
+                xtype: 'textfield',
+                name: 'comments',
+                fieldLabel: 'Comments',
+                allowBlank: true
+            },{
+                xtype: 'combobox',
+                name: 'featureSet',
+                id: 'featureSet',
+                fieldLabel: 'Feature Annotation Set',
+                //allowBlank: false,
+                allowBlank: true,
+                valueField: 'RowId',
+                displayField: 'Name',
+                scope: this,
+                store: Ext4.create('LABKEY.ext4.data.Store', {
+                    schemaName: 'Microarray',
+                    queryName: 'FeatureAnnotationSet',
+                    autoLoad: true
+                }),
+                listeners:{
+                    change: function(){
+                        var cmBtn = this.up().down('toolbar').down('button[name=cmBtn]');
+                        cmBtn.enable();
+                    }
+                }
+            },{
+                xtype: 'combobox',
+                name: 'pipelineId',
+                fieldLabel: 'Pipeline',
+                allowBlank: false,
+                value: 'HIPCMatrix:pipeline:create-matrix',
+                valueField: 'taskid',
+                 displayField: 'description',
+                 // TODO: Dynamically get the list of matrix pipelines
+                 store: Ext4.create('Ext.data.Store', {
+                fields: ['taskid', 'description'],
+                    data: [
+                       {'taskid': 'HIPCMatrix:pipeline:create-matrix', 'description': 'Create Matrix using R'}
+                    ]
+                })
+            }],
+            dockedItems: [{
+                xtype: 'toolbar',
+                style: 'background-color: transparent;',
+                dock: 'bottom',
+                ui: 'footer',
+                items: [
+                    '->',
+                    {
+                     xtype: 'button',
+                     text: 'Create Matrix',
+                     handler: onSubmit,
+                     scope: this,
+                     name: 'cmBtn',
+                     disabled: true
+                    }
+                    ,
+                    {
+                     text: 'Cancel',
+                     handler: onCancel,
+                      scope: this
+                  },
+                ]
+            }]
+
+    });
 
     function onSubmit() {
         var form = panel.getForm();
@@ -149,7 +233,7 @@ function renderPanel()
             url = LABKEY.ActionURL.buildURL("query", "executeQuery.view", null, schemaName, queryName);
         window.location = url;
     };
-
+/*
     var panel = Ext4.create('Ext.form.Panel', {
         title: '',
         renderTo: 'analysisForm',
@@ -184,7 +268,12 @@ function renderPanel()
                 schemaName: 'Microarray',
                 queryName: 'FeatureAnnotationSet',
                 autoLoad: true
-            })
+            }),
+            listeners: {
+                select: function(){
+                    Ext.getCmp('cmBtn').hidden = false;
+                }
+            }
         },{
             xtype: 'combobox',
             name: 'pipelineId',
@@ -208,15 +297,29 @@ function renderPanel()
             ui: 'footer',
             items: [
                 '->',
-                {text: 'Create Matrix', handler: onSubmit, scope: this},
-                {text: 'Cancel', handler: onCancel, scope: this},
+                {
+                 xtype: 'button',
+                 text: 'Create Matrix',
+                 handler: onSubmit,
+                 scope: this,
+                 id: 'cmBtn'
+                }
+                ,
+                {
+                 text: 'Cancel',
+                 handler: onCancel,
+                 scope: this
+                },
             ]
-        }]
-    });
+        }],
+            listeners:{
+                afterrender: function(){
+                    Ext.getCmp('cmBtn').hidden = true;
+                }
+            }
+
+    });*/
 }
 
-Ext4.onReady(function () {
-    renderPanel();
-});
-
+getSelectedSamples();
 </script>
