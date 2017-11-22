@@ -10,7 +10,7 @@ if [ `whoami` != 'immunespace' ];then
   exit 1
 fi
 
-if [ `hostname | tail -c3` != 've' ];then # RServe machine
+if [ `hostname | tail -c7` != 'rserve' ];then # RServe machine
   echo "ERROR: This script should be executed on the RServe machine."
   exit 1
 fi
@@ -68,6 +68,9 @@ do
   fi
   if [ -d ${aspera_files}/${study}/ResultFiles/Gene_expression_result ];then
     cp ${aspera_files}/${study}/ResultFiles/Gene_expression_result/* ${dir_ge}/
+  fi
+  if [ -d ${aspera_files}/${study}/ResultFiles/RNA_sequencing_result ];then
+    cp ${aspera_files}/${study}/ResultFiles/RNA_sequencing_result/* ${dir_ge}/
   fi
   if [ -d ${aspera_files}/${study}/ResultFiles/Flow_cytometry_result ];then
     cp ${aspera_files}/${study}/ResultFiles/Flow_cytometry_result/* ${dir_flow}/

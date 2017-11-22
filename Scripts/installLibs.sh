@@ -2,10 +2,6 @@
 
 OS=`cat /etc/issue | head -c6`
 
-if [ ${OS} = 'Debian' ] ; then
-    export DEBIAN_FRONTEND=noninteractive
-fi
-
 echo
 echo '========================================='
 echo 'Installing the necessary system libraries'
@@ -20,49 +16,37 @@ apt-get -y install libpcre3-dev
 
 
 # install the required libraries
+if [ ${OS} = 'Debian' ] ; then
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get -y install gpg
+    apt-get -y install default-libmysqlclient-dev
+fi
+if [ ${OS} = 'Ubuntu' ] ; then
+    apt-get -y install libmysqlclient-dev
+    apt-get -y install libssl1.0.0
+fi
 apt-get -y install build-essential
 apt-get -y install cfortran
 apt-get -y install f2c
 apt-get -y install fort77
 apt-get -y install freeglut3-dev
 apt-get -y install g++
-apt-get -y install gpg # for Docker image
 apt-get -y install graphviz-dev
 apt-get -y install libbz2-dev
 apt-get -y install libcairo2-dev
 apt-get -y install libcurl4-openssl-dev
 apt-get -y install libgsl0-dev
 apt-get -y install libhdf5-serial-dev
-if [ ${OS} = 'Debian' ] ; then
-    apt-get -y install libicu-dev
-else # OS = 'Ubuntu'
-    apt-get -y install libicu-devel
-fi
+apt-get -y install libicu-dev
 apt-get -y install liblzma-dev
-if [ ${OS} = 'Debian' ] ; then
-    apt-get -y install default-libmysqlclient-dev
-    #apt-get -y install libmariadbclient-dev-compat
-else # OS = 'Ubuntu'
-    apt-get -y install libmysqlclient-dev
-fi
 apt-get -y install libnetcdf-dev
 apt-get -y install libprotobuf-dev
 apt-get -y install libreadline-dev
-if [ ${OS} = 'Debian' ] ; then
-    apt-get -y install libssl-dev
-    #apt-get -y install libssl1.0-dev
-else # OS = 'Ubuntu'
-    apt-get -y install libssl-dev/trusty
-    apt-get -y install libssl1.0.0/trusty
-fi
+apt-get -y install libssl-dev
 apt-get -y install libxml2-dev
 apt-get -y install openmpi-bin
 apt-get -y install openmpi-common
-if [ ${OS} = 'Debian' ] ; then
-    apt-get -y install openssl
-else # OS = 'Ubuntu'
-    apt-get -y install openssl/trusty
-fi
+apt-get -y install openssl
 apt-get -y install protobuf-compiler
 apt-get -y install xorg-dev
 apt-get -y install xvfb

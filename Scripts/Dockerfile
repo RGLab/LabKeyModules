@@ -3,7 +3,8 @@
 # and subsequently built via invoking
 # "images/labkey/rstudio-base/make"
 
-FROM labkey/rstudio-base:3.4.0
+ARG version
+FROM labkey/rstudio-base:${version}
 ARG build_type
 RUN apt-get update
 

@@ -342,6 +342,7 @@ pre, .ext-mb-text {
 
 /*************************************/
 /* Fix so that the buttons on toolbars look normal (not text) */
+/* THE ENTIRE SECTION BELOW NEEDS TO BE REMOVED FOR THE NEW UI */
 .ISCore .x-toolbar .x-btn-tl,
 .ISCore .x-toolbar .x-btn-tr,
 .ISCore .x-toolbar .x-btn-tc,

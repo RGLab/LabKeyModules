@@ -31,7 +31,6 @@ gridExtra
 gtools
 hash
 heatmaply
-ImmuneSignatures
 Kmisc
 knitr
 languageR
@@ -62,5 +61,4 @@ Rlabkey
 Rlibstree
 stringr
 tidytext
-UpdateAnno
 wordcloud

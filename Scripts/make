@@ -1,14 +1,46 @@
 #!/bin/bash
-./getRpkgs.sh
 if [ $1 ] ; then
-    BUILD_TYPE=$1
-elif [ `hostname | head -c10` = 'immunetest' ] ; then
-    BUILD_TYPE=master
-elif [ `hostname | head -c10` = 'immuneprod' ] ; then
-    BUILD_TYPE=release
+    VERSION=$1
 else
-    echo 'Build type cannot be detected, must be specified'
+    echo 'R version in the format X.Y.Z must be specified as the first argument'
     exit 1
 fi
-docker build $* -t immunespace/rstudio:3.4.0 --build-arg build_type=${BUILD_TYPE} .
+
+if [ ! -e `which git` ] ; then
+    apt-get install git
+fi
+if [ ! -d /share/github/docker-rstudio ] ; then
+    pushd /share/github
+    echo
+    echo '============================='
+    echo 'Downloading the LabKey docker'
+    echo '============================='
+    git clone https://github.com/LabKey/docker-rstudio.git
+    popd
+else
+    pushd /share/github/docker-rstudio
+    git pull
+    popd
+fi
+pushd /share/github/docker-rstudio/images/labkey/rstudio-base
+./make $VERSION
+popd
+
+./getRpkgs.sh
+if [ $2 ] ; then
+    BUILD_TYPE=$2
+elif [ `hostname | head -c10` = 'immunetest' ] ; then
+    BUILD_TYPE=dev
+elif [ `hostname | head -c10` = 'immuneprod' ] ; then
+    BUILD_TYPE=master
+else
+    echo 'Build type cannot be detected, must be specified as the second parameter'
+    exit 1
+fi
+START_TIME=$SECONDS
+docker build -t immunespace/rstudio:${VERSION} --build-arg version=${VERSION} --build-arg build_type=${BUILD_TYPE} .
+
+ELAPSED_TIME=$(($SECONDS - $START_TIME))
+echo
+echo 'Completed in' `date -d "1970-01-01 ${ELAPSED_TIME} sec" +'%k:%M:%S'`
 

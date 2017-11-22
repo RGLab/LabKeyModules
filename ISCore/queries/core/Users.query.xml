@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns='http://labkey.org/data/xml/query'>
+    <metadata>
+        <tables xmlns='http://labkey.org/data/xml'>
+            <table tableName='Users' tableDbType='TABLE'>
+                <tableUrl></tableUrl>
+                <buttonBarOptions position='both' includeStandardButtons='false'>
+                    <item text='Grid Views' permission='ADMIN' insertPosition='end'>
+                        <originalText>Grid Views</originalText>
+                    </item>
+                    <item text='Insert New Row' permission='ADMIN' insertPosition='end' suppressWarning='true'>
+                        <originalText>Insert New Row</originalText>
+                    </item>
+                    <item text='Delete' permission='ADMIN' insertPosition='end' suppressWarning='true'>
+                        <originalText>Delete</originalText>
+                    </item>
+                    <item text='Export' insertPosition='end'>
+                        <originalText>Export</originalText>
+                    </item>
+                    <item text='Print' insertPosition='end'>
+                        <originalText>Print</originalText>
+                    </item>
+                    <item text='Paging' insertPosition='end'>
+                        <originalText>Paging</originalText>
+                    </item>
+                </buttonBarOptions>
+            </table>
+        </tables>
+    </metadata>
+</query>
+

@@ -4,7 +4,6 @@
         <tables xmlns='http://labkey.org/data/xml'>
             <table tableName='Runs' tableDbType='TABLE'>
                 <buttonBarOptions position='both' includeStandardButtons='false'>
-                    <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
                     <item text='Grid Views' permission='ADMIN' insertPosition='end' suppressWarning='true'>
                         <originalText>Grid Views</originalText>
                     </item>
@@ -28,11 +27,10 @@
                     <item text='Manage' permission='ADMIN' insertPosition='end' suppressWarning='true'>
                         <originalText>Manage</originalText>
                     </item>
-                    <item text='Delete' permission='ADMIN' insertPosition='end' suppressWarning='true'>
-                        <originalText>Delete</originalText>
-                    </item>
-                    <item text='Import data' insertPosition='end'>
-                        <originalText>Import data</originalText>
+                   <includeScript>HIPCMatrix/RemoveEMs.js</includeScript>
+                    <item text='Remove EM' requiresSelection='true' permission='UPDATE' insertPosition='end'>
+                        <onClick>removeEMs(dataRegion); return false;</onClick>
+                        <onLoad>this.disabled = 'true'</onLoad>
                     </item>
                 </buttonBarOptions>
                 <columns>
