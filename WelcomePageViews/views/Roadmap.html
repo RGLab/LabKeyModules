@@ -1,89 +1,124 @@
-<!--ROADMAP-->
-<!DOCTYPE html>
-<html>
-<head>
-<style>
- 
-.sp th, .sp td {
-            border: 2px solid black;
-            padding: 10px;
-        }
-
-</style>
-</head>
-
-<body>
-
-<div>
-    <table class="sp" style="width: 80%; margin:0 auto; border-collapse: collapse">
-        <tr>
-            <th><b>Name</b></th>
-            <th><b>Description</b></th>
-            <th><b>Status</b></th>
-            <th><b>Timeframe</b></th>
-        </tr>
-        <tr>
-            <th>DR21</th>
-            <th>ImmPort Data Release 21 with 2 new studies</th>
-            <th>In Progress: On test, going to production</th>
-            <th>Q2 2017</th>
-        <tr>
-        </tr>
-            <th>Integrated RStudio</th>
-            <th>Allow users to work with ImmuneSpace data in an integrated Rstudio session run within a docker container</th>
-            <th>In Progress: On test, going to production</th>
-            <th>Q2 2017</th>
-        </tr>
-        <tr>
-            <th>Publish Study</th>
-            <th>Allow users to publish a study within ImmuneSpace, including markdown files with reproducible reports based on IS data</th>
-            <th>In Progress: Not yet on test</th>
-            <th>Q2 2017</th>
-        </tr>
-        <tr>
-            <th>Standardizing Gene Symbols</th>
-            <th>Behind the scenes work to ensure all modules and API methods use consistent and up-to-date gene symbols based on the hs.eg.Org.db R package</th>
-            <th>In Progress: In testing</th>
-            <th>Q3 2017</th>
-        </tr>
-        <tr>
-            <th>DR22</th>
-            <th>ImmPort Data Release 22</th>
-            <th>Waiting on ImmPort</th>
-            <th>Q3 2017</th>
-        </tr>
-        <tr>
-            <th>ImmuneSpaceR API Update</th>
-            <th>Upgrading the API to include more unit tests as well as internal maintenance functions. Introduction of participant group querying functions.</th>
-            <th>In Progress: Tests added to dev branch, pgroup functions waiting merge into trunk</th>
-            <th>Q3 2017</th>
-        </tr>
-        <tr>
-            <th>Improving Site Reliability</th>
-            <th>A group of tasks that includes UI testing updates and better error handling</th>
-            <th>In Progress: currently on test</th>
-            <th>Q3 2017</th>
-        </tr>
-        <tr>
-            <th>LabKey Updates</th>
-            <th>Major updates, including UI, to be added in 17.2 build</th>
-            <th>In Progress: Currently working with some 17.2 features on test</th>
-            <th>Q3 2017</th>
-        </tr>
-        <tr>
-            <th>Public Study Overview</th>
-            <th>Allow public / non-signed-in users to view the overview page of public studies coming from a redirect</th>
-            <th>In Discussion with LabKey re: feasibility and scoping</th>
-            <th>Q4 2017</th>
-        </tr>
-        <tr>
-            <th>Collaborative Workspaces</th>
-            <th>Building on integrated RStudio session and participant group querying, users will be able to share an integrated RStudio project with others to facilitate collaboration by ensuring consistent computing environment, data, and code.</th>
-            <th>Scoping with LabKey</th>
-            <th>TBD 2018</th>
-        </tr>
-    </table>
-</div>
-
-</body>
-</html>
+<!--DOCTYPE html-->
+<table border="1" cellpadding="5">
+<tbody>
+    <tr>
+        <th><strong>Name</strong></th>
+        <th><strong>Description</strong></th>
+        <th><strong>Purpose</strong></th>
+        <th><strong>Status</strong></th>
+        <th><strong>Target Completion Date</strong></th>
+    </tr>
+    <tr>
+        <td>User Outreach</td>
+        <td>Contact HIPC users and discuss current functionality, as well as ideas for future development</td>
+        <td>Increase value to users</td>
+        <td>Internal planning and discussion</td>
+        <td>Mid 2018</td>
+    </tr>
+    <tr>
+        <td>Collaborative Workspaces</td>
+        <td>Building on the integrated Rstudio session feature and participant group querying, users will be able to share a saved script from an integrated Rstudio session with collaborators allowing teams to focus on analysis instead of coordinating operating environments, e.g. R package versions and environmental variables.</td>
+        <td>Save collaborators time</td>
+        <td>Testing by LabKey</td>
+        <td>Mid 2018</td>
+    </tr>
+    <tr>
+        <td>RNAseq-to-expression matrix pipeline standardization</td>
+        <td>Work with HIPC Biostatistics and Bioinformatics Subcommittee to determine best processing system for RNAseq data as more is becoming available in IS database</td>
+        <td>Attract more users with more available pre-processed expression data</td>
+        <td>In discussion</td>
+        <td>Mid 2018</td>
+    </tr>
+    <tr>
+        <td>Migration to new LabKey UI</td>
+        <td>Adapt all front-end components of custom modules to work with Node.js framework underlying LabKey JS API. Rewrite UI tests as necessary.</td>
+        <td>Improved user experience</td>
+        <td>Testing on IS test server</td>
+        <td>Early 2018</td>
+    </tr>
+    <tr>
+        <td>LabKey Server Update - 17.3</td>
+        <td>Major update, especially to UI</td>
+        <td>Improved user experience and easier front-end development</td>
+        <td>Testing on IS test server</td>
+        <td>Early 2018</td>
+    </tr>
+    <tr>
+        <td>Allow NAb as response variable in custom modules</td>
+        <td>In addition to HAI, allowing Neutralizing Antibody Titer data as the immune response data in Gene Expression Explorer and Immune Response Predictor modules will enable more studies to use these modules</td>
+        <td>Increase UI-based analysis options</td>
+        <td>Testing on IS test server</td>
+        <td>Early 2018</td>
+    </tr>
+    <tr>
+        <td>DR24</td>
+        <td>Data Release 24 from ImmPort, incl. 1 new HIPC study (SDY888)</td>
+        <td>Attract more users with larger dataset</td>
+        <td>Testing on IS test Server</td>
+        <td>Dec 2017</td>
+    </tr>
+    <tr>
+        <td>IS1 Virtual Study</td>
+        <td>Create and publish virtual study to reproduce the results of the ImmuneSignatures Project by HIPC collaborators</td>
+        <td>Demonstrate meta-analysis and study publishing features</td>
+        <td>Complete</td>
+        <td>NA</td>
+    </tr>
+    <tr>
+        <td>Public Study Overview</td>
+        <td>Allow public, non-signed-in users to view the overview page of public studies coming from a redirect</td>
+        <td>Increase usership</td>
+        <td>Complete</td>
+        <td>NA</td>
+    </tr>
+    <tr>
+        <td>Improving Site Reliability</td>
+        <td>A group of tasks that includes UI testing improvements (e.g. switching headless browsers to Chrome)</td>
+        <td>Better user experience</td>
+        <td>Complete</td>
+        <td>NA</td>
+    </tr>
+    <tr>
+        <td>ImmuneSpaceR API Update</td>
+        <td>Upgrading the API to include more unit tests as well as internal maintenance functions. Introduction of participant group querying functions.</td>
+        <td>Improve API functionality and reliability</td>
+        <td>Complete</td>
+        <td>NA</td>
+    </tr>
+    <tr>
+        <td>DR22</td>
+        <td>Data Release 22 from ImmPort, incl. 2 new HIPC studies (SDY1041 and SDY1097)</td>
+        <td>Attract more users with larger dataset</td>
+        <td>Complete</td>
+        <td>NA</td>
+    </tr>
+    <tr>
+        <td>Standardizing Gene Symbols</td>
+        <td>Behind-the-scenes work to ensure that all modules and API methods use consistent and up-to-date gene symbols based on hs.eg.Org.db R package</td>
+        <td>Ensure consistency across studies to allow for meta-analyses</td>
+        <td>Complete</td>
+        <td>NA</td>
+    </tr>
+    <tr>
+        <td>Publish Study</td>
+        <td>Allow users to publish a study within ImmuneSpace, including Rmd files with reproducible reports based on IS Data</td>
+        <td>Support users in disseminating their research</td>
+        <td>Complete</td>
+        <td>NA</td>
+    </tr>
+    <tr>
+        <td>Integrated Rstudio</td>
+        <td>Allow users to work with ImmuneSpace data in an integrated Rstudio session run in a docker container</td>
+        <td>Save users' time by taking over maintenance of analysis environment</td>
+        <td>Complete</td>
+        <td>NA</td>
+    </tr>
+    <tr>
+        <td>DR21</td>
+        <td>Data Release 21 from ImmPort with 2 new studies, incl. HIPC study SDY522</td>
+        <td>Attract more users with larger dataset</td>
+        <td>Complete</td>
+        <td>NA</td>
+    </tr>
+</tbody>
+</table>
