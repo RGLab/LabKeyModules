@@ -144,10 +144,10 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 select: checkBtnsStatus
             },
             store: new Ext.data.ArrayStore({
-                data: [ [ 'HAI', 'HAI' ] ],
+                data: [ [ 'Hemagglutination inhibition (HAI)', 'Hemagglutination inhibition (HAI)' ] ],
                 fields: [ 'name', 'name' ]
             }),
-            value: 'HAI',
+            value: 'Hemagglutination inhibition (HAI)',
             valueField: 'name',
             width: fieldWidth,
             cls: 'ui-test-response'

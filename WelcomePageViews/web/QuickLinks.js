@@ -43,13 +43,6 @@ makeNavTree = function (webPartDiv){
     },{
         children: [{
         cls: "file",
-        href: "https://groups.google.com/forum/#!forum/immunespace",
-        hrefTarget: "_blank",
-        leaf: true,
-        qtip: "ImmuneSpace Google Group",
-        text: "ImmuneSpace Google Group"
-        },{
-        cls: "file",
         href: "https://immunespace.org/data_standards.url",
         hrefTarget: "_blank",
         leaf: true,
@@ -86,6 +79,34 @@ makeNavTree = function (webPartDiv){
                 text: "Emory University"
             },{
             cls: "file",
+            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-boston",
+            hrefTarget: "_blank",
+            leaf: true,
+                qtip: "Boston Children's Hospital",
+                text: "Boston Childrens"
+            },{
+            cls: "file",
+            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-centInfRD",
+            hrefTarget: "_blank",
+            leaf: true,
+                qtip: "Center for Infectious Disease Research",
+                text: "CIDR"
+            },{
+            cls: "file",
+            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-columbia",
+            hrefTarget: "_blank",
+            leaf: true,
+                qtip: "Columbia University",
+                text: "Columbia University"
+            },{
+            cls: "file",
+            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-drexel",
+            hrefTarget: "_blank",
+            leaf: true,
+                qtip: "Drexel University",
+                text: "Drexel University"
+            },{
+            cls: "file",
             href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-mssm",
             hrefTarget: "_blank",
             leaf: true,
@@ -98,6 +119,20 @@ makeNavTree = function (webPartDiv){
             leaf: true,
                 qtip: "La Jolla Institute for Allergy and Immunology",
                 text: "La Jolla Institute"
+            },{
+            cls: "file",
+            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-ucla",
+            hrefTarget: "_blank",
+            leaf: true,
+                qtip: "University of California Los Angeles",
+                text: "UCLA"
+            },{
+            cls: "file",
+            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-yale2",
+            hrefTarget: "_blank",
+            leaf: true,
+                qtip: "Yale University",
+                text: "Yale University"
             }],
             cls: "folder",
             expanded: true,

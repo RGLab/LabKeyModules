@@ -22,3 +22,8 @@ RUN chmod -R 755 /usr/local/lib/R/site-library
 COPY Renviron.site /etc/R/Renviron.site
 RUN dos2unix /etc/R/Renviron.site
 
+COPY Rprofile.site /Rprofile.site.tmp
+RUN dos2unix /Rprofile.site.tmp && \
+    cat /Rprofile.site.tmp >> /usr/local/lib/R/etc/Rprofile.site && \
+    rm /Rprofile.site.tmp
+
