@@ -12,7 +12,7 @@ FROM
     CAST(study_time_collected AS VARCHAR(100)) || ' ' || LCASE(study_time_collected_unit) AS coefficient,
     Run
   FROM
-    study.HM_InputSamplesQuerySnapshot
+    study.HM_InputSamplesQuery
   WHERE
     participantid IN ( SELECT participantid FROM study.hai )
 ) AS GEM

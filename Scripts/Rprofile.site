@@ -1,0 +1,28 @@
+library("bitops")
+library("RCurl")
+library("rjson")
+library("Rlabkey")
+library("rstudioapi")
+
+labkey.init <- function(apiKey="")
+{
+  if (file.exists("~/.rstudio/labkey-session"))
+    source("~/.rstudio/labkey-session")
+  else if (file.exists("~/.Rsession"))
+    source("~/.Rsession")
+  if (apiKey!="")
+    labkey.setDefaults(apiKey=apiKey);
+  hasViewer <- FALSE
+  try (hasViewer <- rstudioapi::hasFun("viewer"))
+}
+
+.First <- function()
+{
+    labkey.init()
+    print("Welcome to RStudio Server")
+    if (exists('labkey.properties') && !is.null(labkey.properties$user$email))
+      print(paste("started by", labkey.properties$user$email, "at", date(), sep=" "))
+    else
+       print(date())
+}
+

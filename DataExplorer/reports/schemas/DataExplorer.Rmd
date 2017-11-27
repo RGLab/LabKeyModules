@@ -49,8 +49,8 @@ if(legend == '') {
   legend <- unlist(strsplit(legend, ','))
 }
 
-imageWidthR <- 10 # 5 * imageWidth / min(c(imageWidth, imageHeight))
-imageHeightR <- 10 # 5 * imageHeight / min(c(imageWidth, imageHeight))
+imageWidthR <- 15 * imageWidth / max(c(imageWidth, imageHeight))
+imageHeightR <- 15 * imageHeight / max(c(imageWidth, imageHeight))
 ```
 
 <div align='center'>
