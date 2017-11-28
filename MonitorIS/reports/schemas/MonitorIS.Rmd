@@ -56,6 +56,7 @@ admins <- labkey.selectRows(baseUrl = labkey.url.base,
                                                      "Developers;Administrators")),
                             containerFilter = NULL)
 
+extra_emails <- c("rglab.org;immunespace.org;labkey.com;gilguday@comcast.net;lwolfe@fredhutch.org")
 extras <- labkey.selectRows(baseUrl = labkey.url.base,
                             folderPath = "/home",
                             schemaName = "core",
@@ -63,7 +64,7 @@ extras <- labkey.selectRows(baseUrl = labkey.url.base,
                             viewName = "",
                             colFilter = makeFilter(c("Email",
                                                      "CONTAINS_ONE_OF",
-                                                     "rglab.org;immunespace.org")),
+                                                     extra_emails)),
                             containerFilter = NULL)
 
 exclusion_list <- paste0(unique(c(admins$`Display Name`, extras$`Display Name`)), collapse = ";")
@@ -352,7 +353,8 @@ read_log2 <- function(date) {
              study = str_extract(X5, "SDY\\d+|IS\\d+|Lyoplate"),
              schema = grepl("schemaName=study?", X5),
              query = str_extract(X5, "(?<=queryName=)\\w+")) %>%
-      filter(!X12 %in% exclusion_email)
+      filter(!X12 %in% exclusion_email) %>%
+      filter(X6 == 200)
   } else {
     NULL
   }
@@ -364,7 +366,15 @@ logs_dt <- lapply(from_to$date, read_log2) %>% bind_rows()
 
 ## Pageviews: Study
 ```{r study-views}
-string <- "(/project/Studies/SDY\\d+/begin.view\\?? | /project/Studies/begin.view\\?? | /project/HIPC/IS\\d+/begin.view\\?? | /project/HIPC/Lyoplate/begin.view\\??)"
+string <- paste0("(",
+                 "/project/Studies/SDY\\d+/begin.view\\?? HTTP/1.1",
+                 "|",
+                 "/project/Studies/begin.view\\?? HTTP/1.1",
+                 "|",
+                 "/project/HIPC/IS\\d+/begin.view\\?? HTTP/1.1",
+                 "|",
+                 "/project/HIPC/Lyoplate/begin.view\\?? HTTP/1.1",
+                 ")")
 
 log_study <- logs_dt %>%
   mutate(folder = str_extract(X5, string)) %>%
@@ -383,7 +393,7 @@ datatable(log_study,
 
 ## Pageviews: Module
 ```{r module-views}
-string <- "(?<=GET /)(DataExplorer|GeneExpressionExplorer|GeneSetEnrichmentAnalysis|ImmuneResponsePredictor)(?=/\\w+)"
+string <- "(?<=GET /)(DataExplorer|GeneExpressionExplorer|GeneSetEnrichmentAnalysis|ImmuneResponsePredictor)(?=/\\S+/begin.view HTTP/1.1)"
 
 log_module <- logs_dt %>%
   mutate(module = str_extract(X5, string)) %>%
@@ -440,7 +450,6 @@ datatable(log_reports,
 ISR <- logs_dt %>%
   filter(grepl("ImmuneSpaceR", X11)) %>%
   filter(!is.na(X12)) %>%
-  filter(X6 == 200) %>%
   mutate(study = ifelse(is.na(study),
                         "All",
                         study))
