@@ -166,6 +166,10 @@ pd <- pd[, cohort_label := ifelse(cohort %in% param$cohortsTesting,
 train_pids <- pd[cohort %in% param$cohortsTraining, participant_id]
 # Select trainingset patients
 FC_train <- FC[train_pids,]
+if(is.null(dim(FC_train))){
+    stop("Training cohort results in one participant at peak time point. This is insufficient for performing glmnet function.  Please select different training cohort and retry.")
+}
+
 # filter features on training set
 if(param$timepoint > 0){
   if(is.null(DEG) & param$FC_thresh > 0){ #i.e: not using the GEAR but using a FC thresh on the matrix
