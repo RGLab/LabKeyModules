@@ -6,9 +6,17 @@
 
 ```{r knitr-opts, echo = FALSE, message = FALSE, cache = FALSE}
 library(knitr)
-opts_chunk$set(cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE,
-               fig.width=12, fig.height=10, fig.align="center",
-               cache.path=file.path(labkey.file.root, "cache/ImmuneResponsePredictor/", labkey.user.email, ""))
+opts_chunk$set(cache = FALSE,
+               echo = FALSE,
+               message = FALSE,
+               warning = FALSE,
+               fig.width = 12,
+               fig.height = 10,
+               fig.align = "center",
+               cache.path = file.path(labkey.file.root,
+                                    "cache/ImmuneResponsePredictor/",
+                                    labkey.user.email,
+                                    ""))
 ```
 
 ```{r libraries, echo = FALSE, message = FALSE, cache = FALSE}
@@ -33,6 +41,7 @@ palette <- ISpalette(20)
 
 ```{r envir-var, echo = FALSE, cache=FALSE}
 param <- list(
+  responseVar     = labkey.url.params$responseVar,
   timepoint       = as.numeric(labkey.url.params$timePoint),
   timepointUnit   = labkey.url.params$timePointUnit,
   cohortsTraining = fromJSON(labkey.url.params$cohortsTraining),
@@ -53,39 +62,53 @@ format_table <- function(x, ...) {
     #This is to make sure that we don't have issues with row names in data.frames
     stop("This function only works on data.tables")
   }
-  out <- kable(x, format = "html", digits = 4, table.attr = 'class="display" id="res_table"', output = FALSE, escape = FALSE, ...)
-  footer <- paste0("</thead>\n<tfoot>", strsplit(strsplit(out,"<thead>")[[1]][2],"</thead>")[[1]][1], "</tfoot>\n")
+  out <- kable(x,
+               format = "html",
+               digits = 4,
+               table.attr = 'class="display" id="res_table"',
+               output = FALSE,
+               escape = FALSE,
+               ...)
+  footer <- paste0("</thead>\n<tfoot>",
+                   strsplit(strsplit(out,"<thead>")[[1]][2],
+                            "</thead>")[[1]][1],
+                   "</tfoot>\n")
   out_new <- gsub("</thead>", footer,out)
   cat(out_new)
 }
 
 # Get the hai response at peak immunogenicity for a participant list
 # @value A data.table with response and participant_id, ordered by participant (i.e: same order as FC or matrix)
-getHAI <- function(con, subjects, dichotomize, dichValue) {
-  hai <- con$getDataset("hai", original_view = TRUE, reload = TRUE)
-  hai <- hai[participant_id %in% subjects]
-  hai <- hai[, list(arm_accession, study_time_collected, study_time_collected_unit,
+getResponse <- function(con, responseVar, subjects, dichotomize, dichValue) {
+  re <- con$getDataset(responseVar, original_view = TRUE, reload = TRUE)
+  re <- re[participant_id %in% subjects]
+  re <- re[, list(arm_accession, study_time_collected, study_time_collected_unit,
                     response = value_reported/mean(value_reported[study_time_collected<=0])),
                by = "virus,participant_id"]
-  hai <- hai[, mr := mean(response), by="study_time_collected"]
-  hai <- hai[, ma := max(mr), by = "arm_accession"]
-  peak <- unique(hai[mr ==ma, list(study_time_collected, arm_accession)])
-  hai <- merge(hai, peak, by=c("study_time_collected", "arm_accession"))
-  hai <- hai[, list(response=log2(max(response))), by="participant_id"]
+  re <- re[, mr := mean(response), by="study_time_collected"]
+  re <- re[, ma := max(mr), by = "arm_accession"]
+  peak <- unique(re[mr == ma, list(study_time_collected, arm_accession)])
+  re<- merge(re, peak, by=c("study_time_collected", "arm_accession"))
+  re <- re[, list(response = log2(max(response))), by = "participant_id"]
   if(dichotomize) {
-    hai <- hai[,response:=ifelse(response>=log2(dichValue), TRUE,  FALSE)]
+    re <- re[,response := ifelse(response >= log2(dichValue), TRUE,  FALSE)]
   }
-  hai <- hai[order(participant_id)]
-  return(hai)
+  re <- re[order(participant_id)]
+  return(re)
 }
 
 getGenes <- function(con, param) {
   if(param$FDR_thresh) {
     tpu <- param$timepointUnit
     tpu <- paste0(toupper(substr(tpu, 1, 1)), substr(tpu, 2, nchar(tpu)))
-    cf <- makeFilter(c("analysis_accession/arm_name", "IN",
-                        paste(c(param$cohortsTraining, param$cohortsTesting), collapse = ";")),
-                     c("analysis_accession/coefficient", "EQUAL", paste(param$timepoint, tpu)))
+    cf <- makeFilter(c("analysis_accession/arm_name",
+                       "IN",
+                       paste(c(param$cohortsTraining,
+                               param$cohortsTesting),
+                             collapse = ";")),
+                     c("analysis_accession/coefficient",
+                       "EQUAL",
+                       paste(param$timepoint, tpu)))
     DEG <- con$getGEAnalysis(colFilter = cf)
     setnames(DEG, "log_fold-change", "log_fc")
     DEG <- DEG[abs(log_fc) > param$FC_thresh]
@@ -107,9 +130,9 @@ cached_pids <- labkey.selectRows(
     folderPath = labkey.url.path,
     schemaName = "study",
     queryName = "demographics",
-    viewName="",
-    colFilter=NULL,
-    containerFilter=NULL,
+    viewName = "",
+    colFilter = NULL,
+    containerFilter = NULL,
     colNameOpt = "rname")$participantid
 ```
 
@@ -128,29 +151,42 @@ DEG <- getGenes(con, param)
 ```
 ```{r main2, echo = FALSE, cache = TRUE, dependson="EMs;functions"}
 # Subset the EM
-# - Get only subject that have both, the requested timepoint and baseline
+# Get only subject with requested timepoint OR baseline AND appropriate unit
 EM <- EM[, EM$study_time_collected %in% c(0,  param$timepoint) & tolower(EM$study_time_collected_unit) == param$timepointUnit]
 pd <- data.table(pData(EM))
 if(!is.null(DEG)){
   EM <- EM[DEG %in% featureNames(EM),]
 }
+
+# In some cases, e.g. SDY180, there may be multiple observations per
+# participant_id + timePt, therefore need to arbitrarily select the first
+# observation prior to ensuring subject has BOTH requested timePt and
+# baseline.
 if(param$timepoint > 0){
+  setkeyv(pd, c("study_time_collected","participant_id"))
+  pd <- pd[ , .SD[1L], by = key(pd)]
   pids <- pd[, .N, by = participant_id][N > 1, participant_id]
   pd  <- pd[participant_id %in% pids]
   pd  <- pd[order(participant_id, study_time_collected)]
   EM <- EM[, pd$biosample_accession]
+
   # Calculate fold-change
-  FC <- exprs(EM[, pd[study_time_collected == param$timepoint, biosample_accession]]) -
-        exprs(EM[, pd[study_time_collected == 0, biosample_accession]])
-  FC <- t(FC)
+  laterPt <- exprs(EM[, pd[study_time_collected == param$timepoint, biosample_accession]])
+  baseline <- exprs(EM[, pd[study_time_collected == 0, biosample_accession]])
+  FC <- t(laterPt - baseline)
 } else{
   pids <- pd$participant_id
   pd  <- pd[order(participant_id, study_time_collected)]
   EM <- EM[, pd$biosample_accession]
   FC <- t(exprs(EM))
 }
+
 rownames(FC) <- pd[match(rownames(FC), pd$biosample_accession), participant_id]
-response <- getHAI(con, pids, param$dichotomize, param$dichValue)
+response <- getResponse(con,
+                        param$responseVar,
+                        pids,
+                        param$dichotomize,
+                        param$dichValue)
 response_pids <- unique(response$participant_id)
 FC <- FC[rownames(FC) %in% response_pids,]
 pd <- unique(pd[participant_id %in% rownames(FC), list(participant_id, cohort)])
