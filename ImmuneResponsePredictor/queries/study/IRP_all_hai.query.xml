@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='IRP_all_hai' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        Query that gets all information relevant to IRP for hai response
+    </description>
+</query>
