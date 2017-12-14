@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='IRP_timepoints_hai' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        List all of the timepoint / timepoint unit combinations including the number of cohorts per each pair for those participants that have HAI data.
+    </description>
+</query>

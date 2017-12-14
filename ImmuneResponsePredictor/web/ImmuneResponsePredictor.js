@@ -1,13 +1,10 @@
 // vim: sw=4:ts=4:nu:nospell
 /*
  Copyright 2014 Fred Hutchinson Cancer Research Center
-
  Licensed under the Apache License, Version 2.0 (the 'License');
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
-
  http://www.apache.org/licenses/LICENSE-2.0
-
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an 'AS IS' BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -74,9 +71,19 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var foldchange_help         = 'Features with an absolute fold change to baseline <u>lower</u> than the threshold will be excluded.';
         var falsediscoveryrate_help = 'If checked, only genes differentially expressed over time are selected (as opposed to the entire array).';
 
-        ///////////////////////////////////
-        //            Stores             //
-        ///////////////////////////////////
+
+        /////////////////////////////////////
+        //           Stores                //
+        /////////////////////////////////////
+
+        var strVariable = new LABKEY.ext.Store({
+            autoLoad: true,
+            listeners: {
+                loadexception: LABKEY.ext.ISCore.onFailure
+            },
+            queryName: 'IRP_data_sets',
+            schemaName: 'study'
+        });
 
         var strCohortTraining = new LABKEY.ext.Store({
             autoLoad: false,
@@ -86,23 +93,22 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'IRP_all',
             schemaName: 'study'
         });
 
         var strCohortTesting = new LABKEY.ext.Store({
+            autoLoad: false,
             listeners: {
                 load: function(){
                     cbCohortTesting.setDisabled( this.getCount() === 0 );
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'IRP_all',
             schemaName: 'study'
         });
 
         var strTimePoint = new LABKEY.ext.Store({
-            autoLoad: true,
+            autoLoad: false,
             listeners: {
                 load: function(){
                     if ( this.getCount() > 0 ){
@@ -124,7 +130,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
-            queryName: 'IRP_timepoints',
             schemaName: 'study'
         });
 
@@ -135,20 +140,28 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
         var cbVariable = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
-            displayField: 'name',
+            displayField: 'Label',
             fieldLabel: 'Response variable',
             listeners: {
-                blur: checkBtnsStatus,
-                change: checkBtnsStatus,
-                cleared: checkBtnsStatus,
-                select: checkBtnsStatus
+                blur:       checkBtnsStatus,
+                change:     checkBtnsStatus,
+                cleared:    checkBtnsStatus,
+                select: function(value){
+                    // Build SQL statements b/c need resp table dynamic
+                    var resp = value.store.data.items[0].data.Name,
+                        irpAll = 'IRP_all_' + resp,
+                        irpTp = 'IRP_timepoints_' + resp;
+
+                    strCohortTraining.setBaseParam('query.queryName', irpAll);
+                    strCohortTesting.setBaseParam('query.queryName', irpAll);
+                    strTimePoint.setBaseParam('query.queryName', irpTp);
+
+                    strTimePoint.load();
+                    checkBtnsStatus();
+                },
             },
-            store: new Ext.data.ArrayStore({
-                data: [ [ 'Hemagglutination inhibition (HAI)', 'Hemagglutination inhibition (HAI)' ] ],
-                fields: [ 'name', 'name' ]
-            }),
-            value: 'Hemagglutination inhibition (HAI)',
-            valueField: 'name',
+            store: strVariable,
+            valueField: 'Name',
             width: fieldWidth,
             cls: 'ui-test-response'
         });
@@ -200,7 +213,6 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 select: function(){
                     flagTimePoint = true;
                     handleTimepointSelection();
-
                     checkBtnsStatus();
                 }
             },
@@ -361,6 +373,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 setReportRunning( true );
 
                 cnfReport.inputParams = {
+                    responseVar:            cbVariable.getValue(),
                     analysisAccession:      Ext.encode( cbCohortTraining.getCheckedArray( 'analysis_accession' ) ),
                     cohortsTraining:        Ext.encode( cbCohortTraining.getCheckedArray() ),
                     cohortsTesting:         Ext.encode( cbCohortTesting.getCheckedArray() ),
@@ -971,4 +984,3 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
     resize: function(){
     }
 }); // end ImmuneResponsePredictor Panel class
-

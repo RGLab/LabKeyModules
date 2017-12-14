@@ -46,13 +46,15 @@ alpha <- tolower(labkey.url.params$alpha)
 
 #stopcheck(labkey.url.params)
 
+# helper functions
 add_r2 <- function(data) {
   dt <- data.table(data)
-  dt <- dt[, r2 :=  paste("R^2 ==", round(summary(lm(response ~ value))[['r.squared']], 3)), by = "cohort,gene_symbol"]
+  dt <- dt[, r2 := paste("R^2 ==", round(summary(lm(response ~ value))[['r.squared']], 3)), by = "cohort,gene_symbol"]
   dt <- dt[, r2x := (min(value) + max(value)) / 2, by = "cohort,gene_symbol"]
   dt <- dt[, r2y := max(response), by = "cohort,gene_symbol"]
   return(data.frame(dt))
 }
+
 check_cohorts <- function(data) {
   # Add study_accession information to the cohorts that are shared accross studies
   dt <- data.table(data)
@@ -62,27 +64,20 @@ check_cohorts <- function(data) {
   return(data.frame(dt))
 }
 
-filter <- as.matrix(lapply(filters, function(e) {
-  return(paste0(RCurl::curlEscape(e['fieldKey']), '~', e['op'], '=', RCurl::curlEscape(e['value']) ) )
-}))
-if (nrow(filter) == 0) filter <- NULL
+parseFilter <- function(e) {
+  paste0(curlEscape(e['fieldKey']), '~', e['op'], '=', curlEscape(e['value']))
+}
 
-
-# Get the participants
-# Check that con exist and that ithas the same participants as the Rlabkey version
-# Check that cohorts exists and are the same
-DF_pids <- labkey.selectRows(
-  baseUrl = labkey.url.base,
-  folderPath = labkey.url.path,
-  schemaName = "study",
-  queryName = "demographics",
-  viewName = "",
-  colFilter = NULL,
-  containerFilter = NULL,
-  colNameOpt = "rname")$participantid
+# Ensure Rlabkey format of vector of filter strings
+if( length(filters) > 0 ){
+  filtChk <- colFilter <- unlist(lapply(filters, parseFilter))
+}else{
+  colFilter <- NULL
+  filtChk <- "" # Need non-NULL str for reload logic
+}
 
 # Reload everything when DataFinder filters are updated
-if(!exists("con") || !all(con$getDataset("demographics")$participant_id %in% DF_pids)) {
+if( !exists("con") || !all(loaded_filter == filtChk) ){
   con <- CreateConnection()
   if(exists("loaded_ems")) rm(loaded_ems)
   if(exists("loaded_genes")) rm(loaded_genes)
@@ -102,7 +97,7 @@ if(!exists("loaded_ems") || length(loaded_ems) != length(input_cohorts) || !all(
   setnames(DEMO, "age_reported", "age")
 }
 
-HAI <- con$getDataset("hai", original_view = TRUE, colFilter = filter, reload = TRUE)
+HAI <- con$getDataset("hai", original_view = TRUE, colFilter = colFilter, reload = TRUE)
 HAI <- HAI[, list(arm_accession, study_time_collected, study_time_collected_unit,
                   response = value_reported / mean(value_reported[study_time_collected <= 0])), by = "virus,participant_id"]
 # HAI at peak immunogenicity
@@ -116,8 +111,8 @@ PD <- data.table(pData(EM))
 PD <- merge(PD, HAI, by = "participant_id")
 
 # Fail gracefully if PD empty due to non-overlap in participant ids, issue num 21
-if(nrow(PD) == 0) {
-  stop("Participant IDs in the requested HAI dataset do not overlap with those in the requested pheno data")
+if( nrow(PD) == 0 ){
+  stop("Participant IDs in the requested HAI dataset do not overlap with those in the requested pheno data. Please select a different cohort or timepoint and try again.")
 }
 
 PD <- merge(PD, DEMO, by = "participant_id")
@@ -176,5 +171,6 @@ if (interactive) {
 # Variables used for caching
 loaded_ems <- ems
 loaded_genes <- input_genes
+loaded_filter <- filtChk
 ```
 </div>

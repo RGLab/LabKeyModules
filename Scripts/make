@@ -1,4 +1,15 @@
 #!/bin/bash
+
+if [ `hostname | tail -c7` != 'rserve' ];then # RServe machine
+    echo "This script should be executed on the RServe machine."
+    exit 1
+fi
+
+if [ `whoami` != 'root' ] ; then
+    echo 'You must be the root user in order to run this script'
+    exit 1
+fi
+
 if [ $1 ] ; then
     VERSION=$1
 else
@@ -23,10 +34,13 @@ else
     popd
 fi
 pushd /share/github/docker-rstudio/images/labkey/rstudio-base
-./make $VERSION
+docker pull rocker/rstudio:${VERSION}
+./make ${VERSION}
 popd
 
-./getRpkgs.sh
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+${DIR}/getRpkgs.sh
+
 if [ $2 ] ; then
     BUILD_TYPE=$2
 elif [ `hostname | head -c10` = 'immunetest' ] ; then
@@ -38,7 +52,7 @@ else
     exit 1
 fi
 START_TIME=$SECONDS
-docker build -t immunespace/rstudio:${VERSION} --build-arg version=${VERSION} --build-arg build_type=${BUILD_TYPE} .
+docker build --no-cache -t immunespace/rstudio:${VERSION} --build-arg version=${VERSION} --build-arg build_type=${BUILD_TYPE} ${DIR}
 
 ELAPSED_TIME=$(($SECONDS - $START_TIME))
 echo

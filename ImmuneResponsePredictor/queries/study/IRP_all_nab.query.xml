@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='IRP_all_neut_ab_titer' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        Query that gets all information relevant to IRP for nab response
+    </description>
+</query>

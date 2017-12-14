@@ -1,9 +1,10 @@
 ```{r knitr, echo = FALSE}
-knitr::opts_chunk$set(message = FALSE, 
-                      echo = FALSE, 
-                      warning = FALSE, 
-                      fig.align = 'left', 
-                      fig.width = 12)
+knitr::opts_chunk$set(message = FALSE,
+                      echo = FALSE,
+                      warning = FALSE,
+                      fig.align = 'left',
+                      fig.height = 12,
+                      fig.width = 15)
 ```
 
 ```{r libs, message = FALSE}
@@ -23,17 +24,20 @@ library(stringr)
 ```{r preprocess}
 #str(labkey.url.params)
 
+# global
+TODAY <- today(tz = "US/Pacific")
+
 # labkey parameters
 from <- ifelse(labkey.url.params$from == "",
-               as.Date("2016-01-01"),
-               as.Date(labkey.url.params$from))
+               as_date("2016-01-01"),
+               as_date(labkey.url.params$from))
 to <- ifelse(labkey.url.params$to == "",
-             Sys.Date(),
-             as.Date(labkey.url.params$to))
+             TODAY,
+             as_date(labkey.url.params$to))
 class(from) <- "Date"
 class(to) <- "Date"
 from <- ifelse(from > to,
-               as.Date("2016-01-01"),
+               as_/date("2016-01-01"),
                from)
 class(from) <- "Date"
 from_to <- tibble(date = seq(from, to, by = "1 day"))
@@ -56,7 +60,13 @@ admins <- labkey.selectRows(baseUrl = labkey.url.base,
                                                      "Developers;Administrators")),
                             containerFilter = NULL)
 
-extra_emails <- c("rglab.org;immunespace.org;labkey.com;gilguday@comcast.net;lwolfe@fredhutch.org")
+extra_emails <- paste("rglab.org",
+                      "immunespace.org",
+                      "labkey.com",
+                      "gilguday@comcast.net",
+                      "lwolfe@fredhutch.org",
+                      "rsautera@fhcrc.org",
+                      sep = ";")
 extras <- labkey.selectRows(baseUrl = labkey.url.base,
                             folderPath = "/home",
                             schemaName = "core",
@@ -84,8 +94,8 @@ users_all <- labkey.selectRows(baseUrl = labkey.url.base,
                                containerFilter = NULL)
 colnames(users_all) <- tolower(chartr(" ", "_", colnames(users_all)))
 users_all <- users_all %>%
-  mutate(created = as.Date(created),
-         last_login = as.Date(last_login))
+  mutate(created = as_date(created),
+         last_login = as_date(last_login))
 
 users <- users_all %>%
   filter(created >= from & created <= to) %>%
@@ -127,7 +137,7 @@ logins <- labkey.selectRows(baseUrl = labkey.url.base,
                                                      "Database authentication")),
                             containerFilter= "AllFolders")
 logins <- logins %>%
-  mutate(Date = as.Date(Date)) %>%
+  mutate(Date = as_date(Date)) %>%
   select(Date, `Created By`) %>%
   filter(Date >= from & Date <= to)
 active_by <- logins %>%
@@ -157,7 +167,7 @@ We had **`r round(mean(active_by$n), 2)` active users** per *`r dateBy`* on aver
 
 ```{r logins}
 logins_by <- logins %>%
-  mutate(Date = floor_date(as.Date(Date), dateBy)) %>%
+  mutate(Date = floor_date(as_date(Date), dateBy)) %>%
   count(Date, `Created By`) %>%
   left_join(select(users_all, user_id, display_name),
             by = c("Created By" =  "user_id")) %>%
@@ -313,12 +323,12 @@ sdys <- folders %>%
   mutate(count = 1:nrow(.)) %>%
   filter(created >= "2016-01-01") %>%
   select(created, count) %>%
-  mutate(created = as.Date(created))
+  mutate(created = as_date(created))
 
-sdys <- bind_rows(tibble(created = as.Date("2016-01-01"),
+sdys <- bind_rows(tibble(created = as_date("2016-01-01"),
                          count = min(sdys$count)),
                   sdys,
-                  tibble(created = Sys.Date(),
+                  tibble(created = TODAY,
                          count = max(sdys$count)))
 
 # Based on folder creation -> counts private studies
@@ -341,26 +351,64 @@ sdys %>%
 # 00 0-23/6 * * * rsync -a -v /labkey/apps/tomcat/logs/localhost_access_log.* /share/tomcat-logs/
 # This will sync logs to `/share/tomcat-logs/` every six hour.
 read_log2 <- function(date) {
-  if (Sys.info()["nodename"] == "immunetestrserve" & date > "2016-08-08") {
+  if (Sys.info()["nodename"] == "immunetestrserve" && date < "2017-09-22") {
     file_name <- paste0("/share/tomcat-logs/localhost_access_log..", date, ".txt")
+    file_name_m <- paste0("/share/tomcat-logs/modified/localhost_access_log..", date, ".txt")
   } else {
     file_name <- paste0("/share/tomcat-logs/localhost_access_log.", date, ".txt")
+    file_name_m <- paste0("/share/tomcat-logs/modified/localhost_access_log.", date, ".txt")
   }
+
   if (file.exists(file_name)) {
-     read_log(file = file_name,
-              col_types = cols(.default = col_character())) %>%
-      mutate(date = date,
-             study = str_extract(X5, "SDY\\d+|IS\\d+|Lyoplate"),
-             schema = grepl("schemaName=study?", X5),
-             query = str_extract(X5, "(?<=queryName=)\\w+")) %>%
-      filter(!X12 %in% exclusion_email) %>%
-      filter(X6 == 200)
+    tried <- try(
+      read_log(file = file_name,
+               col_types = cols(.default = col_character()))
+    )
+
+    if (class(tried) == "try-error") {
+      if (!file.exists(file_name_m)) {
+        original <- file(file_name, "r")
+        modified <- file(file_name_m, "w")
+        lines <- readLines(original, skipNul = TRUE)
+        writeLines(lines, modified)
+        close(original)
+        close(modified)
+      }
+
+      tried <- try(
+        read_log(file = file_name_m,
+                 col_types = cols(.default = col_character()))
+      )
+    }
+
+    if (class(tried) == "try-error") {
+      NULL
+    } else {
+      if (nrow(tried) > 0) {
+        # delete if the log is still being modfied
+        if (date == TODAY) {
+          if (file.exists(file_name_m)) {
+            file.remove(file_name_m)
+          }
+        }
+        tried %>%
+          mutate(date = date,
+                 study = str_extract(X5, "SDY\\d+|IS\\d+|Lyoplate"),
+                 schema = grepl("schemaName=study?", X5),
+                 query = str_extract(X5, "(?<=queryName=)\\w+")) %>%
+          filter(!X12 %in% exclusion_email) %>%
+          filter(X6 == 200)
+      } else {
+        NULL
+      }
+    }
   } else {
     NULL
   }
 }
 
-logs_dt <- lapply(from_to$date, read_log2) %>% bind_rows()
+logs_list <- lapply(from_to$date, read_log2)
+logs_dt <- bind_rows(logs_list)
 ```
 
 
@@ -549,9 +597,9 @@ datatable(ISR_top_user, width = 800)
 BIOC <- read.table("https://www.bioconductor.org/packages/stats/bioc/ImmuneSpaceR/ImmuneSpaceR_stats.tab", header = TRUE)
 BIOC <- BIOC %>%
   filter(Month != "all") %>%
-  mutate(date = as.Date(paste(Year, Month, "01", sep = "-"), "%Y-%b-%d")) %>%
+  mutate(date = as_date(paste(Year, Month, "01", sep = "-"), "%Y-%b-%d")) %>%
   arrange(date) %>%
-  filter(date <= Sys.Date()) %>%
+  filter(date <= TODAY) %>%
   select(date, Nb_of_downloads)
 
 p <- BIOC %>%
@@ -577,6 +625,7 @@ if (plotType == "line") {
 ***
 
 # RStudio
+
 ```{r rstudio}
 log_rstudio <- logs_dt %>%
   filter(grepl("GET /_rstudio/ HTTP/1.1", X5))
@@ -605,3 +654,13 @@ if (plotType == "line") {
 
 We had **`r round(mean(session_rstudio$N), 2)` RStudio sessions** per *`r dateBy`* on average from `r from` to `r to`.
 
+
+
+***
+
+# Debuggin Messages
+
+## Missing access logs
+```{r debugging-messages}
+from_to$date[unlist(lapply(logs_list, is.null))]
+```
