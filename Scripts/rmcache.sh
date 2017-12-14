@@ -7,3 +7,5 @@ do
   fi
 done
 
+rm -r /share/files/Studies/@files/cache
+

@@ -217,6 +217,9 @@ if(param$timepoint > 0){
   }
 }
 response_train <- response[participant_id %in% train_pids, response]
+if( length(unique(response_train)) == 1 ){
+    stop("All response calls in training cohort are the same, which causes the glmnet() to fail as 'y' is constant and the null deviance cannot be calculated in order to standardize the data. Please select a different training cohort.")
+}
 ```
 
 ```{r elastic-net, echo = FALSE, cache = TRUE, dependson="subset-train"}

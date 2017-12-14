@@ -5,17 +5,23 @@ opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Da
 ```
 
 ```{r setup}
+# load libraries
 suppressMessages(library(Cairo))
 suppressMessages(library(RJSONIO))
 suppressMessages(library(RCurl))
 suppressMessages(library(ImmuneSpaceR))
 
+# helper functions
 stopcheck <- function(data) {
-    stop(paste0(paste(capture.output(str(data)), collapse='\n'), '\nl.u.b: ',labkey.url.base, '\nl.u.p: ',labkey.url.path))
+  stop(paste0(paste(capture.output(str(data)), collapse='\n'), '\nl.u.b: ',labkey.url.base, '\nl.u.p: ',labkey.url.path))
 }
-imageWidth  <- as.numeric(labkey.url.params$imageWidth)
-imageHeight <- as.numeric(labkey.url.params$imageHeight)
+parseFilter <- function(e) {
+  paste0(curlEscape(e['fieldKey']), '~', e['op'], '=', curlEscape(e['value']))
+}
 
+# labkey parameters
+imageWidth     <- as.numeric(labkey.url.params$imageWidth)
+imageHeight    <- as.numeric(labkey.url.params$imageHeight)
 dataset        <- labkey.url.params$datasetName
 datasetDisplay <- labkey.url.params$datasetLabel
 plotType       <- labkey.url.params$plotType
@@ -30,33 +36,42 @@ color          <- labkey.url.params$color
 shape          <- labkey.url.params$shape
 size           <- labkey.url.params$size
 alpha          <- labkey.url.params$alpha
-#stopcheck(labkey.url.params)
+# stopcheck(labkey.url.params)
 
-filter <- as.matrix(lapply(filters, function(e) {
-    return(paste0(curlEscape(e['fieldKey']), '~', e['op'], '=', curlEscape(e['value'])))
-}))
-if (nrow(filter) == 0) {
+# conver filters to a matrix
+if (length(filters) > 0) {
+  filter <- as.matrix(unlist(lapply(filters, parseFilter)))
+} else {
   filter <- NULL
 }
 
+# if empty convert to NULL
 if(color  == '') color <- NULL
 if(shape  == '') shape <- NULL
 if(size   == '') size  <- NULL
 if(alpha  == '') alpha <- NULL
 if(legend == '') {
   legend <- NULL
-} else{
+} else {
   legend <- unlist(strsplit(legend, ','))
 }
 
-imageWidthR <- 15 * imageWidth / max(c(imageWidth, imageHeight))
-imageHeightR <- 15 * imageHeight / max(c(imageWidth, imageHeight))
+# width and height for interactive visualization
+imageWidthR     <- 15 * imageWidth  / max( c(imageWidth, imageHeight) )
+imageHeightR    <- 15 * imageHeight / max( c(imageWidth, imageHeight) )
 ```
 
 <div align='center'>
 ```{r visualize, fig.width = imageWidthR, fig.height = imageHeightR}
 con <- CreateConnection()
-if (!interactive | tolower(dataset) == "pcr") CairoPNG(filename='${imgout:Plot.png}', width = imageWidth, height = imageHeight)
+
+if (!interactive || tolower(dataset) == "pcr") {
+    CairoPNG(   filename    = ${imgout:Plot.png}',
+                width       = imageWidth,
+                height      = imageHeight
+    )
+}
+
 m_out <- con$quick_plot(dataset,
                         normalize_to_baseline = normalize,
                         type                  = plotType,
@@ -70,7 +85,9 @@ m_out <- con$quick_plot(dataset,
                         legend                = legend,
                         show_virus_strain     = show_strains,
                         interactive           = interactive)
-if (!interactive) dev.off()
+
+if (!interactive || tolower(dataset) == "pcr") dev.off()
+
 m_out
 ```
 </div>

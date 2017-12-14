@@ -73,15 +73,12 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
 
 
         /////////////////////////////////////
-        //           STORES                //
+        //           Stores                //
         /////////////////////////////////////
 
-        // Response Variable store is loaded automatically b/c no vars
         var strVariable = new LABKEY.ext.Store({
             autoLoad: true,
             listeners: {
-                load: function(){
-                },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },
             queryName: 'IRP_data_sets',
@@ -136,6 +133,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             schemaName: 'study'
         });
 
+
         /////////////////////////////////////
         //     ComboBoxes / TextFields     //
         /////////////////////////////////////
@@ -145,19 +143,18 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             displayField: 'Label',
             fieldLabel: 'Response variable',
             listeners: {
-                blur: checkBtnsStatus,
-                change: checkBtnsStatus,
-                cleared: checkBtnsStatus,
+                blur:       checkBtnsStatus,
+                change:     checkBtnsStatus,
+                cleared:    checkBtnsStatus,
                 select: function(value){
-                    
-                    // build sql statements b/c need resp table dynamic
-                    var resp = value.store.data.items[0].data.Name;
-                    var irpAll = "IRP_all_" + resp;
-                    var irpTp = "IRP_timepoints_" + resp;
-                    
-                    strCohortTraining.setBaseParam("query.queryName", irpAll);
-                    strCohortTesting.setBaseParam("query.queryName", irpAll);
-                    strTimePoint.setBaseParam("query.queryName", irpTp);
+                    // Build SQL statements b/c need resp table dynamic
+                    var resp = value.store.data.items[0].data.Name,
+                        irpAll = 'IRP_all_' + resp,
+                        irpTp = 'IRP_timepoints_' + resp;
+
+                    strCohortTraining.setBaseParam('query.queryName', irpAll);
+                    strCohortTesting.setBaseParam('query.queryName', irpAll);
+                    strTimePoint.setBaseParam('query.queryName', irpTp);
 
                     strTimePoint.load();
                     checkBtnsStatus();

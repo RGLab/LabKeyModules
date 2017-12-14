@@ -74,7 +74,7 @@ if [ `whoami` = 'root' ] ; then
         echo '======================================================='
         cd ${LK_MODULES_PATH}/LabKeyModules/Scripts
         ./getRpkgs.sh
-        Rscript ./installR.R ${BUILD_TYPE}
+        Rscript --vanilla ./installR.R ${BUILD_TYPE}
 
         if [ ${INTERACTIVE} = 'yes' ] ; then
             ./rmcache.sh # delete cached resources that relied on the old installation
