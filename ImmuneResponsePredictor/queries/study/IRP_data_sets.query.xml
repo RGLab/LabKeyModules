@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='IRP_data_sets' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        List HAI and NAb data sets if present in study.
+    </description>
+</query>
