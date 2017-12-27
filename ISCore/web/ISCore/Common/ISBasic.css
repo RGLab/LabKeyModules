@@ -57,6 +57,10 @@ td.labkey-main-icon {
     white-space: normal; background-color: #ededdf;
 }
 
+.wiki-list ol li {
+    width:  390px;
+}
+
 .wiki-list li {
     padding: 5px;
 }
