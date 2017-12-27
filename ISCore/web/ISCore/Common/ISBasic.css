@@ -54,7 +54,7 @@ td.labkey-main-icon {
 /* ***************** Top Bar Menu Items Styling *************** */
 /* ************************************************************ */
 .wiki-list li:hover {
-    white-space: nowrap; background-color: #ededdf;
+    white-space: normal; background-color: #ededdf;
 }
 
 .wiki-list li {
