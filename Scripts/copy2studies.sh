@@ -72,6 +72,9 @@ do
   if [ -d ${aspera_files}/${study}/ResultFiles/RNA_sequencing_result ];then
     cp ${aspera_files}/${study}/ResultFiles/RNA_sequencing_result/* ${dir_ge}/
   fi
+  if [ -d ${aspera_files}/${study}/ResultFiles/Illumina_BeadArray ];then
+    cp ${aspera_files}/${study}/ResultFiles/Illumina_BeadArray/* ${dir_ge}/
+  fi
   if [ -d ${aspera_files}/${study}/ResultFiles/Flow_cytometry_result ];then
     cp ${aspera_files}/${study}/ResultFiles/Flow_cytometry_result/* ${dir_flow}/
   fi
