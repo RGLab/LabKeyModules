@@ -10,15 +10,17 @@ var studyTour = function(){
         },{
             title: 'Study Overview',
             content: 'Overall summary of the study, objectives, protocols, conditions studied etc.',
-            target: $('[name=webpart]')[0],
-            placement: 'top',
+            target: $('a[name="Study Overview"]')[0],
+            placement: 'right',
+            yOffset: -20,
             showPrevButton: true,
             showNextButton: true
         },{
             title: 'PubMed Statistics',
             content: 'List of publications associated with this study with relevant links to PubMed.',
-            target: $('[name=webpart]')[1],
-            placement: 'top',
+            target: $('a[name="Publications and Citations"]')[0],
+            placement: 'right',
+            yOffset: -20,
             showPrevButton: true,
             showNextButton: true
         },{
@@ -36,7 +38,7 @@ var studyTour = function(){
         },{
             title: 'Demographics Table',
             content: 'Table of basic demographics. It can be sorted and filtered to explore demographic data for all participants enrolled in the study.',
-            target: $('[name=webpart]')[0],
+            target: $('a[name="Participant Data"]')[0],
             placement: 'top',
             showPrevButton: true,
             showNextButton: true,
@@ -58,8 +60,9 @@ var studyTour = function(){
         },{
             title: 'Data Views',
             content: 'The list of datasets available for this study. Click on a dataset name to explore the data in a grid.',
-            target: $('[name=webpart]')[0],
-            placement: 'top',
+            target: $('a[name="Data Views"]')[0],
+            placement: 'right',
+            yOffset: -20,
             showPrevButton: true,
             showNextButton: true,
             onPrev: function(){
@@ -69,9 +72,9 @@ var studyTour = function(){
         },{
             title: 'Visualization',
             content: 'Selected datasets can be explored using the Data Explorer module.',
-            target: $('[name=webpart]')[1],
+            target: $('a[name="Data Visualization"]')[0],
             placement: 'left',
-            yOffset: -15,
+            yOffset: -20,
             showPrevButton: true,
             showNextButton: true
         },{
@@ -89,8 +92,9 @@ var studyTour = function(){
         },{
             title: 'Active Modules',
             content: 'List of active interactive modules available for this study. The list will vary depending on the data available and the type of study.',
-            target: $('[name=webpart]')[0],
-            placement: 'top',
+            target: $('a[name="Active Modules"]')[0],
+            placement: 'right',
+            yOffset: -20,
             showPrevButton: true,
             showNextButton: true,
             onPrev: function(){
@@ -111,8 +115,9 @@ var studyTour = function(){
         },{
             title: 'Available Reports',
             content: 'List of available reports for this study. The list will vary depending on the data available and the type of study. Reports can be generic or tailored to the study.',
-            target: $('[name=webpart]')[0],
-            placement: 'top',
+            target: $('a[name="List of available reports"]')[0],
+            placement: 'right',
+            yOffset: -20,
             showPrevButton: true,
             onPrev: function(){
                 LABKEY.help.Tour.continueAtLocation('/project' + LABKEY.container.path + '/begin.view?pageId=Modules');

@@ -249,6 +249,10 @@ pre, .ext-mb-text {
     list-style-type: none;
 }
 
+.ISCore .x-tree-node {
+    font-size: 14px;
+}
+
 .ISCore .x-tree-node,
 .ISCore .x-tree-node-ct,
 .ISCore .x-tree-root-ct {
@@ -290,6 +294,10 @@ pre, .ext-mb-text {
 
 .ISCore .x-tab-strip span.x-tab-strip-text {
     font: bold 12px tahoma,arial,helvetica;
+}
+
+.ISCore .x-tab-panel-body-top.x-tab-panel-body {
+    width: auto !important;
 }
 
 /********************************/
@@ -340,51 +348,6 @@ pre, .ext-mb-text {
     -webkit-user-select: text !important;
 }
 
-/*************************************/
-/* Fix so that the buttons on toolbars look normal (not text) */
-/* THE ENTIRE SECTION BELOW NEEDS TO BE REMOVED FOR THE NEW UI */
-.ISCore .x-toolbar .x-btn-tl,
-.ISCore .x-toolbar .x-btn-tr,
-.ISCore .x-toolbar .x-btn-tc,
-.ISCore .x-toolbar .x-btn-ml,
-.ISCore .x-toolbar .x-btn-mr,
-.ISCore .x-toolbar .x-btn-mc,
-.ISCore .x-toolbar .x-btn-bl,
-.ISCore .x-toolbar .x-btn-br,
-.ISCore .x-toolbar .x-btn-bc {
-    background-image:url(../../gtheme/img/lkbtn.gif);
-}
-
-.ISCore .x-toolbar .x-btn-tl {
-    background-position: 0 0;
-}
-.ISCore .x-toolbar .x-btn-tr {
-    background-position: -3px 0;
-}
-.ISCore .x-toolbar .x-btn-tc {
-    background-position: 0 -6px;
-}
-
-.ISCore .x-toolbar .x-btn-ml {
-    background-position: 0px -24px;
-}
-.ISCore .x-toolbar .x-btn-mr {
-    background-position: -3px -24px;
-}
-
-.ISCore .x-toolbar .x-btn-mc {
-    background-position: 0 -1096px;
-}
-.ISCore .x-toolbar .x-btn-bl {
-    background-position: 0 -3px;
-}
-.ISCore .x-toolbar .x-btn-br {
-    background-position: -3px -3px;
-}
-.ISCore .x-toolbar .x-btn-bc {
-    background-position: 0 -15px;
-}
-
 /**********************************/
 /* Modules help pop-up */
 .ISCore div.labkey-help-pop-up {
@@ -414,6 +377,28 @@ pre, .ext-mb-text {
     width: auto;
 }
 /**********************************/
+.ISCore .showSummary {
+    cursor: pointer;
+}
+
+.ISCore .x-form-item {
+    font-size: 14px;
+}
+
+.ISCore td.x-toolbar-cell {
+    padding: 1px;
+}
+
+.ISCore .x-panel-body.x-panel-body-noheader,
+.ISCore fieldset.x-fieldset.x-form-label-left,
+.ISCore div.x-panel.x-panel-noborder.x-form-label-left
+{
+    width: auto !important;
+}
+
+.ISCore .x-panel-body.x-panel-body-noheader {
+    overflow-x: hidden !important;
+}
 
 .ISCore .overview-spacing {
     padding-bottom: 0.5em;
@@ -444,6 +429,7 @@ pre, .ext-mb-text {
 
 .ISCore .x-fieldset-header {
     padding-top: 2px;
+    width: auto;
 }
 
 .ISCore .labkey-data-region-wrap {

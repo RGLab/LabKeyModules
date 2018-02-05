@@ -10,8 +10,8 @@ biocLite( c( scan('listOfNeededRPackages', what = 'character' ), 'rmarkdown' ) )
 
 library( devtools )
 install_github(
-    paste0( 'RGLab/ImmuneSpaceR@', args[1] ),
-    'RGLab/UpdateAnno',
-    'RGLab/ImmuneSignatures'
+    c(paste0( 'RGLab/ImmuneSpaceR@', args[1] ),
+      'RGLab/UpdateAnno',
+      'RGLab/ImmuneSignatures')
 )
 

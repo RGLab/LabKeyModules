@@ -20,9 +20,6 @@
                     <item text='Export' insertPosition='end'>
                         <originalText>Export</originalText>
                     </item>
-                    <item text='Paging' insertPosition='end'>
-                        <originalText>Paging</originalText>
-                    </item>
                     <item text='Insert' permission='ADMIN' insertPosition='end' suppressWarning='true'>
                         <originalText>Insert</originalText>
                     </item>

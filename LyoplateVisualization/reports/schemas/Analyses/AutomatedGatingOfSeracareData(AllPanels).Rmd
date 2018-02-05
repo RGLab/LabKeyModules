@@ -11,14 +11,17 @@
 OpenCyto and other required R libraries are loaded. The gating is performed using the *OpenCyto* framework from BioConductor, and takes advantage of external gating tools like the `flowDensity` package. 
 
 ```{r eval=TRUE,echo=FALSE,warning=FALSE, message=FALSE}
-    library(openCyto)
-    library(data.table)
-    library(digest)
-    library(tools)
-    library(Rlabkey)
-    co <- labkey.setCurlOptions(sslversion = 1)
-    library(plyr)
-    library(flowDensity)
+library(openCyto)
+opt <- getOption('openCyto')
+opt$check.pop <- FALSE
+options(openCyto = opt)
+library(data.table)
+library(digest)
+library(tools)
+library(Rlabkey)
+co <- labkey.setCurlOptions(sslversion = 1)
+library(plyr)
+library(flowDensity)
 ```
 
 In order to use `flowDensity`, we define a *wrapper* function so that `flowDensity` can be included in the OpenCyto gating template definition.

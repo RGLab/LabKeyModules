@@ -83,7 +83,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     LABKEY.DataRegions = {};
                     qwpResponse = new LABKEY.QueryWebPart({
                         buttonBar: {
-                            items:[ 'export', 'paging' ],
+                            items:[ 'export' ],
                             position: 'top',
                             showUpdateColumn: false
                         },
@@ -746,15 +746,13 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var tlbrButtons = new Ext.Toolbar({
             border: true,
             defaults: {
-                style: 'padding-top: 1px; padding-bottom: 1px;',
                 width: 45
             },
             enableOverflow: true,
             items: [
                 btnPlot,
                 btnReset
-            ],
-            style: 'padding-right: 2px; padding-left: 2px;'
+            ]
         });
 
         var
@@ -801,8 +799,11 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             deferredRender: false,
             items: [
                 new Ext.Container({
-                    autoEl: 'a',
-                    cls: 'labkey-text-link bold-text',
+                    autoEl: {
+                        href: '#',
+                        tag: 'a'
+                    },
+                    cls: 'labkey-text-link',
                     html: 'quick help',
                     listeners: {
                         afterrender: {
@@ -822,12 +823,15 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         { html: 'For information and help on how to use the Gene Expression Explorer module, click the' },
                         new Ext.Container({
-                            autoEl: 'a',
+                            autoEl: {
+                                href: '#',
+                                tag: 'a'
+                            },
                             html: '&nbsp;\'About\'&nbsp;',
                             listeners: {
                                 afterrender: {
                                     fn: function(){
-                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 1 ); } );
+                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 2 ); } );
                                     },
                                     single: true
                                 }
@@ -835,12 +839,15 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         }),
                         { html: 'and' },
                         new Ext.Container({
-                            autoEl: 'a',
+                            autoEl: {
+                                href: '#',
+                                tag: 'a'
+                            },
                             html: '&nbsp;\'Help\'&nbsp;',
                             listeners: {
                                 afterrender: {
                                     fn: function(){
-                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 2 ); } );
+                                        this.getEl().on( 'click', function(){ pnlTabs.setActiveTab( 3 ); } );
                                     },
                                     single: true
                                 }
@@ -870,8 +877,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         tlbrButtons,
                         cntPlot
-                    ],
-                    style: 'padding-right: 2px; padding-left: 2px;'
+                    ]
                 }
             ],
             tabTip: 'Input / View',
@@ -885,7 +891,10 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             items: [
                 { html: 'Go to the' },
                 new Ext.Container({
-                    autoEl: 'a',
+                    autoEl: {
+                        href: '#',
+                        tag: 'a'
+                    },
                     html: '&nbsp;\'Input / View\'&nbsp;',
                     listeners: {
                         afterrender: {
@@ -1076,7 +1085,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
 
         $('#' + config.webPartDivId)
-            .parents('tr')
+            .parents('.panel-body')
             .prev()
             .find('.labkey-wp-title-text')
             .wrap(

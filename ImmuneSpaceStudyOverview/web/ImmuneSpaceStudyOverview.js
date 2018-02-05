@@ -42,7 +42,8 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                             cls: 'overview-spacing',
                             cn: [
                                 {
-                                    cls: 'labkey-text-link bold-text',
+                                    cls: 'labkey-text-link',
+                                    href: '#',
                                     html: 'quick help',
                                     onClick: 'LABKEY.help.Tour.show(\'immport-study-tour\')',
                                     tag: 'a'
@@ -112,7 +113,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                                         html: 'Description: ',
                                         tag: 'span'
                                     },{
-                                        cls: 'show'.wpdi(),
+                                        cls: 'showSummary',
                                         html: 'show',
                                         tag: 'a'
                                     },{
@@ -128,7 +129,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                                         html: 'Objectives: ',
                                         tag: 'span'
                                     },{
-                                        cls: 'show'.wpdi(),
+                                        cls: 'showSummary',
                                         html: 'show',
                                         tag: 'a'
                                     },{
@@ -144,7 +145,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                                         html: 'Endpoints: ',
                                         tag: 'span'
                                     },{
-                                        cls: 'show'.wpdi(),
+                                        cls: 'showSummary',
                                         html: 'show',
                                         tag: 'a'
                                     },{
@@ -224,7 +225,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
 
         dh.append( ''.wpdi(), spec );
 
-        $( '.show'.wpdi() ).click(
+        $( '.showSummary' ).click(
             function(){
                 var e = $(this);
                 e.next().toggleClass( 'hidden' );

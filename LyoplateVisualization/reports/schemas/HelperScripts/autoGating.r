@@ -1,4 +1,7 @@
 library(openCyto)
+opt <- getOption('openCyto')
+opt$check.pop <- FALSE
+options(openCyto = opt)
 library(data.table)
 library(plyr)
 

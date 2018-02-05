@@ -253,12 +253,10 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
 
         var tlbrButtons = new Ext.Toolbar({
             defaults: {
-                style: 'padding-top: 1px; padding-bottom: 1px;',
                 width: 45
             },
             enableOverflow: true,
-            items: [ btnRun, btnReset ],
-            style: 'padding-right: 2px; padding-left: 2px;'
+            items: [ btnRun, btnReset ]
         });
 
         var pnlInput = new Ext.form.FormPanel({
@@ -271,8 +269,11 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             deferredRender: false,
             items: [
                 new Ext.Container({
-                    autoEl: 'a',
-                    cls: 'labkey-text-link bold-text',
+                    autoEl: {
+                        href: '#',
+                        tag: 'a'
+                    },
+                    cls: 'labkey-text-link',
                     html: 'quick help',
                     listeners: {
                         afterrender: {
@@ -292,7 +293,10 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     items: [
                         { html: 'For information and help on how to use the Gene Set Enrichment Analysis module, click the' },
                         new Ext.Container({
-                            autoEl: 'a',
+                            autoEl: {
+                                href: '#',
+                                tag: 'a'
+                            },
                             html: '&nbsp;\'About\'&nbsp;',
                             listeners: {
                                 afterrender: {
@@ -305,7 +309,10 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                         }),
                         { html: 'and' },
                         new Ext.Container({
-                            autoEl: 'a',
+                            autoEl: {
+                                href: '#',
+                                tag: 'a'
+                            },
                             html: '&nbsp;\'Help\'&nbsp;',
                             listeners: {
                                 afterrender: {
@@ -332,8 +339,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
                     border: true,
                     items: [
                         tlbrButtons
-                    ],
-                    style: 'padding-right: 2px; padding-left: 2px;'
+                    ]
                 }
             ],
             labelWidth: 60,
@@ -348,7 +354,10 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             items: [
                 { html: 'Switch to the' },
                 new Ext.Container({
-                    autoEl: 'a',
+                    autoEl: {
+                        href: '#',
+                        tag: 'a'
+                    },
                     html: '&nbsp;\'Input\'&nbsp;',
                     listeners: {
                         afterrender: {
@@ -540,7 +549,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         // jQuery-related
 
         $('#' + config.webPartDivId)
-            .parents('tr')
+            .parents('.panel-body')
             .prev()
             .find('.labkey-wp-title-text')
             .wrap(

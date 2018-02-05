@@ -358,7 +358,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             },
             minValue: 0,
             value: 0.58,
-            width: 40,
+            width: 50,
             cls: 'ui-test-foldchange-value'
         });
 
@@ -507,7 +507,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 text: 'Gene expression'
             }),
             new Ext.Spacer({
-                height: 20
+                height: 10
             }),
             new Ext.form.Label({
                 cls: 'x-form-item',
@@ -549,15 +549,13 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var tlbrButtons = new Ext.Toolbar({
             border: true,
             defaults: {
-                style: 'padding-top: 1px; padding-bottom: 1px;',
                 width: 45
             },
             enableOverflow: true,
             items: [
                 btnRun,
                 btnReset
-            ],
-            style: 'padding-right: 2px; padding-left: 2px;'
+            ]
         });
 
         var
@@ -597,8 +595,11 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             deferredRender: false,
             items: [
                 new Ext.Container({
-                    autoEl: 'a',
-                    cls: 'labkey-text-link bold-text',
+                    autoEl: {
+                        href: '#',
+                        tag: 'a'
+                    },
+                    cls: 'labkey-text-link',
                     html: 'quick help',
                     listeners: {
                         afterrender: {
@@ -618,7 +619,10 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     items: [
                         { html: 'For information and help on how to use the Immune Response Predictor module, click the' },
                         new Ext.Container({
-                            autoEl: 'a',
+                            autoEl: {
+                                href: '#',
+                                tag: 'a'
+                            },
                             html: '&nbsp;\'About\'&nbsp;',
                             listeners: {
                                 afterrender: {
@@ -631,7 +635,10 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                         }),
                         { html: 'and' },
                         new Ext.Container({
-                            autoEl: 'a',
+                            autoEl: {
+                                href: '#',
+                                tag: 'a'
+                            },
                             html: '&nbsp;\'Help\'&nbsp;',
                             listeners: {
                                 afterrender: {
@@ -667,8 +674,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     border: true,
                     items: [
                         tlbrButtons
-                    ],
-                    style: 'padding-right: 2px; padding-left: 2px;'
+                    ]
                 }
             ],
             labelWidth: labelWidth,
@@ -683,7 +689,10 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             items: [
                 { html: 'Switch to the' },
                 new Ext.Container({
-                    autoEl: 'a',
+                    autoEl: {
+                        href: '#',
+                        tag: 'a'
+                    },
                     html: '&nbsp;\'Input\'&nbsp;',
                     listeners: {
                         afterrender: {
@@ -945,7 +954,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         // jQuery-related
 
         $('#' + config.webPartDivId)
-            .parents('tr')
+            .parents('.panel-body')
             .prev()
             .find('.labkey-wp-title-text')
             .wrap(

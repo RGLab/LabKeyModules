@@ -1,72 +1,25 @@
 /* ************************************************************ */
 /* ******************** Main General Styling ****************** */
 /* ************************************************************ */
-#header {
+.labkey-page-header {
     background: #519eda url(/images/vman_app.png) top left no-repeat !important;
 }
 
-li.labkey-app-bar-tab-inactive {
-    background-color: #fff;
-}
-
-td.labkey-main-icon {
-    padding: 4px 4px 6px 116px;
-}
-
-#headerDiv {
-    top: 25px;
-    right: 20px;
-}
-
-.lk-input input.hdr-search-input {
-    border: none; padding-left: 25px;
-}
-
-#labkey-main-title {
-    display: none;
-}
-/* ************************************************************ */
-
-/* ************************************************************ */
-/* ***************** Top Bar Item Link Styling **************** */
-/* ************************************************************ */
-.labkey-main-menu li.labkey-main-menu-item {
-    background: url(/images/Arrow.png) no-repeat top right;
-    background-color: rgba(0,0,0,0.3);
-    padding: 6px 18px 6px 10px;
-    border-left: 1px solid rgba(255,255,255,0.3);
-    border-right: 1px solid rgba(255,255,255,0.3);
-}
-
-.labkey-main-menu-item:hover a {
-    color: #FFFFFF;
-}
-
-.labkey-main-menu li.labkey-main-menu-item.selected {
-    background: url(/images/Arrow_over.png) no-repeat top right;
-    padding: 6px 18px 6px 10px;
-    border-left: 1px solid transparent;
-    border-right: 1px solid transparent;
+.navbar-header a img {
+    padding-left: 220px;
 }
 /* ************************************************************ */
 
 /* ************************************************************ */
 /* ***************** Top Bar Menu Items Styling *************** */
 /* ************************************************************ */
-.wiki-list li:hover {
-    white-space: normal; background-color: #ededdf;
+#studies.folder-nav {
+    width: 130px;
+    min-width: 130px;
 }
 
-.wiki-list ol li {
+#tutorials ul li {
     width:  390px;
-}
-
-.wiki-list li {
-    padding: 5px;
-}
-
-.wiki-list ul {
-    list-style-type: none;
 }
 /* ************************************************************ */
 
@@ -86,18 +39,11 @@ div.hopscotch-bubble .hopscotch-bubble-number {
 /* ************************************************************ */
 /* ******************* Footer Icons Styling ******************* */
 /* ************************************************************ */
-.labkey-wiki, div.labkey-wiki {
-   /* font-size: 14px;
-    letter-spacing: .3px;
-    line-height: 1.25;
-    margin: 0px; */
-}
-
 .iconLink svg {
-    height: 10pt;
-    margin: 0 0 -0.125rem 0;
+    height: 14pt;
+    margin: 0 0 -0.25rem 0;
     padding: 0.25rem 0.25rem 0;
-    width: 10pt;
+    width: 14pt;
 }
 
 .iconLink svg path {
