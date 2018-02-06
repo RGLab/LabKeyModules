@@ -1,10 +1,10 @@
-<div id='dataVisualization'></div>
 <script type='text/javascript'>
-Ext.DomHelper.append( Ext.query('#dataVisualization')[0],
+Ext.DomHelper.append( Ext.query('#' + <%=webpartContext%>.wrapperDivId)[0],
 '<div>The <a href="/DataExplorer' + LABKEY.container.path + '/begin.view">Data Explorer module</a> can be used to quickly visualize the assay data by plotting it.</div>' + 
 '<div style=\'margin-top: 5px;\'>This module provides a simplified interface that takes advantage of ImmuneSpace\'s assay standardization.</div>' +
 '<div style=\'margin-top: 5px;\'>Look for the <span class=\'button\'>Data Explorer</span> button on any grid to start exploring the chosen dataset.</div>'
 );
+Ext.DomHelper.applyStyles( Ext.query('.content-right')[0], 'width:240px' );
 </script>
 <style>
     .button {

@@ -200,7 +200,7 @@ makeNavTree = function (webPartDiv){
         animate:    true,
         autoScroll: true,
         border:     false,
-        cls:        "opencyto",
+        cls:        'ISCore',
         enableDD:   false,
         lines:      true,
         listeners: {

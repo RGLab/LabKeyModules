@@ -28,9 +28,9 @@ msig_rnames <- function(rnames){
   return(rnames)
 }
 emory_rnames <- function(rnames){
-  modules <- gsub("\\)$", "", gsub("^.*\\(", "", rnames))
-  rnames <- paste0('<a href="http://www.interactivefigures.com/meni/btm416_annotation/btmdata/',
-                   modules, '.htm" target="_blank">', rnames, '</a>')
+#  modules <- gsub("\\)$", "", gsub("^.*\\(", "", rnames))
+#  rnames <- paste0('<a href="http://www.interactivefigures.com/meni/btm416_annotation/btmdata/',
+#                   modules, '.htm" target="_blank">', rnames, '</a>')
   return(rnames)
 }
 baylor_rnames <- function(rnames){

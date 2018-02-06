@@ -30,16 +30,16 @@ generateMenu = function(){
                 Ext.each( d.rows, function(row, i){
                     toAdd.push(
                         isPublic ?
-                        '<a href="/project/home/Public/begin.view?SDY=' + row.Name + '"><li>' + row.Name + ( row.hipc_funded ? '*' : '' ) + '</li></a>' :
-                        '<a href="/project/Studies/' + row.Name + '/begin.view?"><li>' + row.Name + ( row.hipc_funded ? '*' : '' ) + '</li></a>'
+                        '<li><a href="/project/home/Public/begin.view?SDY=' + row.Name + '">' + row.Name + ( row.hipc_funded ? '*' : '' ) + '</li></a>' :
+                        '<li><a href="/project/Studies/' + row.Name + '/begin.view?">' + row.Name + ( row.hipc_funded ? '*' : '' ) + '</li></a>'
                     );
                 });
 
                 jQuery('#studies').empty();
 
                 jQuery('#studies').append(
-                    '<ul style="width: 130px; padding-left: 0px; margin-top: 0px; margin-bottom: 0px;">' +
-                        '<a href="/project/Studies/begin.view?"><li>Data Finder</li></a>' +
+                    '<ul>' +
+                        '<li><a href="/project/Studies/begin.view?">Data Finder</a></li>' +
                     '</ul>'
                 );
 
@@ -58,15 +58,15 @@ generateMenu = function(){
 
                 jQuery(input).on('keyup click input', function(){
                     var filter = jQuery(this).val(); // get the value of the input, which we filter on
-                    jQuery('#list').find('li:not(:Contains(' + filter + '))').parent().hide();
-                    jQuery('#list').find('li:contains(' + filter + ')').parent().show();
+                    jQuery('#list').find('li:not(:Contains(' + filter + '))').hide();
+                    jQuery('#list').find('li:contains(' + filter + ')').show();
                 });
 
                 jQuery('#studies').append(
-                    '<ul id="list" style="max-height: 400px; width: 130px; overflow-y: auto; padding-left: 0px; margin-top: 0px; margin-bottom: 0px;">' +
+                    '<ul id="list" style="max-height: 400px; overflow-y: auto; padding-left: 0px; margin-top: 0px; margin-bottom: 0px;">' +
                     toAdd.join('') +
                     '</ul>' +
-                    '<ul style="width: 130px; padding-left: 0px; margin-top: 0px; margin-bottom: 0px;">' +
+                    '<ul>' +
                         '<div>* HIPC funded</div>' +
                     '</ul>'
                 );

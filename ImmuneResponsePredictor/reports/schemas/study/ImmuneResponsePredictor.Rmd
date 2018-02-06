@@ -272,7 +272,7 @@ colnames(predictor_table) <- c("statistic", "p-value")
 predictor_table <- data.table(cbind(selected_features, predictor_table))
 predictor_table <- predictor_table[, `:=`(c("statistic", "p-value"), list(as.numeric(statistic), as.numeric(`p-value`)))]
 predictor_table <- predictor_table[, gene_symbol := selected_features]
-predictor_table <- predictor_table[, gene_symbol := sapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0('<a href="http://immunet-dev.princeton.edu/predictions/gene/?network=immune_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
+predictor_table <- predictor_table[, gene_symbol := sapply(strsplit(as.character(selected_features), split=";"), function(X){ paste0('<a href="http://immunet.princeton.edu/predictions/gene/?network=immune_global&gene=', X, '" target="_blank">', X, '</a>', collapse=";")})]
 predictor_table <- predictor_table[, selected_features := NULL]
 setcolorder(predictor_table,  c("gene_symbol", "statistic", "p-value"))
 ```

@@ -146,6 +146,24 @@ Ext.ux.form.ExtendedComboBox = Ext.extend( Ext.form.ComboBox, {
         }
     },
 
+    restrictHeight : function(){
+        this.innerList.dom.style.height = '';
+        var inner = this.innerList.dom,
+            pad = this.list.getFrameWidth('tb') + (this.resizable ? this.handleHeight : 0) + this.assetHeight,
+            h = Math.max(inner.clientHeight, inner.offsetHeight, inner.scrollHeight) + 1,
+            ha = this.getPosition()[1]-Ext.getBody().getScroll().top,
+            hb = Ext.lib.Dom.getViewHeight()-ha-this.getSize().height,
+            space = Math.max(ha, hb, this.minHeight || 0)-this.list.shadowOffset-pad-5;
+
+        h = Math.min(h, space, this.maxHeight);
+
+        this.innerList.setHeight(h);
+        this.list.beginUpdate();
+        this.list.setHeight(h+pad);
+        this.list.alignTo.apply(this.list, [this.el].concat(this.listAlign));
+        this.list.endUpdate();
+    },
+
     initList: function(){
         if(!this.list){
             var cls = 'x-combo-list',

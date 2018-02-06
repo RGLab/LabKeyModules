@@ -15,6 +15,8 @@
  limitations under the License.
 */
 
+$ = jQuery;
+
 Ext.namespace('LABKEY.ext.ISCore');
 
 LABKEY.ext.ISCore.isStudyFolder =

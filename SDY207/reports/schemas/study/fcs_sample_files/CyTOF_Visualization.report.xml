@@ -7,7 +7,7 @@
     <reportType>
       <R>
         <dependencies>
-          <dependency path='ISCore/Common/jquery.min.js'/>
+          <!--<dependency path='internal/jQuery/jquery-1.12.4.js'/>-->
         </dependencies>
       </R>
     </reportType>

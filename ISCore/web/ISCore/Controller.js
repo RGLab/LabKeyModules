@@ -35,7 +35,6 @@ ga('send', 'pageview');
         if ( isPortalPage && isStudyFolder ){ // 'Home page' of a study subfolder
             LABKEY.requiresScript(
                 [
-                    'ISCore/Common/jquery.min.js',
                     'ISCore/Tours/Study.js'
                 ],
                 true, function(){ studyTour(); }, this, true
@@ -45,7 +44,6 @@ ga('send', 'pageview');
         if ( isPortalPage && isHomePage ){
             LABKEY.requiresScript(
                 [
-                    'ISCore/Common/jquery.min.js',
                     'ISCore/Tours/Home.js'
                 ],
                 true, function(){ homeTour(); }, this, true

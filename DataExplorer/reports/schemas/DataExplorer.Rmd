@@ -66,7 +66,7 @@ imageHeightR    <- 15 * imageHeight / max( c(imageWidth, imageHeight) )
 con <- CreateConnection()
 
 if (!interactive || tolower(dataset) == "pcr") {
-    CairoPNG(   filename    = ${imgout:Plot.png}',
+    CairoPNG(   filename    = '${imgout:Plot.png}',
                 width       = imageWidth,
                 height      = imageHeight
     )

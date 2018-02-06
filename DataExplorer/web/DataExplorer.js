@@ -252,7 +252,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     LABKEY.DataRegions = {};
                     qwpDataset = new LABKEY.QueryWebPart({
                         buttonBar: {
-                            items:[ 'export', 'paging' ],
+                            items:[ 'export' ],
                             position: 'top',
                             showUpdateColumn: false
                         },
@@ -751,7 +751,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             maxValue: 10,
             minValue: 1,
             value: 2,
-            width: 40,
+            width: 50,
             cls: 'ui-test-horizontal'
         });
 
@@ -774,7 +774,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             maxValue: 10,
             minValue: 1,
             value: 1,
-            width: 40,
+            width: 50,
             cls: 'ui-test-vertical'
         });
 
@@ -946,7 +946,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         var tlbrButtons = new Ext.Toolbar({
             border: true,
             defaults: {
-                style: 'padding-top: 1px; padding-bottom: 1px;',
                 width: 45
             },
             enableOverflow: true,
@@ -955,7 +954,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 btnReset,
                 cmpStatus
             ],
-            style: 'padding-right: 2px; padding-left: 2px;',
             cls: 'ui-test-buttons'
         });
 
@@ -970,8 +968,11 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             deferredRender: false,
             items: [
                 new Ext.Container({
-                    autoEl: 'a',
-                    cls: 'labkey-text-link bold-text',
+                    autoEl: {
+                        href: '#',
+                        tag: 'a'
+                    },
+                    cls: 'labkey-text-link',
                     html: 'quick help',
                     listeners: {
                         afterrender: {
@@ -991,7 +992,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     items: [
                         { html: 'For information and help on how to use the Data Explorer module, click the' },
                         new Ext.Container({
-                            autoEl: 'a',
+                            autoEl: {
+                                href: '#',
+                                tag: 'a'
+                            },
                             html: '&nbsp;\'About\'&nbsp;',
                             listeners: {
                                 afterrender: {
@@ -1004,7 +1008,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         }),
                         { html: 'and' },
                         new Ext.Container({
-                            autoEl: 'a',
+                            autoEl: {
+                                href: '#',
+                                tag: 'a'
+                            },
                             html: '&nbsp;\'Help\'&nbsp;',
                             listeners: {
                                 afterrender: {
@@ -1038,8 +1045,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                         tlbrButtons,
                         cntPlotMessage,
                         cntPlot
-                    ],
-                    style: 'padding-right: 2px; padding-left: 2px;'
+                    ]
                 })
             ],
             tabTip: 'Input / View',
@@ -1053,7 +1059,10 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
             items: [
                 { html: 'Go to the' },
                 new Ext.Container({
-                    autoEl: 'a',
+                    autoEl: {
+                        href: '#',
+                        tag: 'a'
+                    },
                     html: '&nbsp;\'Input / View\'&nbsp;',
                     listeners: {
                         afterrender: {
@@ -1281,7 +1290,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
         };
 
         $('#' + config.webPartDivId)
-            .parents('tr')
+            .parents('.panel-body')
             .prev()
             .find('.labkey-wp-title-text')
             .wrap(

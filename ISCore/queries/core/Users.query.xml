@@ -20,9 +20,6 @@
                     <item text='Print' insertPosition='end'>
                         <originalText>Print</originalText>
                     </item>
-                    <item text='Paging' insertPosition='end'>
-                        <originalText>Paging</originalText>
-                    </item>
                 </buttonBarOptions>
             </table>
         </tables>
