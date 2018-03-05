@@ -15,7 +15,7 @@
 #  limitations under the License.
 
 suppressMessages( library( Rlabkey ) );
-co <- labkey.setCurlOptions( sslversion = 1, ssl.verifyhost = 2 );
+co <- labkey.setCurlOptions( sslversion = 1, ssl_verifyhost = 2 );
 suppressMessages( library( RJSONIO ) );
 
 gspaths     <- RJSONIO::fromJSON( labkey.url.params$gspaths );

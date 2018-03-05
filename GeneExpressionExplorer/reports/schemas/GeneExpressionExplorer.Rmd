@@ -65,7 +65,7 @@ check_cohorts <- function(data) {
 }
 
 parseFilter <- function(e) {
-  paste0(curlEscape(e['fieldKey']), '~', e['op'], '=', curlEscape(e['value']))
+  paste0(URLencode(e['fieldKey']), '~', e['op'], '=', URLencode(e['value']))
 }
 
 # Ensure Rlabkey format of vector of filter strings

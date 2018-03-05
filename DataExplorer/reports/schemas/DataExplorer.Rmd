@@ -8,7 +8,6 @@ opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Da
 # load libraries
 suppressMessages(library(Cairo))
 suppressMessages(library(RJSONIO))
-suppressMessages(library(RCurl))
 suppressMessages(library(ImmuneSpaceR))
 
 # helper functions
@@ -16,7 +15,7 @@ stopcheck <- function(data) {
   stop(paste0(paste(capture.output(str(data)), collapse='\n'), '\nl.u.b: ',labkey.url.base, '\nl.u.p: ',labkey.url.path))
 }
 parseFilter <- function(e) {
-  paste0(curlEscape(e['fieldKey']), '~', e['op'], '=', curlEscape(e['value']))
+  paste0(URLencode(e['fieldKey']), '~', e['op'], '=', URLencode(e['value']))
 }
 
 # labkey parameters

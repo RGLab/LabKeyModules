@@ -432,7 +432,7 @@ if( !dir.exists(outPath) ){
   stop(paste0("file path ", outPath, " does not exist. Please correct and re-run"))
 }
 
-co <- labkey.setCurlOptions(ssl.verifyhost = 2, sslversion = 1)
+co <- labkey.setCurlOptions(ssl_verifyhost = 2, sslversion = 1)
 FAS_filter <- makeFilter(c("FeatureAnnotationSetId/RowId",
                            "IN",
                            "${assay run property, featureSet}"))
