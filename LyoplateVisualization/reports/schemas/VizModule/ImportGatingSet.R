@@ -16,7 +16,7 @@
 
 suppressMessages( library( flowWorkspace ) );
 suppressMessages( library( Rlabkey ) );
-co <- labkey.setCurlOptions( sslversion = 1, ssl.verifyhost = 2 );
+co <- labkey.setCurlOptions( sslversion = 1, ssl_verifyhost = 2 );
 suppressMessages( library( digest ) );
 suppressMessages( library( Rlibstree ) );
 
@@ -138,10 +138,10 @@ importGatingSet <- function( addresses, folders, filesPaths, names, descriptions
             oldColNames <- colnames( meta );
 
             filter <- array( 0, dim = c( 2 + len ), 1 );
-            filter[ len + 1 ] <- paste0( curlEscape( 'Run/ProtocolStep' ), '~eq=', curlEscape( 'Keywords' ) );
-            filter[ len + 2 ] <- paste0( curlEscape( 'Run/FCSFileCount' ), '~neq=', curlEscape( 0 ) );
+            filter[ len + 1 ] <- paste0( URLencode( 'Run/ProtocolStep' ), '~eq=', URLencode( 'Keywords' ) );
+            filter[ len + 2 ] <- paste0( URLencode( 'Run/FCSFileCount' ), '~neq=', URLencode( 0 ) );
             for ( i in 1:len ){
-                filter[ i ] <- paste0( curlEscape( colNames[i] ), '~in=', curlEscape( paste( meta[ , oldColNames[i] ], collapse = ';' ) ) );
+                filter[ i ] <- paste0( URLencode( colNames[i] ), '~in=', URLencode( paste( meta[ , oldColNames[i] ], collapse = ';' ) ) );
             }
 
             rowIds <- labkey.selectRows(

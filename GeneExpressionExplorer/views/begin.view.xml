@@ -7,7 +7,6 @@
         <dependency path='ISCore/FancyBox'/>
         <dependency path='ISCore/Spinner'/>
         <dependency path='ISCore/SuperBoxSelect'/>
-        <dependency path='ISCore/DoubleScroll'/>
 
         <dependency path='GEETour.js'/>
         <dependency path='GeneExpressionExplorer.js'/>

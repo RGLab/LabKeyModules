@@ -1,4 +1,4 @@
-# This URL will consistently get you the latest 17.1 installer:
+#!/bin/bash
 
 if [ `hostname | tail -c4` != 'web' ];then # Web server machine
   echo "ERROR: This script should be executed on the Web server machine."
@@ -22,13 +22,26 @@ if [ `whoami` = 'root' ] ; then
                 fi
             fi
         else # remote location
-            if [[ $LOC =~ ^[0-9]{2}[.][1-3]{1}$ ]] ; then
-                LOC='http://teamcity.labkey.org/repository/download/LabKey_'${LOC/./}'Release_Premium_Installers/lastSuccessful/immunespace/LabKey'$LOC'-{build.number}-IMMUNESPACE-bin.tar.gz'
+            if [[ $LOC =~ ^[0-9]{2}[.][1-3]{1}r$ ]] ; then
+                FOLDER=${LOC/./}'elease'
+                VERSION=`echo ${LOC} | head -c4`
+                LOC='http://teamcity.labkey.org/repository/download/LabKey_'${FOLDER}'_Premium_Installers/lastSuccessful/immunespace/LabKey'$VERSION'-{build.number}-IMMUNESPACE-bin.tar.gz'
+            fi
+            if [[ $LOC =~ ^[0-9]{2}[.][1-3]{1}rb$ ]] ; then
+                FOLDER=`echo $( echo ${LOC/./} | head -c3 )'Release'`
+                VERSION=`echo $( echo ${LOC} | head -c4 )'Beta'`
+                LOC='http://teamcity.labkey.org/repository/download/LabKey_'${FOLDER}'_Premium_Installers/lastSuccessful/immunespace/LabKey'$VERSION'-{build.number}-IMMUNESPACE-bin.tar.gz'
+            fi
+            if [[ $LOC =~ ^[0-9]{2}[.][1-3]{1}t$ ]] ; then
+                FOLDER=trunk
+                VERSION=`echo $( echo ${LOC} | head -c4 )'-SNAPSHOT'`
+                LOC='http://teamcity.labkey.org/repository/download/LabKey_'${FOLDER}'_Premium_Installers/lastSuccessful/immunespace/LabKey'$VERSION'-{build.number}-IMMUNESPACE-bin.tar.gz'
             fi
             if [ $( echo ${LOC} | head -c4 ) = 'http' ] ; then
                 LOC=${LOC/http:\/\/teamcity.labkey.org\/repository\/download\//http:\/\/teamcity.labkey.org\/httpAuth\/repository\/download\/}
                 LOC=`curl ${LOC} -gJLO -w '%{url_effective}' -u ${REALUSER} | cut -d ' ' -f6`
                 NAME=`basename ${LOC}`
+                rm -fv /labkey/src/labkey/LabKey*-{build.number}-IMMUNESPACE-bin.tar.gz
             else
                 echo 'The specified argument "'$1'" does not resolve to a valid location for the build'
                 exit 1
@@ -39,10 +52,12 @@ if [ `whoami` = 'root' ] ; then
             exit 1
         fi
 
+        echo
+        echo ${NAME%.*.*}
         tar xzf ${NAME}
         ./${NAME%.*.*}/manual-upgrade.sh -l /labkey/labkey -d ./${NAME%.*.*} -c /labkey/apps/tomcat -u immunespace --service --noPrompt
     else
-        echo 'The web address or version in the format ##.# or path of the server build tar file must be specified as the first argument'
+        echo 'The web address or version in the format ##.#[r/rb/t] (where "r" stands for "release", "rb" for "release beta", and "t" - for "trunk" or path of the server build tar file must be specified as the first argument'
         exit 1
     fi
 else

@@ -199,8 +199,6 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                 });
             }
             cbDataset.setDisabled( false );
-
-            $('.labkey-data-region-wrap').doubleScroll();
         };
 
         var loadDataset = function( params ){
@@ -1196,9 +1194,7 @@ LABKEY.ext.DataExplorer = Ext.extend( Ext.Panel, {
                     single: true 
                 },
                 tabchange: function( tabPanel, activeTab ){
-                    if ( activeTab.title == 'Data' ){
-                        $('.labkey-data-region-wrap').doubleScroll( 'refresh' );
-                    } 
+                    if ( activeTab.title == 'Data' ){}
                 }
             },
             minTabWidth: 100,

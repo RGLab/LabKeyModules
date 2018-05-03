@@ -51,7 +51,6 @@ preprocessCore
 pROC
 qusage
 RColorBrewer
-RCurl
 readr
 rentrez
 reshape

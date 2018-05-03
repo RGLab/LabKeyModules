@@ -17,8 +17,6 @@ library(DT)
 ```{r parameters}
 contrast <- c("study_time_collected", "study_time_collected_unit")
 study <- basename(labkey.url.path)
-i <- 1 # analysis accession key
-infostring <- ""
 ```
 
 ## Differential expression analysis
@@ -30,115 +28,81 @@ contrast: `r contrast`
 
 ```{r getData, warning = FALSE}
 con <- CreateConnection(study)
-con$GeneExpressionInputs()
-getAllCoefs <- function(con) {
-  runs <- con$data_cache$GE_matrices$name
-  if (is.null(runs)) {
-    stop("This study does not have gene-expression data")
-  }
-  coefs <- con$data_cache$GE_inputs
-  coefs <- unique(coefs[, c("arm_name", contrast), with = FALSE])
-  coefs <- coefs[study_time_collected > 0]
-  return(coefs)
+
+if (is.null(con$cache[["GE_matrices"]])) {
+  warning("There is no HIPCMatrix run in this study")
+  opts_chunk$set(eval = FALSE, echo = FALSE)
 }
 
-
-if (is.null(con$data_cache[["GE_matrices"]])) {
-  nCoefs <- -1
-  infostring <- "There is no HIPCMatrix run in this study"
-} else{
-  runs <- con$data_cache$GE_matrices[, list(cohort, name)]
-  setnames(runs, "cohort", "arm_name")
-  allCoefs <- getAllCoefs(con)
-  allCoefs[, coefficient := do.call(paste, .SD), .SDcols = contrast]
-  existGEA <- data.table(labkey.selectRows(labkey.url.base, labkey.url.path, "gene_expression", 
-                                           "gene_expression_analysis", colNameOpt = "rname"))
-  if (nrow(existGEA) > 0) {
-    q1 <- quote(arm_name)
-    q2 <- quote(coefficient)
-    existGEA[, key := paste0(eval(q1), eval(q2))]
-    allCoefs <- allCoefs[, key := paste0(eval(q1), eval(q2))]
-    allCoefs <- allCoefs[!key %in% existGEA$key]
-    arm_todo <- unique(allCoefs$arm_name)
-    i <- max(as.numeric(gsub("^GEA", "", existGEA$analysis_accession))) + 1
-    runs <- runs[arm_name %in% arm_todo]
-  }
-  runs <- gsub(".tsv$", "", runs$name)
-  nCoefs <- nrow(allCoefs)
-}
-```
-
-```{r infostring-set, echo = FALSE}
-if (nCoefs == 0) {
-  infostring <- "This analysis has already been run. You can visualize the results using the Data Explorer module."
-} else if(nCoefs > 0) {
-  infostring <- paste("There will be", nCoefs, "new differential expression analysis.")
-}
-```
-
-`r infostring`
-```{r stop, echo = FALSE}
-if (nCoefs == 0) {
- opts_chunk$set(eval = FALSE, echo = FALSE)
-}
+# create df of cohorts and timepoints
+con$getGEInputs()
+coefs <- unique(con$cache$GE_inputs[, c("arm_name", contrast), with = FALSE])
+coefs <- coefs[study_time_collected > 0]
+message(paste("There will be", nrow(coefs), "differential expression analysis."))
 ```
 
 ```{r analysis}
 idx <- 1
+
 GEA_list <- vector("list")
 GEAR_list <- vector("list")
-for (run in runs) {
-  EM <- con$getGEMatrix(matrixName = run)
+
+cm <- con$getDataset("cohort_membership")
+cm <- unique(cm[, list(cohort, arm_accession)])
+
+runs <- con$cache$GE_matrices[, list(cohort, name)]
+setnames(runs, "cohort", "arm_name")
+
+for (mx in runs$name) {
+
+  EM <- con$getGEMatrix(matrixName = mx)
   pd <- data.table(pData(EM))
-  cm <- con$getDataset("cohort_membership")
-  cm <- unique(cm[, list(cohort, arm_accession)])
   pd <- pd[, coef := do.call(paste, .SD), .SDcols = contrast]
   to_drop <- unique(pd[study_time_collected <= 0, coef])
   pd <- pd[coef %in% to_drop, coef := "baseline"]
-  pd <- pd[, coef := factor(coef,levels = c("baseline",
-    grep("baseline", value = TRUE, invert = TRUE, mixedsort(unique(coef)))))]
+  tmp <- grep("baseline", value = TRUE, invert = TRUE, mixedsort(unique(pd$coef)))
+  pd <- pd[, coef := factor(coef, levels = c("baseline", tmp))] # preps coef col for use in model
   mm <- model.matrix(formula("~participant_id + coef"), pd)
 
-  # Check if it's RNA-seq or microarrays
-  if (max(exprs(EM)) > 100) {
-    fit <- lmFit(voom(EM), mm)
-  } else {
-    fit <- lmFit(EM, mm)
-  }
-
+  if (max(exprs(EM)) > 100) { EM <- voom(EM) } # Check if it's RNA-seq or microarrays
+  fit <- lmFit(EM, mm)
   fit <- eBayes(fit)
 
-  coefs <- grep("^coef", colnames(mm), value = TRUE)
-  for (coef in coefs) {
-    analysis_accession <- paste0("GEA", i)
-    TP <- gsub("coef", "", coef)
-    arm_name <- unique(pData(EM)$cohort)
-    arm_accession <- cm[cohort == arm_name, arm_accession]
-    if (is.null(arm_name)) arm_name <- NA
-    description <- paste0("Differential expression in ", run, ", ", TP, " vs. baseline")
+  timepoints <- grep("^coef", colnames(mm), value = TRUE)
+  for (tp in timepoints) {
+    analysis_accession <- paste0("GEA", idx )
+    currTP <- gsub("coef", "", tp)
+    arm_name <- unique(pd$cohort)
+    arm_accession <- cm[ cohort == arm_name, arm_accession ]
+    if (is.null(arm_name)){ arm_name <- NA }
+    description <- paste0("Differential expression in ",
+                          mx, ", ", currTP, " vs. baseline")
 
     GEA_list[[idx]] <- data.table(analysis_accession = analysis_accession,
-                                  expression_matrix = run,
+                                  expression_matrix = mx,
                                   arm_name = arm_name,
                                   arm_accession = arm_accession,
-                                  coefficient = gsub("^coef", "", coef),
+                                  coefficient = currTP,
                                   description = description)
-    tt <- data.table(topTable(fit, coef = coef, number = Inf))
+
+    tt <- data.table(topTable(fit, coef = tp, number = Inf))
     ttDE <- tt[adj.P.Val < 0.02]
+
     if (nrow(ttDE) < 100) {
-      tt <- tt[order(adj.P.Val)][1:min(nrow(tt), 100)]
-    } else {
-      tt <- ttDE
+      ttDE <- tt[order(adj.P.Val)][1:min(nrow(tt), 100)]
     }
-    if (nrow(tt) > 0) {
-      tt[, c("analysis_accession", "coefficient") := list(analysis_accession, coef)]
-      GEAR_list[[idx]] <- data.table(tt)
+
+    if (nrow(ttDE) > 0) {
+      ttDE[, c("analysis_accession", "coefficient") := list(analysis_accession, currTP)]
+      GEAR_list[[idx]] <- data.table(ttDE)
     }
-    i <- i + 1
+
     idx <- idx + 1
   }
 }
+
 GEA <- rbindlist(GEA_list)
+
 if (length(GEAR_list) == 0) {
   warning("No feature was found to be differentially expressed at any timepoint.")
   opts_chunk$set(eval = FALSE, echo = FALSE)
@@ -151,16 +115,88 @@ if (length(GEAR_list) == 0) {
 ```
 
 ```{r write}
-res_GEA <- labkey.importRows(labkey.url.base,
-                             labkey.url.path,
-                             "gene_expression",
-                             "gene_expression_analysis",
-                             toImport = GEA)
-res_GEAR <- labkey.importRows(labkey.url.base,
-                              labkey.url.path,
-                              "gene_expression",
-                              "gene_expression_analysis_results",
-                              toImport = GEAR)
+
+if( length(GEA_list) > 0 ){
+    # Set HTTP call vars
+    baseUrl <- labkey.url.base
+    folderPath <- labkey.url.path
+    schemaGE <- "gene_expression"
+    queryGEA <- "gene_expression_analysis"
+    queryRes <- "gene_expression_analysis_results"
+
+    # delete old GEA
+    currGEA <- labkey.selectRows(baseUrl = baseUrl,
+                                 folderPath = folderPath,
+                                 schemaName = schemaGE,
+                                 queryName = queryGEA,
+                                 colNameOpt = "rname",
+                                 showHidden = T)
+    if( nrow(currGEA) != 0 ){
+      deleteGEA <- labkey.deleteRows(baseUrl = baseUrl,
+                                     folderPath = folderPath,
+                                     schemaName = schemaGE,
+                                     queryName = queryGEA,
+                                     toDelete = currGEA)
+      if( deleteGEA$rowsAffected != nrow(currGEA) ){
+        stop("currGEA not deleted correctly")
+      }
+    }
+
+    # push newGEA b/c listings may be different in terms of idx than old
+    newGEA <- rbindlist(GEA_list)
+    doneGEA <- labkey.importRows(baseUrl = baseUrl,
+                                 folderPath = folderPath,
+                                 schemaName = schemaGE,
+                                 queryName = queryGEA,
+                                 toImport = newGEA)
+
+    if( doneGEA$rowsAffected != nrow(newGEA) ){
+      stop("newGEA not imported correctly")
+    }
+
+    # GEAR gets deleted and then new rows imported because
+    # new mappings will be different and do not want to have leftovers
+    if(length(GEAR_list) != 0){
+      currGEAR <- labkey.selectRows(baseUrl = baseUrl,
+                                    folderPath = folderPath,
+                                    schemaName = schemaGE,
+                                    queryName = queryRes,
+                                    colNameOpt = "rname",
+                                    showHidden = T)
+
+      if( nrow(currGEAR) != 0 ){
+        delGEAR <- labkey.deleteRows(baseUrl = baseUrl,
+                                     folderPath = folderPath,
+                                     schemaName = schemaGE,
+                                     queryName = queryRes,
+                                     toDelete = currGEAR)
+
+        suppressWarnings(postDeleteGEAR <- labkey.selectRows(baseUrl = baseUrl,
+                                            folderPath = folderPath,
+                                            schemaName = schemaGE,
+                                            queryName = queryRes,
+                                            colNameOpt = "rname",
+                                            showHidden = T))
+
+        if( nrow(postDeleteGEAR) != 0){
+          stop("not all GEAR deleted correctly")
+        }
+      }
+
+      # Import new GEAR
+      GEAR <- rbindlist(GEAR_list)
+      GEAR[ is.na(GEAR) ] <- ""
+      setnames(GEAR,
+               c("FeatureId", "gene_symbol", "adj.P.Val", "AveExpr", "logFC", "P.Value", "t"),
+               c("feature_id", "gene_symbol", "adj_p_val", "ave_expr", "log_fc", "p_value", "statistic"))
+      toImport <- data.frame(GEAR, stringsAsFactors = F)
+      resGEAR <- labkey.importRows(baseUrl = baseUrl,
+                                   folderPath = folderPath,
+                                   schemaName = schemaGE,
+                                   queryName = queryRes,
+                                   toImport = toImport)
+    }
+}
 ```
 
 ```{r new-analysis}

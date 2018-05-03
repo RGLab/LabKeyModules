@@ -1,5 +1,4 @@
 library("bitops")
-library("RCurl")
 library("rjson")
 library("Rlabkey")
 library("rstudioapi")

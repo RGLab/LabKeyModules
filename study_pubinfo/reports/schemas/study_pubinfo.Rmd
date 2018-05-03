@@ -7,7 +7,7 @@ options(width=80)
 ```{r load-required-packages, cache=FALSE}
 # Required librairies
 library(Rlabkey)
-co <- labkey.setCurlOptions(sslversion = 1, ssl.verifyhost = 2)
+co <- labkey.setCurlOptions(sslversion = 1, ssl_verifyhost = 2)
 library(rentrez)
 ```
 
@@ -41,11 +41,11 @@ if(length(id) ==0){
 
   cat("<h3> Data from this study have been published in the following paper(s): </h3>\n")
 
-  citationtxt <- paste0("<ul><li>", study_citation, "</li></ul>", "\n",
-                        "The article has ",
+  citationtxt <- paste0("<li>", study_citation,
+                        "</br>The article has ",
                         ifelse(ncitation > 0, paste0("<a href=", url_citedin, " target='_blank'>",
                                                      ncitation, " citations</a>"), "0 citations"),
-                        " in PubMed central.", collapse="\n")
+                        " in PubMed central.</li>", collapse="</br>")
 }
 ```
 
