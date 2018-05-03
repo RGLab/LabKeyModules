@@ -330,7 +330,7 @@ subDf["SDY67", "2010-2011"] <- nrow( pd[pd$Study == "SDY67", ] )
 
 subDf <- data.frame(subDf, stringsAsFactors = F)
 colnames(subDf) <- colNms
-tbl <- tableGrob(subDf)
+tbl <- gridExtra::tableGrob(subDf)
 
 print(plot_grid(agePlot,
           tbl,
