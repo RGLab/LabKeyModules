@@ -6,7 +6,6 @@ opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Ge
 
 ```{r setup}
 suppressMessages(library(Cairo))
-suppressMessages(library(RJSONIO))
 library(ggplot2)
 library(Biobase)
 library(data.table)
@@ -25,16 +24,16 @@ imageHeight <- as.numeric(labkey.url.params$imageHeight)
 
 # Input parameters
 response <- as.character(labkey.url.params$response)
-ems <- RJSONIO::fromJSON(labkey.url.params$ema)
-input_cohorts <- RJSONIO::fromJSON(labkey.url.params$cohorts)
-input_genes <- RJSONIO::fromJSON(labkey.url.params$genes)
+ems <- rjson::fromJSON(labkey.url.params$ema)
+input_cohorts <- rjson::fromJSON(labkey.url.params$cohorts)
+input_genes <- rjson::fromJSON(labkey.url.params$genes)
 timePoint <- as.numeric(labkey.url.params$timePoint)
 timePointUnit <- as.character(labkey.url.params$timePointUnit)
 normalize <- as.logical(labkey.url.params$normalize)
 interactive <- as.logical(labkey.url.params$interactive)
 
 # Data grid
-filters <- RJSONIO::fromJSON(labkey.url.params$filters)
+filters <- rjson::fromJSON(labkey.url.params$filters)
 
 # Additional options
 textSize <- as.numeric(labkey.url.params$textSize)
@@ -76,17 +75,27 @@ if( length(filters) > 0 ){
   filtChk <- "" # Need non-NULL str for reload logic
 }
 
+if (exists("loaded_filter")) {
+  if (length(loaded_filter) == length(filtChk)) {
+    filterChanged <- all(loaded_filter == filtChk)
+  } else {
+    filterChanged <- TRUE
+  }
+} else {
+  filterChanged <- FALSE
+}
+
 # Reload everything when DataFinder filters are updated
-if( !exists("con") || !all(loaded_filter == filtChk) ){
+if (!exists("con") || filterChanged) {
   con <- CreateConnection()
   if(exists("loaded_ems")) rm(loaded_ems)
   if(exists("loaded_genes")) rm(loaded_genes)
 }
 
 # Re-download EM and demographics when the selected cohorts change
-if(!exists("loaded_ems") || length(loaded_ems) != length(input_cohorts) || !all(loaded_ems %in% ems)) {
+if (!exists("loaded_ems") || length(loaded_ems) != length(input_cohorts) || !all(loaded_ems %in% ems)) {
   EM <- con$getGEMatrix(matrixName = ems, reload = TRUE)
-  if(any(exprs(EM)>100, na.rm = TRUE)) {
+  if (any(exprs(EM)>100, na.rm = TRUE)) {
     dt <- data.table(voom(EM)$E)
     dt <- dt[, gene_symbol := rownames(exprs(EM))]
   } else {
@@ -111,7 +120,7 @@ PD <- data.table(pData(EM))
 PD <- merge(PD, HAI, by = "participant_id")
 
 # Fail gracefully if PD empty due to non-overlap in participant ids, issue num 21
-if( nrow(PD) == 0 ){
+if (nrow(PD) == 0) {
   stop("Participant IDs in the requested HAI dataset do not overlap with those in the requested pheno data. Please select a different cohort or timepoint and try again.")
 }
 
@@ -126,7 +135,7 @@ dt <- dt[, c("gene_symbol", PD$biosample_accession), with = FALSE]
 ssdt <- dt[gene_symbol %in% input_genes, ]
 data <- melt(ssdt, variable.name = "biosample_accession", id.vars = "gene_symbol")
 data <- merge(data, PD, by = "biosample_accession")
-if(normalize) {
+if (normalize) {
   data[, value := value[study_time_collected == timePoint & tolower(study_time_collected_unit) == timePointUnit]  -
                   value[study_time_collected == 0 & tolower(study_time_collected_unit) == timePointUnit],
         by = "participant_id,gene_symbol"]
@@ -139,10 +148,10 @@ data <- add_r2(data)
 data <- check_cohorts(data)
 
 # Plot
-if(color == "") color <- NULL
-if(shape == "") shape <- NULL
-if(size == "") size <- NULL
-if(alpha == "") alpha <- NULL
+if (color == "") color <- NULL
+if (shape == "") shape <- NULL
+if (size == "") size <- NULL
+if (alpha == "") alpha <- NULL
 ```
 
 <div align = 'center'>
