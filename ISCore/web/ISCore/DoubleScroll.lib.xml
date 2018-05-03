@@ -1,7 +1,0 @@
-<libraries xmlns='http://labkey.org/clientLibrary/xml/'> 
-    <library compileInProductionMode='false'>
-        <script path='ISCore/DoubleScroll/jquery-ui-1.11.3.min.js'/>
-        <script path='ISCore/DoubleScroll/DoubleScroll.js'/>
-    </library>
-</libraries>
-

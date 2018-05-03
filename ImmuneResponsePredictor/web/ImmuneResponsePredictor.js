@@ -25,7 +25,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var
             me                          = this,
             maskReport                  = undefined,
-            fieldWidth                  = 240,
+            fieldWidth                  = 260,
             labelWidth                  = 155,
             flagCohortTrainingSelect    = undefined,
             flagTimePointSelect         = undefined,

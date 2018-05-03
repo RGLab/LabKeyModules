@@ -432,9 +432,8 @@ pre, .ext-mb-text {
     width: auto;
 }
 
-.ISCore .labkey-data-region-wrap {
-    overflow: auto;
+.ISCore .pubOverviewShow {
+    display: inline;
 }
-
 /* ************************************************************ */
 

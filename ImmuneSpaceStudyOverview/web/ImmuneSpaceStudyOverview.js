@@ -31,7 +31,6 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
         ;
 
         String.prototype.wpdi = function(){ return this + config.webPartDivId; };
-
         var
             me = this,
             spec =
@@ -417,14 +416,14 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
             }
         };
 
-        me.border         = false;
-        me.cls            = 'ISCore';
-        me.contentEl      = 'ImmuneSpaceStudyOverview'.wpdi();
-        me.frame          = false;
-        me.layout         = 'fit';
-        me.renderTo       = config.webPartDivId;
-        me.webPartDivId   = config.webPartDivId;
-        me.width          = document.getElementById(config.webPartDivId).offsetWidth;
+        me.border       = false;
+        me.cls          = 'ISCore';
+        me.contentEl    = 'ImmuneSpaceStudyOverview'.wpdi();
+        me.frame        = false;
+        me.layout       = 'fit';
+        me.renderTo     = config.webPartDivId;
+        me.webPartDivId = config.webPartDivId;
+        me.width        = document.getElementById(config.webPartDivId).offsetWidth;
 
         LABKEY.ext.ImmuneSpaceStudyOverview.superclass.constructor.apply(this, arguments);
     } // end constructor

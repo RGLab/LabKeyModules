@@ -40,14 +40,12 @@ apt-get -y install libhdf5-serial-dev
 apt-get -y install libicu-dev
 apt-get -y install liblzma-dev
 apt-get -y install libnetcdf-dev
-apt-get -y install libprotobuf-dev
 apt-get -y install libreadline-dev
 apt-get -y install libssl-dev
 apt-get -y install libxml2-dev
 apt-get -y install openmpi-bin
 apt-get -y install openmpi-common
 apt-get -y install openssl
-apt-get -y install protobuf-compiler
 apt-get -y install xorg-dev
 apt-get -y install xvfb
 

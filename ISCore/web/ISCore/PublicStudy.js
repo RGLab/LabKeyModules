@@ -433,7 +433,7 @@ LABKEY.ext.PublicStudyOverview = Ext.extend( Ext.Panel, {
         $('#' + config.webPartDivId)
             .parents('div')
             .prev()
-            .find( '.labkey-folder-title' )
+            .find( '.lk-body-title > h3' )
             .html( SDY )
 
         me.border         = false;

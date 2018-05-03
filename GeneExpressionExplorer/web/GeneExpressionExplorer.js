@@ -105,7 +105,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     cntEmptyPnlData.setVisible( false );
                     cntResponse.setVisible( true );
 
-                    qwpResponse.on( 'render', onRender );
+                    qwpResponse.on( 'render', checkBtnsStatus );
                     qwpResponse.render( cntResponse.getEl() );
                 }
             } else {
@@ -1030,9 +1030,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                     single: true 
                 },
                 tabchange: function( tabPanel, activeTab ){
-                    if ( activeTab.title == 'Data' ){
-                        $('.labkey-data-region-wrap').doubleScroll( 'refresh' );
-                    }
+                    if ( activeTab.title == 'Data' ){}
                 }
             },
             minTabWidth: 100,
@@ -1043,12 +1041,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //             Functions           //
         /////////////////////////////////////
-
-        var onRender = function(){
-            checkBtnsStatus();
-
-            $('.labkey-data-region-wrap').doubleScroll();
-        };
 
         var setPlotRunning = function( bool ){
             if ( bool ){

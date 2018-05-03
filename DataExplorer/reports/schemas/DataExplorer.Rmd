@@ -71,7 +71,7 @@ if (!interactive || tolower(dataset) == "pcr") {
     )
 }
 
-m_out <- con$quick_plot(dataset,
+m_out <- con$plot(dataset,
                         normalize_to_baseline = normalize,
                         type                  = plotType,
                         filter                = filter,

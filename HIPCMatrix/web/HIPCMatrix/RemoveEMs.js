@@ -20,7 +20,10 @@ function removeEMs( dataRegion ) {
                 var tsvRec = fileSystem.recordFromCache( emObj["path"] );
                 var tsv = fileSystem.canDelete( tsvRec );
                 var sumRec = fileSystem.recordFromCache( emObj["path"] + ".summary" );
-                if( tsv & sum ){
+                var sum = fileSystem.canDelete( sumRec );
+                var rawRec = fileSystem.recordFromCache( emObj["path"] + ".raw" );
+                var raw = fileSystem.canDelete( rawRec );
+                if( tsv & sum & raw){
                     rmLKrow(emObj);
                 } else {
                     notAllowedPaths.push(emObj["path"]);
@@ -42,17 +45,18 @@ function removeEMs( dataRegion ) {
     function rmLKrow( emObj ) {
         selRows.responseJSON.rows.forEach( function(row) {
             if( emObj["name"] == row.Name){
+                var path = containerPath != "/Studies" ? containerPath : containerPath + "/" + emObj["folder"];
                 LABKEY.Query.deleteRows({
                     "schemaName": schemaName,
                     "queryName": queryName,
-                    "containerPath": containerPath + emObj["folder"],
+                    "containerPath": path,
                     "rows": [ { "RowId" : row.RowId } ],
                     success: function ( data ) {
                         rmLkFiles(emObj);
                     },
                     failure: function( errorInfo, options, responseObj ) {
                         notDeletedNames.push ( emObj["name"] );
-                        doneCheck.upate(2);
+                        doneCheck.update(2);
                     }
                 });
             }
@@ -87,7 +91,8 @@ function removeEMs( dataRegion ) {
             success: function(fileSys, path, records){
                 fileRm(fileSystem, emObj["path"]); // rm tsv
                 fileRm(fileSystem, emObj["path"] + ".summary"); // rm summary
-		fileRm(fileSystem, emObj["path"] + ".summary.orig"); // rm orig
+                fileRm(fileSystem, emObj["path"] + ".summary.orig"); // rm orig
+                fileRm(fileSystem, emObj["path"] + ".raw"); //rm raw
             },
             scope: this
         }, this);
@@ -112,6 +117,7 @@ function removeEMs( dataRegion ) {
 
     // global vars
     var notAllowedPaths = [];
+    var notDeletedNames = [];
     var notDeletedDb = [];
     var notRemovedFiles = [];
     var removedFiles = [];
@@ -143,7 +149,7 @@ function removeEMs( dataRegion ) {
     var schemaName = "assay.ExpressionMatrix.matrix";
     var queryName = "Runs";
     var selectionKey = dataRegion.selectionKey;
-    var containerPath = "/Studies/";
+    var containerPath = LABKEY.ActionURL.getContainer();
 
     var selRows = LABKEY.Query.selectRows({
         schemaName: schemaName,

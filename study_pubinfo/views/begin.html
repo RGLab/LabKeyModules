@@ -16,6 +16,7 @@
             } else if ( outputParams && outputParams.length > 0 ){
                 var p = outputParams[0];
                 document.getElementById('reportdiv').innerHTML = p.value;
+                Ext.EventManager.fireResize();
             } else{
                 LABKEY.ext.ISCore.onFailure({
                     exception: 'Strange situation: there are no reported errors, but also no output to show'

@@ -15,122 +15,122 @@
  *  limitations under the License.
  */
 
-makeNavTree = function (webPartDiv){
+makeNavTree = function(webPartDiv) {
 
     Ext.QuickTips.init();
 
     inputArray = [{
-      children: [{
-        cls: "file",
-        href: "/project/HIPC/Lyoplate/begin.view?",
-        hrefTarget: "_blank",
-        leaf: true,
-        qtip: "Lyoplate Study",
-        text: "Lyoplate Study"
-        },{
-        cls: "file",
-        href: "/project/HIPC/IS1/begin.view?",
-        hrefTarget: "_blank",
-        leaf: true,
-        qtip: "ImmuneSignatures Study",
-        text: "ImmuneSignatures Study"
+        children: [{
+            cls: "file",
+            href: "/project/HIPC/Lyoplate/begin.view?",
+            hrefTarget: "_blank",
+            leaf: true,
+            qtip: "Lyoplate Study",
+            text: "Lyoplate Study"
+        }, {
+            cls: "file",
+            href: "/project/HIPC/IS1/begin.view?",
+            hrefTarget: "_blank",
+            leaf: true,
+            qtip: "ImmuneSignatures Study",
+            text: "ImmuneSignatures Study"
         }],
         cls: "folder",
         expanded: true,
         leaf: false,
         qtip: "Resources",
         text: "<strong>Special Projects</strong>"
-    },{
+    }, {
         children: [{
-        cls: "file",
-        href: "https://immunespace.org/data_standards.url",
-        hrefTarget: "_blank",
-        leaf: true,
-        qtip: "HIPC Standards",
-        text: "HIPC Standards"
-        },{
-        cls: "file",
-        href: "http://www.immuneprofiling.org",
-        hrefTarget: "_blank",
-        leaf: true,
-        qtip: "HIPC Website",
-        text: "HIPC Website"
-        },{
-        cls: "file",
-        href: "http://www.immport.org",
-        hrefTarget: "_blank",
-        leaf: true,
-        qtip: "ImmPort Database",
-        text: "ImmPort Database"
+            cls: "file",
+            href: "https://immunespace.org/data_standards.url",
+            hrefTarget: "_blank",
+            leaf: true,
+            qtip: "HIPC Standards",
+            text: "HIPC Standards"
+        }, {
+            cls: "file",
+            href: "http://www.immuneprofiling.org",
+            hrefTarget: "_blank",
+            leaf: true,
+            qtip: "HIPC Website",
+            text: "HIPC Website"
+        }, {
+            cls: "file",
+            href: "http://www.immport.org",
+            hrefTarget: "_blank",
+            leaf: true,
+            qtip: "ImmPort Database",
+            text: "ImmPort Database"
         }],
         cls: "folder",
         expanded: true,
         leaf: false,
         qtip: "Resources",
         text: "<strong>Resources</strong>"
-    },{
+    }, {
         children: [{
             children: [{
-            cls: "file",
-            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-emory2",
-            hrefTarget: "_blank",
-            leaf: true,
-                qtip: "Emory University",
-                text: "Emory University"
-            },{
-            cls: "file",
-            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-boston",
-            hrefTarget: "_blank",
-            leaf: true,
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-boston",
+                hrefTarget: "_blank",
+                leaf: true,
                 qtip: "Boston Children's Hospital",
-                text: "Boston Childrens"
-            },{
-            cls: "file",
-            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-centInfRD",
-            hrefTarget: "_blank",
-            leaf: true,
+                text: "Boston Children's"
+            }, {
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-centInfRD",
+                hrefTarget: "_blank",
+                leaf: true,
                 qtip: "Center for Infectious Disease Research",
                 text: "CIDR"
-            },{
-            cls: "file",
-            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-columbia",
-            hrefTarget: "_blank",
-            leaf: true,
+            }, {
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-columbia",
+                hrefTarget: "_blank",
+                leaf: true,
                 qtip: "Columbia University",
                 text: "Columbia University"
-            },{
-            cls: "file",
-            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-drexel",
-            hrefTarget: "_blank",
-            leaf: true,
+            }, {
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-drexel",
+                hrefTarget: "_blank",
+                leaf: true,
                 qtip: "Drexel University",
                 text: "Drexel University"
-            },{
-            cls: "file",
-            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-mssm",
-            hrefTarget: "_blank",
-            leaf: true,
-                qtip: "Icahn School of Medicine at Mount Sinai / University of California, Berkeley",
-                text: "Mount Sinai"
-            },{
-            cls: "file",
-            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-lajolla",
-            hrefTarget: "_blank",
-            leaf: true,
+            }, {
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-emory2",
+                hrefTarget: "_blank",
+                leaf: true,
+                qtip: "Emory University",
+                text: "Emory University"
+            }, {
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-lajolla",
+                hrefTarget: "_blank",
+                leaf: true,
                 qtip: "La Jolla Institute for Allergy and Immunology",
                 text: "La Jolla Institute"
-            },{
-            cls: "file",
-            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-ucla",
-            hrefTarget: "_blank",
-            leaf: true,
+            }, {
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-mssm",
+                hrefTarget: "_blank",
+                leaf: true,
+                qtip: "Icahn School of Medicine at Mount Sinai / University of California, Berkeley",
+                text: "Mount Sinai"
+            }, {
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-ucla",
+                hrefTarget: "_blank",
+                leaf: true,
                 qtip: "University of California Los Angeles",
                 text: "UCLA"
-            },{
-            cls: "file",
-            href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-yale2",
-            hrefTarget: "_blank",
-            leaf: true,
+            }, {
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-yale2",
+                hrefTarget: "_blank",
+                leaf: true,
                 qtip: "Yale University",
                 text: "Yale University"
             }],
@@ -139,7 +139,7 @@ makeNavTree = function (webPartDiv){
             leaf: false,
             qtip: "Current Members",
             text: "<strong>Current Members</strong>"
-        },{
+        }, {
             children: [{
                 cls: "file",
                 href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-baylor",
@@ -147,47 +147,54 @@ makeNavTree = function (webPartDiv){
                 leaf: true,
                 qtip: "Baylor Research Institute",
                 text: "Baylor Research Institute"
-        },{
+            }, {
                 cls: "file",
-                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-stanford",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-emory",
                 hrefTarget: "_blank",
                 leaf: true,
-                qtip: "Stanford University",
-                text: "Stanford University"
-        },{
-                cls: "file",
-                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-yale",
-                hrefTarget: "_blank",
-                leaf: true,
-                qtip: "Yale University",
-                text: "Yale University"
-            },{
-                cls: "file",
-                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-mayo",
-                hrefTarget: "_blank",
-                leaf: true,
-                qtip: "Mayo Clinic",
-                text: "Mayo Clinic"
-        },{
+                qtip: "Emory University",
+                text: "Emory University"
+            }, {
                 cls: "file",
                 href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-danafarber",
                 hrefTarget: "_blank",
                 leaf: true,
                 qtip: "Dana-Farber Cancer Institute",
                 text: "Harvard University"
-        },{
+            }, {
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-mayo",
+                hrefTarget: "_blank",
+                leaf: true,
+                qtip: "Mayo Clinic",
+                text: "Mayo Clinic"
+            }, {
                 cls: "file",
                 href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-seattlebio",
                 hrefTarget: "_blank",
                 leaf: true,
                 qtip: "Seattle Biomedical Research Institute",
                 text: "Seattle Biomed Research Institute"
-        }],
-        cls: "folder",
+            }, {
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-stanford",
+                hrefTarget: "_blank",
+                leaf: true,
+                qtip: "Stanford University",
+                text: "Stanford University"
+            }, {
+                cls: "file",
+                href: "https://www.immuneprofiling.org/hipc/page/showPage?pg=projects-yale",
+                hrefTarget: "_blank",
+                leaf: true,
+                qtip: "Yale University",
+                text: "Yale University"
+            }],
+            cls: "folder",
             expanded: false,
-        leaf: false,
-        qtip: "Past Members",
-        text: "<strong>Past Members</strong>"
+            leaf: false,
+            qtip: "Past Members",
+            text: "<strong>Past Members</strong>"
         }],
         cls: "folder",
         expanded: false,
@@ -197,28 +204,25 @@ makeNavTree = function (webPartDiv){
     }];
 
     navTree = new Ext.tree.TreePanel({
-        animate:    true,
+        animate: true,
         autoScroll: true,
-        border:     false,
-        cls:        'ISCore',
-        enableDD:   false,
-        lines:      true,
+        border: false,
+        cls: 'ISCore',
+        enableDD: false,
+        lines: true,
         listeners: {
-            checkchange: function(node, checked){
-            },
-            click: function( node ){
-            }
+            checkchange: function(node, checked) {},
+            click: function(node) {}
         },
         loader: new Ext.tree.TreeLoader(), // register a TreeLoader to make use of createNode()
         renderTo: webPartDiv,
         root: new Ext.tree.AsyncTreeNode({
-            children:   inputArray,
-            draggable:  false,
-            expanded :  true
+            children: inputArray,
+            draggable: false,
+            expanded: true
         }),
         rootVisible: false
     });
 
     navTree.render();
-}
-
+};

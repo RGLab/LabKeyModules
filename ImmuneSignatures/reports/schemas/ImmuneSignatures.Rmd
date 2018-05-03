@@ -154,7 +154,7 @@ sdy80all <- "" # need eset with all time points for some figures
 for(sdy in studies){
   labkey.url.path <- paste0("/Studies/", sdy)
   con <- CreateConnection()
-  mats <- con$data_cache$GE_matrices$name
+  mats <- con$cache$GE_matrices$name
 
   # --------GET GENE EXPRESSION DATA------------
 
@@ -197,7 +197,7 @@ for(sdy in studies){
                         phenoData = AnnotatedDataFrame(pheno))
   }
 
-  es <- con$EMNames(es) # map biosample ids to subject ids
+  es <- con$mapSampleNames(es) # map biosample ids to subject ids
   em <- exprs(es)
 
   if(sdy %in% c("SDY63", "SDY404")){

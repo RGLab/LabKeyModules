@@ -17,5 +17,8 @@
         <cv:column name='created'/>
         <cv:column name='createdby'/>
     </cv:columns>
+    <cv:sorts>
+        <cv:sort column='created' descending='1'/>
+    </cv:sorts>
 </cv:customView>
 
