@@ -65,7 +65,6 @@ extra_emails <- paste("rglab.org",
                       "labkey.com",
                       "gilguday@comcast.net",
                       "lwolfe@fredhutch.org",
-                      "rsautera@fhcrc.org",
                       sep = ";")
 extras <- labkey.selectRows(baseUrl = labkey.url.base,
                             folderPath = "/home",
@@ -78,7 +77,7 @@ extras <- labkey.selectRows(baseUrl = labkey.url.base,
                             containerFilter = NULL)
 
 exclusion_list <- paste0(unique(c(admins$`Display Name`, extras$`Display Name`)), collapse = ";")
-exclusion_email <- unique(c(admins$Email, extras$Email))
+exclusion_email <- unique(c(admins$Email, extras$Email), "rsautera@fhcrc.org")
 ```
 
 
@@ -503,7 +502,9 @@ ISR <- logs_dt %>%
                         study))
 
 ISR_inits <- ISR %>%
-  filter(query == "ISC_study_datasets")
+  filter(query == "ISC_study_datasets" |
+         X5 == "GET /project/Studies/getContainers.view?includeSubfolders=0&includeEffectivePermissions=1 HTTP/1.1",
+         X1 != "10.10.1.74")
 ```
 
 ## Connections
