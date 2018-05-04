@@ -59,7 +59,7 @@ check_cohorts <- function(data) {
   dt <- data.table(data)
   dt <- dt[, study_accession := paste0("SDY", gsub("^.*\\.", "", participant_id))]
   uc <- unique(dt[, study_accession, by ="cohort"])[, .N, by = "cohort"][N >1, cohort]
-  dt[cohort == uc, cohort := paste0(cohort, " (", study_accession, ")")]
+  dt[cohort %in% uc, cohort := paste0(cohort, " (", study_accession, ")")]
   return(data.frame(dt))
 }
 
