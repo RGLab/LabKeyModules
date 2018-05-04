@@ -24,16 +24,16 @@ imageHeight <- as.numeric(labkey.url.params$imageHeight)
 
 # Input parameters
 response <- as.character(labkey.url.params$response)
-ems <- rjson::fromJSON(labkey.url.params$ema)
-input_cohorts <- rjson::fromJSON(labkey.url.params$cohorts)
-input_genes <- rjson::fromJSON(labkey.url.params$genes)
+ems <- RJSONIO::fromJSON(labkey.url.params$ema)
+input_cohorts <- RJSONIO::fromJSON(labkey.url.params$cohorts)
+input_genes <- RJSONIO::fromJSON(labkey.url.params$genes)
 timePoint <- as.numeric(labkey.url.params$timePoint)
 timePointUnit <- as.character(labkey.url.params$timePointUnit)
 normalize <- as.logical(labkey.url.params$normalize)
 interactive <- as.logical(labkey.url.params$interactive)
 
 # Data grid
-filters <- rjson::fromJSON(labkey.url.params$filters)
+filters <- RJSONIO::fromJSON(labkey.url.params$filters)
 
 # Additional options
 textSize <- as.numeric(labkey.url.params$textSize)
@@ -68,9 +68,9 @@ parseFilter <- function(e) {
 }
 
 # Ensure Rlabkey format of vector of filter strings
-if( length(filters) > 0 ){
+if (length(filters) > 0) {
   filtChk <- colFilter <- unlist(lapply(filters, parseFilter))
-}else{
+} else {
   colFilter <- NULL
   filtChk <- "" # Need non-NULL str for reload logic
 }
