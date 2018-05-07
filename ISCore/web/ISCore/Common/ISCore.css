@@ -379,6 +379,7 @@ pre, .ext-mb-text {
 /**********************************/
 .ISCore .showSummary {
     cursor: pointer;
+    display: inline; /* Important for Pub Sdy Overview */
 }
 
 .ISCore .x-form-item {
@@ -432,8 +433,5 @@ pre, .ext-mb-text {
     width: auto;
 }
 
-.ISCore .pubOverviewShow {
-    display: inline;
-}
 /* ************************************************************ */
 
