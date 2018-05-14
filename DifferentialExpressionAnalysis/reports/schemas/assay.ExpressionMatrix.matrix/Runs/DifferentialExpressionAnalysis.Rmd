@@ -27,7 +27,8 @@ study: `r study`
 contrast: `r contrast`
 
 ```{r getData, warning = FALSE}
-con <- CreateConnection(study)
+onTest <- labkey.url.base == "https://test.immunespace.org"
+con <- CreateConnection(study, onTest = onTest)
 
 if (is.null(con$cache[["GE_matrices"]])) {
   warning("There is no HIPCMatrix run in this study")
@@ -38,6 +39,9 @@ if (is.null(con$cache[["GE_matrices"]])) {
 con$getGEInputs()
 coefs <- unique(con$cache$GE_inputs[, c("arm_name", contrast), with = FALSE])
 coefs <- coefs[study_time_collected > 0]
+if( nrow(coefs) == 0 ){
+  stop("No post-baseline timepoints available in any cohort. Analysis not run.")
+}
 message(paste("There will be", nrow(coefs), "differential expression analysis."))
 ```
 
@@ -63,44 +67,57 @@ for (mx in runs$name) {
   tmp <- grep("baseline", value = TRUE, invert = TRUE, mixedsort(unique(pd$coef)))
   pd <- pd[, coef := factor(coef, levels = c("baseline", tmp))] # preps coef col for use in model
   mm <- model.matrix(formula("~participant_id + coef"), pd)
-
-  if (max(exprs(EM)) > 100) { EM <- voom(EM) } # Check if it's RNA-seq or microarrays
-  fit <- lmFit(EM, mm)
-  fit <- eBayes(fit)
-
-  timepoints <- grep("^coef", colnames(mm), value = TRUE)
-  for (tp in timepoints) {
-    analysis_accession <- paste0("GEA", idx )
-    currTP <- gsub("coef", "", tp)
-    arm_name <- unique(pd$cohort)
-    arm_accession <- cm[ cohort == arm_name, arm_accession ]
-    if (is.null(arm_name)){ arm_name <- NA }
-    description <- paste0("Differential expression in ",
-                          mx, ", ", currTP, " vs. baseline")
-
-    GEA_list[[idx]] <- data.table(analysis_accession = analysis_accession,
-                                  expression_matrix = mx,
-                                  arm_name = arm_name,
-                                  arm_accession = arm_accession,
-                                  coefficient = currTP,
-                                  description = description)
-
-    tt <- data.table(topTable(fit, coef = tp, number = Inf))
-    ttDE <- tt[adj.P.Val < 0.02]
-
-    if (nrow(ttDE) < 100) {
-      ttDE <- tt[order(adj.P.Val)][1:min(nrow(tt), 100)]
+  
+  if(dim(mm)[[1]] > dim(mm)[[2]]){
+    # Check if it's non-normalized and use na.rm = T b/c currently allowing NAs to remain
+    # in matrices in pipeline unless normalization doesn't work (e.g. DEseq)
+    if (max(exprs(EM), na.rm = TRUE) > 100) { EM <- voom(EM) }
+    fit <- lmFit(EM, mm)
+    fit <- tryCatch(
+            eBayes(fit),
+            error = function(e) return(e)
+         )   
+  
+    if( !is.null(fit$message) ){  
+      message(paste0("Linear model not able to be fit for ", mx, ". Skipping to next matrix"))
+      next() 
+    }   
+  
+    timepoints <- grep("^coef", colnames(mm), value = TRUE)
+    for (tp in timepoints) {
+      analysis_accession <- paste0("GEA", idx )
+      currTP <- gsub("coef", "", tp)
+      arm_name <- unique(pd$cohort)
+      arm_accession <- cm[ cohort == arm_name, arm_accession ]
+      if (is.null(arm_name)){ arm_name <- NA }
+      description <- paste0("Differential expression in ",
+                            mx, ", ", currTP, " vs. baseline")
+  
+      GEA_list[[idx]] <- data.table(analysis_accession = analysis_accession,
+                                    expression_matrix = mx,
+                                    arm_name = arm_name,
+                                    arm_accession = arm_accession,
+                                    coefficient = currTP,
+                                    description = description)
+  
+      tt <- data.table(topTable(fit, coef = tp, number = Inf))
+      ttDE <- tt[adj.P.Val < 0.02]
+  
+      if (nrow(ttDE) < 100) {
+        ttDE <- tt[order(adj.P.Val)][1:min(nrow(tt), 100)]
+      }
+  
+      if (nrow(ttDE) > 0) {
+        ttDE[, c("analysis_accession", "coefficient") := list(analysis_accession, currTP)]
+        GEAR_list[[idx]] <- data.table(ttDE)
+      }
+  
+      idx <- idx + 1
     }
-
-    if (nrow(ttDE) > 0) {
-      ttDE[, c("analysis_accession", "coefficient") := list(analysis_accession, currTP)]
-      GEAR_list[[idx]] <- data.table(ttDE)
-    }
-
-    idx <- idx + 1
+  }else{
+    message("Run ", mx, "does not have enough subjects to perform analysis.")
   }
 }
-
 GEA <- rbindlist(GEA_list)
 
 if (length(GEAR_list) == 0) {
