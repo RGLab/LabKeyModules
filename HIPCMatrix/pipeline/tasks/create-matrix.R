@@ -2,9 +2,12 @@
 # DEPENDENCIES
 #--------------------------------
 
-# wrapper function, separated for sourcing when running on CL
-# other libraries loaded in createMatrixWrapper.R
-source("runCreateMx.R")
+# NOTES:
+# 1. Wrapper function, separated for sourcing when running on CL
+# 2. other libraries loaded in createMatrixWrapper.R
+# 3. Using full path because script is copied to study-specific directory for 
+# running from UI.
+source("/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/runCreateMx.R")
 
 #--------------------------------
 # PARAMS & EXECUTION
