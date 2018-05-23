@@ -1,0 +1,248 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(ImmuneSpaceR)
+library(dplyr)
+library(tidyr)
+library(data.table)
+library(ggplot2)
+library(plotly)
+```
+
+```{r params}
+  # Main Params
+  sdy <- gsub("/Studies/", "", labkey.url.params$folderPath)
+  timeAs <- labkey.url.params$timeAs
+  assays <- strsplit(labkey.url.params$assays, ",")[[1]]
+  timePts <- strsplit(labkey.url.params$timePts, ",")[[1]]
+  label <- labkey.url.params$label
+  plotType <- labkey.url.params$plotType
+
+  # additional options
+  perplexity <- as.integer(labkey.url.params$perplexity)
+  numComponents <- as.integer(labkey.url.params$numComponents)
+```
+
+```{r helper-fn}
+stdCol <- function(x){
+  x <- (x - median(x, na.rm = TRUE))/sd(x, na.rm = TRUE)
+  x[is.na(x)] <- median(x, na.rm = T)
+  return(x)
+}
+
+getAssayData <- function(assay, con, timePts, timeAs){
+  dat <- con$getDataset(assay, original_view = TRUE)
+  dat$stc_key <- paste(dat$study_time_collected, dat$study_time_collected_unit)
+  dat <- dat[ dat$stc_key %in% timePts]
+
+  if(nrow(dat) == 0){ return() } # Assay does not contain chosen timepoints
+
+  if(assay == "hai"){
+    dat <- dat %>%
+        group_by_("participant_id", "study_time_collected") %>%
+        mutate(avg = mean(value_reported)) %>%
+        summarise(mean_hai = unique(avg))
+    if(timeAs == "observation"){
+      dat$sub_tp <- paste0( dat$participant_id, "_", dat$study_time_collected)
+      dat <- dat[ , c("sub_tp", "mean_hai")]
+    }else{
+      dat <- spread(dat, key = "study_time_collected", value = "mean_hai")
+      nms <- colnames(dat)[ colnames(dat) != "participant_id"  ]
+      nms <- paste0(nms, "_mean_hai")
+      colnames(dat) <- c("participant_id", nms)
+    }
+    
+  }else if(assay == "fcs_analyzed_result"){
+    dat$fcar_percent_population <- round(as.numeric(dat$population_cell_number) / as.numeric(dat$base_parent_population) * 100, 2)
+    if(timeAs == "observation"){ 
+      dat$sub_tp <- paste0(dat$participant_id, "_", dat$study_time_collected)
+      dat <- dat[ , c("sub_tp", "fcar_percent_population") ]
+    }else{
+      dat <- dat[ , c("participant_id", "fcar_percent_population"), with = FALSE]
+    }
+    
+  }else if(assay == "elisa"){
+    cols <- c("participant_id", "study_time_collected", "analyte", "value_preferred")
+    dat <- dat[ , cols, with = FALSE ]
+    if(timeAs == "observation"){
+      dat <- dat %>% 
+        mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
+        group_by(sub_tp, analyte) %>%
+        summarize(newValue = unique(mean(value_preferred)))
+      dat <- spread(dat, key = "analyte", value = "newValue")
+    }else{
+      dat <- dat %>%
+        mutate(analyte_day = paste(analyte, study_time_collected, assay, sep = "_")) %>%
+        group_by_("participant_id", "analyte_day") %>%
+        summarise(newValue = unique(mean(value_preferred)))
+      dat <- spread(dat, key = "analyte_day", value = "newValue")
+    }
+    
+  }else if(assay == "elispot"){
+    cols <- c("participant_id", "study_time_collected", "analyte", "spot_number_reported")
+    dat <- dat[ , cols, with = FALSE ]
+    if(timeAs == "observation"){
+      dat <- dat %>% 
+        mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
+        group_by(sub_tp, analyte) %>%
+        summarize(newValue = unique(mean(spot_number_reported)))
+      dat <- spread(dat, key = "analyte", value = "newValue")
+    }else{
+      dat <- dat %>%
+        mutate(analyte_day = paste(analyte, study_time_collected, assay, sep = "_")) %>%
+        group_by_("participant_id", "analyte_day") %>%
+        summarise(newValue = unique(mean(spot_number_reported)))
+      dat <- spread(dat, key = "analyte_day", value = "newValue")
+    }
+
+  }else if(assay == "pcr"){
+    cols <- c("participant_id", "study_time_collected", "entrez_gene_id", "value_reported")
+    dat <- dat[ , cols, with = FALSE ]
+    if(timeAs == "observation"){
+      dat <- dat %>% 
+        mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
+        group_by(sub_tp, entrez_gene_id) %>%
+        summarize(newValue = unique(mean(value_reported)))
+      dat <- spread(dat, key = "entrez_gene_id", value = "newValue")
+    }else{
+      dat <- dat %>%
+        mutate(gene_day = paste(entrez_gene_id, study_time_collected, assay, sep = "_")) %>%
+        group_by_("participant_id", "gene_day") %>%
+        summarise(value_reported)
+      dat <- spread(dat, key = "gene_day", value = "value_reported")
+    }
+  }
+
+  return(data.frame(dat, stringsAsFactors = FALSE))
+}
+```
+
+```{r prep-assay-data}
+# ImmuneSpace connection
+onTest <- grepl("test", labkey.url.params$baseUrl)
+con <- CreateConnection(sdy, onTest = onTest)
+
+# get assay data
+aData <- lapply(assays,
+                getAssayData,
+                con = con,
+                timePts = timePts,
+                timeAs = timeAs)
+
+# Check aData to be sure !null
+nulls <- sapply(aData, is.null)
+aData <- aData[ !nulls ]
+assaysSkipped <- ifelse( any(nulls) == FALSE, "None", assays[ nulls ])
+
+# Get list of subs with all assayData
+subCol <- ifelse(timeAs == "variable", "participant_id", "sub_tp")
+subLs <- lapply(aData, function(x){ return(unname(unlist(x[,subCol]))) })
+
+# Demo subs
+demo <- con$getDataset("demographics")
+if( timeAs == "observation"){
+  subLs$demo <- demoSubTps <- unlist(lapply(timePts, function(x){
+    paste0(demo$participant_id, "_", gsub(" Days", "", x))
+  }))
+}else{
+  subLs$demo <- demo$participant_id
+}
+
+# Find intersection for labels
+subs <- as.vector(Reduce(intersect, subLs))
+
+# Prepare matrices for merge and standardize (prior to subsetting)
+sData <- lapply(seq(1:length(aData)), function(i){
+  x <- data.frame(aData[[i]], stringsAsFactors = FALSE)
+  x <- x[ order(x[[subCol]]), ]
+  ids <- x[[subCol]]
+  x <- x[, grep(subCol, colnames(x), invert = TRUE), drop = FALSE]
+  x <- apply(x, 2, as.numeric)
+  x <- apply(x, 2, stdCol)
+  x <- x[ ids %in% subs, ]
+})
+
+# merge
+allMat <- do.call(cbind, sData)
+rownames(allMat) <- subs
+
+if(dim(allMat)[2] < 2){ 
+    stop("Too few variables selected. Please select more assays or timepoints and re-run.")
+}
+```
+### General Information
+- Number of Observations (Subjects): `r dim(allMat)[1]`
+- Number of Features (Assay Data): `r dim(allMat)[2]`
+- Assays Skipped Due to Missing Timepoints: `r assaysSkipped`
+
+```{r prep-labels}
+# Provide label vector
+if(label == "hai response"){
+    if("hai" %in% assays){
+      hai <- aData[[ grep("hai", assays) ]]
+    }else{
+      hai <- getAssayData("hai", con, timeAs = timeAs, timePts = timePts)
+    }
+    baseline <- grep("0_mean_hai", colnames(hai))
+    laterDay <- max(colnames(hai)[ grep("mean_hai", colnames(hai))])
+    hai$respCall <- ifelse(hai[[laterDay]]/ hai[[baseline]] > 4, "high", "low")
+    hai <- hai[ hai[[subCol]] %in% subs, ]
+    hai <- hai[ order(hai[[subCol]]), ]
+    colorCol <- hai$respCall
+}else if(label == "time"){
+    colorCol <- gsub("^SUB\\d{5,6}\\.\\d{2,4}_", "", rownames(allMat))
+}else{
+    if(timeAs == "observation"){ subs <- gsub("_\\d{1}", "", subs) }
+    colorCol <- demo[[label]][ match(subs, demo$participant_id)]
+}
+```
+
+### Plot
+```{r  plot}
+# Setup
+prettyLbl <- tools::toTitleCase(ifelse(label == "age_reported", "Age Reported", label))
+df <- data.frame(label = colorCol,
+                 text = rownames(allMat),
+                 stringsAsFactors = FALSE)
+
+# helper for iterating through multiple components of PCA 
+makePlot <- function(i, df, resObj, type){
+  if(type == "tSNE"){
+    df$x <- resObj$Y[, 1]
+    df$y <- resObj$Y[, 2]
+  }else{
+    df$x = pca$x[, paste0("PC",i)]
+    df$y = pca$x[, paste0("PC",i+1)]
+  }
+  p <- ggplot(df) +
+    geom_point(aes(x = x, y = y, color = label, text = text)) +
+    labs(color = prettyLbl, x = paste0(type, i), y = paste0(type, (i+1)))
+}
+
+if(plotType == "tSNE"){
+  set.seed(8)
+  # Avoid duplicate rows by adding random noise
+  if( any(duplicated(allMat)) ){
+    allMat[,1] <- jitter(allMat[,1], factor = 1, amount = NULL)
+  }
+  tRes <- Rtsne::Rtsne(allMat, perplexity = perplexity)
+  p <- makePlot(1, df, tRes, "tSNE")
+  ggplotly(p)
+}else{
+  pca <- prcomp(allMat)
+  screeplot(pca, type="lines", col = 3)
+  plots <- lapply(seq(1:numComponents),
+                  makePlot,
+                  df = df,
+                  resObj = pca,
+                  type = "PCA")
+  if(length(plots) == 1){
+    ggplotly(plots[[1]])
+  }else{
+    cowplot::plot_grid(plotlist = plots, ncol = ifelse(length(plots) <= 3, 1, 2))
+  }
+}
+```
+<script>
+window.HTMLWidgets.staticRender();
+</script>
+
