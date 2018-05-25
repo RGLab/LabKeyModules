@@ -178,7 +178,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
         var rgTime = new Ext.form.RadioGroup({
             allowBlank: false,
-            fieldLabel: 'Time Usage',
+            fieldLabel: 'Use Time As',
             width: fieldWidth,
             columns: 2,
             items: [
@@ -303,23 +303,33 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             value: 'PCA',
             listeners: {
                 blur:       checkBtnsStatus,
-                change:     checkBtnsStatus,
+                change:     function(){
+                    if(this.getValue().value == "tSNE"){
+                        nmNumComponents.disable();
+                        nmPerplexity.enable();
+                    }else{
+                        nmNumComponents.enable();
+                        nmPerplexity.disable();
+                    }
+                    checkBtnsStatus;
+                },
             },
             cls: 'ui-test-plottypes'
         });
         
         var nmPerplexity = new Ext.form.NumberField({
             allowBlank: false,
-            fieldLabel: 'tSNE Perplexity',
+            fieldLabel: 'tSNE - Perplexity',
             value: 5,
             maxValue: 50,
             minValue: 1,
-            hidden: false
+            hidden: false,
+            disabled: true
         });
 
         var nmNumComponents = new Ext.form.NumberField({
             allowBlank: false,
-            fieldLabel: 'Number of PCA Components',
+            fieldLabel: 'PCA - Components to Show',
             value: 2,
             maxValue: 6, 
             minValue: 2,

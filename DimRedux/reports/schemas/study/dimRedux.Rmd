@@ -4,7 +4,6 @@ library(ImmuneSpaceR)
 library(dplyr)
 library(tidyr)
 library(data.table)
-library(ggplot2)
 library(plotly)
 ```
 
@@ -196,26 +195,40 @@ if(label == "hai response"){
 }
 ```
 
-### Plot
+### Plots
 ```{r  plot}
 # Setup
-prettyLbl <- tools::toTitleCase(ifelse(label == "age_reported", "Age Reported", label))
-df <- data.frame(label = colorCol,
-                 text = rownames(allMat),
-                 stringsAsFactors = FALSE)
+prettyLbl <- tools::toTitleCase(gsub("_", " ", label))
 
 # helper for iterating through multiple components of PCA 
-makePlot <- function(i, df, resObj, type){
+makePlot <- function(i, resObj, type){
   if(type == "tSNE"){
-    df$x <- resObj$Y[, 1]
-    df$y <- resObj$Y[, 2]
+    df <- data.frame(x = resObj$Y[,1],
+                     y = resObj$Y[,2],
+                     stringsAsFactors = FALSE)
   }else{
-    df$x = pca$x[, paste0("PC",i)]
-    df$y = pca$x[, paste0("PC",i+1)]
+    df <- data.frame(x = pca$x[, paste0("PC",i)],
+                     y = pca$x[, paste0("PC",i+1)],
+                     stringsAsFactors = FALSE)
   }
-  p <- ggplot(df) +
-    geom_point(aes(x = x, y = y, color = label, text = text)) +
-    labs(color = prettyLbl, x = paste0(type, i), y = paste0(type, (i+1)))
+  
+  p <- plot_ly(data = df,
+               x = ~x,
+               y = ~y,
+               color = colorCol,
+               hoverinfo = 'text',
+               text = paste(prettyLbl, ": ", colorCol, "<br>ID: ", rownames(allMat))) %>%
+       layout(xaxis = list(title = paste0(type,i)), 
+              yaxis = list(title = paste0(type, i+1)),
+              annotations = list(yref = 'paper',
+                                 xref = 'paper',
+                                 y = 1.02,
+                                 x = 1.175,
+                                 text = prettyLbl,
+                                 showarrow = FALSE),
+              autosize = T,
+              width = 700,
+              showlegend=TRUE)
 }
 
 if(plotType == "tSNE"){
@@ -225,23 +238,19 @@ if(plotType == "tSNE"){
     allMat[,1] <- jitter(allMat[,1], factor = 1, amount = NULL)
   }
   tRes <- Rtsne::Rtsne(allMat, perplexity = perplexity)
-  p <- makePlot(1, df, tRes, "tSNE")
-  ggplotly(p)
+  p <- makePlot(1, tRes, "tSNE")
+  p
 }else{
   pca <- prcomp(allMat)
   screeplot(pca, type="lines", col = 3)
-  plots <- lapply(seq(1:numComponents),
+  plots <- lapply(seq(numComponents-1),
                   makePlot,
-                  df = df,
                   resObj = pca,
-                  type = "PCA")
-  if(length(plots) == 1){
-    ggplotly(plots[[1]])
-  }else{
-    cowplot::plot_grid(plotlist = plots, ncol = ifelse(length(plots) <= 3, 1, 2))
-  }
+                  type = "PCA") 
+  htmltools::tagList(plots)
 }
 ```
+
 <script>
 window.HTMLWidgets.staticRender();
 </script>
