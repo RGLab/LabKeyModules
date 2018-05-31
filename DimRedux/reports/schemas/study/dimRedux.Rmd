@@ -19,15 +19,10 @@ library(plotly)
   # additional options
   perplexity <- as.integer(labkey.url.params$perplexity)
   numComponents <- as.integer(labkey.url.params$numComponents)
+  impute <- labkey.url.params$impute
 ```
 
 ```{r helper-fn}
-stdCol <- function(x){
-  x <- (x - median(x, na.rm = TRUE))/sd(x, na.rm = TRUE)
-  x[is.na(x)] <- median(x, na.rm = T)
-  return(x)
-}
-
 getAssayData <- function(assay, con, timePts, timeAs){
   dat <- con$getDataset(assay, original_view = TRUE)
   dat$stc_key <- paste(dat$study_time_collected, dat$study_time_collected_unit)
@@ -127,47 +122,41 @@ aData <- lapply(assays,
                 timePts = timePts,
                 timeAs = timeAs)
 
-# Check aData to be sure !null
+# Check aData to be sure non-null
 nulls <- sapply(aData, is.null)
 aData <- aData[ !nulls ]
-assaysSkipped <- ifelse( any(nulls) == FALSE, "None", assays[ nulls ])
-
-# Get list of subs with all assayData
-subCol <- ifelse(timeAs == "variable", "participant_id", "sub_tp")
-subLs <- lapply(aData, function(x){ return(unname(unlist(x[,subCol]))) })
+assaysSkipped <- ifelse( any(nulls) == FALSE, "None", assays [ nulls] )
 
 # Demo subs
 demo <- con$getDataset("demographics")
-if( timeAs == "observation"){
-  subLs$demo <- demoSubTps <- unlist(lapply(timePts, function(x){
-    paste0(demo$participant_id, "_", gsub(" Days", "", x))
-  }))
-}else{
-  subLs$demo <- demo$participant_id
+
+# combine
+allMat <- Reduce(function(x,y){merge(x,y,all=T)}, aData)
+rownames(allMat) <- allMat[,1]
+allMat <- allMat[,-1]
+
+# normalize
+allMat <- scale(allMat)
+
+# Impute missing values
+if(impute == "mean"){
+    allMat <- apply(allMat, 2, function(x){ x[is.na(x)] <- mean(x, na.rm = T); return(x)})
+}else if(impute == "median"){
+    allMat <- apply(allMat, 2, function(x){ x[is.na(x)] <- median(x, na.rm = T); return(x)})
+}else if(impute == "knn"){
+    res <- impute::impute.knn(as.matrix(allMat))
+    allMat <- res$data
+}else if(impute == "none"){
+    allMat <- allMat[ complete.cases(allMat), ]
 }
-
-# Find intersection for labels
-subs <- as.vector(Reduce(intersect, subLs))
-
-# Prepare matrices for merge and standardize (prior to subsetting)
-sData <- lapply(seq(1:length(aData)), function(i){
-  x <- data.frame(aData[[i]], stringsAsFactors = FALSE)
-  x <- x[ order(x[[subCol]]), ]
-  ids <- x[[subCol]]
-  x <- x[, grep(subCol, colnames(x), invert = TRUE), drop = FALSE]
-  x <- apply(x, 2, as.numeric)
-  x <- apply(x, 2, stdCol)
-  x <- x[ ids %in% subs, ]
-})
-
-# merge
-allMat <- do.call(cbind, sData)
-rownames(allMat) <- subs
 
 if(dim(allMat)[2] < 2){ 
     stop("Too few variables selected. Please select more assays or timepoints and re-run.")
+}else if(dim(allMat)[1] < 1){
+    stop("No subjects with complete cases. Select imputation method other than 'None' and retry.")
 }
 ```
+
 ### General Information
 - Number of Observations (Subjects): `r dim(allMat)[1]`
 - Number of Features (Assay Data): `r dim(allMat)[2]`
@@ -175,6 +164,7 @@ if(dim(allMat)[2] < 2){
 
 ```{r prep-labels}
 # Provide label vector
+subs <- rownames(allMat)
 if(label == "hai response"){
     if("hai" %in% assays){
       hai <- aData[[ grep("hai", assays) ]]
@@ -184,11 +174,12 @@ if(label == "hai response"){
     baseline <- grep("0_mean_hai", colnames(hai))
     laterDay <- max(colnames(hai)[ grep("mean_hai", colnames(hai))])
     hai$respCall <- ifelse(hai[[laterDay]]/ hai[[baseline]] > 4, "high", "low")
+    subCol <- ifelse(timeAs == "observation", "sub_tp", "participant_id")
     hai <- hai[ hai[[subCol]] %in% subs, ]
     hai <- hai[ order(hai[[subCol]]), ]
     colorCol <- hai$respCall
 }else if(label == "time"){
-    colorCol <- gsub("^SUB\\d{5,6}\\.\\d{2,4}_", "", rownames(allMat))
+    colorCol <- gsub("^SUB\\d{5,6}\\.\\d{2,4}_", "", subs)
 }else{
     if(timeAs == "observation"){ subs <- gsub("_\\d{1}", "", subs) }
     colorCol <- demo[[label]][ match(subs, demo$participant_id)]

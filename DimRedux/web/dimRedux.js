@@ -63,79 +63,49 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 labels_help = 'Demographic data that can be used to label the scatter plot values from either a PCA or tSNE analysis.',
                 plotTypes_help = 'Either Principle Components Analysis (PCA) or t-distributed Stochastic Neighbor Embedding (tSNE)'
                 perplexity_help = 'Parameter passed to Rtsne',
-                numComponents_help = 'Number of PCA components to plot pairwise'
+                numComponents_help = 'Number of PCA components to plot pairwise',
+                impute_help = "Method for imputing missing (NA) values"
             ;
 
         /////////////////////////////////////
         //           Stores                //
         /////////////////////////////////////
 
-        var strAssays = new LABKEY.ext.Store({
-            autoLoad: true,
-            listeners: {
-                loadexception: LABKEY.ext.ISCore.onFailure
+        LABKEY.Query.selectRows({
+            schemaName: 'study',
+            queryName: 'ehTstDR',
+            success: function(data){
+                data.rows.forEach( function(row){
+                    if(strTimePoints.byTP[row.Days] == null){
+                        strTimePoints.byTP[row.Days] = [row.Name];
+                    }else{
+                        strTimePoints.byTP[row.Days].push(row.Name);
+                    }
+                });
+                strTimePoints.load();       
             },
-            queryName: 'DimRedux_data_sets',
-            schemaName: 'study'
+            failure: function(errorInfo, options, responseObj){
+
+            }
         });
 
         var strTimePoints = {
             load: function(){
-                var assay = cbAssays.getValue();
-                var assayArr = assay.split(",");
-                for( var i = 0; i < assayArr.length; i++){
-                     getTimePoints(assayArr[i], assayArr);
-                }
+                var tp = Object.keys(strTimePoints.byTP);
+                tp.forEach( function(x){
+                    strTimePoints.values.push([x,x]);
+                });
+                var tpStore = new Ext.data.SimpleStore({
+                    data: strTimePoints.values,
+                    id: 0,
+                    fields: ['display', 'values']
+                });
+                cbTimePoints.bindStore(tpStore);
             },
             values: [],
-            byAssay: {},
             byTP: {}
         };
         
-        var getTimePoints = function(assay, assayArr){
-            LABKEY.Query.executeSql({
-                schemaName: 'study',
-                sql: "SELECT * FROM (SELECT study_time_collected || ' ' || study_time_collected_unit AS timepoint FROM " + assay + ") GROUP BY timepoint",
-                success: function(data){
-                        parseTimePoints(data, assay, assayArr);
-                        },  
-                failure: function(errorInfo, options , responseObj){ 
-                        alert("Failure: " + responseObj.statusText) 
-                        }   
-            }); 
-        };  
-
-        var parseTimePoints = function(data, assay, assayArr){
-            strTimePoints.byAssay[assay] = []; 
-            data.rows.forEach( function(el){ 
-                strTimePoints.byAssay[assay].push(el.timepoint);
-                strTimePoints.byTP[el.timepoint] = strTimePoints.byTP[el.timepoint] ? strTimePoints.byTP[el.timepoint] + 1 : 1;
-            }); 
-            // Only when the last assay is being processed will this be true
-            if( Object.keys(strTimePoints.byAssay).sort().join(',') === assayArr.sort().join(',') ){
-                pushTimePoints();
-            }   
-        };  
-            
-        // Ext.SimpleStore needs two values at least or it                           
-        // tries to split the string to generate an id, e.g. 0 instead
-        // of 0 days. 
-        var pushTimePoints = function(){
-            for( var tp in strTimePoints.byTP){
-                strTimePoints.values.push([tp, tp])
-            };
-            bindTimePoints(strTimePoints.values);
-        }
-
-        var bindTimePoints = function(vals){
-            var tmpStore = new Ext.data.SimpleStore({
-                data: vals,
-                id: 0,
-                fields: ['display', 'values']
-            });
-            cbTimePoints.bindStore(tmpStore);
-        };
-
         var strVar = new Ext.data.SimpleStore({
             data:[
                 ['Age', 'age_reported'],
@@ -165,17 +135,6 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         ///      Check and ComboBoxes     ///
         /////////////////////////////////////
         
-        var handleAssaySelection = function(){
-            cbTimePoints.disable();
-            cbTimePoints.clearValue();
-            cbTimePoints.store.removeAll();
-            strTimePoints.byAssay = {};
-            strTimePoints.byTP = {};
-            strTimePoints.values = [];
-            strTimePoints.load();
-            cbTimePoints.enable();
-        };
-
         var rgTime = new Ext.form.RadioGroup({
             allowBlank: false,
             fieldLabel: 'Use Time As',
@@ -216,35 +175,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         
         var cbAssays = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
-            displayField: 'Name',
-            fieldLabel: 'Assays',
-            lazyInit: false,
-            disabled: false,
-            listeners: {
-                change:     function(){
-                    checkBtnsStatus();
-                },
-                cleared:    function(){
-                    cbTimePoints.disable();
-                    cbTimePoints.reset();
-                    checkBtnsStatus();
-                },
-                select:     function(){
-                    handleAssaySelection();
-                    checkBtnsStatus();
-                }
-            },
-            separator: ',', // IMPORTANT FOR STRSPLIT FN
-            store: strAssays,
-            valueField: 'Name',
-            width: fieldWidth,
-            cls: 'ui-test-assays'
-        });
-
-        var cbTimePoints = new Ext.ux.form.ExtendedLovCombo({
-            allowBlank: false,
             displayField: 'display',
-            fieldLabel: 'Assay Timepoints',
+            fieldLabel: 'Assays',
             lazyInit: false,
             disabled: true,
             listeners: {
@@ -255,6 +187,69 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     checkBtnsStatus();
                 },
                 select:     function(){
+                    checkBtnsStatus();
+                }
+            },
+            separator: ',', // IMPORTANT FOR STRSPLIT FN
+            store: new Ext.data.SimpleStore({data: [], id: 0, fields: [] }),
+            valueField: 'value',
+            width: fieldWidth,
+            cls: 'ui-test-assays'
+        });
+
+        var cbTimePoints = new Ext.ux.form.ExtendedLovCombo({
+            allowBlank: false,
+            displayField: 'display',
+            fieldLabel: 'Assay Timepoints',
+            lazyInit: false,
+            disabled: false,
+            listeners: {
+                change:     function(){
+                    checkBtnsStatus();
+                },
+                cleared:    function(){
+                    cbAssays.disable();
+                    cbAssays.reset();
+                    checkBtnsStatus();
+                },
+                select:     function(){
+                    cbAssays.disable();
+                    cbAssays.clearValue();
+                    cbAssays.store.removeAll();
+                    var assays = []; 
+                    var tps = cbTimePoints.getValue();
+                    tps = tps.split(",");
+                    tps.forEach( function(y){
+                        assays.push(strTimePoints.byTP[y]);
+                    });
+                    assays = [].concat.apply([], assays);
+                    if( rgTime.getValue().value == "variable" ){ 
+                        // Allow all assays that have any of the timepoints
+                        assays = assays.filter( function(el, i, arr){
+                            return arr.indexOf(el) === i;
+                        });
+                    } else {
+                        // Ensure only assays with all timepoints are allowed
+                        var counts = {};
+                        assays.forEach( function(el){
+                            counts[el] = counts[el] ? counts[el] + 1 : 1;
+                        });
+                        var keys = Object.keys(counts);
+                        assays = keys.filter(function(key){ 
+                            return counts[key] == tps.length 
+                        }) 
+                    } 
+                    var preStore = []; 
+                    assays.forEach( function(z){
+                        preStore.push([z,z]);
+                    }); 
+                    var assayStore = new Ext.data.SimpleStore({
+                        data: preStore,
+                        id: 0,
+                        fields: ['display','value']
+                    }); 
+                    cbAssays.bindStore(assayStore);
+                    cbAssays.enable();
                     checkBtnsStatus();
                 }
             },
@@ -320,6 +315,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         var nmPerplexity = new Ext.form.NumberField({
             allowBlank: false,
             fieldLabel: 'tSNE - Perplexity',
+            width: fieldWidth,
             value: 5,
             maxValue: 50,
             minValue: 1,
@@ -330,12 +326,50 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         var nmNumComponents = new Ext.form.NumberField({
             allowBlank: false,
             fieldLabel: 'PCA - Components to Show',
+            width: fieldWidth,
             value: 2,
             maxValue: 6, 
             minValue: 2,
             hidden: false
         }); 
 
+
+        var rgImpute = new Ext.form.RadioGroup({
+            allowBlank: false,
+            fieldLabel: 'Missing Value Imputation Method',
+            width: fieldWidth,
+            columns: 2,
+            items: [
+                {   
+                    boxLabel: 'Mean',
+                    checked: true,
+                    inputValue: 'Mean',
+                    name: 'Impute',
+                    value: 'mean'
+                },{ 
+                    boxLabel: 'Median',
+                    inputValue: 'Median',
+                    name: 'Impute',
+                    value: 'median'
+                },{   
+                    boxLabel: 'KNN',
+                    inputValue: 'KNN',
+                    name: 'Impute',
+                    value: 'knn'
+                },{ 
+                    boxLabel: 'None',
+                    inputValue: 'None',
+                    name: 'Impute',
+                    value: 'none'
+                } 
+            ],  
+            value: 'Mean',
+            listeners: {
+                blur:       checkBtnsStatus,
+                change:     checkBtnsStatus
+            },  
+            cls: 'ui-test-impute'
+        }); 
 
         /////////////////////////////////////
         //    Buttons and Radio Groups     //
@@ -355,7 +389,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     label:                  cbLabel.getValue(),
                     plotType:               rgPlotType.getValue().value,
                     perplexity:             nmPerplexity.getValue(),
-                    numComponents:          nmNumComponents.getValue()
+                    numComponents:          nmNumComponents.getValue(),
+                    impute:                 rgImpute.getValue().value
                 };
                 LABKEY.Report.execute( cnfReport );
             },
@@ -516,6 +551,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             items: [
                 LABKEY.ext.ISCore.factoryTooltipWrapper( nmPerplexity, 'tSNE perplexity', perplexity_help ),
                 LABKEY.ext.ISCore.factoryTooltipWrapper( nmNumComponents, 'PCA components to plot', numComponents_help ),
+                LABKEY.ext.ISCore.factoryTooltipWrapper( rgImpute, 'Impute', impute_help)
             ],
             labelWidth: labelWidth,
             listeners: {
@@ -545,8 +581,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     autoScroll: true,
                     items: [
                         LABKEY.ext.ISCore.factoryTooltipWrapper( rgTime, 'Time Usage', timeAs_help),
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbAssays, 'Assays', assays_help ),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Timepoints', timepoints_help ),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbAssays, 'Assays', assays_help ),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbLabel, 'Label', labels_help ), 
                         LABKEY.ext.ISCore.factoryTooltipWrapper( rgPlotType, 'Plot Type', plotTypes_help ),
 
