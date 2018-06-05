@@ -36,8 +36,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 	        if (
 		        cbAssays.isValid( true ) &&
                 cbTimePoints.isValid( true ) &&
-                cbLabel.isValid( true ) &&
-		        rgPlotType.isValid( true)
+                rgTime.isValid( true ) &&
+		        rgPlotType.isValid( true )
 	        ){
 		        btnRun.setDisabled( false );
 	        } else {
@@ -46,7 +46,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
             if (    cbAssays.getValue()              == cbAssays.originalValue &&
                     cbTimePoints.getValue()          == cbTimePoints.originalValue &&
-                    cbLabel.getValue()               == cbLabel.originalValue &&
+                    rgTime.getValue()                == rgTime.originalValue &&
 		            rgPlotType.getValue()            == rgPlotType.originalValue
             ){
                 btnReset.setDisabled( true );
@@ -71,15 +71,16 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         //           Stores                //
         /////////////////////////////////////
 
+        /*
         LABKEY.Query.selectRows({
             schemaName: 'study',
-            queryName: 'ehTstDR',
+            queryName: 'DimRedux_data_sets',
             success: function(data){
                 data.rows.forEach( function(row){
-                    if(strTimePoints.byTP[row.Days] == null){
-                        strTimePoints.byTP[row.Days] = [row.Name];
+                    if(strTimePoints.byTP[row.Timepoint] == null){
+                        strTimePoints.byTP[row.Timepoint] = [row.Name];
                     }else{
-                        strTimePoints.byTP[row.Days].push(row.Name);
+                        strTimePoints.byTP[row.Timepoint].push(row.Name);
                     }
                 });
                 strTimePoints.load();       
@@ -88,12 +89,31 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
             }
         });
+        */
 
         var strTimePoints = {
             load: function(){
                 var tp = Object.keys(strTimePoints.byTP);
+                
+                //Order chronologically and account for hours / days
+                var hrs = [],
+                    days = [];
                 tp.forEach( function(x){
-                    strTimePoints.values.push([x,x]);
+                    if(x.match("Days") != null){
+                        days.push(Number(x.match(/\d+/)[0]));
+                    }else{
+                        hrs.push(Number(x.match(/\d+/)[0]));
+                    }
+                });
+                hrs = hrs.sort(function(a,b){ return(a-b) });
+                hrs = hrs.map( function(i){ return i + " Hours" });
+                days = days.sort(function(a,b){ return(a-b) });
+                days = days.map( function(i){ return i + " Days" });
+                var allTP = hrs.concat(days);
+                
+                // Push to store
+                allTP.forEach( function(z){
+                    strTimePoints.values.push([z,z])
                 });
                 var tpStore = new Ext.data.SimpleStore({
                     data: strTimePoints.values,
@@ -105,6 +125,25 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             values: [],
             byTP: {}
         };
+
+        LABKEY.Query.selectRows({                                                               
+            schemaName: 'study',
+            queryName: 'DimRedux_data_sets',
+            success: function(data){
+                data.rows.forEach( function(row){
+                    if(strTimePoints.byTP[row.Timepoint] == null){
+                        strTimePoints.byTP[row.Timepoint] = [row.Name];
+                    }else{
+                        strTimePoints.byTP[row.Timepoint].push(row.Name);
+                    }   
+                }); 
+                strTimePoints.load();           
+            },  
+            failure: function(errorInfo, options, responseObj){
+
+            }   
+        }); 
+
         
         var strVar = new Ext.data.SimpleStore({
             data:[
@@ -130,11 +169,27 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         });
 
 
-
         /////////////////////////////////////
         ///      Check and ComboBoxes     ///
         /////////////////////////////////////
         
+        var cbLabel = new Ext.ux.form.ExtendedComboBox({
+            allowBlank: false,
+            displayField: 'display',
+            fieldLabel: 'Label',
+            lazyInit: false,
+            listeners: {
+                select: function(){
+                    $('#'+cntReport.id).html(reportHolder[cbLabel.getValue()]);
+                }
+            },  
+            store: strVar,
+            value: 'age_reported', 
+            valueField: 'values',
+            width: fieldWidth,
+            cls: 'ui-test-labels'
+        }); 
+
         var rgTime = new Ext.form.RadioGroup({
             allowBlank: false,
             fieldLabel: 'Use Time As',
@@ -159,14 +214,24 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             listeners: {
                 blur:       checkBtnsStatus,
                 change:     function(){
-                    cbLabel.disable();
+                    // force new selection of timepoints and assays because
+                    // assay options are affected by timeAs
+                    cbTimePoints.disable();
+                    cbTimePoints.clearValue();
+                    cbTimePoints.enable();
+
+                    cbAssays.disable();
+                    cbAssays.clearValue();
+                    cbAssays.store.removeAll();
+                    cbAssays.enable();
+
                     cbLabel.clearValue();
+                    cblabel.store.removeAll();
                     if(rgTime.getValue().value == 'observation'){
                         cbLabel.bindStore(strObs);
                     }else{
                         cbLabel.bindStore(strVar);
                     }
-                    cbLabel.enable();
                 }
             },
             cls: 'ui-test-timebox'
@@ -260,22 +325,6 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             cls: 'ui-test-timepoints'
         });
         
-        var cbLabel = new Ext.ux.form.ExtendedComboBox({
-            allowBlank: false,
-            displayField: 'display',
-            fieldLabel: 'Label',
-            lazyInit: false,
-            listeners: {
-                change: checkBtnsStatus,
-                cleared: checkBtnsStatus,
-                select: checkBtnsStatus
-            },
-            store: strVar,
-            valueField: 'values',
-            width: fieldWidth,
-            cls: 'ui-test-labels'
-        });
-
         var rgPlotType = new Ext.form.RadioGroup({
             allowBlank: false,
             fieldLabel: 'Plot type',
@@ -374,25 +423,48 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         //    Buttons and Radio Groups     //
         /////////////////////////////////////
+        
+        var srcScripts = ""
 
+        var reportHolder = {
+            age_reported: null,
+            ethnicity: null,
+            gender: null,
+            race: null
+        };
+
+        var lbls = [
+                    'age_reported',
+                    'ethnicity',
+                    'gender',
+                    'race'
+                    ]
+        
         var btnRun = new Ext.Button({
             disabled: true,
             handler: function(){
                 setReportRunning( true );
 
-                cnfReport.inputParams = {
-                    baseUrl:       	        LABKEY.ActionURL.getBaseURL(),
-                    folderPath:             LABKEY.ActionURL.getContainer(),
-                    timeAs:                 rgTime.getValue().value,
-                    assays:	                cbAssays.getValue(),
-                    timePts:                cbTimePoints.getValue(),
-                    label:                  cbLabel.getValue(),
-                    plotType:               rgPlotType.getValue().value,
-                    perplexity:             nmPerplexity.getValue(),
-                    numComponents:          nmNumComponents.getValue(),
-                    impute:                 rgImpute.getValue().value
-                };
-                LABKEY.Report.execute( cnfReport );
+                if( rgTime.getValue().value == 'observation'){
+                    lbls.push('time');
+                    reportHolder['time'] = null;
+                }
+
+                
+                    inputParams = { 
+                        baseUrl:                LABKEY.ActionURL.getBaseURL(),
+                        folderPath:             LABKEY.ActionURL.getContainer(),
+                        timeAs:                 rgTime.getValue().value,
+                        assays:                 cbAssays.getValue(),
+                        timePts:                cbTimePoints.getValue(),
+                        label:                  lbls[0],
+                        plotType:               rgPlotType.getValue().value,
+                        perplexity:             nmPerplexity.getValue(),
+                        numComponents:          nmNumComponents.getValue(),
+                        impute:                 rgImpute.getValue().value
+                    }; 
+                    makeReport(inputParams);
+                
             },
             text: 'Run'
         });
@@ -437,13 +509,19 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 [
                     cbAssays,
                     cbTimePoints,
-                    cbLabel,
+                    //cbLabel,
                     rgPlotType,
                     tlbrBtns
                 ],
                 function( e ){ e.setDisabled( bool ); }
             );
         };        
+        
+        var makeReport = function(inputParams){
+            cnfReport.inputParams = inputParams;
+            LABKEY.Report.execute( cnfReport );        
+    
+        }
 
         var cnfReport = {
             failure: function( errorInfo, options, responseObj ){
@@ -463,18 +541,43 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         exception: errors.join('\n')
                     });
                 } else {
-                    var p = outputParams[0];
+                    // Create one copy of source files and trim from plot html 
+                    // to avoid long load times when changing plots.
+                    var htmlValue = outputParams[0].value;
 
-                    $('#'+cntReport.id).html(p.value);
-                    cntEmptyPnlView.setVisible( false );
-                    cntReport.setVisible( true );
+                    if( cnfReport.inputParams.label == 'age_reported'){
+                        srcScripts = htmlValue.match(/style>(?:\s|\S)+head>/g, "style>\n</head"); 
+                        srcScripts = srcScripts[0].replace(/style>\n\s/g, "");
+                        srcScripts = srcScripts.replace(/<.head>/g, "");
+                    }
 
-                    pnlTabs.setActiveTab( 1 );
-                    window.HTMLWidgets.staticRender();
+                    htmlValue = htmlValue.replace(/style>(?:\s|\S)+head>/g, "style>\n</h    ead");                   
+                    reportHolder[cnfReport.inputParams.label] = htmlValue;
+
+                    // Determine if other reports left to run
+                    var repKeys = Object.keys(reportHolder);
+                    var repsLeft = repKeys.filter( function(key){
+                        return(reportHolder[key] == null)
+                    });
+                    
+                    // Run next report or show view tab if all done
+                    // When showing view tab, inject srcScripts once into
+                    // the auto-generated moduleView.
+                    if( repsLeft.length == 0 ){
+                        $('#'+cntEmptyPnlView.id).html(srcScripts);
+                        $('#'+cntReport.id).html(reportHolder['age_reported']);
+                        cntEmptyPnlView.setVisible( false );
+                        cntReport.setVisible( true );
+
+                        pnlTabs.setActiveTab( 1 );
+                        window.HTMLWidgets.staticRender();
+                    } else {
+                        cnfReport.inputParams.label = repsLeft[0]
+                        makeReport(cnfReport.inputParams);
+                    }                    
                 }
             }
         };
-
 
         /////////////////////////////////////
         //  Panels, Containers, Components //
@@ -492,8 +595,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         });
 
         var
-            cfTimePoints        = LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Time point', timepoints_help ),
-            cfLabel             = LABKEY.ext.ISCore.factoryTooltipWrapper( cbLabel, 'Label', labels_help )
+            cfTimePoints        = LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Time point', timepoints_help )//,
+           // cfLabel             = LABKEY.ext.ISCore.factoryTooltipWrapper( cbLabel, 'Label', labels_help )
         ;
 
         // var pnlInputs
@@ -537,7 +640,17 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 autoHeight: true,
                 hideMode: 'offsets'
             },
-            items: [ cntEmptyPnlView, cntReport ],
+            items: [ 
+                cntEmptyPnlView, 
+                new Ext.form.FieldSet({
+                    autoScroll: true,
+                    items: [
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbLabel, 'Label', labels_help)
+                    ],
+                    title: 'Display Options',
+                    cls: 'ui-test-display-options'
+                }),
+                cntReport ],
             layout: 'fit',
             tabTip: 'View',
             title: 'View'
@@ -583,7 +696,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         LABKEY.ext.ISCore.factoryTooltipWrapper( rgTime, 'Time Usage', timeAs_help),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Timepoints', timepoints_help ),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbAssays, 'Assays', assays_help ),
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbLabel, 'Label', labels_help ), 
+                       // LABKEY.ext.ISCore.factoryTooltipWrapper( cbLabel, 'Label', labels_help ), 
                         LABKEY.ext.ISCore.factoryTooltipWrapper( rgPlotType, 'Plot Type', plotTypes_help ),
 
 
