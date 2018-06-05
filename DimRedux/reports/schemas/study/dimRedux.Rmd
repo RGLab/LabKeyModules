@@ -151,9 +151,9 @@ if(impute == "mean"){
 }
 
 if(dim(allMat)[2] < 2){ 
-    stop("Too few variables selected. Please select more assays or timepoints and re-run.")
+    stop("R Report Error: Too few variables selected. Please select more assays or timepoints and re-run.")
 }else if(dim(allMat)[1] < 1){
-    stop("No subjects with complete cases. Select imputation method other than 'None' and retry.")
+    stop("R Report Error: No subjects with complete cases. Select imputation method other than 'None' and retry.")
 }
 ```
 

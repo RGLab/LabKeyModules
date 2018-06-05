@@ -71,26 +71,6 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         //           Stores                //
         /////////////////////////////////////
 
-        /*
-        LABKEY.Query.selectRows({
-            schemaName: 'study',
-            queryName: 'DimRedux_data_sets',
-            success: function(data){
-                data.rows.forEach( function(row){
-                    if(strTimePoints.byTP[row.Timepoint] == null){
-                        strTimePoints.byTP[row.Timepoint] = [row.Name];
-                    }else{
-                        strTimePoints.byTP[row.Timepoint].push(row.Name);
-                    }
-                });
-                strTimePoints.load();       
-            },
-            failure: function(errorInfo, options, responseObj){
-
-            }
-        });
-        */
-
         var strTimePoints = {
             load: function(){
                 var tp = Object.keys(strTimePoints.byTP);
@@ -226,8 +206,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     cbAssays.enable();
 
                     cbLabel.clearValue();
-                    cblabel.store.removeAll();
-                    if(rgTime.getValue().value == 'observation'){
+                    cbLabel.store.removeAll();
+                    if( rgTime.getValue().value == 'observation' ){
                         cbLabel.bindStore(strObs);
                     }else{
                         cbLabel.bindStore(strVar);
@@ -509,7 +489,6 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 [
                     cbAssays,
                     cbTimePoints,
-                    //cbLabel,
                     rgPlotType,
                     tlbrBtns
                 ],
@@ -531,12 +510,14 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             },
             reportId: 'module:DimRedux/study/dimRedux.Rmd',
             success: function( result ){
-                setReportRunning( false );
 
                 var errors = result.errors;
                 var outputParams = result.outputParams;
 
                 if ( errors && errors.length > 0 ){
+                    setReportRunning( false );
+                    
+                    errors = errors[0].match(/R Report Error(?:\s|\S)+/g); // clean msg
                     LABKEY.ext.ISCore.onFailure({
                         exception: errors.join('\n')
                     });
@@ -551,7 +532,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         srcScripts = srcScripts.replace(/<.head>/g, "");
                     }
 
-                    htmlValue = htmlValue.replace(/style>(?:\s|\S)+head>/g, "style>\n</h    ead");                   
+                    htmlValue = htmlValue.replace(/style>(?:\s|\S)+head>/g, "style>\n</head");                   
                     reportHolder[cnfReport.inputParams.label] = htmlValue;
 
                     // Determine if other reports left to run
@@ -562,10 +543,14 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     
                     // Run next report or show view tab if all done
                     // When showing view tab, inject srcScripts once into
-                    // the auto-generated moduleView.
-                    if( repsLeft.length == 0 ){
+                    // the auto-generated empty panel that is not visible.
+                    if( repsLeft.length == 0 ){                    
+    
                         $('#'+cntEmptyPnlView.id).html(srcScripts);
                         $('#'+cntReport.id).html(reportHolder['age_reported']);
+                        
+                        setReportRunning( false ); // Wait until all html is loaded
+
                         cntEmptyPnlView.setVisible( false );
                         cntReport.setVisible( true );
 
