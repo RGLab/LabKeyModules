@@ -681,7 +681,6 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         LABKEY.ext.ISCore.factoryTooltipWrapper( rgTime, 'Time Usage', timeAs_help),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Timepoints', timepoints_help ),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbAssays, 'Assays', assays_help ),
-                       // LABKEY.ext.ISCore.factoryTooltipWrapper( cbLabel, 'Label', labels_help ), 
                         LABKEY.ext.ISCore.factoryTooltipWrapper( rgPlotType, 'Plot Type', plotTypes_help ),
 
 
