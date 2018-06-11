@@ -217,7 +217,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             cls: 'ui-test-timebox'
 
         });
-        
+
         var cbAssays = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
             displayField: 'display',
@@ -329,10 +329,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 blur:       checkBtnsStatus,
                 change:     function(){
                     if(this.getValue().value == "tSNE"){
-                        nmNumComponents.disable();
                         nmPerplexity.enable();
                     }else{
-                        nmNumComponents.enable();
                         nmPerplexity.disable();
                     }
                     checkBtnsStatus;
@@ -354,7 +352,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
         var nmNumComponents = new Ext.form.NumberField({
             allowBlank: false,
-            fieldLabel: 'PCA - Components to Show',
+            fieldLabel: 'Components to Plot',
             width: fieldWidth,
             value: 2,
             maxValue: 6, 
@@ -365,7 +363,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
         var rgImpute = new Ext.form.RadioGroup({
             allowBlank: false,
-            fieldLabel: 'Missing Value Imputation Method',
+            fieldLabel: 'Missing Value Imputation',
             width: fieldWidth,
             columns: 2,
             items: [
@@ -517,7 +515,13 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 if ( errors && errors.length > 0 ){
                     setReportRunning( false );
                     
-                    errors = errors[0].match(/R Report Error(?:\s|\S)+/g); // clean msg
+                    // Trim to expected errors with useful info for user
+                    errors = errors[0].match(/R Report Error(?:\s|\S)+/g);
+
+                    // If unexpected R Report Error fail gracefully
+                    if( errors == null){
+                        errors = ["Unexpected Error in R Markdown Report. Please notify an adminstrator."]
+                    }
                     LABKEY.ext.ISCore.onFailure({
                         exception: errors.join('\n')
                     });

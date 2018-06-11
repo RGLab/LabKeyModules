@@ -24,7 +24,7 @@ library(plotly)
 
 ```{r helper-fn}
 getAssayData <- function(assay, con, timePts, timeAs){
-  dat <- con$getDataset(assay, original_view = TRUE)
+  dat <- con$getDataset(assay, original_view = TRUE, transform.method = "auto")
   dat$stc_key <- paste(dat$study_time_collected, dat$study_time_collected_unit)
   dat <- dat[ dat$stc_key %in% timePts]
 
@@ -87,80 +87,75 @@ getAssayData <- function(assay, con, timePts, timeAs){
         summarise(newValue = unique(mean(spot_number_reported)))
       dat <- spread(dat, key = "analyte_day", value = "newValue")
     }
-
-  }else if(assay == "pcr"){
-    cols <- c("participant_id", "study_time_collected", "entrez_gene_id", "value_reported")
-    dat <- dat[ , cols, with = FALSE ]
-    if(timeAs == "observation"){
-      dat <- dat %>% 
-        mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
-        group_by(sub_tp, entrez_gene_id) %>%
-        summarize(newValue = unique(mean(value_reported)))
-      dat <- spread(dat, key = "entrez_gene_id", value = "newValue")
-    }else{
-      dat <- dat %>%
-        mutate(gene_day = paste(entrez_gene_id, study_time_collected, assay, sep = "_")) %>%
-        group_by_("participant_id", "gene_day") %>%
-        summarise(value_reported)
-      dat <- spread(dat, key = "gene_day", value = "value_reported")
-    }
   }
-
   return(data.frame(dat, stringsAsFactors = FALSE))
 }
 ```
 
 ```{r prep-assay-data}
-# ImmuneSpace connection
-onTest <- grepl("test", labkey.url.params$baseUrl)
-con <- CreateConnection(sdy, onTest = onTest)
-
-# get assay data
-aData <- lapply(assays,
-                getAssayData,
-                con = con,
-                timePts = timePts,
-                timeAs = timeAs)
-
-# Check aData to be sure non-null
-nulls <- sapply(aData, is.null)
-aData <- aData[ !nulls ]
-assaysSkipped <- ifelse( any(nulls) == FALSE, "None", assays [ nulls] )
-
-# Demo subs
-demo <- con$getDataset("demographics")
-
-# combine
-allMat <- Reduce(function(x,y){merge(x,y,all=T)}, aData)
-rownames(allMat) <- allMat[,1]
-allMat <- allMat[,-1]
-
-# normalize
-allMat <- scale(allMat)
-
-# Impute missing values
-if(impute == "mean"){
-    allMat <- apply(allMat, 2, function(x){ x[is.na(x)] <- mean(x, na.rm = T); return(x)})
-}else if(impute == "median"){
-    allMat <- apply(allMat, 2, function(x){ x[is.na(x)] <- median(x, na.rm = T); return(x)})
-}else if(impute == "knn"){
-    res <- impute::impute.knn(as.matrix(allMat))
-    allMat <- res$data
-}else if(impute == "none"){
-    allMat <- allMat[ complete.cases(allMat), ]
+# Cache the allMat object on first run and then re-use for other labels
+dimReduxPath <- paste0("/share/files/Studies/", sdy, "/@files/cache/DimensionReduction/")
+if (!dir.exists(dimReduxPath)) {
+  dir.create(dimReduxPath)
 }
+rdaPath <- paste0(dimReduxPath, labkey.user.email)
 
-if(dim(allMat)[2] < 2){ 
-    stop("R Report Error: Too few variables selected. Please select more assays or timepoints and re-run.")
-}else if(dim(allMat)[1] < 1){
-    stop("R Report Error: No subjects with complete cases. Select imputation method other than 'None' and retry.")
+if (label == "age_reported"){
+    # ImmuneSpace connection
+    onTest <- grepl("test", labkey.url.params$baseUrl)
+    con <- CreateConnection(sdy, onTest = onTest)
+
+    # get assay data
+    aData <- lapply(assays,
+                    getAssayData,
+                    con = con,
+                    timePts = timePts,
+                    timeAs = timeAs)
+
+    # Check aData to be sure non-null
+    nulls <- sapply(aData, is.null)
+    aData <- aData[ !nulls ]
+    assaysSkipped <- ifelse( any(nulls) == FALSE, "None", assays [ nulls] )
+
+    # Demo subs
+    demo <- con$getDataset("demographics")
+
+    # combine
+    allMat <- Reduce(function(x,y){merge(x,y,all=T)}, aData)
+    rownames(allMat) <- allMat[,1]
+    allMat <- allMat[,-1]
+
+    # normalize
+    allMat <- scale(allMat)
+
+    # Impute missing values
+    if(impute == "mean"){
+        allMat <- apply(allMat, 2, function(x){ x[is.na(x)] <- mean(x, na.rm = T); return(x)})
+    }else if(impute == "median"){
+        allMat <- apply(allMat, 2, function(x){ x[is.na(x)] <- median(x, na.rm = T); return(x)})
+    }else if(impute == "knn"){
+        res <- impute::impute.knn(as.matrix(allMat))
+        allMat <- res$data
+    }else if(impute == "none"){
+        allMat <- allMat[ complete.cases(allMat), ]
+    }
+
+    if(dim(allMat)[2] < 2){ 
+        stop("R Report Error: Too few variables selected. Please select more assays or timepoints and re-run.")
+    }else if(dim(allMat)[1] < 1){
+        stop("R Report Error: No subjects with complete cases. Select imputation method other than 'None' and retry.")
+    }
+    save(demo, file = paste0(rdaPath, ".demo.rda"))
+    save(allMat, file = paste0(rdaPath, ".allmat.rda"))
+} else {
+    load(file = paste0(rdaPath, ".demo.rda"))
+    load(file = paste0(rdaPath, ".allmat.rda"))
 }
 ```
 
 ### General Information
 - Number of Observations (Subjects): `r dim(allMat)[1]`
 - Number of Features (Assay Data): `r dim(allMat)[2]`
-- Assays Skipped Due to Missing Timepoints: `r assaysSkipped`
 
 ```{r prep-labels}
 # Provide label vector
@@ -192,14 +187,14 @@ if(label == "hai response"){
 prettyLbl <- tools::toTitleCase(gsub("_", " ", label))
 
 # helper for iterating through multiple components of PCA 
-makePlot <- function(i, resObj, type){
+makePlot <- function(i, j, resObj, type){
   if(type == "tSNE"){
-    df <- data.frame(x = resObj$Y[,1],
-                     y = resObj$Y[,2],
+    df <- data.frame(x = resObj$Y[,i],
+                     y = resObj$Y[,j],
                      stringsAsFactors = FALSE)
   }else{
     df <- data.frame(x = pca$x[, paste0("PC",i)],
-                     y = pca$x[, paste0("PC",i+1)],
+                     y = pca$x[, paste0("PC",j)],
                      stringsAsFactors = FALSE)
   }
   
@@ -209,8 +204,8 @@ makePlot <- function(i, resObj, type){
                color = colorCol,
                hoverinfo = 'text',
                text = paste(prettyLbl, ": ", colorCol, "<br>ID: ", rownames(allMat))) %>%
-       layout(xaxis = list(title = paste0(type,i)), 
-              yaxis = list(title = paste0(type, i+1)),
+       layout(xaxis = list(title = paste0(type, i)), 
+              yaxis = list(title = paste0(type, j)),
               annotations = list(yref = 'paper',
                                  xref = 'paper',
                                  y = 1.02,
@@ -222,26 +217,36 @@ makePlot <- function(i, resObj, type){
               showlegend=TRUE)
 }
 
+# create and sort possible component combinations
+poss <- expand.grid(j = 1:numComponents, i = 1:numComponents)
+poss <- poss[ poss$j != poss$i, ]
+poss$test <- sapply(1:nrow(poss), function(x){
+    paste(sort(c(poss[x,1], poss[x,2])), collapse = ":")
+})
+poss <- poss[ !duplicated(poss$test), ]
+
+# Run analysis and get pieces together for plotting
 if(plotType == "tSNE"){
   set.seed(8)
   # Avoid duplicate rows by adding random noise
   if( any(duplicated(allMat)) ){
     allMat[,1] <- jitter(allMat[,1], factor = 1, amount = NULL)
   }
-  tRes <- Rtsne::Rtsne(allMat, perplexity = perplexity)
-  p <- makePlot(1, tRes, "tSNE")
-  p
+  tRes <- Rtsne::Rtsne(allMat, dims = numComponents, perplexity = perplexity)
+  moreArgs <- list(resObj = tRes, type = "tSNE")
 }else{
   pca <- prcomp(allMat)
-  screeplot(pca, type="lines", col = 3)
-  plots <- lapply(seq(numComponents-1),
-                  makePlot,
-                  resObj = pca,
-                  type = "PCA") 
-  htmltools::tagList(plots)
+  moreArgs <- list(resObj = pca, type = "PCA")
 }
-```
 
+plots <- mapply(makePlot,
+                i = poss$i,
+                j = poss$j,
+                MoreArgs = moreArgs,
+                SIMPLIFY = FALSE
+                ) 
+htmltools::tagList(plots)
+```
 <script>
 window.HTMLWidgets.staticRender();
 </script>

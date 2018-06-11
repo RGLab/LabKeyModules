@@ -3,7 +3,6 @@
     <dependencies>
         <dependency path='ISCore/Common'/>
         <dependency path='ISCore/ExtendedLovCombo'/>
-        <dependency path='ISCore/SuperBoxSelect'/>
         <dependency path='dimRedux.js'/>
     </dependencies>
 </view>

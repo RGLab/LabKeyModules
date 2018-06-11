@@ -94,18 +94,6 @@ FROM
        SELECT
          study_time_collected || ' ' || study_time_collected_unit as Timepoint,
          COUNT( participantid ) AS n,
-         'pcr' AS Name,
-         'Polymerisation chain reaction (PCR)' AS Label
-       FROM
-         pcr
-       GROUP BY 
-          study_time_collected, study_time_collected_unit
-
-       UNION
-       
-       SELECT
-         study_time_collected || ' ' || study_time_collected_unit as Timepoint,
-         COUNT( participantid ) AS n,
          'hla_typing' AS Name,
          'Human leukocyte antigen (HLA) typing' AS Label,
        FROM
