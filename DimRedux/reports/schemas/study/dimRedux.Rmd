@@ -103,9 +103,20 @@ getAssayData <- function(assay, con, timePts, timeAs){
     }
 
   }else if(assay == "gene_expression"){
-     dat <- dat[, grep("stc_key|study_time_collected", colnames(dat), invert = T)]
+    if(timeAs == "variable"){
+      mats <- lapply(timePts, function(x){
+        mat <- dat[ dat$stc_key == x, ]
+        mat <- mat[, grep("stc_key|study_time_collected", colnames(dat), invert = T)]
+        nms <- colnames(mat)[ colnames(mat) != "participant_id" ]
+        nms <- paste0(nms, "_", gsub(" Days", "", x))
+        colnames(mat) <- c(nms, "participant_id")
+        return(mat)
+      })
+      dat <- Reduce(function(x,y){merge(x,y, by="participant_id", all=T)}, mats)
+    }else{
+      dat <- dat[, grep("stc_key|study_time_collected", colnames(dat), invert = T)]
+    } 
   }
-
 
   return(data.frame(dat, stringsAsFactors = FALSE))
 }
@@ -267,6 +278,15 @@ plots <- mapply(makePlot,
                 ) 
 htmltools::tagList(plots)
 ```
+
+```{r, cleanup}
+if( (timeAs == "variable" & label == "gender") | (timeAs == "observation" & label == "time") ){
+    file.remove(paste0(rdaPath, ".demo.rda"))
+    file.remove(paste0(rdaPath, ".allmat.rda"))
+}
+```
+
+
 <script>
 window.HTMLWidgets.staticRender();
 </script>
