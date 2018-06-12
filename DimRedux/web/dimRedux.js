@@ -27,7 +27,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         var
             me                          = this,
             maskReport                  = undefined,
-            fieldWidth                  = 250,
+            fieldWidth                  = 350,
             labelWidth                  = 200,
             flagAssay                   = undefined
             ;
@@ -103,7 +103,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 cbTimePoints.bindStore(tpStore);
             },
             values: [],
-            byTP: {}
+            byTP: {},
+            assayNms: {}
         };
 
         LABKEY.Query.selectRows({                                                               
@@ -115,7 +116,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         strTimePoints.byTP[row.Timepoint] = [row.Name];
                     }else{
                         strTimePoints.byTP[row.Timepoint].push(row.Name);
-                    }   
+                    }
+                    strTimePoints.assayNms[row.Name] = row.Label;   
                 }); 
                 strTimePoints.load();           
             },  
@@ -239,6 +241,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             store: new Ext.data.SimpleStore({data: [], id: 0, fields: [] }),
             valueField: 'value',
             width: fieldWidth,
+            listWidth: fieldWidth,
             cls: 'ui-test-assays'
         });
 
@@ -286,7 +289,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     } 
                     var preStore = []; 
                     assays.forEach( function(z){
-                        preStore.push([z,z]);
+                        preStore.push([strTimePoints.assayNms[z],z]);
                     }); 
                     var assayStore = new Ext.data.SimpleStore({
                         data: preStore,

@@ -24,9 +24,24 @@ library(plotly)
 
 ```{r helper-fn}
 getAssayData <- function(assay, con, timePts, timeAs){
-  dat <- con$getDataset(assay, original_view = TRUE, transform.method = "auto")
+  if(assay != "gene_expression"){
+    dat <- con$getDataset(assay, original_view = TRUE, transform.method = "auto")
+  }else{
+    eset <- con$getGEMatrix(con$cache$GE_matrices$name)
+    dat <- data.frame(t(Biobase::exprs(eset)),stringsAsFactors = F)
+    gef <- con$getDataset("gene_expression_files", original_view = T)
+    ptid <- gef$participant_id[ match(rownames(dat), gef$biosample_accession) ]
+    dat$study_time_collected <- gef$study_time_collected[ match(rownames(dat), gef$biosample_accession)]
+    dat$study_time_collected_unit <- gef$study_time_collected_unit[ match(rownames(dat), gef$biosample_accession)]
+    if(timeAs == "observation"){
+      dat$sub_tp <- paste0( ptid, "_", dat$study_time_collected)
+    }else{
+      dat$participant_id <- ptid
+    }
+  }
+  
   dat$stc_key <- paste(dat$study_time_collected, dat$study_time_collected_unit)
-  dat <- dat[ dat$stc_key %in% timePts]
+  dat <- dat[ dat$stc_key %in% timePts, ]
 
   if(nrow(dat) == 0){ return() } # Assay does not contain chosen timepoints
 
@@ -46,12 +61,11 @@ getAssayData <- function(assay, con, timePts, timeAs){
     }
     
   }else if(assay == "fcs_analyzed_result"){
-    dat$fcar_percent_population <- round(as.numeric(dat$population_cell_number) / as.numeric(dat$base_parent_population) * 100, 2)
     if(timeAs == "observation"){ 
       dat$sub_tp <- paste0(dat$participant_id, "_", dat$study_time_collected)
-      dat <- dat[ , c("sub_tp", "fcar_percent_population") ]
+      dat <- dat[ , c("sub_tp", "population_cell_number") ]
     }else{
-      dat <- dat[ , c("participant_id", "fcar_percent_population"), with = FALSE]
+      dat <- dat[ , c("participant_id", "population_cell_number"), with = FALSE]
     }
     
   }else if(assay == "elisa"){
@@ -87,7 +101,12 @@ getAssayData <- function(assay, con, timePts, timeAs){
         summarise(newValue = unique(mean(spot_number_reported)))
       dat <- spread(dat, key = "analyte_day", value = "newValue")
     }
+
+  }else if(assay == "gene_expression"){
+     dat <- dat[, grep("stc_key|study_time_collected", colnames(dat), invert = T)]
   }
+
+
   return(data.frame(dat, stringsAsFactors = FALSE))
 }
 ```
@@ -122,8 +141,9 @@ if (label == "age_reported"){
 
     # combine
     allMat <- Reduce(function(x,y){merge(x,y,all=T)}, aData)
-    rownames(allMat) <- allMat[,1]
-    allMat <- allMat[,-1]
+    nmsCol <- grep("sub_tp|participant_id", colnames(allMat))
+    rownames(allMat) <- allMat[, nmsCol]
+    allMat <- allMat[,-nmsCol]
 
     # normalize
     allMat <- scale(allMat)

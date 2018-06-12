@@ -3,8 +3,6 @@ SELECT
     dataset_n.Name,
     dataset_n.Label,
     dataset_n.Timepoint,
-    DataSets.CategoryId AS Category,
-    DataSets.DataSetId AS Id
 FROM
     (
        SELECT
@@ -100,10 +98,19 @@ FROM
           hla_typing
        GROUP BY 
           study_time_collected, study_time_collected_unit
+       
+       UNION
 
-    ) AS dataset_n,
-    DataSets
+       SELECT
+         coefficient as Timepoint,
+         COUNT(analysis_accession) AS n,
+         'gene_expression' as Name,
+         'Gene Expression' as Label
+       FROM
+          gene_expression.gene_expression_analysis
+       GROUP BY
+          coefficient
+
+    ) AS dataset_n
 WHERE
-    DataSets.Name = dataset_n.Name AND
-    DataSets.ShowByDefault = True AND
     dataset_n.n > 0
