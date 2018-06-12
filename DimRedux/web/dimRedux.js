@@ -430,8 +430,17 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     lbls.push('time');
                     reportHolder['time'] = null;
                 }
+                    // Clear Cache!
+                    var fileSystem = new LABKEY.FileSystem.WebdavFileSystem({   
+                        baseUrl: "/_webdav/" + LABKEY.ActionURL.getContainer() + "/@files/cache/"
+                    });
 
-                
+                    fileSystem.deletePath({
+                        path: "DimensionReduction/" + LABKEY.user.email,
+                        isFile: false
+                    });
+                                   
+                    // Run Report 
                     inputParams = { 
                         baseUrl:                LABKEY.ActionURL.getBaseURL(),
                         folderPath:             LABKEY.ActionURL.getContainer(),
@@ -523,7 +532,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
                     // If unexpected R Report Error fail gracefully
                     if( errors == null){
-                        errors = ["Unexpected Error in R Markdown Report. Please notify an adminstrator."]
+                        errors = ["\nUnexpected Error in R Markdown Report. Please notify an adminstrator."]
                     }
                     LABKEY.ext.ISCore.onFailure({
                         exception: errors.join('\n')

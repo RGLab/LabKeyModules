@@ -124,13 +124,19 @@ getAssayData <- function(assay, con, timePts, timeAs){
 
 ```{r prep-assay-data}
 # Cache the allMat object on first run and then re-use for other labels
-dimReduxPath <- paste0("/share/files/Studies/", sdy, "/@files/cache/DimensionReduction/")
-if (!dir.exists(dimReduxPath)) {
-  dir.create(dimReduxPath)
+rdaPath <- paste0("/share/files/Studies/", sdy, "/@files/cache/DimensionReduction/", labkey.user.email)
+if( !dir.exists(rdaPath) ){
+    dir.create(rdaPath, recursive = TRUE)
 }
-rdaPath <- paste0(dimReduxPath, labkey.user.email)
 
-if (label == "age_reported"){
+# Need external count because array.forEach not predictable
+if ( file.exists(paste0(rdaPath, "/iter.rda")) ){
+    load(file = paste0(rdaPath, "/iter.rda"))
+}else{
+    iter <- 1
+}
+
+if (iter == 1){
     # ImmuneSpace connection
     onTest <- grepl("test", labkey.url.params$baseUrl)
     con <- CreateConnection(sdy, onTest = onTest)
@@ -145,7 +151,6 @@ if (label == "age_reported"){
     # Check aData to be sure non-null
     nulls <- sapply(aData, is.null)
     aData <- aData[ !nulls ]
-    assaysSkipped <- ifelse( any(nulls) == FALSE, "None", assays [ nulls] )
 
     # Demo subs
     demo <- con$getDataset("demographics")
@@ -176,11 +181,11 @@ if (label == "age_reported"){
     }else if(dim(allMat)[1] < 1){
         stop("R Report Error: No subjects with complete cases. Select imputation method other than 'None' and retry.")
     }
-    save(demo, file = paste0(rdaPath, ".demo.rda"))
-    save(allMat, file = paste0(rdaPath, ".allmat.rda"))
+    save(demo, file = paste0(rdaPath, "/demo.rda"))
+    save(allMat, file = paste0(rdaPath, "/allmat.rda"))
 } else {
-    load(file = paste0(rdaPath, ".demo.rda"))
-    load(file = paste0(rdaPath, ".allmat.rda"))
+    load(file = paste0(rdaPath, "/demo.rda"))
+    load(file = paste0(rdaPath, "/allmat.rda"))
 }
 ```
 
@@ -280,9 +285,13 @@ htmltools::tagList(plots)
 ```
 
 ```{r, cleanup}
-if( (timeAs == "variable" & label == "gender") | (timeAs == "observation" & label == "time") ){
-    file.remove(paste0(rdaPath, ".demo.rda"))
-    file.remove(paste0(rdaPath, ".allmat.rda"))
+if( (timeAs == "variable" & iter == 4) | (timeAs == "observation" & iter == 5) ){
+    file.remove(paste0(rdaPath, "/demo.rda"))
+    file.remove(paste0(rdaPath, "/allmat.rda"))
+    file.remove(paste0(rdaPath, "/iter.rda"))
+}else{
+    iter <- iter + 1
+    save(iter, file = paste0(rdaPath, "/iter.rda"))
 }
 ```
 

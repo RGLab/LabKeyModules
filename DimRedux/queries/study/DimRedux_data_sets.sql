@@ -9,7 +9,7 @@ FROM
          study_time_collected || ' ' || study_time_collected_unit as Timepoint,
          COUNT( participantid ) AS n,
          'fcs_analyzed_result' AS Name,
-         'Flow cytometry analyzed results' AS Label
+         'Flow Cytometry' AS Label
        FROM
           fcs_analyzed_result
        GROUP BY 
@@ -21,7 +21,7 @@ FROM
          study_time_collected || ' ' || study_time_collected_unit as Timepoint,
          COUNT( participantid ) AS n,
          'mbaa' AS Name,
-         'Multiplex bead array asssay' AS Label
+         'MBAA' AS Label
        FROM
           mbaa
        GROUP BY 
@@ -33,7 +33,7 @@ FROM
          study_time_collected || ' ' || study_time_collected_unit as Timepoint,
          COUNT( participantid ) AS n,
          'kir_typing' AS Name,
-         'Killer cell immunoglobulin-like receptors (KIR) typing' AS Label
+         'KIR Typing' AS Label
        FROM
           kir_typing
        GROUP BY 
@@ -45,7 +45,7 @@ FROM
          study_time_collected || ' ' || study_time_collected_unit as Timepoint,
          COUNT( participantid ) AS n,
          'elisa' AS Name,
-         'Enzyme-linked immunosorbent assay (ELISA)' AS Label
+         'ELISA' AS Label
        FROM
           elisa
        GROUP BY 
@@ -57,7 +57,7 @@ FROM
          study_time_collected || ' ' || study_time_collected_unit as Timepoint,
          COUNT( participantid ) AS n,
          'elispot' AS Name,
-         'Enzyme-Linked ImmunoSpot (ELISPOT)' AS Label
+         'ELISPOT' AS Label
        FROM
           elispot
        GROUP BY 
@@ -69,7 +69,7 @@ FROM
          study_time_collected || ' ' || study_time_collected_unit as Timepoint,
          COUNT( participantid ) AS n,
          'hai' AS Name,
-         'Hemagglutination inhibition (HAI)' AS Label
+         'HAI' AS Label
        FROM
           hai
        GROUP BY 
@@ -81,7 +81,7 @@ FROM
          study_time_collected || ' ' || study_time_collected_unit as Timepoint,
          COUNT( participantid ) AS n,
          'neut_ab_titer' AS Name,
-         'Neutralizing antibody titer' AS Label
+         'NAB' AS Label
        FROM
          neut_ab_titer
        GROUP BY 
@@ -93,7 +93,7 @@ FROM
          study_time_collected || ' ' || study_time_collected_unit as Timepoint,
          COUNT( participantid ) AS n,
          'hla_typing' AS Name,
-         'Human leukocyte antigen (HLA) typing' AS Label,
+         'HLA typing' AS Label,
        FROM
           hla_typing
        GROUP BY 
