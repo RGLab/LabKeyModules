@@ -123,20 +123,6 @@ getAssayData <- function(assay, con, timePts, timeAs){
 ```
 
 ```{r prep-assay-data}
-# Cache the allMat object on first run and then re-use for other labels
-rdaPath <- paste0("/share/files/Studies/", sdy, "/@files/cache/DimensionReduction/", labkey.user.email)
-if( !dir.exists(rdaPath) ){
-    dir.create(rdaPath, recursive = TRUE)
-}
-
-# Need external count because array.forEach not predictable
-if ( file.exists(paste0(rdaPath, "/iter.rda")) ){
-    load(file = paste0(rdaPath, "/iter.rda"))
-}else{
-    iter <- 1
-}
-
-if (iter == 1){
     # ImmuneSpace connection
     onTest <- grepl("test", labkey.url.params$baseUrl)
     con <- CreateConnection(sdy, onTest = onTest)
@@ -164,6 +150,13 @@ if (iter == 1){
     # normalize
     allMat <- scale(allMat)
 
+    # Remove features with all NAs created by the merge
+    # These are coming from gene_expression
+    badCols <- apply(allMat, 2, function(x){
+      all(is.na(x))
+    })
+    allMat <- allMat[ , !badCols ]
+
     # Impute missing values
     if(impute == "mean"){
         allMat <- apply(allMat, 2, function(x){ x[is.na(x)] <- mean(x, na.rm = T); return(x)})
@@ -181,15 +174,10 @@ if (iter == 1){
     }else if(dim(allMat)[1] < 1){
         stop("R Report Error: No subjects with complete cases. Select imputation method other than 'None' and retry.")
     }
-    save(demo, file = paste0(rdaPath, "/demo.rda"))
-    save(allMat, file = paste0(rdaPath, "/allmat.rda"))
-} else {
-    load(file = paste0(rdaPath, "/demo.rda"))
-    load(file = paste0(rdaPath, "/allmat.rda"))
-}
 ```
 
 ### General Information
+- Label: `r label`
 - Number of Observations (Subjects): `r dim(allMat)[1]`
 - Number of Features (Assay Data): `r dim(allMat)[2]`
 
@@ -283,19 +271,6 @@ plots <- mapply(makePlot,
                 ) 
 htmltools::tagList(plots)
 ```
-
-```{r, cleanup}
-if( (timeAs == "variable" & iter == 4) | (timeAs == "observation" & iter == 5) ){
-    file.remove(paste0(rdaPath, "/demo.rda"))
-    file.remove(paste0(rdaPath, "/allmat.rda"))
-    file.remove(paste0(rdaPath, "/iter.rda"))
-}else{
-    iter <- iter + 1
-    save(iter, file = paste0(rdaPath, "/iter.rda"))
-}
-```
-
-
 <script>
 window.HTMLWidgets.staticRender();
 </script>

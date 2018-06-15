@@ -27,7 +27,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         var
             me                          = this,
             maskReport                  = undefined,
-            fieldWidth                  = 350,
+            fieldWidth                  = 250,
             labelWidth                  = 200,
             flagAssay                   = undefined
             ;
@@ -432,7 +432,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 }
                     // Clear Cache!
                     var fileSystem = new LABKEY.FileSystem.WebdavFileSystem({   
-                        baseUrl: "/_webdav/" + LABKEY.ActionURL.getContainer() + "/@files/cache/"
+                        baseUrl: "/_webdav" + LABKEY.ActionURL.getContainer() + "/@files/cache/"
                     });
 
                     fileSystem.deletePath({
@@ -447,14 +447,14 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         timeAs:                 rgTime.getValue().value,
                         assays:                 cbAssays.getValue(),
                         timePts:                cbTimePoints.getValue(),
-                        label:                  lbls[0],
                         plotType:               rgPlotType.getValue().value,
                         perplexity:             nmPerplexity.getValue(),
                         numComponents:          nmNumComponents.getValue(),
                         impute:                 rgImpute.getValue().value
                     }; 
-                    makeReport(inputParams);
-                
+                    lbls.forEach( function(lbl){
+                        makeReport(inputParams, lbl);
+                    });
             },
             text: 'Run'
         });
@@ -506,9 +506,11 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             );
         };        
         
-        var makeReport = function(inputParams){
-            cnfReport.inputParams = inputParams;
-            LABKEY.Report.execute( cnfReport );        
+        var makeReport = function(inputParams, lbl){
+            var tmpReport = Object.assign({},cnfReport);
+            tmpReport.inputParams = Object.assign({},inputParams);
+            tmpReport.inputParams["label"] = lbl;
+            LABKEY.Report.execute( tmpReport );        
     
         }
 
@@ -542,14 +544,16 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     // to avoid long load times when changing plots.
                     var htmlValue = outputParams[0].value;
 
-                    if( cnfReport.inputParams.label == 'age_reported'){
-                        srcScripts = htmlValue.match(/style>(?:\s|\S)+head>/g, "style>\n</head"); 
-                        srcScripts = srcScripts[0].replace(/style>\n\s/g, "");
-                        srcScripts = srcScripts.replace(/<.head>/g, "");
-                    }
+                    srcScripts = htmlValue.match(/style>(?:\s|\S)+head>/g, "style>\n</head"); 
+                    srcScripts = srcScripts[0].replace(/style>\n\s/g, "");
+                    srcScripts = srcScripts.replace(/<.head>/g, "");
 
-                    htmlValue = htmlValue.replace(/style>(?:\s|\S)+head>/g, "style>\n</head");                   
-                    reportHolder[cnfReport.inputParams.label] = htmlValue;
+                    htmlValue = htmlValue.replace(/style>(?:\s|\S)+head>/g, "style>\n</head");            
+		    var currLbl = htmlValue.match(/<li>Label(?:\s|\S)+Obs/g)
+		    currLbl = currLbl[0].replace(/<li>Label: /g, "");
+		    currLbl = currLbl.replace(/<\/li>\n<li>Number of Obs/g, "")
+	       
+                    reportHolder[currLbl] = htmlValue;
 
                     // Determine if other reports left to run
                     var repKeys = Object.keys(reportHolder);
@@ -572,9 +576,6 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
                         pnlTabs.setActiveTab( 1 );
                         window.HTMLWidgets.staticRender();
-                    } else {
-                        cnfReport.inputParams.label = repsLeft[0]
-                        makeReport(cnfReport.inputParams);
                     }                    
                 }
             }
