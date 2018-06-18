@@ -177,48 +177,22 @@ getAssayData <- function(assay, con, timePts, timeAs){
 ```
 
 ### General Information
-- Label: `r label`
 - Number of Observations (Subjects): `r dim(allMat)[1]`
 - Number of Features (Assay Data): `r dim(allMat)[2]`
 
-```{r prep-labels}
-# Provide label vector
-subs <- rownames(allMat)
-if(label == "hai response"){
-    if("hai" %in% assays){
-      hai <- aData[[ grep("hai", assays) ]]
-    }else{
-      hai <- getAssayData("hai", con, timeAs = timeAs, timePts = timePts)
-    }
-    baseline <- grep("0_mean_hai", colnames(hai))
-    laterDay <- max(colnames(hai)[ grep("mean_hai", colnames(hai))])
-    hai$respCall <- ifelse(hai[[laterDay]]/ hai[[baseline]] > 4, "high", "low")
-    subCol <- ifelse(timeAs == "observation", "sub_tp", "participant_id")
-    hai <- hai[ hai[[subCol]] %in% subs, ]
-    hai <- hai[ order(hai[[subCol]]), ]
-    colorCol <- hai$respCall
-}else if(label == "time"){
-    colorCol <- gsub("^SUB\\d{5,6}\\.\\d{2,4}_", "", subs)
-}else{
-    if(timeAs == "observation"){ subs <- gsub("_\\d{1}", "", subs) }
-    colorCol <- demo[[label]][ match(subs, demo$participant_id)]
-}
-```
+```{r plot helpers}
+# get demo once
+demo <- con$getDataset("demographics")
 
-### Plots
-```{r  plot, fig.align="left"}
-# Setup
-prettyLbl <- tools::toTitleCase(gsub("_", " ", label))
-
-# helper for iterating through multiple components of PCA 
-makePlot <- function(i, j, resObj, type){
+# helper for iterating through multiple components
+genPlot <- function(i, j, resObj, type, prettyLbl, colorCol){
   if(type == "tSNE"){
     df <- data.frame(x = resObj$Y[,i],
                      y = resObj$Y[,j],
                      stringsAsFactors = FALSE)
   }else{
-    df <- data.frame(x = pca$x[, paste0("PC",i)],
-                     y = pca$x[, paste0("PC",j)],
+    df <- data.frame(x = resObj$x[, paste0("PC",i)],
+                     y = resObj$x[, paste0("PC",j)],
                      stringsAsFactors = FALSE)
   }
   
@@ -241,34 +215,97 @@ makePlot <- function(i, j, resObj, type){
               showlegend=TRUE)
 }
 
-# create and sort possible component combinations
-poss <- expand.grid(j = 1:numComponents, i = 1:numComponents)
-poss <- poss[ poss$j != poss$i, ]
-poss$test <- sapply(1:nrow(poss), function(x){
-    paste(sort(c(poss[x,1], poss[x,2])), collapse = ":")
-})
-poss <- poss[ !duplicated(poss$test), ]
-
-# Run analysis and get pieces together for plotting
-if(plotType == "tSNE"){
-  set.seed(8)
-  # Avoid duplicate rows by adding random noise
-  if( any(duplicated(allMat)) ){
-    allMat[,1] <- jitter(allMat[,1], factor = 1, amount = NULL)
+makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
+  prettyLbl <- tools::toTitleCase(gsub("_", " ", label))
+  
+  subs <- rownames(allMat)
+  
+  if(label == "time"){
+    colorCol <- gsub("^SUB\\d{5,6}\\.\\d{2,4}_", "", subs)
+  }else{
+    if(timeAs == "observation"){ subs <- gsub("_\\d{1}", "", subs) }
+    colorCol <- demo[[label]][ match(subs, demo$participant_id)]
   }
-  tRes <- Rtsne::Rtsne(allMat, dims = numComponents, perplexity = perplexity)
-  moreArgs <- list(resObj = tRes, type = "tSNE")
-}else{
-  pca <- prcomp(allMat)
-  moreArgs <- list(resObj = pca, type = "PCA")
+  
+  # create and sort possible component combinations
+  poss <- expand.grid(j = 1:numComponents, i = 1:numComponents)
+  poss <- poss[ poss$j != poss$i, ]
+  poss$test <- sapply(1:nrow(poss), function(x){
+      paste(sort(c(poss[x,1], poss[x,2])), collapse = ":")
+  })
+  poss <- poss[ !duplicated(poss$test), ]
+  
+  # Run analysis and get pieces together for plotting
+  if(plotType == "tSNE"){
+    set.seed(8)
+    # Avoid duplicate rows by adding random noise
+    if( any(duplicated(allMat)) ){
+      allMat[,1] <- jitter(allMat[,1], factor = 1, amount = NULL)
+    }
+    tRes <- Rtsne::Rtsne(allMat, dims = numComponents, perplexity = perplexity)
+    moreArgs <- list(resObj = tRes, type = "tSNE", prettyLbl = prettyLbl, colorCol = colorCol)
+  }else{
+    pca <- prcomp(allMat)
+    moreArgs <- list(resObj = pca, type = "PCA", prettyLbl = prettyLbl, colorCol = colorCol)
+  }
+  
+  plots <- mapply(genPlot,
+                  i = poss$i,
+                  j = poss$j,
+                  MoreArgs = moreArgs,
+                  SIMPLIFY = FALSE
+                  ) 
 }
 
-plots <- mapply(makePlot,
-                i = poss$i,
-                j = poss$j,
-                MoreArgs = moreArgs,
-                SIMPLIFY = FALSE
-                ) 
+```
+
+## Plots {.tabset}
+
+### Age
+```{r  age, fig.align="left"}
+plots <- makePlot(label = "age_reported",
+                  timeAs = timeAs,
+                  demo = demo,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+                  )
+htmltools::tagList(plots)
+```
+
+### Gender
+```{r  gender, fig.align="left"}
+plots <- makePlot(label = "gender",
+                  timeAs = timeAs,
+                  demo = demo,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+                  )
+htmltools::tagList(plots)
+```
+
+### Ethnicity
+```{r  ethnicity, fig.align="left"}
+plots <- makePlot(label = "ethnicity",
+                  timeAs = timeAs,
+                  demo = demo,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+                  )
+htmltools::tagList(plots)
+```
+
+### Race
+```{r  race, fig.align="left"}
+plots <- makePlot(label = "race",
+                  timeAs = timeAs,
+                  demo = demo,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+                  )
 htmltools::tagList(plots)
 ```
 <script>
