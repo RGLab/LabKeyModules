@@ -2,11 +2,13 @@
 SELECT
     dataset_n.Name,
     dataset_n.Label,
-    dataset_n.Timepoint,
+    CAST(dataset_n.study_time_collected AS INTEGER) AS study_time_collected,
+    dataset_n.study_time_collected_unit
 FROM
     (
        SELECT
-         study_time_collected || ' ' || study_time_collected_unit as Timepoint,
+         study_time_collected,
+         study_time_collected_unit,
          COUNT( participantid ) AS n,
          'fcs_analyzed_result' AS Name,
          'Flow Cytometry' AS Label
@@ -18,7 +20,8 @@ FROM
        UNION
        
        SELECT
-         study_time_collected || ' ' || study_time_collected_unit as Timepoint,
+         study_time_collected,
+         study_time_collected_unit,
          COUNT( participantid ) AS n,
          'mbaa' AS Name,
          'MBAA' AS Label
@@ -30,7 +33,8 @@ FROM
        UNION
        
        SELECT
-         study_time_collected || ' ' || study_time_collected_unit as Timepoint,
+         study_time_collected,
+         study_time_collected_unit,
          COUNT( participantid ) AS n,
          'kir_typing' AS Name,
          'KIR Typing' AS Label
@@ -42,7 +46,8 @@ FROM
        UNION
        
        SELECT
-         study_time_collected || ' ' || study_time_collected_unit as Timepoint,
+         study_time_collected,
+         study_time_collected_unit,
          COUNT( participantid ) AS n,
          'elisa' AS Name,
          'ELISA' AS Label
@@ -54,7 +59,8 @@ FROM
        UNION
        
        SELECT
-         study_time_collected || ' ' || study_time_collected_unit as Timepoint,
+         study_time_collected,
+         study_time_collected_unit,
          COUNT( participantid ) AS n,
          'elispot' AS Name,
          'ELISPOT' AS Label
@@ -66,7 +72,8 @@ FROM
        UNION
        
        SELECT
-         study_time_collected || ' ' || study_time_collected_unit as Timepoint,
+         study_time_collected,
+         study_time_collected_unit,
          COUNT( participantid ) AS n,
          'hai' AS Name,
          'HAI' AS Label
@@ -78,7 +85,8 @@ FROM
        UNION
        
        SELECT
-         study_time_collected || ' ' || study_time_collected_unit as Timepoint,
+         study_time_collected,
+         study_time_collected_unit,
          COUNT( participantid ) AS n,
          'neut_ab_titer' AS Name,
          'NAB' AS Label
@@ -90,7 +98,8 @@ FROM
        UNION
        
        SELECT
-         study_time_collected || ' ' || study_time_collected_unit as Timepoint,
+         study_time_collected,
+         study_time_collected_unit,
          COUNT( participantid ) AS n,
          'hla_typing' AS Name,
          'HLA typing' AS Label,
@@ -102,7 +111,8 @@ FROM
        UNION
 
        SELECT
-         coefficient as Timepoint,
+         CAST(SPLIT_PART(coefficient, ' ', 1) AS DOUBLE) AS study_time_collected,
+         SPLIT_PART(coefficient, ' ', 2) AS study_time_collected_unit,
          COUNT(analysis_accession) AS n,
          'gene_expression' as Name,
          'Gene Expression' as Label

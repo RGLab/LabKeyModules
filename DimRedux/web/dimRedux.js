@@ -175,7 +175,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
         var cbTimePoints = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
-            displayField: 'Timepoint',
+            displayField: 'Timepoints',
             fieldLabel: 'Assay Timepoints',
             lazyInit: false,
             disabled: false,
@@ -226,7 +226,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             },
             separator: ',', // IMPORTANT FOR STRSPLIT FN
             store: strTimePoints,
-            valueField: 'Timepoint',
+            valueField: 'Timepoints',
             width: fieldWidth,
             cls: 'ui-test-timepoints'
         });
