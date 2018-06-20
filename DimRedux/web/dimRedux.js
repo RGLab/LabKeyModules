@@ -71,62 +71,41 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         //           Stores                //
         /////////////////////////////////////
 
-        var strTimePoints = {
-            load: function(){
-                var tp = Object.keys(strTimePoints.byTP);
-                
-                //Order chronologically and account for hours / days
-                var hrs = [],
-                    days = [];
-                tp.forEach( function(x){
-                    if(x.match("Days") != null){
-                        days.push(Number(x.match(/\d+/)[0]));
-                    }else{
-                        hrs.push(Number(x.match(/\d+/)[0]));
-                    }
-                });
-                hrs = hrs.sort(function(a,b){ return(a-b) });
-                hrs = hrs.map( function(i){ return i + " Hours" });
-                days = days.sort(function(a,b){ return(a-b) });
-                days = days.map( function(i){ return i + " Days" });
-                var allTP = hrs.concat(days);
-                
-                // Push to store
-                allTP.forEach( function(z){
-                    strTimePoints.values.push([z,z])
-                });
-                var tpStore = new Ext.data.SimpleStore({
-                    data: strTimePoints.values,
-                    id: 0,
-                    fields: ['display', 'values']
-                });
-                cbTimePoints.bindStore(tpStore);
-            },
-            values: [],
-            byTP: {},
-            assayNms: {}
-        };
-
-        LABKEY.Query.selectRows({                                                               
+        var strTimePoints = new LABKEY.ext.Store({
             schemaName: 'study',
-            queryName: 'DimRedux_data_sets',
-            success: function(data){
-                data.rows.forEach( function(row){
-                    if(strTimePoints.byTP[row.Timepoint] == null){
-                        strTimePoints.byTP[row.Timepoint] = [row.Name];
-                    }else{
-                        strTimePoints.byTP[row.Timepoint].push(row.Name);
-                    }
-                    strTimePoints.assayNms[row.Name] = row.Label;   
-                }); 
-                strTimePoints.load();           
-            },  
-            failure: function(errorInfo, options, responseObj){
-
-            }   
-        }); 
-
+            queryName: 'DimRedux_timePoints',
+            autoLoad: true 
+        })
         
+        // This is a convluted way to ensure that the
+        // selectAll functionality is loaded and maintained.
+
+        // The first time the strAssays store is loaded
+        // the `items` holder is filled out with the unfiltered
+        // values.  This is done because the full set of options
+        // is not stored on the client side.
+
+        // This would not be a problem to use Ext.data.SimpleStore
+        // however the selectAll functionality is interfered with
+        // when binding a non LABKEY.ext.store (Ext.data.Store?)
+        var items = [];
+        var iter = 0;
+        
+        var strAssays = new LABKEY.ext.Store({
+            schemaName: 'study',
+            queryName: 'DimRedux_Gathered',
+            autoLoad: true,
+            listeners: {
+                load: function(){
+                    if(iter == 0){
+                        items = cbAssays.store.data.items;
+                    }
+                    iter = iter + 1
+                }
+            }
+        })
+        
+
         /////////////////////////////////////
         ///      Check and ComboBoxes     ///
         /////////////////////////////////////
@@ -163,8 +142,6 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
                     cbAssays.disable();
                     cbAssays.clearValue();
-                    cbAssays.store.removeAll();
-                    cbAssays.enable();
                 }
             },
             cls: 'ui-test-timebox'
@@ -173,7 +150,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
         var cbAssays = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
-            displayField: 'display',
+            displayField: 'Label',
             fieldLabel: 'Assays',
             lazyInit: false,
             disabled: true,
@@ -189,8 +166,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 }
             },
             separator: ',', // IMPORTANT FOR STRSPLIT FN
-            store: new Ext.data.SimpleStore({data: [], id: 0, fields: [] }),
-            valueField: 'value',
+            store: strAssays,
+            valueField: 'Name',
             width: fieldWidth,
             listWidth: fieldWidth,
             cls: 'ui-test-assays'
@@ -198,7 +175,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
         var cbTimePoints = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
-            displayField: 'display',
+            displayField: 'Timepoint',
             fieldLabel: 'Assay Timepoints',
             lazyInit: false,
             disabled: false,
@@ -211,50 +188,45 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     cbAssays.reset();
                     checkBtnsStatus();
                 },
-                select:     function(){
+                select: function(){
+               
+                    // clear curr vals
                     cbAssays.disable();
                     cbAssays.clearValue();
-                    cbAssays.store.removeAll();
-                    var assays = []; 
-                    var tps = cbTimePoints.getValue();
-                    tps = tps.split(",");
-                    tps.forEach( function(y){
-                        assays.push(strTimePoints.byTP[y]);
+                    cbAssays.store.clearFilter();
+                    
+                    // setup vars
+                    var tpsSelected = cbTimePoints.getValue().split(",");
+                    var okLabels = [];
+                   
+                    // Create filter based on original store values 
+                    items.forEach( function(y){
+                        var tpsAvailable = y.data.Timepoints.split(";");
+                        var intersect = tpsAvailable.filter( function(val){
+                            return( tpsSelected.indexOf(val) !== -1) ;
+                        });
+                        if(rgTime.getValue().value == "observation"){   
+                            if(intersect.length == tpsSelected.length){
+                                okLabels.push(y.data.Label);
+                            }
+                        }else{
+                            if(intersect.length > 0){
+                                okLabels.push(y.data.Label);
+                            }
+                        }
                     });
-                    assays = [].concat.apply([], assays);
-                    if( rgTime.getValue().value == "variable" ){ 
-                        // Allow all assays that have any of the timepoints
-                        assays = assays.filter( function(el, i, arr){
-                            return arr.indexOf(el) === i;
-                        });
-                    } else {
-                        // Ensure only assays with all timepoints are allowed
-                        var counts = {};
-                        assays.forEach( function(el){
-                            counts[el] = counts[el] ? counts[el] + 1 : 1;
-                        });
-                        var keys = Object.keys(counts);
-                        assays = keys.filter(function(key){ 
-                            return counts[key] == tps.length 
-                        }) 
-                    } 
-                    var preStore = []; 
-                    assays.forEach( function(z){
-                        preStore.push([strTimePoints.assayNms[z],z]);
-                    }); 
-                    var assayStore = new Ext.data.SimpleStore({
-                        data: preStore,
-                        id: 0,
-                        fields: ['display','value']
-                    }); 
-                    cbAssays.bindStore(assayStore);
-                    cbAssays.enable();
-                    checkBtnsStatus();
+
+                    // Reload store via selectRows call with .load()
+                    var lblFilter = LABKEY.Filter.create('Label', okLabels.join(";"), LABKEY.Filter.Types.IN)
+                    cbAssays.store.setUserFilters([lblFilter]);
+                    cbAssays.store.load();
+                    cbAssays.enable()
+                        
                 }
             },
             separator: ',', // IMPORTANT FOR STRSPLIT FN
-            store: new Ext.data.SimpleStore({data: [], id: 0, fields: []}),
-            valueField: 'values',
+            store: strTimePoints,
+            valueField: 'Timepoint',
             width: fieldWidth,
             cls: 'ui-test-timepoints'
         });
