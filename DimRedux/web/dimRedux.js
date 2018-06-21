@@ -81,13 +81,13 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         // selectAll functionality is loaded and maintained.
 
         // The first time the strAssays store is loaded
-        // the `items` holder is filled out with the unfiltered
-        // values.  This is done because the full set of options
-        // is not stored on the client side.
+        // cbAssays.initSelectAll() is run and the necessary pieces
+        // created if the store is not empty.
 
-        // This would not be a problem to use Ext.data.SimpleStore
-        // however the selectAll functionality is interfered with
-        // when binding a non LABKEY.ext.store (Ext.data.Store?)
+        // Using a global var holder `items` because reloading the
+        // cbAssays using cbAssays.load() after cbAssays.clearFilter()
+        // was not actually pulling the original unfiltered data.  Also,
+        // reducing the selectRows calls by half.
         var items = [];
         var iter = 0;
         
@@ -427,11 +427,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         exception: errors.join('\n')
                     });
                 } else {
-                    // Create one copy of source files and trim from plot html 
-                    // to avoid long load times when changing plots.
-                    var htmlValue = outputParams[0].value;
-
-                    $('#'+cntReport.id).html(htmlValue);
+                    $('#'+cntReport.id).html(outputParams[0].value);
                         
                     setReportRunning( false ); // Wait until all html is loaded
 
