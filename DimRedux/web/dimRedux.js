@@ -77,32 +77,10 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             autoLoad: true 
         })
         
-        // This is a convluted way to ensure that the
-        // selectAll functionality is loaded and maintained.
-
-        // The first time the strAssays store is loaded
-        // cbAssays.initSelectAll() is run and the necessary pieces
-        // created if the store is not empty.
-
-        // Using a global var holder `items` because reloading the
-        // cbAssays using cbAssays.load() after cbAssays.clearFilter()
-        // was not actually pulling the original unfiltered data.  Also,
-        // reducing the selectRows calls by half.
-        var items = [];
-        var iter = 0;
-        
         var strAssays = new LABKEY.ext.Store({
             schemaName: 'study',
             queryName: 'DimRedux_Gathered',
-            autoLoad: true,
-            listeners: {
-                load: function(){
-                    if(iter == 0){
-                        items = cbAssays.store.data.items;
-                    }
-                    iter = iter + 1
-                }
-            }
+            autoLoad: true
         })
         
 
@@ -148,6 +126,11 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
         });
 
+        // To ensure filtering from cbTimepoints works, need following:
+        // 1. lastQuery - defaults to not reloading if query is same
+        // 2. beforequery listener - defaults to true means reset
+        // 3. other listeners - need to handle timepoint selection each
+        // time or resets to original store
         var cbAssays = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
             displayField: 'Label',
@@ -155,14 +138,24 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             lazyInit: false,
             disabled: true,
             listeners: {
+                focus:      function(){
+                    handleTpSelect();
+                },
                 change:     function(){
+                    handleTpSelect();
                     checkBtnsStatus();
                 },
                 cleared:    function(){
+                    handleTpSelect();
                     checkBtnsStatus();
                 },
                 select:     function(){
+                    handleTpSelect();
                     checkBtnsStatus();
+                },
+                beforequery: function(qe){
+                    qe.combo.onLoad(); // Loads store with current filter applied
+                    return false; // Stops store from resetting to unfiltered
                 }
             },
             separator: ',', // IMPORTANT FOR STRSPLIT FN
@@ -170,8 +163,23 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             valueField: 'Name',
             width: fieldWidth,
             listWidth: fieldWidth,
+            lastQuery: '', // If lastQuery is left as default then does not reload
             cls: 'ui-test-assays'
         });
+
+        var handleTpSelect = function(){
+            var tpsSelected = cbTimePoints.getValue().split(",");
+            cbAssays.store.filterBy( function(record){
+                var tpsAvailable = record.data.Timepoints.split(";");
+                var intersect = tpsAvailable.filter( function(val){
+                    return( tpsSelected.indexOf(val) !== -1) ;
+                });
+                var obs = rgTime.getValue().value == 'observation';
+                if( (!obs & intersect.length > 0) | (obs & intersect.length == tpsSelected.length) ){
+                    return(true)
+                }
+            });
+        }
 
         var cbTimePoints = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
@@ -189,39 +197,10 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     checkBtnsStatus();
                 },
                 select: function(){
-               
-                    // clear curr vals
                     cbAssays.disable();
                     cbAssays.clearValue();
-                    cbAssays.store.clearFilter();
-                    
-                    // setup vars
-                    var tpsSelected = cbTimePoints.getValue().split(",");
-                    var okLabels = [];
-                   
-                    // Create filter based on original store values 
-                    items.forEach( function(y){
-                        var tpsAvailable = y.data.Timepoints.split(";");
-                        var intersect = tpsAvailable.filter( function(val){
-                            return( tpsSelected.indexOf(val) !== -1) ;
-                        });
-                        if(rgTime.getValue().value == "observation"){   
-                            if(intersect.length == tpsSelected.length){
-                                okLabels.push(y.data.Label);
-                            }
-                        }else{
-                            if(intersect.length > 0){
-                                okLabels.push(y.data.Label);
-                            }
-                        }
-                    });
-
-                    // Reload store via selectRows call with .load()
-                    var lblFilter = LABKEY.Filter.create('Label', okLabels.join(";"), LABKEY.Filter.Types.IN)
-                    cbAssays.store.setUserFilters([lblFilter]);
-                    cbAssays.store.load();
-                    cbAssays.enable()
-                        
+                    handleTpSelect();
+                    cbAssays.enable();
                 }
             },
             separator: ',', // IMPORTANT FOR STRSPLIT FN
