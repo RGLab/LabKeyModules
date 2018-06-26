@@ -1,4 +1,3 @@
-affy
 arm
 Biobase
 boot
@@ -31,6 +30,8 @@ gridExtra
 gtools
 hash
 heatmaply
+hgu133plus2cdf
+hthgu133pluspmcdf
 Kmisc
 knitr
 languageR
@@ -48,6 +49,7 @@ plotly
 plyr
 png
 preprocessCore
+primeviewcdf
 pROC
 qusage
 RColorBrewer
@@ -58,6 +60,8 @@ reshape2
 RJSONIO
 Rlabkey
 Rlibstree
+Rtsne
 stringr
+tidyr
 tidytext
 wordcloud
