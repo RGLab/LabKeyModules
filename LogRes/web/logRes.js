@@ -33,13 +33,14 @@ LABKEY.ext.LogRes = Ext.extend( Ext.Panel, {
             ;
 
         var checkBtnsStatus = function(){
-            if ( cbIrp.isValid( true ) ){
+            if ( cbIrp.isValid( true ) & cbTransform.isValid( true) ){
                 btnRun.setDisabled( false );
             } else {
                 btnRun.setDisabled( true );
             }
 
-            if (cbIrp.getValue() == cbIrp.originalValue){
+            if (cbIrp.getValue() == cbIrp.originalValue &
+                cbTransform.getValue() == cbTransform.originalValue){
                 btnReset.setDisabled( true );
             } else {
                 btnReset.setDisabled( false );
@@ -62,41 +63,40 @@ LABKEY.ext.LogRes = Ext.extend( Ext.Panel, {
             autoLoad: true
         })
 
-        var strTransform = new LABKEY.ext.Store({
-            schemaName: 'study',
-            queryName: 'LogRes_assayDates',
-            listeners: {
-                onLoad: function(){
+        var makeStrTrx = function(){
+            new LABKEY.Query.selectRows({
+                schemaName: 'study',
+                queryName: 'LogRes_assayDates',
+                success: function(data) {
                     // based on assay selection look at whether there are multiple dates
-                    var dates = [];
-                    this.data.rows.forEach(function(row){
-                        if(row.Label == cbIrp.getValue() && row.study_time_collected_unit){
-                            dates.push(row.study_time_collected);
+                    var stc = [];
+                    data.rows.forEach(function(row){
+                        if(row.Name == cbIrp.getValue() && row.study_time_collected_unit == "Days"){
+                            stc.push(row.study_time_collected);
                         }
                     })
                     
-                    // if multiple dates then all for fc or mfc, else just none
-                    if(dates.length() > 1 && dates.contains('0')){
+                    // if multiple dates then calculated options otherwise single
+                    if(stc.length > 1 && stc.includes(0)){
                         var txOps = [
-                                ['Modified Fold Change', 'mfc'],
-                                ['Fold Change', 'fc'],
-                                ['None', 'none']
-                              ]
+                            ['Modified Fold Change', 'mfc'],
+                            ['Fold Change', 'fc'],
+                            ['Categorized Response', 'cr']
+                        ]
                     }else{
-                        var txOps = [ ['None', 'none'] ]
+                        var txOps = [ ['Single Timepoint Value', 'stv'] ]
                     }
 
-                    var tmpStore = Ext.data.SimpleStore({
+                    var tmpStore = new Ext.data.SimpleStore({
                         data: txOps,
                         id: 0,
-                        fields: ['Name', 'Value']
+                        fields: ['Display', 'Value']
                     });
 
                     cbTransform.bindStore(tmpStore);
                 }
-            },
-            autoLoad: false
-        })
+            })
+        }
         
 
         /////////////////////////////////////
@@ -111,12 +111,19 @@ LABKEY.ext.LogRes = Ext.extend( Ext.Panel, {
             disabled: false,
             listeners: {
                 change:     function(){
+                    cbTransform.disable();
+                    cbTransform.clearValue();
+                    makeStrTrx();
+                    cbTransform.enable()
                     checkBtnsStatus();
                 },
                 cleared:    function(){
+                    cbTransform.disable();
+                    cbTransform.clearValue();
                     checkBtnsStatus();
                 },
                 select:     function(){
+                    makeStrTrx();
                     cbTransform.enable();
                     checkBtnsStatus();
                 }
@@ -130,7 +137,7 @@ LABKEY.ext.LogRes = Ext.extend( Ext.Panel, {
 
         var cbTransform = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
-            displayField: 'Label',
+            displayField: 'Display',
             fieldLabel: 'Transformation Method',
             lazyInit: false,
             disabled: true,
@@ -145,8 +152,8 @@ LABKEY.ext.LogRes = Ext.extend( Ext.Panel, {
                     checkBtnsStatus();
                 }
             },
-            store: strTransform,
-            valueField: 'Name',
+            store: new Ext.data.SimpleStore({data:[],id:0,fields:[]}),
+            valueField: 'Value',
             width: fieldWidth,
             listWidth: fieldWidth,
             cls: 'ui-test-transform'
@@ -341,7 +348,13 @@ LABKEY.ext.LogRes = Ext.extend( Ext.Panel, {
                     ],
                     title: 'Parameters',
                     cls: 'ui-test-parameters'
-                })
+                }),
+                {
+                    border: true,
+                    items: [
+                        tlbrBtns
+                    ]
+                }
             ],
             labelWidth: labelWidth,
             tabTip: 'Input',
