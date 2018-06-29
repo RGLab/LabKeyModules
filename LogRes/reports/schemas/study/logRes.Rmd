@@ -1,0 +1,209 @@
+---
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, include = FALSE)
+```
+
+```{r local-testing}
+# labkey.url.params <- list()
+# labkey.url.params$irp <- "hai"
+# labkey.url.params$pGrp <- NULL
+# labkey.url.params$folderPath <- "/Studies/SDY269"
+# labkey.url.params$baseUrl <- "https://test.immunespace.org"
+# labkey.url.params$userEmail <- "ehenrich@fredhutch.org"
+```
+
+```{r libs}
+# bsselectR is a method for generating custom html for dropdown of plots
+# install via devtools::install_github("walkerke/bsselectR")
+library(ImmuneSpaceR)
+library(dplyr)
+library(glmnet)
+library(ggplot2)
+library(bsselectR)
+```
+
+```{r params-and-settings}
+# From UI
+irp <- labkey.url.params$irp
+# pGrp <- labkey.url.params$pGrp
+pGrp <- NULL # for timebeing while only intra-study work
+sdy <- gsub("/Studies/", "", labkey.url.params$folderPath)
+baseUrl <- labkey.url.params$baseUrl
+userNm <- labkey.url.params$username
+
+# Hardcoded
+basePath <- "/share/files/Studies/"
+```
+
+```{r helper-fn}
+# Test each set of features to ensure that every col has 2 or more factors
+# Create model matrix if so
+prepMM <- function(dat){
+  features <- dat[ , colnames(dat) != "value" ]
+  rownames(features) <- features$participant_id
+  features <- features[ , grep("_id", colnames(features), invert = T)]
+  
+  uniqs <- apply(features, 2, function(x){length(unique(x))})
+  
+  if(any(uniqs == 1)){
+      return(NULL)
+  }else{
+      features <- model.matrix( ~ ., features)
+      response <- dat$value
+      return(list(features = features, response = response))
+  }
+}
+
+# adaptation of plot.cv.glmnet for ggplot
+plotModel <- function(model){
+  dat <- data.frame(x = log(model$lambda), 
+                    y = model$cvm,
+                    min = model$cvlo,
+                    max = model$cvup)
+  p <- ggplot(dat, aes(x = x, y = y)) + 
+    geom_errorbar(aes(ymin = min, ymax = max), width = .1) +
+    geom_line() +
+    geom_point(color = "red") +
+    xlab("log(Lamda)") +
+    ylab(model$name) +
+    geom_vline(xintercept = log(model$lambda.min), color = "blue" ) +
+    geom_vline(xintercept = log(model$lambda.1se) , color = "blue")
+}
+
+# Wrapper to generate plots and return named list of filepaths for bsselect()
+makePlotList <- function(datSubsets){
+  # Create model matrices 
+  datSubsets <- lapply(datSubsets, prepMM)
+  datSubsets <- datSubsets[ !unlist(lapply(datSubsets, is.null)) ] 
+  
+  # run cross-validated glmnet and then plot with ggplot
+  plots <- lapply(datSubsets, function(x){
+      model <- cv.glmnet(x$features, x$response)
+      res <- plotModel(model)
+  })
+  
+  # Order list of filepaths for study time and study time unit
+  tmp <- names(plots)
+  splTmp <- strsplit(tmp, " ")
+  tmpDf <- data.frame(t(as.data.frame(splTmp)), row.names = NULL, stringsAsFactors = F)
+  colnames(tmpDf) <- c("Num", "Modifier")
+  tmpDf$Num <- as.integer(tmpDf$Num)
+  tmpDf <- tmpDf[ order(tmpDf$Modifier, tmpDf$Num), ]
+  rnk <- paste(tmpDf$Num, tmpDf$Modifier)
+  plotsByDay <- plots[ order(match(names(plots), rnk)) ]
+}
+
+printPlots <- function(plots){
+  dmp <- lapply(names(plots), function(x){
+    print(x)
+    plot(plots[[x]])
+  })
+}
+```
+
+
+```{r data-prep}
+# get data - user should have created participant group by
+# selecting the independent var assay as well as the irp dependent
+# var assay.
+dCols <- c("participant_id", "age_reported", "ethnicity", "gender", "race")
+
+if( !is.null(pGrp) ){
+    con <- CreateConnection("", onTest = grepl("test", baseUrl))
+    dat <- con$getParticipantData(group = pGrp, dataType = irp)
+    demo <- con$getParticipantData(group = pGrp, dataType = "demographics")
+    demo <- demo[ , colnames(demo) %in% dCols]
+}else if( !is.null(sdy) ){
+    con <- CreateConnection(sdy, onTest = grepl("test", baseUrl))
+    dat <- con$getDataset(irp)
+    demo <- con$getDataset("demographics")
+    demo <- demo[ , colnames(demo) %in% dCols, with = FALSE]
+}else{
+    stop("Report must have a participant group or be run from a study container.")
+}
+```
+
+#### Parameters
+- **Immune Response Assay:** `r irp`
+- **Participant Group Name or Study:** `r ifelse(is.null(pGrp), sdy, pGrp)`
+
+#### Plots
+- **Number of Available Immune Response Timepoints:** `r length(unique(dat$study_time_collected))`
+- **Number of Participants:** `r nrow(dat)`
+
+## Analysis {.tabset}
+
+### By Timepoint
+
+```{r by-timepoint-analysis, include=TRUE}
+# Create data subsets by timepoint
+dat.byTp <- merge(dat, demo)
+timePts <- unique(paste(dat.byTp$study_time_collected, dat.byTp$study_time_collected_unit))
+datSubsets <- lapply(timePts, function(timepoint){
+    stc <- strsplit(timepoint, " ")[[1]][1]
+    stcu <- strsplit(timepoint, " ")[[1]][2]
+    tmp <- dat.byTp[ dat.byTp$study_time_collected == stc & 
+                dat.byTp$study_time_collected_unit == stcu, ]
+
+    # Create single result per subject by doing median?
+    tmp <- tmp %>%
+        select(-virus) %>%
+        group_by(participant_id) %>%
+        filter(value_reported == median(value_reported)) %>%
+        summarize(value = unique(value_reported),
+                  age = unique(age_reported),
+                  ethnicity = unique(ethnicity),
+                  race = unique(race),
+                  gender = unique(gender))
+})
+names(datSubsets) <- timePts
+
+plots <- makePlotList(datSubsets)
+printPlots(plots)
+```
+
+### Fold Change
+
+```{r fold-change-analysis, include=TRUE}
+# modify irp dat
+tps <- unique(dat$study_time_collected)
+tps <- tps[ tps != 0 ]
+
+dat.fc <- dat %>% 
+  group_by(virus, participant_id) %>% 
+  tidyr::spread(study_time_collected, value_reported) 
+
+dat.fc <- merge(dat.fc, demo)
+
+# funky conversion needed of timepoint within non-std eval mutate
+datSubsets <- lapply(tps, function(x){
+  tmp <- dat.fc %>%
+    group_by(virus, participant_id) %>%
+    mutate(fc = (!!as.name("0")) / (!!as.name(x)) ) %>%
+    ungroup() %>%
+    group_by(participant_id) %>%
+    filter(fc == max(fc)) %>%
+    summarize(value = unique(fc),
+              age = unique(age_reported),
+              ethnicity = unique(ethnicity),
+              race = unique(race),
+              gender = unique(gender))
+})
+names(datSubsets) <- paste(tps, "Days")
+
+# plot
+plots <- makePlotList(datSubsets)
+printPlots(plots)
+```
+
+### Modified Fold Change
+
+```{r modified-fold-change-analysis}
+# modify irp dat
+
+# merge and plot
+
+```
