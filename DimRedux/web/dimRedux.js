@@ -83,7 +83,92 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             autoLoad: true
         })
         
+        /////////////////////////////////////
+        ///   timepoint v Assay Viz       ///
+        /////////////////////////////////////
 
+        // Setup for fields and data in gridPanel
+        //var gridFields = [{name: 'Label', type: 'string'}];
+        //var gridData = [];
+
+        // Helper
+        var arrUniq = function( el, i, arr){
+            return( arr.indexOf(el) === i );
+        }
+        
+        // Fill in gridData to show timepoints present
+        // for each assay
+        new LABKEY.Query.selectRows({
+            schemaName: 'study',
+            queryName: 'DimRedux_data_sets',
+            success: function(data){
+                // setup
+                var gridCols = [{
+                    header: '<b>Label</b>', 
+                    dataIndex: 'Label',
+                    width: 120
+                }];
+
+                var gridFields = ['Label'];
+                var gridData = [];
+
+                // Get col and row vals
+                var tps = Ext.pluck( data.rows, "timepoint");
+                var uniqTps = tps.filter( function( el, i, arr){
+                    return( arr.indexOf(el) === i );
+                });
+                var lbls = Ext.pluck( data.rows, "Label");
+                var uniqLbls = lbls.filter( function( el, i, arr){
+                    return( arr.indexOf(el) === i );
+                });
+                
+                // Fill empty values for gridData
+                uniqLbls.forEach( function(lbl){
+                    var rowArr = [lbl];
+                    uniqTps.forEach( function(tp){
+                        rowArr.push('');
+                    });
+                    gridData.push(rowArr);   
+                });
+                
+                uniqTps.forEach( function(tp){
+                    gridCols.push({
+                        header: "<b>" + tp + "</b>",
+                        dataIndex: tp,
+                        width: 90
+                    });
+                    gridFields.push(tp);
+                });
+                
+                // Update gridData where tp present
+                data.rows.forEach(function(row){
+                    // get gridData row of assay
+                    var lblIdx = uniqLbls.indexOf(row.Label);
+                    var tpIdx = uniqTps.indexOf(row.timepoint);
+                    // change corresponding tp value
+                    gridData[lblIdx][tpIdx + 1] = 'x'; // +1 b/c label first
+                });
+                
+                gridPnl = new Ext.grid.GridPanel({
+                    store: new Ext.data.SimpleStore({
+                        id: 0,
+                        data: gridData,
+                        fields: gridFields
+                    }),
+                    columns: gridCols,
+                    viewConfig: {
+                        forceFit: false
+                    },
+                    width: uniqTps.length * 90 + 120,
+                    height: (uniqLbls.length + 1) * 33,
+                    columnLines: true,
+                    frame: true,
+                    cls: 'custom-grid',
+                });
+                gridPnl.render('tpAssayGrid')
+            }
+        })
+        
         /////////////////////////////////////
         ///      Check and ComboBoxes     ///
         /////////////////////////////////////
@@ -265,7 +350,6 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             hidden: false
         }); 
 
-
         var rgImpute = new Ext.form.RadioGroup({
             allowBlank: false,
             fieldLabel: 'Missing Value Imputation',
@@ -312,24 +396,26 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             handler: function(){
                 setReportRunning( true );
 
-                if( rgTime.getValue().value == 'observation'){
-                    lbls.push('time');
-                    reportHolder['time'] = null;
-                }
-                    // Run Report 
-                    inputParams = { 
-                        baseUrl:                LABKEY.ActionURL.getBaseURL(),
-                        folderPath:             LABKEY.ActionURL.getContainer(),
-                        timeAs:                 rgTime.getValue().value,
-                        assays:                 cbAssays.getValue(),
-                        timePts:                cbTimePoints.getValue(),
-                        plotType:               rgPlotType.getValue().value,
-                        perplexity:             nmPerplexity.getValue(),
-                        numComponents:          nmNumComponents.getValue(),
-                        impute:                 rgImpute.getValue().value
-                    }; 
-                    cnfReport.inputParams = inputParams;
-                    LABKEY.Report.execute( cnfReport );    
+                // Run Report 
+                inputParams = { 
+    
+                    // Non-User Selected Params
+                    baseUrl:                LABKEY.ActionURL.getBaseURL(),
+                    folderPath:             LABKEY.ActionURL.getContainer(),
+    
+                    // User Selected Main Params
+                    timeAs:                 rgTime.getValue().value,
+                    assays:                 cbAssays.getValue(),
+                    timePts:                cbTimePoints.getValue(),
+                    plotType:               rgPlotType.getValue().value,
+                    
+                    // User Selected Additional Options
+                    perplexity:             nmPerplexity.getValue(),
+                    numComponents:          nmNumComponents.getValue(),
+                    impute:                 rgImpute.getValue().value
+                }; 
+                cnfReport.inputParams = inputParams;
+                LABKEY.Report.execute( cnfReport );    
             },
             text: 'Run'
         });
@@ -386,7 +472,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
                 LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
             },
-            reportId: 'module:DimRedux/study/dimRedux.Rmd',
+            reportId: 'module:DimRedux/dimRedux.Rmd',
             success: function( result ){
 
                 var errors = result.errors;
@@ -522,6 +608,17 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             },
             deferredRender: false,
             items: [
+                {
+                    border: true,
+                    title: 'Assay Data Available by Timepoint',
+                    items: [
+                        new Ext.Container({
+                            items: [], 
+                            layout: 'fit',
+                            id: 'tpAssayGrid'
+                        })
+                    ]
+                },
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
@@ -529,8 +626,6 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Timepoints', timepoints_help ),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbAssays, 'Assays', assays_help ),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( rgPlotType, 'Plot Type', plotTypes_help ),
-
-
                     ],
                     title: 'Parameters',
                     cls: 'ui-test-parameters'

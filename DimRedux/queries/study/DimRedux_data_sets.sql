@@ -3,7 +3,8 @@ SELECT
     dataset_n.Name,
     dataset_n.Label,
     CAST(dataset_n.study_time_collected AS INTEGER) AS study_time_collected,
-    dataset_n.study_time_collected_unit
+    dataset_n.study_time_collected_unit,
+    dataset_n.study_time_collected || ' ' || dataset_n.study_time_collected_unit AS timepoint
 FROM
     (
        SELECT
@@ -27,19 +28,6 @@ FROM
          'MBAA' AS Label
        FROM
           mbaa
-       GROUP BY 
-          study_time_collected, study_time_collected_unit
-
-       UNION
-       
-       SELECT
-         study_time_collected,
-         study_time_collected_unit,
-         COUNT( participantid ) AS n,
-         'kir_typing' AS Name,
-         'KIR Typing' AS Label
-       FROM
-          kir_typing
        GROUP BY 
           study_time_collected, study_time_collected_unit
 
@@ -96,19 +84,6 @@ FROM
           study_time_collected, study_time_collected_unit
 
        UNION
-       
-       SELECT
-         study_time_collected,
-         study_time_collected_unit,
-         COUNT( participantid ) AS n,
-         'hla_typing' AS Name,
-         'HLA typing' AS Label,
-       FROM
-          hla_typing
-       GROUP BY 
-          study_time_collected, study_time_collected_unit
-       
-       UNION
 
        SELECT
          CAST(SPLIT_PART(coefficient, ' ', 1) AS DOUBLE) AS study_time_collected,
@@ -124,3 +99,5 @@ FROM
     ) AS dataset_n
 WHERE
     dataset_n.n > 0
+ORDER BY
+    dataset_n.study_time_collected_unit DESC, dataset_n.study_time_collected ASC

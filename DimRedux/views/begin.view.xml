@@ -4,5 +4,6 @@
         <dependency path='ISCore/Common'/>
         <dependency path='ISCore/ExtendedLovCombo'/>
         <dependency path='dimRedux.js'/>
+        <dependency path='dimRedux.css'/>
     </dependencies>
 </view>
