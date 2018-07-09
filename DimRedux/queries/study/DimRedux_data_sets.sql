@@ -86,6 +86,20 @@ FROM
        UNION
 
        SELECT
+         study_time_collected,
+         study_time_collected_unit,
+         COUNT( participantid ) AS n,
+         'pcr' AS Name,
+         'PCR' AS Label
+       FROM
+         pcr
+       GROUP BY  
+          study_time_collected, study_time_collected_unit
+
+       UNION
+
+
+       SELECT
          CAST(SPLIT_PART(coefficient, ' ', 1) AS DOUBLE) AS study_time_collected,
          SPLIT_PART(coefficient, ' ', 2) AS study_time_collected_unit,
          COUNT(analysis_accession) AS n,

@@ -33,7 +33,7 @@ library(plotly)
 getAssayData <- function(assay, con, timePts, timeAs){
   if(assay != "gene_expression"){
     original_view <- assay != "mbaa"
-    dat <- con$getDataset(assay, original_view = original_view, transform.method = "auto")
+    dat <- con$getDataset(assay, original_view = original_view, transformMethod = "auto")
   }else{
     eset <- con$getGEMatrix(con$cache$GE_matrices$name)
     dat <- data.frame(t(Biobase::exprs(eset)),stringsAsFactors = F)
@@ -143,6 +143,23 @@ getAssayData <- function(assay, con, timePts, timeAs){
         group_by(participant_id, analyte_day) %>%
         summarize(newValue = mean(as.numeric(concentration_value)))
       dat <- spread(dat, key = "analyte_day", value = "newValue")
+    }
+  
+  }else if(assay == "pcr"){
+    cols <- c("participant_id", "study_time_collected", "gene_symbol", "value_reported")
+    dat <- dat[ , cols, with = FALSE ]
+    if(timeAs == "observation"){
+        dat <- dat %>%
+          mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
+          group_by(sub_tp, gene_symbol) %>%
+          summarize(newValue = mean(value_reported))
+        dat <- spread(dat, key = "gene_symbol", value = "newValue")
+    }else{
+        dat <- dat %>%
+          mutate(gs_day = paste0(gene_symbol, "_", study_time_collected)) %>%
+          group_by(participant_id, gs_day) %>%
+          summarize(newValue = mean(value_reported))
+        dat <- spread(dat, key = "gs_day", value = "newValue")
     }
   }
 
