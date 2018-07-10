@@ -72,12 +72,21 @@ getAssayData <- function(assay, con, timePts, timeAs){
     }  
   
   }else if(assay == "fcs_analyzed_result"){
-    if(timeAs == "observation"){ 
-      dat$sub_tp <- paste0(dat$participant_id, "_", dat$study_time_collected)
-      dat <- dat[ , c("sub_tp", "population_cell_number") ]
+    cols <- c("participant_id", "study_time_collected", "population_definition_reported", "population_cell_number")
+    dat <- dat[ , cols, with = FALSE ]
+    if(timeAs == "observation"){
+      dat <- dat %>%
+        mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
+        group_by(sub_tp, population_definition_reported) %>%
+        summarize(newValue = unique(mean(population_cell_number)))
+      dat <- spread(dat, key = "population_definition_reported", value = "newValue")
     }else{
-      dat <- dat[ , c("participant_id", "population_cell_number"), with = FALSE]
-    }
+      dat <- dat %>%
+        mutate(popDef_day = paste(population_definition_reported, study_time_collected, sep = "_")) %>%
+        group_by_("participant_id", "popDef_day") %>%
+        summarise(newValue = unique(mean(population_cell_number)))
+      dat <- spread(dat, key = "popDef_day", value = "newValue")
+    } 
     
   }else if(assay == "elisa"){
     cols <- c("participant_id", "study_time_collected", "analyte", "value_preferred")
