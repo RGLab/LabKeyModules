@@ -283,11 +283,14 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
   
   if(label == "time"){
     colorCol <- gsub("^SUB\\d{5,6}\\.\\d{2,4}_", "", subs)
+  }else if(label == "study"){
+    colorCol <- gsub("^SUB\\d{5,6}\\.", "", subs)
+    colorCol <- paste0("SDY", gsub("_\\d+$", "", colorCol))
   }else{
     if(timeAs == "observation"){ subs <- gsub("_\\d{1}", "", subs) }
     colorCol <- demo[[label]][ match(subs, demo$participant_id)]
   }
-  
+
   # create and sort possible component combinations
   poss <- expand.grid(j = 1:numComponents, i = 1:numComponents)
   poss <- poss[ poss$j != poss$i, ]
@@ -368,6 +371,39 @@ plots <- makePlot(label = "race",
                   allMat = allMat
                   )
 htmltools::tagList(plots)
+```
+
+### Timepoint
+```{r  timePt, fig.align="left"}
+if(timeAs == "observation"){
+    plots <- makePlot(label = "time",
+                  timeAs = timeAs,
+                  demo = demo,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+                  )
+    htmltools::tagList(plots)   
+}else{
+    print("Plots are only labelled by timepoint if `Use Time As` equals 'observation'.")
+}
+
+```
+
+### Study
+```{r  byStudy, fig.align="left"}
+if(sdy == "/Studies"){
+    plots <- makePlot(label = "study",
+                      timeAs = timeAs,
+                      demo = demo,
+                      numComponents = numComponents,
+                      plotType = plotType,
+                      allMat = allMat
+                      )
+    htmltools::tagList(plots)   
+}else{
+   print("Plots are only labelled by study if run at the project level through `Data Finder`.")
+}
 ```
 <script>
 window.HTMLWidgets.staticRender();
