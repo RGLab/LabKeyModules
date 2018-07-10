@@ -264,7 +264,7 @@ genPlot <- function(i, j, resObj, type, prettyLbl, colorCol){
                y = ~y,
                color = colorCol,
                hoverinfo = 'text',
-               text = paste(prettyLbl, ": ", colorCol, "<br>ID: ", rownames(allMat))) %>%
+               text = paste(prettyLbl, ": ", colorCol, "<br>ID: ", subs)) %>%
        layout(xaxis = list(title = paste0(type, i)), 
               yaxis = list(title = paste0(type, j)),
               annotations = list(yref = 'paper',
