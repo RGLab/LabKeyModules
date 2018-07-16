@@ -215,7 +215,7 @@ for(sdy in studies){
     cds <- estimateSizeFactors(cds) ## estimate size factor
     cdsBlind <- estimateDispersions(cds, method="blind" )
     vsd <- varianceStabilizingTransformation(cdsBlind)
-    em <- exprs(vsd)
+    em <- Biobase::exprs(vsd)
 
     # gene_set actually has some as lower case, e.g. 'C10orf11', but to
     # reproduce manuscript, must use toupper(), which causes these
