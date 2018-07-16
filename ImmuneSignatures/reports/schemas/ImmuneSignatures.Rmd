@@ -77,7 +77,7 @@ library(grid)
 
 #options(width = 700) # must be > 675 for 9.5in wide pdf
 knitr::opts_chunk$set(echo=FALSE,
-               cache.path=paste0(labkey.file.root, "/cache/tst/"),
+               cache.path=paste0(labkey.file.root, "/cache/"),
                cache=TRUE,
                warning=FALSE,
                message=FALSE,
@@ -679,7 +679,7 @@ valPlot <- ggplot() +
 eset <- sdy80all[ , !is.na(sdy80all$fc_res_max_d30) ]
 
 # get Module Intensity for each subject by averaging for genes in module
-em <- data.frame(exprs(eset), stringsAsFactors = F)
+em <- data.frame(Biobase::exprs(eset), stringsAsFactors = F)
 em$geneSymbols <- fData(eset)$gene_symbol
 em <- em[ em$geneSymbols %in% gene_set$`BCR signaling (M54)`, ]
 em <- em[ , !(colnames(em) == "geneSymbols") ]
@@ -1024,7 +1024,7 @@ genes <- sort(genes)
 # fn to return average of gene expression within sdy and response
 adjEm <- function(eset, resp, genes){
   pd <- pData(eset)
-  em <- data.table(exprs(eset))
+  em <- data.table(Biobase::exprs(eset))
   subs <- paste0(pd$subject[ pd$fc_res_max_d30 == resp ], "_d0")
   em <- em[ , ( colnames(em) %in% subs ), with=FALSE ]
   em <- em[, gs := fData(eset)$gene_symbol ]
