@@ -29,8 +29,6 @@ As seen in the figure below, the analysis first starts by extracting data from I
 <center>![](/ImmuneSignatures/images/fig1.png)</center>
 
 #### Data Notes:
-To save time, the gene expression matrices are pre-loaded as data within the package.  The code to generate these expression matrices from ImmuneSpace / GEO can be found in the `R/get_GE.R` script within the package.There is also one case where data from ImmuneSpace could not be used: SDY80 (hai).
-
 The SDY80 hai data available on ImmuneSpace is not incorporated into the analysis because it does not include subjects without gene expression data.  Although subjects without GE data are filtered out later, they must be included in the adjust_hai.R script in order to achieve the same results for the "endPoint" variable ("fc_res_maxd30").  The original raw HAI data came from Yuri Kotliarov at NIH and is included within the package. 
 
 Finally, the results for the "old" cohort using SDY67 data are slightly different ( <0.5% Relative Error ).  This is due to rounding that occurs from a transformation from one kind of data structure to another.
@@ -47,7 +45,6 @@ library(Biobase) # biocLite
 library(stringr)
 library(hash)
 library(dplyr)
-library(data.table)
 library(DESeq)
 library(preprocessCore) # biocLite
 
@@ -80,7 +77,7 @@ library(grid)
 
 #options(width = 700) # must be > 675 for 9.5in wide pdf
 knitr::opts_chunk$set(echo=FALSE,
-               cache.path=paste0(labkey.file.root, "/cache/"),
+               cache.path=paste0(labkey.file.root, "/cache/tst/"),
                cache=TRUE,
                warning=FALSE,
                message=FALSE,
@@ -174,7 +171,7 @@ for(sdy in studies){
   # 2. prior to sampleNames mapping, one of duplicated biosamples must be removed.
   if(sdy == "SDY212"){
     # expr matrix
-    em <- exprs(es)
+    em <- Biobase::exprs(es)
     em <- em[ -(grep("ILMN_2137536", rownames(em))), ]
     cnames <- colnames(em)
     rnames <- rownames(em)
@@ -198,7 +195,7 @@ for(sdy in studies){
   }
 
   es <- con$mapSampleNames(es) # map biosample ids to subject ids
-  em <- exprs(es)
+  em <- Biobase::exprs(es)
 
   if(sdy %in% c("SDY63", "SDY404")){
     cnames <- colnames(em)
