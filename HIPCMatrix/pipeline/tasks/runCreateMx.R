@@ -213,7 +213,7 @@ library(Biobase)
   
   } else {
     exprs <- fread(inputFiles, header = TRUE)
-    sigcols <- grep("Signal", colnames(exprs), value = TRUE)
+    sigcols <- grep("Signal|SIGNAL", colnames(exprs), value = TRUE)
     rNamesCol <- ifelse(study %in% c("SDY400","SDY404","SDY80","SDY63"), "V1", "PROBE_ID")
     rnames <- exprs[, rNamesCol, with = FALSE]
     if( length(sigcols) > 0 ){
@@ -225,9 +225,6 @@ library(Biobase)
       stop("Unknown format: check data and add code if needed.")
     }
     exprs[, feature_id := rnames]
-    # if(study == "SDY312"){
-      # map colnames to expSamples
-    #}
   }
 
   return(exprs)
@@ -252,7 +249,7 @@ makeRawMatrix <- function(isGEO, isRNA, gef, study, inputFiles){
       stop(paste("There is more than one file extension:", paste(ext, collapse = ",")))
     }else if( ext %in% c("cel","CEL") ){
       exprs <- .process_CEL(gef, inputFiles, study)
-    }else if( ext == "txt" | study %in% c("SDY162", "SDY180", "SDY212", "SDY400", "SDY404", "SDY80", "SDY63") ){
+    }else if( ext == "txt" | study %in% c("SDY162", "SDY180", "SDY212", "SDY400", "SDY404", "SDY80", "SDY63", "SDY312") ){
       exprs <- .process_others(gef, inputFiles, study)
     }else if( ext %in% c("tsv","csv") ){
       exprs <- .process_TSV(gef, inputFiles, isRNA, study)
@@ -334,11 +331,13 @@ summarizeMatrix <- function(norm_exprs, f2g){
 }
 
 writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs, onCL){
+  
+  outNm <- gsub("\\.tsv", "", output.tsv)
   # - Raw EM
   write.table(exprs,
               file = file.path(pipeline.root,
                                "analysis/exprs_matrices",
-                               paste0(output.tsv,".raw")),
+                               paste0(outNm,".raw")),
               sep = "\t",
               quote = FALSE,
               row.names = FALSE)
@@ -356,7 +355,7 @@ writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs,
   write.table(sum_exprs,
               file = file.path(pipeline.root,
                                "analysis/exprs_matrices",
-                               paste0(output.tsv, ".summary")),
+                               paste0(outNm, ".summary")),
               sep = "\t",
               quote = FALSE,
               row.names = FALSE)
@@ -365,8 +364,21 @@ writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs,
   setnames(exprs, "feature_id", "ID_REF")
 
   if(onCL == FALSE){
+    # write out summary.orig only from UI ... assuming that is first
+    # time and will not be overwriting any files
+    write.table(sum_exprs,
+                file = file.path(pipeline.root,
+                                 "analysis/exprs_matrices",
+                                 paste0(outNm, ".orig")),
+                sep = "\t",
+                quote = FALSE,
+                row.names = FALSE)
+
+    # So as to avoid error in LK need blank single space probe colheader
+    setnames(norm_exprs, "feature_id", "ID_REF")  
+    
     # - EM used for pipeline (not moved to the right location)
-    write.table(exprs,
+    write.table(norm_exprs,
                 file = output.tsv,
                 sep = "\t",
                 quote = FALSE,

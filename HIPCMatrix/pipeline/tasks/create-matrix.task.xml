@@ -12,7 +12,10 @@
         <file name='input.txt' splitFiles='true'/>
     </inputs>
     <outputs>
-        <file name='output.tsv' useProtocolNameAsBaseName="true"/>
+        <file name='output.tsv' useProtocolNameAsBaseName='true'/>
+        <file name='output.orig' useProtocolNameAsBaseName='true'/>
+        <file name='output.summary' useProtocolNameAsBaseName='true'/>
+        <file name='output.raw' useProtocolNameAsBaseName='true'/>
     </outputs>
     <script file='create-matrix.R'/>
 </task>
