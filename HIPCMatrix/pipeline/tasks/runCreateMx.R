@@ -25,6 +25,7 @@ library(Biobase)
   if(all(gef$geo_accession %in% sampleNames(es))){ # All selected samples are in the series
     sampleNames(es) <- gef[match(sampleNames(es), geo_accession), expsample_accession] # sampleNames are GEO accession
     exprs <- data.table(exprs(es))
+    cnames <- colnames(copy(exprs))
     exprs <- exprs[ , feature_id := featureNames(es) ]
     setcolorder(exprs, c("feature_id", cnames))
   } else{
@@ -333,6 +334,7 @@ summarizeMatrix <- function(norm_exprs, f2g){
 writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs, onCL){
   
   outNm <- gsub("\\.tsv", "", output.tsv)
+  
   # - Raw EM
   write.table(exprs,
               file = file.path(pipeline.root,
@@ -360,9 +362,6 @@ writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs,
               quote = FALSE,
               row.names = FALSE)
 
-  # So as to avoid error in LK need blank single space probe colheader
-  setnames(exprs, "feature_id", "ID_REF")
-
   if(onCL == FALSE){
     # write out summary.orig only from UI ... assuming that is first
     # time and will not be overwriting any files
@@ -375,14 +374,14 @@ writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs,
                 row.names = FALSE)
 
     # So as to avoid error in LK need blank single space probe colheader
-    setnames(norm_exprs, "feature_id", "ID_REF")  
+    # setnames(norm_exprs, "feature_id", "ID_REF")  
     
     # - EM used for pipeline (not moved to the right location)
-    write.table(norm_exprs,
-                file = output.tsv,
-                sep = "\t",
-                quote = FALSE,
-                row.names = FALSE)
+    # write.table(norm_exprs,
+    #            file = output.tsv,
+    #            sep = "\t",
+    #            quote = FALSE,
+    #            row.names = FALSE)
   }
 }
 
@@ -452,7 +451,7 @@ runCreateMx <- function(labkey.url.base,
 
   # manually curate list of RNAseq  and GEO studies
   isRNA <- con$study %in% c("SDY888", "SDY224", "SDY67", "SDY300")
-  isGEO <- con$study %in% c("SDY888")
+  isGEO <- con$study %in% c("SDY888","SDY984")
 
   # limit inputFiles to only those existing
   # SDY224 is special case where we use local copy of a processed counts tsv not listed in gef
@@ -502,7 +501,7 @@ runCreateMx <- function(labkey.url.base,
   }
 
   file.copy(from = "/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/create-matrix.R",
-            to = paste0(analysis.directory, "/create-matrix-snapshot.R")
+            to = paste0(analysis.directory, "/", output.tsv, "-create-matrix-snapshot.R")
             )
 
   # write out tsv of vars to make later replication of results easier
