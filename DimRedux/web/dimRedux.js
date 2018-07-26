@@ -64,7 +64,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 plotTypes_help = 'Either Principle Components Analysis (PCA) or t-distributed Stochastic Neighbor Embedding (tSNE)'
                 perplexity_help = 'Parameter passed to Rtsne',
                 numComponents_help = 'Number of PCA components to plot pairwise',
-                impute_help = "Method for imputing missing (NA) values"
+                impute_help = "Method for imputing missing (NA) values",
+                response_help = "Immune response data that can be used for labels if present"
             ;
 
         /////////////////////////////////////
@@ -128,7 +129,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     uniqTps.forEach( function(tp){
                         rowArr.push('');
                     });
-                    gridData.push(rowArr);   
+                    gridData.push(rowArr);
                 });
                 
                 uniqTps.forEach( function(tp){
@@ -281,7 +282,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     cbAssays.reset();
                     checkBtnsStatus();
                 },
-                select: function(){
+                select:     function(){
                     cbAssays.disable();
                     cbAssays.clearValue();
                     handleTpSelect();
@@ -387,6 +388,33 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             cls: 'ui-test-impute'
         }); 
 
+        var rgResponse = new Ext.form.RadioGroup({
+            allowBlank: false,
+            fieldLabel: 'Immune Response Label',
+            width: fieldWidth,
+            columns: 2,
+            items: [
+                { 
+                    boxLabel: 'HAI',
+                    checked: true,
+                    inputValue: 'HAI',
+                    name: 'Response',
+                    value: 'hai'
+                },{
+                    boxLabel: 'NAb',
+                    inputValue: 'NAb',
+                    name: 'Response',
+                    value: 'neut_ab_titer'
+                }
+            ],
+            value: 'HAI',
+            listeners: {
+                blur:       checkBtnsStatus,
+                change:     checkBtnsStatus
+            },
+            cls: 'ui-test-responseLbl'
+        });
+
         /////////////////////////////////////
         //    Buttons and Radio Groups     //
         /////////////////////////////////////
@@ -396,8 +424,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             handler: function(){
                 setReportRunning( true );
 
-                // Run Report 
-                inputParams = { 
+                // Run Report
+                inputParams = {
     
                     // Non-User Selected Params
                     baseUrl:                LABKEY.ActionURL.getBaseURL(),
@@ -412,10 +440,11 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     // User Selected Additional Options
                     perplexity:             nmPerplexity.getValue(),
                     numComponents:          nmNumComponents.getValue(),
-                    impute:                 rgImpute.getValue().value
-                }; 
+                    impute:                 rgImpute.getValue().value,
+                    responseVar:            rgResponse.getValue().value
+                };
                 cnfReport.inputParams = inputParams;
-                LABKEY.Report.execute( cnfReport );    
+                LABKEY.Report.execute( cnfReport );
             },
             text: 'Run'
         });
@@ -464,8 +493,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 ],
                 function( e ){ e.setDisabled( bool ); }
             );
-        };        
-            
+        };
+
         var cnfReport = {
             failure: function( errorInfo, options, responseObj ){
                 setReportRunning( false );
@@ -480,7 +509,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
                 if ( errors && errors.length > 0 ){
                     setReportRunning( false );
-                    
+
                     // Trim to expected errors with useful info for user
                     errors = errors[0].match(/R Report Error(?:\s|\S)+/g);
 
@@ -493,14 +522,14 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     });
                 } else {
                     $('#'+cntReport.id).html(outputParams[0].value);
-                        
+
                     setReportRunning( false ); // Wait until all html is loaded
 
                     cntEmptyPnlView.setVisible( false );
                     cntReport.setVisible( true );
 
                     pnlTabs.setActiveTab( 1 );
-                    window.HTMLWidgets.staticRender();                    
+                    window.HTMLWidgets.staticRender();
                 }
             }
         };
@@ -521,8 +550,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         });
 
         var
-            cfTimePoints        = LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Time point', timepoints_help )//,
-           // cfLabel             = LABKEY.ext.ISCore.factoryTooltipWrapper( cbLabel, 'Label', labels_help )
+            cfTimePoints = LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Time point', timepoints_help )
+         // cfLabel      = LABKEY.ext.ISCore.factoryTooltipWrapper( cbLabel, 'Label', labels_help )
         ;
 
         // var pnlInputs
@@ -582,7 +611,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             items: [
                 LABKEY.ext.ISCore.factoryTooltipWrapper( nmPerplexity, 'tSNE perplexity', perplexity_help ),
                 LABKEY.ext.ISCore.factoryTooltipWrapper( nmNumComponents, 'PCA components to plot', numComponents_help ),
-                LABKEY.ext.ISCore.factoryTooltipWrapper( rgImpute, 'Impute', impute_help)
+                LABKEY.ext.ISCore.factoryTooltipWrapper( rgImpute, 'Impute', impute_help),
+                LABKEY.ext.ISCore.factoryTooltipWrapper( rgResponse, 'Response', response_help)
             ],
             labelWidth: labelWidth,
             listeners: {

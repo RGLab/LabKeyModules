@@ -19,8 +19,23 @@ library(Biobase)
 .process_GEO_microarray <- function(gef){
   gef <- gef[ geo_accession != "" ] # Make sure we only have rows with GEO.
   gsm <- getGEO(gef[1, geo_accession])
-  gse <- gsm@header$series_id[1] # Assumes that the serie is the first one (SuperSeries with higher ID)
-  es <- getGEO(gse)[[1]]
+  gse <- gsm@header$series_id[1] # Assumes that the series is the first one (SuperSeries with higher ID)
+  esList <- getGEO(gse) # returns list of expressionsets
+  if( length(esList) == 1){
+    es <- esList[[1]]
+  }else{
+    # create combined expressionSet based on `.combineEMs` in getGEMatrix
+    fds <- lapply(esList, function(x) {
+                    droplevels(data.table(Biobase::fData(x)))
+    })
+    fd <- Reduce(f = function(x, y) {merge(x, y)}, fds)
+    esList <- lapply(esList, "[", as.character(fd$ID))
+    for (i in 1:length(esList)) {
+        fData(esList[[i]]) <- fd
+        esList[[i]]@annotation <- "" # may have diff GPLXXX in GEO, but not really different annotation, therefore force combination by removing GPL listed here
+    }
+    es <- Reduce(f = combine, esList)
+  }
   es <- es[ , sampleNames(es) %in% gef$geo_accession ]
   if(all(gef$geo_accession %in% sampleNames(es))){ # All selected samples are in the series
     sampleNames(es) <- gef[match(sampleNames(es), geo_accession), expsample_accession] # sampleNames are GEO accession
@@ -169,6 +184,7 @@ library(Biobase)
     setnames(exprs, "rn", "feature_id")
   }else{
     try(setnames(exprs, "V1", "feature_id"))
+    try(setnames(exprs, "gene_ID", "feature_id")) # SDY1324
   }
   return(exprs)
 }
@@ -214,12 +230,20 @@ library(Biobase)
   
   } else {
     exprs <- fread(inputFiles, header = TRUE)
-    sigcols <- grep("Signal|SIGNAL", colnames(exprs), value = TRUE)
-    rNamesCol <- ifelse(study %in% c("SDY400","SDY404","SDY80","SDY63"), "V1", "PROBE_ID")
+    grepTerm <- ifelse(study != "SDY74", "Signal|SIGNAL", "RAW_SIGNAL")
+    sigcols <- grep(grepTerm, colnames(exprs), value = TRUE)
+    if(study %in% c("SDY400","SDY404","SDY80","SDY63")){
+      rNamesCol <- "V1"
+    }else if(study == "SDY74"){
+      rNamesCol <- "TARGET_ID"
+    }else{
+      rNamesCol <- "PROBE_ID"
+    }
     rnames <- exprs[, rNamesCol, with = FALSE]
     if( length(sigcols) > 0 ){
       exprs <- exprs[ , sigcols, with = FALSE ]
-      setnames(exprs, gsub(".AVG.*$", "", colnames(exprs)))
+      gsubTerm <- ifelse(study != "SDY74", ".AVG.*$", "_RAW.*$")
+      setnames(exprs, gsub(gsubTerm, "", colnames(exprs)))
     }else if( all(gef$biosample_accession %in% colnames(exprs)) ){
       exprs <- exprs[ , gef$biosample_accession, with = FALSE ]
     }else{
@@ -250,7 +274,7 @@ makeRawMatrix <- function(isGEO, isRNA, gef, study, inputFiles){
       stop(paste("There is more than one file extension:", paste(ext, collapse = ",")))
     }else if( ext %in% c("cel","CEL") ){
       exprs <- .process_CEL(gef, inputFiles, study)
-    }else if( ext == "txt" | study %in% c("SDY162", "SDY180", "SDY212", "SDY400", "SDY404", "SDY80", "SDY63", "SDY312") ){
+    }else if( ext == "txt" | study %in% c("SDY162", "SDY180", "SDY212", "SDY400", "SDY404", "SDY80", "SDY63", "SDY312", "SDY74") ){
       exprs <- .process_others(gef, inputFiles, study)
     }else if( ext %in% c("tsv","csv") ){
       exprs <- .process_TSV(gef, inputFiles, isRNA, study)
@@ -285,8 +309,9 @@ normalizeMatrix <- function(exprs, study, isRNA){
   # exprs comes in as data.table with feature_id col holding probes
   # data.table so MUST COPY to prevent changes in later work
   em <- copy(exprs)
+
   # already processed and raw data only in SRA, no raw count matrix easily available
-  if( study == "SDY224"){ 
+  if( study %in% c("SDY224","SDY1324")){
     return(em) 
   }else if(study == "SDY300"){
     em <- na.omit(em) # removes approx 20k rows! b/c DESeq needs only integers
@@ -339,7 +364,7 @@ writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs,
   write.table(exprs,
               file = file.path(pipeline.root,
                                "analysis/exprs_matrices",
-                               paste0(outNm,".raw")),
+                               paste0(output.tsv,".raw")),
               sep = "\t",
               quote = FALSE,
               row.names = FALSE)
@@ -357,7 +382,7 @@ writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs,
   write.table(sum_exprs,
               file = file.path(pipeline.root,
                                "analysis/exprs_matrices",
-                               paste0(outNm, ".summary")),
+                               paste0(output.tsv, ".summary")),
               sep = "\t",
               quote = FALSE,
               row.names = FALSE)
@@ -368,20 +393,38 @@ writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs,
     write.table(sum_exprs,
                 file = file.path(pipeline.root,
                                  "analysis/exprs_matrices",
-                                 paste0(outNm, ".orig")),
+                                 paste0(output.tsv, ".summary.orig")),
                 sep = "\t",
                 quote = FALSE,
                 row.names = FALSE)
 
     # So as to avoid error in LK need blank single space probe colheader
-    # setnames(norm_exprs, "feature_id", "ID_REF")  
+    setnames(norm_exprs, "feature_id", "ID_REF")
     
     # - EM used for pipeline (not moved to the right location)
-    # write.table(norm_exprs,
-    #            file = output.tsv,
-    #            sep = "\t",
-    #            quote = FALSE,
-    #            row.names = FALSE)
+    write.table(norm_exprs,
+               file = output.tsv,
+               sep = "\t",
+               quote = FALSE,
+               row.names = FALSE)
+
+    write.table(exprs,
+                file = paste0(outNm, ".raw"),
+                sep = "\t",
+                quote = FALSE,
+                row.names = FALSE)
+
+    write.table(sum_exprs,
+                file = paste0(outNm, ".summary"),
+                sep = "\t",
+                quote = FALSE,
+                row.names = FALSE)
+
+    write.table(sum_exprs,
+                file = paste0(outNm, ".orig"),
+                sep = "\t",
+                quote = FALSE,
+                row.names = FALSE)
   }
 }
 
@@ -450,8 +493,8 @@ runCreateMx <- function(labkey.url.base,
   }
 
   # manually curate list of RNAseq  and GEO studies
-  isRNA <- con$study %in% c("SDY888", "SDY224", "SDY67", "SDY300")
-  isGEO <- con$study %in% c("SDY888","SDY984")
+  isRNA <- con$study %in% c("SDY888", "SDY224", "SDY67", "SDY300","SDY1324")
+  isGEO <- con$study %in% c("SDY888","SDY984","SDY1264", "SDY1260", "SDY1276","SDY1293","SDY1328")
 
   # limit inputFiles to only those existing
   # SDY224 is special case where we use local copy of a processed counts tsv not listed in gef
@@ -501,8 +544,10 @@ runCreateMx <- function(labkey.url.base,
   }
 
   file.copy(from = "/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/create-matrix.R",
-            to = paste0(analysis.directory, "/", output.tsv, "-create-matrix-snapshot.R")
-            )
+            to = paste0(analysis.directory, "/", output.tsv, "-create-matrix-snapshot.R"))
+
+  file.copy(from = "/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/runCreateMatrix.R",
+            to = paste0(analysis.directory, "/", output.tsv, "-runCM-snapshot.R"))
 
   # write out tsv of vars to make later replication of results easier
   varDf <- data.frame(labkey.url.base = labkey.url.base,

@@ -27,6 +27,7 @@ library(plotly)
   perplexity <- as.integer(labkey.url.params$perplexity)
   numComponents <- as.integer(labkey.url.params$numComponents)
   impute <- labkey.url.params$impute
+  responseVar <- labkey.url.params$responseVar
 ```
 
 ```{r helper-fn}
@@ -238,6 +239,7 @@ getAssayData <- function(assay, con, timePts, timeAs){
 - **Plot Type**: `r plotType`
 - **Number of Components Analyzed**: `r numComponents`
 - **Imputation Method**: `r impute`
+- **Immune Response Label**: `r responseVar`
 
 ## General Information
 - **Number of Observations (Subjects)**: `r dim(allMat)[1]`
@@ -286,6 +288,26 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
   }else if(label == "study"){
     colorCol <- gsub("^SUB\\d{5,6}\\.", "", subs)
     colorCol <- paste0("SDY", gsub("_\\d+$", "", colorCol))
+  }else if(label %in% c("hai", "neut_ab_titer")){
+    re <- re[participant_id %in% subs ]
+    # create response value from fold-change compared to baseline for each virus
+    re <- re[, list(arm_accession, study_time_collected, study_time_collected_unit,
+                    response = value_reported/mean(value_reported[study_time_collected<=0])),
+               by = "virus,participant_id"]
+    # determine mean response for each study day across virus
+    re <- re[, mr := mean(response, na.rm=T), by = "study_time_collected"]
+    # determine maximum mean response for each cohort for each study day
+    re <- re[, ma := max(mr, na.rm=T), by = "arm_accession"]
+    # Determine the peak study day for each cohort
+    peak <- unique(re[mr == ma, list(study_time_collected, arm_accession)])
+    # Use merge to filter to study days for peak response by cohort
+    re <- merge(re, peak, by=c("study_time_collected", "arm_accession"))
+    # provide single response for each participant by taking the log of max
+    re <- re[, list(response = log2(max(response))), by = "participant_id"]
+    # Dichotomize the participants into high and low responders arbitrarily at log2(4)
+    # based on default values in IRP
+    re <- re[, response := ifelse(response >= log2(4), "high responder",  "low responder")]
+    colorCol <- re$response[order(match(subs, re$participant_id))]
   }else{
     if(timeAs == "observation"){ subs <- gsub("_\\d{1}", "", subs) }
     colorCol <- demo[[label]][ match(subs, demo$participant_id)]
@@ -383,9 +405,9 @@ if(timeAs == "observation"){
                   plotType = plotType,
                   allMat = allMat
                   )
-    htmltools::tagList(plots)   
+    htmltools::tagList(plots)
 }else{
-    print("Plots are only labelled by timepoint if `Use Time As` equals 'observation'.")
+    cat("Plots are only labelled by timepoint if `Use Time As` equals 'observation'.")
 }
 
 ```
@@ -400,11 +422,35 @@ if(sdy == "/Studies"){
                       plotType = plotType,
                       allMat = allMat
                       )
-    htmltools::tagList(plots)   
+    htmltools::tagList(plots) 
 }else{
-   print("Plots are only labelled by study if run at the project level through `Data Finder`.")
+   cat("Plots are only labelled by study if run at the project level through `Data Finder`.")
 }
 ```
+
+### Immune Response
+Note: Not all subjects may have immune response data
+```{r IR, fig.align="left"}
+re <- tryCatch(
+    con$getDataset(responseVar, original_view = T),
+    warning = function(w) return(w),
+    error = function(e) return(e)
+)
+
+if(is.null(re$message)){
+    plots <- makePlot(label = responseVar,
+                      timeAs = timeAs,
+                      demo = demo,
+                      numComponents = numComponents,
+                      plotType = plotType,
+                      allMat = allMat
+                      )
+    htmltools::tagList(plots) 
+}else{
+    cat(paste0("Response variable ", responseVar, " returns empty data frame from study.  Data is not available for given participants."))
+}
+```
+
 <script>
 window.HTMLWidgets.staticRender();
 </script>
