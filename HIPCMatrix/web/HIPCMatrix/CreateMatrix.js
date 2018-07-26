@@ -39,7 +39,7 @@ function createMatrixClick( dataRegion ) {
 
     function getRoles(userPermsInfo){
         var roles = Ext.pluck( userPermsInfo.container.groups, "name");
-        if( LABKEY.adminOnlyMode != null & !roles.includes("Site Administrators") ){
+        if( LABKEY.adminOnlyMode != null && !roles.includes("Site Administrators") ){
             Ext.Msg.alert("Pipeline User does not have admin rights. Create Matrix request will error out if run in admin-only mode.");
         }
         checkCohorts();
