@@ -118,6 +118,11 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 var uniqTps = tps.filter( function( el, i, arr){
                     return( arr.indexOf(el) === i );
                 });
+                // must remove any decimal value timepoints
+                // or json parser errors on unexpected numerical literal
+                uniqTps = uniqTps.filter(function(x){
+                    return( x.match('\\.') == null )
+                })
                 var lbls = Ext.pluck( data.rows, "Label");
                 var uniqLbls = lbls.filter( function( el, i, arr){
                     return( arr.indexOf(el) === i );
@@ -143,11 +148,14 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 
                 // Update gridData where tp present
                 data.rows.forEach(function(row){
-                    // get gridData row of assay
-                    var lblIdx = uniqLbls.indexOf(row.Label);
-                    var tpIdx = uniqTps.indexOf(row.timepoint);
-                    // change corresponding tp value
-                    gridData[lblIdx][tpIdx + 1] = 'x'; // +1 b/c label first
+                    // ignore decimal timepoints b/c json parser error
+                    if(row.timepoint.match('\\.') == null){
+                        // get gridData row of assay
+                        var lblIdx = uniqLbls.indexOf(row.Label);
+                        var tpIdx = uniqTps.indexOf(row.timepoint);
+                        // change corresponding tp value
+                        gridData[lblIdx][tpIdx + 1] = 'x'; // +1 b/c label first
+                    }
                 });
                 
                 gridPnl = new Ext.grid.GridPanel({
@@ -157,14 +165,13 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         fields: gridFields
                     }),
                     columns: gridCols,
-                    viewConfig: {
-                        forceFit: false
-                    },
-                    width: uniqTps.length * 90 + 120,
-                    height: (uniqLbls.length + 1) * 33,
+                    forceFit: false,
+                    overflowX: true,
+                    //width: do not use, messes up scroll.
+                    height: (uniqLbls.length + 1) * 30,
                     columnLines: true,
                     frame: true,
-                    cls: 'custom-grid',
+                    cls: 'custom-grid'
                 });
                 gridPnl.render('tpAssayGrid')
             }
