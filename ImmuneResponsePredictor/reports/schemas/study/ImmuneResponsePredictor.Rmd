@@ -83,7 +83,7 @@ getResponse <- function(con, responseVar, subjects, dichotomize, dichValue) {
   re <- con$getDataset(responseVar, original_view = TRUE, reload = TRUE)
   re <- re[participant_id %in% subjects]
   re <- re[, list(arm_accession, study_time_collected, study_time_collected_unit,
-                    response = value_reported/mean(value_reported[study_time_collected<=0])),
+                    response = value_preferred/mean(value_preferred[study_time_collected<=0])),
                by = "virus,participant_id"]
   re <- re[, mr := mean(response), by="study_time_collected"]
   re <- re[, ma := max(mr), by = "arm_accession"]

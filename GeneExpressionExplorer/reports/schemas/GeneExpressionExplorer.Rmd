@@ -108,7 +108,7 @@ if (!exists("loaded_ems") || length(loaded_ems) != length(input_cohorts) || !all
 
 HAI <- con$getDataset("hai", original_view = TRUE, colFilter = colFilter, reload = TRUE)
 HAI <- HAI[, list(arm_accession, study_time_collected, study_time_collected_unit,
-                  response = value_reported / mean(value_reported[study_time_collected <= 0])), by = "virus,participant_id"]
+                  response = value_preferred / mean(value_preferred[study_time_collected <= 0])), by = "virus,participant_id"]
 # HAI at peak immunogenicity
 HAI <- HAI[, mr := mean(response), by = "study_time_collected"]
 HAI <- HAI[, ma := max(mr), by = "arm_accession"]
