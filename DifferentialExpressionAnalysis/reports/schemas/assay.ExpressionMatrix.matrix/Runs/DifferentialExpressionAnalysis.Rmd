@@ -85,6 +85,12 @@ for (mx in runs$name) {
   
     timepoints <- grep("^coef", colnames(mm), value = TRUE)
     for (tp in timepoints) {
+      tt <- data.table(topTable(fit, coef = coef, number = Inf))
+      if(all(is.na(tt$adj.P.Val))){
+        message(paste0(coef, " has all NA values for adj.P.Val. Skipping to next coef."))
+        next()
+      }
+ 
       analysis_accession <- paste0("GEA", idx )
       currTP <- gsub("coef", "", tp)
       arm_name <- unique(pd$cohort)
@@ -100,7 +106,6 @@ for (mx in runs$name) {
                                     coefficient = currTP,
                                     description = description)
   
-      tt <- data.table(topTable(fit, coef = tp, number = Inf))
       ttDE <- tt[adj.P.Val < 0.02]
   
       if (nrow(ttDE) < 100) {
