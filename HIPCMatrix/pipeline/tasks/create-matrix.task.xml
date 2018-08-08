@@ -12,10 +12,10 @@
         <file name='input.txt' splitFiles='true'/>
     </inputs>
     <outputs>
-        <file name='output.tsv' useProtocolNameAsBaseName='true' outputDir='/analysis/exprs_matrices/'/>
-        <file name='output.orig' useProtocolNameAsBaseName='true' outputDir='/analysis/exprs_matrices/'/>
-        <file name='output.summary' useProtocolNameAsBaseName='true' outputDir='/analysis/exprs_matrices/'/>
-        <file name='output.raw' useProtocolNameAsBaseName='true' outputDir='/analysis/exprs_matrices/'/>
+        <file name='output.tsv' useProtocolNameAsBaseName='true' outputLocation='data'/>
+        <file name='output.summary' suffixes='.tsv.summary' useProtocolNameAsBaseName='true' outputLocation='data'/>
+        <file name='output.orig' suffixes='.tsv.summary.orig' useProtocolNameAsBaseName='true' outputLocation='data'/>
+        <file name='output.raw' suffixes='.tsv.raw' useProtocolNameAsBaseName='true' outputLocation='data'/>
     </outputs>
     <script file='create-matrix.R'/>
 </task>
