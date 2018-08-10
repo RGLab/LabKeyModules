@@ -207,7 +207,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
         var strCohort = new LABKEY.ext.Store({
             autoLoad: false,
-            containerFilter: 'CurrentPlusProject', // Query gets proj container from microarray.FAS
+            containerFilter: 'CurrentAndSubfolders',
             listeners: {
                 load: function(){
                     cbCohorts.setDisabled( this.getCount() === 0 );

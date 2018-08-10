@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='fasMap' schemaName='microarray' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        List featureSetId for both original and latest version of a featureAnnotationSet
+    </description>
+</query>
+

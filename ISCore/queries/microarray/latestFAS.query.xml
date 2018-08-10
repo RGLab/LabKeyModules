@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='latestFAS' schemaName='microarray' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        For any featureAnnotationSet name show the ID of the latest annotation version
+    </description>
+</query>
+

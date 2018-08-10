@@ -3,7 +3,7 @@ SELECT
     timepointUnit,
     COUNT( cohort ) AS cohortCount
 FROM
-    GEE_studyCohortsInfo
+    GEE_studyCohortsInfoLatest
 GROUP BY
     timepoint, timepointUnit
 ORDER BY
