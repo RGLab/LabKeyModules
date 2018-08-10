@@ -109,8 +109,8 @@ if (!exists("loaded_ems") || length(loaded_ems) != length(input_cohorts) || !all
 HAI <- con$getDataset("hai", original_view = TRUE, colFilter = colFilter, reload = TRUE)
 HAI <- HAI[, list(arm_accession, study_time_collected, study_time_collected_unit,
                   response = value_preferred / mean(value_preferred[study_time_collected <= 0])), by = "virus,participant_id"]
-# HAI at peak immunogenicity
-HAI <- HAI[, mr := mean(response), by = "study_time_collected"]
+# HAI at peak immunogenicity. Account for NA in some studies causing proj lvl merge failure.
+HAI <- HAI[, mr := mean(response, na.rm=TRUE), by = "study_time_collected"]
 HAI <- HAI[, ma := max(mr), by = "arm_accession"]
 peak <- unique(HAI[mr == ma, list(study_time_collected, arm_accession)])
 HAI <- merge(HAI, peak, by = c("study_time_collected", "arm_accession"))
