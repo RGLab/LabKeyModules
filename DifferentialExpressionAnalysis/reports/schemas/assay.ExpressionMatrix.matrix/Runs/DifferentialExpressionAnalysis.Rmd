@@ -37,12 +37,27 @@ if (is.null(con$cache[["GE_matrices"]])) {
 
 # create df of cohorts and timepoints
 con$getGEInputs()
+
 coefs <- unique(con$cache$GE_inputs[, c("arm_name", contrast), with = FALSE])
+if( !any(coefs$study_time_collected <= 0) ){
+  stop("No baseline timepoints available in any cohort. Analysis not run.")
+}
+
 coefs <- coefs[study_time_collected > 0]
 if( nrow(coefs) == 0 ){
   stop("No post-baseline timepoints available in any cohort. Analysis not run.")
 }
-message(paste("There will be", nrow(coefs), "differential expression analysis."))
+
+tmp <- coefs %>%
+  group_by(arm_name) %>%
+  mutate(baseline = any(study_time_collected <= 0)) %>%
+  filter(baseline == TRUE) %>%
+  mutate(laterTp = sum(study_time_collected > 0 )) %>%
+  summarize(tps = unique(laterTp))
+
+message(paste("There will be", 
+              sum(tmp$tps), 
+              "differential expression analysis."))
 ```
 
 ```{r analysis}
@@ -63,6 +78,10 @@ for (mx in runs$name) {
   pd <- data.table(pData(EM))
   pd <- pd[, coef := do.call(paste, .SD), .SDcols = contrast]
   to_drop <- unique(pd[study_time_collected <= 0, coef])
+  if( length(to_drop) == 0 ){
+      message(paste0("No baseline for ", mx, ". Skipping to next EM."))
+      next()
+  }
   pd <- pd[coef %in% to_drop, coef := "baseline"]
   tmp <- grep("baseline", value = TRUE, invert = TRUE, mixedsort(unique(pd$coef)))
   pd <- pd[, coef := factor(coef, levels = c("baseline", tmp))] # preps coef col for use in model
