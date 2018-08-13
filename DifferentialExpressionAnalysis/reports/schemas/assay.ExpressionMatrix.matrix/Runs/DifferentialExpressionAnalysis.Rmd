@@ -5,6 +5,7 @@ opts_chunk$set(echo = FALSE, message = FALSE)
 ```
 
 ```{r libraries, message = FALSE, echo = FALSE, warning = FALSE}
+library(dplyr)
 library(Rlabkey)
 library(ImmuneSpaceR)
 library(limma)
@@ -38,13 +39,12 @@ if (is.null(con$cache[["GE_matrices"]])) {
 # create df of cohorts and timepoints
 con$getGEInputs()
 
-coefs <- unique(con$cache$GE_inputs[, c("arm_name", contrast), with = FALSE])
+coefs<- unique(con$cache$GE_inputs[, c("arm_name", contrast), with = FALSE])
 if( !any(coefs$study_time_collected <= 0) ){
   stop("No baseline timepoints available in any cohort. Analysis not run.")
 }
 
-coefs <- coefs[study_time_collected > 0]
-if( nrow(coefs) == 0 ){
+if( sum(coefs$study_time_collected > 0) == 0 ){
   stop("No post-baseline timepoints available in any cohort. Analysis not run.")
 }
 
@@ -104,9 +104,9 @@ for (mx in runs$name) {
   
     timepoints <- grep("^coef", colnames(mm), value = TRUE)
     for (tp in timepoints) {
-      tt <- data.table(topTable(fit, coef = coef, number = Inf))
+      tt <- data.table(topTable(fit, coef = tp, number = Inf))
       if(all(is.na(tt$adj.P.Val))){
-        message(paste0(coef, " has all NA values for adj.P.Val. Skipping to next coef."))
+        message(paste0(tp, " has all NA values for adj.P.Val. Skipping to next coef."))
         next()
       }
  
