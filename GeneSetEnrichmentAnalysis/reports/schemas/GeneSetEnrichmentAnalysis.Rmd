@@ -92,6 +92,9 @@ switch(set,
 ```{r camera, cache = TRUE, dependson="cache-cohort;cache-modules"}
 indices <- ids2indices(gene_sets, fData(EM)$gene_symbol)
 pData(EM)[, contrast] <- as.factor(pData(EM)[, contrast])
+if( length(unique(pData(EM)[, contrast])) < 2){
+  stop("Cohort does not have multiple timepoints for differential expression data. Unable to analyze.")
+}
 mm <- model.matrix(formula(paste("~participant_id +", contrast)), EM)
 colnames(mm) <- make.names(colnames(mm))
 ```
