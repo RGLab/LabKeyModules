@@ -23,17 +23,24 @@ function removeEMs( dataRegion ) {
                 var sum = fileSystem.canDelete( sumRec );
                 var rawRec = fileSystem.recordFromCache( emObj["path"] + ".raw" );
                 var raw = fileSystem.canDelete( rawRec );
-                if( tsv & sum & raw){
+                var origRec = fileSystem.recordFromCache( emObj["path"] + ".summary.orig");
+                if( origRec == null){
+                    alert("No .summary.orig version for " + emObj["path"] +". Still delete row?");
+                    var orig = true; // to allow passing thru below
+                }else{
+                    var orig = fileSystem.canDelete( origRec);
+                }
+                if( tsv & sum & raw & orig){
                     rmLKrow(emObj);
                 } else {
                     notAllowedPaths.push(emObj["path"]);
-                    doneCheck.update(2);
+                    doneCheck.update(4);
                 }
 
             },
             failure: function( response, options ){
                 notAllowedPaths.push(emObj["path"]);
-                doneCheck.update(2);
+                doneCheck.update(4);
             },
             scope: this
         }, this);
@@ -56,7 +63,7 @@ function removeEMs( dataRegion ) {
                     },
                     failure: function( errorInfo, options, responseObj ) {
                         notDeletedNames.push ( emObj["name"] );
-                        doneCheck.update(2);
+                        doneCheck.update(4);
                     }
                 });
             }
@@ -99,7 +106,7 @@ function removeEMs( dataRegion ) {
     }
 
     function goToView(){
-        if( doneCheck["count"] / 2 == selRows.responseJSON.rowCount ){
+        if( doneCheck["count"] / 4 == selRows.responseJSON.rowCount ){
             window.location = LABKEY.ActionURL.buildURL("HIPCMatrix",
                                                         "RemoveEMs.view",
                                                         null,
@@ -160,4 +167,3 @@ function removeEMs( dataRegion ) {
         success: onSuccess
     });
 }
-

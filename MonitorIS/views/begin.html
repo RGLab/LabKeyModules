@@ -4,7 +4,8 @@
     Ext.onReady(
         LABKEY.ext.ISCore.initModule.createCallback(
             function( webPartDiv ){ return new LABKEY.ext.MonitorIS({ webPartDivId: webPartDiv }); },
-            <%=webpartContext%>.wrapperDivId
+            <%=webpartContext%>.wrapperDivId,
+            'MonitorIS'
         )
     );
 </script>

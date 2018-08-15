@@ -5,7 +5,7 @@
             <cv:property name='columnTitle' value='Participant ID'/>
           </cv:properties>
         </cv:column>
-        <cv:column name='study'/>
+        <cv:column name='ImmSigCol/study'/>
         <cv:column name='gender'/>
         <cv:column name='age_reported'/>
         <cv:column name='age_unit'/>
@@ -13,7 +13,7 @@
         <cv:column name='ethnicity'/>
         <cv:column name='race'/>
         <cv:column name='species'/>
-        <cv:column name='cohort'/>
+        <cv:column name='ImmSigCol/cohort'/>
     </cv:columns>
 </cv:customView>
 

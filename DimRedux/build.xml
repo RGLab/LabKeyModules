@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<project name='LabKeyModules' default='deploy' basedir='.'>
+
+    <property environment='env'/>
+
+    <target name='init'>
+        <property name='modules.dir' value='${env.MODULES_DIR}'/>
+        <property name='moduleDir' location='${basedir}'/>
+        <basename property='module.name' file='${moduleDir}'/>
+        <property name='module.src.dir' value='${basedir}'/>
+        <property name='build.modules.dir' location='${basedir}/..'/>
+    </target>
+
+    <target name='module.properties' depends='init'>
+        <ant antfile='../build_common.xml' target='ensure_enlistment_id' />
+        <property file='enlistment.properties'/>
+
+        <mkdir dir='${module.src.dir}/config'/>
+        <tstamp>
+            <format property='buildtime' pattern='MMMM d yyyy, h:mm aa'/>
+        </tstamp>
+        <copy tofile='${module.src.dir}/config/module.xml' file='${build.modules.dir}/module.template.xml' overwrite='true'>
+            <filterset begintoken='@@' endtoken='@@'>
+                <filtersfile file='${basedir}/module.properties'/>
+                <filter token='BuildOS' value='${os.name}'/>
+                <filter token='BuildPath' value='${build.modules.dir}/${module.name}.module'/>
+                <filter token='BuildTime' value='${buildtime}'/>
+                <filter token='BuildType' value='${BuildType}'/>
+                <filter token='BuildUser' value='${user.name}'/>
+                <filter token='EnlistmentId' value='${enlistment.id}'/>
+                <filter token='ModuleDependencies' value=''/>
+                <filter token='RequiredServerVersion' value='${RequiredServerVersion}'/>
+                <filter token='Revision' value='Not built from a Subversion source tree'/>
+                <filter token='SourcePath' value='${moduleDir}'/>
+                <filter token='URL' value='Not built from a Subversion source tree'/>
+            </filterset>
+        </copy>
+    </target>
+
+    <target name='build' depends='module.properties'>
+        <zip destfile='${build.modules.dir}/${module.name}.module'>
+            <zipfileset dir='.'/>
+        </zip>
+
+        <available property='modulesDirExists' file='${modules.dir}'/>
+    </target>
+
+    <target name='deploy' depends='before_development_build,build' if='modulesDirExists'>
+        <echo message='Deploying ${module.name}.module to ${modules.dir}'/>
+        <copy file='${build.modules.dir}/${module.name}.module' overwrite='true' tofile='${modules.dir}/${module.name}.module'/>
+        <delete file='${build.modules.dir}/${module.name}.module'/>
+    </target>
+
+    <target name='before_development_build'>
+        <property name='BuildType' value='Development'/>
+    </target>
+
+    <target name='dev' depends='before_development_build,deploy'></target>
+
+    <target name='before_production_build'>
+        <property name='BuildType' value='Production'/>
+    </target>
+
+    <target name='prod' depends='before_production_build,deploy'></target>
+
+</project>
+

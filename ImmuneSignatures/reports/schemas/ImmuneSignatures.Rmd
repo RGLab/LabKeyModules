@@ -29,8 +29,6 @@ As seen in the figure below, the analysis first starts by extracting data from I
 <center>![](/ImmuneSignatures/images/fig1.png)</center>
 
 #### Data Notes:
-To save time, the gene expression matrices are pre-loaded as data within the package.  The code to generate these expression matrices from ImmuneSpace / GEO can be found in the `R/get_GE.R` script within the package.There is also one case where data from ImmuneSpace could not be used: SDY80 (hai).
-
 The SDY80 hai data available on ImmuneSpace is not incorporated into the analysis because it does not include subjects without gene expression data.  Although subjects without GE data are filtered out later, they must be included in the adjust_hai.R script in order to achieve the same results for the "endPoint" variable ("fc_res_maxd30").  The original raw HAI data came from Yuri Kotliarov at NIH and is included within the package. 
 
 Finally, the results for the "old" cohort using SDY67 data are slightly different ( <0.5% Relative Error ).  This is due to rounding that occurs from a transformation from one kind of data structure to another.
@@ -47,7 +45,6 @@ library(Biobase) # biocLite
 library(stringr)
 library(hash)
 library(dplyr)
-library(data.table)
 library(DESeq)
 library(preprocessCore) # biocLite
 
@@ -174,7 +171,7 @@ for(sdy in studies){
   # 2. prior to sampleNames mapping, one of duplicated biosamples must be removed.
   if(sdy == "SDY212"){
     # expr matrix
-    em <- exprs(es)
+    em <- Biobase::exprs(es)
     em <- em[ -(grep("ILMN_2137536", rownames(em))), ]
     cnames <- colnames(em)
     rnames <- rownames(em)
@@ -198,7 +195,7 @@ for(sdy in studies){
   }
 
   es <- con$mapSampleNames(es) # map biosample ids to subject ids
-  em <- exprs(es)
+  em <- Biobase::exprs(es)
 
   if(sdy %in% c("SDY63", "SDY404")){
     cnames <- colnames(em)
@@ -218,7 +215,7 @@ for(sdy in studies){
     cds <- estimateSizeFactors(cds) ## estimate size factor
     cdsBlind <- estimateDispersions(cds, method="blind" )
     vsd <- varianceStabilizingTransformation(cdsBlind)
-    em <- exprs(vsd)
+    em <- Biobase::exprs(vsd)
 
     # gene_set actually has some as lower case, e.g. 'C10orf11', but to
     # reproduce manuscript, must use toupper(), which causes these
@@ -682,7 +679,7 @@ valPlot <- ggplot() +
 eset <- sdy80all[ , !is.na(sdy80all$fc_res_max_d30) ]
 
 # get Module Intensity for each subject by averaging for genes in module
-em <- data.frame(exprs(eset), stringsAsFactors = F)
+em <- data.frame(Biobase::exprs(eset), stringsAsFactors = F)
 em$geneSymbols <- fData(eset)$gene_symbol
 em <- em[ em$geneSymbols %in% gene_set$`BCR signaling (M54)`, ]
 em <- em[ , !(colnames(em) == "geneSymbols") ]
@@ -1027,7 +1024,7 @@ genes <- sort(genes)
 # fn to return average of gene expression within sdy and response
 adjEm <- function(eset, resp, genes){
   pd <- pData(eset)
-  em <- data.table(exprs(eset))
+  em <- data.table(Biobase::exprs(eset))
   subs <- paste0(pd$subject[ pd$fc_res_max_d30 == resp ], "_d0")
   em <- em[ , ( colnames(em) %in% subs ), with=FALSE ]
   em <- em[, gs := fData(eset)$gene_symbol ]

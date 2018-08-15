@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='DimRedux_Timepoints' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        Query that for distinct assay timepoints for a study
+    </description>
+</query>

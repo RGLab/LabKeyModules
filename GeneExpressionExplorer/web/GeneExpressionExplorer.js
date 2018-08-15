@@ -210,11 +210,28 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
             containerFilter: 'CurrentAndSubfolders',
             listeners: {
                 load: function(){
-                    cbCohorts.setDisabled( this.getCount() === 0 );
-                    checkBtnsStatus();
-                    cbTimePoint.triggerBlur();
-                    cbCohorts.focus( 100 );
-                    cbCohorts.expand();
+
+                    // remap FeatureAnnotationSetIds if necessary to be latest anno
+                    LABKEY.Query.selectRows({
+                        schemaName: 'microarray',
+                        queryName: 'fasMap',
+                        success: function(results){
+                            var currIds = Ext.pluck( results.rows, 'currId');
+                            var origIds = Ext.pluck( results.rows, 'origId');
+
+                            cbCohorts.store.data.items.forEach( function(item){
+                                if( !currIds.includes( item.data.featureSetId) ){
+                                    item.data.featureSetId = currIds[ origIds.indexOf( item.data.featureSetId )];
+                                } 
+                            })
+
+                            cbCohorts.setDisabled( cbCohorts.store.getCount() === 0 );
+                            checkBtnsStatus();
+                            cbTimePoint.triggerBlur();
+                            cbCohorts.focus( 100 );
+                            cbCohorts.expand();
+                        }
+                    })
                 },
                 loadexception: LABKEY.ext.ISCore.onFailure
             },

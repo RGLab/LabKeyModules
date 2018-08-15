@@ -1,0 +1,172 @@
+---
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, include = FALSE)
+```
+
+```{r local-testing}
+labkey.url.params <- list()
+labkey.url.params$irp <- "hai"
+labkey.url.params$pGrp <- NULL
+labkey.url.params$study <- "SDY269"
+labkey.url.params$baseUrl <- "https://test.immunespace.org"
+labkey.url.params$userEmail <- "ehenrich@fredhutch.org"
+```
+
+```{r libs}
+# bsselectR is a method for generating custom html for dropdown of plots
+# install via devtools::install_github("walkerke/bsselectR")
+library(ImmuneSpaceR)
+library(dplyr)
+library(glmnet)
+library(ggplot2)
+library(bsselectR)
+```
+
+```{r params}
+irp <- labkey.url.params$irp
+pGrp <- labkey.url.params$pGrp
+sdy <- labkey.url.params$study
+baseUrl <- labkey.url.params$baseUrl
+userEmail <- labkey.url.params$userEmail
+```
+
+```{r prep}
+# helper fn for getting irp by timepoint
+# returns 2 col df with pid and value
+irpByTp <- function(timepoint, dat){
+    print(timepoint)
+    stc <- strsplit(timepoint, " ")[[1]][1]
+    stcu <- strsplit(timepoint, " ")[[1]][2]
+    dat <- dat[ dat$study_time_collected == stc & dat$study_time_collected_unit == stcu, ]
+
+    # Create single result per subject by doing median?
+    if(irp %in% c("hai", "neut_antibody")){
+        dat <- dat %>%
+            select(-virus) %>%
+            group_by(participant_id) %>%
+            filter(value_reported == median(value_reported)) %>%
+            summarize(value = unique(value_reported),
+                      age = unique(age_reported),
+                      ethnicity = unique(ethnicity),
+                      race = unique(race),
+                      gender = unique(gender))
+    }else{
+        # ??? what other assays are going to be used?
+    }
+    
+    features <- dat[ , colnames(dat) != "value" ]
+    rownames(features) <- features$participant_id
+    features <- features[ , grep("_id", colnames(features), invert = T)]
+    
+    # Every col needs 2 or more factors in order to be part of a model
+    uniqs <- apply(features, 2, function(x){length(unique(x))})
+    
+    if(any(uniqs == 1)){
+        return(NULL)
+    }else{
+        features <- model.matrix( ~ ., features)
+        response <- dat$value
+        return(list(features = features, response = response))
+    }
+}
+
+# get data - user should have created participant group by
+# selecting the independent var assay as well as the irp dependent
+# var assay.
+dCols <- c("participant_id", "age_reported", "ethnicity", "gender", "race")
+
+if( !is.null(pGrp) ){
+    con <- CreateConnection("", onTest = grepl("test", baseUrl))
+    dat <- con$getParticipantData(group = pGrp, dataType = irp)
+    demo <- con$getParticipantData(group = pGrp, dataType = "demographics")
+    demo <- demo[ , colnames(demo) %in% dCols]
+}else if( !is.null(sdy) ){
+    con <- CreateConnection(sdy, onTest = grepl("test", baseUrl))
+    dat <- con$getDataset(irp)
+    demo <- con$getDataset("demographics")
+    demo <- demo[ , colnames(demo) %in% dCols, with = FALSE]
+}else{
+    stop("Report must have a participant group or be run from a study container.")
+}
+
+dat <- merge(dat, demo)
+
+timePts <- unique(paste(dat$study_time_collected, dat$study_time_collected_unit))
+datSubsets <- lapply(timePts, irpByTp, dat = dat)
+names(datSubsets) <- timePts
+datSubsets <- datSubsets[ !unlist(lapply(datSubsets, is.null)) ]
+```
+
+```{r glmnet-plotter}
+# adaptation of plot.cv.glmnet for ggplot
+plotModel <- function(model){
+  dat <- data.frame(x = log(model$lambda), 
+                    y = model$cvm,
+                    min = model$cvlo,
+                    max = model$cvup)
+  p <- ggplot(dat, aes(x = x, y = y)) + 
+    geom_errorbar(aes(ymin = min, ymax = max), width = .1) +
+    geom_line() +
+    geom_point(color = "red") +
+    xlab("log(Lamda)") +
+    ylab(model$name) +
+    geom_vline(xintercept = log(model$lambda.min), color = "blue" ) +
+    geom_vline(xintercept = log(model$lambda.1se) , color = "blue")
+}
+```
+
+```{r analysis}
+# run cross-validated glmnet and then plot with ggplot
+plots <- lapply(datSubsets, function(x){
+    model <- cv.glmnet(x$features, x$response)
+    res <- plotModel(model)
+})
+
+# Create paths
+paths <- paste0(gsub(" ", "_", names(datSubsets)), ".png")
+basePath <- "/home/ehenrich/R/"
+holderDir <- paste0(basePath, userEmail, "/logres_plots")
+if(!dir.exists(holderDir)){ 
+    dir.create(holderDir, recursive = T)
+}else{
+    fls <- list.files(holderDir)
+    lapply(paste0(holderDir, "/", fls), file.remove)
+}
+
+# Save plots
+dmp <- lapply(1:length(plots), function(x){
+    ggsave(filename = paths[[x]], 
+           plot = plots[[x]],
+           path = holderDir,
+           dpi = 300)
+})
+```
+
+## Parameters
+- **Immune Response Assay:** `r irp`
+- **Participant Group Name or Study:** `r ifelse(is.null(pGrp), sdy, pGrp)`
+
+## Plots
+- **Number of Available Immune Response Timepoints:** `r length(datSubsets)`
+- **Number of Participants:** `r nrow(dat)`
+
+```{r plot, include = TRUE}
+plotsByDay <- paste0(list.files(holderDir, full.names = TRUE))
+names(plotsByDay) <- tmp <- names(datSubsets)
+
+# Order for hours / days and by number
+splTmp <- strsplit(tmp, " ")
+tmpDf <- data.frame(t(as.data.frame(splTmp)), row.names = NULL, stringsAsFactors = F)
+colnames(tmpDf) <- c("Num", "Modifier")
+tmpDf$Num <- as.integer(tmpDf$Num)
+tmpDf <- tmpDf[ order(tmpDf$Modifier, tmpDf$Num), ]
+rnk <- paste(tmpDf$Num, tmpDf$Modifier)
+plotsByDay <- plotsByDay[ order(match(names(plotsByDay), rnk)) ]
+
+bsselect(plotsByDay, type = "img", selected = "0 Days", 
+         live_search = TRUE, show_tick = TRUE)
+```
+

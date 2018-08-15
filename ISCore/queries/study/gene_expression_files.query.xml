@@ -29,17 +29,6 @@
                     <item text='Delete' permission='ADMIN' insertPosition='end' suppressWarning='true'>
                         <originalText>Delete</originalText>
                     </item>
-                    <item text='Create Matrix' requiresSelection='true' permission='UPDATE' insertPosition='end'>
-                        <!-- 'return false' prevents '#' from showing up on the URL -->
-                        <onClick>
-                        if ( LABKEY.container.activeModules.indexOf( 'HIPCMatrix' ) != -1 ){
-                            createMatrixClick(dataRegion);
-                        } else {
-                            Ext.Msg.alert( 'Error', 'The "HIPCMatrix" module is not enabled. It needs to be enabled in order to create Gene Expression matrices.' );
-                        }
-                        return false;
-                        </onClick>
-                    </item>
                 </buttonBarOptions>
                 <columns>
                   <column columnName='file_info_name'>

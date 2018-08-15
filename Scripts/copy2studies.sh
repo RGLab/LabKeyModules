@@ -67,22 +67,34 @@ do
     zip -j ${dir_proto}/${study}_protocol.zip ${aspera_files}/${study}/Protocols/*
   fi
   if [ -d ${aspera_files}/${study}/ResultFiles/Gene_expression_result ];then
-    cp ${aspera_files}/${study}/ResultFiles/Gene_expression_result/* ${dir_ge}/
+    cp -r ${aspera_files}/${study}/ResultFiles/Gene_expression_result/. ${dir_ge}/
   fi
   if [ -d ${aspera_files}/${study}/ResultFiles/RNA_sequencing_result ];then
-    cp ${aspera_files}/${study}/ResultFiles/RNA_sequencing_result/* ${dir_ge}/
+    cp -r  ${aspera_files}/${study}/ResultFiles/RNA_sequencing_result/. ${dir_ge}/
   fi
   if [ -d ${aspera_files}/${study}/ResultFiles/Illumina_BeadArray ];then
-    cp ${aspera_files}/${study}/ResultFiles/Illumina_BeadArray/* ${dir_ge}/
+    cp -r ${aspera_files}/${study}/ResultFiles/Illumina_BeadArray/. ${dir_ge}/
+  fi
+  if [ -d ${aspera_files}/${study}/ResultFiles/Affymetrix_CEL ];then
+    cp -r ${aspera_files}/${study}/ResultFiles/Affymetrix_CEL/. ${dir_ge}/
+  fi
+  if [ -d ${aspera_files}/${study}/ResultFiles/Affymetrix_other ];then
+    cp -r ${aspera_files}/${study}/ResultFiles/Affymetrix_other/. ${dir_ge}/
   fi
   if [ -d ${aspera_files}/${study}/ResultFiles/Flow_cytometry_result ];then
-    cp ${aspera_files}/${study}/ResultFiles/Flow_cytometry_result/* ${dir_flow}/
+    cp -r ${aspera_files}/${study}/ResultFiles/Flow_cytometry_result/. ${dir_flow}/
   fi
   if [ -d ${aspera_files}/${study}/ResultFiles/Flow_cytometry_compensation_or_control ];then
-    cp ${aspera_files}/${study}/ResultFiles/Flow_cytometry_compensation_or_control/* ${dir_flow}/
+    cp -r ${aspera_files}/${study}/ResultFiles/Flow_cytometry_compensation_or_control/. ${dir_flow}/
   fi
   if [ -d ${aspera_files}/${study}/ResultFiles/CyTOF_result ];then
-    cp ${aspera_files}/${study}/ResultFiles/CyTOF_result/* ${dir_flow}/
+    cp -r ${aspera_files}/${study}/ResultFiles/CyTOF_result/. ${dir_flow}/
+  fi
+  if [ -d ${aspera_files}/${study}/ResultFiles/Flow_cytometry_description ];then
+    cp -r ${aspera_files}/${study}/ResultFiles/Flow_cytometry_description/. ${dir_flow}/
+  fi
+  if [ -d ${aspera_files}/${study}/ResultFiles/Flow_cytometry_workspace ];then
+    cp -r ${aspera_files}/${study}/ResultFiles/Flow_cytometry_workspace/. ${dir_flow}/
   fi
   echo "$(date +%Y-%m-%d\ %H:%M)| ${study}" >> $copy_logs
 

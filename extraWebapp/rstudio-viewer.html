@@ -1,0 +1,71 @@
+
+<script type='text/javascript' src='js/ext-4.2.1/ext-all-sandbox.js'></script>
+<script type='text/javascript' src='js/labkey.js'></script>
+<script type='text/javascript' src='js/clientapi.min.js'></script>
+
+
+<!--
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.21.1/babel.min.js"></script>
+
+<script>
+    function onSuccess(data) {
+        //console.log(data);
+        document.getElementById(data.queryName).innerHTML = data.rowCount;
+
+    };
+
+    LABKEY.contextPath = '';
+    LABKEY.container = {path: 'Studies'};
+    queries = ['StudyProperties', 'ISC_study_datasets', 'demographics'];
+    queries.forEach(function(i) {
+        LABKEY.Query.selectRows({
+            schemaName: 'study',
+            queryName: i,
+            success: onSuccess
+        });
+    });
+
+    setInterval(function() {
+        window.location.reload();
+        }, 10000);
+
+    function ManualRefresh(){
+        window.location.reload();
+    }
+
+</script>
+
+
+<div id='title'>ImmuneSpace Data Finder Summary</div>
+<div id='info-section'>
+    <p><span id='StudyProperties'></span> Studies</p>
+    <p><span id='ISC_study_datasets'></span> Datasets</p>
+    <p><span id='demographics'></span> Participants</p>
+</div>
+<input type='submit' value='Update' onClick='ManualRefresh();'>
+
+-->
+
+<body>
+<div id="title"></div>
+
+<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.21.1/babel.min.js"></script>
+
+<script type='text/babel'>
+const rootElement = document.getElementById('title',)
+const Message = (props) => <div>{props.children}</div>
+const title = (
+    <div className='container'>
+        <Message>ImmuneSpace Data Finder Summary</Message>
+        <Message>Query Information</Message>
+    </div>
+)
+
+ReactDOM.render(title, rootElement)
+</script>
+</body>
+

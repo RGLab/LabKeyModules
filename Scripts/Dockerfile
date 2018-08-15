@@ -27,3 +27,5 @@ RUN dos2unix /Rprofile.site.tmp && \
     cat /Rprofile.site.tmp >> /usr/local/lib/R/etc/Rprofile.site && \
     rm /Rprofile.site.tmp
 
+COPY ImmuneSpace-RStudio.Rd /ImmuneSpace-RStudio.Rd
+RUN dos2unix /ImmuneSpace-RStudio.Rd

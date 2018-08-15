@@ -1,0 +1,13 @@
+<cv:customView xmlns:cv='http://labkey.org/data/xml/queryCustomView'>
+    <cv:columns>
+        <cv:column name='Status'/>
+        <cv:column name='Created'/>
+        <cv:column name='CreatedBy'/>
+        <cv:column name='Description'/>
+        <cv:column name='Info'/>
+    </cv:columns>
+    <cv:sorts>
+        <cv:sort column='Created' descending='1'/>
+    </cv:sorts>
+</cv:customView>
+
