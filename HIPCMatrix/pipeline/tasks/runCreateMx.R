@@ -253,12 +253,12 @@ library(Biobase)
   
   } else if(study != "SDY180") {
     exprs <- fread(inputFiles, header = TRUE)
-    ImmPortFormatted <- c("SDY74","SDY690","SDY301","SDY597","SDY387","SDY522")
+    ImmPortFormatted <- c("SDY74","SDY690","SDY301","SDY597","SDY387","SDY522","SDY364","SDY368", "SDY372", "SDY667")
     grepTerm <- ifelse(!study %in% ImmPortFormatted, "Signal|SIGNAL", "RAW_SIGNAL")
     sigcols <- grep(grepTerm, colnames(exprs), value = TRUE)
     if(study == "SDY80"){
       rNamesCol <- "V1"
-    }else if(study %in% ImmPortFormatted){
+    }else if(study %in% ImmPortFormatted & study != "SDY667"){
       rNamesCol <- "TARGET_ID"
     }else{
       rNamesCol <- "PROBE_ID"
@@ -322,7 +322,7 @@ makeRawMatrix <- function(isGEO, isRNA, gef, study, inputFiles){
       stop(paste("There is more than one file extension:", paste(ext, collapse = ",")))
     }else if( ext %in% c("cel","CEL") ){
       exprs <- .process_CEL(gef, inputFiles, study)
-    }else if( ext == "txt" | study %in% c("SDY522","SDY162", "SDY180", "SDY212", "SDY80", "SDY312", "SDY74", "SDY690", "SDY301", "SDY597", "SDY387") ){
+    }else if( ext == "txt" | study %in% c("SDY522","SDY162", "SDY180", "SDY212", "SDY80", "SDY312", "SDY74", "SDY690", "SDY301", "SDY597", "SDY387","SDY364", "SDY368", "SDY372", "SDY667") ){
       exprs <- .process_others(gef, inputFiles, study)
     }else if( ext %in% c("tsv","csv") ){
       exprs <- .process_TSV(gef, inputFiles, isRNA, study)
@@ -542,17 +542,16 @@ runCreateMx <- function(labkey.url.base,
 
   # manually curate list of RNAseq  and GEO studies
   isRNA <- con$study %in% c("SDY888", "SDY224", "SDY67", "SDY300","SDY1324")
-  isGEO <- con$study %in% c("SDY400","SDY404","SDY888","SDY984","SDY1264", "SDY1260", "SDY1276","SDY1289","SDY1293","SDY1328", "SDY63")
+  isGEO <- con$study %in% c("SDY400","SDY404","SDY888","SDY984","SDY1264", "SDY1260", "SDY1276","SDY1289","SDY1293","SDY1328", "SDY63", "SDY113", "SDY406", "SDY789")
 
   # limit inputFiles to only those existing
   # SDY224 is special case where we use local copy of a processed counts tsv not listed in gef
-  # YALE studies 400, 404, 63 changed to GEO only in DR27, so below is old
   if( isGEO == FALSE ){
     if( con$study == "SDY224"){
       inputFiles <- "TIV_2010.tsv"
     }else if( con$study == "SDY299"){
       inputFiles <- "ImmportMicroarrayDataHeplisav.441456.csv"
-    }else if( con$study %in% c("SDY400", "SDY404", "SDY80", "SDY63") ){
+    }else if( con$study == "SDY80" ){
       inputFiles <- paste0(mx, ".tsv")
     }else{
       inputFiles <- gef$file_info_name[ grep("CEL$|cel$|txt$|tsv$|csv$", gef$file_info_name)]

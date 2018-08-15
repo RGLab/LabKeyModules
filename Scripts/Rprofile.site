@@ -1,5 +1,5 @@
-library("bitops")
 library("rjson")
+library("httr")
 library("Rlabkey")
 library("rstudioapi")
 
@@ -10,18 +10,34 @@ labkey.init <- function(apiKey="")
   else if (file.exists("~/.Rsession"))
     source("~/.Rsession")
   if (apiKey!="")
+  {
+    options(labkey.apiKey=apiKey);
     labkey.setDefaults(apiKey=apiKey);
+  }
   hasViewer <- FALSE
-  try (hasViewer <- rstudioapi::hasFun("viewer"))
+  try(hasViewer <- rstudioapi::hasFun("viewer"))
+  baseUrl <- options('labkey.baseUrl');
+  # backward compatibility (delete after 18.2)
+  if (is.null(baseUrl) && exists('labkey.properties') && !is.null(labkey.properties$url$base))
+    baseUrl <- labkey.properties$url$base;
+  if (hasViewer && !is.null(baseUrl))
+    rstudioapi::viewer(paste(baseUrl,"rstudio-viewer.html",sep='/'));
+
+  hasPreview <- FALSE
+  try (hasPreview <- rstudioapi::hasFun("previewRd"))
+  if (hasPreview) try(rstudioapi::previewRd("/ImmuneSpace-RStudio.Rd"), silent = TRUE)
 }
 
 .First <- function()
 {
     labkey.init()
-    print("Welcome to RStudio Server")
-    if (exists('labkey.properties') && !is.null(labkey.properties$user$email))
-      print(paste("started by", labkey.properties$user$email, "at", date(), sep=" "))
+    email <- options("labkey.user.email")
+    # backward compatibility (delete after 18.2)
+    if (is.null(email) && exists('labkey.properties') && !is.null(labkey.properties$user$email))
+        email <- labkey.properties$user$email
+    message("Welcome to ImmuneSpace RStudio Session")
+    if (!is.null(email))
+      message(paste("started by", email, "at", date(), sep=" "))
     else
-       print(date())
+      message(date())
 }
-

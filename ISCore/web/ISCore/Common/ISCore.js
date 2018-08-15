@@ -67,7 +67,7 @@ LABKEY.ext.ISCore.contributors =
 LABKEY.ext.ISCore.moduleNotEnabled =
     'This module is not currently enabled in this study.' +
     ( LABKEY.user.isAdmin ? ' Click <a href=\'' +
-    LABKEY.ActionURL.buildURL( 'admin', 'folderManagement', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
+    LABKEY.ActionURL.buildURL( 'admin', 'folderType', LABKEY.ActionURL.getContainer(), { tabId: 'folderType' } ) +
     '\'>here</a> to enable it.' : '' );
 
 LABKEY.ext.ISCore.renderTempPnl = function( maskMsg, webPartDiv ){
@@ -109,20 +109,17 @@ LABKEY.ext.ISCore.simpleInitModule = function( renderModule, webPartDiv ){
     Ext.EventManager.fireWindowResize();
 }
 
-LABKEY.ext.ISCore.initModule = function( renderModule, webPartDiv, queryToCheck, schemaToCheck ){
-    if ( queryToCheck == undefined ){
+LABKEY.ext.ISCore.initModule = function( renderModule, webPartDiv, moduleToCheck  ){
+    if ( moduleToCheck == undefined ){
         LABKEY.ext.ISCore.simpleInitModule( renderModule, webPartDiv );
     } else{
-        LABKEY.Query.getQueryDetails({
-            failure: function(){
-                LABKEY.ext.ISCore.renderTempPnl( LABKEY.ext.ISCore.moduleNotEnabled, webPartDiv );
-            },
-            queryName: queryToCheck,
-            schemaName: schemaToCheck ? schemaToCheck : 'study',
-            success: LABKEY.ext.ISCore.simpleInitModule.createCallback( renderModule, webPartDiv )
-        });
-    }
-};
+        if ( LABKEY.container.activeModules.includes(moduleToCheck)){
+            LABKEY.ext.ISCore.simpleInitModule( renderModule, webPartDiv )
+        } else{
+            LABKEY.ext.ISCore.renderTempPnl( LABKEY.ext.ISCore.moduleNotEnabled, webPartDiv );
+        }
+    };
+}
 
 LABKEY.ext.ISCore.captureEvents = function( observable ) {
     Ext.util.Observable.capture(

@@ -22,8 +22,16 @@
                     </item>
                 </buttonBarOptions>
                 <columns>
-                    <column columnName="study">
-                        <url>/project/Studies/${study}/begin.view</url>
+                    <column columnName="ImmSigCol" wrappedColumnName="lsid">
+                        <dimension>true</dimension>
+                        <fk>
+                            <fkDbSchema>study</fkDbSchema>
+                            <fkTable>ImmSig_demographics</fkTable>
+                            <fkColumnName>lsid</fkColumnName>
+                        </fk>
+                        <shownInInsertView>false</shownInInsertView>
+                        <shownInUpdateView>false</shownInUpdateView>
+                        <columnTitle>Imm Sig Col</columnTitle>
                     </column>
                 </columns>
             </table>

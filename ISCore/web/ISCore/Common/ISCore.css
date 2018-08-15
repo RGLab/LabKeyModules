@@ -435,3 +435,7 @@ pre, .ext-mb-text {
 
 /* ************************************************************ */
 
+.ISCore .x-panel-header {
+    border-bottom: 1px solid #d0d0d0;
+}
+
