@@ -181,11 +181,6 @@ library(Biobase)
   
   if( isRNA == FALSE & study != "SDY296"){
     exprs <- setnames(exprs, tolower(chartr(" ", "_", names(exprs))))
-    if( study == "SDY299" ){
-	  ui2es <- fread("/share/files/Studies/SDY299/@files/rawdata/gene_expression/SDY299_userIds2expSmpls.csv")
-      tmp <- ui2es[, Accession][ match(exprs[,`experiment_sample_user-defined_id`], ui2es[,`User Defined ID`])]
-      exprs[, experiment_sample_accession := tmp]
-    }
     if( !all(c("target_id", "raw_signal" ) %in% colnames(exprs))){
       stop("The file does not follow HIPC standards.")
     }
@@ -253,7 +248,7 @@ library(Biobase)
   
   } else if(study != "SDY180") {
     exprs <- fread(inputFiles, header = TRUE)
-    ImmPortFormatted <- c("SDY74","SDY690","SDY301","SDY597","SDY387","SDY522","SDY364","SDY368", "SDY372", "SDY667")
+    ImmPortFormatted <- c("SDY74","SDY690","SDY301","SDY597","SDY387","SDY522","SDY364","SDY368", "SDY372", "SDY667", "SDY299")
     grepTerm <- ifelse(!study %in% ImmPortFormatted, "Signal|SIGNAL", "RAW_SIGNAL")
     sigcols <- grep(grepTerm, colnames(exprs), value = TRUE)
     if(study == "SDY80"){
@@ -322,7 +317,7 @@ makeRawMatrix <- function(isGEO, isRNA, gef, study, inputFiles){
       stop(paste("There is more than one file extension:", paste(ext, collapse = ",")))
     }else if( ext %in% c("cel","CEL") ){
       exprs <- .process_CEL(gef, inputFiles, study)
-    }else if( ext == "txt" | study %in% c("SDY522","SDY162", "SDY180", "SDY212", "SDY80", "SDY312", "SDY74", "SDY690", "SDY301", "SDY597", "SDY387","SDY364", "SDY368", "SDY372", "SDY667") ){
+    }else if( ext == "txt" | study %in% c("SDY522","SDY162", "SDY180", "SDY212", "SDY80", "SDY312", "SDY74", "SDY690", "SDY301", "SDY597", "SDY387","SDY364", "SDY368", "SDY372", "SDY667", "SDY299") ){
       exprs <- .process_others(gef, inputFiles, study)
     }else if( ext %in% c("tsv","csv") ){
       exprs <- .process_TSV(gef, inputFiles, isRNA, study)
@@ -549,8 +544,6 @@ runCreateMx <- function(labkey.url.base,
   if( isGEO == FALSE ){
     if( con$study == "SDY224"){
       inputFiles <- "TIV_2010.tsv"
-    }else if( con$study == "SDY299"){
-      inputFiles <- "ImmportMicroarrayDataHeplisav.441456.csv"
     }else if( con$study == "SDY80" ){
       inputFiles <- paste0(mx, ".tsv")
     }else{
