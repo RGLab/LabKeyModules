@@ -498,7 +498,7 @@ runCreateMx <- function(labkey.url.base,
   # Check that output filepath exists before starting run
   outPath <- file.path(pipeline.root, "analysis/exprs_matrices")
   if( !dir.exists(outPath) ){
-    stop(paste0("file path ", outPath, " does not exist. Please correct and re-run"))
+    dir.create(outPath)
   }
 
   # Check that feature2gene mapping is available prior to doing work
