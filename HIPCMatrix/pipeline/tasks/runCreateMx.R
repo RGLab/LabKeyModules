@@ -200,6 +200,12 @@ library(Biobase)
   }else if(study == "SDY296"){
     setnames(exprs, "PROBE_ID", "feature_id")
     exprs[, GENE_SYMBOL := NULL]
+  }else if(study == "SDY300"){
+    exprs[, TYPE := NULL ]
+    exprs[, ENSEMBL_ID := NULL ]
+    setnames(exprs, "GENE_SYMBOL", "feature_id")
+  }else if(study == "SDY67"){
+    setnames(exprs, "GENE_SYMBOL", "feature_id")
   }else{
     try(setnames(exprs, "V1", "feature_id"))
     try(setnames(exprs, "gene_ID", "feature_id")) # SDY1324
@@ -217,32 +223,16 @@ library(Biobase)
     exprs <- setnames(exprs, tolower(chartr(" ", "_", names(exprs))))
     keepCols <- c("sample", "gene_symbol", "expression_value")
 
-    if(study %in% c("SDY300","SDY67") ){ # essentially isRNA
-      formula <- "gene_symbol ~ sample"
-      rNamesCol <- "gene_symbol"
-      try(setnames(exprs, "gene_count", "expression_value"), silent = TRUE) # only for SDY300  
-    }else{
-      try(setnames(exprs, "target_id", "probe_id"), silent = TRUE) # silent b/c SDY296 already has correct names
-      try(setnames(exprs, "raw_signal", "expression_value"), silent = TRUE)
-      keepCols <- c(keepCols, "probe_id")
-      formula <- "probe_id ~ sample"
-      rNamesCol <- "probe_id"
-    }
+    try(setnames(exprs, "target_id", "probe_id"), silent = TRUE) # silent b/c SDY296 already has correct names
+    try(setnames(exprs, "raw_signal", "expression_value"), silent = TRUE)
+    keepCols <- c(keepCols, "probe_id")
+    formula <- "probe_id ~ sample"
+    rNamesCol <- "probe_id"
 
     file2sample <- unique(gef[, list(file_info_name, expsample_accession)])
     exprs[, sample := file2sample[match(.id, file_info_name), expsample_accession]]
     exprs <- exprs[ , keepCols, with = FALSE  ]
-    
-    if(study != "SDY300"){
-      exprs <- dcast.data.table(exprs, formula = formula, value.var = "expression_value")
-    }else{
-      # 20731 genes present in all 90 samples, but 20937 only present in 31? why?
-      # Some genes duplicated in a handful of samples, these are therefore averaged
-      exprs <- dcast.data.table(exprs, formula = formula, value.var = "expression_value", fun.aggregate = mean)
-      # rm genes that were saved as dates or blank, most likely just digits converted by ms excel
-      exprs <- exprs[ grep("^\\d{1,2}-[A-z]{3}|^$", exprs[,gene_symbol], invert = TRUE) ]
-      # At this point many NaN left in matrix due to the missing data. Leaving as-is for the moment.
-    }
+    exprs <- dcast.data.table(exprs, formula = formula, value.var = "expression_value")
     
     setnames(exprs, rNamesCol, "feature_id")
   
@@ -498,7 +488,7 @@ runCreateMx <- function(labkey.url.base,
   # Check that output filepath exists before starting run
   outPath <- file.path(pipeline.root, "analysis/exprs_matrices")
   if( !dir.exists(outPath) ){
-    stop(paste0("file path ", outPath, " does not exist. Please correct and re-run"))
+    dir.create(outPath)
   }
 
   # Check that feature2gene mapping is available prior to doing work
