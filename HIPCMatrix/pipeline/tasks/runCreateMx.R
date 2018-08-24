@@ -391,8 +391,7 @@ summarizeMatrix <- function(norm_exprs, f2g){
 
 writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs, onCL){
   
-  # outNm <- gsub("\\.tsv", "", output.tsv)
-  
+  if(onCL == TRUE){
   # - Raw EM
   write.table(exprs,
               file = file.path(pipeline.root,
@@ -420,21 +419,18 @@ writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs,
               quote = FALSE,
               row.names = FALSE)
 
-  if(onCL == FALSE){
-    # write out summary.orig only from UI ... assuming that is first
-    # time and will not be overwriting any files
-    write.table(sum_exprs,
-                file = file.path(pipeline.root,
-                                 "analysis/exprs_matrices",
-                                 paste0(output.tsv, ".summary.orig")),
-                sep = "\t",
-                quote = FALSE,
-                row.names = FALSE)
+  # NOT CREATING .summary.orig b/c assuming if onCL then only updating
+
+  }else{
 
     # So as to avoid error in LK need blank single space probe colheader
     setnames(norm_exprs, "feature_id", "ID_REF")
     
-    # EMs used for pipeline go to /rawdata/gene_expression
+    # EMs used for pipeline are written to the R working directory,
+    # which is /share/files/Studies/SDY123/@files/rawdata/gene_expression/create-matrix/<run_name>/<workingDir>
+    # Then the pipeline job moves them to /share/files/Studies/SDY123/@files/analysis/exprs_matrices
+    # based on the create-matrix.task.xml parameter 'outputDir' which uses a relative path
+    # to the analysis directory which is /share/files/Studies/SDY123/@files/rawdata/gene_expression/create-matrix/<run_name>
     write.table(norm_exprs,
                file = output.tsv,
                sep = "\t",
@@ -595,6 +591,7 @@ runCreateMx <- function(labkey.url.base,
   write.table(varDf,
               file = paste0(analysis.directory, "/create-matrix-vars.tsv"),
               sep = "\t",
-              quote = FALSE)
+              quote = FALSE,
+              row.names = FALSE)
 }
 
