@@ -391,70 +391,29 @@ summarizeMatrix <- function(norm_exprs, f2g){
 
 writeMatrix <- function(pipeline.root, output.tsv, exprs, norm_exprs, sum_exprs, onCL){
   
-  if(onCL == TRUE){
-  # - Raw EM
-  write.table(exprs,
-              file = file.path(pipeline.root,
-                               "analysis/exprs_matrices",
-                               paste0(output.tsv,".raw")),
-              sep = "\t",
-              quote = FALSE,
-              row.names = FALSE)
-
-  # - Normalized EM
-  write.table(norm_exprs,
-              file = file.path(pipeline.root,
-                               "analysis/exprs_matrices",
-                               output.tsv),
-              sep = "\t",
-              quote = FALSE,
-              row.names = FALSE)
-
-  # - summary EM
-  write.table(sum_exprs,
-              file = file.path(pipeline.root,
-                               "analysis/exprs_matrices",
-                               paste0(output.tsv, ".summary")),
-              sep = "\t",
-              quote = FALSE,
-              row.names = FALSE)
-
-  # NOT CREATING .summary.orig b/c assuming if onCL then only updating
-
-  }else{
-
-    # So as to avoid error in LK need blank single space probe colheader
-    setnames(norm_exprs, "feature_id", "ID_REF")
-    
-    # EMs used for pipeline are written to the R working directory,
-    # which is /share/files/Studies/SDY123/@files/rawdata/gene_expression/create-matrix/<run_name>/<workingDir>
-    # Then the pipeline job moves them to /share/files/Studies/SDY123/@files/analysis/exprs_matrices
-    # based on the create-matrix.task.xml parameter 'outputDir' which uses a relative path
-    # to the analysis directory which is /share/files/Studies/SDY123/@files/rawdata/gene_expression/create-matrix/<run_name>
-    write.table(norm_exprs,
-               file = output.tsv,
-               sep = "\t",
-               quote = FALSE,
-               row.names = FALSE)
-
-    write.table(exprs,
-                file = paste0(output.tsv, ".raw"),
-                sep = "\t",
-                quote = FALSE,
-                row.names = FALSE)
-
-    write.table(sum_exprs,
-                file = paste0(output.tsv, ".summary"),
-                sep = "\t",
-                quote = FALSE,
-                row.names = FALSE)
-
-    write.table(sum_exprs,
-                file = paste0(output.tsv, ".summary.orig"),
-                sep = "\t",
-                quote = FALSE,
-                row.names = FALSE)
+  .writeTbl <- function(df, onCL, baseNm){
+    dir <- ifelse(onCL == TRUE, paste0(pipeline.root, "/analysis/exprs_matrices/"), "")    
+    write.table(df,
+        file = paste0(dir, baseNm),
+        sep = "\t",
+        quote = FALSE,
+        row.names = FALSE)
   }
+
+  # Raw EM
+  .writeTbl(exprs, onCL, paste0(output.tsv, ".raw"))
+
+  # Normalized EM
+  .writeTbl(norm_exprs, onCL, output.tsv)
+
+  # summary EM
+  .writeTbl(sum_exprs, onCL, paste0(output.tsv, ".summary"))
+
+  # original summary EM if through UI
+  if (onCL == FALSE) {
+    .writeTbl(sum_exprs, onCL, paste0(output.tsv, ".summary.orig"))
+  }
+
 }
 
 #-------------------------------
