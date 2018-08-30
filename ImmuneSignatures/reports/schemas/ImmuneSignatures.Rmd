@@ -148,10 +148,17 @@ studies <- c("SDY212","SDY63","SDY404","SDY400","SDY67","SDY80")
 eset_d0 <- list()
 sdy80all <- "" # need eset with all time points for some figures
 
+# labkey.url.path set by UI report pipeline = "/HIPC/IS1"
+# labkey.url.base set by UI report pipeline
+con <- CreateConnection()
+
+# Need sdy-less pid aka subject for mapping HAI
+demo <- con$getDataset("demographics")
+demo$subject <- gsub("\\.\\d{2,3}$", "", demo$participant_id)
+
 for(sdy in studies){
-  labkey.url.path <- paste0("/Studies/", sdy)
-  con <- CreateConnection()
-  mats <- con$cache$GE_matrices$name
+  gTerm <- ifelse(sdy == "SDY80", "pH1N1", sdy)
+  mats <- con$cache$GE_matrices$name[ grep(gTerm, con$cache$GE_matrices$name) ]
 
   # --------GET GENE EXPRESSION DATA------------
 
@@ -252,21 +259,18 @@ for(sdy in studies){
 
   # Adjust according to Yuri Kotliarov code.
   # NOTE: SDY80 raw HAI data in ImmuneSpace not available yet, therefore using preloaded.
-  # labkey.url.path <- paste0("/Studies/", sdy, "/") # for IS site only
-  rawHai <- if(sdy != "SDY80"){ con$getDataset("hai") }else{ SDY80_rawtiterdata_v2 }
+  if(sdy != "SDY80"){ 
+    rawHai <- con$getDataset("hai") 
+    sdyId <- sapply(strsplit(rawHai$participant_id, "\\."), '[', 2)
+    rawHai <- rawHai[ sdyId == gsub("SDY", "", sdy), ]
+  }else{ 
+    rawHai <- SDY80_rawtiterdata_v2 
+  }
+  
+  # Adjust HAI and add age / study
   adjHai <- adjust_hai(sdy, rawHai)
-
-  # Age needed for figure 2 and SDY80 filtering
-  dotNum <- gsub("SDY", ".", sdy, fixed = T)
-  demo <- con$getDataset("demographics")
-  adjHai$Age <- sapply(adjHai$subject, FUN = function( sub ){
-    trg <- demo[ which(demo$participant_id == paste0(sub, dotNum))]
-    return( trg$age_reported )
-  })
-
+  adjHai$Age <- demo$age_reported[ match(adjHai$subject, demo$subject)]
   if(sdy == "SDY80"){ adjHai <- adjHai[ which(adjHai$Age < 36), ] }
-
-  # Need study id for figure 2
   adjHai$study <- sdy
 
   # ---------PREP + PUSH TO HOLDERS-------
@@ -279,17 +283,13 @@ for(sdy in studies){
 Before filtering the expressionSets into "young" (<= 35 years old) and "old" (> 60 years old) cohorts, we create the age distribution figure form the manuscript using the `con$getDataset()` method described before to pull demographic information for all participants.  The subjects are subset into those with day zero gene expression data (dark blue) and those without (light blue).  A second table shows the number of subjects available for each study in ImmuneSpace.  These numbers differ slightly from the manuscript where some filtering was done prior to the calculation of available subjects - e.g. duplicate biosamples removed in SDY212.
 
 ```{r age-distribution, fig.width=6, fig.height=8}
-pd <- rbindlist(lapply(studies, function(sdy) {
-                        con <- CreateConnection(sdy)
-                        demo <- con$getDataset("demographics")
-                        ge <- con$getDataset("gene_expression_files")
-                        ge <- ge[ ge$study_time_collected == 0, ]
-                        demo$ge <- sapply(demo$participant_id,
-                                          FUN = function(x){x %in% unique(ge$participant_id)})
-                        filt <- data.frame(Age = demo$age_reported,
-                                           GE = demo$ge,
-                                           Study = sdy)
-                       }))
+ge <- con$getDataset("gene_expression_files")
+ge <- ge[ ge$study_time_collected == 0, ]
+demo$ge <- demo$participant_id %in% unique(ge$participant_id)
+demo$study <- sapply(strsplit(demo$participant_id, "\\."), '[', 2)
+pd <- data.frame(Age = demo$age_reported,
+                 GE = demo$ge,
+                 Study = demo$study)
 pd.with <- pd[ pd$GE == TRUE, ]
 pd.without <- pd[ pd$GE == FALSE, ]
 
@@ -341,8 +341,10 @@ print(plot_grid(agePlot,
 To provide a more detailed understanding how the hai data adjustment affects the distribution of responders and non-responders, we provide the example of SDY404.  Note that the outlier in Figure 3A. with an extremely high d0 titer is removed from the data before decorrelation.  The blue horizontal lines show the quantile thresholds for categorizing an individual as high responder (>70%) or low responder (<30%).
 ```{r adjMFC-prep, include=FALSE, fig.width=11, fig.height=9}
 # Get raw data from ImmuneSpace and select only young subjects -------------------------------
-con <- CreateConnection("SDY404")
-rawHai <- con$getDataset("hai")
+onTest <- grepl("test",labkey.url.base)
+rm(labkey.url.base, labkey.url.path) # otherwise connection is still through HIPC/IS1
+sdy404 <- CreateConnection("SDY404", onTest = onTest)
+rawHai <- sdy404$getDataset("hai")
 adjHai <- adjust_hai("SDY404", rawHai)
 pd <- adjHai[ adjHai$Age.class == "young", ]
 
