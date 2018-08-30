@@ -482,7 +482,7 @@ runCreateMx <- function(labkey.url.base,
 
   # manually curate list of RNAseq  and GEO studies
   isRNA <- con$study %in% c("SDY888", "SDY224", "SDY67", "SDY300","SDY1324")
-  isGEO <- con$study %in% c("SDY400","SDY404","SDY888","SDY984","SDY1264", "SDY1260", "SDY1276","SDY1289","SDY1293","SDY1328", "SDY63", "SDY113", "SDY406", "SDY789")
+  isGEO <- con$study %in% c("SDY144", "SDY180", "SDY400", "SDY404", "SDY888", "SDY984", "SDY1264", "SDY1260", "SDY1276", "SDY1289", "SDY1293", "SDY1328", "SDY63", "SDY113", "SDY406", "SDY789")
 
   # limit inputFiles to only those existing
   # SDY224 is special case where we use local copy of a processed counts tsv not listed in gef
