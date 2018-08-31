@@ -16,42 +16,44 @@ library(Biobase)
 # Process GEO accession
 # Returns a data.table with a feature_id column and one column per expsample_accession
 #' @importFrom Biobase exprs sampleNames
-.process_GEO_microarray <- function(gef){
+.process_GEO_microarray <- function(gef, study){
   gef <- gef[ geo_accession != "" ] # Make sure we only have rows with GEO.
   gsm <- getGEO(gef[1, geo_accession])
-  gse <- gsm@header$series_id[1] # Assumes that the series is the first one (SuperSeries with higher ID)
-  esList <- getGEO(gse) # returns list of expressionsets
+  gseList <- gsm@header$series_id  
+  esList <- sapply(gseList, getGEO)
+
   if( length(esList) == 1){
     es <- esList[[1]]
   }else{
-    # create combined expressionSet based on `.combineEMs` in getGEMatrix
-    # Multiple esets may have different annotations, so create one large 
-    # featureData and place in both. Assumption is that GPL are not sig diff.
-    # If sig diff GPL, then need to keep separate by cohort (assuming cohort
-    # not split across GSE). SDY1289 is example of this.  TODO: if single
-    # cohort is split across GSE *AND* the GPL are different ...
-    if (unique(gef$study_accession) != "SDY1289") {
-        fds <- lapply(esList, function(x) {
-                        droplevels(data.table(Biobase::fData(x)))
-        })
-        fd <- Reduce(f = function(x, y) {merge(x, y)}, fds)
-        esList <- lapply(esList, "[", as.character(fd$ID))
-        for (i in 1:length(esList)) {
-            fData(esList[[i]]) <- fd
-            esList[[i]]@annotation <- "" # may have diff GPLXXX in GEO, but not really different annotation, therefore force combination by removing GPL listed here
-        }
-        es <- Reduce(f = combine, esList)
+    # determine if all gsms are in single eSet aka GEO series (gse)
+    gsmList <- sapply(esList, Biobase::sampleNames)
+    pres <- sapply(gsmList, function(x){ all(gef$geo_accession %in% x) })
+    esPres <- esList[ pres == TRUE ]
+
+    # if yes, then select this one
+    if( length(esPres) == 1 ){
+      es <- esPres[[1]]
+
+    # if no, then merge eSets based on common featureData aka probes.
+    # This is the case where cohorts were likely split across sequencing platforms
+    # perhaps due to some timepoints being done significantly later.
     }else{
-        gsms <- lapply(esList, Biobase::sampleNames)
-        pres <- lapply(gsms, function(x){
-            all(gef$geo_accession %in% x) 
-        })
-        es <- esList[ pres == TRUE ][[1]]    
+      fds <- lapply(esList, function(x) { droplevels(data.table(Biobase::fData(x))) })
+      fd <- Reduce(f = function(x, y) {merge(x, y)}, fds)
+      esList <- lapply(esList, "[", as.character(fd$ID))
+      for (i in 1:length(esList)) {
+        fData(esList[[i]]) <- fd
+        esList[[i]]@annotation <- "" #force combination by removing GPL listed here
+      }
+      es <- Reduce(f = combine, esList)
     }
   }
-  es <- es[ , sampleNames(es) %in% gef$geo_accession ]
-  if(all(gef$geo_accession %in% sampleNames(es))){ # All selected samples are in the series
-    sampleNames(es) <- gef[match(sampleNames(es), geo_accession), expsample_accession] # sampleNames are GEO accession
+
+  es <- es[, sampleNames(es) %in% gef$geo_accession ]
+  
+  # Map sampleNames(gsm) to expSampleIds
+  if(all(gef$geo_accession %in% sampleNames(es))){ 
+    sampleNames(es) <- gef[match(sampleNames(es), geo_accession), expsample_accession]
     exprs <- data.table(exprs(es))
     cnames <- colnames(copy(exprs))
     exprs <- exprs[ , feature_id := featureNames(es) ]
@@ -60,6 +62,36 @@ library(Biobase)
     stop(paste0("Some of the selected gene_expression_files rows are not part of ",
                 gse, ". Add code!"))
   }
+  
+  return(exprs)
+}
+
+# Process GEO supplementary files for SDY406 and SDY113 b/c the way they 
+# were normalized resulted in expr values < 1
+.process_GEO_affy <- function(gef, study){
+  baseDir <- paste0("/share/files/Studies/", study, "/@files/rawdata/gene_expression/cel_files")
+  dir.create(baseDir)
+  tmp <- lapply(gef$geo_accession, function(x){
+    # get supp file
+    fl <- getGEOSuppFiles(x, makeDirectory = FALSE, baseDir = baseDir)
+    flPath <- rownames(fl)
+    GEOquery::gunzip(flPath, overwrite = TRUE)
+    flPath <- gsub(".gz", "", flPath)
+    
+    # process according to affy without normalization
+    library(primeviewcdf)
+    tmp <- getwd()
+    setwd("/") # b/c filepaths are absolute and justRMA prepends wd
+    eset <- affy::justRMA(filenames = flPath, normalize = FALSE)
+    setwd(tmp)
+    exprs <- data.table(exprs(eset), keep.rownames = TRUE)
+    colnames(exprs) <- c("feature_id", x)
+    return(exprs)
+  })
+  exprs <- Reduce(f = function(x, y) {merge(x, y)}, tmp)
+  nms <- gef$biosample_accession[ match(colnames(exprs), gef$geo_accession)]
+  nms[[1]] <- "feature_id"
+  colnames(exprs) <- nms
   return(exprs)
 }
 
@@ -299,7 +331,11 @@ makeRawMatrix <- function(isGEO, isRNA, gef, study, inputFiles){
     if( isRNA == TRUE ){
       exprs <- .process_GEO_rnaseq(gef, study)
     }else{
-      exprs <- .process_GEO_microarray(gef)
+      if( study %in% c("SDY406","SDY113") ){
+        exprs <- .process_GEO_affy(gef, study)
+      }else{
+        exprs <- .process_GEO_microarray(gef, study)
+      }
     }
   }else{
     ext <- unique(file_ext(inputFiles))
@@ -307,7 +343,7 @@ makeRawMatrix <- function(isGEO, isRNA, gef, study, inputFiles){
       stop(paste("There is more than one file extension:", paste(ext, collapse = ",")))
     }else if( ext %in% c("cel","CEL") ){
       exprs <- .process_CEL(gef, inputFiles, study)
-    }else if( ext == "txt" | study %in% c("SDY522","SDY162", "SDY180", "SDY212", "SDY80", "SDY312", "SDY74", "SDY690", "SDY301", "SDY597", "SDY387","SDY364", "SDY368", "SDY372", "SDY667", "SDY299") ){
+    }else if( ext == "txt" | study %in% c("SDY522","SDY162", "SDY212", "SDY80", "SDY312", "SDY74", "SDY690", "SDY301", "SDY597", "SDY387","SDY364", "SDY368", "SDY372", "SDY667", "SDY299") ){
       exprs <- .process_others(gef, inputFiles, study)
     }else if( ext %in% c("tsv","csv") ){
       exprs <- .process_TSV(gef, inputFiles, isRNA, study)
