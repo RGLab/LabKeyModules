@@ -146,7 +146,7 @@ con <- CreateConnection()
 ```{r EMs, cache = TRUE, dependson="main", cache.extra=digest(param)}
 # When the input parameters change, re-download the EMs
 cohorts <- c(param$cohortsTraining, param$cohortsTesting)
-EM <- con$getGEMatrix(cohort = cohorts)
+EM <- con$getGEMatrix(cohort_type = cohorts)
 DEG <- getGenes(con, param)
 ```
 ```{r main2, echo = FALSE, cache = TRUE, dependson="EMs;functions"}
@@ -189,17 +189,17 @@ response <- getResponse(con,
                         param$dichValue)
 response_pids <- unique(response$participant_id)
 FC <- FC[rownames(FC) %in% response_pids,]
-pd <- unique(pd[participant_id %in% rownames(FC), list(participant_id, cohort)])
+pd <- unique(pd[participant_id %in% rownames(FC), list(participant_id, cohort_type)])
 
-pd <- pd[, cohort_label := ifelse(cohort %in% param$cohortsTesting,
-                                  paste("b:", cohort, "(Testing)"),
-                                  paste("a:", cohort, "(Training)"))]
+pd <- pd[, cohort_label := ifelse(cohort_type %in% param$cohortsTesting,
+                                  paste("b:", cohort_type, "(Testing)"),
+                                  paste("a:", cohort_type, "(Training)"))]
 
 ```
 
 ```{r subset-train, echo = FALSE, cache = TRUE, dependson="main2"}
 #At this point, we have HAI for all patient and FC for all patients.
-train_pids <- pd[cohort %in% param$cohortsTraining, participant_id]
+train_pids <- pd[cohort_type %in% param$cohortsTraining, participant_id]
 # Select trainingset patients
 FC_train <- FC[train_pids,]
 if(is.null(dim(FC_train))){
@@ -212,7 +212,7 @@ if(param$timepoint > 0){
     FC_train <- FC_train[, log(apply(abs(FC_train), 2, max)) > param$FC_thresh, drop = FALSE]
     if(ncol(FC_train) <= 1){
       opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
-      stop("\n\nAt least two genes are required for prediction. Try lowering or diabling the log fold-change filter in the 'Additional options' section to increase the number of selected genes.")
+      stop("At least two genes are required for prediction. Try lowering or diabling the log fold-change filter in the 'Additional options' section to increase the number of selected genes.")
     }
   }
 }
@@ -221,8 +221,11 @@ if( length(unique(response_train)) == 1 ){
     stop("All response calls in training cohort are the same, which causes the glmnet() to fail as 'y' is constant and the null deviance cannot be calculated in order to standardize the data. Please select a different training cohort.")
 }
 ```
-
-```{r elastic-net, echo = FALSE, cache = TRUE, dependson="subset-train"}
+```{r}
+FC_train
+response_train
+```
+```{r elastic-net, echo = FALSE, cache = TRUE, dependson="subset-train", eval=FALSE}
 # Elastic net
 if(param$dichotomize){
   fit <- glmnet(FC_train, as.factor(response_train), alpha = 0.5, family = "binomial")
@@ -247,7 +250,7 @@ if(nObs <= nFeatures){
 }
 ```
 
-```{r lasso, echo = FALSE, cache = TRUE, dependson="elastic-net"}
+```{r lasso, echo = FALSE, cache = TRUE, dependson="elastic-net", eval=F}
 FC <- FC[, selected_features]
 FC_train <- FC_train[, selected_features]
 
@@ -268,7 +271,7 @@ predictor_table <- sum_relasso_coef[,pred_cIdx][-1, ]
 colnames(predictor_table) <- c("statistic", "p-value")
 ```
 
-```{r make-predictor-table, echo = FALSE, cache = FALSE}
+```{r make-predictor-table, echo = FALSE, cache = FALSE, eval=F}
 predictor_table <- data.table(cbind(selected_features, predictor_table))
 predictor_table <- predictor_table[, `:=`(c("statistic", "p-value"), list(as.numeric(statistic), as.numeric(`p-value`)))]
 predictor_table <- predictor_table[, gene_symbol := selected_features]
@@ -277,9 +280,9 @@ predictor_table <- predictor_table[, selected_features := NULL]
 setcolorder(predictor_table,  c("gene_symbol", "statistic", "p-value"))
 ```
 
-```{r subset-test, echo = FALSE, cache = FALSE}
+```{r subset-test, echo = FALSE, cache = FALSE, eval=F}
 if(length(param$cohortsTesting) > 0) {
-  test_pids <- pd[cohort %in% param$cohortsTesting, participant_id]
+  test_pids <- pd[cohort_type %in% param$cohortsTesting, participant_id]
   FC_test <- FC[test_pids, ]
   response_test <- response[participant_id %in% test_pids, response]
 }
@@ -287,7 +290,7 @@ if(length(param$cohortsTesting) > 0) {
 <br><br>
 
 ## Predicted response vs. observed response per Participant
-```{r prediction, echo=FALSE, dev='CairoPNG'}
+```{r prediction, echo=FALSE, dev='CairoPNG', eval=F}
 if(length(param$cohortsTesting) == 0) {
   data <- data.frame(observed = response$response, fitted = relasso$fitted.values)
   p <- ggplot(data, aes(x = observed, y = fitted)) + geom_point() + geom_smooth(method = "lm") + theme_IS()
@@ -307,15 +310,15 @@ ggplotly(p)
 ```
 
 ## Heatmap of selected features
-```{r heatmap, echo = FALSE, cache = FALSE}
+```{r heatmap, echo = FALSE, cache = FALSE, eval=F}
 mat <- t(FC)
 data$participant_id <- rownames(data)
 anno <- merge(pd, data, by = "participant_id")
-anno <- anno[, set := ifelse(cohort %in% param$cohortsTesting, "Testing set", "Training set")]
+anno <- anno[, set := ifelse(cohort_type %in% param$cohortsTesting, "Testing set", "Training set")]
 anno <- anno[, response := observed]
-anno <- anno[order(response, cohort)]
+anno <- anno[order(response, cohort_type)]
 anno <- anno[order(set, decreasing = TRUE)]
-anno <- data.frame(anno[, list(response, cohort, set)], row.names = anno$participant_id)
+anno <- data.frame(anno[, list(response, cohort_type, set)], row.names = anno$participant_id)
 if(param$dichotomize) {
   anno$response <- as.factor(anno$response)
   anno_col <- list(response = c(`FALSE` = "white", `TRUE` = "black"))
@@ -348,6 +351,6 @@ heatmaply(x = mat2,
 
 
 ## Table of genes selected by the elastic net
-```{r kable}
+```{r kable, eval=F}
 datatable(predictor_table, escape = 1, width = 600)
 ```

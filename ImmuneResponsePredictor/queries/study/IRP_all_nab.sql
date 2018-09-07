@@ -1,12 +1,12 @@
 SELECT DISTINCT
-  GEM.cohort AS cohort,
+  GEM.cohort_type AS cohort_type,
   GEM.timepoint AS timepoint,
   LCASE( GEM.timepointUnit ) AS timepointUnit,
   analysis_accession
 FROM
 (
   SELECT DISTINCT
-    cohort,
+    cohort_type,
     study_time_collected AS timepoint,
     study_time_collected_unit AS timepointUnit,
     CAST(study_time_collected AS VARCHAR(100)) || ' ' || LCASE(study_time_collected_unit) AS coefficient,
@@ -17,4 +17,4 @@ FROM
     participantid IN ( SELECT participantid FROM study.neut_ab_titer )
 ) AS GEM
 LEFT JOIN gene_expression.gene_expression_analysis AS GEA
-ON LCASE(GEA.coefficient) = GEM.coefficient AND GEA.arm_name = GEM.cohort
+ON LCASE(GEA.coefficient) = GEM.coefficient AND GEA.arm_name = GEM.cohort_type

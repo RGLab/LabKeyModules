@@ -174,7 +174,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             '</tpl>',
             {
                 pluralCohort : function( count ) {
-                    return Ext.util.Format.plural( count, 'cohort' );
+                    return Ext.util.Format.plural( count, 'cohort_type' );
                 },
                 process : function( value ) { 
                     return value === '' ? '&nbsp;' : Ext.util.Format.htmlEncode( value );
@@ -226,7 +226,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
         var cbCohortTraining = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
             disabled: true,
-            displayField: 'cohort',
+            displayField: 'cohort_type',
             fieldLabel: 'Training',
             lazyInit: false,
             listeners: {
@@ -251,16 +251,16 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                     handleCohortTrainingSelection();
                 }
             },
-            separator: ';', // important for Labkey filters
+            separator: ',', // ';' is important for Labkey filters so MUST ADJUST DOWNSTREAM LOGIC
             store: strCohortTraining,
-            valueField: 'cohort',
+            valueField: 'cohort_type',
             width: fieldWidth,
             cls: 'ui-test-training'
         });
 
         var cbCohortTesting = new Ext.ux.form.ExtendedLovCombo({
             disabled: true,
-            displayField: 'cohort',
+            displayField: 'cohort_type',
             fieldLabel: 'Testing',
             lazyInit: false,
             listeners: {
@@ -269,7 +269,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
                 select: checkBtnsStatus
             },
             store: strCohortTesting,
-            valueField: 'cohort',
+            valueField: 'cohort_type',
             width: fieldWidth,
             cls: 'ui-test-testing'
         });
@@ -932,7 +932,7 @@ LABKEY.ext.ImmuneResponsePredictor = Ext.extend( Ext.Panel, {
             } else {
                 strCohortTesting.setUserFilters([
                     LABKEY.Filter.create(
-                        'cohort',
+                        'cohort_type',
                         cbCohortTraining.getValue(),
                         LABKEY.Filter.Types.EQUALS_NONE_OF
                     ),
