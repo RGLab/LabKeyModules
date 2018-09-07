@@ -1,7 +1,7 @@
 SELECT
     timepoint,
     timepointUnit,
-    COUNT( cohort ) AS cohortCount
+    COUNT( cohort_type ) AS cohortCount
 FROM
     GEE_studyCohortsInfo
 GROUP BY
