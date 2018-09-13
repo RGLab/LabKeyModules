@@ -1,5 +1,21 @@
 /* Ext.grid.GridPanel */
 
+/* text align defaults to left for inner cells */
 #tpAssayGrid .x-grid3-cell-inner {
     text-align: center;
+}
+
+/* Header defaults to left padding 1px */
+#tpAssayGrid .x-grid3-header-offset {
+    padding-left: 0px;
+}
+
+#tpAssayGrid .x-grid3-header-inner {
+    border-bottom: 0px;
+}
+
+.x-grid3 table {
+    border-bottom-width: 1px;
+    border-bottom-color: #aaa;
+    border-bottom-style: solid;
 }
