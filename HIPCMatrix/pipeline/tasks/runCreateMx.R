@@ -68,15 +68,36 @@ library(Biobase)
 
 # Process GEO data where raw microarray data is in each gsm table, but not GSE
 .process_GEO_gsm <- function(gef, study){
-  tmp <- lapply(gef$geo_accession, function(x){
-        
-    # get gsm table
-    obj <- getGEO(x)
-    tbl <- obj@dataTable@table
-    tbl <- tbl[ , colnames(tbl) %in% c("ID_REF", "AVERAGE_SIGNAL")]
-    colnames(tbl) <- c("feature_id", x)
-    return(tbl)
-  })  
+  if(study == "SDY1289"){
+    cnms <- c("ID_REF", "AVERAGE_SIGNAL")
+    suppFls <- FALSE
+  }else if(study == "SDY180"){
+    suppFls <- TRUE
+    grepTerm <- "Signal|V1"
+  }
+
+  if(suppFls == FALSE){
+    tmp <- lapply(gef$geo_accession, function(x){
+      obj <- getGEO(x)
+      tbl <- obj@dataTable@table
+      tbl <- tbl[ , colnames(tbl) %in% cnms ]
+      colnames(tbl) <- c("feature_id", x)
+      return(tbl)
+    })  
+  }else{
+    baseDir <- paste0("/share/files/Studies/", study, "/@files/rawdata/gene_expression/supp_files")
+    dir.create(baseDir)
+    tmp <- lapply(gef$geo_accession, function(x){
+      fl <- getGEOSuppFiles(x, makeDirectory = FALSE, baseDir = baseDir)
+      fl <- rownames(fl)
+      GEOquery::gunzip(fl, overwrite = TRUE)
+      fl <- gsub(".gz", "", fl)
+      em <- data.table::fread(fl)
+      em <- em[ , grep(grepTerm, colnames(em)), with=FALSE]
+      colnames(em) <- c("feature_id",x)
+      return(em)
+    })
+  }  
   exprs <- Reduce(f = function(x, y) {merge(x, y)}, tmp)
   colnames(exprs) <- gef$biosample_accession[ match(colnames(exprs), gef$geo_accession)]
   colnames(exprs)[[1]] <- "feature_id"
@@ -194,14 +215,15 @@ library(Biobase)
   dir.create(baseDir)
   tmp <- lapply(gef$geo_accession, function(x){
     
-    # get supp file
+    # get supp CEL file (may be others present in GSM)
     fl <- getGEOSuppFiles(x, makeDirectory = FALSE, baseDir = baseDir)
     flPath <- rownames(fl)
+    flPath <- flPath[ grep("CEL", flPath)]
     GEOquery::gunzip(flPath, overwrite = TRUE)
     flPath <- gsub(".gz", "", flPath)
     
     # process according to affy without normalization
-    if(study %in% c("SDY984", "SDY1260")){
+    if(study %in% c("SDY984", "SDY1260", "SDY269")){
       library(hthgu133pluspmcdf) 
     }else if(study %in% c("SDY1264", "SDY1293") ){
       library(hgu133plus2cdf)
@@ -310,7 +332,7 @@ library(Biobase)
   # Load package used to convert xy plate coordinates to probe id.
   # affy::justRMA will try to install a cdf pkg if it cannot find the right one
   # and cause an error because it is being run as immunespace and not root user.
-  if(study == "SDY28"){
+  if(study %in% c("SDY28","SDY61")){
     library(hgu133plus2cdf)
   }else if(study %in% c("SDY112", "SDY305","SDY315") ){
     library(primeviewcdf)
@@ -320,8 +342,8 @@ library(Biobase)
   tmp <- getwd()
   setwd("/") # b/c filepaths are absolute and justRMA prepends wd
   eset <- affy::justRMA(filenames = inputFiles, normalize = FALSE)
-  setwd(tmp)
   exprs <- data.table(exprs(eset), keep.rownames = TRUE)
+  setwd(tmp)
   colnames(exprs) <- gef$biosample_accession[ match(colnames(exprs), gef$file_info_name) ]
   setnames(exprs, "rn", "feature_id")
   return(exprs)
@@ -377,7 +399,7 @@ library(Biobase)
 .process_others <- function(gef, inputFiles, study){
 
   # Generating Raw Expression Values Matrix
-  if( length(inputFiles) > 1 & study != "SDY180"){
+  if( length(inputFiles) > 1 ){
     lf <- lapply(inputFiles, fread)
     names(lf) <- basename(inputFiles)
     exprs <- rbindlist(lf, idcol = TRUE)
@@ -397,7 +419,7 @@ library(Biobase)
     
     setnames(exprs, rNamesCol, "feature_id")
   
-  } else if(study != "SDY180") {
+  } else {
     exprs <- fread(inputFiles, header = TRUE)
     ImmPortFormatted <- c("SDY74","SDY690","SDY301","SDY597","SDY387","SDY522","SDY364","SDY368", "SDY372", "SDY667", "SDY299")
     grepTerm <- ifelse(!study %in% ImmPortFormatted, "Signal|SIGNAL", "RAW_SIGNAL")
@@ -426,24 +448,6 @@ library(Biobase)
       stop("Unknown format: check data and add code if needed.")
     }
     exprs[, feature_id := rnames]
-  } else {
-    if(length(inputFiles) == 1){
-        exprs <- fread(inputFiles, header=TRUE)
-        exprs[, GENE_SYMBOL := NULL]
-    }else{
-        lf <- lapply(inputFiles, fread)
-        names(lf) <- basename(inputFiles)
-        exp11772 <- lf[[ grep("EXP11772", names(lf))]]
-        exp11772[, GENE_SYMBOL := NULL]
-        exp10591 <- lf[[ grep("EXP10591", names(lf))]]
-        sigcols <- grep("SIGNAL", colnames(exp10591), value = TRUE)
-        rnames <- exp10591[ , "PROBE_ID", with = FALSE]
-        exp10591 <- exp10591[, sigcols, with=FALSE]
-        setnames(exp10591, gsub("_SIGNAL", "", colnames(exp10591)))
-        exp10591[, PROBE_ID := rnames]
-        exprs <- merge(exp10591, exp11772)
-    }
-    setnames(exprs, "PROBE_ID", "feature_id") 
   }
 
   return(exprs)
@@ -461,11 +465,11 @@ makeRawMatrix <- function(isGEO, isRNA, gef, study, inputFiles){
     if( isRNA == TRUE & study != "SDY224"){
       exprs <- .process_GEO_rnaseq(gef, study)
     }else{
-      if( study %in% c("SDY406", "SDY113", "SDY984", "SDY1260", "SDY1264", "SDY1293", "SDY80") ){
+      if( study %in% c("SDY406", "SDY113", "SDY984", "SDY1260", "SDY1264", "SDY1293", "SDY80", "SDY269") ){
         exprs <- .process_GEO_affy(gef, study)
       }else if(study %in% c("SDY1276", "SDY63", "SDY404", "SDY400", "SDY224")){
         exprs <- .process_GEO_suppfiles(gef, study)
-      }else if(study %in% c("SDY1289")){
+      }else if(study %in% c("SDY1289", "SDY180")){
         exprs <- .process_GEO_gsm(gef, study)
       }else{
         exprs <- .process_GEO_gse(gef, study)
@@ -652,8 +656,8 @@ runCreateMx <- function(labkey.url.base,
 
   # manually curate list of RNAseq  and GEO studies
   isRNA <- con$study %in% c("SDY888", "SDY224", "SDY67", "SDY300","SDY1324")
-  isGEO <- con$study %in% c("SDY144", "SDY180", "SDY400", "SDY404", "SDY888", "SDY984", "SDY1264", "SDY1260", "SDY1276", "SDY1289", "SDY1293", "SDY1328", "SDY63", "SDY113", "SDY406", "SDY789", "SDY224", "SDY80")
-
+  isGEO <- con$study %in% c("SDY144", "SDY180", "SDY400", "SDY404", "SDY888", "SDY984", "SDY1264", "SDY1260", "SDY1276", "SDY1289", "SDY1293", "SDY1328", "SDY63", "SDY113", "SDY406", "SDY789", "SDY224", "SDY80", "SDY269")
+  
   # limit inputFiles to only those existing
   if( isGEO == FALSE ){
     inputFiles <- gef$file_info_name[ grep("CEL$|cel$|txt$|tsv$|csv$", gef$file_info_name)]
@@ -661,6 +665,7 @@ runCreateMx <- function(labkey.url.base,
     inputFiles <- unique(inputFiles[file.exists(inputFiles)]) # sometimes all subs in single file
   }else{
     inputFiles <- NA
+    gef <- gef[ !is.na(gef$geo_accession), ] # biosample may have non-geo related files (eg SDY269)
   }
 
   # Create three versions of matrix
