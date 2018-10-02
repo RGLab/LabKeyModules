@@ -96,7 +96,7 @@ makeNavTree = function(webPartDiv) {
             hrefTarget: "_blank",
             leaf: true,
             qtip: "HIPC Data Standards",
-            text: "HIPC Data STandards"
+            text: "HIPC Data Standards"
         }, {
             cls: "file",
             href: "http://www.immuneprofiling.org",
