@@ -82,7 +82,8 @@ makeNavTree = function(webPartDiv) {
         leaf: false,
         qtip: "Support",
         text: "<strong>Support</strong>"
-    }, [{
+    }, {
+        children: [{
             cls: "file",
             href: "https://test.immunespace.org/project/home/begin.view?pageId=HIPC%20Standards",
             hrefTarget: "_blank",
