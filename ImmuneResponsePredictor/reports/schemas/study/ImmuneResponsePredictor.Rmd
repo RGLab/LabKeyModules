@@ -221,11 +221,8 @@ if( length(unique(response_train)) == 1 ){
     stop("All response calls in training cohort are the same, which causes the glmnet() to fail as 'y' is constant and the null deviance cannot be calculated in order to standardize the data. Please select a different training cohort.")
 }
 ```
-```{r}
-FC_train
-response_train
-```
-```{r elastic-net, echo = FALSE, cache = TRUE, dependson="subset-train", eval=FALSE}
+
+```{r elastic-net, echo = FALSE, cache = TRUE, dependson="subset-train"}
 # Elastic net
 if(param$dichotomize){
   fit <- glmnet(FC_train, as.factor(response_train), alpha = 0.5, family = "binomial")
@@ -250,7 +247,7 @@ if(nObs <= nFeatures){
 }
 ```
 
-```{r lasso, echo = FALSE, cache = TRUE, dependson="elastic-net", eval=F}
+```{r lasso, echo = FALSE, cache = TRUE, dependson="elastic-net"}
 FC <- FC[, selected_features]
 FC_train <- FC_train[, selected_features]
 
@@ -271,7 +268,7 @@ predictor_table <- sum_relasso_coef[,pred_cIdx][-1, ]
 colnames(predictor_table) <- c("statistic", "p-value")
 ```
 
-```{r make-predictor-table, echo = FALSE, cache = FALSE, eval=F}
+```{r make-predictor-table, echo = FALSE, cache = FALSE}
 predictor_table <- data.table(cbind(selected_features, predictor_table))
 predictor_table <- predictor_table[, `:=`(c("statistic", "p-value"), list(as.numeric(statistic), as.numeric(`p-value`)))]
 predictor_table <- predictor_table[, gene_symbol := selected_features]
@@ -280,7 +277,7 @@ predictor_table <- predictor_table[, selected_features := NULL]
 setcolorder(predictor_table,  c("gene_symbol", "statistic", "p-value"))
 ```
 
-```{r subset-test, echo = FALSE, cache = FALSE, eval=F}
+```{r subset-test, echo = FALSE, cache = FALSE}
 if(length(param$cohortsTesting) > 0) {
   test_pids <- pd[cohort_type %in% param$cohortsTesting, participant_id]
   FC_test <- FC[test_pids, ]
@@ -290,7 +287,7 @@ if(length(param$cohortsTesting) > 0) {
 <br><br>
 
 ## Predicted response vs. observed response per Participant
-```{r prediction, echo=FALSE, dev='CairoPNG', eval=F}
+```{r prediction, echo=FALSE, dev='CairoPNG'}
 if(length(param$cohortsTesting) == 0) {
   data <- data.frame(observed = response$response, fitted = relasso$fitted.values)
   p <- ggplot(data, aes(x = observed, y = fitted)) + geom_point() + geom_smooth(method = "lm") + theme_IS()
@@ -310,7 +307,7 @@ ggplotly(p)
 ```
 
 ## Heatmap of selected features
-```{r heatmap, echo = FALSE, cache = FALSE, eval=F}
+```{r heatmap, echo = FALSE, cache = FALSE}
 mat <- t(FC)
 data$participant_id <- rownames(data)
 anno <- merge(pd, data, by = "participant_id")
@@ -351,6 +348,7 @@ heatmaply(x = mat2,
 
 
 ## Table of genes selected by the elastic net
-```{r kable, eval=F}
+```{r kable}
 datatable(predictor_table, escape = 1, width = 600)
 ```
+
