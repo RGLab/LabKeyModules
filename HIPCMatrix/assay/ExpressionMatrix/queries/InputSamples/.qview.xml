@@ -4,9 +4,9 @@
         <cv:column name="Biosample/biosample_accession"/>
         <cv:column name="Biosample/ParticipantId"/>
         <cv:column name="Biosample/arm_name">
-         <cv:properties>
-            <cv:property name="columnTitle" value="Cohort"/>
-          </cv:properties>
+            <cv:properties>
+                <cv:property name="columnTitle" value="Cohort"/>
+            </cv:properties>
         </cv:column>
         <cv:column name="Biosample/study_time_collected"/>
         <cv:column name="Biosample/study_time_collected_unit"/>
@@ -18,3 +18,4 @@
         <cv:filter column="Biosample/biosample_accession" operator="startswith" value="BS"/>
     </cv:filters>
 </cv:customView>
+

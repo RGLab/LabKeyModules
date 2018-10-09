@@ -21,3 +21,4 @@
         <cv:filter column="Biosample/biosample_accession" operator="startswith" value="BS"/>
     </cv:filters>
 </cv:customView>
+
