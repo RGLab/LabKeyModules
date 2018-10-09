@@ -2,19 +2,19 @@
 args = commandArgs(trailingOnly = TRUE)
 
 if (length(args) == 0) {
-  stop('Argument must be supplied (BUILD_TYPE)')
+  stop("Argument must be supplied (BUILD_TYPE)")
 }
 
-source('https://bioconductor.org/biocLite.R')
+source("https://bioconductor.org/biocLite.R")
 biocLite(c(
-  scan('listOfNeededRPackages', what = 'character'),
-  'rmarkdown'
+  scan("listOfNeededRPackages", what = "character"),
+  "rmarkdown"
 ))
 
 library(devtools)
 install_github(c(
-  paste0('RGLab/ImmuneSpaceR@', args[1]),
-  'RGLab/UpdateAnno',
-  'RGLab/ImmuneSignatures'
+  paste0("RGLab/ImmuneSpaceR@", args[1]),
+  "RGLab/UpdateAnno",
+  "RGLab/ImmuneSignatures"
 ))
 
