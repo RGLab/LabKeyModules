@@ -63,11 +63,11 @@ library(GEOquery)
     return(inputFiles)
 }
 
-# Create map of GSM accessions to study-given IDs
-.makeIdToBsMap <- function(gef, metaData){
+# Create map of GSM accessions to study-given IDs from GEO
+.makeIdToBsMap <- function(gef, metaData, study){
     mp <- lapply(gef$geo_accession, function(x){
         tmp <- getGEO(x)
-        nm <- tmp@header$title
+        nm <- tmp@header[[metaData$studyIdTerm]][[1]]
         if (study %in% names(metaData$smplGsubTerms)) {
             nm <- gsub(metaData$smplGsubTerms[[study]]$old,
                        metaData$smplGsubTerms[[study]]$new,
@@ -83,8 +83,8 @@ library(GEOquery)
 }
 
 # Map study-given ids to biosample accessions
-.formatGeoRaw <- function(gef, metaData, exprs){
-    mp <- .makeIdToBsMap(gef, metaData)
+.formatGeoRaw <- function(gef, metaData, study, exprs){
+    mp <- .makeIdToBsMap(gef, metaData, study)
     exprs <- exprs[ , colnames(exprs) %in% c("feature_id", mp$id), with = FALSE ]
     nms <- grep("feature_id", colnames(exprs), invert = TRUE, value = TRUE)
     bs <- mp$bs[ match(nms, mp$id) ]
@@ -92,19 +92,20 @@ library(GEOquery)
     return(exprs)
 }
 
-# Map experiment-sample accessions to biosample accessions
-.mapEsToBs <- function(exprs, gef){
-  nms <- grep("^ES", colnames(exprs), value = TRUE)
+# Map experiment-sample or geo accessions to biosample accessions
+.mapAccToBs <- function(exprs, gef){
+  nms <- grep("^ES|^GSM", colnames(exprs), value = TRUE)
   if (length(nms) > 0) {
-    bss <- gef$biosample_accession[ match(nms, gef$expsample_accession) ]
+    colToUse <- ifelse( any(grepl("ES", nms)), "expsample_accession", "geo_accession")
+    bss <- gef$biosample_accession[ match(nms, gef[[colToUse]]) ]
     setnames(exprs, nms, bss)
   }
   return(exprs)
 }
 
-# Custom headers created from gsmSuppFilenames prior to mapping to BS
+# Custom header work needed prior to mapping to BS
 .updateHeaders <- function(lf, study){
-  if(study == "SDY224"){
+  if (study == "SDY224") {
     lf <- lapply(seq(1:length(lf)), function(x){
       em <- lf[[x]]
       subId <- paste0("T", sub(".*T([0-9]+).*", "\\1", names(lf)[[x]]))
@@ -112,6 +113,15 @@ library(GEOquery)
       nms <- paste0(subId, "_Day", nonGene)
       setnames(em, nonGene, nms)
       return(em)
+    })
+  }else if (study == "SDY789") {
+    lf <- lapply(lf, function(x){
+      gsms <- x[3,]
+      gsms[ gsms == "" ] <- NA
+      gsms[[1]] <- "ID_REF"
+      tmp <- x[5:nrow(x),]
+      colnames(tmp) <- as.character(gsms)
+      return(tmp)
     })
   }
   return(lf)
@@ -125,6 +135,13 @@ library(GEOquery)
 # If annotation library is not already on rsT, will need to manually install
 # via biocLite() due to permissions.
 .processAffy <- function(inputFiles, gef, metaData){
+    # Libraries loaded here in order to get picked up by Scripts/getRpkgs.sh.
+    # Only one is used at a time by the `affy::justRMA()` call.
+    library(hugene10stv1cdf)
+    library(primeviewcdf)
+    library(hgu133plus2cdf)
+    library(hthgu133pluspmcdf) 
+
     tmp <- getwd()
     setwd("/") # b/c filepaths are absolute and justRMA prepends wd
     eset <- affy::justRMA(filenames = inputFiles, normalize = FALSE)
@@ -148,9 +165,6 @@ library(GEOquery)
 
 .processIllumina <- function(exprs, gef, metaData, study){
     if (metaData$isGeo == TRUE & metaData$dataInGsm == FALSE) {
-        # Subset to raw data columns
-        exprs <- exprs[ , grep("Pval", colnames(exprs), invert = TRUE), with = FALSE ]
-
         # Create mapping of study-given id to Biosample
         if (metaData$useFullGefMap == TRUE) {
             # First line in exprs says "GSM1445822-GSM1445949", however there
@@ -160,14 +174,18 @@ library(GEOquery)
             tGef <- tmp$getDataset("gene_expression_files")
             acc <- tGef[ tGef$type == "PBMC", geo_accession ]
             colnames(exprs) <- c("feature_id", acc[ order(acc) ])
+        } else if (metaData$usePartialGefMap == TRUE) {
+            gsms <- grep("GSM", colnames(exprs), value = TRUE)
+            exprs <- exprs[ , colnames(exprs) %in% c("feature_id", gsms), with = FALSE]
+            exprs <- .mapAccToBs(exprs, gef)
         } else {
-            exprs <- .formatGeoRaw(gef, metaData, exprs)
+            exprs <- .formatGeoRaw(gef, metaData, study, exprs)
         }
     } else if (metaData$isGeo == FALSE) {
         # Assuming all incoming inputFiles are "ImmPort formatted" and have
         # already been merged by feature_id to be a single matrix.
       
-        # Subset to correct columns
+        # Subset to raw value columns
         sigCols <- grep("signal|feature_id", colnames(exprs), ignore.case = TRUE)
         normCols <- grep("norm", colnames(exprs), ignore.case = TRUE)
         sigCols <- setdiff(sigCols, normCols)
@@ -175,17 +193,17 @@ library(GEOquery)
 
         # Update sampleNames to Biosamples
         setnames(exprs, gsub("_(RAW|AVG).*$", "", colnames(exprs)))
-        exprs <- .mapEsToBs(exprs, gef)
+        exprs <- .mapAccToBs(exprs, gef)
     }
 
     return(exprs)
 }
 
-.processRNAseq <- function(exprs, gef, metaData){
+.processRNAseq <- function(exprs, gef, metaData, study){
     if (metaData$isGeo == TRUE) {
-        exprs <- .formatGeoRaw(gef, metaData, exprs)
+        exprs <- .formatGeoRaw(gef, metaData, study, exprs)
     } else {
-        exprs <- .mapEsToBs(exprs, gef)
+        exprs <- .mapAccToBs(exprs, gef)
     }
 
     return(exprs)
@@ -203,7 +221,13 @@ makeRawMatrix <- function(metaData, gef, study, inputFiles){
         inputFiles <- .getGeoRawFls(study, gef, metaData)
     }
 
-    # Process files according to sequencing platform
+    # ** Processing steps regardless of platform **
+    # 1. Read all files in to list object
+    # 2. Update each file as need be to prepare for merge
+    # 3. Merge
+    # 4. Update column names to biosample accessions
+    # 5. Subset to accessions in gef only
+    # 6. Order columns so that feature_id first
     if (metaData$platform == "Affymetrix" ) {
         exprs <- .processAffy(inputFiles, gef, metaData)
     } else {
@@ -211,9 +235,19 @@ makeRawMatrix <- function(metaData, gef, study, inputFiles){
         # which fread() defaults to a regular line
         lf <- lapply(inputFiles, fread, skip = metaData$skip, header = TRUE)
         names(lf) <- basename(inputFiles)
+        
         if (metaData$updateHeaders == TRUE) {
             lf <- .updateHeaders(lf, study)
         }
+
+        # Prevent duplicates of unneeded data prior to merge  
+        if (metaData$isGeo == TRUE & metaData$dataInGsm == FALSE) {
+            lf <- lapply(lf, function(x){
+                    x <- x[ , grep("Pval", colnames(x), invert = TRUE), with = FALSE ]
+                  })
+        }
+
+        # Create single matrix for all samples in inputFiles
         exprs <- data.table(Reduce(f = function(x, y) {merge(x, y, all = TRUE)}, lf))
 
         # Standardize probe column name
@@ -240,10 +274,11 @@ makeRawMatrix <- function(metaData, gef, study, inputFiles){
         # of samples having problems (e.g. SDY224 / SDY212)
         exprs <- exprs[ !is.na(feature_id) & feature_id != "" ]
 
+        # Perform further colnames mapping
         if (metaData$platform == "Illumina") {
             exprs <- .processIllumina(exprs, gef, metaData, study)
         } else {
-            exprs <- .processRNAseq(exprs, gef, metaData)
+            exprs <- .processRNAseq(exprs, gef, metaData, study)
         }
     }
 
@@ -275,7 +310,14 @@ normalizeMatrix <- function(exprs, study, metaData){
     # Oct 2018 - following studies have some NA values.
     # SDY212 - Known issue and documented in ImmPort Jira
     # SDY1289 - Due to single cohort having multiple batches with different anno.
-    em <- as.matrix(em[ complete.cases(em), ])
+    em <- em[ complete.cases(em), ]
+
+    # Must ensure numeric values as conversion back to character can happen with
+    # casting as matrix.
+    em <- apply(em, 2, as.numeric)
+
+    # Need matrix not DT or DF for processing fn
+    em <- as.matrix(em)
 
     # no platform  == isRNASeq
     if (metaData$platform == "NA") {
@@ -404,7 +446,12 @@ runCreateMx <- function(labkey.url.base,
 
     # ensure single cohort for processing
     if (length(unique(gef$arm_name)) > 1) {
-        message("There are more than one cohort selected in this HIPCMatrix run")
+        stop("There are more than one cohort selected in this HIPCMatrix run.")
+    }
+
+    # ensure each expsample has unique biosample, otherwise summarization is thrown off
+    if (length(gef$biosample_accession) != length(gef$expsample_accession)) {
+        stop("Experiment samples do not have unique biosample accessions.")
     }
 
     # --------------------------- HARDCODED META-DATA -----------------------------------
@@ -412,10 +459,13 @@ runCreateMx <- function(labkey.url.base,
     # Manually curate list object to avoid hardcoding elsewhere
     metaData <- list()
 
-    # **isGeo**: When selectedBiosamples have multiple rows in gef because they
-    # have both gsm and flat files. We assume GEO should be used preferably over
-    # Immport files as those are likely normalized already.
-    metaData$isGeo <- any(!is.na(gef$geo_accession))
+    # **isGeo**: Preference is to use GEO when selectedBiosamples have both gsm and 
+    # flat files because there is often info in GEO about whether files are raw
+    # or normalized that is not available in ImmPort. However, there are exceptions
+    # and those are handled here - e.g. SDY212 where we know from ImmSig1 that the 
+    # available flat file is truly non-normalized data.
+    dontUseGeo <- study %in% c("SDY212")
+    metaData$isGeo <- any(!is.na(gef$geo_accession)) & !dontUseGeo
     
     # **dataInGsm**: means that the raw data is kept in the eset provided by getGEO()
     metaData$dataInGsm <- study %in% c("SDY1289", "SDY180")
@@ -432,6 +482,14 @@ runCreateMx <- function(labkey.url.base,
     # **useFullGefMap**: For special cases where entire gef is needed to correctly map
     # the study-given ids to biosamples.  This is due to mapping by index.
     metaData$useFullGefMap <- study %in% c("SDY400")
+
+    # **useParialGefMap**: For special cases where GSE raw files have been updated
+    # to have GSMs in header where possible and can then be subset using the gef.
+    metaData$usePartialGefMap <- study %in% c("SDY789")
+
+    # **useParialGefMap**: For special cases where GSE raw files have been updated
+    # to have GSMs in header where possible and can then be subset using the gef.
+    metaData$studyIdTerm <- ifelse(study == "SDY144", "description", "title")
     
     # **smplGsubTerms**: Custom gsub terms for allowing the mapping of study-given ids
     # from the supplementary files to the ids found in GEO in the header object.
@@ -450,7 +508,7 @@ runCreateMx <- function(labkey.url.base,
     
     # **updateHeaders**: Before merging inputFile matrices, must update
     # non-unique headers using names(inputFiles)
-    metaData$updateHeaders <- study %in% c("SDY224")
+    metaData$updateHeaders <- study %in% c("SDY224","SDY789")
     
     # **noRaw**: No raw data available in GEO or ImmPort
     metaData$noRaw <- study %in% c("SDY224", "SDY1324")
