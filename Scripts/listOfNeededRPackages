@@ -25,6 +25,7 @@ gdata
 GEOquery
 ggplot2
 glmnet
+googledrive
 gplots
 gridExtra
 gtools
@@ -32,6 +33,8 @@ hash
 heatmaply
 hgu133plus2cdf
 hthgu133pluspmcdf
+hugene10stv1cdf
+ImmPortR
 Kmisc
 knitr
 languageR
