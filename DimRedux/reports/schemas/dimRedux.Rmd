@@ -10,6 +10,7 @@ library(dplyr)
 library(tidyr)
 library(data.table)
 library(plotly)
+library(Rtsne)
 ```
 
 ```{r params}
