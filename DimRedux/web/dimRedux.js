@@ -334,7 +334,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     checkBtnsStatus;
                 },
             },
-            cls: 'ui-test-plottypes'
+            cls: 'ui-test-plottype'
         });
         
         var nmPerplexity = new Ext.form.NumberField({
@@ -345,7 +345,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             maxValue: 50,
             minValue: 1,
             hidden: false,
-            disabled: true
+            disabled: true,
+            cls: 'ui-test-perplexity'
         });
 
         var nmNumComponents = new Ext.form.NumberField({
@@ -355,7 +356,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             value: 2,
             maxValue: 6, 
             minValue: 2,
-            hidden: false
+            hidden: false,
+            cls: 'ui-test-components'
         }); 
 
         var rgImpute = new Ext.form.RadioGroup({
@@ -419,7 +421,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 blur:       checkBtnsStatus,
                 change:     checkBtnsStatus
             },
-            cls: 'ui-test-responseLbl'
+            cls: 'ui-test-response'
         });
 
         /////////////////////////////////////
@@ -453,7 +455,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 cnfReport.inputParams = inputParams;
                 LABKEY.Report.execute( cnfReport );
             },
-            text: 'Run'
+            text: 'Run',
+            cls: 'ui-test-run'
         });
 
         var btnReset = new Ext.Button({
@@ -476,7 +479,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
                 fsAdditionalOptions.collapse();
             },
-            text: 'Reset'
+            text: 'Reset',
+            cls: 'ui-test-reset'
         });
 
 
@@ -607,7 +611,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 cntReport ],
             layout: 'fit',
             tabTip: 'View',
-            title: 'View'
+            title: 'View',
+            cls: 'ui-test-view'
         });
 
 
@@ -633,7 +638,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             },
             title: 'Additional options',
             titleCollapse: true,
-            cls: 'ui-test-additional-options'
+            cls: 'ui-test-additional-options',
+            itemCls: 'ui-test-additional-options-item'
         });
 
         var pnlInput = new Ext.form.FormPanel({
@@ -652,7 +658,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         new Ext.Container({
                             items: [], 
                             layout: 'fit',
-                            id: 'tpAssayGrid'
+                            id: 'tpAssayGrid',
+                            cls: 'ui-test-assaygrid'
                         })
                     ]
                 },
@@ -665,7 +672,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         LABKEY.ext.ISCore.factoryTooltipWrapper( rgPlotType, 'Plot Type', plotTypes_help ),
                     ],
                     title: 'Parameters',
-                    cls: 'ui-test-parameters'
+                    cls: 'ui-test-parameters',
+                    itemCls: 'ui-test-parameters-item'
                 }),
                 fsAdditionalOptions,
                 {
@@ -677,7 +685,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             ],
             labelWidth: labelWidth,
             tabTip: 'Input',
-            title: 'Input'
+            title: 'Input',
+            cls: 'ui-test-input'
         });
         
         var pnlTabs = new Ext.TabPanel({
@@ -722,7 +731,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     ],
                     layout: 'fit',
                     tabTip: 'About',
-                    title: 'About'
+                    title: 'About',
+                    cls: 'ui-test-about'
                 },
             ],
             layoutOnTabChange: true,
