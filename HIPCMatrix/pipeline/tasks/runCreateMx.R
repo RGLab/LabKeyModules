@@ -487,8 +487,7 @@ runCreateMx <- function(labkey.url.base,
     # to have GSMs in header where possible and can then be subset using the gef.
     metaData$usePartialGefMap <- study %in% c("SDY789")
 
-    # **useParialGefMap**: For special cases where GSE raw files have been updated
-    # to have GSMs in header where possible and can then be subset using the gef.
+    # **studyIdTerm**: For extracting sample id from getGEO(gsm) object
     metaData$studyIdTerm <- ifelse(study == "SDY144", "description", "title")
     
     # **smplGsubTerms**: Custom gsub terms for allowing the mapping of study-given ids
