@@ -234,7 +234,9 @@ makeRawMatrix <- function(metaData, gef, study, inputFiles){
     } else {
         # Read in files - note: header = TRUE b/c SDY224 has numeric as header
         # which fread() defaults to a regular line
-        lf <- lapply(inputFiles, fread, skip = metaData$skip, header = TRUE)
+        hdr <- ifelse( study == "SDY224", TRUE, "auto")  
+        lf <- lapply(inputFiles, fread, skip = metaData$skip, header = hdr)
+         
         names(lf) <- basename(inputFiles)
         
         if (metaData$updateHeaders == TRUE) {
