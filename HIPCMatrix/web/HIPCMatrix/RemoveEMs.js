@@ -9,6 +9,9 @@ function removeEMs( dataRegion ) {
     3. Must save to a global var via setter because returning a var will happen
     before success or failure is finished ... even when embedded in success
     or failure. */
+
+    // can no longer use checkRm b/c run accurately links to filepath. Must delete run first!
+    /*
     function checkRm( emObj ){
         var fileSystem = new LABKEY.FileSystem.WebdavFileSystem({
                 baseUrl: "/_webdav/Studies/" + emObj["folder"] + "/@files"
@@ -30,6 +33,7 @@ function removeEMs( dataRegion ) {
                 }else{
                     var orig = fileSystem.canDelete( origRec);
                 }
+                var orig = true;
                 if( tsv & sum & raw & orig){
                     rmLKrow(emObj);
                 } else {
@@ -45,6 +49,7 @@ function removeEMs( dataRegion ) {
             scope: this
         }, this);
     }
+    */
 
     /* Only need Primary Key = "RowId", but must update containerPath with folder
     name. Default view in selectRows for this query is currentAndSubfolders, which
@@ -111,7 +116,6 @@ function removeEMs( dataRegion ) {
                                                         "RemoveEMs.view",
                                                         null,
                                                         {
-                                                        notAllowedPaths: notAllowedPaths,
                                                         dbNotRemoved: notDeletedDb,
                                                         rmFail: notRemovedFiles,
                                                         rmSuccess: removedFiles,
@@ -123,7 +127,6 @@ function removeEMs( dataRegion ) {
 
 
     // global vars
-    var notAllowedPaths = [];
     var notDeletedNames = [];
     var notDeletedDb = [];
     var notRemovedFiles = [];
@@ -144,7 +147,7 @@ function removeEMs( dataRegion ) {
             emObj["folder"] = row['Folder/Name'];
             emObj["path"] = "/analysis/exprs_matrices/" +
                                     row['Name'] + ".tsv";
-            checkRm( emObj );
+            rmLKrow( emObj );
             counter++;
             if(counter === data.rows.length){
                 goToView();

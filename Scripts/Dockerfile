@@ -7,6 +7,7 @@ ARG version
 FROM labkey/rstudio-base:${version}
 ARG build_type
 RUN apt-get update
+RUN apt-get install -y libgeos++-dev
 
 COPY installLibs.sh /
 RUN dos2unix /installLibs.sh; /installLibs.sh

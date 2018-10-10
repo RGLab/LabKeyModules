@@ -43,11 +43,53 @@ makeNavTree = function(webPartDiv) {
     }, {
         children: [{
             cls: "file",
-            href: "https://immunespace.org/data_standards.url",
+            href: "/project/home/support/begin.view",
             hrefTarget: "_blank",
             leaf: true,
-            qtip: "HIPC Standards",
-            text: "HIPC Standards"
+            qtip: "Issues List",
+            text: "Issues List"
+        }, {
+            cls: "file",
+            href: "https://github.com/RGLab/ImmuneSpaceR/issues",
+            hrefTarget: "_blank",
+            leaf: true,
+            qtip: "ImmuneSpaceR",
+            text: "ImmuneSpaceR"
+        }, {
+            cls: "file",
+            href: "https://immunespace.herokuapp.com",
+            hrefTarget: "_blank",
+            leaf: true,
+            qtip: "Slack",
+            text: "Slack"
+        }, {
+            cls: "file",
+            href: "/project/home/Support/begin.view?pageId=Data changes",
+            hrefTarget: "_blank",
+            leaf: true,
+            qtip: "Release Notes",
+            text: "Release Notes"
+        }, {
+            cls: "file",
+            href: "https://www.notion.so/immunespace/0a739a057f234cb6a67d964d2e1bb66d?v=ef29d3978dd64c3bbb2f4f4ba78dc927",
+            hrefTarget: "_blank",
+            leaf: true,
+            qtip: "Roadmap",
+            text: "Roadmap"
+        }],
+        cls: "folder",
+        expanded: true,
+        leaf: false,
+        qtip: "Support",
+        text: "<strong>Support</strong>"
+    }, {
+        children: [{
+            cls: "file",
+            href: "https://test.immunespace.org/project/home/begin.view?pageId=HIPC%20Standards",
+            hrefTarget: "_blank",
+            leaf: true,
+            qtip: "HIPC Data Standards",
+            text: "HIPC Data Standards"
         }, {
             cls: "file",
             href: "http://www.immuneprofiling.org",
@@ -64,7 +106,7 @@ makeNavTree = function(webPartDiv) {
             text: "ImmPort Database"
         }],
         cls: "folder",
-        expanded: true,
+        expanded: false,
         leaf: false,
         qtip: "Resources",
         text: "<strong>Resources</strong>"

@@ -403,7 +403,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 cleared:    manageCbGenesState,
                 select:     manageCbGenesState
             },
-            separator: ';', // IMPORTANT FOR LABKEY FILTERING
+            separator: ';', // ';' IS IMPORTANT FOR LABKEY FILTERING, MUST ADJUST DOWNSTREAM LOGIC
             store: strCohort,
             valueField: 'display',
             width: fieldWidth,
@@ -528,7 +528,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 cnfPlot.inputParams = {
                     //Input parameters
                     response:           cbResponse.getValue(),
-                    cohorts:            Ext.encode( cbCohorts.getCheckedArray( 'cohort' ) ),
+                    cohorts:            Ext.encode( cbCohorts.getCheckedArray( 'cohort_type' ) ),
                     ema:                Ext.encode( cbCohorts.getCheckedArray( 'expression_matrix_accession' ) ),
                     timePoint:          cbTimePoint.getSelectedField( 'timepoint' ),
                     timePointUnit:      cbTimePoint.getSelectedField( 'timepointUnit' ),

@@ -10,6 +10,7 @@ library(dplyr)
 library(tidyr)
 library(data.table)
 library(plotly)
+library(Rtsne)
 ```
 
 ```{r params}
@@ -195,8 +196,15 @@ getAssayData <- function(assay, con, timePts, timeAs){
     nulls <- sapply(aData, is.null)
     aData <- aData[ !nulls ]
 
-    # Demo subs
+    # Get demographic data and add cohort name
     demo <- con$getDataset("demographics")
+
+    cohortMap <- Rlabkey::labkey.selectRows(baseUrl = con$config$labkey.url.base,
+                                     folderPath = con$config$labkey.url.path,
+                                     schemaName = "study",
+                                     queryName = "cohort",
+                                     showHidden = TRUE)
+    demo$cohort <- cohortMap$Label[ match(demo$cohort, cohortMap$Rowid) ]
 
     # combine
     allMat <- Reduce(function(x,y){merge(x,y,all=T)}, aData)
@@ -232,6 +240,7 @@ getAssayData <- function(assay, con, timePts, timeAs){
         allMat <- allMat[ complete.cases(allMat), ]
     }
 ```
+
 ## Parameters
 - **Timepoints**: `r timePts`
 - **Assays**: `r assays`
@@ -246,9 +255,6 @@ getAssayData <- function(assay, con, timePts, timeAs){
 - **Number of Features (Assay Data)**: `r dim(allMat)[2]`
 
 ```{r plot helpers}
-# get demo once
-# demo <- con$getDataset("demographics")
-
 # helper for iterating through multiple components
 genPlot <- function(i, j, resObj, type, prettyLbl, colorCol){
   if(type == "tSNE"){
@@ -392,6 +398,18 @@ plots <- makePlot(label = "race",
                   plotType = plotType,
                   allMat = allMat
                   )
+htmltools::tagList(plots)
+```
+
+### Cohort
+```{r  cohort, fig.align="left"}
+plots <- makePlot(label = "cohort",
+                  timeAs = timeAs,
+                  demo = demo,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+                  )   
 htmltools::tagList(plots)
 ```
 

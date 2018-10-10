@@ -146,7 +146,7 @@ con <- CreateConnection()
 ```{r EMs, cache = TRUE, dependson="main", cache.extra=digest(param)}
 # When the input parameters change, re-download the EMs
 cohorts <- c(param$cohortsTraining, param$cohortsTesting)
-EM <- con$getGEMatrix(cohort = cohorts)
+EM <- con$getGEMatrix(cohort_type = cohorts)
 DEG <- getGenes(con, param)
 ```
 ```{r main2, echo = FALSE, cache = TRUE, dependson="EMs;functions"}
@@ -189,17 +189,17 @@ response <- getResponse(con,
                         param$dichValue)
 response_pids <- unique(response$participant_id)
 FC <- FC[rownames(FC) %in% response_pids,]
-pd <- unique(pd[participant_id %in% rownames(FC), list(participant_id, cohort)])
+pd <- unique(pd[participant_id %in% rownames(FC), list(participant_id, cohort_type)])
 
-pd <- pd[, cohort_label := ifelse(cohort %in% param$cohortsTesting,
-                                  paste("b:", cohort, "(Testing)"),
-                                  paste("a:", cohort, "(Training)"))]
+pd <- pd[, cohort_label := ifelse(cohort_type %in% param$cohortsTesting,
+                                  paste("b:", cohort_type, "(Testing)"),
+                                  paste("a:", cohort_type, "(Training)"))]
 
 ```
 
 ```{r subset-train, echo = FALSE, cache = TRUE, dependson="main2"}
 #At this point, we have HAI for all patient and FC for all patients.
-train_pids <- pd[cohort %in% param$cohortsTraining, participant_id]
+train_pids <- pd[cohort_type %in% param$cohortsTraining, participant_id]
 # Select trainingset patients
 FC_train <- FC[train_pids,]
 if(is.null(dim(FC_train))){
@@ -212,7 +212,7 @@ if(param$timepoint > 0){
     FC_train <- FC_train[, log(apply(abs(FC_train), 2, max)) > param$FC_thresh, drop = FALSE]
     if(ncol(FC_train) <= 1){
       opts_chunk$set(cache=FALSE, echo=FALSE, eval=FALSE)
-      stop("\n\nAt least two genes are required for prediction. Try lowering or diabling the log fold-change filter in the 'Additional options' section to increase the number of selected genes.")
+      stop("At least two genes are required for prediction. Try lowering or diabling the log fold-change filter in the 'Additional options' section to increase the number of selected genes.")
     }
   }
 }
@@ -279,7 +279,7 @@ setcolorder(predictor_table,  c("gene_symbol", "statistic", "p-value"))
 
 ```{r subset-test, echo = FALSE, cache = FALSE}
 if(length(param$cohortsTesting) > 0) {
-  test_pids <- pd[cohort %in% param$cohortsTesting, participant_id]
+  test_pids <- pd[cohort_type %in% param$cohortsTesting, participant_id]
   FC_test <- FC[test_pids, ]
   response_test <- response[participant_id %in% test_pids, response]
 }
@@ -311,11 +311,11 @@ ggplotly(p)
 mat <- t(FC)
 data$participant_id <- rownames(data)
 anno <- merge(pd, data, by = "participant_id")
-anno <- anno[, set := ifelse(cohort %in% param$cohortsTesting, "Testing set", "Training set")]
+anno <- anno[, set := ifelse(cohort_type %in% param$cohortsTesting, "Testing set", "Training set")]
 anno <- anno[, response := observed]
-anno <- anno[order(response, cohort)]
+anno <- anno[order(response, cohort_type)]
 anno <- anno[order(set, decreasing = TRUE)]
-anno <- data.frame(anno[, list(response, cohort, set)], row.names = anno$participant_id)
+anno <- data.frame(anno[, list(response, cohort_type, set)], row.names = anno$participant_id)
 if(param$dichotomize) {
   anno$response <- as.factor(anno$response)
   anno_col <- list(response = c(`FALSE` = "white", `TRUE` = "black"))
@@ -351,3 +351,4 @@ heatmaply(x = mat2,
 ```{r kable}
 datatable(predictor_table, escape = 1, width = 600)
 ```
+

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<view xmlns='http://labkey.org/data/xml/view' title='Logistic Regression'>
+<view xmlns='http://labkey.org/data/xml/view' title='HIPC Data Standards'>
     <dependencies>
         <dependency path='ISCore/Common'/>
-        <dependency path='logRes.js'/>
     </dependencies>
 </view>
+

@@ -1,11 +1,5 @@
 <!-- removeEMs.html -->
 
-<div id='notAllowedPaths'>
-    <b><p>
-        Paths that were not failed LK.canDelete()
-    </p></b>
-</div>
-
 <div id='dbNotRemoved'>
     <b><p>
         Runs that were not removed by LK.deleteRows()
@@ -26,7 +20,6 @@
 
 <script language="javascript">
 
-    var notAllowedPaths = LABKEY.ActionURL.getParameterArray("notAllowedPaths");
     var dbNotRemoved = LABKEY.ActionURL.getParameterArray("dbNotRemoved");
     var rmFail = LABKEY.ActionURL.getParameterArray("rmFail");
     var rmSuccess = LABKEY.ActionURL.getParameterArray("rmSuccess");
@@ -51,7 +44,6 @@
         }
     }
 
-    makeUL(notAllowedPaths, "notAllowedPaths");
     makeUL(dbNotRemoved, "dbNotRemoved");
     makeUL(rmFail, "rmFail");
     makeUL(rmSuccess, "rmSuccess");

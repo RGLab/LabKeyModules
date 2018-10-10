@@ -48,18 +48,18 @@ alpha <- tolower(labkey.url.params$alpha)
 # helper functions
 add_r2 <- function(data) {
   dt <- data.table(data)
-  dt <- dt[, r2 := paste("R^2 ==", round(summary(lm(response ~ value))[['r.squared']], 3)), by = "cohort,gene_symbol"]
-  dt <- dt[, r2x := (min(value) + max(value)) / 2, by = "cohort,gene_symbol"]
-  dt <- dt[, r2y := max(response), by = "cohort,gene_symbol"]
+  dt <- dt[, r2 := paste("R^2 ==", round(summary(lm(response ~ value))[['r.squared']], 3)), by = "cohort_type,gene_symbol"]
+  dt <- dt[, r2x := (min(value) + max(value)) / 2, by = "cohort_type,gene_symbol"]
+  dt <- dt[, r2y := max(response), by = "cohort_type,gene_symbol"]
   return(data.frame(dt))
 }
 
-check_cohorts <- function(data) {
+check_cohort_types <- function(data) {
   # Add study_accession information to the cohorts that are shared accross studies
   dt <- data.table(data)
   dt <- dt[, study_accession := paste0("SDY", gsub("^.*\\.", "", participant_id))]
-  uc <- unique(dt[, study_accession, by ="cohort"])[, .N, by = "cohort"][N >1, cohort]
-  dt[cohort %in% uc, cohort := paste0(cohort, " (", study_accession, ")")]
+  uc <- unique(dt[, study_accession, by ="cohort_type"])[, .N, by = "cohort_type"][N >1, cohort_type]
+  dt[cohort_type %in% uc, cohort_type := paste0(cohort_type, " (", study_accession, ")")]
   return(data.frame(dt))
 }
 
@@ -107,6 +107,7 @@ if (!exists("loaded_ems") || length(loaded_ems) != length(input_cohorts) || !all
 }
 
 HAI <- con$getDataset("hai", original_view = TRUE, colFilter = colFilter, reload = TRUE)
+HAI <- HAI[value_preferred > 0]
 HAI <- HAI[, list(arm_accession, study_time_collected, study_time_collected_unit,
                   response = value_preferred / mean(value_preferred[study_time_collected <= 0])), by = "virus,participant_id"]
 # HAI at peak immunogenicity. Account for NA in some studies causing proj lvl merge failure.
@@ -125,7 +126,9 @@ if (nrow(PD) == 0) {
 }
 
 PD <- merge(PD, DEMO, by = "participant_id")
-#EM <- EM[, pData(EM)$biosample_accession %in% PD$biosample_accession]
+gef <- con$getDataset("gene_expression_files", original_view = T)
+PD$type <- gef$type[ match(PD$biosample_accession, gef$biosample_accession)]
+PD$cohort_type <- paste(PD$cohort, PD$type, sep = "_")
 dt <- dt[, c("gene_symbol", PD$biosample_accession), with = FALSE]
 
 
@@ -145,7 +148,7 @@ if (normalize) {
 }
 data <- data[study_time_collected == timePoint & tolower(study_time_collected_unit) == timePointUnit]
 data <- add_r2(data)
-data <- check_cohorts(data)
+data <- check_cohort_types(data)
 
 # Plot
 if (color == "") color <- NULL
@@ -164,9 +167,9 @@ p <- ggplot(data = data, aes(x = value, y = response)) +
   geom_text(aes(x = r2x, y = r2y, label = r2), hjust = 0, vjust = 1, data = data, parse = TRUE) +
   theme_IS(base_size = textSize) # theme(text = element_text(size = textSize))
 if(facet == "grid") {
-  p <- p + facet_grid(aes(cohort, gene_symbol), scales = "free")
+  p <- p + facet_grid(aes(cohort_type, gene_symbol), scales = "free")
 } else{
-  p <- p + facet_wrap(~cohort + gene_symbol, scales = "free")
+  p <- p + facet_wrap(~cohort_type + gene_symbol, scales = "free")
 }
 
 if (interactive) {
