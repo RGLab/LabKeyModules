@@ -270,6 +270,7 @@ for(sdy in studies){
   # Adjust HAI and add age / study
   adjHai <- adjust_hai(sdy, rawHai)
   adjHai$Age <- demo$age_reported[ match(adjHai$subject, demo$subject)]
+
   if(sdy == "SDY80"){ adjHai <- adjHai[ which(adjHai$Age < 36), ] }
   adjHai$study <- sdy
 
@@ -290,6 +291,7 @@ demo$study <- sapply(strsplit(demo$participant_id, "\\."), '[', 2)
 pd <- data.frame(Age = demo$age_reported,
                  GE = demo$ge,
                  Study = demo$study)
+
 pd.with <- pd[ pd$GE == TRUE, ]
 pd.without <- pd[ pd$GE == FALSE, ]
 
@@ -341,9 +343,10 @@ print(plot_grid(agePlot,
 To provide a more detailed understanding how the hai data adjustment affects the distribution of responders and non-responders, we provide the example of SDY404.  Note that the outlier in Figure 3A. with an extremely high d0 titer is removed from the data before decorrelation.  The blue horizontal lines show the quantile thresholds for categorizing an individual as high responder (>70%) or low responder (<30%).
 ```{r adjMFC-prep, include=FALSE, fig.width=11, fig.height=9}
 # Get raw data from ImmuneSpace and select only young subjects -------------------------------
+
 onTest <- grepl("test",labkey.url.base)
 rm(labkey.url.base, labkey.url.path) # otherwise connection is still through HIPC/IS1
-sdy404 <- CreateConnection("SDY404", onTest = onTest)
+sdy404 <- CreateConnection("SDY404")
 rawHai <- sdy404$getDataset("hai")
 adjHai <- adjust_hai("SDY404", rawHai)
 pd <- adjHai[ adjHai$Age.class == "young", ]

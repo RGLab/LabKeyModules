@@ -2,7 +2,7 @@
 source("/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/makeAllMxVarsDf.R")
 source("/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/runCreateMx.R") # dependencies sourced here
 
-con <- CreateConnection("", onTest = T) # hardcoded(!) for test / prod
+con <- CreateConnection("") # hardcoded(!) for test / prod
 mats <- con$cache$GE_matrices
 
 message("Generating matrix of argument values for runCreateMx() for all current matrices\n")
