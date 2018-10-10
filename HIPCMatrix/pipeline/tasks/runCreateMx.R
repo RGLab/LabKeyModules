@@ -174,6 +174,7 @@ library(GEOquery)
             tGef <- tmp$getDataset("gene_expression_files")
             acc <- tGef[ tGef$type == "PBMC", geo_accession ]
             colnames(exprs) <- c("feature_id", acc[ order(acc) ])
+            exprs <- .mapAccToBs(exprs, gef)
         } else if (metaData$usePartialGefMap == TRUE) {
             gsms <- grep("GSM", colnames(exprs), value = TRUE)
             exprs <- exprs[ , colnames(exprs) %in% c("feature_id", gsms), with = FALSE]
