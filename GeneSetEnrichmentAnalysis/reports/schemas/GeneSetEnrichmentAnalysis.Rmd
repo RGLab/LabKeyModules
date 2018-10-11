@@ -66,14 +66,14 @@ con <- CreateConnection()
 ```
 
 ```{r params, cache = FALSE}
-cohort_type <- labkey.url.params$cohort
+cohortType <- labkey.url.params$cohort
 set <- labkey.url.params$signature
 contrast <- "study_time_collected"
 ```
 
-```{r cache-cohort, cache = TRUE, cache.extra=cohort_type, dependson="connection"}
+```{r cache-cohort, cache = TRUE, cache.extra=cohortType, dependson="connection"}
 # When the cohort changes, we need to re-download the EM
-EM <- con$getGEMatrix(cohort_type = cohort_type)
+EM <- con$getGEMatrix(cohortType = cohortType)
 ```
 ```{r cache-modules, cache = TRUE, cache.extra=set, dependson="connection"}
 # When the modules/set changes, we need to re-assign these values
@@ -99,7 +99,7 @@ mm <- model.matrix(formula(paste("~participant_id +", contrast)), EM)
 colnames(mm) <- make.names(colnames(mm))
 ```
 
-## Gene set enrichment analysis of `r cohort_type`
+## Gene set enrichment analysis of `r cohortType`
 
 ```{r byDay,  cache = TRUE, dependson="camera", echo = FALSE}
 lev <- levels(pData(EM)[, contrast])
