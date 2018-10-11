@@ -146,7 +146,7 @@ con <- CreateConnection()
 ```{r EMs, cache = TRUE, dependson="main", cache.extra=digest(param)}
 # When the input parameters change, re-download the EMs
 cohorts <- c(param$cohortsTraining, param$cohortsTesting)
-EM <- con$getGEMatrix(cohort_type = cohorts)
+EM <- con$getGEMatrix(cohortType = cohorts)
 DEG <- getGenes(con, param)
 ```
 ```{r main2, echo = FALSE, cache = TRUE, dependson="EMs;functions"}

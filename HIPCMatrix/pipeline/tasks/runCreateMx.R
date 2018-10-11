@@ -505,7 +505,8 @@ runCreateMx <- function(labkey.url.base,
     # **gsmTblVarNm**: Custom list of raw values column name for gsm-based data
     metaData$gsmTblVarNm <- list(
       SDY1289 = "AVERAGE_SIGNAL",
-      SDY180  = "VALUE"
+      SDY180  = "VALUE",
+      SDY1293 = "VALUE"
     )
     
     # **updateHeaders**: Before merging inputFile matrices, must update
