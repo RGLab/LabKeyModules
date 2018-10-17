@@ -157,8 +157,7 @@ demo <- con$getDataset("demographics")
 demo$subject <- gsub("\\.\\d{2,3}$", "", demo$participant_id)
 
 for(sdy in studies){
-  gTerm <- ifelse(sdy == "SDY80", "pH1N1", sdy)
-  mats <- con$cache$GE_matrices$name[ grep(gTerm, con$cache$GE_matrices$name) ]
+  mats <- con$cache$GE_matrices$name[ grep(sdy, con$cache$GE_matrices$name) ]
 
   # --------GET GENE EXPRESSION DATA------------
 
@@ -346,7 +345,7 @@ To provide a more detailed understanding how the hai data adjustment affects the
 
 onTest <- grepl("test",labkey.url.base)
 rm(labkey.url.base, labkey.url.path) # otherwise connection is still through HIPC/IS1
-sdy404 <- CreateConnection("SDY404")
+sdy404 <- CreateConnection("SDY404", onTest = onTest)
 rawHai <- sdy404$getDataset("hai")
 adjHai <- adjust_hai("SDY404", rawHai)
 pd <- adjHai[ adjHai$Age.class == "young", ]
