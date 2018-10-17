@@ -13,7 +13,9 @@ library(GEOquery)
 #-------------------------------
 .getGeoRawFls <- function(study, gef, metaData){
     # Important that run specific directory is created to avoid overlap with previous runs.
-    # This done with unique cell_type * arm_accession string
+    # This done with unique cell_type * arm_accession string.
+    # In the case of SDY80, there are two different types within the same arm and for ImmSig
+    # purposes they need to be done together. Therefore calling them "all" there.
     baseDir <- paste0("/share/files/Studies/",
                       study,
                       "/@files/rawdata/gene_expression/supp_files/",
@@ -301,7 +303,13 @@ makeRawMatrix <- function(metaData, gef, study, inputFiles){
 normalizeMatrix <- function(exprs, study, metaData){
     # data.table so MUST COPY to prevent changes in later work
     em <- copy(exprs)
-    
+
+    # Oct 2018 - following studies have some NA values.
+    # SDY212 - Known issue and documented in ImmPort Jira
+    # SDY1289 - Due to single cohort having multiple batches with different anno.
+    # SDY224 - Controls
+    em <- em[ complete.cases(em), ] 
+
     # already processed and raw FASTQ data only in SRA, no raw count matrix easily available
     if (metaData$noRaw == TRUE) {
       return(em)
@@ -310,11 +318,6 @@ normalizeMatrix <- function(exprs, study, metaData){
     rnames <- em[ , feature_id ]
     em[ , feature_id := NULL ]
     
-    # Oct 2018 - following studies have some NA values.
-    # SDY212 - Known issue and documented in ImmPort Jira
-    # SDY1289 - Due to single cohort having multiple batches with different anno.
-    em <- em[ complete.cases(em), ]
-
     # Must ensure numeric values as conversion back to character can happen with
     # casting as matrix.
     em <- apply(em, 2, as.numeric)
