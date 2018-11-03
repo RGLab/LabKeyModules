@@ -199,7 +199,8 @@ library(GEOquery)
   library(primeviewcdf)
   library(hgu133plus2cdf)
   library(hthgu133pluspmcdf) 
-  
+  library(huex10stv2cdf) # customCDF loaded from UpdateAnno Pkg
+
   tmp <- getwd()
   setwd("/") # b/c filepaths are absolute and justRMA prepends wd
   eset <- affy::justRMA(filenames = inputFiles, normalize = FALSE)
@@ -454,7 +455,7 @@ runCreateMx <- function(labkey.url.base,
   # the Illumina that often have a single tsv.gz file in the series accession (GSE)
   metaData$useGsmSuppFls <- study %in% c("SDY80", "SDY113", "SDY269", "SDY406", 
                                          "SDY984", "SDY1260", "SDY1264", "SDY1293",
-                                         "SDY270")
+                                         "SDY270", "SDY1291")
   
   # **studyIdTerm**: For extracting sample id from getGEO(gsm) object
   useDescription <- study %in% c("SDY144","SDY1373","SDY1364","SDY1325")
