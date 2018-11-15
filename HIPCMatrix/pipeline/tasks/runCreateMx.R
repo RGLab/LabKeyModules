@@ -158,7 +158,7 @@ library(limma)
       bad <- grep("SAMPLE", as.character(x[2,]), invert = TRUE)
       badVals <- grep("SAMPLE", as.character(x[2,]), invert = TRUE, value = TRUE)
       x <- x[3:nrow(x),]
-      tmp <- CreateConnection(study, onTest = grepl("test", labkey.url.base))
+      tmp <- CreateConnection(study)
       tGef <- tmp$getDataset("gene_expression_files")
       acc <- tGef[ tGef$type == "PBMC", geo_accession ]
       setnames(x, nms, acc)
@@ -243,10 +243,12 @@ library(limma)
           em <- .prepIlluminaHeaders(em)
           if (needMap == TRUE) {
             # Fixed b/c some ids have escape char (e.g. ".")
-            # Paste0 b/c some ids are numeric and confusable (e.g. "2.1" and "12.1")
+            # Paste0 with "^" b/c some ids are numeric and confusable (e.g. "2.1" and "12.1")
+            # lookahead to ensure full id before sep and not partial (e.g "PBMC_1" and "PBMC_12")
+            # perl = TRUE for lookahead
             for (i in 1:nrow(mp)) {
-              fixedId <- paste0("^", gsub(".", "\\.", mp$id[[i]], fixed = T))
-              colnames(em) <- gsub(fixedId, mp$gsm[[i]], colnames(em))
+              fixedId <- paste0("^", gsub(".", "\\.", mp$id[[i]], fixed = T), "(?=(\\.|_))")
+              colnames(em) <- gsub(fixedId, mp$gsm[[i]], colnames(em), perl = TRUE)
             }
           }
           em <- em[ , grep("GSM|ID_REF", colnames(em)), with = FALSE]
@@ -666,7 +668,7 @@ runCreateMx <- function(labkey.url.base,
   
   # **gseNeedsMap**: Studies that need id-to-gsm mapping from gse supp files
   # without special gsub terms
-  metaData$gseNeedsMap <- study %in% c("SDY404", "SDY522", "SDY1325", "SDY1364")
+  metaData$gseNeedsMap <- study %in% c("SDY404", "SDY522", "SDY1325", "SDY1364", "SDY144")
   
   # **gsmMapIndex**: Index of samplename in vector from getGEO()
   useSecond <- c("SDY180")
