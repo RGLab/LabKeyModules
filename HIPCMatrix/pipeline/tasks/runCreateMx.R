@@ -247,8 +247,8 @@ library(limma)
       # Need to check on a per study basis and tweak if need be.
       if (metaData$platform == "NA") {
         mp <- .makeIdToGsmMap(gef, metaData, study)
-        em <- em[ , colnames(em) %in% c("GENES", mp$id), with = FALSE ]
-        nms <- grep("GENES", colnames(em), invert = TRUE, value = TRUE)
+        em <- em[ , colnames(em) %in% c("GENES","V1", mp$id), with = FALSE ]
+        nms <- grep("GENES|V1", colnames(em), invert = TRUE, value = TRUE)
         gsm <- mp$gsm[ match(nms, mp$id) ]
         setnames(em, nms, gsm)
       }
@@ -371,9 +371,9 @@ library(limma)
     # If Illumina from Immport
     prbCol <- grep("id_ref", colnames(exprs), ignore.case = TRUE)
     
-    # If RNAseq then accept gene* col
+    # If RNAseq then accept gene* or V1 col
     if (length(prbCol) == 0) {
-      prbCol <- grep("gene", colnames(exprs), ignore.case = TRUE)
+      prbCol <- grep("gene|V1", colnames(exprs), ignore.case = TRUE)
     }
     
     # In case of features in rownames, e.g. from GEO
