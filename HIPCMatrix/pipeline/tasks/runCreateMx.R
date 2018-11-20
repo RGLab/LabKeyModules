@@ -126,21 +126,6 @@ library(limma)
   return(mp)
 }
 
-# Map study-given ids or names from inputFiles to a GEF-accession
-# (This may already be done in .fixHeaders if mapping needs to happen
-# from the filename)
-.mapNmsToAcc <- function(em, metaData, gef, study){
-  needMap <- !all(gef$geo_accession %in% colnames(em))
-  if (metaData$isGeo == TRUE & needMap) {
-    mp <- .makeIdToGsmMap(gef, metaData, study)
-    em <- em[ , colnames(em) %in% c("feature_id", mp$id), with = FALSE ]
-    nms <- grep("feature_id", colnames(em), invert = TRUE, value = TRUE)
-    gsm <- mp$gsm[ match(nms, mp$id) ]
-    setnames(em, nms, gsm)
-  }
-  return(em)
-}
-
 .fixHeaders <- function(mxList, study){
   if (study == "SDY224") {
     mxList <- lapply(mxList, function(x){
@@ -261,7 +246,11 @@ library(limma)
       # Header mapping assumes that names are in getGEO(gsm) object.
       # Need to check on a per study basis and tweak if need be.
       if (metaData$platform == "NA") {
-        em <- .mapNmsToAcc(em, metaData, gef, study)
+        mp <- .makeIdToGsmMap(gef, metaData, study)
+        em <- em[ , colnames(em) %in% c("GENES", mp$id), with = FALSE ]
+        nms <- grep("GENES", colnames(em), invert = TRUE, value = TRUE)
+        gsm <- mp$gsm[ match(nms, mp$id) ]
+        setnames(em, nms, gsm)
       }
       
       inputFiles <- .writeSingleMx(em, baseDir, study)
@@ -282,7 +271,7 @@ library(limma)
     inputFiles <- .writeSingleMx(em, baseDir, study)
   } else if (metaData$platform == "NA") {
     mxList <- lapply(inputFiles, fread)
-    mxList <- .fixHeaders(mxList)
+    mxList <- .fixHeaders(mxList, study)
     inputFiles <- .writeSingleMx(mxList, baseDir, study)
   }
   return(inputFiles)
@@ -302,6 +291,7 @@ library(limma)
   library(hgu133plus2cdf)
   library(hthgu133pluspmcdf)
   library(huex10stv2cdf) # customCDF loaded from UpdateAnno Pkg
+  library(hursta2a520709cdf) # customCDF loaded from UpdateAnno Pkg - SDY1328
   
   # Background Correction Notes:
   # 'background' = TRUE performs function similar to normexp.fit.control and normexp.signal
@@ -368,8 +358,6 @@ library(limma)
 # of raw counts files ...
 .processRnaSeq <- function(inputFiles, study){
   lf <- lapply(inputFiles, fread)
-  lf <- .fixHeaders(lf, study)
-  # lf <- .subsetToRaw(lf)
   exprs <- data.table(Reduce(f = function(x, y) {merge(x, y, all = TRUE)}, lf))
 }
 
@@ -649,7 +637,8 @@ runCreateMx <- function(labkey.url.base,
   # the Illumina that often have a single tsv.gz file in the series accession (GSE)
   metaData$useGsmSuppFls <- study %in% c("SDY80", "SDY113", "SDY180", "SDY269",
                                          "SDY406", "SDY984", "SDY1260", "SDY1264",
-                                         "SDY1293", "SDY270", "SDY1291", "SDY212")
+                                         "SDY1293", "SDY270", "SDY1291", "SDY212",
+                                         "SDY315", "SDY305", "SDY1328")
   
   # **studyIdTerm**: For extracting sample id from getGEO(gsm) object
   useDescription <- study %in% c("SDY144", "SDY180", "SDY522", "SDY1373", "SDY1364", "SDY1325")
@@ -661,7 +650,7 @@ runCreateMx <- function(labkey.url.base,
     SDY1276 = list(old = "WholeBloodRNA_", new = ""),
     SDY224  = list(old = " \\[PBMC\\]", new = ""),
     SDY63   = list(old = "^101", new = "10"),
-    SDY888  = list(old = "( |)_(N|n)egative|(S|s)econdary", new = "_RNASeq"),
+    SDY888  = list(old = "( |)_((N|n)egative|(S|s)econdary)", new = "_RNASeq"),
     SDY1373 = list(old = "Sample name: ", new = ""),
     SDY180  = list(old = "([0-9])([A-Z])", new = "\\1_\\2")
   )
