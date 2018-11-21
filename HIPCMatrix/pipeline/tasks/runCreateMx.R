@@ -267,13 +267,12 @@ library(limma)
       em <- .subsetIlluminaEM(em)
       em <- .prepIlluminaHeaders(em)
     })
-    em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
-    inputFiles <- .writeSingleMx(em, baseDir, study)
   } else if (metaData$platform == "NA") {
     mxList <- lapply(inputFiles, fread)
     mxList <- .fixHeaders(mxList, study)
-    inputFiles <- .writeSingleMx(mxList, baseDir, study)
   }
+  em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
+  inputFiles <- .writeSingleMx(em, baseDir, study)
   return(inputFiles)
 }
 
