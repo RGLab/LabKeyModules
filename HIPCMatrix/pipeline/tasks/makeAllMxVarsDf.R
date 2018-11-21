@@ -1,7 +1,7 @@
 # Creates DF of all info needed to run CL version of runCreateMx()
 
 # Helper
-makeVarList <- function(sdy, mx, con, onTest = TRUE){
+makeVarList <- function(sdy, mx, con){
   print(paste(sdy, mx))
   baseDir <- paste0("/share/files/Studies/",
                     sdy,
@@ -18,7 +18,7 @@ makeVarList <- function(sdy, mx, con, onTest = TRUE){
     taskOutputParams <- "notAvailable"
   }
 
-  labkey.url.base     <- ifelse(onTest, "https://test.immunespace.org", "https://www.immunespace.org")
+  labkey.url.base     <- con$config$labkey.url.base
   labkey.url.path     <- paste0("/Studies/", sdy)
   pipeline.root       <- paste0("/share/files", labkey.url.path, "/@files")
   analysis.directory  <- paste0(pipeline.root, "/rawdata/gene_expression/create-matrix/", mx)
