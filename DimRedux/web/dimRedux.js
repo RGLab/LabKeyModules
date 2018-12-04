@@ -64,7 +64,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 plotTypes_help = 'Either Principle Components Analysis (PCA) or t-distributed Stochastic Neighbor Embedding (tSNE)'
                 perplexity_help = 'Parameter passed to Rtsne',
                 numComponents_help = 'Number of PCA components to plot pairwise',
-                impute_help = "Method for imputing missing (NA) values",
+                impute_help = "Method for imputing missing (NA) values within a single feature in an assay",
                 response_help = "Immune response data that can be used for labels if present"
             ;
 
@@ -170,7 +170,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     //width: do not use, messes up scroll.
                     height: (uniqLbls.length + 1) * 30,
                     columnLines: true,
-                    frame: true,
+                    frame: false,
                     cls: 'custom-grid'
                 });
                 gridPnl.render('tpAssayGrid')
@@ -389,7 +389,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     value: 'none'
                 } 
             ],  
-            value: 'Mean',
+            value: 'None',
             listeners: {
                 blur:       checkBtnsStatus,
                 change:     checkBtnsStatus
@@ -651,18 +651,21 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             },
             deferredRender: false,
             items: [
-                {
-                    border: true,
-                    title: 'Assay Data Available by Timepoint',
+                new Ext.form.FieldSet({
+                    autoScroll: true,
                     items: [
                         new Ext.Container({
+                            border: false,
                             items: [], 
                             layout: 'fit',
                             id: 'tpAssayGrid',
                             cls: 'ui-test-assaygrid'
                         })
-                    ]
-                },
+                    ],
+                    title: 'Available Assay Data',
+                    cls: 'ui-test-available-data',
+                    itemCls: 'ui-test-available-data-item'
+                }),
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
