@@ -1,43 +1,30 @@
-library("rjson")
-library("httr")
-library("Rlabkey")
-library("rstudioapi")
+# Extend RStduio session initialization with custom tasks
+labkey.rstudio.extend <- function() {
+  library(ImmuneSpaceR)
 
-labkey.init <- function(apiKey="")
-{
-  if (file.exists("~/.rstudio/labkey-session"))
-    source("~/.rstudio/labkey-session")
-  else if (file.exists("~/.Rsession"))
-    source("~/.Rsession")
-  if (apiKey!="")
-  {
-    options(labkey.apiKey=apiKey);
-    labkey.setDefaults(apiKey=apiKey);
+  # Retrieve session information
+  baseUrl <- Rlabkey:::.lkdefaults[["baseUrl"]]
+  whoami <- httr::GET(
+    url = paste0(baseUrl, "/login-whoami.view"),
+    config = Rlabkey:::labkey.getRequestOptions()
+  )
+  res <- httr::content(whoami)
+  user <- res$displayName
+
+  # Set options for ImmuneSpaceR initiliaztion
+  options(labkey.baseUrl = baseUrl)
+  options(labkey.user.email = res$email)
+
+  # Utilize RStudio panels to display useful information
+  # try(rstudioapi::viewer(paste(baseUrl, "rstudio-viewer.html", sep = "/")), silent = TRUE)
+  try(rstudioapi::previewRd("/ImmuneSpace-RStudio.Rd"), silent = TRUE)
+  
+  # Welcome users with a cheerful message
+  message("Welcome to the ImmuneSpace RStudio Session!")
+  if (!is.null(user)) {
+    message(paste("started by", user, "at", date()))
+  } else {
+    message(paste("started at", date()))
   }
-  hasViewer <- FALSE
-  try(hasViewer <- rstudioapi::hasFun("viewer"))
-  baseUrl <- options('labkey.baseUrl');
-  # backward compatibility (delete after 18.2)
-  if (is.null(baseUrl) && exists('labkey.properties') && !is.null(labkey.properties$url$base))
-    baseUrl <- labkey.properties$url$base;
-  if (hasViewer && !is.null(baseUrl))
-    rstudioapi::viewer(paste(baseUrl,"rstudio-viewer.html",sep='/'));
-
-  hasPreview <- FALSE
-  try (hasPreview <- rstudioapi::hasFun("previewRd"))
-  if (hasPreview) try(rstudioapi::previewRd("/ImmuneSpace-RStudio.Rd"), silent = TRUE)
 }
 
-.First <- function()
-{
-    labkey.init()
-    email <- options("labkey.user.email")
-    # backward compatibility (delete after 18.2)
-    if (is.null(email) && exists('labkey.properties') && !is.null(labkey.properties$user$email))
-        email <- labkey.properties$user$email
-    message("Welcome to ImmuneSpace RStudio Session")
-    if (!is.null(email))
-      message(paste("started by", email, "at", date(), sep=" "))
-    else
-      message(date())
-}
