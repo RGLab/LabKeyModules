@@ -14,7 +14,11 @@ biocLite(c(
 library(devtools)
 install_github(c(
   paste0("RGLab/ImmuneSpaceR@", args[1]),
-  "RGLab/UpdateAnno",
+  paste0("RGLab/UpdateAnno@", args[1]),
   "RGLab/ImmuneSignatures"
 ))
+
+# Install custom annotation packages
+install_url(paste0("https://github.com/RGLab/UpdateAnno/raw/", args[1], "/FeatureAnnotationSetDev/hursta2a520709cdf.tar.gz"))
+install_url(paste0("https://github.com/RGLab/UpdateAnno/raw/", args[1], "/FeatureAnnotationSetDev/huex10stv2cdf.tar.gz"))
 
