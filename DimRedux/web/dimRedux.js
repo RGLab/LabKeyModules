@@ -389,7 +389,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     value: 'none'
                 } 
             ],  
-            value: 'Mean',
+            value: 'None',
             listeners: {
                 blur:       checkBtnsStatus,
                 change:     checkBtnsStatus

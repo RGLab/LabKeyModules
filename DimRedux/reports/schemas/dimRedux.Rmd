@@ -2,7 +2,6 @@
 output: html_document
 ---
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(ImmuneSpaceR)
@@ -17,13 +16,13 @@ library(Rtsne)
   # Non-User Selected Params
   baseUrl <- labkey.url.params$baseUrl
   sdy <- gsub("/Studies/", "", labkey.url.params$folderPath)
-
+  
   # Main Params
   timeAs <- labkey.url.params$timeAs
   assays <- strsplit(labkey.url.params$assays, ",")[[1]]
   timePts <- strsplit(labkey.url.params$timePts, ",")[[1]]
   plotType <- labkey.url.params$plotType
-
+  
   # additional options
   perplexity <- as.integer(labkey.url.params$perplexity)
   numComponents <- as.integer(labkey.url.params$numComponents)
@@ -39,7 +38,7 @@ getAssayData <- function(assay, con, timePts, timeAs){
   }else{
     eset <- con$getGEMatrix(con$cache$GE_matrices$name)
     dat <- data.frame(t(Biobase::exprs(eset)),stringsAsFactors = F)
-    gef <- con$getDataset("gene_expression_files", 
+    gef <- con$getDataset("gene_expression_files",
                           original_view = TRUE)
     ptid <- gef$participant_id[ match(rownames(dat), gef$biosample_accession) ]
     dat$study_time_collected <- gef$study_time_collected[ match(rownames(dat), gef$biosample_accession)]
@@ -50,12 +49,11 @@ getAssayData <- function(assay, con, timePts, timeAs){
       dat$participant_id <- ptid
     }
   }
-  
+
   dat$stc_key <- paste(dat$study_time_collected, dat$study_time_collected_unit)
   dat <- dat[ dat$stc_key %in% timePts, ]
-
   if(nrow(dat) == 0){ return() } # Assay does not contain chosen timepoints
-
+  
   if(assay %in% c("hai","neut_ab_titer")){
     sum_col <- paste0("mean_", assay)
     dat <- dat %>%
@@ -71,8 +69,8 @@ getAssayData <- function(assay, con, timePts, timeAs){
       nms <- colnames(dat)[ colnames(dat) != "participant_id"  ]
       nms <- paste0(nms, "_", sum_col)
       colnames(dat) <- c("participant_id", nms)
-    }  
-  
+    }
+
   }else if(assay == "fcs_analyzed_result"){
     cols <- c("participant_id", "study_time_collected", "population_definition_reported", "population_cell_number")
     dat <- dat[ , cols, with = FALSE ]
@@ -88,13 +86,13 @@ getAssayData <- function(assay, con, timePts, timeAs){
         group_by_("participant_id", "popDef_day") %>%
         summarise(newValue = unique(mean(population_cell_number)))
       dat <- spread(dat, key = "popDef_day", value = "newValue")
-    } 
-    
+    }
+
   }else if(assay == "elisa"){
     cols <- c("participant_id", "study_time_collected", "analyte", "value_preferred")
     dat <- dat[ , cols, with = FALSE ]
     if(timeAs == "observation"){
-      dat <- dat %>% 
+      dat <- dat %>%
         mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
         group_by(sub_tp, analyte) %>%
         summarize(newValue = unique(mean(value_preferred)))
@@ -106,12 +104,12 @@ getAssayData <- function(assay, con, timePts, timeAs){
         summarise(newValue = unique(mean(value_preferred)))
       dat <- spread(dat, key = "analyte_day", value = "newValue")
     }
-    
+
   }else if(assay == "elispot"){
     cols <- c("participant_id", "study_time_collected", "analyte", "spot_number_reported")
     dat <- dat[ , cols, with = FALSE ]
     if(timeAs == "observation"){
-      dat <- dat %>% 
+      dat <- dat %>%
         mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
         group_by(sub_tp, analyte) %>%
         summarize(newValue = unique(mean(spot_number_reported)))
@@ -123,22 +121,34 @@ getAssayData <- function(assay, con, timePts, timeAs){
         summarise(newValue = unique(mean(spot_number_reported)))
       dat <- spread(dat, key = "analyte_day", value = "newValue")
     }
-
   }else if(assay == "gene_expression"){
+    # Be sure to only subset by GE timepoints not all assay time points!
+    geOnlyTp <- unique(dat$stc_key)
+
+    # Figure out subs with all tp
+    subSums <- sapply(unique(dat$participant_id), function(x){
+      return(length(dat$stc_key[ dat$participant_id == x]))
+    })
+    goodSubs <- names(subSums)[ subSums == length(geOnlyTp)]
+    
+    # Reorganize matrices by gs_timePt as colnames and cbind
     if(timeAs == "variable"){
-      mats <- lapply(timePts, function(x){
-        mat <- dat[ dat$stc_key == x, ]
+      mats <- lapply(geOnlyTp, function(x){
+        mat <- dat[ dat$stc_key == x & dat$participant_id %in% goodSubs, ]
         mat <- mat[, grep("stc_key|study_time_collected", colnames(dat), invert = T)]
         nms <- colnames(mat)[ colnames(mat) != "participant_id" ]
         nms <- paste0(nms, "_", gsub(" Days", "", x))
         colnames(mat) <- c(nms, "participant_id")
+        mat <- mat[ order(match(mat$participant_id, goodSubs)), ]
+        mat <- mat[ , -grep("participant_id", colnames(mat)) ]
         return(mat)
       })
-      dat <- Reduce(function(x,y){merge(x,y, by="participant_id", all=T)}, mats)
+      dat <- Reduce(function(x,y){cbind(x,y)}, mats)
+      dat$participant_id <- goodSubs
     }else{
       dat <- dat[, grep("stc_key|study_time_collected", colnames(dat), invert = T)]
-    } 
-  
+    }
+
   }else if(assay == "mbaa"){
     cols <- c("participant_id", "study_time_collected", "analyte", "concentration_value")
     dat <- dat[ , cols, with = FALSE ]
@@ -155,90 +165,107 @@ getAssayData <- function(assay, con, timePts, timeAs){
         summarize(newValue = mean(as.numeric(concentration_value)))
       dat <- spread(dat, key = "analyte_day", value = "newValue")
     }
-  
+
   }else if(assay == "pcr"){
     cols <- c("participant_id", "study_time_collected", "gene_symbol", "value_reported")
     dat <- dat[ , cols, with = FALSE ]
     if(timeAs == "observation"){
-        dat <- dat %>%
-          mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
-          group_by(sub_tp, gene_symbol) %>%
-          summarize(newValue = mean(value_reported))
-        dat <- spread(dat, key = "gene_symbol", value = "newValue")
+      dat <- dat %>%
+        mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
+        group_by(sub_tp, gene_symbol) %>%
+        summarize(newValue = mean(value_reported))
+      dat <- spread(dat, key = "gene_symbol", value = "newValue")
     }else{
-        dat <- dat %>%
-          mutate(gs_day = paste0(gene_symbol, "_", study_time_collected)) %>%
-          group_by(participant_id, gs_day) %>%
-          summarize(newValue = mean(value_reported))
-        dat <- spread(dat, key = "gs_day", value = "newValue")
+      dat <- dat %>%
+        mutate(gs_day = paste0(gene_symbol, "_", study_time_collected)) %>%
+        group_by(participant_id, gs_day) %>%
+        summarize(newValue = mean(value_reported))
+      dat <- spread(dat, key = "gs_day", value = "newValue")
     }
   }
-
   return(data.frame(dat, stringsAsFactors = FALSE))
 }
 ```
 
 ```{r prep-assay-data}
-    # ImmuneSpace connection
-    onTest <- grepl("test", baseUrl)
+# Sdy == "" if at project level!
+con <- CreateConnection(sdy, onTest = grepl("test", baseUrl))
 
-    # Sdy == "" if at project level!
-    con <- CreateConnection(sdy, onTest = onTest)
+# get assay data
+# NOTES:
+# 1. When timeAs == "variable", GE data is subset to subjects with all timepoints
+# Otherwise too much imputation is done and would affect subjects score.
+# 2. If impute == "none", then assay data matrix is cut down to only subjects with
+# every assay * timepoint combination. This could be highly limiting in project level work.
+aData <- lapply(assays,
+                getAssayData,
+                con = con,
+                timePts = timePts,
+                timeAs = timeAs)
 
-    # get assay data
-    aData <- lapply(assays,
-                    getAssayData,
-                    con = con,
-                    timePts = timePts,
-                    timeAs = timeAs)
+# Check aData to be sure non-null
+nulls <- sapply(aData, is.null)
+aData <- aData[ !nulls ]
 
-    # Check aData to be sure non-null
-    nulls <- sapply(aData, is.null)
-    aData <- aData[ !nulls ]
+# Impute missing values within each assay on per sample or sample_tp (column) basis if selected by user
+if(impute == "mean"){
+  aData <- lapply(aData, function(df){ 
+    df <- apply(df, 2, function(x){ x[is.na(x) ] <- mean(x, na.rm = T); return(x)})
+  })
+}else if(impute == "median"){
+  aData <- lapply(aData, function(df){ 
+    df <- apply(df, 2, function(x){ x[is.na(x) ] <- median(x, na.rm = T); return(x)})
+  })
+}else if(impute == "knn"){
+  aData <- lapply(aData, function(df){ 
+    res <- impute::impute.knn(as.matrix(df))
+    return(res$data)
+  })
+}else if(impute == "none"){
+  aData <- lapply(aData, function(df){ 
+    df <- df[ complete.cases(df), ]
+  })
+}
 
-    # Get demographic data and add cohort name
-    demo <- con$getDataset("demographics")
+# Find subs with all datasets
+subs <- sapply(aData, function(x){
+  x[, grep("sub_tp|participant_id", colnames(x))]
+})
+numSubs <- table(unlist(subs))
+subs <- names(numSubs)[ numSubs == length(aData) ]
 
-    cohortMap <- Rlabkey::labkey.selectRows(baseUrl = con$config$labkey.url.base,
-                                     folderPath = con$config$labkey.url.path,
-                                     schemaName = "study",
-                                     queryName = "cohort",
-                                     showHidden = TRUE)
-    demo$cohort <- cohortMap$Label[ match(demo$cohort, cohortMap$Rowid) ]
+# Remove subs without all datasets and order for cbind
+aData <- lapply(aData, function(x){
+  nmsCol <- grep("sub_tp|participant_id", colnames(x), value = T)
+  x <- x[ x[[nmsCol]] %in% subs, ]
+  x <- x[ order(match(x[[nmsCol]], subs)), ]
+  x <- x[, -grep(nmsCol, colnames(x)) ]
+})
 
-    # combine
-    allMat <- Reduce(function(x,y){merge(x,y,all=T)}, aData)
-    nmsCol <- grep("sub_tp|participant_id", colnames(allMat))
-    subs <- allMat[, nmsCol]
-    allMat <- allMat[,-nmsCol]
-    
-    # normalize
-    allMat <- scale(allMat)
+# combine
+allMat <- Reduce(function(x,y){cbind(x,y)}, aData)
+rownames(allMat) <- subs
 
-    # Remove features with all NAs created by the merge
-    # These are coming from gene_expression
-    badCols <- apply(allMat, 2, function(x){
-      all(is.na(x))
-    })
-    allMat <- allMat[ , !badCols ]
- 
-    if( is.null(dim(allMat)) || dim(allMat)[2] < 2){ 
-        stop("R Report Error: Too few variables selected. Please select more assays or timepoints and re-run.")
-    }else if(dim(allMat)[1] < 1){ 
-        stop("R Report Error: No subjects with complete cases. Select imputation method other than 'None' and retry.")
-    }  
+# normalize
+allMat <- scale(allMat)
 
-    # Impute missing values
-    if(impute == "mean"){
-        allMat <- apply(allMat, 2, function(x){ x[is.na(x)] <- mean(x, na.rm = T); return(x)})
-    }else if(impute == "median"){
-        allMat <- apply(allMat, 2, function(x){ x[is.na(x)] <- median(x, na.rm = T); return(x)})
-    }else if(impute == "knn"){
-        res <- impute::impute.knn(as.matrix(allMat))
-        allMat <- res$data
-    }else if(impute == "none"){
-        allMat <- allMat[ complete.cases(allMat), ]
-    }
+if( is.null(dim(allMat)) || dim(allMat)[2] < 2){
+  stop("R Report Error: Too few variables selected. Please select more assays or timepoints and re-run.")
+}else if(dim(allMat)[1] < 1){
+  stop("R Report Error: No subjects with complete cases. Select imputation method other than 'None' and retry.")
+}
+```
+
+
+```{r prep-demo-data}
+# Get demographic data and add cohort name
+demo <- con$getDataset("demographics")
+cohortMap <- Rlabkey::labkey.selectRows(baseUrl = con$config$labkey.url.base,
+                                        folderPath = con$config$labkey.url.path,
+                                        schemaName = "study",
+                                        queryName = "cohort",
+                                        showHidden = TRUE)
+demo$cohort <- cohortMap$Label[ match(demo$cohort, cohortMap$Rowid) ]
 ```
 
 ## Parameters
@@ -251,6 +278,13 @@ getAssayData <- function(assay, con, timePts, timeAs){
 - **Immune Response Label**: `r responseVar`
 
 ## General Information
+Note: Only subjects with assay data at all timepoints are included in the final
+dimension reduction analysis. By default, there is no imputation. If you do select
+to impute data, it is done within the individual assay data prior to combining multiple
+assays.  For gene-expression data, imputation only occurs if subjects have at least
+partial data for the timepoint. For non-gene-expression data, imputation does not require
+partial data for the timepoint (e.g. some hai strains but not others).
+
 - **Number of Observations (Subjects)**: `r dim(allMat)[1]`
 - **Number of Features (Assay Data)**: `r dim(allMat)[2]`
 
@@ -266,29 +300,29 @@ genPlot <- function(i, j, resObj, type, prettyLbl, colorCol){
                      y = resObj$x[, paste0("PC",j)],
                      stringsAsFactors = FALSE)
   }
-  
+
   p <- plot_ly(data = df,
                x = ~x,
                y = ~y,
                color = colorCol,
                hoverinfo = 'text',
                text = paste(prettyLbl, ": ", colorCol, "<br>ID: ", subs)) %>%
-       layout(xaxis = list(title = paste0(type, i)), 
-              yaxis = list(title = paste0(type, j)),
-              annotations = list(yref = 'paper',
-                                 xref = 'paper',
-                                 y = 1.02,
-                                 x = 1.175,
-                                 text = prettyLbl,
-                                 showarrow = FALSE),
-              autosize = T,
-              width = 700,
-              showlegend=TRUE)
+    layout(xaxis = list(title = paste0(type, i)),
+           yaxis = list(title = paste0(type, j)),
+           annotations = list(yref = 'paper',
+                              xref = 'paper',
+                              y = 1.02,
+                              x = 1.175,
+                              text = prettyLbl,
+                              showarrow = FALSE),
+           autosize = T,
+           width = 700,
+           showlegend=TRUE)
 }
 
 makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
   prettyLbl <- tools::toTitleCase(gsub("_", " ", label))
-  
+
   if(label == "time"){
     colorCol <- gsub("^SUB\\d{5,6}\\.\\d{2,4}_", "", subs)
   }else if(label == "study"){
@@ -299,7 +333,7 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
     # create response value from fold-change compared to baseline for each virus
     re <- re[, list(arm_accession, study_time_collected, study_time_collected_unit,
                     response = value_reported/mean(value_reported[study_time_collected<=0])),
-               by = "virus,participant_id"]
+             by = "virus,participant_id"]
     # determine mean response for each study day across virus
     re <- re[, mr := mean(response, na.rm=T), by = "study_time_collected"]
     # determine maximum mean response for each cohort for each study day
@@ -318,15 +352,14 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
     if(timeAs == "observation"){ subs <- gsub("_\\d{1}", "", subs) }
     colorCol <- demo[[label]][ match(subs, demo$participant_id)]
   }
-
   # create and sort possible component combinations
   poss <- expand.grid(j = 1:numComponents, i = 1:numComponents)
   poss <- poss[ poss$j != poss$i, ]
   poss$test <- sapply(1:nrow(poss), function(x){
-      paste(sort(c(poss[x,1], poss[x,2])), collapse = ":")
+    paste(sort(c(poss[x,1], poss[x,2])), collapse = ":")
   })
   poss <- poss[ !duplicated(poss$test), ]
-  
+
   # Run analysis and get pieces together for plotting
   if(plotType == "tSNE"){
     set.seed(8)
@@ -340,15 +373,14 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
     pca <- prcomp(allMat)
     moreArgs <- list(resObj = pca, type = "PCA", prettyLbl = prettyLbl, colorCol = colorCol)
   }
-  
+
   plots <- mapply(genPlot,
                   i = poss$i,
                   j = poss$j,
                   MoreArgs = moreArgs,
                   SIMPLIFY = FALSE
-                  ) 
+  )
 }
-
 ```
 
 ## Plots {.tabset}
@@ -361,7 +393,7 @@ plots <- makePlot(label = "age_reported",
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
-                  )
+)
 htmltools::tagList(plots)
 ```
 
@@ -373,7 +405,7 @@ plots <- makePlot(label = "gender",
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
-                  )
+)
 htmltools::tagList(plots)
 ```
 
@@ -385,7 +417,7 @@ plots <- makePlot(label = "ethnicity",
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
-                  )
+)
 htmltools::tagList(plots)
 ```
 
@@ -397,7 +429,7 @@ plots <- makePlot(label = "race",
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
-                  )
+)
 htmltools::tagList(plots)
 ```
 
@@ -409,40 +441,39 @@ plots <- makePlot(label = "cohort",
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
-                  )   
+)
 htmltools::tagList(plots)
 ```
 
 ### Timepoint
 ```{r  timePt, fig.align="left"}
 if(timeAs == "observation"){
-    plots <- makePlot(label = "time",
-                  timeAs = timeAs,
-                  demo = demo,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-                  )
-    htmltools::tagList(plots)
+  plots <- makePlot(label = "time",
+                    timeAs = timeAs,
+                    demo = demo,
+                    numComponents = numComponents,
+                    plotType = plotType,
+                    allMat = allMat
+  )
+  htmltools::tagList(plots)
 }else{
-    cat("Plots are only labelled by timepoint if `Use Time As` equals 'observation'.")
+  cat("Plots are only labelled by timepoint if `Use Time As` equals 'observation'.")
 }
-
 ```
 
 ### Study
 ```{r  byStudy, fig.align="left"}
 if(sdy == "/Studies"){
-    plots <- makePlot(label = "study",
-                      timeAs = timeAs,
-                      demo = demo,
-                      numComponents = numComponents,
-                      plotType = plotType,
-                      allMat = allMat
-                      )
-    htmltools::tagList(plots) 
+  plots <- makePlot(label = "study",
+                    timeAs = timeAs,
+                    demo = demo,
+                    numComponents = numComponents,
+                    plotType = plotType,
+                    allMat = allMat
+  )
+  htmltools::tagList(plots)
 }else{
-   cat("Plots are only labelled by study if run at the project level through `Data Finder`.")
+  cat("Plots are only labelled by study if run at the project level through `Data Finder`.")
 }
 ```
 
@@ -450,24 +481,24 @@ if(sdy == "/Studies"){
 Note: Not all subjects may have immune response data
 ```{r IR, fig.align="left"}
 re <- tryCatch(
-    con$getDataset(responseVar, original_view = T),
-    warning = function(w) return(w),
-    error = function(e) return(e)
+  con$getDataset(responseVar, original_view = T),
+  warning = function(w) return(w),
+  error = function(e) return(e)
 )
-
 if(is.null(re$message)){
-    plots <- makePlot(label = responseVar,
-                      timeAs = timeAs,
-                      demo = demo,
-                      numComponents = numComponents,
-                      plotType = plotType,
-                      allMat = allMat
-                      )
-    htmltools::tagList(plots) 
+  plots <- makePlot(label = responseVar,
+                    timeAs = timeAs,
+                    demo = demo,
+                    numComponents = numComponents,
+                    plotType = plotType,
+                    allMat = allMat
+  )
+  htmltools::tagList(plots)
 }else{
-    cat(paste0("Response variable ", responseVar, " returns empty data frame from study.  Data is not available for given participants."))
+  cat(paste0("Response variable ", responseVar, " returns empty data frame from study.  Data is not available for given participants."))
 }
 ```
+
 
 <script>
 window.HTMLWidgets.staticRender();
