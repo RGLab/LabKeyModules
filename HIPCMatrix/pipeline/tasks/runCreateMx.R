@@ -8,6 +8,7 @@ library(ImmuneSpaceR)
 library(Biobase)
 library(GEOquery)
 library(limma)
+library(illuminaio)
 
 #######################################
 ###         FILE RETRIEVAL          ###
@@ -186,14 +187,27 @@ library(limma)
           info <- getGEOSuppFiles(gsm, makeDirectory = FALSE, baseDir = baseDir)
           GEOquery::gunzip(rownames(info), overwrite = TRUE, remove = TRUE)
           path <- gsub("\\.gz", "", rownames(info))
-          em <- fread(path)
-          em <- .subsetIlluminaEM(em)
-          em <- .prepIlluminaHeaders(em)
-          smplFormats <- "\\d{10}_[A-Z]"
-          smplId <- regmatches(colnames(em)[[2]], regexpr(smplFormats, colnames(em)[[2]]))
-          colnames(em) <- gsub(smplId, gsm, colnames(em))
+          
+          if (study %in% names(metaData$illuminaManifestFile)) {
+            res <- read.idat(idatfiles = path, 
+                             bgxfile = metaData$illuminaManifestFile[[study]])
+            em <- res$E
+            pvals <- detectionPValues(res)
+            em <- data.table(gsm = em[,1], pvals = pvals[,1], ID_REF = res$genes$Probe_Id)
+            em <- em[ !duplicated(em$ID_REF) ] # dups b/c single probe assigned to multiple array_ids
+            setnames(em, "gsm", paste0(gsm, ".AVG_Signal"))
+            setnames(em, "pvals", paste0(gsm, ".Detection Pval"))
+          } else {
+            em <- fread(path)
+            em <- .subsetIlluminaEM(em)
+            em <- .prepIlluminaHeaders(em)
+            smplFormats <- "\\d{10}_[A-Z]"
+            smplId <- regmatches(colnames(em)[[2]], regexpr(smplFormats, colnames(em)[[2]]))
+            colnames(em) <- gsub(smplId, gsm, colnames(em))
+          }
           return(em)
         })
+
         em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
         inputFiles <- .writeSingleMx(em, baseDir, study)
         
@@ -328,6 +342,7 @@ library(limma)
     es <- regmatches(nms, regexpr("(ES|GSM)\\d{6,7}", nms))
     em <- em[ , grep(es, colnames(em), invert = TRUE), with = FALSE]
   }
+  
   # 2. Control or misnamed probes (not unique) - e.g. "NEGATIVE"
   em <- em[ grep("ILMN", em$ID_REF) ]
   write.table(em, rawFl, sep = "\t", row.names = FALSE, quote = FALSE)
@@ -637,10 +652,26 @@ runCreateMx <- function(labkey.url.base,
   metaData$useGsmSuppFls <- study %in% c("SDY80", "SDY113", "SDY180", "SDY269",
                                          "SDY406", "SDY984", "SDY1260", "SDY1264",
                                          "SDY1293", "SDY270", "SDY1291", "SDY212",
-                                         "SDY315", "SDY305", "SDY1328")
+                                         "SDY315", "SDY305", "SDY1328", "SDY1368")
   
+  #**illuminaManifestFile**: for studies with Illumina idat files that need bgx 
+  # manifest files.  These are found through the Illumina website and stored in
+  # the UpdateAnno package. Below creates a temp file to store this data.
+  # TODO: assign file based on fasId
+  metaData$illuminaManifestFile <- list(
+    SDY1368 = "HumanHT-12_V4_0_R2_15002873_B.bgx"
+  )
+
+  if (study %in% names(metaData$illuminaManifestFile)){
+    manifestUrl <- paste0("https://github.com/RGLab/UpdateAnno/raw/master/CreateMatrixAssets/IlluminaManifests/", metaData$illuminaManifestFile[[study]])
+    tmpFl <- tempfile()
+    download.file(url = manifestUrl, destfile = tmpFl, quiet = TRUE)
+    metaData$illuminaManifestFile[[study]] <- tmpFl
+  }
+
   # **studyIdTerm**: For extracting sample id from getGEO(gsm) object
-  useDescription <- study %in% c("SDY144", "SDY180", "SDY522", "SDY1373", "SDY1364", "SDY1325")
+  useDescription <- study %in% c("SDY144", "SDY180", "SDY522", "SDY1373", "SDY1364", 
+                                 "SDY1325")
   metaData$studyIdTerm <- ifelse(useDescription, "description", "title")
   
   # **smplGsubTerms**: Custom gsub terms for allowing the mapping of study-given ids
