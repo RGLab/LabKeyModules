@@ -136,19 +136,16 @@ library(illuminaio)
       return(x)
     })
   } else if (study == "SDY400") {
-    # First line in exprs says "GSM1445822-GSM1445949", however there
-    # are only 120 samples not 126 as indicated.  In order to account for
-    # missing ones, must use full gef which has the missing GSM removed.
+    # Using mapping file provided by Hailong Meng at Yale, Dec 2018
+    # since note in header of file is misleading due to gsm swaps made
+    # later based on knowledge of switched samples.
     mxList <- lapply(mxList, function(x){
-      nms <- grep("SAMPLE", as.character(x[2,]))
-      bad <- grep("SAMPLE", as.character(x[2,]), invert = TRUE)
-      badVals <- grep("SAMPLE", as.character(x[2,]), invert = TRUE, value = TRUE)
-      x <- x[3:nrow(x),]
-      tmp <- CreateConnection(study)
-      tGef <- tmp$getDataset("gene_expression_files")
-      acc <- tGef[ tGef$type == "PBMC", geo_accession ]
-      setnames(x, nms, acc)
-      setnames(x, bad, badVals)
+      mp <- fread("/share/files/Studies/SDY400/@files/rawdata/gene_expression/SDY400_HeaderMapping.csv")
+      setnames(x, colnames(x), as.character(x[2,]))
+      x <- x[-(1:2),]
+      smpls <- grep("SAMPLE", colnames(x), value = T)
+      titles <- mp$Title[ match(smpls, mp$Sample) ]
+      setnames(x, smpls, titles)
       return(x)
     })
   } else if (study == "SDY1325") {
@@ -158,6 +155,7 @@ library(illuminaio)
       return(x)
     })
   } else if (study == "SDY1324") {
+    # Custom header mapping provided by authors via P.Dunn Dec 2018.
     mxList <- lapply(mxList, function(x){
       mp <- fread("/share/files/Studies/SDY1324/@files/rawdata/gene_expression/raw_counts/SDY1324_Header_Mapping.csv")
       accs <- grep("V1", colnames(x), invert = TRUE, value = TRUE)
@@ -730,7 +728,8 @@ runCreateMx <- function(labkey.url.base,
   
   # **gseNeedsMap**: Studies that need id-to-gsm mapping from gse supp files
   # without special gsub terms
-  metaData$gseNeedsMap <- study %in% c("SDY404", "SDY522", "SDY1325", "SDY1364", "SDY144")
+  metaData$gseNeedsMap <- study %in% c("SDY404", "SDY522", "SDY1325", "SDY1364", "SDY144",
+                                       "SDY400")
   
   # **gsmMapIndex**: Index of samplename in vector from getGEO()
   useSecond <- c("SDY180")
