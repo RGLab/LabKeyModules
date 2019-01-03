@@ -1,15 +1,14 @@
-<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" containerFilter="CurrentAndSubfolders">
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" containerFilter="AllFolders">
     <cv:columns>
-        <cv:column name="RunId"/>
         <cv:column name="Biosample"/>
-        <cv:column name="Biosample/ParticipantId"/>
+        <cv:column name="participantId"/>
         <cv:column name="Biosample/study_time_collected"/>
         <cv:column name="Biosample/study_time_collected_unit"/>
         <cv:column name="featureSet"/>
         <cv:column name="features"/>
     </cv:columns>
     <cv:filters>
-        <cv:filter column="Biosample/biosample_accession" operator="startswith" value="BS"/>
+        <cv:filter column="Biosample" operator="startswith" value="BS"/>
     </cv:filters>
 </cv:customView>
 

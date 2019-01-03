@@ -2,8 +2,8 @@
 SELECT
   dataset_n.pid AS participantId,
   dataset_n.Name,
-    dataset_n.Label,
-    dataset_n.study_time_collected || ' ' || dataset_n.study_time_collected_unit AS timepoint,
+  dataset_n.Label,
+  dataset_n.study_time_collected || ' ' || dataset_n.study_time_collected_unit AS timepoint,
   dataset_n.features
 FROM
     (
@@ -118,5 +118,8 @@ FROM
          study_time_collected, study_time_collected_unit, participantid
 
     ) AS dataset_n
+WHERE
+  -- Ensure no blank non-pid rows due to AllFolder containerFilter option in upstream GE queries
+  dataset_n.pid LIKE 'SUB%'
 ORDER BY
-    dataset_n.pid ASC, dataset_n.Label ASC, dataset_n.study_time_collected_unit ASC, dataset_n.study_time_collected ASC
+  dataset_n.pid ASC, dataset_n.Label ASC, dataset_n.study_time_collected_unit ASC, dataset_n.study_time_collected ASC

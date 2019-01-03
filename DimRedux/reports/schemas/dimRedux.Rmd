@@ -32,7 +32,7 @@ library(Rtsne)
 
 ```{r helper-fn}
 getAssayData <- function(assay, con, timePts, timeAs){
-  if(assay != "gene_expression"){
+  if(assay != "gene_expression_files"){
     original_view <- assay != "mbaa"
     dat <- con$getDataset(assay, original_view = original_view, transformMethod = "auto")
   }else{
@@ -121,7 +121,7 @@ getAssayData <- function(assay, con, timePts, timeAs){
         summarise(newValue = unique(mean(spot_number_reported)))
       dat <- spread(dat, key = "analyte_day", value = "newValue")
     }
-  }else if(assay == "gene_expression"){
+  }else if(assay == "gene_expression_files"){
     # Be sure to only subset by GE timepoints not all assay time points!
     geOnlyTp <- unique(dat$stc_key)
 

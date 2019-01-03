@@ -74,13 +74,13 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
         var strTimePoints = new LABKEY.ext.Store({
             schemaName: 'study',
-            queryName: 'DimRedux_timePoints',
+            queryName: 'DimRedux_Timepoints',
             autoLoad: true 
         })
         
         var strAssays = new LABKEY.ext.Store({
             schemaName: 'study',
-            queryName: 'DimRedux_Gathered',
+            queryName: 'DimRedux_assay_by_timepoints',
             autoLoad: true
         })
         
@@ -101,7 +101,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         // for each assay
         new LABKEY.Query.selectRows({
             schemaName: 'study',
-            queryName: 'DimRedux_data_sets',
+            queryName: 'DimRedux_assay_data_gathered',
             success: function(data){
                 // setup
                 var gridCols = [{
@@ -154,7 +154,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         var lblIdx = uniqLbls.indexOf(row.Label);
                         var tpIdx = uniqTps.indexOf(row.timepoint);
                         // change corresponding tp value
-                        gridData[lblIdx][tpIdx + 1] = 'x'; // +1 b/c label first
+                        gridData[lblIdx][tpIdx + 1] = [row.subjects, "/", row.features].join(' '); // +1 b/c label first
                     }
                 });
                 
@@ -243,6 +243,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     checkBtnsStatus();
                 },
                 select:     function(){
+                    handleAssaySelect();
                     handleTpSelect();
                     checkBtnsStatus();
                 },
@@ -274,9 +275,30 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             });
         }
 
+        var handleAssaySelect = function(){
+            var tps = cbTimePoints.getValue().split(",").join("','");
+            var assays = cbAssays.getValue().split(",").join("','");
+            var preAssaySql = "SELECT COUNT(participantId) AS Subjects, MAX(features) AS Features, assays FROM ( SELECT participantId, COUNT(Label) AS assays, SUM(features) AS features FROM DimRedux_assay_data WHERE Name IN ('";
+            var midSql = "') AND timepoint IN ('";
+            var postTpsSql = "') GROUP BY participantId ) AS cnt GROUP BY cnt.assays ORDER BY cnt.assays DESC LIMIT 1"
+            var fullSql = preAssaySql + assays + midSql + tps + postTpsSql;
+
+            LABKEY.Query.executeSql({
+                schemaName: 'study',
+                sql: fullSql,
+                success: function(r){
+                    var titleHtml = '<b>Count of subjects and features to be analyzed based on selections:</b><br>'
+                    var subjectsHtml = "<p><i>Subjects: </i>" + r.rows[0].Subjects;  
+                    var featuresHtml = "    <i>Features: </i>" + r.rows[0].Features + "</p>";
+                    jQuery( '#tpAssayCounter')[0].innerHTML = titleHtml + subjectsHtml + featuresHtml;
+                }
+            })
+
+        }
+
         var cbTimePoints = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
-            displayField: 'Timepoints',
+            displayField: 'Timepoint',
             fieldLabel: 'Assay Timepoints',
             lazyInit: false,
             disabled: false,
@@ -298,7 +320,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             },
             separator: ',', // IMPORTANT FOR STRSPLIT FN
             store: strTimePoints,
-            valueField: 'Timepoints',
+            valueField: 'Timepoint',
             width: fieldWidth,
             cls: 'ui-test-timepoints'
         });
@@ -656,11 +678,27 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.Container({
                             border: false,
+                            items: [],
+                            layout: 'fit',
+                            id: 'tpAssayHeader',
+                            cls: 'ui-test-assayheader',
+                            html: '<p><b>Note:</b> Each cell shows subjects / features available for that assay at the specified timepoint</p><br>'
+                        }),
+                        new Ext.Container({
+                            border: false,
                             items: [], 
                             layout: 'fit',
                             id: 'tpAssayGrid',
                             cls: 'ui-test-assaygrid'
-                        })
+                        }),
+                        new Ext.Container({
+                            border: false,
+                            items: [], 
+                            layout: 'fit',
+                            id: 'tpAssayCounter',
+                            cls: 'ui-test-assaycounter',
+                            html: '<b>Count of subjects and features to be analyzed based on selections: </b><br>'  
+                        }),         
                     ],
                     title: 'Available Assay Data',
                     cls: 'ui-test-available-data',
