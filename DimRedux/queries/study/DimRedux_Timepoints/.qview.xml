@@ -1,0 +1,8 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" containerFilter="AllFolders">
+    <cv:columns>
+        <cv:column name="timepoint"/>
+        <cv:column name="study_time_collected"/>
+        <cv:column name="study_time_collected_unit"/>
+    </cv:columns>
+</cv:customView>
+
