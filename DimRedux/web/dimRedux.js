@@ -88,14 +88,43 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         ///   timepoint v Assay Viz       ///
         /////////////////////////////////////
 
-        // Setup for fields and data in gridPanel
-        //var gridFields = [{name: 'Label', type: 'string'}];
-        //var gridData = [];
+        // ------ String Helpers ------------
 
-        // Helper
-        var arrUniq = function( el, i, arr){
-            return( arr.indexOf(el) === i );
+        // Get unique values from array
+        var getUniq = function(arry){
+            var uniqArry = arry.filter( function( el, i, arr){
+                return( arr.indexOf(el) === i );
+            })
+            return(uniqArry)
         }
+
+        // Get timepoints by study time collected unit 
+        var getTpsByStcu = function(arry, stcu){
+            var filteredVals = arry.filter( function( el, i, arr){
+                return( el.includes(stcu) );
+            });
+            return(filteredVals)
+        }
+
+        // Correctly order timepoint array by number but with stcu added back
+        var orderByTp = function(arry, stcu){
+            var digits = [];
+            arry.forEach( function(el){
+                 digits.push(parseFloat(el.match(/(-|)\d+/)[0]));
+            });
+        
+            // order numeric array ascending
+            digits = digits.sort(function(a, b){ return a - b;});
+
+            var ordered = [];
+            digits.forEach( function(el){
+                 ordered.push(el + " " + stcu);
+            });
+
+            return(ordered)
+        }
+
+        // -----------------------------------
         
         // Fill in gridData to show timepoints present
         // for each assay
@@ -103,6 +132,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             schemaName: 'study',
             queryName: 'DimRedux_assay_data_gathered',
             success: function(data){
+                
                 // setup
                 var gridCols = [{
                     header: '<b>Label</b>', 
@@ -113,22 +143,29 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 var gridFields = ['Label'];
                 var gridData = [];
 
-                // Get col and row vals
-                var tps = Ext.pluck( data.rows, "timepoint");
-                var uniqTps = tps.filter( function( el, i, arr){
-                    return( arr.indexOf(el) === i );
-                });
-                // must remove any decimal value timepoints
+                // Get timepoint vals for grid colnames and order correctly
+                // NOTE: must remove any decimal value timepoints
                 // or json parser errors on unexpected numerical literal
+                var tps = Ext.pluck( data.rows, "timepoint");
+                var uniqTps = getUniq(tps);
+
                 uniqTps = uniqTps.filter(function(x){
                     return( x.match('\\.') == null )
                 })
-                var lbls = Ext.pluck( data.rows, "Label");
-                var uniqLbls = lbls.filter( function( el, i, arr){
-                    return( arr.indexOf(el) === i );
-                });
                 
-                // Fill empty values for gridData
+                var days = getTpsByStcu( uniqTps, "Days" );
+                days = orderByTp(days, "Days");
+
+                var hours = getTpsByStcu( uniqTps, "Hours" );
+                hours = orderByTp(hours, "Hours");
+
+                uniqTps = hours.concat(days);
+                
+                // Get assay label values for grid rownames
+                var lbls = Ext.pluck( data.rows, "Label");
+                var uniqLbls = getUniq(lbls);
+
+                // Fill grid
                 uniqLbls.forEach( function(lbl){
                     var rowArr = [lbl];
                     uniqTps.forEach( function(tp){
@@ -278,18 +315,24 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         var handleAssaySelect = function(){
             var tps = cbTimePoints.getValue().split(",").join("','");
             var assays = cbAssays.getValue().split(",").join("','");
-            var preAssaySql = "SELECT COUNT(participantId) AS Subjects, MAX(features) AS Features, assays FROM ( SELECT participantId, COUNT(Label) AS assays, SUM(features) AS features FROM DimRedux_assay_data WHERE Name IN ('";
-            var midSql = "') AND timepoint IN ('";
-            var postTpsSql = "') GROUP BY participantId ) AS cnt GROUP BY cnt.assays ORDER BY cnt.assays DESC LIMIT 1"
-            var fullSql = preAssaySql + assays + midSql + tps + postTpsSql;
+            var cnt = cbAssays.getValue().split(",").length;
+
+            var preAssay = "SELECT COUNT(participantId) AS Subjects, MAX(features) AS Features, assays FROM (SELECT * FROM ( SELECT participantId, COUNT(Label) AS assays, SUM(features) AS features, FROM DimRedux_assay_data WHERE Name IN ('";
+            var assayToTps = "') AND timepoint IN ('";
+            var tpsToCnt = "') GROUP BY participantId ) AS cnt WHERE assays = ";
+            var postCnt = ") filteredCnt GROUP BY filteredCnt.assays ORDER BY filteredCnt.assays DESC LIMIT 1"
+            
+            var fullSql = preAssay + assays + assayToTps + tps + tpsToCnt + cnt + postCnt
 
             LABKEY.Query.executeSql({
                 schemaName: 'study',
                 sql: fullSql,
                 success: function(r){
                     var titleHtml = '<b>Count of subjects and features to be analyzed based on selections:</b><br>'
-                    var subjectsHtml = "<p><i>Subjects: </i>" + r.rows[0].Subjects;  
-                    var featuresHtml = "    <i>Features: </i>" + r.rows[0].Features + "</p>";
+                    var subs = r.rows.length == 0 ? 0 : r.rows[0].Subjects;
+                    var features = r.rows.length == 0 ? 0 : r.rows[0].Features;
+                    var subjectsHtml = "<p><i>Subjects: </i>" + subs;  
+                    var featuresHtml = "    <i>Features: </i>" + features + "</p>";
                     jQuery( '#tpAssayCounter')[0].innerHTML = titleHtml + subjectsHtml + featuresHtml;
                 }
             })
@@ -298,7 +341,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
         var cbTimePoints = new Ext.ux.form.ExtendedLovCombo({
             allowBlank: false,
-            displayField: 'Timepoint',
+            displayField: 'timepoint',
             fieldLabel: 'Assay Timepoints',
             lazyInit: false,
             disabled: false,
@@ -320,7 +363,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             },
             separator: ',', // IMPORTANT FOR STRSPLIT FN
             store: strTimePoints,
-            valueField: 'Timepoint',
+            valueField: 'timepoint',
             width: fieldWidth,
             cls: 'ui-test-timepoints'
         });
