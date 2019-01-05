@@ -32,17 +32,20 @@ library(Rtsne)
 
 ```{r helper-fn}
 getAssayData <- function(assay, con, timePts, timeAs){
-  if(assay != "gene_expression_files"){
+  
+  # Get data with default transformation method unless gene expression which
+  # needs special treatment to organize in appropriate format
+  if(assay != "gene_expression"){
     original_view <- assay != "mbaa"
     dat <- con$getDataset(assay, original_view = original_view, transformMethod = "auto")
   }else{
     eset <- con$getGEMatrix(con$cache$GE_matrices$name)
-    dat <- data.frame(t(Biobase::exprs(eset)),stringsAsFactors = F)
-    gef <- con$getDataset("gene_expression_files",
-                          original_view = TRUE)
-    ptid <- gef$participant_id[ match(rownames(dat), gef$biosample_accession) ]
-    dat$study_time_collected <- gef$study_time_collected[ match(rownames(dat), gef$biosample_accession)]
-    dat$study_time_collected_unit <- gef$study_time_collected_unit[ match(rownames(dat), gef$biosample_accession)]
+    dat <- data.frame(t(Biobase::exprs(eset)),stringsAsFactors = FALSE)
+    gef <- con$getDataset("gene_expression_files", original_view = TRUE)
+    matchOrder <- match(rownames(dat), gef$biosample_accession)
+    dat$study_time_collected <- gef$study_time_collected[ matchOrder ]
+    dat$study_time_collected_unit <- gef$study_time_collected_unit[ matchOrder]
+    ptid <- gef$participant_id[ matchOrder ]
     if(timeAs == "observation"){
       dat$sub_tp <- paste0( ptid, "_", dat$study_time_collected)
     }else{
@@ -50,78 +53,67 @@ getAssayData <- function(assay, con, timePts, timeAs){
     }
   }
 
-  dat$stc_key <- paste(dat$study_time_collected, dat$study_time_collected_unit)
-  dat <- dat[ dat$stc_key %in% timePts, ]
-  if(nrow(dat) == 0){ return() } # Assay does not contain chosen timepoints
+  # Update stc_key to use underscore and replace negative sign for later use in colnames
+  dat$stc_key <- paste(dat$study_time_collected, dat$study_time_collected_unit, sep = "_")
+  dat <- dat[ dat$stc_key %in% gsub(" ", "_", timePts), ]
+  dat$stc_key <- gsub("-", "neg", dat$stc_key)
   
+  # Avoid downstream errors by returning NULL if assay does not contain chosen timepoints
+  if(nrow(dat) == 0){ return() } 
+  
+  # Transform assay data to be in following format depending on timeAs var:
+  # observation: rownames are sub_tp and colnames are grouping variable for value reported
+  # variable: rownames are participant_id and colnames are grouping var concat with stc_key
+  
+  # ---------------- HAI, NAb ----------------- #
+  # Grouping by pid instead of pid * virus, otherwise same mechanics as other assays
   if(assay %in% c("hai","neut_ab_titer")){
+    dat$value_reported <- as.numeric(dat$value_reported)
+    dat <- dat[, lapply(.SD, mean), .(participant_id, stc_key), .SDcols = c("value_reported")]
     sum_col <- paste0("mean_", assay)
-    dat <- dat %>%
-      group_by_("participant_id", "study_time_collected") %>%
-      mutate(avg = mean(value_reported)) %>%
-      summarize(sum_col = unique(avg))
-    colnames(dat)[ colnames(dat) == "sum_col"] <- sum_col
+    setnames(dat, "value_reported", sum_col)
     if(timeAs == "observation"){
-      dat$sub_tp <- paste0( dat$participant_id, "_", dat$study_time_collected)
-      dat <- dat[ , grep("sub|mean", colnames(dat))]
+      dat$sub_tp <- paste(dat$participant_id, dat$stc_key, sep = "_")
+      dat <- dat[ , grep("sub|mean", colnames(dat)), with = FALSE]
     }else{
-      dat <- spread(dat, key = "study_time_collected", value = sum_col)
-      nms <- colnames(dat)[ colnames(dat) != "participant_id"  ]
-      nms <- paste0(nms, "_", sum_col)
-      colnames(dat) <- c("participant_id", nms)
+      dat <- spread(dat, key = "stc_key", value = sum_col)
+      nms <- grep("participant_id", colnames(dat), value = TRUE, invert = TRUE)
+      setnames(dat, nms, paste0(nms, "_", sum_col))
     }
 
-  }else if(assay == "fcs_analyzed_result"){
-    cols <- c("participant_id", "study_time_collected", "population_definition_reported", "population_cell_number")
-    dat <- dat[ , cols, with = FALSE ]
+  # ---- ELISA, ELISPOT, MBAA, PCR, FCS  ------ #
+  }else if(assay %in% c("elisa", "elispot", "mbaa", "pcr", "fcs_analyzed_result")){
+    valCol <- switch( assay,
+          "elisa" = "value_preferred",
+          "elispot" = "spot_number_reported",
+          "mbaa" = "value_concentration",
+          "pcr" = "value_reported",
+          "fcs_analyzed_result" = "population_cell_number"
+        )
+    grpByCol <- switch( assay,
+          "elisa" = "analyte",
+          "elispot" = "analyte",
+          "mbaa" = "analyte",
+          "pcr" = "gene_symbol",
+          "fcs_analyzed_result" = "population_definition_reported"
+        )
+    dat[[valCol]] <- as.numeric(dat[[valCol]]) # some assays seem to have issues with types
+    keepCols <- c("participant_id", "stc_key", grpByCol, valCol)
+    dat <- dat[ , keepCols, with = FALSE ]
     if(timeAs == "observation"){
-      dat <- dat %>%
-        mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
-        group_by(sub_tp, population_definition_reported) %>%
-        summarize(newValue = unique(mean(population_cell_number)))
-      dat <- spread(dat, key = "population_definition_reported", value = "newValue")
+      dat <- dat[, sub_tp := paste(participant_id, stc_key, sep = "_")]
+      byCols <- c("sub_tp", grpByCol)
+      keyCol <- grpByCol
     }else{
-      dat <- dat %>%
-        mutate(popDef_day = paste(population_definition_reported, study_time_collected, sep = "_")) %>%
-        group_by_("participant_id", "popDef_day") %>%
-        summarise(newValue = unique(mean(population_cell_number)))
-      dat <- spread(dat, key = "popDef_day", value = "newValue")
+      dat <- dat[, grpByColDay := paste(dat[[grpByCol]], stc_key, sep = "_")]
+      byCols <- c("participant_id","grpByColDay")
+      keyCol <- "grpByColDay"
     }
-
-  }else if(assay == "elisa"){
-    cols <- c("participant_id", "study_time_collected", "analyte", "value_preferred")
-    dat <- dat[ , cols, with = FALSE ]
-    if(timeAs == "observation"){
-      dat <- dat %>%
-        mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
-        group_by(sub_tp, analyte) %>%
-        summarize(newValue = unique(mean(value_preferred)))
-      dat <- spread(dat, key = "analyte", value = "newValue")
-    }else{
-      dat <- dat %>%
-        mutate(analyte_day = paste(analyte, study_time_collected, assay, sep = "_")) %>%
-        group_by_("participant_id", "analyte_day") %>%
-        summarise(newValue = unique(mean(value_preferred)))
-      dat <- spread(dat, key = "analyte_day", value = "newValue")
-    }
-
-  }else if(assay == "elispot"){
-    cols <- c("participant_id", "study_time_collected", "analyte", "spot_number_reported")
-    dat <- dat[ , cols, with = FALSE ]
-    if(timeAs == "observation"){
-      dat <- dat %>%
-        mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
-        group_by(sub_tp, analyte) %>%
-        summarize(newValue = unique(mean(spot_number_reported)))
-      dat <- spread(dat, key = "analyte", value = "newValue")
-    }else{
-      dat <- dat %>%
-        mutate(analyte_day = paste(analyte, study_time_collected, assay, sep = "_")) %>%
-        group_by_("participant_id", "analyte_day") %>%
-        summarise(newValue = unique(mean(spot_number_reported)))
-      dat <- spread(dat, key = "analyte_day", value = "newValue")
-    }
-  }else if(assay == "gene_expression_files"){
+    dat <- dat[, lapply(.SD, mean), by = byCols, .SDcols = c(valCol)]
+    dat <- spread(dat, key = keyCol, value = valCol)
+    
+  # ------ Gene Expression -------------- #
+  }else if(assay == "gene_expression"){
     # Be sure to only subset by GE timepoints not all assay time points!
     geOnlyTp <- unique(dat$stc_key)
 
@@ -143,46 +135,13 @@ getAssayData <- function(assay, con, timePts, timeAs){
         mat <- mat[ , -grep("participant_id", colnames(mat)) ]
         return(mat)
       })
-      dat <- Reduce(function(x,y){cbind(x,y)}, mats)
+      dat <- Reduce(function(x,y){ cbind(x,y) }, mats)
       dat$participant_id <- goodSubs
     }else{
       dat <- dat[, grep("stc_key|study_time_collected", colnames(dat), invert = T)]
     }
-
-  }else if(assay == "mbaa"){
-    cols <- c("participant_id", "study_time_collected", "analyte", "concentration_value")
-    dat <- dat[ , cols, with = FALSE ]
-    if(timeAs == "observation"){
-      dat <- dat %>%
-        mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
-        group_by(sub_tp, analyte) %>%
-        summarize(newValue = mean(as.numeric(concentration_value)))
-      dat <- spread(dat, key = "analyte", value = "newValue")
-    }else{
-      dat <- dat %>%
-        mutate(analyte_day = paste0(analyte, "_", study_time_collected)) %>%
-        group_by(participant_id, analyte_day) %>%
-        summarize(newValue = mean(as.numeric(concentration_value)))
-      dat <- spread(dat, key = "analyte_day", value = "newValue")
-    }
-
-  }else if(assay == "pcr"){
-    cols <- c("participant_id", "study_time_collected", "gene_symbol", "value_reported")
-    dat <- dat[ , cols, with = FALSE ]
-    if(timeAs == "observation"){
-      dat <- dat %>%
-        mutate(sub_tp = paste0(participant_id, "_", study_time_collected)) %>%
-        group_by(sub_tp, gene_symbol) %>%
-        summarize(newValue = mean(value_reported))
-      dat <- spread(dat, key = "gene_symbol", value = "newValue")
-    }else{
-      dat <- dat %>%
-        mutate(gs_day = paste0(gene_symbol, "_", study_time_collected)) %>%
-        group_by(participant_id, gs_day) %>%
-        summarize(newValue = mean(value_reported))
-      dat <- spread(dat, key = "gs_day", value = "newValue")
-    }
   }
+
   return(data.frame(dat, stringsAsFactors = FALSE))
 }
 ```
@@ -304,6 +263,9 @@ genPlot <- function(i, j, resObj, type, prettyLbl, colorCol){
   p <- plot_ly(data = df,
                x = ~x,
                y = ~y,
+               type = "scatter",
+               mode = "markers",
+               marker = list(size = 14),
                color = colorCol,
                hoverinfo = 'text',
                text = paste(prettyLbl, ": ", colorCol, "<br>ID: ", subs)) %>%
@@ -349,7 +311,7 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
     re <- re[, response := ifelse(response >= log2(4), "high responder",  "low responder")]
     colorCol <- re$response[order(match(subs, re$participant_id))]
   }else{
-    if(timeAs == "observation"){ subs <- gsub("_\\d{1}", "", subs) }
+    if(timeAs == "observation"){ subs <- gsub("_.+", "", subs) }
     colorCol <- demo[[label]][ match(subs, demo$participant_id)]
   }
   # create and sort possible component combinations
