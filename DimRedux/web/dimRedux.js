@@ -69,152 +69,6 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             ;
 
         /////////////////////////////////////
-        //           Stores                //
-        /////////////////////////////////////
-
-        var strTimePoints = new LABKEY.ext.Store({
-            schemaName: 'study',
-            queryName: 'DimRedux_Timepoints',
-            autoLoad: true 
-        })
-        
-        var strAssays = new LABKEY.ext.Store({
-            schemaName: 'study',
-            queryName: 'DimRedux_assay_by_timepoints',
-            autoLoad: true
-        })
-        
-        /////////////////////////////////////
-        ///   timepoint v Assay Viz       ///
-        /////////////////////////////////////
-
-        // ------ String Helpers ------------
-
-        // Get unique values from array
-        var getUniq = function(arry){
-            var uniqArry = arry.filter( function( el, i, arr){
-                return( arr.indexOf(el) === i );
-            })
-            return(uniqArry)
-        }
-
-        // Get timepoints by study time collected unit 
-        var getTpsByStcu = function(arry, stcu){
-            var filteredVals = arry.filter( function( el, i, arr){
-                return( el.includes(stcu) );
-            });
-            return(filteredVals)
-        }
-
-        // Correctly order timepoint array by number but with stcu added back
-        var orderByTp = function(arry, stcu){
-            var digits = [];
-            arry.forEach( function(el){
-                 digits.push(parseFloat(el.match(/(-|)\d+/)[0]));
-            });
-        
-            // order numeric array ascending
-            digits = digits.sort(function(a, b){ return a - b;});
-
-            var ordered = [];
-            digits.forEach( function(el){
-                 ordered.push(el + " " + stcu);
-            });
-
-            return(ordered)
-        }
-
-        // -----------------------------------
-        
-        // Fill in gridData to show timepoints present
-        // for each assay
-        new LABKEY.Query.selectRows({
-            schemaName: 'study',
-            queryName: 'DimRedux_assay_data_gathered',
-            success: function(data){
-                
-                // setup
-                var gridCols = [{
-                    header: '<b>Label</b>', 
-                    dataIndex: 'Label',
-                    width: 120
-                }];
-
-                var gridFields = ['Label'];
-                var gridData = [];
-
-                // Get timepoint vals for grid colnames and order correctly
-                // NOTE: must remove any decimal value timepoints
-                // or json parser errors on unexpected numerical literal
-                var tps = Ext.pluck( data.rows, "timepoint");
-                var uniqTps = getUniq(tps);
-
-                uniqTps = uniqTps.filter(function(x){
-                    return( x.match('\\.') == null )
-                })
-                
-                var days = getTpsByStcu( uniqTps, "Days" );
-                days = orderByTp(days, "Days");
-
-                var hours = getTpsByStcu( uniqTps, "Hours" );
-                hours = orderByTp(hours, "Hours");
-
-                uniqTps = hours.concat(days);
-                
-                // Get assay label values for grid rownames
-                var lbls = Ext.pluck( data.rows, "Label");
-                var uniqLbls = getUniq(lbls);
-
-                // Fill grid
-                uniqLbls.forEach( function(lbl){
-                    var rowArr = [lbl];
-                    uniqTps.forEach( function(tp){
-                        rowArr.push('');
-                    });
-                    gridData.push(rowArr);
-                });
-                
-                uniqTps.forEach( function(tp){
-                    gridCols.push({
-                        header: "<b>" + tp + "</b>",
-                        dataIndex: tp,
-                        width: 90
-                    });
-                    gridFields.push(tp);
-                });
-                
-                // Update gridData where tp present
-                data.rows.forEach(function(row){
-                    // ignore decimal timepoints b/c json parser error
-                    if(row.timepoint.match('\\.') == null){
-                        // get gridData row of assay
-                        var lblIdx = uniqLbls.indexOf(row.Label);
-                        var tpIdx = uniqTps.indexOf(row.timepoint);
-                        // change corresponding tp value
-                        gridData[lblIdx][tpIdx + 1] = [row.subjects, "/", row.features].join(' '); // +1 b/c label first
-                    }
-                });
-                
-                gridPnl = new Ext.grid.GridPanel({
-                    store: new Ext.data.SimpleStore({
-                        id: 0,
-                        data: gridData,
-                        fields: gridFields
-                    }),
-                    columns: gridCols,
-                    forceFit: false,
-                    overflowX: true,
-                    //width: do not use, messes up scroll.
-                    height: (uniqLbls.length + 1) * 30,
-                    columnLines: true,
-                    frame: false,
-                    cls: 'custom-grid'
-                });
-                gridPnl.render('tpAssayGrid')
-            }
-        })
-        
-        /////////////////////////////////////
         ///      Check and ComboBoxes     ///
         /////////////////////////////////////
         
@@ -290,7 +144,11 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 }
             },
             separator: ',', // IMPORTANT FOR STRSPLIT FN
-            store: strAssays,
+            store: new Ext.data.SimpleStore({
+                id: 0,
+                fields: ['Name','Label'],
+                data: []
+            }),
             valueField: 'Name',
             width: fieldWidth,
             listWidth: fieldWidth,
@@ -362,7 +220,11 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 }
             },
             separator: ',', // IMPORTANT FOR STRSPLIT FN
-            store: strTimePoints,
+            store: new Ext.data.SimpleStore({
+                id: 0,
+                fields: ['timepoint','timepoint'],
+                data: []                                                                                                                                                                                           
+            }),
             valueField: 'timepoint',
             width: fieldWidth,
             cls: 'ui-test-timepoints'
@@ -707,15 +569,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             itemCls: 'ui-test-additional-options-item'
         });
 
-        var pnlInput = new Ext.form.FormPanel({
-            bodyStyle: { paddingTop: '1px' },
-            defaults: {
-                autoHeight: true,
-                forceLayout: true,
-                hideMode: 'offsets'
-            },
-            deferredRender: false,
-            items: [
+        var inputItems =  [
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
@@ -766,13 +620,32 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                         tlbrBtns
                     ]
                 }
+            ]
+
+        var pnlInput = new Ext.form.FormPanel({
+            bodyStyle: { paddingTop: '1px' },
+            defaults: {
+                autoHeight: true,
+                forceLayout: true,
+                hideMode: 'offsets'
+            },
+            deferredRender: false,
+            items: [
+                new Ext.Container({
+                    border: false,
+                    items: [], 
+                    layout: 'fit',
+                    id: 'loadingBanner',
+                    cls: 'ui-test-loading-banner',
+                    html: '<p><b>Data is loading. Thank you for your patience!</b></p>'
+                }),  
             ],
             labelWidth: labelWidth,
             tabTip: 'Input',
             title: 'Input',
             cls: 'ui-test-input'
         });
-        
+
         var pnlTabs = new Ext.TabPanel({
             activeTab: 0,
             autoHeight: true,
@@ -868,7 +741,188 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         this.width          = document.getElementById(config.webPartDivId).offsetWidth;
 
         LABKEY.ext.dimRedux.superclass.constructor.apply(this, arguments);
+    
+        /////////////////////////////////////
+        //    Stores and Grid Data         //
+        /////////////////////////////////////
+        
+        /* Doing this last because queries take 30 to 40 seconds and 
+        want to load page only when all data is ready. */
 
+        // -------- Grid Setup -------------
+        var gridCols = [{
+            header: '<b>Label</b>',
+            dataIndex: 'Label',
+            width: 120
+        }];
+
+        var gridFields = ['Label'];
+        var gridData = [];
+
+        var uniqLbls = [];
+
+        // -------- Store Setup ------------
+        var strTpLoaded = false;
+        var strAssaysLoaded = false;
+
+        // --------- Callback --------------
+        var checkQueries = function(){
+            var gridPnl = new Ext.grid.GridPanel({
+                store: new Ext.data.SimpleStore({
+                    id: 0,
+                    data: gridData,
+                    fields: gridFields
+                }),
+                columns: gridCols,
+                forceFit: false,
+                overflowX: true,
+                //width: do not use, messes up scroll.
+                height: (uniqLbls.length + 1) * 30,
+                columnLines: true,
+                frame: false,
+                cls: 'custom-grid'
+             });
+
+            if( gridData !== null & strTpLoaded == true & strAssaysLoaded == true ){
+                pnlInput.removeAll();
+                pnlInput.add(inputItems);
+                pnlInput.doLayout();
+                gridPnl.render('tpAssayGrid');
+            }
+        }
+
+        // ---------- Stores ---------------
+        strTimePoints = new LABKEY.ext.Store({
+            schemaName: 'study',
+            queryName: 'DimRedux_Timepoints',
+            autoLoad: true,
+            listeners: {
+                load: function(){
+                    cbTimePoints.bindStore(this);
+                    strTpLoaded = true;
+                    checkQueries();
+                },
+                loadexception: LABKEY.ext.ISCore.onFailure
+            }
+        })
+
+        strAssays = new LABKEY.ext.Store({
+            schemaName: 'study',
+            queryName: 'DimRedux_assay_by_timepoints',
+            autoLoad: true,
+            listeners: {
+                load: function(){
+                    cbAssays.bindStore(this);
+                    strAssaysLoaded = true;
+                    checkQueries();
+                },
+                loadexception: LABKEY.ext.ISCore.onFailure
+            }
+        })
+
+        // ------ Grid Helper Fn ------------
+
+        // Get unique values from array
+        var getUniq = function(arry){
+            var uniqArry = arry.filter( function( el, i, arr){
+                return( arr.indexOf(el) === i );
+            })
+            return(uniqArry)
+        }
+
+        // Get timepoints by study time collected unit 
+        var getTpsByStcu = function(arry, stcu){
+            var filteredVals = arry.filter( function( el, i, arr){
+                return( el.includes(stcu) );
+            });
+            return(filteredVals)
+        }
+
+        // Correctly order timepoint array by number but with stcu added back
+        var orderByTp = function(arry, stcu){
+            var digits = [];
+            arry.forEach( function(el){
+                 digits.push(parseFloat(el.match(/(-|)\d+/)[0]));
+            });
+
+            // order numeric array ascending
+            digits = digits.sort(function(a, b){ return a - b;});
+
+            var ordered = [];
+            digits.forEach( function(el){
+                 ordered.push(el + " " + stcu);
+            });
+
+            return(ordered)
+        }
+
+        // ------- Fill in Grid --------------
+
+        // Fill in gridData to show timepoints present
+        // for each assay
+
+        new LABKEY.Query.selectRows({
+            schemaName: 'study',
+            queryName: 'DimRedux_assay_data_gathered',
+            success: function(data){
+
+
+                // Get timepoint vals for grid colnames and order correctly
+                // NOTE: must remove any decimal value timepoints
+                // or json parser errors on unexpected numerical literal
+                var tps = Ext.pluck( data.rows, "timepoint");
+                var uniqTps = getUniq(tps);
+
+                uniqTps = uniqTps.filter(function(x){
+                    return( x.match('\\.') == null )
+                })
+
+                var days = getTpsByStcu( uniqTps, "Days" );
+                days = orderByTp(days, "Days");
+
+                var hours = getTpsByStcu( uniqTps, "Hours" );
+                hours = orderByTp(hours, "Hours");
+
+                uniqTps = hours.concat(days);
+
+                // Get assay label values for grid rownames
+                // Note uniqLbls is global b/c needed in checkQueries
+                // to render correctly.
+                var lbls = Ext.pluck( data.rows, "Label");
+                uniqLbls = getUniq(lbls);
+
+                // Fill grid
+                uniqLbls.forEach( function(lbl){
+                    var rowArr = [lbl];
+                    uniqTps.forEach( function(tp){
+                        rowArr.push('');
+                    });
+                    gridData.push(rowArr);
+                });
+
+                uniqTps.forEach( function(tp){
+                    gridCols.push({
+                        header: "<b>" + tp + "</b>",
+                        dataIndex: tp,
+                        width: 90
+                    });
+                    gridFields.push(tp);
+                });
+
+                // Update gridData where tp present
+                data.rows.forEach(function(row){
+                    // ignore decimal timepoints b/c json parser error
+                    if(row.timepoint.match('\\.') == null){
+                        // get gridData row of assay
+                        var lblIdx = uniqLbls.indexOf(row.Label);
+                        var tpIdx = uniqTps.indexOf(row.timepoint);
+                        // change corresponding tp value
+                        gridData[lblIdx][tpIdx + 1] = [row.subjects, "/", row.features].join(' '); // +1 b/c label first
+                    }
+                });
+                checkQueries();
+            }
+        })
     }, // end constructor
 
     resize: function(){
