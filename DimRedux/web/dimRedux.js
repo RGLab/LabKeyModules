@@ -637,7 +637,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     layout: 'fit',
                     id: 'loadingBanner',
                     cls: 'ui-test-loading-banner',
-                    html: '<p><b>Data is loading. Thank you for your patience!</b></p>'
+                    html: '<p><b>Meta-data is loading and may take a couple of minutes. Thank you for your patience!</b></p>'
                 }),  
             ],
             labelWidth: labelWidth,
@@ -749,7 +749,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         /* Doing this last because queries take 30 to 40 seconds and 
         want to load page only when all data is ready. */
 
-        // -------- Grid Setup -------------
+        // -------- Grid and Store Setup -------------
         var gridCols = [{
             header: '<b>Label</b>',
             dataIndex: 'Label',
@@ -760,9 +760,8 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         var gridData = [];
 
         var uniqLbls = [];
+        var uniqTps = [];
 
-        // -------- Store Setup ------------
-        var strTpLoaded = false;
         var strAssaysLoaded = false;
 
         // --------- Callback --------------
@@ -783,28 +782,30 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 cls: 'custom-grid'
              });
 
-            if( gridData !== null & strTpLoaded == true & strAssaysLoaded == true ){
+
+            if( gridData.length > 0 & strAssaysLoaded == true ){
+                
+                // Generate TimePoints store here because via query bogged down
+                var tpsDbl = [];
+                uniqTps.forEach( function(el){
+                    tpsDbl.push([el,el])
+                })
+                cbTimePoints.bindStore(  new Ext.data.SimpleStore({
+                                            id: 0,
+                                            fields: ['timepoint', 'timepoint'],
+                                            data: tpsDbl
+                                         }) 
+                                      );  
+
                 pnlInput.removeAll();
                 pnlInput.add(inputItems);
                 pnlInput.doLayout();
+                
                 gridPnl.render('tpAssayGrid');
             }
         }
 
         // ---------- Stores ---------------
-        strTimePoints = new LABKEY.ext.Store({
-            schemaName: 'study',
-            queryName: 'DimRedux_Timepoints',
-            autoLoad: true,
-            listeners: {
-                load: function(){
-                    cbTimePoints.bindStore(this);
-                    strTpLoaded = true;
-                    checkQueries();
-                },
-                loadexception: LABKEY.ext.ISCore.onFailure
-            }
-        })
 
         strAssays = new LABKEY.ext.Store({
             schemaName: 'study',
@@ -871,7 +872,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 // NOTE: must remove any decimal value timepoints
                 // or json parser errors on unexpected numerical literal
                 var tps = Ext.pluck( data.rows, "timepoint");
-                var uniqTps = getUniq(tps);
+                uniqTps = getUniq(tps);
 
                 uniqTps = uniqTps.filter(function(x){
                     return( x.match('\\.') == null )
