@@ -7,9 +7,11 @@
     <author>lwolfe@fredhutch.org</author>
     <inputs>
         <file name='input.xml' splitFiles='true'/>
+        <file name='input.fcs' splitFiles='true'/>
     </inputs>
     <outputs>
-        <file name='output.rd' useProtocolNameAsBaseName='true' outputDir='../../../../rawdata/gating_set'/>
+        <file name='output.tsv' useProtocolNAmeAsBaseName='true' outputDir='../../.../../rawdata/gating_set'/>
+        <file name='output.rds' useProtocolNameAsBaseName='true' outputDir='../../../../rawdata/gating_set'/>
         <file name='output.pb' useProtocolNameAsBaseName='true' outputDir='../../../../rawdata/gating_set'/>
         <file name='output.nc' useProtocolNameAsBaseName='true' outputDir='../../../../rawdata/gating_set'/>
     </outputs>

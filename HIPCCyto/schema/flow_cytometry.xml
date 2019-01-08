@@ -1,0 +1,37 @@
+<?xml verison='1.0' encoding='UTF-8'?>
+<ns:tables xmlns:ns='http://labkey.org/data/xml'>
+    <ns:table tableName='flow_cytometry_gating_set' tableDbType='TABLE'>
+        <ns:description>
+            The 'flow_cytometry_gating_set' table stores runs HIPCCyto pipeline with metadata about the available gating sets.
+        </ns:description>
+        <ns:columns>
+            <ns:column columnName='key'>
+                <ns:isHidden>true</ns:isHidden>
+                <ns:isKeyField>true</ns:isKeyField>
+            </ns:column>
+            <ns:column columnName='container'>
+                <ns:isHidden>true</ns:isHidden>
+            </ns:column>
+            <ns:column columnName='gating_set_file'>
+                <ns:columnTitle>Gating Set File</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='workspace'>
+                <ns:columnTitle>Workspace</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='num_samples'>
+                <ns:columnTitle>Number of Samples</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='group_id'>
+                <ns:columnTitle>Group Id</ns:columnTitle>
+            </ns:column>
+            <ns:column columnTitle='fw_version'>
+                <ns:columnTitle>Flow Workspace Version</ns:columnTitle>
+            </ns:column>
+            <ns:column ColumnName='created'>
+                <ns:isHidden>true</ns:isHidden>
+                <ns:columnTitle>Created</ns:columnTitle>
+                <ns:formatString>yyyy-MM-dd HH:mm:ss</ns:formatString>
+            </ns:column>
+        </ns:columns>
+    </table>
+</ns:tables>

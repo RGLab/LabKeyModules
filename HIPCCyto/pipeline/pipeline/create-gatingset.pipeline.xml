@@ -4,11 +4,12 @@
           name='create-gatingset' version='0.0'>
     <description>Create gating set</description>
     <author>lwolfe@fredhutch.org</author>
-   <!-- <analyzeURL>/pipelinetest/CreateGatingSet.view</analyzeURL>-->
+    <!--<analyzeURL>/pipelinetest/CreateGatingSet.view</analyzeURL>-->
     <tasks>
         <taskref ref='HIPCCyto:task:create-gatingset'/>
-        <task xsi:type='ScriptTaskType' >
-            <providerName> </providerName>
+        <task xsi:type='AssayImportRunTaskType'>
+            <providerName>General</providerName>
+            <protocolName>FlowPipelineRun</protocolName>
         </task>
     </tasks>
 </pipeline>
