@@ -171,20 +171,32 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         }
 
         var handleAssaySelect = function(){
-            var tps = cbTimePoints.getValue().split(",").join("','");
-            var assays = cbAssays.getValue().split(",").join("','");
-            var cnt = cbAssays.getValue().split(",").length;
+            var tps = cbTimePoints.getValue().split(",");
+            var assays = cbAssays.getValue().split(",");
+            
+            var assayIdx = cbAssays.getCheckedArrayInds();
+            var tpsIdx = cbTimePoints.getCheckedArrayInds();
+            
+            // count equals all viable assay * timepoint combinations for selection (e.g. where any subs are available)
+            var cnt = 0;
+            assayIdx.forEach( function(a){
+                tpsIdx.forEach( function(t){
+                    cnt =  gridData[a][t + 1] != "" ? cnt + 1 : cnt
+                });
+            });
+                
 
             var preAssay = "SELECT COUNT(participantId) AS Subjects, MAX(features) AS Features, assays FROM (SELECT * FROM ( SELECT participantId, COUNT(Label) AS assays, SUM(features) AS features, FROM DimRedux_assay_data WHERE Name IN ('";
             var assayToTps = "') AND timepoint IN ('";
             var tpsToCnt = "') GROUP BY participantId ) AS cnt WHERE assays = ";
             var postCnt = ") filteredCnt GROUP BY filteredCnt.assays ORDER BY filteredCnt.assays DESC LIMIT 1"
             
-            var fullSql = preAssay + assays + assayToTps + tps + tpsToCnt + cnt + postCnt
+            var fullSql = preAssay + assays.join("','") + assayToTps + tps.join("','") + tpsToCnt + cnt + postCnt
 
             LABKEY.Query.executeSql({
                 schemaName: 'study',
                 sql: fullSql,
+                containerFilter: 'AllFolders',
                 success: function(r){
                     var titleHtml = '<b>Count of subjects and features to be analyzed based on selections:</b><br>'
                     var subs = r.rows.length == 0 ? 0 : r.rows[0].Subjects;
