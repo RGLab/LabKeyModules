@@ -170,6 +170,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             });
         }
 
+        // Selection of assay causes the subject/feature counter to update
         var handleAssaySelect = function(){
             var tps = cbTimePoints.getValue().split(",");
             var assays = cbAssays.getValue().split(",");
@@ -177,36 +178,51 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             var assayIdx = cbAssays.getCheckedArrayInds();
             var tpsIdx = cbTimePoints.getCheckedArrayInds();
             
-            // count equals all viable assay * timepoint combinations for selection (e.g. where any subs are available)
+            // count equals all viable assay * timepoint combinations for selection
             var cnt = 0;
             assayIdx.forEach( function(a){
                 tpsIdx.forEach( function(t){
                     cnt =  gridData[a][t + 1] != "" ? cnt + 1 : cnt
                 });
             });
-                
 
-            var preAssay = "SELECT COUNT(participantId) AS Subjects, MAX(features) AS Features, assays FROM (SELECT * FROM ( SELECT participantId, COUNT(Label) AS assays, SUM(features) AS features, FROM DimRedux_assay_data WHERE Name IN ('";
-            var assayToTps = "') AND timepoint IN ('";
-            var tpsToCnt = "') GROUP BY participantId ) AS cnt WHERE assays = ";
-            var postCnt = ") filteredCnt GROUP BY filteredCnt.assays ORDER BY filteredCnt.assays DESC LIMIT 1"
+            // put new filter on store for assays and time points
+            strAssayData.filterBy( function(record){
+                return( tps.includes(record.data.timepoint) & assays.includes(record.data.Name) ) 
+            });
             
-            var fullSql = preAssay + assays.join("','") + assayToTps + tps.join("','") + tpsToCnt + cnt + postCnt
+            // calculate subs and features
+            // get unique set of pids
+            var pids = strAssayData.collect("participantId");
+            
+            // Group by participantId and get subject and feature data
+            var dat = strAssayData.data.items;   
+            var sumByPid = [];
+            pids.forEach( function(el){
+                // get data for just pid
+                var filtDat = dat.filter( function(rec){ return(rec.data.participantId == el) });
+    
+                // sum features
+                var feats = []
+                filtDat.forEach( function(rec){ feats.push(rec.data.features) })
+                var sum = feats.reduce((a,b) => a + b, 0)
 
-            LABKEY.Query.executeSql({
-                schemaName: 'study',
-                sql: fullSql,
-                containerFilter: 'AllFolders',
-                success: function(r){
-                    var titleHtml = '<b>Count of subjects and features to be analyzed based on selections:</b><br>'
-                    var subs = r.rows.length == 0 ? 0 : r.rows[0].Subjects;
-                    var features = r.rows.length == 0 ? 0 : r.rows[0].Features;
-                    var subjectsHtml = "<p><i>Subjects: </i>" + subs;  
-                    var featuresHtml = "    <i>Features: </i>" + features + "</p>";
-                    jQuery( '#tpAssayCounter')[0].innerHTML = titleHtml + subjectsHtml + featuresHtml;
-                }
-            })
+                // return rows aka count of assays
+                sumByPid.push({ sum: sum, count: filtDat.length, pid: el})
+            });
+            
+            // Filter down to pids with all assay * timepoint combinations
+            sumByPid.filter( function(rec){ return(rec.count = cnt) });
 
+            // Generate new html for counter with correct sub and feature values
+            // Note: when subs are 0 length then maxFeatures will be NaN
+            var subs = sumByPid.length;
+            var maxFeatures = Math.max( ...Ext.pluck(sumByPid, "sum") );
+
+            var titleHtml = '<b>Count of subjects and features to be analyzed based on selections:</b><br>'
+            var subjectsHtml = "<p><i>Subjects: </i>" + subs;  
+            var featuresHtml = "    <i>Features: </i>" + maxFeatures + "</p>";
+            jQuery( '#tpAssayCounter')[0].innerHTML = titleHtml + subjectsHtml + featuresHtml;
         }
 
         var cbTimePoints = new Ext.ux.form.ExtendedLovCombo({
@@ -775,6 +791,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         var uniqTps = [];
 
         var strAssaysLoaded = false;
+        var strAssayDataLoaded = false;
 
         // --------- Callback --------------
         var checkQueries = function(){
@@ -795,7 +812,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
              });
 
 
-            if( gridData.length > 0 & strAssaysLoaded == true ){
+            if( gridData.length > 0 & strAssaysLoaded == true & strAssayDataLoaded == true){
                 
                 // Generate TimePoints store here because via query bogged down
                 var tpsDbl = [];
@@ -832,6 +849,19 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 loadexception: LABKEY.ext.ISCore.onFailure
             }
         })
+
+        strAssayData = new LABKEY.ext.Store({
+            schemaName: 'study',
+            queryName: 'DimRedux_assay_data',
+            autoLoad: true,
+            listeners: {
+                load: function(){
+                    strAssayDataLoaded = true;
+                    checkQueries();
+                },      
+                loadexception: LABKEY.ext.ISCore.onFailure
+            }       
+        })          
 
         // ------ Grid Helper Fn ------------
 
