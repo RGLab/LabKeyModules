@@ -35,7 +35,7 @@ getAssayData <- function(assay, con, timePts, timeAs){
   
   # Get data with default transformation method unless gene expression which
   # needs special treatment to organize in appropriate format
-  if(assay != "gene_expression"){
+  if(assay != "gene_expression_files"){
     original_view <- assay != "mbaa"
     dat <- con$getDataset(assay, original_view = original_view, transformMethod = "auto")
   }else{
@@ -113,7 +113,7 @@ getAssayData <- function(assay, con, timePts, timeAs){
     dat <- spread(dat, key = keyCol, value = valCol)
     
   # ------ Gene Expression -------------- #
-  }else if(assay == "gene_expression"){
+  }else if(assay == "gene_expression_files"){
     # Be sure to only subset by GE timepoints not all assay time points!
     geOnlyTp <- unique(dat$stc_key)
 
@@ -167,13 +167,16 @@ nulls <- sapply(aData, is.null)
 aData <- aData[ !nulls ]
 
 # Impute missing values within each assay on per sample or sample_tp (column) basis if selected by user
-if(impute == "mean"){
-  aData <- lapply(aData, function(df){ 
-    df <- apply(df, 2, function(x){ x[is.na(x) ] <- mean(x, na.rm = T); return(x)})
-  })
-}else if(impute == "median"){
-  aData <- lapply(aData, function(df){ 
-    df <- apply(df, 2, function(x){ x[is.na(x) ] <- median(x, na.rm = T); return(x)})
+if(impute == "mean" | impute == "median"){
+  fn <- get(impute)
+  aData <- lapply(aData, function(df){
+    df <- apply(df, 2, function(x){
+      if( !grepl("SUB", x[[1]])){
+        x <- as.numeric(x)
+        x[ is.na(x) ] <- fn(x, na.rm = TRUE)
+      }
+      return(x)
+    })
   })
 }else if(impute == "knn"){
   aData <- lapply(aData, function(df){ 
@@ -195,6 +198,7 @@ subs <- names(numSubs)[ numSubs == length(aData) ]
 
 # Remove subs without all datasets and order for cbind
 aData <- lapply(aData, function(x){
+  x <- data.frame(x, stringsAsFactors = FALSE) # imputation may change class
   nmsCol <- grep("sub_tp|participant_id", colnames(x), value = T)
   x <- x[ x[[nmsCol]] %in% subs, ]
   x <- x[ order(match(x[[nmsCol]], subs)), ]
@@ -205,8 +209,12 @@ aData <- lapply(aData, function(x){
 allMat <- Reduce(function(x,y){cbind(x,y)}, aData)
 rownames(allMat) <- subs
 
-# normalize
-allMat <- scale(allMat)
+# normalize after ensuring numeric
+allMat <- scale(apply(allMat, 2, as.numeric))
+
+# remove any features that have no variance
+noVariance <- apply(allMat, 2, function(x){ return(length(unique(x)) == 1)})
+allMat <- allMat[ , !noVariance ]
 
 if( is.null(dim(allMat)) || dim(allMat)[2] < 2){
   stop("R Report Error: Too few variables selected. Please select more assays or timepoints and re-run.")
@@ -245,7 +253,8 @@ partial data for the timepoint. For non-gene-expression data, imputation does no
 partial data for the timepoint (e.g. some hai strains but not others).
 
 - **Number of Observations (Subjects)**: `r dim(allMat)[1]`
-- **Number of Features (Assay Data)**: `r dim(allMat)[2]`
+- **Number of Features Used (Assay Data)**: `r dim(allMat)[2]`
+- **Number of Features Removed Due to Lack of Variance**: `r sum(noVariance)`
 
 ```{r plot helpers}
 # helper for iterating through multiple components
