@@ -32,31 +32,98 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             flagAssay                   = undefined
             ;
 
-        var checkBtnsStatus = function(){
-	        if (
-		        cbAssays.isValid( true ) &&
-                cbTimePoints.isValid( true ) &&
-                rgTime.isValid( true ) &&
-		        rgPlotType.isValid( true )
-	        ){
-		        btnRun.setDisabled( false );
-	        } else {
-		        btnRun.setDisabled( true );
- 	        }
 
-            if (    cbAssays.getValue()              == cbAssays.originalValue &&
-                    cbTimePoints.getValue()          == cbTimePoints.originalValue &&
-                    rgTime.getValue()                == rgTime.originalValue &&
-		            rgPlotType.getValue()            == rgPlotType.originalValue
-            ){
-                btnReset.setDisabled( true );
-            } else {
-                btnReset.setDisabled( false );
-            }
-        };
+        ////////////////////////////////////////////////////
+        ///  inputItems Created after Data is Loaded     ///
+        ////////////////////////////////////////////////////
+        var renderInputElements = function( strAssays, gridPnl, tpsDbl){
 
-        //Help strings
-	        var
+            /////////////////////////////////////
+            //      Back-end Configuration     //
+            /////////////////////////////////////
+        
+            var setReportRunning = function( bool ){
+                if ( bool ){
+                    maskReport.show();
+                } else {
+                    maskReport.hide();
+                }
+                // disable btns during report run
+                Ext.each(
+                    [
+                        cbAssays,
+                        cbTimePoints,
+                        rgPlotType,
+                        tlbrBtns
+                    ],
+                    function( e ){ e.setDisabled( bool ); }
+                );
+            };
+
+            var cnfReport = {
+                failure: function( errorInfo, options, responseObj ){
+                    setReportRunning( false );
+
+                    LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
+                },
+                reportId: 'module:DimRedux/dimRedux.Rmd',
+                success: function( result ){
+
+                    var errors = result.errors;
+                    var outputParams = result.outputParams;
+
+                    if ( errors && errors.length > 0 ){
+                        setReportRunning( false );
+
+                        // Trim to expected errors with useful info for user
+                        errors = errors[0].match(/R Report Error(?:\s|\S)+/g);
+
+                        // If unexpected R Report Error fail gracefully
+                        if( errors == null){
+                            errors = ["\nUnexpected Error in R Markdown Report. Please notify an adminstrator."]
+                        }
+                        LABKEY.ext.ISCore.onFailure({
+                            exception: errors.join('\n')
+                        });
+                    } else {
+                        $('#'+cntReport.id).html(outputParams[0].value);
+
+                        setReportRunning( false ); // Wait until all html is loaded
+
+                        cntEmptyPnlView.setVisible( false );
+                        cntReport.setVisible( true );
+
+                        pnlTabs.setActiveTab( 1 );
+                        window.HTMLWidgets.staticRender();
+                    }
+                }
+            };
+            
+            var checkBtnsStatus = function(){
+                if (
+                    cbAssays.isValid( true ) &&
+                    cbTimePoints.isValid( true ) &&
+                    rgTime.isValid( true ) &&
+                    rgPlotType.isValid( true )
+                ){
+                    btnRun.setDisabled( false );
+                } else {
+                    btnRun.setDisabled( true );
+                }
+
+                if (    cbAssays.getValue()              == cbAssays.originalValue &&
+                        cbTimePoints.getValue()          == cbTimePoints.originalValue &&
+                        rgTime.getValue()                == rgTime.originalValue &&
+                        rgPlotType.getValue()            == rgPlotType.originalValue
+                ){
+                    btnReset.setDisabled( true );
+                } else {
+                    btnReset.setDisabled( false );
+                }
+            };
+
+            //Help strings
+            var
                 timeAs_help = 'Using time as an observation allows for the labeling of points with time, not just by subject.',
                 assays_help = 'Assays present in the study.',
                 timepoints_help = 'The official study time collected value.',
@@ -68,459 +135,497 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 response_help = "Immune response data that can be used for labels if present"
             ;
 
-        /////////////////////////////////////
-        ///      Check and ComboBoxes     ///
-        /////////////////////////////////////
+            /////////////////////////////////////
+            //    Buttons and Radio Groups     //
+            /////////////////////////////////////
         
-        var rgTime = new Ext.form.RadioGroup({
-            allowBlank: false,
-            fieldLabel: 'Use Time As',
-            width: fieldWidth,
-            columns: 2,
-            items: [
-                {
-                    boxLabel: 'Variable',
-                    checked: true,
-                    inputValue: 'Variable',
-                    name: 'Time',
-                    value: 'variable'
-                },{
-                    boxLabel: 'Observation',
-                    inputValue: 'Observation',
-                    name: 'Time',
-                    value: 'observation'
+            var btnRun = new Ext.Button({
+                disabled: true,
+                handler: function(){
+                    setReportRunning( true );
 
-                }        
-            ],
-            value: 'Variable',
-            listeners: {
-                blur:       checkBtnsStatus,
-                change:     function(){
-                    // force new selection of timepoints and assays because
-                    // assay options are affected by timeAs
-                    cbTimePoints.disable();
-                    cbTimePoints.clearValue();
-                    cbTimePoints.enable();
-
-                    cbAssays.disable();
-                    cbAssays.clearValue();
-                }
-            },
-            cls: 'ui-test-timebox'
-
-        });
-
-        // To ensure filtering from cbTimepoints works, need following:
-        // 1. lastQuery - defaults to not reloading if query is same
-        // 2. beforequery listener - defaults to true means reset
-        // 3. other listeners - need to handle timepoint selection each
-        // time or resets to original store
-        var cbAssays = new Ext.ux.form.ExtendedLovCombo({
-            allowBlank: false,
-            displayField: 'Label',
-            fieldLabel: 'Assays',
-            lazyInit: false,
-            disabled: true,
-            listeners: {
-                focus:      function(){
-                    handleTpSelect();
+                    // Run Report
+                    inputParams = {
+        
+                        // Non-User Selected Params
+                        baseUrl:                LABKEY.ActionURL.getBaseURL(),
+                        folderPath:             LABKEY.ActionURL.getContainer(),
+        
+                        // User Selected Main Params
+                        timeAs:                 rgTime.getValue().value,
+                        assays:                 cbAssays.getValue(),
+                        timePts:                cbTimePoints.getValue(),
+                        plotType:               rgPlotType.getValue().value,
+                        
+                        // User Selected Additional Options
+                        perplexity:             nmPerplexity.getValue(),
+                        numComponents:          nmNumComponents.getValue(),
+                        impute:                 rgImpute.getValue().value,
+                        responseVar:            rgResponse.getValue().value
+                    };
+                    cnfReport.inputParams = inputParams;
+                    LABKEY.Report.execute( cnfReport );
                 },
-                change:     function(){
-                    handleTpSelect();
-                    checkBtnsStatus();
-                },
-                cleared:    function(){
-                    handleTpSelect();
-                    checkBtnsStatus();
-                },
-                select:     function(){
-                    handleAssaySelect();
-                    handleTpSelect();
-                    checkBtnsStatus();
-                },
-                beforequery: function(qe){
-                    qe.combo.onLoad(); // Loads store with current filter applied
-                    return false; // Stops store from resetting to unfiltered
-                }
-            },
-            separator: ',', // IMPORTANT FOR STRSPLIT FN
-            store: new Ext.data.SimpleStore({
-                id: 0,
-                fields: ['Name','Label'],
-                data: []
-            }),
-            valueField: 'Name',
-            width: fieldWidth,
-            listWidth: fieldWidth,
-            lastQuery: '', // If lastQuery is left as default then does not reload
-            cls: 'ui-test-assays'
-        });
-
-        var handleTpSelect = function(){
-            var tpsSelected = cbTimePoints.getValue().split(",");
-            cbAssays.store.filterBy( function(record){
-                var tpsAvailable = record.data.Timepoints.split(";");
-                var intersect = tpsAvailable.filter( function(val){
-                    return( tpsSelected.indexOf(val) !== -1) ;
-                });
-                var obs = rgTime.getValue().value == 'observation';
-                if( (!obs & intersect.length > 0) | (obs & intersect.length == tpsSelected.length) ){
-                    return(true)
-                }
-            });
-        }
-
-        // Selection of assay causes the subject/feature counter to update
-        var handleAssaySelect = function(){
-            var tps = cbTimePoints.getValue().split(",");
-            var assays = cbAssays.getValue().split(",");
-            
-            var assayIdx = cbAssays.getCheckedArrayInds();
-            var tpsIdx = cbTimePoints.getCheckedArrayInds();
-            
-            // count equals all viable assay * timepoint combinations for selection
-            var cnt = 0;
-            assayIdx.forEach( function(a){
-                tpsIdx.forEach( function(t){
-                    cnt =  gridData[a][t + 1] != "" ? cnt + 1 : cnt
-                });
+                text: 'Run',
+                cls: 'ui-test-run'
             });
 
-            // put new filter on store for assays and time points
-            strAssayData.filterBy( function(record){
-                return( tps.includes(record.data.timepoint) & assays.includes(record.data.Name) ) 
-            });
-            
-            // calculate subs and features
-            // get unique set of pids
-            var pids = strAssayData.collect("participantId");
-            
-            // Group by participantId and get subject and feature data
-            var dat = strAssayData.data.items;   
-            var sumByPid = [];
-            pids.forEach( function(el){
-                // get data for just pid
-                var filtDat = dat.filter( function(rec){ return(rec.data.participantId == el) });
-    
-                // sum features
-                var feats = []
-                filtDat.forEach( function(rec){ feats.push(rec.data.features) })
-                var sum = feats.reduce((a,b) => a + b, 0)
+            var btnReset = new Ext.Button({
+                disabled: true,
+                handler: function(){
+                    Ext.each(
+                        [
+                            rgTime,
+                            cbAssays,
+                            cbTimePoints,
+                            rgPlotType
+                        ],
+                        function( e ){ e.reset(); }
+                    );
 
-                // return rows aka count of assays
-                sumByPid.push({ sum: sum, count: filtDat.length, pid: el})
-            });
-            
-            // Filter down to pids with all assay * timepoint combinations
-            sumByPid.filter( function(rec){ return(rec.count = cnt) });
+                    cntEmptyPnlView.setVisible( true );
+                    cntReport.setVisible( false );
 
-            // Generate new html for counter with correct sub and feature values
-            // Note: when subs are 0 length then maxFeatures will be NaN
-            var subs = sumByPid.length;
-            var maxFeatures = Math.max( ...Ext.pluck(sumByPid, "sum") );
-
-            var titleHtml = '<b>Count of subjects and features to be analyzed based on selections:</b><br>'
-            var subjectsHtml = "<p><i>Subjects: </i>" + subs;  
-            var featuresHtml = "    <i>Features: </i>" + maxFeatures + "</p>";
-            jQuery( '#tpAssayCounter')[0].innerHTML = titleHtml + subjectsHtml + featuresHtml;
-        }
-
-        var cbTimePoints = new Ext.ux.form.ExtendedLovCombo({
-            allowBlank: false,
-            displayField: 'timepoint',
-            fieldLabel: 'Assay Timepoints',
-            lazyInit: false,
-            disabled: false,
-            listeners: {
-                change:     function(){
                     checkBtnsStatus();
+
+                    fsAdditionalOptions.collapse();
                 },
-                cleared:    function(){
-                    cbAssays.disable();
-                    cbAssays.reset();
-                    checkBtnsStatus();
-                },
-                select:     function(){
-                    cbAssays.disable();
-                    cbAssays.clearValue();
-                    handleTpSelect();
-                    cbAssays.enable();
-                }
-            },
-            separator: ',', // IMPORTANT FOR STRSPLIT FN
-            store: new Ext.data.SimpleStore({
-                id: 0,
-                fields: ['timepoint','timepoint'],
-                data: []                                                                                                                                                                                           
-            }),
-            valueField: 'timepoint',
-            width: fieldWidth,
-            cls: 'ui-test-timepoints'
-        });
-        
-        var rgPlotType = new Ext.form.RadioGroup({
-            allowBlank: false,
-            fieldLabel: 'Plot type',
-            width: fieldWidth,
-            columns: 2,
-            items: [
-                {
-                    boxLabel: 'PCA',
-                    checked: true,
-                    inputValue: 'PCA',
-                    name: 'plotType',
-                    value: 'PCA'
-                },{
-                    boxLabel: 'tSNE',
-                    inputValue: 'tSNE',
-                    name: 'plotType',
-                    value: 'tSNE'
-                }
-            ],
-            value: 'PCA',
-            listeners: {
-                blur:       checkBtnsStatus,
-                change:     function(){
-                    if(this.getValue().value == "tSNE"){
-                        nmPerplexity.enable();
-                    }else{
-                        nmPerplexity.disable();
-                    }
-                    checkBtnsStatus;
-                },
-            },
-            cls: 'ui-test-plottype'
-        });
-        
-        var nmPerplexity = new Ext.form.NumberField({
-            allowBlank: false,
-            fieldLabel: 'tSNE - Perplexity',
-            width: fieldWidth,
-            value: 5,
-            maxValue: 50,
-            minValue: 1,
-            hidden: false,
-            disabled: true,
-            cls: 'ui-test-perplexity'
-        });
+                text: 'Reset',
+                cls: 'ui-test-reset'
+            });
 
-        var nmNumComponents = new Ext.form.NumberField({
-            allowBlank: false,
-            fieldLabel: 'Components to Plot',
-            width: fieldWidth,
-            value: 2,
-            maxValue: 6, 
-            minValue: 2,
-            hidden: false,
-            cls: 'ui-test-components'
-        }); 
+            var rgTime = new Ext.form.RadioGroup({
+                allowBlank: false,
+                fieldLabel: 'Use Time As',
+                width: fieldWidth,
+                columns: 2,
+                items: [
+                    {
+                        boxLabel: 'Variable',
+                        checked: true,
+                        inputValue: 'Variable',
+                        name: 'Time',
+                        value: 'variable'
+                    },{
+                        boxLabel: 'Observation',
+                        inputValue: 'Observation',
+                        name: 'Time',
+                        value: 'observation'
 
-        var rgImpute = new Ext.form.RadioGroup({
-            allowBlank: false,
-            fieldLabel: 'Missing Value Imputation',
-            width: fieldWidth,
-            columns: 2,
-            items: [
-                {   
-                    boxLabel: 'Mean',
-                    checked: true,
-                    inputValue: 'Mean',
-                    name: 'Impute',
-                    value: 'mean'
-                },{ 
-                    boxLabel: 'Median',
-                    inputValue: 'Median',
-                    name: 'Impute',
-                    value: 'median'
-                },{   
-                    boxLabel: 'KNN',
-                    inputValue: 'KNN',
-                    name: 'Impute',
-                    value: 'knn'
-                },{ 
-                    boxLabel: 'None',
-                    inputValue: 'None',
-                    name: 'Impute',
-                    value: 'none'
-                } 
-            ],  
-            value: 'None',
-            listeners: {
-                blur:       checkBtnsStatus,
-                change:     checkBtnsStatus
-            },  
-            cls: 'ui-test-impute'
-        }); 
-
-        var rgResponse = new Ext.form.RadioGroup({
-            allowBlank: false,
-            fieldLabel: 'Immune Response Label',
-            width: fieldWidth,
-            columns: 2,
-            items: [
-                { 
-                    boxLabel: 'HAI',
-                    checked: true,
-                    inputValue: 'HAI',
-                    name: 'Response',
-                    value: 'hai'
-                },{
-                    boxLabel: 'NAb',
-                    inputValue: 'NAb',
-                    name: 'Response',
-                    value: 'neut_ab_titer'
-                }
-            ],
-            value: 'HAI',
-            listeners: {
-                blur:       checkBtnsStatus,
-                change:     checkBtnsStatus
-            },
-            cls: 'ui-test-response'
-        });
-
-        /////////////////////////////////////
-        //    Buttons and Radio Groups     //
-        /////////////////////////////////////
-        
-        var btnRun = new Ext.Button({
-            disabled: true,
-            handler: function(){
-                setReportRunning( true );
-
-                // Run Report
-                inputParams = {
-    
-                    // Non-User Selected Params
-                    baseUrl:                LABKEY.ActionURL.getBaseURL(),
-                    folderPath:             LABKEY.ActionURL.getContainer(),
-    
-                    // User Selected Main Params
-                    timeAs:                 rgTime.getValue().value,
-                    assays:                 cbAssays.getValue(),
-                    timePts:                cbTimePoints.getValue(),
-                    plotType:               rgPlotType.getValue().value,
-                    
-                    // User Selected Additional Options
-                    perplexity:             nmPerplexity.getValue(),
-                    numComponents:          nmNumComponents.getValue(),
-                    impute:                 rgImpute.getValue().value,
-                    responseVar:            rgResponse.getValue().value
-                };
-                cnfReport.inputParams = inputParams;
-                LABKEY.Report.execute( cnfReport );
-            },
-            text: 'Run',
-            cls: 'ui-test-run'
-        });
-
-        var btnReset = new Ext.Button({
-            disabled: true,
-            handler: function(){
-                Ext.each(
-                    [
-                        rgTime,
-                        cbAssays,
-                        cbTimePoints,
-                        rgPlotType
-                    ],
-                    function( e ){ e.reset(); }
-                );
-
-                cntEmptyPnlView.setVisible( true );
-                cntReport.setVisible( false );
-
-                checkBtnsStatus();
-
-                fsAdditionalOptions.collapse();
-            },
-            text: 'Reset',
-            cls: 'ui-test-reset'
-        });
-
-
-        /////////////////////////////////////
-        //      Back-end Configuration     //
-        /////////////////////////////////////
-        
-        var setReportRunning = function( bool ){
-            if ( bool ){
-                maskReport.show();
-            } else {
-                maskReport.hide();
-            }
-            // disable btns during report run
-            Ext.each(
-                [
-                    cbAssays,
-                    cbTimePoints,
-                    rgPlotType,
-                    tlbrBtns
+                    }        
                 ],
-                function( e ){ e.setDisabled( bool ); }
-            );
-        };
+                value: 'Variable',
+                listeners: {
+                    blur:       checkBtnsStatus,
+                    change:     function(){
+                        // force new selection of timepoints and assays because
+                        // assay options are affected by timeAs
+                        cbTimePoints.disable();
+                        cbTimePoints.clearValue();
+                        cbTimePoints.enable();
 
-        var cnfReport = {
-            failure: function( errorInfo, options, responseObj ){
-                setReportRunning( false );
-
-                LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
-            },
-            reportId: 'module:DimRedux/dimRedux.Rmd',
-            success: function( result ){
-
-                var errors = result.errors;
-                var outputParams = result.outputParams;
-
-                if ( errors && errors.length > 0 ){
-                    setReportRunning( false );
-
-                    // Trim to expected errors with useful info for user
-                    errors = errors[0].match(/R Report Error(?:\s|\S)+/g);
-
-                    // If unexpected R Report Error fail gracefully
-                    if( errors == null){
-                        errors = ["\nUnexpected Error in R Markdown Report. Please notify an adminstrator."]
+                        cbAssays.disable();
+                        cbAssays.clearValue();
                     }
-                    LABKEY.ext.ISCore.onFailure({
-                        exception: errors.join('\n')
+                },
+                cls: 'ui-test-timebox'
+
+            });
+
+            // To ensure filtering from cbTimepoints works, need following:
+            // 1. lastQuery - defaults to not reloading if query is same
+            // 2. beforequery listener - defaults to true means reset
+            // 3. other listeners - need to handle timepoint selection each
+            // time or resets to original store
+            var cbAssays = new Ext.ux.form.ExtendedLovCombo({
+                allowBlank: false,
+                displayField: 'Label',
+                fieldLabel: 'Assays',
+                lazyInit: false,
+                disabled: true,
+                listeners: {
+                    focus:      function(){
+                        handleTpSelect();
+                    },
+                    change:     function(){
+                        handleTpSelect();
+                        checkBtnsStatus();
+                    },
+                    cleared:    function(){
+                        handleTpSelect();
+                        checkBtnsStatus();
+                    },
+                    select:     function(){
+                        handleAssaySelect();
+                        handleTpSelect();
+                        checkBtnsStatus();
+                    },
+                    beforequery: function(qe){
+                        qe.combo.onLoad(); // Loads store with current filter applied
+                        return false; // Stops store from resetting to unfiltered
+                    }
+                },
+                separator: ',', // IMPORTANT FOR STRSPLIT FN
+                store: strAssays,
+                valueField: 'Name',
+                width: fieldWidth,
+                listWidth: fieldWidth,
+                lastQuery: '', // If lastQuery is left as default then does not reload
+                cls: 'ui-test-assays'
+            });
+
+            var handleTpSelect = function(){
+                var tpsSelected = cbTimePoints.getValue().split(",");
+                cbAssays.store.filterBy( function(record){
+                    var tpsAvailable = record.data.Timepoints.split(";");
+                    var intersect = tpsAvailable.filter( function(val){
+                        return( tpsSelected.indexOf(val) !== -1) ;
                     });
-                } else {
-                    $('#'+cntReport.id).html(outputParams[0].value);
-
-                    setReportRunning( false ); // Wait until all html is loaded
-
-                    cntEmptyPnlView.setVisible( false );
-                    cntReport.setVisible( true );
-
-                    pnlTabs.setActiveTab( 1 );
-                    window.HTMLWidgets.staticRender();
-                }
+                    var obs = rgTime.getValue().value == 'observation';
+                    if( (!obs & intersect.length > 0) | (obs & intersect.length == tpsSelected.length) ){
+                        return(true)
+                    }
+                });
             }
-        };
+
+            // Selection of assay causes the subject/feature counter to update
+            var handleAssaySelect = function(){
+                var tps = cbTimePoints.getValue().split(",");
+                var assays = cbAssays.getValue().split(",");
+                
+                var assayIdx = cbAssays.getCheckedArrayInds();
+                var tpsIdx = cbTimePoints.getCheckedArrayInds();
+                
+                // count equals all viable assay * timepoint combinations for selection
+                var cnt = 0;
+                assayIdx.forEach( function(a){
+                    tpsIdx.forEach( function(t){
+                        cnt =  gridData[a][t + 1] != "" ? cnt + 1 : cnt
+                    });
+                });
+
+                // put new filter on store for assays and time points
+                strAssayData.filterBy( function(record){
+                    return( tps.includes(record.data.timepoint) & assays.includes(record.data.Name) ) 
+                });
+                
+                // calculate subs and features
+                // get unique set of pids
+                var pids = strAssayData.collect("participantId");
+                
+                // Group by participantId and get subject and feature data
+                var dat = strAssayData.data.items;   
+                var sumByPid = [];
+                pids.forEach( function(el){
+                    // get data for just pid
+                    var filtDat = dat.filter( function(rec){ return(rec.data.participantId == el) });
+        
+                    // sum features
+                    var feats = []
+                    filtDat.forEach( function(rec){ feats.push(rec.data.features) })
+                    var sum = feats.reduce((a,b) => a + b, 0)
+
+                    // return rows aka count of assays
+                    sumByPid.push({ sum: sum, count: filtDat.length, pid: el})
+                });
+                
+                // Filter down to pids with all assay * timepoint combinations
+                sumByPid = sumByPid.filter( function(rec){ return(rec.count == cnt) });
+
+                // Generate new html for counter with correct sub and feature values
+                // Note: when subs are 0 length then maxFeatures will be NaN
+                var maxFeatures = Math.max( ...Ext.pluck(sumByPid, "sum") );
+
+                var titleHtml = '<b>Count of subjects and features to be analyzed based on selections:</b><br>'
+                var subjectsHtml = "<p><i>Subjects: </i>" + sumByPid.length;  
+                var featuresHtml = "    <i>Features: </i>" + maxFeatures + "</p>";
+                jQuery( '#tpAssayCounter')[0].innerHTML = titleHtml + subjectsHtml + featuresHtml;
+            }
+
+            var cbTimePoints = new Ext.ux.form.ExtendedLovCombo({
+                allowBlank: false,
+                displayField: 'timepoint',
+                fieldLabel: 'Assay Timepoints',
+                lazyInit: false,
+                disabled: false,
+                listeners: {
+                    change:     function(){
+                        checkBtnsStatus();
+                    },
+                    cleared:    function(){
+                        cbAssays.disable();
+                        cbAssays.reset();
+                        checkBtnsStatus();
+                    },
+                    select:     function(){
+                        cbAssays.disable();
+                        cbAssays.clearValue();
+                        handleTpSelect();
+                        cbAssays.enable();
+                    }
+                },
+                separator: ',', // IMPORTANT FOR STRSPLIT FN
+                store: new Ext.data.SimpleStore({
+                    id: 0,
+                    fields: ['timepoint', 'timepoint'],
+                    data: tpsDbl                                                                                                                                                                                        
+                }),
+                valueField: 'timepoint',
+                width: fieldWidth,
+                cls: 'ui-test-timepoints'
+            });
+            
+            var rgPlotType = new Ext.form.RadioGroup({
+                allowBlank: false,
+                fieldLabel: 'Plot type',
+                width: fieldWidth,
+                columns: 2,
+                items: [
+                    {
+                        boxLabel: 'PCA',
+                        checked: true,
+                        inputValue: 'PCA',
+                        name: 'plotType',
+                        value: 'PCA'
+                    },{
+                        boxLabel: 'tSNE',
+                        inputValue: 'tSNE',
+                        name: 'plotType',
+                        value: 'tSNE'
+                    }
+                ],
+                value: 'PCA',
+                listeners: {
+                    blur:       checkBtnsStatus,
+                    change:     function(){
+                        if(this.getValue().value == "tSNE"){
+                            nmPerplexity.enable();
+                        }else{
+                            nmPerplexity.disable();
+                        }
+                        checkBtnsStatus;
+                    },
+                },
+                cls: 'ui-test-plottype'
+            });
+            
+            var nmPerplexity = new Ext.form.NumberField({
+                allowBlank: false,
+                fieldLabel: 'tSNE - Perplexity',
+                width: fieldWidth,
+                value: 5,
+                maxValue: 50,
+                minValue: 1,
+                hidden: false,
+                disabled: true,
+                cls: 'ui-test-perplexity'
+            });
+
+            var nmNumComponents = new Ext.form.NumberField({
+                allowBlank: false,
+                fieldLabel: 'Components to Plot',
+                width: fieldWidth,
+                value: 2,
+                maxValue: 6, 
+                minValue: 2,
+                hidden: false,
+                cls: 'ui-test-components'
+            }); 
+
+            var rgImpute = new Ext.form.RadioGroup({
+                allowBlank: false,
+                fieldLabel: 'Missing Value Imputation',
+                width: fieldWidth,
+                columns: 2,
+                items: [
+                    {   
+                        boxLabel: 'Mean',
+                        checked: true,
+                        inputValue: 'Mean',
+                        name: 'Impute',
+                        value: 'mean'
+                    },{ 
+                        boxLabel: 'Median',
+                        inputValue: 'Median',
+                        name: 'Impute',
+                        value: 'median'
+                    },{   
+                        boxLabel: 'KNN',
+                        inputValue: 'KNN',
+                        name: 'Impute',
+                        value: 'knn'
+                    },{ 
+                        boxLabel: 'None',
+                        inputValue: 'None',
+                        name: 'Impute',
+                        value: 'none'
+                    } 
+                ],  
+                value: 'None',
+                listeners: {
+                    blur:       checkBtnsStatus,
+                    change:     checkBtnsStatus
+                },  
+                cls: 'ui-test-impute'
+            }); 
+
+            var rgResponse = new Ext.form.RadioGroup({
+                allowBlank: false,
+                fieldLabel: 'Immune Response Label',
+                width: fieldWidth,
+                columns: 2,
+                items: [
+                    { 
+                        boxLabel: 'HAI',
+                        checked: true,
+                        inputValue: 'HAI',
+                        name: 'Response',
+                        value: 'hai'
+                    },{
+                        boxLabel: 'NAb',
+                        inputValue: 'NAb',
+                        name: 'Response',
+                        value: 'neut_ab_titer'
+                    }
+                ],
+                value: 'HAI',
+                listeners: {
+                    blur:       checkBtnsStatus,
+                    change:     checkBtnsStatus
+                },
+                cls: 'ui-test-response'
+            });
+
+            /*var
+                cfTimePoints = LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Time point', timepoints_help )
+            ;*/
+
+            var fsAdditionalOptions = new Ext.form.FieldSet({
+                autoScroll: true,
+                collapsed: true,
+                collapsible: true,
+                items: [
+                    LABKEY.ext.ISCore.factoryTooltipWrapper( nmPerplexity, 'tSNE perplexity', perplexity_help ),
+                    LABKEY.ext.ISCore.factoryTooltipWrapper( nmNumComponents, 'PCA components to plot', numComponents_help ),
+                    LABKEY.ext.ISCore.factoryTooltipWrapper( rgImpute, 'Impute', impute_help),
+                    LABKEY.ext.ISCore.factoryTooltipWrapper( rgResponse, 'Response', response_help)
+                ],
+                labelWidth: labelWidth,
+                listeners: {
+                    afterrender: {
+                        fn: function(){
+                            this.on( 'collapse', checkBtnsStatus );
+                        },
+                        single: true
+                    },
+                    expand: checkBtnsStatus
+                },
+                title: 'Additional options',
+                titleCollapse: true,
+                cls: 'ui-test-additional-options',
+                itemCls: 'ui-test-additional-options-item'
+            });
+
+            var tlbrBtns = new Ext.Toolbar({
+                defaults: {
+                    width: 45
+                },
+                enableOverflow: true,
+                items: [
+                    btnRun,
+                    btnReset
+                ]
+            });
+
+            var inputItems =  [
+                new Ext.form.FieldSet({
+                    autoScroll: true,
+                    items: [
+                        new Ext.Container({
+                            border: false,
+                            items: [],
+                            layout: 'fit',
+                            id: 'tpAssayHeader',
+                            cls: 'ui-test-assayheader',
+                            html: '<p><b>Note:</b> Each cell shows subjects / features available for that assay at the specified timepoint</p><br>'
+                        }),
+                        new Ext.Container({
+                            border: false,
+                            items: gridPnl, 
+                            layout: 'fit',
+                            id: 'tpAssayGrid',
+                            cls: 'ui-test-assaygrid'
+                        }),
+                        new Ext.Container({
+                            border: false,
+                            items: [], 
+                            layout: 'fit',
+                            id: 'tpAssayCounter',
+                            cls: 'ui-test-assaycounter',
+                            html: '<b>Count of subjects and features to be analyzed based on selections: </b><br>'  
+                        }),         
+                    ],
+                    title: 'Available Assay Data',
+                    cls: 'ui-test-available-data',
+                    itemCls: 'ui-test-available-data-item'
+                }),
+                new Ext.form.FieldSet({
+                    autoScroll: true,
+                    items: [
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( rgTime, 'Time Usage', timeAs_help),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Timepoints', timepoints_help ),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbAssays, 'Assays', assays_help ),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( rgPlotType, 'Plot Type', plotTypes_help ),
+                    ],
+                    title: 'Parameters',
+                    cls: 'ui-test-parameters',
+                    itemCls: 'ui-test-parameters-item'
+                }),
+                fsAdditionalOptions,
+                {
+                    border: true,
+                    items: [
+                        tlbrBtns
+                    ]
+                }
+            ]
+
+            pnlInput.removeAll();
+            pnlInput.add(inputItems);
+            pnlInput.doLayout();
+        }
+        
 
         /////////////////////////////////////
         //  Panels, Containers, Components //
         /////////////////////////////////////
 
-        var tlbrBtns = new Ext.Toolbar({
-	    defaults: {
-                width: 45
+        // ----- pnlInput temporary holder onLoad ----- 
+        var pnlInput = new Ext.form.FormPanel({
+            bodyStyle: { paddingTop: '1px' },
+            defaults: {
+                autoHeight: true,
+                forceLayout: true,
+                hideMode: 'offsets'
             },
-            enableOverflow: true,
+            deferredRender: false,
             items: [
-                btnRun,
-                btnReset
-            ]
+                new Ext.Container({
+                    border: false,
+                    items: [], 
+                    layout: 'fit',
+                    id: 'loadingBanner',
+                    cls: 'ui-test-loading-banner',
+                    html: '<p><b>Meta-data is loading and may take a couple of minutes. Thank you for your patience!</b></p>'
+                }),  
+            ],
+            labelWidth: labelWidth,
+            tabTip: 'Input',
+            title: 'Input',
+            cls: 'ui-test-input'
         });
 
-        var
-            cfTimePoints = LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Time point', timepoints_help )
-         // cfLabel      = LABKEY.ext.ISCore.factoryTooltipWrapper( cbLabel, 'Label', labels_help )
-        ;
-
-        // var pnlInputs
+        // ----- pnlView elements ------
         var cntEmptyPnlView = new Ext.Container({
             defaults: {
                 border: false
@@ -570,110 +675,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             cls: 'ui-test-view'
         });
 
-
-        var fsAdditionalOptions = new Ext.form.FieldSet({
-            autoScroll: true,
-            collapsed: true,
-            collapsible: true,
-            items: [
-                LABKEY.ext.ISCore.factoryTooltipWrapper( nmPerplexity, 'tSNE perplexity', perplexity_help ),
-                LABKEY.ext.ISCore.factoryTooltipWrapper( nmNumComponents, 'PCA components to plot', numComponents_help ),
-                LABKEY.ext.ISCore.factoryTooltipWrapper( rgImpute, 'Impute', impute_help),
-                LABKEY.ext.ISCore.factoryTooltipWrapper( rgResponse, 'Response', response_help)
-            ],
-            labelWidth: labelWidth,
-            listeners: {
-                afterrender: {
-                    fn: function(){
-                        this.on( 'collapse', checkBtnsStatus );
-                    },
-                    single: true
-                },
-                expand: checkBtnsStatus
-            },
-            title: 'Additional options',
-            titleCollapse: true,
-            cls: 'ui-test-additional-options',
-            itemCls: 'ui-test-additional-options-item'
-        });
-
-        var inputItems =  [
-                new Ext.form.FieldSet({
-                    autoScroll: true,
-                    items: [
-                        new Ext.Container({
-                            border: false,
-                            items: [],
-                            layout: 'fit',
-                            id: 'tpAssayHeader',
-                            cls: 'ui-test-assayheader',
-                            html: '<p><b>Note:</b> Each cell shows subjects / features available for that assay at the specified timepoint</p><br>'
-                        }),
-                        new Ext.Container({
-                            border: false,
-                            items: [], 
-                            layout: 'fit',
-                            id: 'tpAssayGrid',
-                            cls: 'ui-test-assaygrid'
-                        }),
-                        new Ext.Container({
-                            border: false,
-                            items: [], 
-                            layout: 'fit',
-                            id: 'tpAssayCounter',
-                            cls: 'ui-test-assaycounter',
-                            html: '<b>Count of subjects and features to be analyzed based on selections: </b><br>'  
-                        }),         
-                    ],
-                    title: 'Available Assay Data',
-                    cls: 'ui-test-available-data',
-                    itemCls: 'ui-test-available-data-item'
-                }),
-                new Ext.form.FieldSet({
-                    autoScroll: true,
-                    items: [
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( rgTime, 'Time Usage', timeAs_help),
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Timepoints', timepoints_help ),
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( cbAssays, 'Assays', assays_help ),
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( rgPlotType, 'Plot Type', plotTypes_help ),
-                    ],
-                    title: 'Parameters',
-                    cls: 'ui-test-parameters',
-                    itemCls: 'ui-test-parameters-item'
-                }),
-                fsAdditionalOptions,
-                {
-                    border: true,
-                    items: [
-                        tlbrBtns
-                    ]
-                }
-            ]
-
-        var pnlInput = new Ext.form.FormPanel({
-            bodyStyle: { paddingTop: '1px' },
-            defaults: {
-                autoHeight: true,
-                forceLayout: true,
-                hideMode: 'offsets'
-            },
-            deferredRender: false,
-            items: [
-                new Ext.Container({
-                    border: false,
-                    items: [], 
-                    layout: 'fit',
-                    id: 'loadingBanner',
-                    cls: 'ui-test-loading-banner',
-                    html: '<p><b>Meta-data is loading and may take a couple of minutes. Thank you for your patience!</b></p>'
-                }),  
-            ],
-            labelWidth: labelWidth,
-            tabTip: 'Input',
-            title: 'Input',
-            cls: 'ui-test-input'
-        });
-
+        // --- pnlTabs Main UI element on load ----
         var pnlTabs = new Ext.TabPanel({
             activeTab: 0,
             autoHeight: true,
@@ -756,7 +758,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     }
                 ) +
                 '\' target=\'_blank\' title=\'Click to open the knitr source code in a new window\'></a>'
-);
+            );
 
         this.border         = false;
         this.boxMinWidth    = 370;
@@ -775,7 +777,10 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         /////////////////////////////////////
         
         /* Doing this last because queries take 30 to 40 seconds and 
-        want to load page only when all data is ready. */
+        want to load inputItems only when all data is ready. Also, important
+        to generate lov combo boxes with full store so selectAllRecord is not
+        undefined, which can happen when initializing with empty store and then
+        binding a new store.*/
 
         // -------- Grid and Store Setup -------------
         var gridCols = [{
@@ -819,30 +824,19 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                 uniqTps.forEach( function(el){
                     tpsDbl.push([el,el])
                 })
-                cbTimePoints.bindStore(  new Ext.data.SimpleStore({
-                                            id: 0,
-                                            fields: ['timepoint', 'timepoint'],
-                                            data: tpsDbl
-                                         }) 
-                                      );  
 
-                pnlInput.removeAll();
-                pnlInput.add(inputItems);
-                pnlInput.doLayout();
-                
-                gridPnl.render('tpAssayGrid');
+                renderInputElements( strAssays, gridPnl, tpsDbl );
             }
         }
 
         // ---------- Stores ---------------
 
-        strAssays = new LABKEY.ext.Store({
+        var strAssays = new LABKEY.ext.Store({
             schemaName: 'study',
             queryName: 'DimRedux_assay_by_timepoints',
             autoLoad: true,
             listeners: {
                 load: function(){
-                    cbAssays.bindStore(this);
                     strAssaysLoaded = true;
                     checkQueries();
                 },
@@ -850,7 +844,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
             }
         })
 
-        strAssayData = new LABKEY.ext.Store({
+        var strAssayData = new LABKEY.ext.Store({
             schemaName: 'study',
             queryName: 'DimRedux_assay_data',
             autoLoad: true,
@@ -971,4 +965,5 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
     resize: function(){
     }
 }); // end DimRedux Panel class
+
 

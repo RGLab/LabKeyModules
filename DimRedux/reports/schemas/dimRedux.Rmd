@@ -5,7 +5,6 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(ImmuneSpaceR)
-library(dplyr)
 library(tidyr)
 library(data.table)
 library(plotly)
@@ -202,7 +201,7 @@ aData <- lapply(aData, function(x){
   nmsCol <- grep("sub_tp|participant_id", colnames(x), value = T)
   x <- x[ x[[nmsCol]] %in% subs, ]
   x <- x[ order(match(x[[nmsCol]], subs)), ]
-  x <- x[, -grep(nmsCol, colnames(x)) ]
+  x <- x[, -grep(nmsCol, colnames(x)), drop = FALSE ] # ensure remains df in case only one feature
 })
 
 # combine
