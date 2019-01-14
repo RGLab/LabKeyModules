@@ -104,7 +104,9 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                     cbAssays.isValid( true ) &&
                     cbTimePoints.isValid( true ) &&
                     rgTime.isValid( true ) &&
-                    rgPlotType.isValid( true )
+                    rgPlotType.isValid( true ) &&
+                    currPidCnt != 0
+
                 ){
                     btnRun.setDisabled( false );
                 } else {
@@ -150,7 +152,8 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                         // Non-User Selected Params
                         baseUrl:                LABKEY.ActionURL.getBaseURL(),
                         folderPath:             LABKEY.ActionURL.getContainer(),
-        
+                        filteredPids:           filteredPids.join(";"),
+
                         // User Selected Main Params
                         timeAs:                 rgTime.getValue().value,
                         assays:                 cbAssays.getValue(),
@@ -331,13 +334,14 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 
                 // Filter down to pids with all assay * timepoint combinations
                 sumByPid = sumByPid.filter( function(rec){ return(rec.count == cnt) });
-
+                
                 // Generate new html for counter with correct sub and feature values
                 // Note: when subs are 0 length then maxFeatures will be NaN
-                var maxFeatures = Math.max( ...Ext.pluck(sumByPid, "sum") );
+                currPidCnt = sumByPid.length
+                var maxFeatures = currPidCnt == 0 ? 0 : Math.max( ...Ext.pluck(sumByPid, "sum") );
 
                 var titleHtml = '<b>Count of subjects and features to be analyzed based on selections:</b><br>'
-                var subjectsHtml = "<p><i>Subjects: </i>" + sumByPid.length;  
+                var subjectsHtml = "<p><i>Subjects: </i>" + currPidCnt;  
                 var featuresHtml = "    <i>Features: </i>" + maxFeatures + "</p>";
                 jQuery( '#tpAssayCounter')[0].innerHTML = titleHtml + subjectsHtml + featuresHtml;
             }
@@ -798,6 +802,9 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
         var strAssaysLoaded = false;
         var strAssayDataLoaded = false;
 
+        var filteredPids = [];
+        var currPidCnt = 0;
+
         // --------- Callback --------------
         var checkQueries = function(){
             var gridPnl = new Ext.grid.GridPanel({
@@ -851,6 +858,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
             listeners: {
                 load: function(){
                     strAssayDataLoaded = true;
+                    filteredPids = this.collect("participantId");
                     checkQueries();
                 },      
                 loadexception: LABKEY.ext.ISCore.onFailure

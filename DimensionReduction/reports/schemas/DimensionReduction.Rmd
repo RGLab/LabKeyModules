@@ -15,7 +15,8 @@ library(Rtsne)
   # Non-User Selected Params
   baseUrl <- labkey.url.params$baseUrl
   sdy <- gsub("/Studies/", "", labkey.url.params$folderPath)
-  
+  filteredPids <- labkey.url.params$filteredPids
+
   # Main Params
   timeAs <- labkey.url.params$timeAs
   assays <- strsplit(labkey.url.params$assays, ",")[[1]]
@@ -30,17 +31,33 @@ library(Rtsne)
 ```
 
 ```{r helper-fn}
-getAssayData <- function(assay, con, timePts, timeAs){
+getAssayData <- function(assay, con, filteredPids, timePts, timeAs){
+
+  # use participantId filter to make sure project level filtering on
+  # dataFinder is transferred to report
+  pidsFilt <- Rlabkey::makeFilter(c("participantId", "IN", filteredPids))
   
   # Get data with default transformation method unless gene expression which
   # needs special treatment to organize in appropriate format
   if(assay != "gene_expression_files"){
     original_view <- assay != "mbaa"
-    dat <- con$getDataset(assay, original_view = original_view, transformMethod = "auto")
+    dat <- con$getDataset(assay, 
+                          original_view = original_view, 
+                          transformMethod = "auto", 
+                          colFilter = pidsFilt)
   }else{
-    eset <- con$getGEMatrix(con$cache$GE_matrices$name)
+    # Use filteredPids to only download matrices for specified studies and then
+    # subset data by filtered gef to ensure only correct pids picked up.
+    tmp <- strsplit(filteredPids, ";")
+    tmp <- lapply(tmp, strsplit, split = "\\.")[[1]]
+    sdys <- paste0("SDY", unique(sapply(tmp, "[", 2)))
+    mats <- con$cache$GE_matrices$name[ con$cache$GE_matrices$folder %in% sdys ]
+    eset <- con$getGEMatrix(mats)
     dat <- data.frame(t(Biobase::exprs(eset)),stringsAsFactors = FALSE)
-    gef <- con$getDataset("gene_expression_files", original_view = TRUE)
+    gef <- con$getDataset("gene_expression_files", 
+                          original_view = TRUE, 
+                          colFilter = pidsFilt)
+    dat <- dat[ rownames(dat) %in% gef$biosample_accession, ]
     matchOrder <- match(rownames(dat), gef$biosample_accession)
     dat$study_time_collected <- gef$study_time_collected[ matchOrder ]
     dat$study_time_collected_unit <- gef$study_time_collected_unit[ matchOrder]
@@ -158,6 +175,7 @@ con <- CreateConnection(sdy, onTest = grepl("test", baseUrl))
 aData <- lapply(assays,
                 getAssayData,
                 con = con,
+                filteredPids = filteredPids,
                 timePts = timePts,
                 timeAs = timeAs)
 
