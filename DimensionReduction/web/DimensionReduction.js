@@ -14,7 +14,7 @@
 
 Ext.namespace('LABKEY.ext');
 
-LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
+LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
 
     // config is expected only to include a 'webPartDivId'
     // for use in the jQuery component
@@ -66,7 +66,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
 
                     LABKEY.ext.ISCore.onFailure( errorInfo, options, responseObj );
                 },
-                reportId: 'module:DimRedux/dimRedux.Rmd',
+                reportId: 'module:DimensionReduction/DimensionReduction.Rmd',
                 success: function( result ){
 
                     var errors = result.errors;
@@ -753,7 +753,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
                     'runReport',
                     null,
                     {
-                        reportId: 'module:DimRedux/reports/schemas/study/dimRedux.Rmd',
+                        reportId: 'module:DimensionReduction/reports/schemas/study/DimensionReduction.Rmd',
                         tabId: 'Source'
                     }
                 ) +
@@ -770,7 +770,7 @@ LABKEY.ext.dimRedux = Ext.extend( Ext.Panel, {
         this.webPartDivId   = config.webPartDivId;
         this.width          = document.getElementById(config.webPartDivId).offsetWidth;
 
-        LABKEY.ext.dimRedux.superclass.constructor.apply(this, arguments);
+        LABKEY.ext.DimensionReduction.superclass.constructor.apply(this, arguments);
     
         /////////////////////////////////////
         //    Stores and Grid Data         //

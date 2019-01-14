@@ -3,7 +3,7 @@
     <dependencies>
         <dependency path='ISCore/Common'/>
         <dependency path='ISCore/ExtendedLovCombo'/>
-        <dependency path='dimRedux.js'/>
-        <dependency path='dimRedux.css'/>
+        <dependency path='DimensionReduction.js'/>
+        <dependency path='DimensionReduction.css'/>
     </dependencies>
 </view>
