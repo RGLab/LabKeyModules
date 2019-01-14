@@ -85,7 +85,7 @@ getAssayData <- function(assay, con, timePts, timeAs){
     valCol <- switch( assay,
           "elisa" = "value_preferred",
           "elispot" = "spot_number_reported",
-          "mbaa" = "value_concentration",
+          "mbaa" = "concentration_value",
           "pcr" = "value_reported",
           "fcs_analyzed_result" = "population_cell_number"
         )
@@ -213,12 +213,12 @@ allMat <- scale(apply(allMat, 2, as.numeric))
 
 # remove any features that have no variance
 noVariance <- apply(allMat, 2, function(x){ return(length(unique(x)) == 1)})
-allMat <- allMat[ , !noVariance ]
+allMat <- allMat[ , !noVariance, drop = FALSE ]
 
 if( is.null(dim(allMat)) || dim(allMat)[2] < 2){
   stop("R Report Error: Too few variables selected. Please select more assays or timepoints and re-run.")
-}else if(dim(allMat)[1] < 1){
-  stop("R Report Error: No subjects with complete cases. Select imputation method other than 'None' and retry.")
+}else if(dim(allMat)[1] < 2){
+  stop("R Report Error: Fewer than two subjects with complete cases. Select imputation method other than 'None' and retry.")
 }
 ```
 
@@ -252,6 +252,7 @@ partial data for the timepoint. For non-gene-expression data, imputation does no
 partial data for the timepoint (e.g. some hai strains but not others).
 
 - **Number of Observations (Subjects)**: `r dim(allMat)[1]`
+- **Number of Observations Removed due to missing data**: `r length(numSubs[ numSubs < length(aData)])`
 - **Number of Features Used (Assay Data)**: `r dim(allMat)[2]`
 - **Number of Features Removed Due to Lack of Variance**: `r sum(noVariance)`
 
