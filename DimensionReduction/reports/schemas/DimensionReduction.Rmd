@@ -213,6 +213,10 @@ subs <- sapply(aData, function(x){
 numSubs <- table(unlist(subs))
 subs <- names(numSubs)[ numSubs == length(aData) ]
 
+if(length(subs) < 2){
+  stop("R Report Error: Fewer than two subjects available for analysis. Select imputation method other than 'None' and retry.")
+}
+
 # Remove subs without all datasets and order for cbind
 aData <- lapply(aData, function(x){
   x <- data.frame(x, stringsAsFactors = FALSE) # imputation may change class
@@ -235,8 +239,6 @@ allMat <- allMat[ , !noVariance, drop = FALSE ]
 
 if( is.null(dim(allMat)) || dim(allMat)[2] < 2){
   stop("R Report Error: Too few variables selected. Please select more assays or timepoints and re-run.")
-}else if(dim(allMat)[1] < 2){
-  stop("R Report Error: Fewer than two subjects with complete cases. Select imputation method other than 'None' and retry.")
 }
 ```
 
