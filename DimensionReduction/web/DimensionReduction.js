@@ -149,9 +149,9 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                     // Run Report
                     inputParams = {
         
-                        // Non-User Selected Params
-                        baseUrl:                LABKEY.ActionURL.getBaseURL(),
-                        folderPath:             LABKEY.ActionURL.getContainer(),
+                        // Non-User Selected Params - url and path injected via report engine
+                        //baseUrl:                LABKEY.ActionURL.getBaseURL(),
+                        //folderPath:             LABKEY.ActionURL.getContainer(),
                         filteredPids:           filteredPids.join(";"),
 
                         // User Selected Main Params

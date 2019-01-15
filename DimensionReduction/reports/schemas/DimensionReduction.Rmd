@@ -13,8 +13,6 @@ library(Rtsne)
 
 ```{r params}
   # Non-User Selected Params
-  baseUrl <- labkey.url.params$baseUrl
-  sdy <- gsub("/Studies/", "", labkey.url.params$folderPath)
   filteredPids <- labkey.url.params$filteredPids
 
   # Main Params
@@ -30,13 +28,15 @@ library(Rtsne)
   responseVar <- labkey.url.params$responseVar
 ```
 
-```{r helper-fn}
-getAssayData <- function(assay, con, filteredPids, timePts, timeAs){
+```{r pidsFilter}
+# use participantId filter to make sure project level filtering on
+# dataFinder is transferred to report
+pidsFilt <- Rlabkey::makeFilter(c("participantId", "IN", filteredPids))
+```
 
-  # use participantId filter to make sure project level filtering on
-  # dataFinder is transferred to report
-  pidsFilt <- Rlabkey::makeFilter(c("participantId", "IN", filteredPids))
-  
+```{r helper-fn}
+getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, timeAs){
+
   # Get data with default transformation method unless gene expression which
   # needs special treatment to organize in appropriate format
   if(assay != "gene_expression_files"){
@@ -163,8 +163,9 @@ getAssayData <- function(assay, con, filteredPids, timePts, timeAs){
 ```
 
 ```{r prep-assay-data}
-# Sdy == "" if at project level!
-con <- CreateConnection(sdy, onTest = grepl("test", baseUrl))
+# Pulling labkey.url.base and labkey.url.path from injected code and using this
+# to set up connection
+con <- CreateConnection()
 
 # get assay data
 # NOTES:
@@ -175,6 +176,7 @@ con <- CreateConnection(sdy, onTest = grepl("test", baseUrl))
 aData <- lapply(assays,
                 getAssayData,
                 con = con,
+                pidsFilt = pidsFilt,
                 filteredPids = filteredPids,
                 timePts = timePts,
                 timeAs = timeAs)
@@ -245,12 +247,13 @@ if( is.null(dim(allMat)) || dim(allMat)[2] < 2){
 
 ```{r prep-demo-data}
 # Get demographic data and add cohort name
-demo <- con$getDataset("demographics")
+demo <- con$getDataset("demographics", colFilter = pidsFilt)
 cohortMap <- Rlabkey::labkey.selectRows(baseUrl = con$config$labkey.url.base,
                                         folderPath = con$config$labkey.url.path,
                                         schemaName = "study",
                                         queryName = "cohort",
-                                        showHidden = TRUE)
+                                        showHidden = TRUE,
+                                        colFilter = pidsFilt)
 demo$cohort <- cohortMap$Label[ match(demo$cohort, cohortMap$Rowid) ]
 ```
 
@@ -454,7 +457,8 @@ if(timeAs == "observation"){
 
 ### Study
 ```{r  byStudy, fig.align="left"}
-if(sdy == "/Studies"){
+projLvl <- !grepl("SDY\\d{2,4}", con$config$labkey.url.path)
+if(projLvl == TRUE){
   plots <- makePlot(label = "study",
                     timeAs = timeAs,
                     demo = demo,
