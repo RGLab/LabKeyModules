@@ -1,0 +1,10 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" containerFilter="AllFolders">
+    <cv:columns>
+        <cv:column name="Name"/>
+        <cv:column name="Label"/>
+        <cv:column name="timepoint"/>
+        <cv:column name="subjects"/>
+        <cv:column name="features"/>
+    </cv:columns>
+</cv:customView>
+

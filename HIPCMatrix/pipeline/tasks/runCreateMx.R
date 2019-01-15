@@ -8,6 +8,7 @@ library(ImmuneSpaceR)
 library(Biobase)
 library(GEOquery)
 library(limma)
+library(illuminaio)
 
 #######################################
 ###         FILE RETRIEVAL          ###
@@ -135,25 +136,31 @@ library(limma)
       return(x)
     })
   } else if (study == "SDY400") {
-    # First line in exprs says "GSM1445822-GSM1445949", however there
-    # are only 120 samples not 126 as indicated.  In order to account for
-    # missing ones, must use full gef which has the missing GSM removed.
+    # Using mapping file provided by Hailong Meng at Yale, Dec 2018
+    # since note in header of file is misleading due to gsm swaps made
+    # later based on knowledge of switched samples.
     mxList <- lapply(mxList, function(x){
-      nms <- grep("SAMPLE", as.character(x[2,]))
-      bad <- grep("SAMPLE", as.character(x[2,]), invert = TRUE)
-      badVals <- grep("SAMPLE", as.character(x[2,]), invert = TRUE, value = TRUE)
-      x <- x[3:nrow(x),]
-      tmp <- CreateConnection(study)
-      tGef <- tmp$getDataset("gene_expression_files")
-      acc <- tGef[ tGef$type == "PBMC", geo_accession ]
-      setnames(x, nms, acc)
-      setnames(x, bad, badVals)
+      mp <- fread("/share/files/Studies/SDY400/@files/rawdata/gene_expression/SDY400_HeaderMapping.csv")
+      setnames(x, colnames(x), as.character(x[2,]))
+      x <- x[-(1:2),]
+      smpls <- grep("SAMPLE", colnames(x), value = T)
+      titles <- mp$Title[ match(smpls, mp$Sample) ]
+      setnames(x, smpls, titles)
       return(x)
     })
   } else if (study == "SDY1325") {
     mxList <- lapply(mxList, function(x){
       setnames(x, colnames(x), as.character(x[5,]))
       x <- x[6:nrow(x),]
+      return(x)
+    })
+  } else if (study == "SDY1324") {
+    # Custom header mapping provided by authors via P.Dunn Dec 2018.
+    mxList <- lapply(mxList, function(x){
+      mp <- fread("/share/files/Studies/SDY1324/@files/rawdata/gene_expression/raw_counts/SDY1324_Header_Mapping.csv")
+      accs <- grep("V1", colnames(x), invert = TRUE, value = TRUE)
+      esNms <- mp$experimentAccession[ match(accs, mp$AuthorGivenId) ]
+      setnames(x, accs, esNms)
       return(x)
     })
   }
@@ -186,23 +193,52 @@ library(limma)
           info <- getGEOSuppFiles(gsm, makeDirectory = FALSE, baseDir = baseDir)
           GEOquery::gunzip(rownames(info), overwrite = TRUE, remove = TRUE)
           path <- gsub("\\.gz", "", rownames(info))
-          em <- fread(path)
-          em <- .subsetIlluminaEM(em)
-          em <- .prepIlluminaHeaders(em)
-          smplFormats <- "\\d{10}_[A-Z]"
-          smplId <- regmatches(colnames(em)[[2]], regexpr(smplFormats, colnames(em)[[2]]))
-          colnames(em) <- gsub(smplId, gsm, colnames(em))
+          
+          if (study %in% names(metaData$illuminaManifestFile)) {
+            res <- read.idat(idatfiles = path, 
+                             bgxfile = metaData$illuminaManifestFile[[study]])
+            em <- res$E
+            pvals <- detectionPValues(res)
+            em <- data.table(gsm = em[,1], pvals = pvals[,1], ID_REF = res$genes$Probe_Id)
+            em <- em[ !duplicated(em$ID_REF) ] # dups b/c single probe assigned to multiple array_ids
+            setnames(em, "gsm", paste0(gsm, ".AVG_Signal"))
+            setnames(em, "pvals", paste0(gsm, ".Detection Pval"))
+          } else {
+            em <- fread(path)
+            em <- .subsetIlluminaEM(em)
+            em <- .prepIlluminaHeaders(em)
+            smplFormats <- "\\d{10}_[A-Z]"
+            smplId <- regmatches(colnames(em)[[2]], regexpr(smplFormats, colnames(em)[[2]]))
+            colnames(em) <- gsub(smplId, gsm, colnames(em))
+          }
           return(em)
         })
+
         em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
         inputFiles <- .writeSingleMx(em, baseDir, study)
         
         # Case 3: raw data in gsm supp files - Affymetrix
       } else if (metaData$platform == "Affymetrix") {
         inputFiles <- .dlSuppFls(accList = gef$geo_accession, baseDir, study)
+      
+        # Case 4: raw data in gsm supp files - Stanford custom HEEBO
+      } else if (grepl("Stanford", metaData$platform)) {
+        mxList <- lapply(gef$geo_accession, function(gsm){
+          info <- getGEOSuppFiles(gsm, makeDirectory = FALSE, baseDir = baseDir)
+          GEOquery::gunzip(rownames(info), overwrite = TRUE, remove = TRUE)
+          path <- gsub("\\.gz", "", rownames(info))
+          # Because of two colors, do background correction and processing here
+          # to generate single expression value per probe
+          em <- .processTwoColorArray(path)
+          setnames(em, "gsm", gsm)
+          return(em)
+        })
+
+        em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
+        inputFiles <- .writeSingleMx(em, baseDir, study)
       }
       
-      # Cases 4 and 5: raw data in gse supp files - Illumina / RNAseq
+      # Cases 5 and 6: raw data in gse supp files - Illumina / RNAseq
     } else {
       accList <- unique(unlist(lapply(gef$geo_accession, function(x){
         gsm <- getGEO(x)
@@ -212,7 +248,7 @@ library(limma)
       mxList <- lapply(inputFiles, fread)
       mxList <- .fixHeaders(mxList, study)
       
-      # Case 4: Illumina raw data in gse supp files
+      # Case 5: Illumina raw data in gse supp files
       # Because multiple raw files need to be combined, must
       # address header issues prior to combination otherwise
       # untreated "Detection Pval" cols will cause dup error
@@ -242,7 +278,7 @@ library(limma)
       
       em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
       
-      # Case 5: RNAseq in gse supp files
+      # Case 6: RNAseq in gse supp files
       # Header mapping assumes that names are in getGEO(gsm) object.
       # Need to check on a per study basis and tweak if need be.
       if (metaData$platform == "NA") {
@@ -328,6 +364,7 @@ library(limma)
     es <- regmatches(nms, regexpr("(ES|GSM)\\d{6,7}", nms))
     em <- em[ , grep(es, colnames(em), invert = TRUE), with = FALSE]
   }
+  
   # 2. Control or misnamed probes (not unique) - e.g. "NEGATIVE"
   em <- em[ grep("ILMN", em$ID_REF) ]
   write.table(em, rawFl, sep = "\t", row.names = FALSE, quote = FALSE)
@@ -360,6 +397,22 @@ library(limma)
   exprs <- data.table(Reduce(f = function(x, y) {merge(x, y, all = TRUE)}, lf))
 }
 
+# Two color array processing using limma and assuming genepix files.
+# bc.method is the background correction method and normexp is used to match
+# work with Illumina and Affymetrix.
+.processTwoColorArray <- function(path){
+  RG <- read.maimages(files = path, source = "genepix")
+  MA <- normalizeWithinArrays(RG, bc.method = "normexp", method = "none")
+  em <- data.table(feature_id = MA$genes$ID, gsm = MA$A[,1])
+  
+  # RM dup probes due to multiple probes per spot
+  # RM NA vals possibly from background correction issues
+  em <- em[ !duplicated(feature_id) & !is.na(gsm) ]
+  
+  # RM unmappable feature_ids
+  em <- em[ grep("EMPTY|bsid", feature_id, invert = TRUE) ]
+}
+
 #######################################
 ###            MAPPING              ###
 #######################################
@@ -372,7 +425,7 @@ library(limma)
     
     # If RNAseq then accept gene* or V1 col
     if (length(prbCol) == 0) {
-      prbCol <- grep("gene|V1", colnames(exprs), ignore.case = TRUE)
+      prbCol <- grep("gene|^V1$", colnames(exprs), ignore.case = TRUE)
     }
     
     # In case of features in rownames, e.g. from GEO
@@ -422,8 +475,10 @@ makeRawMatrix <- function(metaData, gef, study, inputFiles){
   } else {
     if (metaData$platform == "Illumina") {
       exprs <- .processIllumina(inputFiles)
-    }else{
+    } else if (metaData$platform == "NA"){
       exprs <- .processRnaSeq(inputFiles, study)
+    } else {
+      exprs <- fread(inputFiles)
     }
     
     # Ensure probe col is named 'feature_id'
@@ -637,10 +692,27 @@ runCreateMx <- function(labkey.url.base,
   metaData$useGsmSuppFls <- study %in% c("SDY80", "SDY113", "SDY180", "SDY269",
                                          "SDY406", "SDY984", "SDY1260", "SDY1264",
                                          "SDY1293", "SDY270", "SDY1291", "SDY212",
-                                         "SDY315", "SDY305", "SDY1328")
+                                         "SDY315", "SDY305", "SDY1328", "SDY1368",
+                                         "SDY1370")
   
+  #**illuminaManifestFile**: for studies with Illumina idat files that need bgx 
+  # manifest files.  These are found through the Illumina website and stored in
+  # the UpdateAnno package. Below creates a temp file to store this data.
+  # TODO: assign file based on fasId
+  metaData$illuminaManifestFile <- list(
+    SDY1368 = "HumanHT-12_V4_0_R2_15002873_B.bgx"
+  )
+
+  if (study %in% names(metaData$illuminaManifestFile)){
+    manifestUrl <- paste0("https://github.com/RGLab/UpdateAnno/raw/master/CreateMatrixAssets/IlluminaManifests/", metaData$illuminaManifestFile[[study]])
+    tmpFl <- tempfile()
+    download.file(url = manifestUrl, destfile = tmpFl, quiet = TRUE)
+    metaData$illuminaManifestFile[[study]] <- tmpFl
+  }
+
   # **studyIdTerm**: For extracting sample id from getGEO(gsm) object
-  useDescription <- study %in% c("SDY144", "SDY180", "SDY522", "SDY1373", "SDY1364", "SDY1325")
+  useDescription <- study %in% c("SDY144", "SDY180", "SDY522", "SDY1373", "SDY1364", 
+                                 "SDY1325")
   metaData$studyIdTerm <- ifelse(useDescription, "description", "title")
   
   # **smplGsubTerms**: Custom gsub terms for allowing the mapping of study-given ids
@@ -656,7 +728,8 @@ runCreateMx <- function(labkey.url.base,
   
   # **gseNeedsMap**: Studies that need id-to-gsm mapping from gse supp files
   # without special gsub terms
-  metaData$gseNeedsMap <- study %in% c("SDY404", "SDY522", "SDY1325", "SDY1364", "SDY144")
+  metaData$gseNeedsMap <- study %in% c("SDY404", "SDY522", "SDY1325", "SDY1364", "SDY144",
+                                       "SDY400")
   
   # **gsmMapIndex**: Index of samplename in vector from getGEO()
   useSecond <- c("SDY180")
@@ -668,8 +741,8 @@ runCreateMx <- function(labkey.url.base,
     SDY1293 = "VALUE"
   )
   
-  # **noRaw**: No raw data available in GEO or ImmPort
-  metaData$noRaw <- study %in% c("SDY1324")
+  # **noRaw**: No raw data available in GEO, ImmPort, or customRawFile
+  metaData$noRaw <- study %in% c()
   
   # **platform**: sequencing platform (Affymetrix, Illumina, or 'NA', aka RNAseq)
   fas <- data.table(labkey.selectRows(baseUrl = labkey.url.base,
@@ -679,19 +752,24 @@ runCreateMx <- function(labkey.url.base,
                                       colNameOpt = "rname",
                                       showHidden = T))
   metaData$platform <- fas$vendor[ fas$rowid == fasId ]
+
+  # **useCustomRawFile**: For some studies a custom file has been provided by ImmPort
+  # temporarily while they update a study. These should be checked periodically.
+  metaData$useCustomRawFile <- study %in% c("SDY224", "SDY1324")
   
   # ----------------------------- PROCESSING -------------------------------------
   
   # Identify correct inputFiles
-  if (metaData$isGeo == FALSE & study != "SDY224") {
+  if (metaData$isGeo == FALSE & metaData$useCustomRawFile == FALSE) {
     inputFiles <- gef$file_info_name[ grep("cel$|txt$|tsv$|csv$",
                                            gef$file_info_name,
                                            ignore.case = TRUE)]
     inputFiles <- paste0(pipeline.root, "/rawdata/gene_expression/", inputFiles)
     inputFiles <- unique(inputFiles[ file.exists(inputFiles) ])
-  } else if (study == "SDY224") {
-    rawDir <- "/share/files/Studies/SDY224/@files/rawdata/gene_expression/raw_counts/"
+  } else if (metaData$useCustomRawFile == TRUE) {
+    rawDir <- paste0("/share/files/Studies/", study, "/@files/rawdata/gene_expression/raw_counts/")
     inputFiles <- paste0(rawDir, list.files(rawDir))
+    inputFiles <- inputFiles[ grep("Header", inputFiles, invert = TRUE) ]
   } else {
     inputFiles <- NA
     gef <- gef[ !is.na(gef$geo_accession), ]

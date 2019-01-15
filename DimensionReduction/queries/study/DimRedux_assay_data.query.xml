@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<query name='DimRedux_data_sets' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+<query name='DimRedux_assay_data' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
     <description>
         Query that gets timepoints and dataset information for DimRedux module
     </description>

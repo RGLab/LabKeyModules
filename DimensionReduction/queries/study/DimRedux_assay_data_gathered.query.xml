@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='DimRedux_assay_data_gathered' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        Query that gets count of subjects and features on a per assay basis for DimRedux module
+    </description>
+</query>
