@@ -52,6 +52,12 @@
         <delete file='${build.modules.dir}/${module.name}.module'/>
     </target>
 
+    <target name='before_local_build'>
+	<property name='BuildType' value='Local'/>
+    </target>
+
+    <target name='local' depends='before_local_build,deploy'></target>
+	
     <target name='before_development_build'>
         <property name='BuildType' value='Development'/>
     </target>
