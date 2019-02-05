@@ -1,41 +1,24 @@
-# Basic pipeline for processing flow workspaces
-# Take in workspace, parse, and output gating sets for each group and summary info for that run
+#${input.txt}
+#--------------------------------
+# DEPENDENCIES
+#--------------------------------
 
-# to do
-# add handling for multiple workspaces
-# figure out how to convert .jo files to xml
-# do gating sets need their own sub directory?
+# NOTES:
+# 1. Wrapper function, separated for sourcing when running on CL
+# 2. other libraries loaded in createMatrixWrapper.R
+# 3. Using full path because script is copied to study-specific directory for 
+# running from UI.
+source("/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R")
 
-library(flowWorkspace)
-library(dplyr)
+#--------------------------------
+# PARAMS & EXECUTION
+#--------------------------------
 
-##----FUNCTIONS----##
+taskInfo <- "${pipeline, taskInfo}" # separated to make debugging locally easier
 
-.getGS <- function(ws, group_id_num = 1) {
-    gs <- parseWorkspace(ws,
-                         name = group_id_num,
-                         isNCdf = TRUE)
-}
-
-.runData <- function(sdy, ws, gs, group_id) {
-    file_name <- paste0(sdy, "_GS_", group_id, ".rda")
-    workspace <- ws@file
-    num_samples <- length(gs@data@phenoData@data$name)
-    fw_version <- as.character(packageVersion("flowWorkspace"))
-
-    run <- data.frame(file_name, workspace, num_samples, fw_version, stringAsFactors = FALSE)
-
-    return(run)
-}
-
-
-
-##----PARSE-TASK-INFO----##
-
-taskInfo <- "${pipeline, taskInfo}"
-
+## taskInfo.tsv inputs
 jobInfo <- read.table(taskInfo,
-                      colnames = c("name", "value", "type"),
+                      col.names = c("name", "value"),
                       header = FALSE,
                       check.names = FALSE,
                       stringsAsFactors = FALSE,
@@ -44,42 +27,44 @@ jobInfo <- read.table(taskInfo,
                       fill = TRUE,
                       na.strings = "")
 
-labkey.url.path <- jobInfo$value[ jobInfo$name == "containerPath"]
+pipe.root           <- jobInfo$value[ jobInfo$name == "pipeRoot" ]
+labkey.url.path     <- jobInfo$value[ jobInfo$name == "containerPath" ]
+labkey.url.base     <- jobInfo$value[ jobInfo$name == "baseUrl" ]
+analysis.directory  <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
+data.directory      <- jobInfo$value[ jobInfo$name == "dataDirectory" ]
 
-sdy <- gsub("/Studies/", "", labkey.url.path)
+# From LABKEY.Pipeline.startAnalysis in views/CreateMatrix.html.
+# Vars are interpreted in the create-matrix.R file generated in
+# /share/files/Studies/SDY123/@files/rawdata/gene_expression/create-matrix/mxName/mxName.work
+# This directory is removed once work is finished, hence need for
+# outputting version within pipeline for reproducibility.
+# You can often find this info though in the mxName.log file
+# found in the .../create-matrix/mxName subdir.
 
-##----CHECK-FOR-FILES----##
-# check for workspace file in correct format
-fcs_dir <- file.path("/share", "files", "Studies", sdy, "@files", "rawdata", "flow_cytometry")
-ws_files <- list.files(fcs_dir, pattern = ".xml", full.names = TRUE)
+res <- runCreateGS(labkey.url.base = labkey.url.base,
+                   labkey.url.path = labkey.url.path,
+                   pipeline.root = pipe.root,
+                   data.directory = data.directory,
+                   analysis.directory = analysis.directory)
 
-if (length(ws_files) == 0) {
-    stop("No XML workspace files found")
-}
+# Notes:
+# for running at command line, use or look at runCM_allCL.R which
+# generates variables from the matrices currently available instead
+# of trying to parse logs and taskInfo tsv files.
 
-gs_dir <- file.path("/share", "files", "Studies", sdy, "@files", "rawdata", "gating_set")
+# ${tsvout:tsvfile}
+write.table(res$run,
+            file ="${output.tsv}",
+            sep ="\t",
+            row.names = FALSE)
 
-if (!file.exists(gs_dir)) {
-    dir.create(gs_dir, recursive = TRUE)
-}
+write.table(res$input,
+            file = paste0(analysis.directory, "/inputFiles.csv"),
+            sep = ",",
+            quote = FALSE,
+            row.names = FALSE)
 
-ws <- openWorkspace(ws_names)
-
-##----ACCESS-BASIC-WORKSPACE-INFO----##
-
-sample_groups <- getSampleGroups(ws)
-group_ids <- unique(sample_groups$groupID)
-
-if (length(group_ids) == 1) {
-    gs <- .getGS(ws)
-    run <- .runData(sdy, ws, gs, group_ids)
-    save_gs(gs, gs_dir)
-}
-# still working on handilng of multiple group id output
-else {
-    stop("multiple group_ids")
-}
-
-##----WRITE-RUN-DATA-TO-TABLE----##
-
-write.table(run, paste0(gs_dir, "/runs.tsv"), sep = "\t")
+file.copy(from = "/share/github/LabKeyModules/HIPCCytdo/pipeline/tasks/create-gatingset.R",
+          to = paste0(analysis.directory, "/create-gatingset-snapshot.R"))
+file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
+          to = paste0(analysis.directory, "/runGS-snapshot.R"))
