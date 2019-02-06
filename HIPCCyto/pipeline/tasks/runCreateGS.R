@@ -17,10 +17,12 @@ library(dplyr)
                          name = group_id_num,
                          keywords = c("DAY", "TREATMENT", "TUBE NAME"),
                          isNCdf = TRUE)
+    pData(gs)$FILENAME <- basename(as.character(keyword(gs, "FILENAME")$FILENAME))
+    return(gs)
 }
 
 .runData <- function(sdy, ws, gs, group_id) {
-    gating_set <- paste0(gs@guid, ".rds")
+    gating_set <- gs@guid
     workspace <- ws@file
     group_id <- as.character(group_id)
     num_samples <- length(gs@data@phenoData@data$name)
@@ -94,7 +96,7 @@ runCreateGS <- function(labkey.url.base,
             run <- .runData(sdy, ws, gs, group_ids)
             save_gs(gs,
                     gsdir,
-                    cdf="skip")
+                    cdf="copy")
             input <- .inputFiles(gs, gsdir, labkey.url.base, labkey.url.path)
         } else {
             stop("multiple group_ids") # add handling for multiple group ids
