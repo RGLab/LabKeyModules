@@ -13,7 +13,7 @@ library(dplyr)
 
 .getGS <- function(ws, group_id_num = 1) {
     gs <- parseWorkspace(ws,
-                         subset = 1:2,
+                         subset = 1:100,
                          name = group_id_num,
                          keywords = c("DAY", "TREATMENT", "TUBE NAME"),
                          isNCdf = TRUE)
@@ -34,7 +34,7 @@ library(dplyr)
 }
 
 .inputFiles <- function(gs, gsdir, labkey.url.base, labkey.url.path) {
-    fcs <- basename(as.character(flowWorkspace::keyword(gs, "FILENAME")$FILENAME))
+    fcs <- pData(gs)$FILENAME
     input_files <- labkey.selectRows(baseUrl = labkey.url.base,
                                      folderPath = labkey.url.path,
                                      schemaName = "study",

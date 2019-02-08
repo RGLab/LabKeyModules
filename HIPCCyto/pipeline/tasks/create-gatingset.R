@@ -4,10 +4,9 @@
 #--------------------------------
 
 # NOTES:
-# 1. Wrapper function, separated for sourcing when running on CL
-# 2. other libraries loaded in createMatrixWrapper.R
-# 3. Using full path because script is copied to study-specific directory for 
+# Wrapper function, separated for sourcing when running on CL
 # running from UI.
+
 source("/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R")
 
 #--------------------------------
@@ -34,12 +33,12 @@ analysis.directory  <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
 data.directory      <- jobInfo$value[ jobInfo$name == "dataDirectory" ]
 
 # From LABKEY.Pipeline.startAnalysis in views/CreateMatrix.html.
-# Vars are interpreted in the create-matrix.R file generated in
-# /share/files/Studies/SDY123/@files/rawdata/gene_expression/create-matrix/mxName/mxName.work
+# Vars are interpreted in the create-gatingset.R file generated in
+# /share/files/Studies/SDY123/@files/rawdata/flow_cytometry/create-gatingset/gatingset/gatingset.work
 # This directory is removed once work is finished, hence need for
 # outputting version within pipeline for reproducibility.
-# You can often find this info though in the mxName.log file
-# found in the .../create-matrix/mxName subdir.
+# You can often find this info though in the gatingset.log file
+# found in the .../create-gatingset/gatingset subdir.
 
 res <- runCreateGS(labkey.url.base = labkey.url.base,
                    labkey.url.path = labkey.url.path,
@@ -48,7 +47,7 @@ res <- runCreateGS(labkey.url.base = labkey.url.base,
                    analysis.directory = analysis.directory)
 
 # Notes:
-# for running at command line, use or look at runCM_allCL.R which
+# for running at command line, use or look at runCGS_allCL.R which
 # generates variables from the matrices currently available instead
 # of trying to parse logs and taskInfo tsv files.
 
@@ -64,7 +63,7 @@ write.table(res$input,
             quote = FALSE,
             row.names = FALSE)
 
-file.copy(from = "/share/github/LabKeyModules/HIPCCytdo/pipeline/tasks/create-gatingset.R",
+file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/create-gatingset.R",
           to = paste0(analysis.directory, "/create-gatingset-snapshot.R"))
 file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
           to = paste0(analysis.directory, "/runGS-snapshot.R"))
