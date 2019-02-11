@@ -13,7 +13,7 @@ library(dplyr)
 
 .getGS <- function(ws, group_id_num = 1) {
     gs <- parseWorkspace(ws,
-                         subset = 1:100,
+                         subset = 1:10,
                          name = group_id_num,
                          keywords = c("DAY", "TREATMENT", "TUBE NAME"),
                          isNCdf = TRUE)
@@ -41,10 +41,14 @@ library(dplyr)
                                      queryName = "fcs_sample_files",
                                      colNameOpt = "rname",
                                      colSelect = c("file_info_name", "ParticipantId", "biosample_accession", "expsample_accession", 
-                                                   "study_accession", "study_time_collected", "study_time_collected_unit"))
+                                                   "study_accession"))
     input_files <- input_files[input_files$file_info_name %in% fcs, ]
-    input_files$gs_dir <- gsdir
-    return(input_files)
+    input_files$gsdir <- gsdir
+    labkey.insertRows(baseUrl = labkey.url.base,
+                      folderPath = labkey.url.path,
+                      schemaName = "cytometry_processing",
+                      queryName = "gatingSetInputFiles",
+                      toInsert = input_files)
 }
 
 
@@ -94,9 +98,9 @@ runCreateGS <- function(labkey.url.base,
             gs <- .getGS(ws)
             gs@guid <- paste0(sdy, "_WS1_GS", group_ids)
             run <- .runData(sdy, ws, gs, group_ids)
-            save_gs(gs,
-                    gsdir,
-                    cdf="copy")
+            #save_gs(gs,
+            #        gsdir,
+            #        cdf="copy")
             input <- .inputFiles(gs, gsdir, labkey.url.base, labkey.url.path)
         } else {
             stop("multiple group_ids") # add handling for multiple group ids
@@ -105,19 +109,18 @@ runCreateGS <- function(labkey.url.base,
         stop("multiple_workspaces")
     }
 
-    return( list(run = run, input = input))
+    # ${tsvout:tsvfile}
+    write.table(run,
+                file = "${output.tsv}",
+                sep="\t",
+                row.names = FALSE)
 
+#----COPY-OVER-SCRIPT-FILES----##
+    file.copy(from = "/share/github/LabKeyModules/HIPCCytdo/pipeline/tasks/create-gatingset.R",
+              to = paste0(analysis.directory, "/create-gatingset-snapshot.R"))
+    file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
+              to = paste0(analysis.directory, "/runGS-snapshot.R"))
 
-    #write.table(input,
-    #            file = paste0(analysis.directory, "/bleh/", sdy, "_input_files.csv"),
-    #            sep=",",
-    #            quote = FALSE,
-    #            row.names = FALSE)
-
-    ##----COPY-OVER-SCRIPT-FILES----##
-    #file.copy(from = "/share/github/LabKeyModules/HIPCCytdo/pipeline/tasks/create-gatingset.R",
-    #          to = paste0(analysis.directory, "/create-gatingset-snapshot.R"))
-    #file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
-    #          to = paste0(analysis.directory, "/runGS-snapshot.R"))
+    #return( list(run = run, input = input))
 
 }
