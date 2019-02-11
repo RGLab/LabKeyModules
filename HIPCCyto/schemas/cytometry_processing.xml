@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns:tables xmlns:ns='http://labkey.org/data/xml'>
+    <ns:table tableName='gatingSetInputFiles' tableDbType='TABLE'>
+        <ns:description>
+            The 'gatingSetInputFiles' table stores information regarding which files were used in a run of the create-gatingset processing pipeline.
+        </ns:description>
+        <ns:columns>
+            <ns:column columnName='Container'>
+                <ns:isHidden>true</ns:isHidden>
+            </ns:column>
+            <ns:column columnName='key'>
+                <ns:isHidden>true</ns:isHidden>
+                <ns:isKeyField>true</ns:isKeyField>
+            </ns:column>
+            <ns:column columnName='file_info_name'>
+                <ns:columnTitle>File Info Name</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='ParticipantId'>
+                <ns:columnTitle>Participant ID</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='biosample_accession'>
+                <ns:columnTitle>Biosample Accession</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='expsample_accession'>
+                <ns:columnTitle>Group Id</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='study_accession'>
+                <ns:columnTitle>Study</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='gsdir'>
+                <ns:columnTitle>Gating Set Directory</ns:columnTitle>
+            </ns:column>
+        </ns:columns>
+    </ns:table>
+</ns:tables>
