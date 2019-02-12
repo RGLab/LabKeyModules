@@ -13,7 +13,7 @@ library(dplyr)
 
 .getGS <- function(ws, group_id_num = 1) {
     gs <- parseWorkspace(ws,
-                         subset = 1:10,
+                         subset = 1:50,
                          name = group_id_num,
                          keywords = c("DAY", "TREATMENT", "TUBE NAME"),
                          isNCdf = TRUE)
@@ -26,10 +26,13 @@ library(dplyr)
     workspace <- ws@file
     group_id <- as.character(group_id)
     num_samples <- length(gs@data@phenoData@data$name)
+    num_unique_days <- length(unique(pData(gs)$DAY))
+    num_unique_trt <- length(unique(pData(gs)$TREATMENT))
+    num_unique_tube <- length(unique(pData(gs)$`TUBE NAME`))
     fw_version <- as.character(packageVersion("flowWorkspace"))
     study <- sdy
-    run <- data.frame(gating_set, workspace, group_id, num_samples, fw_version, study)
-
+    run <- data.frame(gating_set, workspace, group_id, num_samples, num_unique_days,
+                                      num_unique_trt, num_unique_tube, fw_version, study)
     return(run)
 }
 
@@ -98,9 +101,9 @@ runCreateGS <- function(labkey.url.base,
             gs <- .getGS(ws)
             gs@guid <- paste0(sdy, "_WS1_GS", group_ids)
             run <- .runData(sdy, ws, gs, group_ids)
-            #save_gs(gs,
-            #        gsdir,
-            #        cdf="copy")
+            save_gs(gs,
+                    gsdir,
+                    cdf="copy")
             input <- .inputFiles(gs, gsdir, labkey.url.base, labkey.url.path)
         } else {
             stop("multiple group_ids") # add handling for multiple group ids
@@ -111,7 +114,7 @@ runCreateGS <- function(labkey.url.base,
 
     # ${tsvout:tsvfile}
     write.table(run,
-                file = "${output.tsv}",
+                file = paste0(outpath, "/runs.tsv"),
                 sep="\t",
                 row.names = FALSE)
 
