@@ -39,7 +39,7 @@ source(file.path(scriptPath, "wrapper-functions.r"))
 nodes<-list()
 gs_lists<-NULL
 #' load panel-specific settings (uncomment the panel you want to analyze)
-for(PANELSETTINGS in list.files(path=scriptPath,pattern="settings*")){
+for(PANELSETTINGS in list.files(path=scriptPath,pattern="settings-\\w+.r$")){
 source(file.path(scriptPath,PANELSETTINGS))
 
 #' Should we extract the spillover matrices for each center?
