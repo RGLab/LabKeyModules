@@ -13,9 +13,10 @@ library(dplyr)
 
 .getGS <- function(ws, group_id_num = 1) {
     gs <- parseWorkspace(ws,
-                         subset = 1:50,
+#                         subset = 1:50,
                          name = group_id_num,
                          keywords = c("DAY", "TREATMENT", "TUBE NAME"),
+                         additional.keys = "sampleID",
                          isNCdf = TRUE)
     pData(gs)$FILENAME <- basename(as.character(keyword(gs, "FILENAME")$FILENAME))
     return(gs)
@@ -64,6 +65,7 @@ runCreateGS <- function(labkey.url.base,
                         pipeline.root,
                         data.directory,
                         analysis.directory,
+                        output.tsv,
                         onCL = FALSE) {
     
     sdy <- gsub("/Studies/", "", labkey.url.path)
@@ -93,10 +95,10 @@ runCreateGS <- function(labkey.url.base,
 
     sample_groups <- getSampleGroups(ws)
     group_ids <- unique(sample_groups$groupID)
-
+    
     if (length(ws_files) == 1) {
-
-        if (length(group_ids) == 1) {
+        
+        if ( length(group_ids) == 1 ) {
             gsdir <- file.path(outpath, paste0("WS1_GS", group_ids))
             gs <- .getGS(ws)
             gs@guid <- paste0(sdy, "_WS1_GS", group_ids)
@@ -106,7 +108,7 @@ runCreateGS <- function(labkey.url.base,
                     cdf="copy")
             input <- .inputFiles(gs, gsdir, labkey.url.base, labkey.url.path)
         } else {
-            stop("multiple group_ids") # add handling for multiple group ids
+            stop("can't run all samples") # add handling for when all samples can't be run
         }
     } else {
         stop("multiple_workspaces")
@@ -114,12 +116,12 @@ runCreateGS <- function(labkey.url.base,
 
     # ${tsvout:tsvfile}
     write.table(run,
-                file = paste0(outpath, "/runs.tsv"),
+                file = output.tsv,
                 sep="\t",
                 row.names = FALSE)
 
 #----COPY-OVER-SCRIPT-FILES----##
-    file.copy(from = "/share/github/LabKeyModules/HIPCCytdo/pipeline/tasks/create-gatingset.R",
+    file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/create-gatingset.R",
               to = paste0(analysis.directory, "/create-gatingset-snapshot.R"))
     file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
               to = paste0(analysis.directory, "/runGS-snapshot.R"))
