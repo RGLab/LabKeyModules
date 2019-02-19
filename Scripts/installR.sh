@@ -65,8 +65,11 @@ if [ `whoami` = 'root' ] ; then
         else # INTERACTIVE = 'no'
             ./configure --enable-R-shlib --prefix=/usr > ./R-conig.log
         fi
-        make
-        make install
+
+        CPU_NUM="$(grep -c processor /proc/cpuinfo)"    # UNTESTED CODE, this line did not use to be here
+        make -j${CPU_NUM}                               # UNTESTED CODE, used to be just "make"
+
+        make install                                    # COULD ALSO ADD THE -j${CPU_NUM} PARAMETER FOR SPEED? DON'T KNOW
 
         echo
         echo '======================================================='
