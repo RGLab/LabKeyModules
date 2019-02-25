@@ -9,7 +9,7 @@
         <taskref ref='HIPCCyto:task:create-gatingset'/>
         <task xsi:type='AssayImportRunTaskType'>
             <providerName>General</providerName>
-            <!--<protocolName></protocolName>-->
+            <protocolName>gatingset</protocolName>
         </task>
     </tasks>
 </pipeline>
