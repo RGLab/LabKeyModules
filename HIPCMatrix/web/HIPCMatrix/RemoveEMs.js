@@ -144,7 +144,7 @@ function removeEMs( dataRegion ) {
         data.rows.forEach( function(rw){
             var emObj = {};
             emObj["name"] = rw['Name'];
-            emObj["folder"] = rw['_labkeyurl_Folder'].match(/SDY\d{2,4}/)[0];
+            emObj["folder"] = rw['Folder/Name'].match(/SDY\d{2,4}/)[0];
             emObj["path"] = "/analysis/exprs_matrices/" +
                                     rw['Name'] + ".tsv";
             rmLKrow( emObj );
