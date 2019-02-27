@@ -5,7 +5,7 @@
 library(Rlabkey)
 library(ImmuneSpaceR)
 library(flowWorkspace)
-library(dplyr)
+library(data.table)
 
 #----------------------
 # FUNCTIONS
@@ -13,33 +13,38 @@ library(dplyr)
 
 .getGS <- function(ws, group_id_num = 1) {
     gs <- parseWorkspace(ws,
-                         subset = 1:15,
+#                         subset = 1:15,
                          name = group_id_num,
                          keywords = c("DAY", "TREATMENT", "TUBE NAME"),
-                         isNCdf = TRUE)
+                         isNCdf = TRUE,
+                         use.sampleID = TRUE) # this is a hidden option not exposed in parseWorkspace docs
     pData(gs)$FILENAME <- basename(as.character(keyword(gs, "FILENAME")$FILENAME))
     return(gs)
 }
 
-.runData <- function(gs, group_id, group_name, wsID, ws, sdy) {
-    gs@guid <- paste0(sdy, "_", wsID, "_GS", group_id)
-    wsID <- wsID
+.updateGuid <- function(gs, guid) {
+    gs@guid <- guid
+    return(gs)
+}
+
+.runData <- function(gs, group_id, group_name, wsid, ws, sdy) {
+    wsid <- wsid
     workspace <- ws@file
     gating_set <- gs@guid
     group_id <- as.character(group_id)
+    group_name <- as.character(group_name)
     num_samples <- length(gs@data@phenoData@data$name)
     num_unique_days <- length(unique(pData(gs)$DAY))
     num_unique_trt <- length(unique(pData(gs)$TREATMENT))
     num_unique_tube <- length(unique(pData(gs)$`TUBE NAME`))
     fw_version <- as.character(packageVersion("flowWorkspace"))
     study <- sdy
-    run <- data.frame(wsID, workspace, gating_set, group_id, group_name,group_name, num_samples, num_unique_days,
-                                      num_unique_trt, num_unique_tube, fw_version, study,
-                                      stringsAsFactors = FALSE)
+    run <- data.table(wsid, workspace, gating_set, group_id, group_name,group_name, num_samples, num_unique_days,
+                                      num_unique_trt, num_unique_tube, fw_version, study)
     return(run)
 }
 
-.inputFiles <- function(gs, wsID, gsdir, labkey.url.base, labkey.url.path) {
+.inputFiles <- function(gs, wsid, gsdir, labkey.url.base, labkey.url.path) {
     fcs <- pData(gs)$FILENAME
     input_files <- labkey.selectRows(baseUrl = labkey.url.base,
                                      folderPath = labkey.url.path,
@@ -49,8 +54,8 @@ library(dplyr)
                                      colSelect = c("file_info_name", "ParticipantId", "biosample_accession", "expsample_accession", 
                                                    "study_accession"))
     input_files <- input_files[input_files$file_info_name %in% fcs, ]
-    input_files$gsdir <- gsdir
-    input_files$wsID <- wsID
+    input_files$wsid <- wsid
+    input_files$gsdir <- paste0(gsdir,"/",gs@guid)
     labkey.insertRows(baseUrl = labkey.url.base,
                       folderPath = labkey.url.path,
                       schemaName = "cytometry_processing",
@@ -72,12 +77,12 @@ runCreateGS <- function(labkey.url.base,
                         onCL = FALSE) {
     
     sdy <- gsub("/Studies/", "", labkey.url.path)
-    wsID <- gsub(".tsv", "", output.tsv)
+    wsid <- gsub(".tsv", "", output.tsv)
 
     ##----CHECK-FOR-FILES----##
     # check for workspace file in correct format
     
-    ws_regex <- paste0(wsID, ".*xml$")
+    ws_regex <- paste0(wsid, ".*xml$")
     ws_file <- list.files(data.directory, pattern = ws_regex, full.names = TRUE)
 
     if ( length(ws_file) == 0 ) {
@@ -85,7 +90,7 @@ runCreateGS <- function(labkey.url.base,
     }
     
     if ( length(ws_file) > 1 ) {
-        stop(paste0("More than one workspace found with ID: ", wsID))
+        stop(paste0("More than one workspace found with ID: ", wsid))
     }
 
     # check that analysis directory exists
@@ -95,8 +100,8 @@ runCreateGS <- function(labkey.url.base,
     
     # create output directory
     outpath <- paste0(pipeline.root, "/analysis/gating_set/")    
-    if (!file.exists(analysis.directory)) {
-        dir.create(analysis.directory, recursive = TRUE)
+    if (!file.exists(outpath)) {
+        dir.create(outpath, recursive = TRUE)
     }
 
     ##----ACCESS-BASIC-WORKSPACE-INFO----##
@@ -107,15 +112,16 @@ runCreateGS <- function(labkey.url.base,
     
     groups$groupNumber <- seq(1:nrow(groups))
     
-    gsdir <- paste0(outpath, wsID)
+    gsdir <- paste0(outpath, wsid)
 
     if ( nrow(groups) == 1 ) {
         gs <- .getGS(ws)
-        run <- .runData(gs, groups$groupID, groups$groupName, wsID, ws, sdy)
+        gs@guid <- paste0(sdy, "_", wsid, "_GS", groups$groupID)
+        run <- .runData(gs, groups$groupID, groups$groupName, wsid, ws, sdy)
         save_gs(gs,
                 gsdir,
                 cdf="copy")
-        input <- .inputFiles(gs, gsdir, labkey.url.base, labkey.url.path)
+        input <- .inputFiles(gs, wsid, gsdir, labkey.url.base, labkey.url.path)
         } else {
             # remove all samples
             groups <- subset(groups, groups$groupName != "All Samples")
@@ -128,16 +134,21 @@ runCreateGS <- function(labkey.url.base,
                               .getGS(ws = ws, group_id_num = num)
             })
 
-            run <- mapply(.runData, gs_list, group_id, group_name, MoreArgs= list(wsID, ws, sdy), SIMPLIFY = FALSE)
-            run <- data.frame(do.call(rbind, run))
+            guids <- paste0(sdy, "_", wsid, "_GS", group_id)
+            gs_list <- mapply(.updateGuid, gs_list, guids)
+
+
+            run <- mapply(.runData, gs_list, group_id, group_name, MoreArgs= list(wsid, ws, sdy), SIMPLIFY = FALSE)
+            run <- data.table(do.call(rbind, run))
 
             save_gslist(GatingSetList(gs_list),
                         gsdir,
                         cdf = "copy")
 
             lapply(gs_list, function(gs) {
-                   .inputFiles(gs, wsID, gsdir, labkey.url.base, labkey.url.path)
+                   .inputFiles(gs, wsid, gsdir, labkey.url.base, labkey.url.path)
             })
+
         }
 
     # ${tsvout:tsvfile}
