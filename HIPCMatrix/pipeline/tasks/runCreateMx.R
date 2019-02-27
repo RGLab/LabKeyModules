@@ -327,7 +327,8 @@ library(illuminaio)
   library(hthgu133pluspmcdf)
   library(huex10stv2cdf) # customCDF loaded from UpdateAnno Pkg
   library(hursta2a520709cdf) # customCDF loaded from UpdateAnno Pkg - SDY1328
-  
+  library(affy)
+ 
   # Background Correction Notes:
   # 'background' = TRUE performs function similar to normexp.fit.control and normexp.signal
   # from limma package.
