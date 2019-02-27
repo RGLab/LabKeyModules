@@ -324,6 +324,7 @@ library(illuminaio)
   library(hugene10stv1cdf)
   library(primeviewcdf)
   library(hgu133plus2cdf)
+  library(hgu133a2cdf)
   library(hthgu133pluspmcdf)
   library(huex10stv2cdf) # customCDF loaded from UpdateAnno Pkg
   library(hursta2a520709cdf) # customCDF loaded from UpdateAnno Pkg - SDY1328
