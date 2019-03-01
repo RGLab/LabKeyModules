@@ -1,23 +1,23 @@
-#---------------------
+#---------------------------
 # DEPENDENCIES
-#----------------------
+#----------------------------
 
 library(Rlabkey)
 library(ImmuneSpaceR)
 library(flowWorkspace)
 library(data.table)
 
-#----------------------
+#----------------------------
 # FUNCTIONS
-#----------------------
+#----------------------------
 
 .getGS <- function(ws, group_id_num = 1) {
     gs <- parseWorkspace(ws,
-#                         subset = 1:15,
+                         subset = 1:15,
                          name = group_id_num,
                          keywords = c("DAY", "TREATMENT", "TUBE NAME"),
                          isNCdf = TRUE,
-                         use.sampleID = TRUE) # this is a hidden option not exposed in parseWorkspace docs
+                         additional.sampleID = TRUE) # this is a hidden option not exposed in parseWorkspace docs
     pData(gs)$FILENAME <- basename(as.character(keyword(gs, "FILENAME")$FILENAME))
     return(gs)
 }
@@ -64,9 +64,9 @@ library(data.table)
 }
 
 
-#--------------------
+#--------------------------
 # PIPELINE
-#--------------------
+#--------------------------
 
 runCreateGS <- function(labkey.url.base,
                         labkey.url.path,
@@ -79,9 +79,9 @@ runCreateGS <- function(labkey.url.base,
     sdy <- gsub("/Studies/", "", labkey.url.path)
     wsid <- gsub(".tsv", "", output.tsv)
 
-    ##----CHECK-FOR-FILES----##
-    # check for workspace file in correct format
+    ##---------------CHECK-FOR-FILES---------------##
     
+    # check for workspace file in correct format (xml)
     ws_regex <- paste0(wsid, ".*xml$")
     ws_file <- list.files(data.directory, pattern = ws_regex, full.names = TRUE)
 
@@ -89,6 +89,7 @@ runCreateGS <- function(labkey.url.base,
         stop("No XML workspace files found")
     }
     
+    # check the wsid is unique to a single workspace file
     if ( length(ws_file) > 1 ) {
         stop(paste0("More than one workspace found with ID: ", wsid))
     }
@@ -103,17 +104,50 @@ runCreateGS <- function(labkey.url.base,
     if (!file.exists(outpath)) {
         dir.create(outpath, recursive = TRUE)
     }
+    
+    # create gating set directory
+    # check if it exists (save_gs won't run if T must delete)
+    gsdir <- paste0(outpath, wsid) 
+    if (file.exists(gsdir)) {
+        stop('gsdir exists -- must delete before proceeding')
+    }
+    
+    ##---------------HARDCODED-METADATA---------------##
+    # Manually curate a list to avoid hardcoding throughout
+    metaData <- list()
 
-    ##----ACCESS-BASIC-WORKSPACE-INFO----##
+    # **RmGrp**
+    # If a workspace requires a group to be removed add the logic here and log why
+    # the group has been removed.
+
+    # SDY113 - Group 3 - 885 controls
+    # For this study controls were put in their own group as well as the other corrosponding
+    # plate # group. Gating sets should not have overlapping samples. We remove Group 3 to handle this.
+
+    rmGroup <- sdy %in% c("SDY113")
+
+    if ( rmGroup ){
+        if ( sdy == "SDY113"){
+            group <- 3
+        }
+    } else { group <- NA }
+    metaData$rmGrp <- data.table(rmGroup = rmGroup, group = group)
+        
+    ##---------------ACCESS-BASIC-WORKSPACE-INFO---------------##
     ws <- openWorkspace(ws_file)
 
     sample_groups <- getSampleGroups(ws)
     groups <- unique(sample_groups[, c("groupID", "groupName")])
     
+    # assign group #
     groups$groupNumber <- seq(1:nrow(groups))
     
-    gsdir <- paste0(outpath, wsid)
+    # remove groups as needed
+    if ( metaData$rmGrp$rmGroup ){
+        groups <- groups[ -(metaData$rmGrp$group), ]
+    }
 
+    ##---------------PARSE-WS-AND-OUTPUT-GS---------------##
     if ( nrow(groups) == 1 ) {
         gs <- .getGS(ws)
         gs@guid <- paste0(sdy, "_", wsid, "_GS", groups$groupID)
@@ -157,7 +191,7 @@ runCreateGS <- function(labkey.url.base,
                 sep="\t",
                 row.names = FALSE)
 
-#----COPY-OVER-SCRIPT-FILES----##
+    #--------------COPY-OVER-SCRIPT-FILES--------------##
     file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/create-gatingset.R",
               to = paste0(analysis.directory, "/create-gatingset-snapshot.R"))
     file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
