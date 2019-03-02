@@ -22,10 +22,13 @@
                 <ns:columnTitle>Biosample Accession</ns:columnTitle>
             </ns:column>
             <ns:column columnName='expsample_accession'>
-                <ns:columnTitle>Group Id</ns:columnTitle>
+                <ns:columnTitle>Expsample Accession</ns:columnTitle>
             </ns:column>
             <ns:column columnName='study_accession'>
                 <ns:columnTitle>Study</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='wsid'>
+                <ns:columnTitle>Workspace ID</ns:columnTitle>
             </ns:column>
             <ns:column columnName='gsdir'>
                 <ns:columnTitle>Gating Set Directory</ns:columnTitle>

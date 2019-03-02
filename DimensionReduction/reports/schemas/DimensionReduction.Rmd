@@ -206,6 +206,23 @@ if(impute == "mean" | impute == "median"){
   aData <- lapply(aData, function(df){ 
     df <- df[ complete.cases(df), ]
   })
+  prbAssays <- sapply(aData, function(x){ return(dim(x)[[1]] == 0 )} )
+  prbAssays <- assays[ prbAssays ]
+  if (length(prbAssays) > 0 ) {
+    prbAssays <- sapply(prbAssays, function(x){ 
+      x <- switch(x,
+          "elisa" = "Elisa",
+          "elispot" = "Elispot",
+          "mbaa" = "MBAA",
+          "pcr" = "PCR",
+          "fcs_analyzed_result" = "Flow Cytometry",
+          "gene_expression_files" = "Gene Expression",
+          "hai" = "HAI",
+          "neut_ab_titer" = "Neutralizing Antibody Titer"
+        )
+    })
+    stop(paste0("R Report Error: Some assays do not have any subjects with complete cases. Select an imputation method or remove problematic assays (", paste(prbAssays, collapse = ", "), ")."))
+  }
 }
 
 # Find subs with all datasets
@@ -216,7 +233,7 @@ numSubs <- table(unlist(subs))
 subs <- names(numSubs)[ numSubs == length(aData) ]
 
 if(length(subs) < 2){
-  stop("R Report Error: Fewer than two subjects available for analysis. Select imputation method other than 'None' and retry.")
+  stop("R Report Error: Fewer than two subjects available for analysis across all assays. Select imputation method other than 'None' and retry.")
 }
 
 # Remove subs without all datasets and order for cbind
