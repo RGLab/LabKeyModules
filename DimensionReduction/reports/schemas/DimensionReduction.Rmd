@@ -198,6 +198,7 @@ if(impute == "mean" | impute == "median"){
     })
   })
 }else if(impute == "knn"){
+  library(impute)
   aData <- lapply(aData, function(df){ 
     res <- impute::impute.knn(as.matrix(df))
     return(res$data)
