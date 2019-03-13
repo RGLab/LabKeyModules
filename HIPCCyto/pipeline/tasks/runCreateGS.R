@@ -13,12 +13,15 @@ library(data.table)
 
 .getGS <- function(ws, group_id_num = 1) {
     gs <- parseWorkspace(ws,
-                         subset = 1:15,
                          name = group_id_num,
                          keywords = c("DAY", "TREATMENT", "TUBE NAME"),
                          isNCdf = TRUE,
                          additional.sampleID = TRUE) # this is a hidden option not exposed in parseWorkspace docs
     pData(gs)$FILENAME <- basename(as.character(keyword(gs, "FILENAME")$FILENAME))
+    pData(gs)$panel <- unlist(lapply(gs@data@frames, function(x){
+                                     markers <- markernames(x)
+                                     paste(markers[markers != "-"], collapse = "|")
+    }))[rownames(pData(gs))]
     return(gs)
 }
 
@@ -37,10 +40,11 @@ library(data.table)
     num_unique_days <- length(unique(pData(gs)$DAY))
     num_unique_trt <- length(unique(pData(gs)$TREATMENT))
     num_unique_tube <- length(unique(pData(gs)$`TUBE NAME`))
+    panels <- paste(unique(pData(gs)$panel), collapse = "; ")
     fw_version <- as.character(packageVersion("flowWorkspace"))
     study <- sdy
     run <- data.table(wsid, workspace, gating_set, group_id, group_name,group_name, num_samples, num_unique_days,
-                                      num_unique_trt, num_unique_tube, fw_version, study)
+                                      num_unique_trt, num_unique_tube, panels, fw_version, study)
     return(run)
 }
 
