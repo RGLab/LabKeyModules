@@ -3,6 +3,7 @@
     <metadata>
         <tables xmlns='http://labkey.org/data/xml'>
             <table tableName='SelectedRuns' tableDbType='TABLE'>
+                <tableTitle>Gene expression matrices</tableTitle>
                 <buttonBarOptions position='both' includeStandardButtons='false'>
                     <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
                     <item text='Grid Views' permission='ADMIN' insertPosition='end'>
