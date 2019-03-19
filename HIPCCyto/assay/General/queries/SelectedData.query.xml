@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns='http://labkey.org/data/xml/query'>
+    <metadata>
+        <tables xmlns='http://labkey.org/data/xml'>
+            <table tableName='SelectedData' tableDbType='TABLE'>
+                <tableTitle>Gating sets</tableTitle>
+                <buttonBarOptions position='both' includeStandardButtons='false'>
+                    <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
+                    <item text='Grid Views' permission='ADMIN' insertPosition='end' suppressWarning='true'>
+                        <originalText>Grid Views</originalText>
+                    </item>
+                    <item text='Views' insertPosition='end'>
+                        <item text='Default'>
+                            <onClick>goToView(dataRegion, ''); return false;</onClick>
+                        </item>
+                        <item text='Gating sets'>
+                            <onClick>goToView(dataRegion, 'gating_sets'); return false;</onClick>
+                        </item>
+                    </item>
+                    <item text='Export' insertPosition='end'>
+                        <originalText>Export</originalText>
+                    </item>
+                    <item text='Insert' permission='ADMIN' insertPosition='end' suppressWarning='true'>
+                        <originalText>Insert</originalText>
+                    </item>
+                    <item text='Manage' permission='ADMIN' insertPosition='end' suppressWarning='true'>
+                        <originalText>Manage</originalText>
+                    </item>
+                    <item text='Delete' requiresSelection='true' permission='ADMIN' insertPosition='end' suppressWarning='true'>
+                        <originalText>Delete</originalText>
+                    </item>
+                </buttonBarOptions>
+                <columns>
+                    <column columnName='workspace'>
+                        <url>/_webdav/Studies/${study}/%40files/rawdata/flow_cytometry/${workspace}</url>
+                        <urlTarget>_blank</urlTarget>
+                    </column>
+                    <column columnName='gating_set'>
+                        <url>/_webdav/Studies/${study}/%40files/analysis/gating_set/${wsID}/${gating_set}/?method=zip&amp;depth=-1</url>
+                        <urlTarget>_blank</urlTarget>
+                    </column>
+                </columns>
+            </table>
+        </tables>
+    </metadata>
+</query>

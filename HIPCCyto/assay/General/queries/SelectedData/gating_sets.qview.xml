@@ -1,0 +1,2 @@
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" containerFilter="CurrentAndSubfolders" label="Gating sets" category="Assays" showInDataViews="true"/>
+
