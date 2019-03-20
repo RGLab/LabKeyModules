@@ -69,7 +69,7 @@ parseFilter <- function(e) {
 
 # Ensure Rlabkey format of vector of filter strings
 if (length(filters) > 0) {
-  filtChk <- colFilter <- unlist(lapply(filters, parseFilter))
+  filtChk <- colFilter <- as.matrix(unlist(lapply(filters, parseFilter)))
 } else {
   colFilter <- NULL
   filtChk <- "" # Need non-NULL str for reload logic
