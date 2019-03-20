@@ -13,12 +13,15 @@ library(data.table)
 
 .getGS <- function(ws, group_id_num = 1) {
     gs <- parseWorkspace(ws,
-                         subset = 1:15,
                          name = group_id_num,
                          keywords = c("DAY", "TREATMENT", "TUBE NAME"),
                          isNCdf = TRUE,
                          additional.sampleID = TRUE) # this is a hidden option not exposed in parseWorkspace docs
     pData(gs)$FILENAME <- basename(as.character(keyword(gs, "FILENAME")$FILENAME))
+    pData(gs)$panel <- unlist(lapply(gs@data@frames, function(x){
+                                     markers <- markernames(x)
+                                     paste(markers[markers != "-"], collapse = "|")
+    }))[rownames(pData(gs))]
     return(gs)
 }
 
@@ -37,14 +40,15 @@ library(data.table)
     num_unique_days <- length(unique(pData(gs)$DAY))
     num_unique_trt <- length(unique(pData(gs)$TREATMENT))
     num_unique_tube <- length(unique(pData(gs)$`TUBE NAME`))
+    panels <- paste(unique(pData(gs)$panel), collapse = "; ")
     fw_version <- as.character(packageVersion("flowWorkspace"))
     study <- sdy
-    run <- data.table(wsid, workspace, gating_set, group_id, group_name,group_name, num_samples, num_unique_days,
-                                      num_unique_trt, num_unique_tube, fw_version, study)
+    run <- data.table(gating_set, wsid, workspace, group_id, group_name,group_name, num_samples, num_unique_days,
+                                      num_unique_trt, num_unique_tube, panels, fw_version, study)
     return(run)
 }
 
-.inputFiles <- function(gs, wsid, gsdir, labkey.url.base, labkey.url.path) {
+.inputFiles <- function(gs, wsid, wsdir, labkey.url.base, labkey.url.path) {
     fcs <- pData(gs)$FILENAME
     input_files <- labkey.selectRows(baseUrl = labkey.url.base,
                                      folderPath = labkey.url.path,
@@ -55,7 +59,7 @@ library(data.table)
                                                    "study_accession"))
     input_files <- input_files[input_files$file_info_name %in% fcs, ]
     input_files$wsid <- wsid
-    input_files$gsdir <- paste0(gsdir,"/",gs@guid)
+    input_files$gsdir <- paste0(wsdir,"/",gs@guid)
     labkey.insertRows(baseUrl = labkey.url.base,
                       folderPath = labkey.url.path,
                       schemaName = "cytometry_processing",
@@ -105,12 +109,11 @@ runCreateGS <- function(labkey.url.base,
         dir.create(outpath, recursive = TRUE)
     }
     
-    # create gating set directory
-    # check if it exists (save_gs won't run if T must delete)
-    gsdir <- paste0(outpath, wsid) 
-    if (file.exists(gsdir)) {
-        stop('gsdir exists -- must delete before proceeding')
-    }
+    # create gating set directory path
+    # don't create directory yet...
+    # for studies outputting gs using save_gslist wsdir should not exist
+    # for studies outputting gs using save_gs wsdire must exist
+    wsdir <- paste0(outpath, wsid) 
     
     ##---------------HARDCODED-METADATA---------------##
     # Manually curate a list to avoid hardcoding throughout
@@ -151,6 +154,18 @@ runCreateGS <- function(labkey.url.base,
     if ( nrow(groups) == 1 ) {
         gs <- .getGS(ws)
         gs@guid <- paste0(sdy, "_", wsid, "_GS", groups$groupID)
+        
+        # check directories for save_gs to run
+        if (!file.exists(wsdir)) {
+            dir.create(wsdir, recursive = TRUE)
+        }
+        
+        gsdir <- paste0(wsdir, "/", gs@guid)
+        if (file.exists(gsdir)) {
+            stop('gsdir exists -- must delete before proceeding')
+        }
+        
+        
         run <- .runData(gs, groups$groupID, groups$groupName, wsid, ws, sdy)
         save_gs(gs,
                 gsdir,
@@ -174,13 +189,13 @@ runCreateGS <- function(labkey.url.base,
 
             run <- mapply(.runData, gs_list, group_id, group_name, MoreArgs= list(wsid, ws, sdy), SIMPLIFY = FALSE)
             run <- data.table(do.call(rbind, run))
-
+            
             save_gslist(GatingSetList(gs_list),
-                        gsdir,
-                        cdf = "copy")
-
+                        wsdir,
+                        cdf="copy")            
+            
             lapply(gs_list, function(gs) {
-                   .inputFiles(gs, wsid, gsdir, labkey.url.base, labkey.url.path)
+                   .inputFiles(gs, wsid, wsdir,  labkey.url.base, labkey.url.path)
             })
 
         }

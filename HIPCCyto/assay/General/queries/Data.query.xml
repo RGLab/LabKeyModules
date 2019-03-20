@@ -6,7 +6,7 @@
                 <buttonBarOptions position='both' includeStandardButtons='true'>
                     <includeScript>HIPCCyto/RemoveGSs.js</includeScript>
                     <item text='Remove GS' requiresSelection='true' permission='UPDATE' insertPosition='end'>
-                        <onClick>RemoveGSs(dataRegion); return false;</onClick>
+                        <onClick>removeGSs(dataRegion); return false;</onClick>
                         <onLoad>this.disabled='true'</onLoad>
                     </item>
                 </buttonBarOptions>
