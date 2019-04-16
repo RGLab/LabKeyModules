@@ -853,7 +853,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
 
         var strAssayData = new LABKEY.ext.Store({
             schemaName: 'study',
-            queryName: 'DimRedux_assay_data',
+            queryName: 'DimRedux_assay_data_computed',
             autoLoad: true,
             listeners: {
                 load: function(){

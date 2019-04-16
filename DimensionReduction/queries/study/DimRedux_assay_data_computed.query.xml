@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query name='DimRedux_assay_data_computed' schemaName='study' xmlns='http://labkey.org/data/xml/query'>
+    <description>
+        Study filtered version of DimensionReduction.DimRedux_Assay_Data_PreCompute
+    </description>
+</query>

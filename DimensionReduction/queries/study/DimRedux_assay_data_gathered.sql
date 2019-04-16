@@ -7,7 +7,7 @@ SELECT
   COUNT( participantId ) AS subjects,
   MAX (features) AS features
 FROM 
-  DimRedux_assay_data
+  DimRedux_assay_data_computed
 GROUP BY
   Name, Label, timepoint
 ORDER BY
