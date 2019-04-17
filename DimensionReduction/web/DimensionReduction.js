@@ -309,23 +309,23 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
 
                 // put new filter on store for assays and time points
                 strAssayData.filterBy( function(record){
-                    return( tps.includes(record.data.timepoint) & assays.includes(record.data.Name) ) 
+                    return( tps.includes(record.data.Timepoint) & assays.includes(record.data.Name) ) 
                 });
                 
                 // calculate subs and features
                 // get unique set of pids
-                var pids = strAssayData.collect("participantId");
+                var pids = strAssayData.collect("ParticipantId");
                 
                 // Group by participantId and get subject and feature data
                 var dat = strAssayData.data.items;   
                 var sumByPid = [];
                 pids.forEach( function(el){
                     // get data for just pid
-                    var filtDat = dat.filter( function(rec){ return(rec.data.participantId == el) });
+                    var filtDat = dat.filter( function(rec){ return(rec.data.ParticipantId == el) });
         
                     // sum features
                     var feats = []
-                    filtDat.forEach( function(rec){ feats.push(rec.data.features) })
+                    filtDat.forEach( function(rec){ feats.push(rec.data.Features) })
                     var sum = feats.reduce((a,b) => a + b, 0)
 
                     // return rows aka count of assays
@@ -858,7 +858,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
             listeners: {
                 load: function(){
                     strAssayDataLoaded = true;
-                    filteredPids = this.collect("participantId");
+                    filteredPids = this.collect("ParticipantId");
                     checkQueries();
                 },      
                 loadexception: LABKEY.ext.ISCore.onFailure
