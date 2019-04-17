@@ -1,4 +1,3 @@
--- List the datasets available (is also properly filtered by the Data Finder)
 SELECT
   dataset_n.pid AS participantId,
   dataset_n.Name,
@@ -6,68 +5,96 @@ SELECT
   dataset_n.study_time_collected || ' ' || dataset_n.study_time_collected_unit AS timepoint,
   dataset_n.features
 FROM
-    (
+    (                                                                                                                   
        SELECT
          study_time_collected,
          study_time_collected_unit,
-         participantid AS pid,
+         pid,
          COUNT(population_definition_reported) AS features,
          'fcs_analyzed_result' AS Name,
          'Flow Cytometry' AS Label
-       FROM
-          fcs_analyzed_result
+       FROM ( SELECT DISTINCT
+              study_time_collected,
+              study_time_collected_unit,
+              participantid AS pid,
+              population_definition_reported
+              FROM
+              fcs_analyzed_result
+              GROUP BY
+              study_time_collected, study_time_collected_unit, participantid, population_definition_reported)
        GROUP BY
-         study_time_collected, study_time_collected_unit, participantid
+         study_time_collected, study_time_collected_unit, pid
 
        UNION
-       
+     
        SELECT
          study_time_collected,
          study_time_collected_unit,
-         participantid AS pid,
+         pid,
          COUNT(analyte) AS features,
          'mbaa' AS Name,
          'MBAA' AS Label
-       FROM
-          mbaa
+       FROM ( SELECT DISTINCT
+              study_time_collected,
+              study_time_collected_unit,
+              participantid AS pid,
+              analyte
+              FROM
+              mbaa
+              GROUP BY
+              study_time_collected, study_time_collected_unit, participantid, analyte)
        GROUP BY
-         study_time_collected, study_time_collected_unit, participantid
+         study_time_collected, study_time_collected_unit, pid
 
        UNION
        
        SELECT
          study_time_collected,
          study_time_collected_unit,
-         participantid AS pid,
+         pid,
          COUNT(analyte) AS features,
-         'elisa' AS Name,
-         'ELISA' AS Label
-       FROM
-          elisa
+        'elisa' AS Name,
+        'ELISA' AS Label
+       FROM ( SELECT DISTINCT
+              study_time_collected,
+              study_time_collected_unit,
+              participantid AS pid,
+              analyte
+              FROM
+              elisa
+              GROUP BY
+              study_time_collected, study_time_collected_unit, participantid, analyte)
        GROUP BY
-         study_time_collected, study_time_collected_unit, participantid
+         study_time_collected, study_time_collected_unit, pid
 
        UNION
        
        SELECT
          study_time_collected,
          study_time_collected_unit,
-         participantid AS pid,
+         pid,
          COUNT(analyte) AS features,
-         'elispot' AS Name,
-         'ELISPOT' AS Label
-       FROM
-          elispot
+        'elispot' AS Name,
+        'ELISPOT' AS Label
+       FROM ( SELECT DISTINCT
+              study_time_collected,
+              study_time_collected_unit,
+              participantid AS pid,
+              analyte
+              FROM
+              elispot
+              GROUP BY
+              study_time_collected, study_time_collected_unit, participantid, analyte)
        GROUP BY
-         study_time_collected, study_time_collected_unit, participantid
+         study_time_collected, study_time_collected_unit, pid
 
        UNION
-       
+     
        SELECT
          study_time_collected,
          study_time_collected_unit,
          participantid AS pid,
-         COUNT(virus) AS features,
+         1 AS features,
          'hai' AS Name,
          'HAI' AS Label
        FROM
@@ -76,12 +103,12 @@ FROM
          study_time_collected, study_time_collected_unit, participantid
 
        UNION
-       
+     
        SELECT
          study_time_collected,
          study_time_collected_unit,
          participantid AS pid,
-         COUNT(virus) AS features,
+         1 AS features,
          'neut_ab_titer' AS Name,
          'NAb' AS Label
        FROM
@@ -102,9 +129,9 @@ FROM
          pcr
        GROUP BY
          study_time_collected, study_time_collected_unit, participantid
-       
+     
        UNION
-       
+     
        SELECT
          study_time_collected,
          study_time_collected_unit,
