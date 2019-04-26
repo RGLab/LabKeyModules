@@ -454,26 +454,20 @@ ISR <- logs_dt[ grepl("ImmuneSpaceR", X11) & !is.na(X12)]
 # Fix study for project level connections
 ISR[, study := ifelse(is.na(study), "All", study) ]
 
-# Get unique CreateConnection calls
-#x5Filt <- "GET /project/Studies/getContainers.view?includeSubfolders=0&includeEffectivePermissions=1 HTTP/1.1"
-#ISR_inits <- ISR[ (query == "ISC_study_datasets" | X5 == x5Filt) & X1 != "10.10.1.74", ]
-
-# option 2
+# Filter down to connections
 ISR_inits <- ISR[ , list(cnt = .N), by = .(date2, X12, study)]
 ```
 
 
 ## 9. ImmuneSpaceR Users Over Time
 ```{r isr-user}
-# Remove inits without email or date
-#ISR_user <- ISR_inits[!is.na(X12) & !is.na(date2), list(date2, X12)]
+# Filter to single connection per user per day for accurate aggregation
+ISR_users <- ISR_inits[ , list(X12, date2) ]
+ISR_users <- ISR_users[ !duplicated(ISR_users) ]
 
-# De-dupe to get unique user inits 
-#ISR_user <- ISR_user[ !duplicated(ISR_user)]
-
-# Group by break
-tmp <- as.POSIXct(ISR_inits$date2, format="%Y-%m-%d", tz="UTC")
-ISR_usersOverTime <- ISR_inits[ , Date := as.Date(cut(tmp, breaks = labkey.url.params$by)) ]
+# Group by Date break
+tmp <- as.POSIXct(ISR_users$date2, format="%Y-%m-%d", tz="UTC")
+ISR_usersOverTime <- ISR_users[ , Date := as.Date(cut(tmp, breaks = labkey.url.params$by)) ]
 ISR_usersOverTime <- ISR_usersOverTime[ , list(Users = .N), by = Date ]
 
 p <- ISR_usersOverTime %>%
@@ -504,8 +498,9 @@ UI_logins <- UI_logins[ !duplicated(UI_logins) ]
 UI_logins <- UI_logins[ , Date := cut(as.POSIXct(UI_logins$Date, format="%Y-%m-%d", tz="UTC"), breaks = "day") ]
 
 # prep ISR Logins
-ISR_logins <- ISR_inits[ , list(date2, X12)]
-setnames(ISR_logins, colnames(ISR_logins), c("Date", "Email"))
+ISR_logins <- ISR_inits[ , list(X12, date2) ]
+ISR_logins <- ISR_logins[ !duplicated(ISR_logins) ]
+setnames(ISR_logins, colnames(ISR_logins), c("Email", "Date"))
 ISR_logins$method <- "ISR"
 ISR_logins <- ISR_logins[ , Date := cut(as.POSIXct(ISR_logins$Date, format="%Y-%m-%d", tz="UTC"), breaks = "day") ]
 
