@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<pipeline xmlns='http://labkey.org/pipeline/xml'
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          name='create-gatingset' version='0.0'>
+    <description>Create gating set</description>
+    <author>lwolfe@fredhutch.org</author>
+    <!--<analyzeURL>/pipelinetest/CreateGatingSet.view</analyzeURL>-->
+    <tasks>
+        <taskref ref='HIPCCyto:task:create-gatingset'/>
+        <task xsi:type='AssayImportRunTaskType'>
+            <providerName>General</providerName>
+            <protocolName>gatingset</protocolName>
+        </task>
+    </tasks>
+</pipeline>
+
