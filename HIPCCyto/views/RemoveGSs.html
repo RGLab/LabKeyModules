@@ -1,0 +1,51 @@
+<!-- removeGSs.html -->
+
+<div id='dbNotRemoved'>
+    <b><p>
+        Runs that were not removed by LK.deleteRows()
+    </p></b>
+</div>
+
+<div id='rmFail'>
+    <b><p>
+        Paths that were not removed by LK.deletePath()
+    </p></b>
+</div>
+
+<div id='rmSuccess'>
+    <b><p>
+        Paths that were successfully deleted and their run removed
+    </p></b>
+</div>
+
+<script language="javascript">
+
+    var dbNotRemoved = LABKEY.ActionURL.getParameterArray("dbNotRemoved");
+    var rmFail = LABKEY.ActionURL.getParameterArray("rmFail");
+    var rmSuccess = LABKEY.ActionURL.getParameterArray("rmSuccess");
+
+    function makeUL(listName, idName) {
+        if(listName != null){
+            // Create the list element:
+            var list = document.createElement('ul');
+
+            for(var i = 0; i < listName.length; i++) {
+                // Create the list item:
+                var item = document.createElement('li');
+
+                // Set its contents:
+                item.appendChild(document.createTextNode(listName[i]));
+
+                // Add it to the list:
+                list.appendChild(item);
+            }
+
+            document.getElementById(idName).appendChild(list);
+        }
+    }
+
+    makeUL(dbNotRemoved, "dbNotRemoved");
+    makeUL(rmFail, "rmFail");
+    makeUL(rmSuccess, "rmSuccess");
+
+</script>
