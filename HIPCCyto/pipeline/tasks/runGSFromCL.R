@@ -1,32 +1,35 @@
 # Main CL script
-source("/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/makeAllWsVarsDf.R")
-source("/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/runCreateMx.R") # dependencies sourced here
+source("/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/makeAllGSVarsDf.R")
+source("/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R") # dependencies sourced here
 
-runMxFromCL <- function(studies = NULL, onTest = TRUE){
+runGSFromCL <- function(studies = NULL, onTest = TRUE){
 
   con <- CreateConnection("", onTest = onTest)
-  mats <- con$cache$GE_matrices
 
+  gs_list <- labkey.selectRows(baseUrl = con$config$labkey.url.base,
+                               folderPath = "/Studies",
+                               schemaName = "assay.General.gatingset",
+                               queryName = "Data",
+                               containerFilter = "CurrentAndSubfolders",
+                               colNameOpt = "rname")
+  
   if (!is.null(studies)) {
-    mats <- mats[ mats$folder %in% studies, ]
+    gs_list <- gs_list[ gs_list$study %in% studies, ]
   }
 
-  message("Generating matrix of argument values for runCreateMx() for all current matrices\n")
+  message("Generating matrix of argument values for runCreateGS() for all current workspaces\n")
   allLs <- mapply(makeVarList,
-                  sdy = mats$folder,
-                  mx = mats$name,
+                  sdy = unique(gs_list$study), 
+                  wsID = unique(gs_list$wsid),
                   MoreArgs = list(con = con))
   df <- data.frame(t(allLs), stringsAsFactors = FALSE)
 
-  message("\nRunning all matrices through runCreateMx()")
-  res <- mapply(runCreateMx,
+  message("\nRunning all workspaces through runCreateGS()")
+  res <- mapply(runCreateGS,
               labkey.url.base = df$labkey.url.base,
               labkey.url.path = df$labkey.url.path,
               pipeline.root = df$pipeline.root,
               analysis.directory = df$analysis.directory,
-              selectedBiosamples = df$selectedBiosamples,
-              fasId = df$fasId,
-              taskOutputParams = df$taskOutputParams,
               output.tsv = df$output.tsv,
               MoreArgs = list(onCL = TRUE)
               )

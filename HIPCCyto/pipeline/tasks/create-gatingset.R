@@ -46,26 +46,11 @@ runCreateGS(labkey.url.base = labkey.url.base,
             pipeline.root = pipe.root,
             data.directory = data.directory,
             analysis.directory = analysis.directory,
-            output.tsv = output.tsv)
+            output.tsv = output.tsv,
+            onCL = FALSE)
 
 # Notes:
 # for running at command line, use or look at runCGS_allCL.R which
 # generates variables from the matrices currently available instead
 # of trying to parse logs and taskInfo tsv files.
 
-# ${tsvout:tsvfile}
-#write.table(res$run,
-#            file ="${output.tsv}",
-#            sep ="\t",
-#            row.names = FALSE)
-
-#write.table(res$input,
-#            file = paste0(analysis.directory, "/inputFiles.csv"),
-#            sep = ",",
-#            quote = FALSE,
-#            row.names = FALSE)
-
-#file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/create-gatingset.R",
-#         to = paste0(analysis.directory, "/create-gatingset-snapshot.R"))
-#file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
-#          to = paste0(analysis.directory, "/runGS-snapshot.R"))

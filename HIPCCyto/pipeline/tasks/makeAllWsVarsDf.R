@@ -1,31 +1,36 @@
 # Creates DF of all info needed to run CL version of runCreateMx()
 
 # Helper
-makeVarList <- function(sdy, ws, con){
-  print(paste(sdy, mx))
+makeVarList <- function(sdy, wsID){
+  print(paste(sdy, wsID))
   baseDir <- paste0("/share/files/Studies/",
                     sdy,
                     "/@files/rawdata/flow_cytometry/create-gatingset/",
-                    ws,
+                    wsID,
                     "/")
   fls <- list.files(baseDir)
 
   if(length(fls) != 0 ){
-    taskInfo <- paste0(baseDir, fls[grep("-taskInfo.tsv", fls)])
-    base <- gsub("-taskInfo.tsv", "", taskInfo)
-    taskOutputParams <- paste0(base, ".params-out.tsv")
-  }else{
-    taskOutputParams <- "notAvailable"
+      taskInfo_path <- file.path(baseDir, fls[grep("-taskInfo.tsv", fls)])
   }
+  
+  jobInfo <- read.table(taskInfo_path,
+                        header = FALSE,
+                        sep = "\t",
+                        stringsAsFactors = FALSE,
+                        col.names = c("name", "value"))
 
-  labkey.url.path     <- paste0("/Studies/", sdy)
-  analysis.directory  <- paste0(pipeline.root, "/rawdata/gene_expression/create-matrix/", mx)
-  output.tsv          <- paste0(mx, ".tsv")
+  labkey.url.base     <- jobInfo$value[ jobInfo$name == "baseUrl" ]
+  labkey.url.path     <- jobInfo$value[ jobInfo$name == "containerPath" ]
+  pipeline.root       <- jobInfo$value[ jobInfo$name == "pipeRoot" ]
+  analysis.directory  <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
+  output.tsv          <- jobInfo$value[ jobInfo$name == "output.tsv" ]
 
 
   res <- list(labkey.url.base = labkey.url.base,
+              labkey.url.path = labkey.url.path,
+              pipeline.root = pipeline.root,
               analysis.directory = analysis.directory,
-              taskOutputParams = taskOutputParams,
               output.tsv = output.tsv)
 
   return(res)

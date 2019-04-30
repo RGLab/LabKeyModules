@@ -14,6 +14,7 @@ library(data.table)
 .getGS <- function(ws, group_id_num = 1) {
     gs <- parseWorkspace(ws,
                          name = group_id_num,
+                         subset = 1:20,
                          keywords = c("DAY", "TREATMENT", "TUBE NAME"),
                          isNCdf = TRUE,
                          additional.sampleID = TRUE) # this is a hidden option not exposed in parseWorkspace docs
@@ -142,7 +143,7 @@ runCreateGS <- function(labkey.url.base,
     # of FlowJo. The prefix/suffix used in the xml need to be modified to
     # be compliant with parseWorkspace.
     
-    metaData$xmlMod <- sdy %in% c("SDY372")
+    metaData$xmlMod <- sdy %in% c("SDY372", "SDY301")
 
 
     ##---------------MODIFY-WORKSPACE-XML---------------##
@@ -162,6 +163,37 @@ runCreateGS <- function(labkey.url.base,
         # change ws_file variable to the modified xml
         ws_file <- mod_xml
     }
+
+    ##---------------COMMAND-LINE-RUN-TASKS---------------##
+    
+    # if the ws is being rerun via the command line the rows in cytometry_processing.GatingSetInputFiles 
+    # and assay.General.gatingset.Data need to be removed and repopulated. Also need to remove gating sets.
+    if (onCL) {
+        # delete inputfiles
+        # get inputFiles row keys
+        input_keys <- labkey.selectRows(baseUrl = labkey.url.base,
+                                        folderPath = labkey.url.path,
+                                        schemaName = "cytometry_processing",
+                                        queryName = "gatingSetInputFiles",
+                                        colSelect = c("key", "wsid"),
+                                        colNameOpt = "rname")
+        
+        # only remove rows from current wsID
+        toDelete <- subset(input_keys, wsid == wsID, select=key)
+
+        # delete InputFile rows
+        deleted <- labkey.deleteRows(baseUrl = labkey.url.base,
+                          folderPath = labkey.url.path,
+                          schemaName = "cytometry_processing",
+                          queryName = "gatingSetInputFiles",
+                          toDelete = toDelete)
+
+        # delete gatingSets from previous run
+        unlink(wsdir, recursive = TRUE)
+    
+    }
+
+
 
     ##---------------ACCESS-BASIC-WORKSPACE-INFO---------------##
     ws <- openWorkspace(ws_file)
@@ -226,12 +258,21 @@ runCreateGS <- function(labkey.url.base,
             })
 
         }
-
-    # ${tsvout:tsvfile}
-    write.table(run,
-                file = output.tsv,
-                sep="\t",
-                row.names = FALSE)
+    # write out run level data table or update current if run from command line
+    if (onCL) {
+        toUpdate <- data.frame(run, stringsAsFactors = FALSE)
+        updated <- labkey.updateRows(baseUrl = labkey.url.base,
+                          folderPath = labkey.url.path,
+                          schemaName = "assay.General.gatingset",
+                          queryName = "Data",
+                          toUpdate = toUpdate)
+    } else {
+        # ${tsvout:tsvfile}
+        write.table(run,
+                    file = output.tsv,
+                    sep="\t",
+                    row.names = FALSE)
+    }
 
     #--------------COPY-OVER-SCRIPT-FILES--------------##
     file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/create-gatingset.R",
