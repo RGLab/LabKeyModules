@@ -266,13 +266,13 @@ if( is.null(dim(allMat)) || dim(allMat)[2] < 2){
 ```{r prep-demo-data}
 # Get demographic data and add cohort name
 demo <- con$getDataset("demographics", colFilter = pidsFilt)
-cohortMap <- Rlabkey::labkey.selectRows(baseUrl = con$config$labkey.url.base,
-                                        folderPath = con$config$labkey.url.path,
-                                        schemaName = "study",
-                                        queryName = "cohort",
-                                        showHidden = TRUE,
-                                        colFilter = pidsFilt)
-demo$cohort <- cohortMap$Label[ match(demo$cohort, cohortMap$Rowid) ]
+# cohortMap <- Rlabkey::labkey.selectRows(baseUrl = con$config$labkey.url.base,
+#                                         folderPath = con$config$labkey.url.path,
+#                                         schemaName = "study",
+#                                         queryName = "cohort",
+#                                         showHidden = TRUE,
+#                                         colFilter = pidsFilt)
+# demo$cohort <- cohortMap$Label[ match(demo$cohort, cohortMap$Rowid) ]
 ```
 
 ## Parameters
