@@ -374,6 +374,11 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
 
   # Run analysis and get pieces together for plotting
   if(plotType == "tSNE"){
+    # perplexity * 2 < nrow(x) - 1
+    if (perplexity > (nrow(allMat) - 1)/3) {
+      minPerplexity <- floor((nrow(allMat) - 1)/3)
+      stop(paste0("R Report Error: Perplexity is too large for the number of samples. Select perplexity <= ", minPerplexity))
+    }
     set.seed(8)
     # Avoid duplicate rows by adding random noise
     if( any(duplicated(allMat)) ){
