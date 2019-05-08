@@ -162,7 +162,7 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, timeAs){
 }
 ```
 
-```{r prep-assay-data}
+```{r prep-assay-data, results = 'hide'}
 # Pulling labkey.url.base and labkey.url.path from injected code and using this
 # to set up connection
 con <- CreateConnection()
@@ -199,9 +199,25 @@ if(impute == "mean" | impute == "median"){
   })
 }else if(impute == "knn"){
   library(impute)
+  # For impute.knn, data should be "An expression matrix
+  # with genes in rows, samples in columns"
+
   aData <- lapply(aData, function(df){ 
-    res <- impute::impute.knn(as.matrix(df))
-    return(res$data)
+    # Transform into correct format
+    if ("participant_id" %in% names(df)) {
+      participant_ids <- df$participant_id
+      df <- df[-which(names(df) == "participant_id")]
+    }
+    mat <- t(df)
+    
+    # Impute
+    res <- impute::impute.knn(as.matrix(mat))
+    
+    # Transform back
+    res_df <- as.data.frame(t(res$data), stringsAsFactors = FALSE)
+    res_df$participant_id <- participant_ids 
+
+    return(res_df)
   })
 }else if(impute == "none"){
   aData <- lapply(aData, function(df){ 
