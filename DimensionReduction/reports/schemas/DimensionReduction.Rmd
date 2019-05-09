@@ -330,8 +330,7 @@ partial data for the timepoint (e.g. some hai strains but not others).
 - **Number of Observations Removed due to missing data**: `r length(numSubs[ numSubs < length(aData)])`
 - **Number of Features Used (Assay Data)**: `r dim(allMat)[2]`
 - **Number of Features Removed Due to Lack of Variance**: `r sum(noVariance)`
-`r if ( impute != "none" ) {paste0("- **Number of Features Imputed**: ", imputedFeatureCount)}`
-`r if ( impute != "none" ) {paste0("- **Number of Observations Imputed**: ", imputedObservationCount)}`
+`r if ( impute != "none" ) {paste0("- **Number of Observations with imputed values**: ", imputedObservationCount)}`
 `r if ( impute != "none" ) {paste0("- **Total Number of Imputed Values**: ", imputedValueCount)}`
 
 
@@ -438,7 +437,7 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
 }
 ```
 
-## Plots {.tabset}
+## Plots {.tabset .tabset-dropdown}
 
 ### Age
 ```{r  age, fig.align="left"}
@@ -500,26 +499,28 @@ plots <- makePlot(label = "cohort",
 htmltools::tagList(plots)
 ```
 
-### Timepoint
-```{r  timePt, fig.align="left"}
-if(timeAs == "observation"){
-  plots <- makePlot(label = "time",
-                    timeAs = timeAs,
-                    demo = demo,
-                    numComponents = numComponents,
-                    plotType = plotType,
-                    allMat = allMat
-  )
-  htmltools::tagList(plots)
-}else{
-  cat("Plots are only labelled by timepoint if `Use Time As` equals 'observation'.")
-}
+```{r showTime}
+showTime <- timeAs == "observation"
 ```
 
-### Study
-```{r  byStudy, fig.align="left"}
+`r if (showTime) {"### Timepoint"}`
+```{r  timePt, fig.align="left", eval = showTime}
+plots <- makePlot(label = "time",
+                  timeAs = timeAs,
+                  demo = demo,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+)
+htmltools::tagList(plots)
+```
+
+```{r projLvl}
 projLvl <- !grepl("SDY\\d{2,4}", con$config$labkey.url.path)
-if(projLvl == TRUE){
+```
+
+`r if (projLvl) {"### Study"}`
+```{r  byStudy, fig.align="left", eval = projLvl}
   plots <- makePlot(label = "study",
                     timeAs = timeAs,
                     demo = demo,
@@ -528,14 +529,21 @@ if(projLvl == TRUE){
                     allMat = allMat
   )
   htmltools::tagList(plots)
-}else{
-  cat("Plots are only labelled by study if run at the project level through `Data Finder`.")
-}
 ```
 
-### Immune Response
-Note: Not all subjects may have immune response data
-```{r IR, fig.align="left"}
+```{r IRcondition}
+re <- tryCatch(
+  con$getdataset(responseVar, original_view = TRUE),
+  warning = function(w) return(w),
+  error = function(e) return(e)
+)
+IRcondition <- !is.null(re$message)
+```
+
+`r if (IRcondition) {"### Immune Response"}`
+`r if (IRcondition) {"Note: Not all subjects may have immune repsonse data"}`
+
+```{r IR, fig.align="left", eval = IRcondition}
 re <- tryCatch(
   con$getDataset(responseVar, original_view = T),
   warning = function(w) return(w),
