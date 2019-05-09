@@ -189,19 +189,20 @@ aData <- aData[ !nulls ]
 # Get number of observations to be imputed
 if ( impute != "none" ) {
   # Get subjects with missing feature data
-  missingFeatures <- lapply(aData, function(df){
+  missingFeaturesBySubject <- lapply(aData, function(df){
     rownames(df) <- df$participant_id
     apply(df, 1, function(x)sum(is.na(x)))
   })
+  
+  missingFeaturesDT <- data.table(subject = names(unlist(missingFeaturesBySubject)),
+                                missing = unlist(missingFeaturesBySubject))
+  missing <- missingFeaturesDT[, .(missing = sum(missing)), subject]
+  missingFeaturesBySubject <- missingFeaturesDT$missing
+  names(missingFeaturesBySubject) <- missing$subject
 
-  missingSubjects <- lapply(aData, function(df) {
+  missingSubjectsByFeature <- lapply(aData, function(df) {
     apply(df, 2, function(x)(sum(is.na(x))))
   })
-                        
-                          
-  imputedObservationCount <- sum(unlist(missingFeatures) != 0)
-  imputedFeatureCount <- sum(unlist(missingSubjects) != 0)
-  imputedValueCount <- sum(unlist(missingSubjects))
 }
 
 if(impute == "mean" | impute == "median"){
@@ -271,6 +272,11 @@ if(length(subs) < 2){
   stop("R Report Error: Fewer than two subjects available for analysis across all assays. Select imputation method other than 'None' and retry.")
 }
 
+if (impute != "none") {
+  # Subset imputation info to only included subjects
+  missingFeaturesBySubject <- missingFeaturesBySubject[subs]
+}
+
 # Remove subs without all datasets and order for cbind
 aData <- lapply(aData, function(x){
   x <- data.frame(x, stringsAsFactors = FALSE) # imputation may change class
@@ -300,6 +306,11 @@ if( is.null(dim(allMat)) || dim(allMat)[2] < 2){
 ```{r prep-demo-data}
 # Get demographic data and add cohort name
 demo <- con$getDataset("demographics", colFilter = pidsFilt)
+
+if (impute != "none") {
+  # Add number of of imputed features to demo
+  demo$imputed_values <- missingFeaturesBySubject[demo$participant_id]
+}
 # cohortMap <- Rlabkey::labkey.selectRows(baseUrl = con$config$labkey.url.base,
 #                                         folderPath = con$config$labkey.url.path,
 #                                         schemaName = "study",
@@ -330,8 +341,10 @@ partial data for the timepoint (e.g. some hai strains but not others).
 - **Number of Observations Removed due to missing data**: `r length(numSubs[ numSubs < length(aData)])`
 - **Number of Features Used (Assay Data)**: `r dim(allMat)[2]`
 - **Number of Features Removed Due to Lack of Variance**: `r sum(noVariance)`
-`r if ( impute != "none" ) {paste0("- **Number of Observations with imputed values**: ", imputedObservationCount)}`
-`r if ( impute != "none" ) {paste0("- **Total Number of Imputed Values**: ", imputedValueCount)}`
+
+
+`r if ( impute != "none" ) {paste0("- **Number of Observations with imputed values**: ", sum(missingFeaturesBySubject > 0))}`
+`r if ( impute != "none" ) {paste0("- **Total Number of Imputed Values**: ", sum(missingFeaturesBySubject))}`
 
 
 ```{r plot helpers}
@@ -437,7 +450,7 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
 }
 ```
 
-## Plots {.tabset .tabset-dropdown}
+## Plots {.tabset .tabset-fade .tabset-pills}
 
 ### Age
 ```{r  age, fig.align="left"}
@@ -537,7 +550,7 @@ re <- tryCatch(
   warning = function(w) return(w),
   error = function(e) return(e)
 )
-IRcondition <- !is.null(re$message)
+IRcondition <- is.null(re$message)
 ```
 
 `r if (IRcondition) {"### Immune Response"}`
@@ -562,6 +575,22 @@ if(is.null(re$message)){
   cat(paste0("Response variable ", responseVar, " returns empty data frame from study.  Data is not available for given participants."))
 }
 ```
+
+```{r imputeCondition}
+imputed <- impute != "none"
+```
+`r if (imputed) {"### Imputed Values"}`
+```{r Imputed, fig.align="left", eval = imputed}
+plots <- makePlot(label = "imputed_values",
+                  timeAs = timeAs,
+                  demo = demo,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+)
+htmltools::tagList(plots)
+```
+
 
 
 <script>
