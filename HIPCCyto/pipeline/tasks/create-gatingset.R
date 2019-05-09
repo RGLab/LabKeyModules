@@ -31,7 +31,7 @@ labkey.url.path     <- jobInfo$value[ jobInfo$name == "containerPath" ]
 labkey.url.base     <- jobInfo$value[ jobInfo$name == "baseUrl" ]
 analysis.directory  <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
 data.directory      <- jobInfo$value[ jobInfo$name == "dataDirectory" ]
-output.tsv          <- jobInfo$value[ jobInfo$name == "output.tsv" ]
+protocol            <- jobInfo$value[ jobInfo$name == "protocol" ]
 
 # From LABKEY.Pipeline.startAnalysis in views/CreateMatrix.html.
 # Vars are interpreted in the create-gatingset.R file generated in
@@ -46,11 +46,11 @@ runCreateGS(labkey.url.base = labkey.url.base,
             pipeline.root = pipe.root,
             data.directory = data.directory,
             analysis.directory = analysis.directory,
-            output.tsv = output.tsv,
+            protocol = protocol,
             onCL = FALSE)
 
 # Notes:
-# for running at command line, use or look at runCGS_allCL.R which
+# for running at command line, use command line function  which
 # generates variables from the matrices currently available instead
 # of trying to parse logs and taskInfo tsv files.
 

@@ -7,10 +7,10 @@
     <!--<analyzeURL>/pipelinetest/CreateGatingSet.view</analyzeURL>-->
     <tasks>
         <taskref ref='HIPCCyto:task:create-gatingset'/>
-        <task xsi:type='AssayImportRunTaskType'>
+        <!--<task xsi:type='AssayImportRunTaskType'>
             <providerName>General</providerName>
             <protocolName>gatingset</protocolName>
-        </task>
+        </task> -->
     </tasks>
 </pipeline>
 

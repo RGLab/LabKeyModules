@@ -32,7 +32,6 @@ library(data.table)
 }
 
 .runData <- function(gs, group_id, group_name, wsid, ws, sdy) {
-    wsid <- wsid
     workspace <- ws@file
     gating_set <- gs@guid
     group_id <- as.character(group_id)
@@ -44,9 +43,16 @@ library(data.table)
     panels <- paste(unique(pData(gs)$panel), collapse = "; ")
     fw_version <- as.character(packageVersion("flowWorkspace"))
     study <- sdy
-    run <- data.table(gating_set, wsid, workspace, group_id, group_name,group_name, num_samples, num_unique_days,
-                                      num_unique_trt, num_unique_tube, panels, fw_version, study)
-    return(run)
+    created <- format(Sys.time(), "%b %d %X %Y")
+    
+    run <- data.frame(gating_set, workspace, wsid, group_id, group_name, num_samples, num_unique_days,
+                      num_unique_trt, num_unique_tube, panels, fw_version, study, created)
+    
+    labkey.insertRows(baseUrl = labkey.url.base,
+                      folderPath = labkey.url.path,
+                      schemaName = "cytometry_processing",
+                      queryName = "gatingSetMetaData",
+                      toInsert = run)
 }
 
 .inputFiles <- function(gs, wsid, wsdir, labkey.url.base, labkey.url.path) {
@@ -60,6 +66,7 @@ library(data.table)
                                                    "study_accession"))
     input_files <- input_files[input_files$file_info_name %in% fcs, ]
     input_files$wsid <- wsid
+    input_files$gating_set <- gs@guid
     input_files$gsdir <- paste0(wsdir,"/",gs@guid)
     labkey.insertRows(baseUrl = labkey.url.base,
                       folderPath = labkey.url.path,
@@ -78,11 +85,11 @@ runCreateGS <- function(labkey.url.base,
                         pipeline.root,
                         data.directory,
                         analysis.directory,
-                        output.tsv,
+                        protocol,
                         onCL = FALSE) {
     
     sdy <- gsub("/Studies/", "", labkey.url.path)
-    wsid <- gsub(".tsv", "", output.tsv)
+    wsid <- protocol
 
     ##---------------CHECK-FOR-FILES---------------##
     
@@ -171,26 +178,40 @@ runCreateGS <- function(labkey.url.base,
     if (onCL) {
         # delete inputfiles
         # get inputFiles row keys
-        input_keys <- labkey.selectRows(baseUrl = labkey.url.base,
+        inputKeys <- labkey.selectRows(baseUrl = labkey.url.base,
                                         folderPath = labkey.url.path,
                                         schemaName = "cytometry_processing",
                                         queryName = "gatingSetInputFiles",
-                                        colSelect = c("key", "wsid"),
+                                        #colSelect = c("key", "wsid"),
+                                        showHidden = TRUE,
                                         colNameOpt = "rname")
         
-        # only remove rows from current wsID
-        toDelete <- subset(input_keys, wsid == wsID, select=key)
+        inputKeysToDelete <- subset(inputKeys, select=c(key, container))
 
         # delete InputFile rows
-        deleted <- labkey.deleteRows(baseUrl = labkey.url.base,
+        inputKeysDeleted <- labkey.deleteRows(baseUrl = labkey.url.base,
                           folderPath = labkey.url.path,
                           schemaName = "cytometry_processing",
                           queryName = "gatingSetInputFiles",
-                          toDelete = toDelete)
+                          toDelete = inputKeysToDelete)
 
         # delete gatingSets from previous run
         unlink(wsdir, recursive = TRUE)
-    
+
+        # get metaData rows to delete
+        gsMetaData <- labkey.selectRows(baseUrl = labkey.url.base,
+                                        folderPath = labkey.url.path,
+                                        schemaName = "cytometry_processing",
+                                        queryName = "gatingSetMetaData",
+                                        colSelect = c("key", "wsid"),
+                                        colNameOpt = "rname")
+
+        # only remove rows from current wsid
+        gsMetaDataToDelete <- labkey.selectRows(baseUrl = labkey.url.base,
+                                                folderPath = labkey.url.path,
+                                                schemaName = "cytometry_processing",
+                                                queryName = "gatingSetMetaData",
+                                                toDelete = gsMetaData)
     }
 
 
@@ -258,27 +279,14 @@ runCreateGS <- function(labkey.url.base,
             })
 
         }
-    # write out run level data table or update current if run from command line
-    if (onCL) {
-        toUpdate <- data.frame(run, stringsAsFactors = FALSE)
-        updated <- labkey.updateRows(baseUrl = labkey.url.base,
-                          folderPath = labkey.url.path,
-                          schemaName = "assay.General.gatingset",
-                          queryName = "Data",
-                          toUpdate = toUpdate)
-    } else {
-        # ${tsvout:tsvfile}
-        write.table(run,
-                    file = output.tsv,
-                    sep="\t",
-                    row.names = FALSE)
-    }
 
     #--------------COPY-OVER-SCRIPT-FILES--------------##
     file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/create-gatingset.R",
-              to = paste0(analysis.directory, "/create-gatingset-snapshot.R"))
+              to = paste0(analysis.directory, "/create-gatingset-snapshot.R"),
+              overwrite = onCL)
     file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
-              to = paste0(analysis.directory, "/runGS-snapshot.R"))
+              to = paste0(analysis.directory, "/runGS-snapshot.R"),
+              overwrite = onCL)
 
 
 }
