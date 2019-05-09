@@ -186,6 +186,24 @@ nulls <- sapply(aData, is.null)
 aData <- aData[ !nulls ]
 
 # Impute missing values within each assay on per sample or sample_tp (column) basis if selected by user
+# Get number of observations to be imputed
+if ( impute != "none" ) {
+  # Get subjects with missing feature data
+  missingFeatures <- lapply(aData, function(df){
+    rownames(df) <- df$participant_id
+    apply(df, 1, function(x)sum(is.na(x)))
+  })
+
+  missingSubjects <- lapply(aData, function(df) {
+    apply(df, 2, function(x)(sum(is.na(x))))
+  })
+                        
+                          
+  imputedObservationCount <- sum(unlist(missingFeatures) != 0)
+  imputedFeatureCount <- sum(unlist(missingSubjects) != 0)
+  imputedValueCount <- sum(unlist(missingSubjects))
+}
+
 if(impute == "mean" | impute == "median"){
   fn <- get(impute)
   aData <- lapply(aData, function(df){
@@ -312,6 +330,10 @@ partial data for the timepoint (e.g. some hai strains but not others).
 - **Number of Observations Removed due to missing data**: `r length(numSubs[ numSubs < length(aData)])`
 - **Number of Features Used (Assay Data)**: `r dim(allMat)[2]`
 - **Number of Features Removed Due to Lack of Variance**: `r sum(noVariance)`
+`r if ( impute != "none" ) {paste0("- **Number of Features Imputed**: ", imputedFeatureCount)}`
+`r if ( impute != "none" ) {paste0("- **Number of Observations Imputed**: ", imputedObservationCount)}`
+`r if ( impute != "none" ) {paste0("- **Total Number of Imputed Values**: ", imputedValueCount)}`
+
 
 ```{r plot helpers}
 # helper for iterating through multiple components
