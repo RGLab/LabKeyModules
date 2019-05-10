@@ -1,6 +1,26 @@
 ---
 output: html_document
 ---
+<style>
+  .tabset-dropdown > .nav-tabs > li.active:before {
+    content: ">";
+    display: inline-block;
+    padding: 10px;
+    border-right: 1px solid #ddd;
+  }
+                      
+  .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+    content: ">";
+    border: none;
+  }
+                                    
+  .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+    content: ">";
+    display: inline-block;
+    padding: 10px;
+    border-right: 1px solid #ddd;
+  }
+</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -450,7 +470,7 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
 }
 ```
 
-## Plots {.tabset .tabset-fade .tabset-pills}
+## Plots {.tabset .tabset-fade .tabset-dropdown} 
 
 ### Age
 ```{r  age, fig.align="left"}
