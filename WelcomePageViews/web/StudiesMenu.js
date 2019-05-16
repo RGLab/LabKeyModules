@@ -17,6 +17,7 @@
 
 generateMenu = function(){
     var isPublic = LABKEY.user.isGuest && ! LABKEY.user.isSignedIn;
+    var prefix = LABKEY.ActionURL.getBaseURL().includes("immunespace") ? "" : "/labkey"; // local path needs labkey
 
     LABKEY.Query.selectRows({
         containerPath: '/Home',
@@ -30,8 +31,8 @@ generateMenu = function(){
                 Ext.each( d.rows, function(row, i){
                     toAdd.push(
                         isPublic ?
-                        '<li><a href="/project/home/Public/begin.view?SDY=' + row.Name + '">' + row.Name + ( row.hipc_funded ? '*' : '' ) + '</li></a>' :
-                        '<li><a href="/project/Studies/' + row.Name + '/begin.view?">' + row.Name + ( row.hipc_funded ? '*' : '' ) + '</li></a>'
+                        '<li><a href="' + prefix + '/project/home/Public/begin.view?SDY=' + row.Name + '">' + row.Name + ( row.hipc_funded ? '*' : '' ) + '</li></a>' :
+                        '<li><a href="' + prefix + '/project/Studies/' + row.Name + '/begin.view?">' + row.Name + ( row.hipc_funded ? '*' : '' ) + '</li></a>'
                     );
                 });
 
@@ -39,7 +40,7 @@ generateMenu = function(){
 
                 jQuery('#studies').append(
                     '<ul>' +
-                        '<li><a href="/project/Studies/begin.view?">Data Finder</a></li>' +
+                        '<li><a href="' + prefix + '/project/Studies/begin.view?">Data Finder</a></li>' +
                     '</ul>'
                 );
 

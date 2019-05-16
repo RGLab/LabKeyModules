@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ${DIR}/..
 
@@ -12,13 +11,13 @@ for f in ./* ; do
             if [ "$b" = "extraWebapp" ] ; then
                 echo '===================================================================================='
                 echo $b 'is the splash page - copied where appropriate'
-                cp -r ../extraWebapp/ ../../release18.3/externalModules/ 
+                cp -r ../extraWebapp/ $MODULES_DIR 
             else
                 echo '===================================================================================='
                 if [ -f build.xml ] ; then
                     echo $b 'has a build file - attempting to deploy it with' local 'target'
                     ant local > /dev/null
-		    cp -r ../$b ../../release18.3/externalModules/ 
+		    cp -r ../$b $MODULES_DIR 
                 else
                     echo $b 'does not have a build.xml file - automatic deployment is not possible'
                 fi
