@@ -1,17 +1,71 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <ns:tables xmlns:ns='http://labkey.org/data/xml'>
+    <ns:table tableName='gatingSetMetaData' tableDbType='TABLE'>    
+        <ns:description>
+            The 'gatingSetMetaData' table stores gating set metadata.
+        </ns:description>
+        <ns:columns>
+            <ns:column columnName='key'>
+                <ns:isHidden>true</ns:isHidden>
+                <ns:isKeyField>true</ns:isKeyField>
+            </ns:column>
+            <ns:column columnName='container'>
+                <ns:isHidden>true</ns:isHidden>
+            </ns:column>    
+            <ns:column columnName='gating_set'>
+                <ns:columnTitle>Gating Set</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='workspace'>
+                <ns:columnTitle>Workspace</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='wsid'>
+                <ns:columnTitle>Workspace Id</ns:columnTitle>                                                                                        
+            </ns:column>
+            <ns:column columnName='group_id'>
+                <ns:columnTitle>Group Id</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='group_name'>
+                <ns:columnTitle>Group Name</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='num_samples'>
+                <ns:columnTitle>Number of Samples</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='num_unique_days'>
+                <ns:columnTitle>Number of Unique Days</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='num_unique_trt'>
+                <ns:columnTitle>Number of Unique Treatments</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='num_unique_tube'>
+                <ns:columnTitle>Number of Unique Tubes</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='panels'>
+                <ns:columnTitle>Panels</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='fw_version'>
+                <ns:columnTitle>FlowWorkspace Version</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='study'>
+                <ns:columnTitle>Study</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='created'>
+                <ns:columnTitle>Created</ns:columnTitle>
+            </ns:column>
+        </ns:columns>
+    </ns:table>
+     
     <ns:table tableName='gatingSetInputFiles' tableDbType='TABLE'>
         <ns:description>
             The 'gatingSetInputFiles' table stores information regarding which files were used in a run of the create-gatingset processing pipeline.
         </ns:description>
         <ns:columns>
-            <ns:column columnName='Container'>
-                <ns:isHidden>true</ns:isHidden>
-            </ns:column>
             <ns:column columnName='key'>
                 <ns:isHidden>true</ns:isHidden>
                 <ns:isKeyField>true</ns:isKeyField>
             </ns:column>
+            <ns:column columnName='container'>
+                <ns:isHidden>true</ns:isHidden>
+            </ns:column>    
             <ns:column columnName='file_info_name'>
                 <ns:columnTitle>File Info Name</ns:columnTitle>
             </ns:column>
@@ -30,6 +84,9 @@
             <ns:column columnName='wsid'>
                 <ns:columnTitle>Workspace ID</ns:columnTitle>
             </ns:column>
+           <ns:column columnName='gating_set'>
+                <ns:columnTitle>Gating Set</ns:columnTitle>
+            </ns:column> 
             <ns:column columnName='gsdir'>
                 <ns:columnTitle>Gating Set Directory</ns:columnTitle>
             </ns:column>
