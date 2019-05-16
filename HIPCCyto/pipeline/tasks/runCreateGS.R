@@ -31,7 +31,7 @@ library(data.table)
     return(gs)
 }
 
-.runData <- function(gs, group_id, group_name, wsid, ws, sdy) {
+.runData <- function(gs, group_id, group_name, wsid, ws, sdy, labkey.url.base, labkey.url.path) {
     workspace <- ws@file
     gating_set <- gs@guid
     group_id <- as.character(group_id)
@@ -182,11 +182,11 @@ runCreateGS <- function(labkey.url.base,
                                         folderPath = labkey.url.path,
                                         schemaName = "cytometry_processing",
                                         queryName = "gatingSetInputFiles",
-                                        #colSelect = c("key", "wsid"),
                                         showHidden = TRUE,
-                                        colNameOpt = "rname")
+                                        colNameOpt = "fieldname")
         
-        inputKeysToDelete <- subset(inputKeys, select=c(key, container))
+        # only delete selected wsids
+        inputKeysToDelete <- inputKeys[grepl(wsid, inputKeys$wsid), ]
 
         # delete InputFile rows
         inputKeysDeleted <- labkey.deleteRows(baseUrl = labkey.url.base,
@@ -203,15 +203,18 @@ runCreateGS <- function(labkey.url.base,
                                         folderPath = labkey.url.path,
                                         schemaName = "cytometry_processing",
                                         queryName = "gatingSetMetaData",
-                                        colSelect = c("key", "wsid"),
-                                        colNameOpt = "rname")
-
+                                        colNameOpt = "fieldname",
+                                        showHidden = TRUE)
+        
+        # only delete selected wsid
+        metaDataToDelete <- gsMetaData[grepl(wsid, gsMetaData$wsid), ]
+        
         # only remove rows from current wsid
-        gsMetaDataToDelete <- labkey.selectRows(baseUrl = labkey.url.base,
+        metaDataDeleted <- labkey.deleteRows(baseUrl = labkey.url.base,
                                                 folderPath = labkey.url.path,
                                                 schemaName = "cytometry_processing",
                                                 queryName = "gatingSetMetaData",
-                                                toDelete = gsMetaData)
+                                                toDelete = metaDataToDelete)
     }
 
 
@@ -246,7 +249,7 @@ runCreateGS <- function(labkey.url.base,
         }
         
         
-        run <- .runData(gs, groups$groupID, groups$groupName, wsid, ws, sdy)
+        run <- .runData(gs, groups$groupID, groups$groupName, wsid, ws, sdy, labkey.url.base, labkey.url.path)
         save_gs(gs,
                 gsdir,
                 cdf="copy")

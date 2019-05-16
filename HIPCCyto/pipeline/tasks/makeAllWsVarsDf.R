@@ -8,13 +8,13 @@ makeVarList <- function(sdy, wsID){
                     "/@files/rawdata/flow_cytometry/create-gatingset/",
                     wsID,
                     "/")
-  fls <- list.files(baseDir)
+  files <- list.files(baseDir, full.names = TRUE)
 
-  if(length(fls) != 0 ){
-      taskInfo_path <- file.path(baseDir, fls[grep("-taskInfo.tsv", fls)])
+  if(length(files) != 0 ) { 
+      taskInfoPath <- files[grepl("taskInfo.tsv", files)]
   }
   
-  jobInfo <- read.table(taskInfo_path,
+  jobInfo <- read.table(taskInfoPath,
                         header = FALSE,
                         sep = "\t",
                         stringsAsFactors = FALSE,
@@ -24,14 +24,16 @@ makeVarList <- function(sdy, wsID){
   labkey.url.path     <- jobInfo$value[ jobInfo$name == "containerPath" ]
   pipeline.root       <- jobInfo$value[ jobInfo$name == "pipeRoot" ]
   analysis.directory  <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
-  output.tsv          <- jobInfo$value[ jobInfo$name == "output.tsv" ]
+  data.directory      <- jobInfo$value[ jobInfo$name == "dataDirectory" ]
+  protocol            <- jobInfo$value[ jobInfo$name == "protocol" ]
 
 
   res <- list(labkey.url.base = labkey.url.base,
               labkey.url.path = labkey.url.path,
               pipeline.root = pipeline.root,
+              data.directory = data.directory,
               analysis.directory = analysis.directory,
-              output.tsv = output.tsv)
+              protocol = protocol)
 
   return(res)
 }
