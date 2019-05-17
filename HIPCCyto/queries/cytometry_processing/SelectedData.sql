@@ -1,6 +1,6 @@
 SELECT
 gating_set,
-wsID,
+wsid,
 workspace,
 group_id,
 group_name,
@@ -9,8 +9,6 @@ num_unique_days,
 num_unique_tube,
 panels,
 fw_version,
-study,
-Run.created,
-Run.createdby
-FROM Data
-WHERE Data.Folder IN (SELECT Container FROM study.participant)
+study
+FROM gatingSetMetaData
+WHERE gatingSetMetaData.container IN (SELECT Container FROM study.participant)
