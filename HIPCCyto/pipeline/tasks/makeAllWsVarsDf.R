@@ -1,12 +1,12 @@
 # Creates DF of all info needed to run CL version of runCreateMx()
 
 # Helper
-makeVarList <- function(sdy, wsID){
-  print(paste(sdy, wsID))
+makeVarList <- function(sdy, wsid){
+  print(paste(sdy, wsid))
   baseDir <- paste0("/share/files/Studies/",
                     sdy,
                     "/@files/rawdata/flow_cytometry/create-gatingset/",
-                    wsID,
+                    wsid,
                     "/")
   files <- list.files(baseDir, full.names = TRUE)
 
@@ -20,19 +20,19 @@ makeVarList <- function(sdy, wsID){
                         stringsAsFactors = FALSE,
                         col.names = c("name", "value"))
 
-  labkey.url.base     <- jobInfo$value[ jobInfo$name == "baseUrl" ]
-  labkey.url.path     <- jobInfo$value[ jobInfo$name == "containerPath" ]
-  pipeline.root       <- jobInfo$value[ jobInfo$name == "pipeRoot" ]
-  analysis.directory  <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
-  data.directory      <- jobInfo$value[ jobInfo$name == "dataDirectory" ]
-  protocol            <- jobInfo$value[ jobInfo$name == "protocol" ]
+  labkeyUrlBase     <- jobInfo$value[ jobInfo$name == "baseUrl" ]
+  labkeyUrlPath     <- jobInfo$value[ jobInfo$name == "containerPath" ]
+  pipelineRoot      <- jobInfo$value[ jobInfo$name == "pipeRoot" ]
+  analysisDirectory <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
+  dataDirectory     <- jobInfo$value[ jobInfo$name == "dataDirectory" ]
+  protocol          <- jobInfo$value[ jobInfo$name == "protocol" ]
 
 
-  res <- list(labkey.url.base = labkey.url.base,
-              labkey.url.path = labkey.url.path,
-              pipeline.root = pipeline.root,
-              data.directory = data.directory,
-              analysis.directory = analysis.directory,
+  res <- list(labkeyUrlBase = labkeyUrlBase,
+              labkeyUrlPath = labkeyUrlPath,
+              pipelineRoot = pipelineRoot,
+              dataDirectory = dataDirectory,
+              analysisDirectory = analysisDirectory,
               protocol = protocol)
 
   return(res)

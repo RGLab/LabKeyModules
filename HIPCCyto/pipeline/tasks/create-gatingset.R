@@ -26,11 +26,11 @@ jobInfo <- read.table(taskInfo,
                       fill = TRUE,
                       na.strings = "")
 
-pipe.root           <- jobInfo$value[ jobInfo$name == "pipeRoot" ]
-labkey.url.path     <- jobInfo$value[ jobInfo$name == "containerPath" ]
-labkey.url.base     <- jobInfo$value[ jobInfo$name == "baseUrl" ]
-analysis.directory  <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
-data.directory      <- jobInfo$value[ jobInfo$name == "dataDirectory" ]
+pipelineRoot        <- jobInfo$value[ jobInfo$name == "pipeRoot" ]
+labkeyUrlPath       <- jobInfo$value[ jobInfo$name == "containerPath" ]
+labkeyUrlBase       <- jobInfo$value[ jobInfo$name == "baseUrl" ]
+analysisDirectory   <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
+dataDirectory       <- jobInfo$value[ jobInfo$name == "dataDirectory" ]
 protocol            <- jobInfo$value[ jobInfo$name == "protocol" ]
 
 # From LABKEY.Pipeline.startAnalysis in views/CreateMatrix.html.
@@ -41,11 +41,11 @@ protocol            <- jobInfo$value[ jobInfo$name == "protocol" ]
 # You can often find this info though in the gatingset.log file
 # found in the .../create-gatingset/gatingset subdir.
 
-runCreateGS(labkey.url.base = labkey.url.base,
-            labkey.url.path = labkey.url.path,
-            pipeline.root = pipe.root,
-            data.directory = data.directory,
-            analysis.directory = analysis.directory,
+runCreateGS(labkeyUrlBase = labkeyUrlBase,
+            labkeyUrlPath = labkeyUrlPath,
+            pipelineRoot = pipelineRoot,
+            dataDirectory = dataDirectory,
+            analysisDirectory = analysisDirectory,
             protocol = protocol,
             onCL = FALSE)
 

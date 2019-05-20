@@ -19,18 +19,18 @@ runGSFromCL <- function(studies = NULL, onTest = TRUE) {
     message("Generating matrix of argument values for runCreateGS() for all current workspaces\n")
     allVars <- mapply(makeVarList,
                       sdy = unique(gsList$study), 
-                      wsID = unique(gsList$wsid))
+                      wsid = unique(gsList$wsid))
                      # MoreArgs = list(con = con))
   
     df <- data.frame(t(allVars), stringsAsFactors = FALSE)
 
     message("\nRunning all workspaces through runCreateGS()")
     res <- mapply(runCreateGS,
-                  labkey.url.base = df$labkey.url.base,
-                  labkey.url.path = df$labkey.url.path,
-                  pipeline.root = df$pipeline.root,
-                  data.directory = df$data.directory,
-                  analysis.directory = df$analysis.directory,
+                  labkeyUrlBase = df$labkeyUrlBase,
+                  labkeyUrlPath = df$labkeyUrlPath,
+                  pipelineRoot = df$pipelineRoot,
+                  dataDirectory = df$dataDirectory,
+                  analysisDirectory = df$analysisDirectory,
                   protocol = df$protocol,
                   MoreArgs = list(onCL = TRUE)
                   )
