@@ -130,16 +130,22 @@ runCreateGS <- function(labkeyUrlBase,
 
     #*** RmGrp ***#
     # If a workspace requires a group to be removed add the logic here and log why
-    # the group has been removed.
+    # the group has been removed. See Notion Flow Cytometry Docs for more information.
 
-    # SDY113 - Group 3 - 885 controls
+    # SDY113 - Group Number 3 - 885 controls
     # For this study controls were put in their own group as well as the other corrosponding
     # plate # group. Gating sets should not have overlapping samples. We remove Group 3 to handle this.
 
-    rmGroup <- sdy %in% c("SDY113")
+    # SDY301 Group Numbers 34-42
+    # These groups were all missing fcs files (documented in Notion card `SDY301`). 
+    # While we investigate this we will parse the gating sets that run without error.
+
+    rmGroup <- sdy %in% c("SDY113", "SDY301")
     
     if (sdy == "SDY113") {
-            group <- 3  
+        group <- 3  
+    } else if (sdy == "SDY301") {
+        group <- c(34:42)
     } else { 
         group <- NA 
     }
@@ -157,16 +163,16 @@ runCreateGS <- function(labkeyUrlBase,
     ##---------------MODIFY-WORKSPACE-XML---------------##
     
     if (metaData$xmlMod) {
-        con <- file(ws_file, "r")
-        tm <- readLines(con = con)
+        con <- file(wsFile, "r")
+        xml <- readLines(con = con)
         # remove prefix/suffix
-        tm <- gsub("prefix=\"&lt;\" suffix=\"&gt;\"", "", tm)
-        tm <- gsub("&lt;", "", tm)
-        tm <- gsub("&gt;", "", tm)
+        xml <- gsub("prefix=\"&lt;\" suffix=\"&gt;\"", "", xml)
+        xml <- gsub("&lt;", "", xml)
+        xml <- gsub("&gt;", "", xml)
                        
         # write out modified xml
         modXmlPath <- paste0(wsFile, ".mod")
-        writeLines(tm, modXmlPath)
+        writeLines(xml, modXmlPath)
         
         # change ws_file variable to the modified xml
         wsFile <- modXmlPath
@@ -230,8 +236,9 @@ runCreateGS <- function(labkeyUrlBase,
     groups$groupNumber <- seq(1:nrow(groups))
     
     # remove groups as needed
-    if ( metaData$rmGroup$rmGroup ){
-        groups <- groups[ -(metaData$rmGroup$group), ]
+    if ( metaData$rmGroup$rmGroup ) {
+       groups <-  groups[!(groups$groupNumber %in% metaData$rmGroup$group), ]
+
     }
 
     ##---------------PARSE-WS-AND-OUTPUT-GS---------------##
