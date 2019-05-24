@@ -34,9 +34,13 @@ $(document).ready(function() {
     me.maskNews.show();
 
 
-    LABKEY.contextPath = '';
-    LABKEY.container = {};
-    LABKEY.container.path = '/home';
+    // Container and ContextPath are used by selectRows and executeSql to build the url for the api call.
+    // Local dev machines use a contextPath '/labkey' after the baseUrl while
+    // servers do not. To determine whether action is on server or not need 
+    // to use the container, which we then redefine to accurately find lists schema.
+    var origContainer = LABKEY.ActionURL.getContainer();
+    LABKEY.container = { path: '/home' };
+    LABKEY.contextPath = origContainer == '/' ? '/labkey' : '';
 
     LABKEY.Query.selectRows({
         failure: me.onFailureSummary.bind( me ),
