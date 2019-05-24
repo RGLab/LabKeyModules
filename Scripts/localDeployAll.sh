@@ -11,13 +11,13 @@ for f in ./* ; do
             if [ "$b" = "extraWebapp" ] ; then
                 echo '===================================================================================='
                 echo $b 'is the splash page - copied where appropriate'
-                cp -r ../extraWebapp/ $MODULES_DIR 
+                cp -r ../extraWebapp/ $DEPLOY_DIR 
             else
                 echo '===================================================================================='
                 if [ -f build.xml ] ; then
                     echo $b 'has a build file - attempting to deploy it with' local 'target'
                     ant local > /dev/null
-		    cp -r ../$b $MODULES_DIR 
+		    cp -r ../$b $DEPLOY_DIR/externalModules 
                 else
                     echo $b 'does not have a build.xml file - automatic deployment is not possible'
                 fi
