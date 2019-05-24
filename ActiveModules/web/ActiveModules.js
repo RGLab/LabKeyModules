@@ -154,7 +154,6 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                         };
 
                         myMask.show();
-
                         if ( ! LABKEY.ext.ISCore.isStudyFolder ){
                             LABKEY.Ajax.request({
                                 failure: onFailure,
@@ -167,7 +166,7 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                                         cntMain.update( '<div class=\'placeholder\' style=\'height: 40px;\'>No data available</div>' );
                                     }
                                 },
-                                url: LABKEY.ActionURL.buildURL( 'study-shared', 'sharedStudyContainerFilter.api' )
+                                url: LABKEY.ActionURL.buildURL( 'study-shared', 'getSharedStudyContainerFilter.api')
                             });
                         } else{
                             generateActiveModules();
