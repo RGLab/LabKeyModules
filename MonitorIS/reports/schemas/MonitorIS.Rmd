@@ -1,3 +1,4 @@
+
 ```{r knitr, echo = FALSE}
 knitr::opts_chunk$set(message = FALSE,
                       echo = FALSE,
@@ -7,49 +8,62 @@ knitr::opts_chunk$set(message = FALSE,
                       fig.width = 15)
 ```
 
+
 ```{r libs, message = FALSE}
 library(Rlabkey)
 library(ImmuneSpaceR)
-library(DT)
-library(dplyr)
+library(data.table)
 library(ggplot2)
 library(plotly)
+library(readr)
+library(DT)
 library(tidytext)
 library(wordcloud)
-library(lubridate)
-library(readr)
+library(tm) # for stopwords
 library(stringr)
+library(rvest)
+```
+
+```{r helpers}
+subsetDF <- function(df, exclCol, exclList, dateCol, from, to, breaks){
+  df <- df[ (df[[dateCol]] > from & df[[dateCol]] < to) & !df[[exclCol]] %in% exclList ]
+  tmp <- as.POSIXct(df[[dateCol]], format = "%Y-%m-%d", tz = "UTC")
+  df[[dateCol]] <- as.Date(cut(tmp, breaks = breaks), format = "%Y-%m-%d")
+  return(df)
+}
+
 ```
 
 ```{r preprocess}
-#str(labkey.url.params)
+# Set dates for subsetting. 
+# `From` - Jan 1, 2016 because this is when ImmuneSpace went live
+# `To` - today
+format <- "%Y-%m-%d"
 
-# global
-TODAY <- today(tz = "US/Pacific")
+from <- ifelse(labkey.url.params$from == "", "2016-01-01", labkey.url.params$from)
+from <- as.POSIXct(from, format = format)
 
-# labkey parameters
-from <- ifelse(labkey.url.params$from == "",
-               as_date("2016-01-01"),
-               as_date(labkey.url.params$from))
-to <- ifelse(labkey.url.params$to == "",
-             TODAY,
-             as_date(labkey.url.params$to))
-class(from) <- "Date"
-class(to) <- "Date"
-from <- ifelse(from > to,
-               as_/date("2016-01-01"),
-               from)
-class(from) <- "Date"
-from_to <- tibble(date = seq(from, to, by = "1 day"))
+to <- ifelse(labkey.url.params$to == "", Sys.Date(), labkey.url.params$to)
+to <- as.POSIXct(to, format = format)
 
+if (from > to){
+  stop("Please select a start date that is earlier than the end date.")
+}
+
+# Set plotting parameters
 plotType <- ifelse(labkey.url.params$plotType %in% c("bar", "line"),
                    labkey.url.params$plotType,
                    "bar")
+
 dateBy <- ifelse(labkey.url.params$by %in% c("day", "week", "month", "year"),
                  labkey.url.params$by,
                  "day")
 
-# exclude admins and support accounts
+# create standard `breaks` definition so that regardless of data there will be
+# common axis labels
+breaks <- seq(from, to, by = dateBy)
+
+# Create lists of admins and others to exclude from counts
 admins <- labkey.selectRows(baseUrl = labkey.url.base,
                             folderPath = "/home",
                             schemaName = "core",
@@ -65,7 +79,16 @@ extra_emails <- paste("rglab.org",
                       "labkey.com",
                       "gilguday@comcast.net",
                       "lwolfe@fredhutch.org",
+                      "matthew@bellew.net",
+                      "gfinak@scharp.org",
+                      "reader@bellew.net",
+                      "patrick.dunn@nih.gov",
+                      "cnathe@labkey.org",
+                      "hrodgers@fredhutch.org",
+                      "wjiang2@fhcrc.org",
+                      "hmiller@fredhutch.org",
                       sep = ";")
+
 extras <- labkey.selectRows(baseUrl = labkey.url.base,
                             folderPath = "/home",
                             schemaName = "core",
@@ -76,83 +99,246 @@ extras <- labkey.selectRows(baseUrl = labkey.url.base,
                                                      extra_emails)),
                             containerFilter = NULL)
 
-exclusion_list <- paste0(unique(c(admins$`Display Name`, extras$`Display Name`)), collapse = ";")
-exclusion_email <- unique(c(admins$Email, extras$Email), "rsautera@fhcrc.org")
+# Admin emails no longer in the DB
+oldAdminEmails <- c("rsautera@fhcrc.org",
+                    "renan.sauteraud@gmail.com",
+                    "ldashevs@fhcrc.org",
+                    "ldashevs@scharp.org")
+
+# Vectors of people to exclude from counts
+exclusionNames <- paste0(unique(c(admins$`Display Name`, extras$`Display Name`)), collapse = ";")
+exclusionEmails <- unique(c(admins$Email, extras$Email, oldAdminEmails))
+exclusionIds <- unique(c(admins$`User Id`, extras$`User Id`))
 ```
 
+# User Interface
 
-
-# Users
+## 1. New Users: How many new users are we attracting over time?
 ```{r newusers}
-users_all <- labkey.selectRows(baseUrl = labkey.url.base,
-                               folderPath = "/",
-                               schemaName = "core",
-                               queryName = "SiteUsers",
-                               viewName = "",
-                               colFilter = NULL,
-                               containerFilter = NULL)
-colnames(users_all) <- tolower(chartr(" ", "_", colnames(users_all)))
-users_all <- users_all %>%
-  mutate(created = as_date(created),
-         last_login = as_date(last_login))
+users <- data.table(labkey.selectRows(baseUrl = labkey.url.base,
+                                      folderPath = "/",
+                                      schemaName = "core",
+                                      queryName = "SiteUsers",
+                                      viewName = ""))
+users <- subsetDF(df = users, 
+                  exclCol = "User Id", 
+                  exclList = exclusionIds, 
+                  dateCol = "Created", 
+                  from = from, to = to, breaks = breaks)
 
-users <- users_all %>%
-  filter(created >= from & created <= to) %>%
-  select(created) %>%
-  count(created) %>%
-  right_join(from_to, by = c("created" = "date")) %>%
-  mutate(n = replace(n, is.na(n), 0)) %>%
-  mutate(created = floor_date(created, dateBy)) %>%
-  group_by(created) %>%
-  summarise(N = sum(n))
-p <- users %>%
-  plot_ly(x = ~created,
+# New users over time
+usersByTime <- users[, list(N = .N), by = Created ]
+p <- usersByTime %>%
+  plot_ly(x = ~Created,
           y = ~N) %>%
   layout(xaxis = list(title = paste0("By ", dateBy)),
-         yaxis = list(title = "New users"),
-         title = "New users over time")
+         yaxis = list(title = "Users"),
+         title = "New Users over Time")
 if (plotType == "line") {
   p %>% add_lines()
 } else {
   p %>% add_bars()
 }
 ```
+We gained **`r round(mean(usersByTime$N, na.rm = TRUE), 2)` new users** per *`r dateBy`* on average from `r from` to `r to`.
 
-We gained **`r round(mean(users$N), 2)` new users** per *`r dateBy`* on average from `r from` to `r to`.
 <br>
 
+## 2. Total Users over time: How many total users do we have?
+```{r total-users}
+setorder(usersByTime, Created)
+totalUsers <- usersByTime[ , cumsum := cumsum(N)]
 
+totalUsers %>%
+  plot_ly(x = ~Created, y = ~cumsum) %>%
+  layout(xaxis = list(title = paste0("By ", dateBy)),
+         yaxis = list(title = "Cumulative users"),
+         title = "Userbase Over Time") %>%
+  add_lines(line = list(shape = "spline"))
+```
+<br>
+
+## 3. User Segments over time: How are total users split up according to their email suffix?
+```{r total-users-by-segment}
+# total user background breakdown by segment
+# Some oddball addresses are left with NA, but this captures > 95% of users
+edu <- c("\\.(edu|gov|org)$")
+personal <- c("@(gmail|yahoo|hotmail|aol|verizon)")
+biz <- c("@([A-z]+|[A-z]+-[A-z]+)\\.com$")
+intl <- c("\\.[a-z]{2}$")
+users$category <- sapply(users$Email, function(x){
+  if (grepl(edu, x)){
+    return("EDU")
+  }else if (grepl(personal, x)) {
+    return("PERSONAL")
+  }else if (grepl(biz, x)) {
+    return("BUSINESS")
+  }else if (grepl(intl, x)) {
+    return("INTERNATIONAL")
+  }else{
+    return(NA)
+  }
+})
+userSegmentByTime <- users[, list(N = .N), by = .(Created, category) ]
+setorder(userSegmentByTime, Created)
+totalSegmentByTime <- userSegmentByTime[ , cumsum := cumsum(N), by = category ]
+spreadSegmentByTime <- dcast(totalSegmentByTime, 
+                             Created ~ category, 
+                             value.var = "cumsum")
+
+p <- plot_ly(spreadSegmentByTime, x = ~Created) %>%
+  add_lines(y = ~BUSINESS, name = 'Corporate', line = list(shape = "spline"), connectgaps = TRUE) %>%
+  add_lines(y = ~EDU, name = 'Educational', line = list(shape = "spline"), connectgaps = TRUE) %>%
+  add_lines(y = ~PERSONAL, name = 'Personal', line = list(shape = "spline"), connectgaps = TRUE) %>%
+  add_lines(y = ~INTERNATIONAL, name = 'International', line = list(shape = "spline"), connectgaps = TRUE) %>%
+  layout(xaxis = list(title = paste0("By ", dateBy)),
+         yaxis = list(title = "Cumulative Users"),
+         title = "Growth of User Segments over Time") 
+p
+```
+<br>
+
+## 4. Active users over time:  How many people are logging into the UI at any given time?
 ```{r activeusers}
-logins <- labkey.selectRows(baseUrl = labkey.url.base,
+allLogins <- data.table(labkey.selectRows(baseUrl = labkey.url.base,
                             folderPath = "/",
                             schemaName = "auditLog",
                             queryName = "UserAuditEvent",
                             viewName = "",
-                            colFilter = makeFilter(c("CreatedBy/DisplayName",
-                                                     "NOT_IN",
-                                                     exclusion_list),
-                                                   c("Comment",
+                            colFilter = makeFilter(c("Comment",
                                                      "CONTAINS",
                                                      "Database authentication")),
-                            containerFilter= "AllFolders")
-logins <- logins %>%
-  mutate(Date = as_date(Date)) %>%
-  select(Date, `Created By`) %>%
-  filter(Date >= from & Date <= to)
-active_by <- logins %>%
-  distinct() %>%
-  count(Date) %>%
-  right_join(from_to, by = c("Date" = "date")) %>%
-  mutate(n = replace(n, is.na(n), 0)) %>%
-  mutate(Date = floor_date(Date, dateBy)) %>%
-  group_by(Date) %>%
-  summarise(n = sum(n))
-p <- active_by %>%
+                            containerFilter= "AllFolders"))
+
+cpAllLogins <- copy(allLogins)
+currentLogins <- subsetDF(df = cpAllLogins, 
+                  exclCol = "Created By", 
+                  exclList = exclusionIds, 
+                  dateCol = "Date", 
+                  from = from, to = to, breaks = breaks)
+
+activeUsersByTime <- copy(currentLogins)
+activeUsersByTime <- activeUsersByTime[ , list(n = length(unique(`Created By`))), 
+                                          by = Date]
+
+p <- activeUsersByTime %>%
   plot_ly(x = ~Date,
           y = ~n) %>%
   layout(xaxis = list(title = paste0("By ", dateBy)),
-         yaxis = list(title = "Active users"),
-         title = "Active users over time")
+         yaxis = list(title = "Users"),
+         title = "Active Users over Time")
+if (plotType == "line") {
+  p %>% add_lines()
+} else {
+  p %>% add_bars()
+}
+```
+We had **`r round(mean(activeUsersByTime$n, na.rm = TRUE), 2)` active users** per *`r dateBy`* on average from `r from` to `r to`.
+
+<br>
+
+## 5. Individual Logins over time: What do individual user experiences look like?
+```{r logins-over-time}
+loginsByUserOverTime <- currentLogins[ , list(n = .N), by = .(Date, User) ]
+loginsByUserOverTime$Date <- as.Date(loginsByUserOverTime$Date)
+
+if (nrow(loginsByUserOverTime) > 0) {
+  p <- ggplot(loginsByUserOverTime, aes(x = Date, y = n, colour = User)) +
+    geom_line(alpha = 0.3) +
+    xlab(paste0("By ", dateBy)) +
+    ylab("Logins") +
+    ggtitle("Logins over time by Individual User") +
+    scale_x_date(limits = c(as.Date(from), as.Date(to))) +
+    theme_minimal() +
+    theme(legend.position = "none")
+  ggplotly(p)
+}
+```
+<br>
+
+## 6. Adjusted individual logins: What is the typical user's experience in terms of logins after the creation date? 
+```{r typical-user-experience}
+# Subset logins by those in the created table
+allLogins <- allLogins[ !allLogins$`Created By` %in% exclusionIds ]
+tmp <- allLogins[ allLogins$User %in% unique(users$`User Id`) ]
+
+# Get all logins and make login_day as date - day0
+tmp2 <- tmp[ , Date := cut(as.POSIXct(tmp$Date, format="%Y-%m-%d", tz="UTC"), breaks = "day") ]
+tmp2$postBaseline <- apply(tmp2, 1, function(x){ 
+  as.double(as.Date(x["Date"]) - as.Date(users$Created[ users$`User Id` == x["User"] ]))
+})
+
+# Subset to postBaseline
+tmp2 <- tmp2[ tmp2$postBaseline > 0 ]
+
+# Add weeks
+tmp2$week <- sapply(tmp2$postBaseline, function(x){ floor(x / 7 + 1) })
+
+# Get counts of users logging in on each post-baseline by week
+tmp3 <- data.frame(matrix(data = 0, 
+                          nrow = length(unique(tmp2$User)), 
+                          ncol = max(unique(tmp2$week))))
+rownames(tmp3) <- sort(unique(tmp2$User))
+colnames(tmp3) <- seq(1:max(unique(tmp2$week)))
+
+# By week
+for( i in 1:nrow(tmp2)) {
+  rw <- match(tmp2$User[[i]], rownames(tmp3))
+  cl <- match(tmp2$week[[i]], colnames(tmp3))
+  tmp3[ rw, cl ] <- 1
+}
+
+# Users that do log back in during their first week
+usersCreated <- length(unique(users$`User Id`))
+
+returns <- tmp3[ tmp3$`1` != 0, ]
+retWk1 <- dim(returns)[[1]]
+sixMonthsRet <- apply(returns, 1, function(x){ sum(x[2:27]) > 0 })
+smr <- sum(sixMonthsRet)
+
+noReturns <- tmp3[ tmp3$`1` == 0, ]
+noRetWk1 <- dim(noReturns)[[1]]
+sixMonthsNoRet <- apply(noReturns, 1, function(x){ sum(x[2:27]) > 0 })
+smnr <- sum(sixMonthsNoRet)
+
+tbl <- data.frame(a = c(usersCreated, retWk1, smr), 
+                  b = c(usersCreated, retWk1, smr))
+colnames(tbl) <- c("Count", "Percentage of Total Users")
+rownames(tbl) <- c("Total Users", "Users returning within first week", "First Week Returns coming back within first 6 months")
+tbl[,2] <- 100* round(tbl[,2]/usersCreated, 2)
+datatable(tbl)
+```
+
+<br>
+
+## 7. Table of top users
+```{r usertable}
+loginsByUser <- currentLogins[ , list(count = .N), by = .(`Created By`)]
+loginsByUser$email <- users$Email[ match(loginsByUser$`Created By`, users$`User Id`)]
+loginsByUser <- loginsByUser[ !is.na(email)]
+setorder(loginsByUser, -count)
+datatable(loginsByUser)
+```
+
+<br>
+
+***
+
+# ImmuneSpaceR
+
+## 8. Downloads (new ISR Users)
+```{r isr-bioc}
+BIOC <- data.table(read.table("https://www.bioconductor.org/packages/stats/bioc/ImmuneSpaceR/ImmuneSpaceR_stats.tab", header = TRUE))
+BIOC[, Date := as.Date(paste(Year, Month, "01", sep = "-"), format = "%Y-%b-%d")]
+BIOC <- BIOC[ !is.na(Date) & Date >= as.Date(from) & Date <= as.Date(to)  ]
+setorder(BIOC, Date)
+
+p <- BIOC %>%
+  plot_ly(x = ~Date,
+          y = ~Nb_of_distinct_IPs) %>%
+  layout(xaxis = list(title = paste0("By ", dateBy)),
+         yaxis = list(title = "Downloads"),
+         title = "Downloads in Bioconductor over Time")
 if (plotType == "line") {
   p %>% add_lines()
 } else {
@@ -160,92 +346,207 @@ if (plotType == "line") {
 }
 ```
 
-We had **`r round(mean(active_by$n), 2)` active users** per *`r dateBy`* on average from `r from` to `r to`.
 <br>
 
+```{r tomcat-logs}
 
-```{r logins}
-logins_by <- logins %>%
-  mutate(Date = floor_date(as_date(Date), dateBy)) %>%
-  count(Date, `Created By`) %>%
-  left_join(select(users_all, user_id, display_name),
-            by = c("Created By" =  "user_id")) %>%
-  mutate(display_name = ifelse(is.na(display_name),
-                               as.character(`Created By`),
-                               display_name)) %>%
-  select(Date, display_name, n)
+# To determine how ImmuneSpaceR has been used, we parse the server logs. Since the server logs
+# all types of GET / POSTS and other requests, there is a fair amount of filtering that must 
+# be done to find the requests that help us understand usage.
+#
+# These logs are created by Tomcat (server software) and written out to `/labkey/apps/tomcat/logs/`
+# on the webserve machine. Since they cannot be accessed by the Rserve, we need to copy them to
+# `/share` by setting up a cron job on `wsP/T` as `immunespace`.
+#
+# crontab -e
+# Add this line
+# 00 0-23/6 * * * rsync -a -v /labkey/apps/tomcat/logs/localhost_access_log.* /share/tomcat-logs/
+# This will sync logs to `/share/tomcat-logs/` every six hour.
 
-if (nrow(logins_by) > 0) {
-  p <- ggplot(logins_by, aes(x = Date, y = n, colour = display_name)) +
-    geom_line(alpha = 0.3) +
-    xlab(paste0("By ", dateBy)) +
-    ylab("# of logins") +
-    ggtitle("# of logins by users over time") +
-    scale_x_date(limits = c(from, to)) +
-    theme_minimal() +
-    theme(legend.position = "none")
-  ggplotly(p)
-#  logins_by %>%
-#    plot_ly(x = ~Date, y = ~n, color = ~display_name) %>%
-#    layout(xaxis = list(title = paste0("By ", dateBy)),
-#           yaxis = list(title = "# of logins"),
-#           title = "# of logins by users over time",
-#           showlegend = FALSE) %>%
-#    add_lines(alpha = 0.3)
+read_log2 <- function(date, exclusionEmails) {
+  
+  if (Sys.info()["nodename"] == "immunetestrserve" && date < "2017-09-22") {
+    file_name <- paste0("/share/tomcat-logs/localhost_access_log..", date, ".txt")
+    file_name_m <- paste0("/share/tomcat-logs/modified/localhost_access_log..", date, ".txt")
+  } else {
+    file_name <- paste0("/share/tomcat-logs/localhost_access_log.", date, ".txt")
+    file_name_m <- paste0("/share/tomcat-logs/modified/localhost_access_log.", date, ".txt")
+  }
+  
+  if (file.exists(file_name)) {
+    # 1. Try reading unmodified logs
+    tried <- try(
+      readr::read_log(file = file_name,
+                      col_types = readr::cols(.default = readr::col_character()))
+    )
+    
+    # 2. If original errors out due to NULL values, create modified without NULL and
+    # try reading that. Note that if tried does not have a "try-error" a list is returned
+    # and to avoid warnings the `any` fn is used.
+    if (any(class(tried) == "try-error")) {
+      if (!file.exists(file_name_m)) {
+        original <- file(file_name, "r")
+        modified <- file(file_name_m, "w")
+        lines <- readLines(original, skipNul = TRUE)
+        writeLines(lines, modified)
+        close(original)
+        close(modified)
+      }
+      tried <- try(
+        readr::read_log(file = file_name_m,
+                        col_types = cols(.default = readr::col_character()))
+      )
+    }
+    
+    # 3. Parse
+    if (!any(class(tried) == "try-error")) {
+      if (nrow(tried) > 0) {
+        
+        # delete if the log is still being modfied
+        if (date == as.POSIXct(Sys.Date())) {
+          if (file.exists(file_name_m)) {
+            file.remove(file_name_m)
+          }
+        }
+        
+        tried <- data.table(tried)
+        tried <- tried[ !X12 %in% exclusionEmails & X6 == 200, 
+                        c("date", "study", "schema", "query") := 
+                        list(date,
+                             stringr::str_extract(X5, "SDY\\d+|IS\\d+|Lyoplate"),
+                             grepl("schemaName=study?", X5),
+                             stringr::str_extract(X5, "(?<=queryName=)\\w+"))]
+      } else {
+        NULL
+      }
+    } else {
+      NULL
+    }
+  } else {
+    NULL
+  }
+}
+
+logs_list <- lapply(seq(from, to, by = "1 day"), read_log2, exclusionEmails = exclusionEmails)
+logs_dt <- data.table::rbindlist(logs_list)
+
+# Create date from X4 rather than log file name b/c log file name leaves many NAs
+# and visualizations require a date
+tmp <- logs_dt$X4
+tmp <- regmatches(tmp, regexpr("\\d{2}/\\w{3}/\\d{4}", tmp))
+logs_dt$date2 <- as.POSIXct(tmp, format="%d/%b/%Y", tz="UTC")
+logs_dt <- logs_dt[ date2 > from & date2 < to ]
+
+# Remove excluded emails
+logs_dt <- logs_dt[ !X12 %in% exclusionEmails ]
+```
+
+
+```{r isr}
+
+# Find unique ImmuneSpaceR Connections using the `ISC_study_datasets` query that is only
+# hit during the CreateConnection() method.
+
+# X11 column defines the type of connection to the server
+# X12 is the user's email
+ISR <- logs_dt[ grepl("ImmuneSpaceR", X11) & !is.na(X12)] 
+
+# Fix study for project level connections
+ISR[, study := ifelse(is.na(study), "All", study) ]
+
+# Filter down to connections
+ISR_inits <- ISR[ , list(cnt = .N), by = .(date2, X12, study)]
+```
+
+
+## 9. ImmuneSpaceR Users Over Time
+```{r isr-user}
+# Filter to single connection per user per day for accurate aggregation
+ISR_users <- ISR_inits[ , list(X12, date2) ]
+ISR_users <- ISR_users[ !duplicated(ISR_users) ]
+
+# Group by Date break
+tmp <- as.POSIXct(ISR_users$date2, format="%Y-%m-%d", tz="UTC")
+ISR_usersOverTime <- ISR_users[ , Date := as.Date(cut(tmp, breaks = labkey.url.params$by)) ]
+ISR_usersOverTime <- ISR_usersOverTime[ , list(Users = .N), by = Date ]
+
+p <- ISR_usersOverTime %>%
+  plot_ly(x = ~Date,
+          y = ~Users) %>%
+  layout(xaxis = list(title = paste0("By ", dateBy)),
+         yaxis = list(title = "Users"),
+         title = "ISR users over time")
+if (plotType == "line") {
+  p %>% add_lines()
+} else {
+  p %>% add_bars()
 }
 ```
+We had **`r round(mean(ISR_usersOverTime$Users, na.rm = TRUE), 2)` ISR users** per *`r dateBy`* on average from `r from` to `r to`.
+
 <br>
 
+## 10. Typical ISR user experience over time from first connection
+```{r typical-isr-user-experience}
+# prep UI logins
+UI_logins <- copy(allLogins)
+UI_logins <- UI_logins[ UI_logins$Date > from & UI_logins$Date < to ]
+UI_logins$Email <- users$Email[ match(UI_logins$User, users$`User Id`)]
+UI_logins <- UI_logins[ !is.na(Date) & !is.na(Email), list(Date, Email)]
+UI_logins$method <- "UI"
+UI_logins <- UI_logins[ !duplicated(UI_logins) ]
+UI_logins <- UI_logins[ , Date := cut(as.POSIXct(UI_logins$Date, format="%Y-%m-%d", tz="UTC"), breaks = "day") ]
 
-```{r vs}
-#vs <- full_join(df, logins_byday, by = c("created" = "Date")) %>%
-#  select(create#n) %>%
-#  mutate(N = ifelse(is.na(N), 0, N), n = ifelse(is.na(n), 0, n), surp = n - N)
-#p <- ggplot(vs, aes(x = N, y = n)) +
-#  geom_point(aes(col = surp, label = created)) +
-#  geom_abline(intercept = 0) +
-#  theme_IS(base_size = 18)
-#ggplotly(p)
-```
+# prep ISR Logins
+ISR_logins <- ISR_inits[ , list(X12, date2) ]
+ISR_logins <- ISR_logins[ !duplicated(ISR_logins) ]
+setnames(ISR_logins, colnames(ISR_logins), c("Email", "Date"))
+ISR_logins$method <- "ISR"
+ISR_logins <- ISR_logins[ , Date := cut(as.POSIXct(ISR_logins$Date, format="%Y-%m-%d", tz="UTC"), breaks = "day") ]
 
+# Combine and add post-baseline days
+allLogins <- rbind(ISR_logins, UI_logins)
+allLogins$postBaseline <- apply(allLogins, 1, function(x){ 
+  ret <- as.double(as.Date(x["Date"]) - as.Date(users$Created[ users$Email == x["Email"] ]))
+  ret <- ifelse(is.null(ret), NA, ret)
+})
 
-```{r totalusers}
-total_users <- mutate(users, cumsum = cumsum(N))
+# Subset to postBaseline
+allLogins <- allLogins[ !is.na(allLogins$postBaseline) & allLogins$postBaseline > 0 ]
 
-total_users %>%
-  plot_ly(x = ~created, y = ~cumsum) %>%
-  layout(xaxis = list(title = paste0("By ", dateBy)),
-         yaxis = list(title = "Total # of users"),
-         title = "Total # of users over time") %>%
-  add_lines(line = list(shape = "hv"))
+# Summarize and spread by method
+dailySmry <- allLogins[ , list(n = .N), by = c("method", "postBaseline") ]
+dailySmry <- dcast(dailySmry, postBaseline ~ method, value.var = "n")
+
+# Plot lines - doing just ISR currently, but may add back UI if
+# a better visualization is determined.  At the moment, UI logins 
+# drown out ISR.
+p <- plot_ly(dailySmry, x = ~postBaseline, y = ~ISR) %>%
+  # add_lines(y = ~UI, name = 'User Interface', line = list(shape = "spline")) %>%
+  # add_lines(y = ~ISR, name = 'ImmuneSpaceR') %>%
+  layout(xaxis = list(title = "Days after account creation"),
+         yaxis = list(title = "Unique User Logins"),
+         title = "ImmuneSpaceR logins by days after account creation") 
+p
 ```
 <br>
 
-
-## Table of users
-```{r usertable}
-logins_byuser <- logins %>%
-  count(`Created By`)
-
-topusers <- users_all %>%
-  left_join(logins_byuser,
-            by = c("user_id" = "Created By")) %>%
-  filter(!is.na(n)) %>%
-  arrange(desc(n))
-
-datatable(topusers)
+## 11. Top ISR users
+```{r isr-top-users}
+topIsrUsers <- ISR_inits[, list(count = .N), by = X12]
+setnames(topIsrUsers, colnames(topIsrUsers), c("Email", "Logins"))
+setorder(topIsrUsers, -Logins)
+datatable(topIsrUsers)
 ```
 <br>
-
-
 
 ***
 
+# Content - what are users looking for?
 
-
-# Searches Queries
-```{r searches}
-searches <- labkey.selectRows(baseUrl = labkey.url.base,
+## 12. Search Queries
+```{r searches-wordcloud}
+searches <- data.table(labkey.selectRows(baseUrl = labkey.url.base,
                               folderPath = "/home",
                               schemaName = "auditLog",
                               queryName = "SearchAuditEvent",
@@ -259,78 +560,56 @@ searches <- labkey.selectRows(baseUrl = labkey.url.base,
                                                        "1234"),
                                                      c("CreatedBy/DisplayName",
                                                        "NOT_IN",
-                                                       exclusion_list)),
-                              containerFilter = NULL)
+                                                       exclusionNames)),
+                              containerFilter = NULL))
+searches <- searches[ `Created By` != 0 & Date >= from & Date <= to, ]
+searches[ , id := paste(Date, `Created By`, sep = "-") ]
+searches <- searches[, list(id, Query)]
 
-searches <- searches %>%
-  filter(`Created By` != 0,
-         Date >= from & Date <= to) %>%
-  mutate(id = paste(Date, `Created By`, sep = "-")) %>%
-  select(id, Query)
-```
+freq <- tidytext::unnest_tokens(searches, output = word, input = Query)
+freq <- freq[ , list(count = .N), by = word]
+stopWords <- tm::stopwords()
+freq <- freq[ !word %in% stopWords ]
 
-## Word cloud
-```{r wordcloud}
-freq <- searches %>%
-  unnest_tokens(output = word, input = Query) %>%
-  count(word, sort = T)
-pal <- brewer.pal(9,"YlGnBu")
+pal <- RColorBrewer::brewer.pal(9,"YlGnBu")
 pal <- pal[-(1:4)]
 
 if (nrow(freq) > 0) {
-  wordcloud(words = freq$word,
-            freq = freq$n,
-            max.words = 30,
-            rot.per = 0,
-            random.order = FALSE,
-            colors = pal)
+  wordcloud::wordcloud(words = freq$word,
+                       freq = freq$count,
+                       max.words = 30,
+                       rot.per = 0,
+                       random.order = FALSE,
+                       colors = pal)
 } else {
-  wordcloud(words = "no search",
-            freq = 1)
+  wordcloud::wordcloud(words = "no search",
+                       freq = 1)
 }
 ```
 <br>
 
-
-## Table of search queries
+## 13. Most common search queries
 ```{r wordtable}
+setorder(freq, -count)
 datatable(freq, width = 600)
 ```
 <br>
 
-
-
-***
-
-
-
-# Studies and Modules
+## 14. Studies Available
 ```{r studycount}
-folders <- labkey.selectRows(baseUrl = labkey.url.base,
+# Number of available studies is defined by the count of study folders created
+folders <- data.table(labkey.selectRows(baseUrl = labkey.url.base,
                              folderPath = "/",
                              schemaName = "auditLog",
                              queryName ="ContainerAuditEvent",
                              colNameOpt = "rname",
-                             containerFilter = "AllFolders")
+                             containerFilter = "AllFolders"))
+sdys <- folders[ !is.na(container) & grepl("Folder SDY[0-9].*created$", comment),
+                 list(created, comment) ]
+sdys[ , study := gsub("\\s.*$", "", gsub("^.*SDY", "SDY", comment)) ]
+setorder(sdys, created)
+sdys[ , count := .I ]
 
-sdys <- folders %>%
-  filter(!is.na(container)) %>%
-  select(created, comment) %>%
-  filter(grepl("Folder SDY[0-9].*created$", comment)) %>%
-  mutate(study = gsub("\\s.*$", "", gsub("^.*SDY", "SDY", comment))) %>%
-  arrange(created) %>%
-  mutate(count = 1:nrow(.)) %>%
-  filter(created >= "2016-01-01") %>%
-  select(created, count) %>%
-  mutate(created = as_date(created))
-
-sdys <- bind_rows(tibble(created = as_date("2016-01-01"),
-                         count = min(sdys$count)),
-                  sdys,
-                  tibble(created = TODAY,
-                         count = max(sdys$count)))
-
-# Based on folder creation -> counts private studies
 sdys %>%
   plot_ly(x = ~created, y = ~count) %>%
   layout(xaxis = list(title = "Date"),
@@ -340,181 +619,10 @@ sdys %>%
 ```
 <br>
 
-
-```{r tomcat-logs}
-# These logs are actually `/labkey/apps/tomcat/logs/` created by tomcat.
-# Since they cannot be access by the r server, we need to copy them to `/share`
-# Set up a cron job on `wsP/T` as `immunespace`
-# crontab -e
-# Add this line
-# 00 0-23/6 * * * rsync -a -v /labkey/apps/tomcat/logs/localhost_access_log.* /share/tomcat-logs/
-# This will sync logs to `/share/tomcat-logs/` every six hour.
-read_log2 <- function(date) {
-  if (Sys.info()["nodename"] == "immunetestrserve" && date < "2017-09-22") {
-    file_name <- paste0("/share/tomcat-logs/localhost_access_log..", date, ".txt")
-    file_name_m <- paste0("/share/tomcat-logs/modified/localhost_access_log..", date, ".txt")
-  } else {
-    file_name <- paste0("/share/tomcat-logs/localhost_access_log.", date, ".txt")
-    file_name_m <- paste0("/share/tomcat-logs/modified/localhost_access_log.", date, ".txt")
-  }
-
-  if (file.exists(file_name)) {
-    tried <- try(
-      read_log(file = file_name,
-               col_types = cols(.default = col_character()))
-    )
-
-    if (class(tried) == "try-error") {
-      if (!file.exists(file_name_m)) {
-        original <- file(file_name, "r")
-        modified <- file(file_name_m, "w")
-        lines <- readLines(original, skipNul = TRUE)
-        writeLines(lines, modified)
-        close(original)
-        close(modified)
-      }
-
-      tried <- try(
-        read_log(file = file_name_m,
-                 col_types = cols(.default = col_character()))
-      )
-    }
-
-    if (class(tried) == "try-error") {
-      NULL
-    } else {
-      if (nrow(tried) > 0) {
-        # delete if the log is still being modfied
-        if (date == TODAY) {
-          if (file.exists(file_name_m)) {
-            file.remove(file_name_m)
-          }
-        }
-        tried %>%
-          mutate(date = date,
-                 study = str_extract(X5, "SDY\\d+|IS\\d+|Lyoplate"),
-                 schema = grepl("schemaName=study?", X5),
-                 query = str_extract(X5, "(?<=queryName=)\\w+")) %>%
-          filter(!X12 %in% exclusion_email) %>%
-          filter(X6 == 200)
-      } else {
-        NULL
-      }
-    }
-  } else {
-    NULL
-  }
-}
-
-logs_list <- lapply(from_to$date, read_log2)
-logs_dt <- bind_rows(logs_list)
-```
-
-
-## Pageviews: Study
-```{r study-views}
-string <- paste0("(",
-                 "/project/Studies/SDY\\d+/begin.view\\?? HTTP/1.1",
-                 "|",
-                 "/project/Studies/begin.view\\?? HTTP/1.1",
-                 "|",
-                 "/project/HIPC/IS\\d+/begin.view\\?? HTTP/1.1",
-                 "|",
-                 "/project/HIPC/Lyoplate/begin.view\\?? HTTP/1.1",
-                 ")")
-
-log_study <- logs_dt %>%
-  mutate(folder = str_extract(X5, string)) %>%
-  filter(!is.na(folder)) %>%
-  mutate(study = ifelse(is.na(study), "Data Finder", study)) %>%
-  select(study) %>%
-  count(study) %>%
-  arrange(desc(n))
-
-datatable(log_study,
-          colnames = c("Study", "Unique pageviews"),
-          caption = paste0("From ", from, " to ", to),
-          width = 600)
-```
-
-
-## Pageviews: Module
-```{r module-views}
-string <- "(?<=GET /)(DataExplorer|GeneExpressionExplorer|GeneSetEnrichmentAnalysis|ImmuneResponsePredictor)(?=/\\S+/begin.view HTTP/1.1)"
-
-log_module <- logs_dt %>%
-  mutate(module = str_extract(X5, string)) %>%
-  filter(!is.na(module)) %>%
-  select(module) %>%
-  count(module) %>%
-  arrange(desc(n))
-
-datatable(log_module,
-          colnames = c("Module", "Unique pageviews"),
-          caption = paste0("From ", from, " to ", to),
-          width = 600)
-```
-
-
-## Pageviews: Reports
-```{r reports-views}
-strings <- c(
-  "GET /reports/Studies/SDY144/runReport.view\\?reportId=module%3ASDY144%2Freports%2Fschemas%2Fstudy%2Fdemographics%2FHAI_VN_vs_plasma_cells.Rmd HTTP/1.1",
-  "GET /reports/Studies/SDY180/runReport.view\\?reportId=module%3ASDY180%2Freports%2Fschemas%2Fstudy%2Fdemographics%2Fplasmablast_abundance.Rmd HTTP/1.1",
-  "GET /reports/Studies/SDY207/runReport.view\\?reportId=module%3ASDY207%2Freports%2Fschemas%2Fstudy%2Ffcs_sample_files%2FCyTOF_Visualization.Rmd HTTP/1.1",
-  "GET /project/Studies/SDY207/begin.view\\?pageId=Report HTTP/1.1",
-  "GET /reports/Studies/SDY269/runReport.view\\?reportId=module%3ASDY269%2Freports%2Fschemas%2Fhai_flow_elispot.Rmd HTTP/1.1",
-  "GET /project/HIPC/IS1/begin.view\\?pageId=Report HTTP/1.1")
-
-log_reports <- logs_dt %>%
-  mutate(report = X5,
-         report = str_replace(report, strings[1], "SDY144"),
-         report = str_replace(report, strings[2], "SDY180"),
-         report = str_replace(report, strings[3], "SDY207"),
-         report = str_replace(report, strings[4], "SDY207"),
-         report = str_replace(report, strings[5], "SDY269"),
-         report = str_replace(report, strings[6], "IS1")) %>%
-  filter(!is.na(report)) %>%
-  filter(report %in% c("SDY144", "SDY180", "SDY207", "SDY269", "IS1")) %>%
-  select(report) %>%
-  count(report) %>%
-  arrange(desc(n))
-
-datatable(log_reports,
-          colnames = c("Report", "Unique pagesviews"),
-          caption = paste0("From ", from, " to ", to),
-          width = 600)
-```
-
-
-***
-
-
-
-# ImmuneSpaceR
-
-```{r isr}
-ISR <- logs_dt %>%
-  filter(grepl("ImmuneSpaceR", X11)) %>%
-  filter(!is.na(X12)) %>%
-  mutate(study = ifelse(is.na(study),
-                        "All",
-                        study))
-
-ISR_inits <- ISR %>%
-  filter(query == "ISC_study_datasets" |
-         X5 == "GET /project/Studies/getContainers.view?includeSubfolders=0&includeEffectivePermissions=1 HTTP/1.1",
-         X1 != "10.10.1.74")
-```
-
-## Connections
-
+## 15. Studies accessed via ISR
 ```{r isr-study}
-ISR_study <- ISR_inits %>%
-  select(study) %>%
-  count(study) %>%
-  arrange(desc(n))
-
+ISR_study <- ISR_inits[ , list(count = .N), by = study]
+setorder(ISR_study, -count)
 datatable(ISR_study,
           colnames = c("Study", "ISR connections"),
           caption = paste0("From ", from, " to ", to),
@@ -522,146 +630,155 @@ datatable(ISR_study,
 ```
 <br>
 
+## 16. Studies accessed via UI (pageviews)
+```{r study-views}
+searchString <- "/project/(Studies/SDY\\d+|Studies|HIPC/IS\\d+|HIPC/Lyoplate)/begin.view\\?? HTTP/1.1"
+log_study <- logs_dt[, folder := stringr::str_extract(X5, searchString)]
+log_study <- log_study[ !is.na(folder) ]
+log_study[ , study := ifelse(is.na(study), "Data Finder", study) ]
+log_study <- log_study[ , list(count = .N), by = study]
+setorder(log_study, -count)
 
-```{r isr-con}
-ISR_con <- ISR_inits %>%
-  select(date) %>%
-  count(date) %>%
-  right_join(from_to, by = "date") %>%
-  mutate(n = replace(n, is.na(n), 0)) %>%
-  mutate(date = floor_date(date, dateBy)) %>%
-  group_by(date) %>%
-  summarise(N = sum(n))
-
-p <- ISR_con %>%
-  plot_ly(x = ~date,
-          y = ~N) %>%
-  layout(xaxis = list(title = paste0("By ", dateBy)),
-         yaxis = list(title = "# of connections"),
-         title = "# of connections over time")
-if (plotType == "line") {
-  p %>% add_lines()
-} else {
-  p %>% add_bars()
-}
-```
-
-We had **`r round(mean(ISR_con$N), 2)` connections** per *`r dateBy`* on average from `r from` to `r to`.
-<br>
-
-
-```{r isr-user}
-ISR_user <- ISR_inits %>%
-  select(date, X12) %>%
-  filter(!is.na(X12)) %>%
-  distinct() %>%
-  select(date) %>%
-  count(date) %>%
-  right_join(from_to, by = "date") %>%
-  mutate(n = replace(n, is.na(n), 0)) %>%
-  mutate(date = floor_date(date, dateBy)) %>%
-  group_by(date) %>%
-  summarise(N = sum(n))
-
-p <- ISR_user %>%
-  plot_ly(x = ~date,
-          y = ~N) %>%
-  layout(xaxis = list(title = paste0("By ", dateBy)),
-         yaxis = list(title = "# of users"),
-         title = "# of ISR users over time")
-if (plotType == "line") {
-  p %>% add_lines()
-} else {
-  p %>% add_bars()
-}
-```
-
-We had **`r round(mean(ISR_user$N), 2)` ISR users** per *`r dateBy`* on average from `r from` to `r to`.
-<br>
-
-## Table of ISR users
-
-```{r isr-top-users}
-ISR_top_user <- ISR_inits %>%
-  mutate(email = X12) %>%
-  count(email) %>%
-  arrange(desc(n))
-datatable(ISR_top_user, width = 800)
-```
-
-<br>
-
-
-## Downloads
-
-```{r isr-bioc}
-BIOC <- read.table("https://www.bioconductor.org/packages/stats/bioc/ImmuneSpaceR/ImmuneSpaceR_stats.tab", header = TRUE)
-BIOC <- BIOC %>%
-  filter(Month != "all") %>%
-  mutate(date = as_date(paste(Year, Month, "01", sep = "-"), "%Y-%b-%d")) %>%
-  arrange(date) %>%
-  filter(date <= TODAY) %>%
-  select(date, Nb_of_downloads)
-
-p <- BIOC %>%
-  plot_ly(x = ~date,
-          y = ~Nb_of_downloads) %>%
-  layout(xaxis = list(title = paste0("By ", dateBy)),
-         yaxis = list(title = "# of downloads"),
-         title = "# of downloads in Bioconductor over time")
-if (plotType == "line") {
-  p %>% add_lines()
-} else {
-  p %>% add_bars()
-}
-
+datatable(log_study,
+          colnames = c("Study", "Unique pageviews"),
+          caption = paste0("From ", from, " to ", to),
+          width = 600)
 ```
 <br>
 
+## 17. Modules accessed via UI (pageviews)
+```{r module-views}
+string <- "(?<=GET /)(DataExplorer|GeneExpressionExplorer|GeneSetEnrichmentAnalysis|ImmuneResponsePredictor|DimensionReduction)(?=/\\S+/begin.view HTTP/1.1)"
 
-```{r isr-github}
+log_module <- logs_dt[, module := stringr::str_extract(X5, string)]
+log_module <- log_module[ !is.na(module) ]
+log_module <- log_module[ , list(count = .N), by = module]
+setorder(log_module, -count)
+
+datatable(log_module,
+          colnames = c("Module", "Unique pageviews"),
+          caption = paste0("From ", from, " to ", to),
+          width = 600)
 ```
+<br>
 
+## 18. Reports accessed via UI (pageviews)
+```{r reports-views}
+# Get study-specific reports, incl. IS1 using search string based on minimal URL
+# then update the report column match study id.
+log_reports <- logs_dt[ , report := X5 ]
+searchString <- "/reports/Studies/SDY(144|180|207|269)/runReport\\.view|IS1/begin\\.view.+pageId=Report"
+log_reports <- log_reports[ grepl(searchString, report) ]
+log_reports$report <- sapply(log_reports$report, function(x){
+  return(regmatches(x, regexpr("SDY\\d{3}|IS\\d{1}", x)))
+})
+log_reports <- log_reports[ , list(count = .N), by = report] 
+setorder(log_reports, -count)
 
-***
+datatable(log_reports,
+          colnames = c("Report", "Unique pageviews"),
+          caption = paste0("From ", from, " to ", to),
+          width = 600)
+```
+<br>
 
-# RStudio
-
+## 19. Rstudio accessed via UI (pageviews)
 ```{r rstudio}
-log_rstudio <- logs_dt %>%
-  filter(grepl("GET /_rstudio/ HTTP/1.1", X5))
+# First half of searchString is pre-2019, second half is post
+searchString <- "GET /_rstudio/ HTTP/1.1|GET /login/login\\.view\\?returnUrl=%2Frstudio"
+log_rstudio <- logs_dt[ (grepl(searchString, X5)) ]
+log_rstudio <- log_rstudio[ , list(count = .N), by = date2 ]
+log_rstudio <- log_rstudio[ , Date := as.Date(cut(date2, breaks = labkey.url.params$by)) ]
+log_rstudio <- log_rstudio[ , list(Sessions = sum(count)), by = Date ]
 
-session_rstudio <- log_rstudio %>%
-  select(date) %>%
-  count(date) %>%
-  right_join(from_to, by = "date") %>%
-  mutate(n = replace(n, is.na(n), 0)) %>%
-  mutate(date = floor_date(date, dateBy)) %>%
-  group_by(date) %>%
-  summarise(N = sum(n))
-
-p <- session_rstudio %>%
-  plot_ly(x = ~date,
-          y = ~N) %>%
+p <- log_rstudio %>%
+  plot_ly(x = ~Date,
+          y = ~Sessions) %>%
   layout(xaxis = list(title = paste0("By ", dateBy)),
-         yaxis = list(title = "# of sessions"),
-         title = "# of RStudio sessions over time")
+         yaxis = list(title = "Sessions"),
+         title = "RStudio sessions over time")
 if (plotType == "line") {
   p %>% add_lines()
 } else {
   p %>% add_bars()
 }
 ```
-
-We had **`r round(mean(session_rstudio$N), 2)` RStudio sessions** per *`r dateBy`* on average from `r from` to `r to`.
-
-
+We had **`r round(mean(log_rstudio$Sessions, na.rm = TRUE), 2)` RStudio sessions** per *`r dateBy`* on average from `r from` to `r to`.
 
 ***
 
-# Debuggin Messages
+# Publications & Citations
+```{r organizing-pub-data}
+# get list of studies and their pubmedids
+df <- labkey.selectRows(baseUrl = labkey.url.base,
+                        folderPath = "/Studies/",
+                        schemaName = "immport",
+                        queryName = "study_pubmed",
+                        colNameOpt = "fieldname")
+
+# For each pubmedid
+base <- "http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid="
+results <- lapply(df$pubmed_id, function(id){
+  page <- read_html(paste0(base, id))
+  nodes <- html_nodes(page, css = '.rslt')
+  res <- lapply(nodes, html_text)
+  parsed <- lapply(res, function(x){
+    spl <- strsplit(x, "\\.")[[1]]
+    title <- spl[[1]]
+    authors <- spl[[2]]
+    pubmedid <- spl[[length(spl)]]
+    pubmedid <- regmatches(pubmedid, regexpr("\\d{8}", pubmedid))
+    return(c(title, authors, pubmedid, id))
+  })
+  parsed <- data.frame(do.call(rbind, parsed))
+})
+allIds <- data.table(do.call(rbind, results))
+cnames <- c("citedby_title",
+            "citedby_authors",
+            "citedby_id",
+            "original_id")
+setnames(allIds, colnames(allIds), cnames)
+
+# Add study
+allIds$study <- df$study_accession[ match(allIds$original_id, df$pubmed_id)]
+allIds$studyNum <- as.numeric(gsub("SDY","", allIds$study))
+```
+
+## 20. Most Cited Studies
+```{r most-cited-study}
+CountByStudy <- allIds[ , list(Citations = .N), by = .(study)]
+setorder(CountByStudy, -Citations)
+setnames(CountByStudy, "study", "Study")
+DT::datatable(CountByStudy)
+```
+
+## 21. Papers that cite ImmuneSpace studies most (top 100)
+```{r papers-using-immunespace}
+CountByPaper <- allIds[ , list(Count = .N, Studies = paste(unique(study), collapse = ", ")), by = .(citedby_title, citedby_id) ]
+CountByPaper$citedby_id <- paste0("<a href='", "https://www.ncbi.nlm.nih.gov/pubmed/?term=", CountByPaper$citedby_id, "'>", 
+                                  CountByPaper$citedby_id, "</a>")
+setorder(CountByPaper, -Count)
+setnames(CountByPaper, c("citedby_title", "citedby_id", "Studies"), c("Paper Title", "Pubmed Id", "Studies Cited") )
+DT::datatable(CountByPaper, escape = FALSE)
+```
+
+## 22. Authors that cite ImmuneSpace studies most (top 100)
+```{r authors-using-immunespace}
+# TODO: Check parsing of html_text results to ensure authors pulled correctly
+authorsList <- unlist(lapply(allIds$citedby_authors, function(x){
+  strsplit(gsub(", ", "," , as.character(x)), ",")[[1]]
+  }))
+author <- authorsList[ grep("^\\w+ \\w{1,2}$", authorsList)]
+tbl <- data.table(table(author))
+setorder(tbl, -N)
+tbl <- tbl[1:100, ]
+setnames(tbl, c("author","N"), c("Author","Count"))
+DT::datatable(tbl)
+```
+
+# Debugging Messages
 
 ## Missing access logs
 ```{r debugging-messages}
-from_to$date[unlist(lapply(logs_list, is.null))]
+# from_to$date[unlist(lapply(logs_list, is.null))]
 ```

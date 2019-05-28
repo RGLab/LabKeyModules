@@ -324,10 +324,12 @@ library(illuminaio)
   library(hugene10stv1cdf)
   library(primeviewcdf)
   library(hgu133plus2cdf)
+  library(hgu133a2cdf)
   library(hthgu133pluspmcdf)
   library(huex10stv2cdf) # customCDF loaded from UpdateAnno Pkg
   library(hursta2a520709cdf) # customCDF loaded from UpdateAnno Pkg - SDY1328
-  
+  library(affy)
+ 
   # Background Correction Notes:
   # 'background' = TRUE performs function similar to normexp.fit.control and normexp.signal
   # from limma package.
@@ -693,7 +695,7 @@ runCreateMx <- function(labkey.url.base,
                                          "SDY406", "SDY984", "SDY1260", "SDY1264",
                                          "SDY1293", "SDY270", "SDY1291", "SDY212",
                                          "SDY315", "SDY305", "SDY1328", "SDY1368",
-                                         "SDY1370")
+                                         "SDY1370", "SDY1119", "SDY1294")
   
   #**illuminaManifestFile**: for studies with Illumina idat files that need bgx 
   # manifest files.  These are found through the Illumina website and stored in

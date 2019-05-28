@@ -5,8 +5,10 @@ if (length(args) == 0) {
   stop("Argument must be supplied (BUILD_TYPE)")
 }
 
-source("https://bioconductor.org/biocLite.R")
-biocLite(c(
+install.packages("Rserve", , "http://cran.fhcrc.org") # install.packages("Rserve", , "http://www.rforge.net/")
+
+install.packages("BiocManager", , "http://cran.fhcrc.org")
+BiocManager::install(c(
   scan("listOfNeededRPackages", what = "character"),
   "rmarkdown"
 ))

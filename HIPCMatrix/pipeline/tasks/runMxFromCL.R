@@ -2,18 +2,24 @@
 source("/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/makeAllMxVarsDf.R")
 source("/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/runCreateMx.R") # dependencies sourced here
 
-con <- CreateConnection("") # hardcoded(!) for test / prod
-mats <- con$cache$GE_matrices
+runMxFromCL <- function(studies = NULL, onTest = TRUE){
 
-message("Generating matrix of argument values for runCreateMx() for all current matrices\n")
-allLs <- mapply(makeVarList,
-                sdy = mats$folder,
-                mx = mats$name,
-                MoreArgs = list(con = con))
-df <- data.frame(t(allLs), stringsAsFactors = FALSE)
+  con <- CreateConnection("", onTest = onTest)
+  mats <- con$cache$GE_matrices
 
-message("\nRunning all matrices through runCreateMx()")
-res <- mapply(runCreateMx,
+  if (!is.null(studies)) {
+    mats <- mats[ mats$folder %in% studies, ]
+  }
+
+  message("Generating matrix of argument values for runCreateMx() for all current matrices\n")
+  allLs <- mapply(makeVarList,
+                  sdy = mats$folder,
+                  mx = mats$name,
+                  MoreArgs = list(con = con))
+  df <- data.frame(t(allLs), stringsAsFactors = FALSE)
+
+  message("\nRunning all matrices through runCreateMx()")
+  res <- mapply(runCreateMx,
               labkey.url.base = df$labkey.url.base,
               labkey.url.path = df$labkey.url.path,
               pipeline.root = df$pipeline.root,
@@ -24,5 +30,5 @@ res <- mapply(runCreateMx,
               output.tsv = df$output.tsv,
               MoreArgs = list(onCL = TRUE)
               )
-message("\nWork completed")
-
+  message("\nWork completed")
+}

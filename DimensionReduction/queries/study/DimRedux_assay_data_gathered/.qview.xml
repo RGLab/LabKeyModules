@@ -1,4 +1,4 @@
-<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" containerFilter="AllFolders">
+<cv:customView xmlns:cv="http://labkey.org/data/xml/queryCustomView" containerFilter="CurrentAndSubfolders">
     <cv:columns>
         <cv:column name="Name"/>
         <cv:column name="Label"/>

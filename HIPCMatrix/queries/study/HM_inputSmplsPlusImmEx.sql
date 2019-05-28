@@ -1,4 +1,5 @@
 SELECT
+GEM.Run,
 GEM.ParticipantId,
 GEM.study_time_collected,
 GEM.study_time_collected_unit,

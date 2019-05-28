@@ -55,14 +55,14 @@ function removeEMs( dataRegion ) {
     name. Default view in selectRows for this query is currentAndSubfolders, which
     is why it's not needed there. */
     function rmLKrow( emObj ) {
-        selRows.responseJSON.rows.forEach( function(row) {
-            if( emObj["name"] == row.Name){
+        selRows.responseJSON.rows.forEach( function(rw) {
+            if( emObj["name"] == rw.Name){
                 var path = containerPath != "/Studies" ? containerPath : containerPath + "/" + emObj["folder"];
                 LABKEY.Query.deleteRows({
                     "schemaName": schemaName,
                     "queryName": queryName,
                     "containerPath": path,
-                    "rows": [ { "RowId" : row.RowId } ],
+                    "rows": [ { "RowId" : rw.RowId } ],
                     success: function ( data ) {
                         rmLkFiles(emObj);
                     },
@@ -141,12 +141,12 @@ function removeEMs( dataRegion ) {
     // MAIN FN -----------------------------------------------------------
     function onSuccess( data ) {
         var counter = 0;
-        data.rows.forEach( function(row){
+        data.rows.forEach( function(rw){
             var emObj = {};
-            emObj["name"] = row['Name'];
-            emObj["folder"] = row['Folder/Name'];
+            emObj["name"] = rw['Name'];
+            emObj["folder"] = rw['Folder/Name'].match(/SDY\d{2,4}/)[0];
             emObj["path"] = "/analysis/exprs_matrices/" +
-                                    row['Name'] + ".tsv";
+                                    rw['Name'] + ".tsv";
             rmLKrow( emObj );
             counter++;
             if(counter === data.rows.length){

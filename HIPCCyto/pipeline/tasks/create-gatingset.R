@@ -1,63 +1,56 @@
-# Basic pipeline for processing flow workspaces
-# Take in workspace, parse, and output gating sets for each group and summary info for that run
+#${input.txt}
+#--------------------------------
+# DEPENDENCIES
+#--------------------------------
 
-# to do
-# add handling for multiple workspaces
-# figure out how to convert .jo files to xml
-# do gating sets need their own sub directory?
+# NOTES:
+# Wrapper function, separated for sourcing when running on CL
+# running from UI.
 
-library(flowWorkspace)
-library(dplyr)
+source("/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R")
 
+#--------------------------------
+# PARAMS & EXECUTION
+#--------------------------------
 
-##----GET-WS-FILE----##
+taskInfo <- "${pipeline, taskInfo}" # separated to make debugging locally easier
 
-sdy <- "SDY416"
-fcs_dir <- file.path("/share","files", "Studies", sdy, "@files", "rawdata", "flow_cytometry")
-fcs_names <- list.files(fcs_dir, pattern="*.fcs", full.names = TRUE)
+## taskInfo.tsv inputs
+jobInfo <- read.table(taskInfo,
+                      col.names = c("name", "value"),
+                      header = FALSE,
+                      check.names = FALSE,
+                      stringsAsFactors = FALSE,
+                      sep = "\t",
+                      quote = "",
+                      fill = TRUE,
+                      na.strings = "")
 
-# Will have to modify to include .jo
-# FlowWorkspace cannot parse .jo -- will need to pull it and output xml??
-ws_names <- list.files(fcs_dir, pattern="*.xml", full.names = TRUE)
+pipelineRoot        <- jobInfo$value[ jobInfo$name == "pipeRoot" ]
+labkeyUrlPath       <- jobInfo$value[ jobInfo$name == "containerPath" ]
+labkeyUrlBase       <- jobInfo$value[ jobInfo$name == "baseUrl" ]
+analysisDirectory   <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
+dataDirectory       <- jobInfo$value[ jobInfo$name == "dataDirectory" ]
+protocol            <- jobInfo$value[ jobInfo$name == "protocol" ]
 
-print(paste0("There are ", length(ws_names), " workspace files for ", sdy))
+# From LABKEY.Pipeline.startAnalysis in views/CreateMatrix.html.
+# Vars are interpreted in the create-gatingset.R file generated in
+# /share/files/Studies/SDY123/@files/rawdata/flow_cytometry/create-gatingset/gatingset/gatingset.work
+# This directory is removed once work is finished, hence need for
+# outputting version within pipeline for reproducibility.
+# You can often find this info though in the gatingset.log file
+# found in the .../create-gatingset/gatingset subdir.
 
-##----OPEN-WS----##
+runCreateGS(labkeyUrlBase = labkeyUrlBase,
+            labkeyUrlPath = labkeyUrlPath,
+            pipelineRoot = pipelineRoot,
+            dataDirectory = dataDirectory,
+            analysisDirectory = analysisDirectory,
+            protocol = protocol,
+            onCL = FALSE)
 
-ws <- openWorkspace(ws_names)
-
-##----ACCESS-BASIC-WORKSPACE-INFO----##
-
-sample_groups <- getSampleGroups(ws)
-group_ids <- unique(sample_groups$groupID)
-
-##----PARSE-WS----##
-
-## CHANGE TO THIS DIRECTORY
-gs_dir <- file.path("/share","files", "Studies", sdy, "@files", "rawdata", "gating_set")
-gs_files <- list.files(gs_dir, pattern="*.rds", full.names = TRUE)
-
-if (!file.exists(gs_dir)) {
-  dir.create(gs_dir, recursive = TRUE)
-}
-
-run_data <- lapply(seq(length(group_ids)), FUN = function(group) {
-  gs <- parseWorkspace(ws,
-                       name = group,
-                       isNCdf = TRUE)
-  file_name <- paste0(sdy, "_gs", group, ".rda")
-  workspace <-
-  group_id <- group_ids[group]
-  num_samples <- length(gs@data@phenoData@data$name)
-  fw_version <- packageVersion("flowWorkspace")
-
-  run_data <- data.frame(file_name, num_samples, group_id, fw_version)
-
-  save_gs(gs, gs_dir)
-
-  return(run_data)
-})
-
-
-##----WRITE-RUN-DATA-TO-TABLE----##
+# Notes:
+# for running at command line, use command line function  which
+# generates variables from the matrices currently available instead
+# of trying to parse logs and taskInfo tsv files.
 

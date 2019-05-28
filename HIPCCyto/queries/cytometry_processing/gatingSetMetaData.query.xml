@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns='http://labkey.org/data/xml/query'>
+    <metadata>
+        <tables xmlns='http://labkey.org/data/xml'>
+            <table tableName='gatingSetMetaData' tableDbType='TABLE'>
+                <buttonBarOptions position='both' includeStandardButtons='true'>
+                    <includeScript>HIPCCyto/RemoveGSs.js</includeScript>
+                    <item text='Remove GS' requiresSelection='true' permission='UPDATE' insertPosition='end'>
+                        <onClick>removeGSs(dataRegion); return false;</onClick>
+                        <onLoad>this.disabled='true'</onLoad>
+                    </item>
+                </buttonBarOptions>
+            </table>
+        </tables>
+    </metadata>
+</query>

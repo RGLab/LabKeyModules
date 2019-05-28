@@ -5,7 +5,7 @@
             <cv:property name='columnTitle' value='Participant ID'/>
           </cv:properties>
         </cv:column>
-        <cv:column name='ParticipantId/Cohort'/>
+        <cv:column name='ParticipantId/Cohort/Label'/>
         <cv:column name='phenotype'/> 
         <cv:column name='gender'/>
         <cv:column name='age_reported'/>

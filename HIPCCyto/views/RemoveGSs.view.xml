@@ -1,8 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<view xmlns='http://labkey.org/data/xml/view' title='Create GatingSet' frame='none'>
+<view xmlns='http://labkey.org/data/xml/view' title='Remove Expression create-gatingset output' frame='none'>
     <dependencies>
         <dependency path='clientapi'/>
         <dependency path='clientapi/ext4'/>
     </dependencies>
 </view>
-

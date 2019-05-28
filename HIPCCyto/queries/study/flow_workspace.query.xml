@@ -2,8 +2,8 @@
 <query xmlns='http://labkey.org/data/xml/query'>
     <metadata>
         <tables xmlns='http://labkey.org/data/xml'>
-            <table tableName='SelectedRuns' tableDbType='TABLE'>
-                <tableTitle>Gene expression matrices</tableTitle>
+            <table tableName='flow_workspace' tableDbType='TABLE'>
+                <tableTitle>Flow cytometry workspace files</tableTitle>
                 <buttonBarOptions position='both' includeStandardButtons='false'>
                     <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
                     <item text='Grid Views' permission='ADMIN' insertPosition='end'>
@@ -13,8 +13,8 @@
                         <item text='Default'>
                             <onClick>goToView(dataRegion, ''); return false;</onClick>
                         </item>
-                        <item text='Gene expression matrices'>
-                            <onClick>goToView(dataRegion, 'expression_matrices'); return false;</onClick>
+                        <item text='Flow cytometry workspace files'>
+                            <onClick>goToView(dataRegion, 'workspaces'); return false;</onClick>
                         </item>
                     </item>
                     <item text='Export' insertPosition='end'>
@@ -31,12 +31,12 @@
                     </item>
                 </buttonBarOptions>
                 <columns>
-                  <column columnName='download_link'>
-                    <url>/_webdav/Studies/${folder/name}/%40files/analysis/exprs_matrices/${name}.tsv</url>
-                  </column>
+                    <column columnName='file_info_name'>
+                        <url>/_webdav/Studies/${study_accession}/%40files/rawdata/flow_cytometry/${file_info_name}</url>
+                        <urlTarget>_blank</urlTarget>
+                    </column>
                 </columns>
             </table>
         </tables>
     </metadata>
 </query>
-

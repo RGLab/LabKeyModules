@@ -1,20 +1,30 @@
 ```{r echo = FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-RSessionInfo <- devtools::session_info(pkgs = rownames(installed.packages()), include_base = TRUE)
+RSessionInfo <- devtools::session_info(
+  pkgs = rownames(installed.packages()),
+  include_base = TRUE
+)
 ```
 
 ## Session Info
+
 ```{r}
 RSessionInfo$platform
 ```
 
 ## Pandoc Version
+
 ```{r}
 rmarkdown::pandoc_version()
 ```
 
 ## Available R Packages
+
 ```{r}
-DT::datatable(RSessionInfo$packages,
-              colnames = c("package", "attached", "version", "date", "source"))
+DT::datatable(
+  RSessionInfo$packages[, c("package", "attached", "ondiskversion", "date", "source")],
+  colnames = c("package", "attached", "version", "date", "source"),
+  rownames = NULL
+)
 ```
+

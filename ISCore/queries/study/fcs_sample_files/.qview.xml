@@ -23,5 +23,10 @@
             <cv:property name='columnTitle' value='Cohort'/>
           </cv:properties>
         </cv:column>
+        <cv:column name='expsample_accession/treatment/name'>
+          <cv:properties>
+              <cv:property name='columnTitle' value='Treatment'/>
+          </cv:properties>
+        </cv:column>
     </cv:columns>
 </cv:customView>

@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns:tables xmlns:ns='http://labkey.org/data/xml'>
+    <ns:table tableName='DimRedux_Assay_Data_PreCompute' tableDbType='TABLE'>
+        <ns:description>
+            The 'DimRedux_Assay_Data_PreCompute' table stores a pre-computed version of the query by the same name in order to improve speed in the module.
+        </ns:description>
+        <ns:columns>
+            <ns:column columnName='Container'>
+                <ns:isHidden>true</ns:isHidden>
+            </ns:column>
+            <ns:column columnName='RowId'>
+                <ns:isHidden>true</ns:isHidden>
+                <ns:isKeyField>true</ns:isKeyField>
+            </ns:column>
+            <ns:column columnName='ParticipantId'>
+                <ns:columnTitle>Participant Id</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='Name'>
+                <ns:columnTitle>Name</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='Label'>
+                <ns:columnTitle>Label</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='Timepoint'>
+                <ns:columnTitle>Timepoint</ns:columnTitle>
+            </ns:column>
+            <ns:column columnName='Features'>
+                <ns:columnTitle>Features</ns:columnTitle>
+            </ns:column>
+        </ns:columns>
+    </ns:table>
+</ns:tables>
