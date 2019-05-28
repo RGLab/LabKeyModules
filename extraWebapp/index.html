@@ -101,7 +101,7 @@
                         <li>
                             <div class='nowrap'>
                                 <input class='roundedCorners' id='password' type='password' name='password' onkeydown='if (event.keyCode == 13) document.getElementById("submitButton").click();'>
-                                <a class='forgotpw' href='/login/home/resetPassword.view' title='Reset password'>?</a>
+                                <a class='forgotpw' onclick='window.location = LABKEY.ActionURL.buildURL("login","resetpassword");' href='javascript:void(0);'title='Reset password'>?</a>
                             </div>
                         </li>
                         <li style="height: 16px; padding-top: 3px; padding-bottom: 2px">
