@@ -7,7 +7,7 @@
     - cytometry.gatingSetInputFiles
     - flowWorkspace::save_gs() files
 
-  Invoked by Remove GS button in cytometry.gatingSetMetaData
+  Invoked by Remove GS button in cytometry_procressing.gatingSetMetaData
 
   Opens a new window displaying paths of deleted/not deleted 
   HTML found in HIPCCyto/views
@@ -111,8 +111,35 @@ function removeGSs(dataRegion) {
         }
         setTimeout(goToView, 1000)
     }
+
+    // CHECK THAT ALL OUTPUT FROM WSID IS SELECTED -------------------------------------------------
+    // check to see that all gatingsets from wsids have been selected
+    // return t/f
+    function wsidCheck(data, allRows) {
+        var selRowsWsids = data.rows.map(function(obj) {
+            return obj.wsid;
+        });
+        var allRowsFiltered = allRows.responseJSON.rows.filter(function(item) {
+            return selRowsWsids.indexOf(item.wsid) !== 1;
+        });
+        var check = allRowsFiltered.length === selRowsWsids.length;
+        return(check);
+        
+    }
+
+    function distinctWsids(data) {
+        var selRowsWsids = data.rows.map(function(obj) {
+            return obj.wsid;
+        });
+        var filteredArray = selRowsWsids.filter(function(item, pos){
+            return selRowsWsids.indexOf(item)== pos; 
+        });
+        
+        return filteredArray
+    }
     
     // GLOBAL VARIABLES ----------------------------------------------------------------------------
+    // vars to populate
     var notDeletedNames = [];
     var notAllowedPaths = [];
     var notDeletedDb = []; 
@@ -124,46 +151,55 @@ function removeGSs(dataRegion) {
             this['count'] = this['count'] + num;
         }
     }
+    // vars pulled from labkeyURL
+    var schemaName = LABKEY.ActionURL.getParameters()['schemaName'] // gatingSetMetaData
+    var queryName = LABKEY.ActionURL.getParameters()['query.queryName'] // cytometry_processing
+    var selectionKey = dataRegion.selectionKey; 
+    var containerPath = LABKEY.ActionURL.getContainer(); // /Studies/SDYXXX
+    var study = LABKEY.ActionURL.getContainerName();
+
+    // queries
+    var inputFiles = LABKEY.Query.selectRows({
+        schemaName: schemaName,
+        queryName: 'gatingSetInputFiles',
+        containerPath: containerPath,                                                                                                      
+        columns: ['container','file_info_name', 'wsid']
+    }); 
+    var allRows = LABKEY.Query.selectRows({
+        schemaName: schemaName,
+        queryName: queryName,
+        containerPath: containerPath,
+        columns: ['gating_set', 'wsid', 'study', 'container', 'key'] 
+    });
 
     // MAIN FUNCTION -------------------------------------------------------------------------------
     // kicks off file check, file deletion, and row deletion
     // kicks off counter and opens new window
     function onSuccess(data) {
         var counter = 0;
-        data.rows.forEach(function(rw) {
-            var gsObj = {}; 
-            gsObj['wsid'] = rw['wsid'];
-            gsObj['study'] = rw['study'];
-            gsObj['path'] = 'analysis/gating_set/' + rw['wsid'];
-            
-            // filter inputfiles by selected wsid
-            var inputFilesArray = inputFiles.responseJSON.rows; 
-            var filteredInputFiles = inputFilesArray.filter(function(item) {
-                return [ gsObj['wsid'] ].indexOf(item.wsid) !== -1;
-            });
-            
+        var check = wsidCheck(data, allRows);
+        if(check) {
+            var uniqueWsids = distinctWsids(data);
+            uniqueWsids.forEach(function(rw) {
+                var gsObj = {};
+                gsObj['wsid'] = rw;
+                gsObj['study'] = study
+                gsObj['path'] = 'analysis/gating_set/' + rw;
+                // filter inputfiles by selected wsid
+                var inputFilesArray = inputFiles.responseJSON.rows; 
+                var filteredInputFiles = inputFilesArray.filter(function(item) {
+                    return [ gsObj['wsid'] ].indexOf(item.wsid) !== -1;
+                });
             canDelete(gsObj, filteredInputFiles);
             counter++;
-            if(counter === data.rows.length) {
+            if(counter === uniqueWsids.length) {
                 goToView();
             }   
-        }); 
+            });
+        } else {
+            Ext.Msg.alert("Missing gatingsets. Please select all gating sets that correspond to selected workspace Ids");
+        } 
     }   
-
-    // ---------------------------------------------------------------------------------------------
-    var schemaName = LABKEY.ActionURL.getParameters()['schemaName'] // gatingSetMetaData
-    var queryName = LABKEY.ActionURL.getParameters()['query.queryName'] // cytometry_processing
-    var selectionKey = dataRegion.selectionKey; 
-    var containerPath = LABKEY.ActionURL.getContainer(); // /Studies/SDYXXX
-    
-    // GET INPUTFILES --------------------------------------------------------------
-    
-    var inputFiles = LABKEY.Query.selectRows({
-        schemaName: schemaName,
-        queryName: 'gatingSetInputFiles',
-        containerPath: containerPath,
-        columns: ['container','file_info_name', 'wsid']
-    });
 
     // GET ROWS THAT HAVE BEEN SELECTED IN THE UI TO DELETE ----------------------------------------- 
     var selRows = LABKEY.Query.selectRows({
@@ -171,9 +207,9 @@ function removeGSs(dataRegion) {
         queryName: queryName,
         containerPath: containerPath,
         showRows: 'selected',
-        columns: ['wsid', 'study', 'container', 'key'],
+        columns: ['gating_set', 'wsid', 'study', 'container', 'key'],
         selectionKey: selectionKey,
-       success: onSuccess
+        success: onSuccess
     });
 
 }
