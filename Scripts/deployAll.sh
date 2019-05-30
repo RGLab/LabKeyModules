@@ -41,6 +41,10 @@ for f in ./* ; do
                 fi
             fi
         fi
+        if [ "$b" == "SDY207" ] ; then
+            echo "Copying SDY207 cytof template for report"
+            cp reports/schemas/study/fcs_sample_files/Updated_tcell_cytof_template.csv /share/files/Studies/SDY207/@files/analysis/
+        fi
         cd ..
     fi
 done
