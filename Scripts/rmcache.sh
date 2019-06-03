@@ -1,4 +1,4 @@
-# remove cache folder in all studies
+# remove cache folder in every study
 for study in /share/files/Studies/SDY*
 do
   if [ -d "${study}/@files/cache" ]; then
@@ -6,14 +6,15 @@ do
     rm -r ${study}/@files/cache
   fi
 
-  # Remove SDY207 manually cached files
-  if [ -d "${study}/@files/analysis/gating_set" ]; then
+  # Remove SDY207 manually cached files to avoid stale report
+  if [ -d "SDY207/@files/analysis/gating_set" ]; then
     echo "rm -r ${study}/@files/analysis/gating_set*"
     rm -r ${study}/@files/analysis/gating_set
     rm -r ${study}/@files/analysis/gating_set_gated 
   fi
 done
 
+# Remove HIPC ISx caches for R reports
 for study in /share/files/HIPC/IS*
 do
   if [ -d "${study}/@files/cache" ]; then
