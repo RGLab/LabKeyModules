@@ -5,6 +5,13 @@ do
     echo "rm -r  ${study}/@files/cache"
     rm -r ${study}/@files/cache
   fi
+
+  # Remove SDY207 manually cached files
+  if [ -d "${study}/@files/analysis/gating_set" ]; then
+    echo "rm -r ${study}/@files/analysis/gating_set*"
+    rm -r ${study}/@files/analysis/gating_set
+    rm -r ${study}/@files/analysis/gating_set_gated 
+  fi
 done
 
 for study in /share/files/HIPC/IS*
@@ -19,4 +26,5 @@ if [ -d "/share/files/Studies/@files/cache" ]; then
     echo "rm -r /share/files/Studies/@files/cache"
     rm -r /share/files/Studies/@files/cache
 fi
+
 
