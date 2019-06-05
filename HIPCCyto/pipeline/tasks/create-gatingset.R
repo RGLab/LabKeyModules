@@ -47,7 +47,7 @@ runCreateGS(labkeyUrlBase = labkeyUrlBase,
             dataDirectory = dataDirectory,
             analysisDirectory = analysisDirectory,
             protocol = protocol,
-            onCL = FALSE)
+            onCl = FALSE)
 
 # Notes:
 # for running at command line, use command line function  which

@@ -36,7 +36,7 @@ CREATE TABLE cytometry_processing.gatingSetInputFiles
     gating_set          TEXT        NOT NULL,
     gsdir               TEXT        NOT NULL, 
     
-    CONSTRAINT PK_gatingSetInputFiles PRIMARY KEY (Container, file_info_name, wsid)
+    CONSTRAINT PK_gatingSetInputFiles PRIMARY KEY (key)
 --    CONSTRAINT FK_gatingSetInputFiles_gatingSetMetaData FOREIGN KEY (Container, gating_set)
 --        REFERENCES cytometry_processing.gatingSetMetaData (Container, gating_set)
 --        ON DELETE CASCADE

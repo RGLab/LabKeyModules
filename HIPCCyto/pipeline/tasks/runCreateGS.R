@@ -1,29 +1,36 @@
-#---------------------------
+#------------------------------------------------
 # DEPENDENCIES
-#----------------------------
+#------------------------------------------------
 
 library(Rlabkey)
 library(ImmuneSpaceR)
 library(flowWorkspace)
+library(CytoML)
 library(data.table)
 
-#----------------------------
-# FUNCTIONS
-#----------------------------
+#------------------------------------------------
+# HELPER FUNCTIONS
+#------------------------------------------------
 
 .getGS <- function(ws, groupIdNum = 1) {
     message(paste0("Parsing gating set\ngroupId: ", groupIdNum))
-    gs <- parseWorkspace(ws,
+    gs <- tryCatch(parseWorkspace(ws,
                          name = groupIdNum,
 #                         subset = 1:20,
                          keywords = c("DAY", "TREATMENT", "TUBE NAME"),
                          isNCdf = TRUE,
-                         additional.sampleID = TRUE) # this is a hidden option not exposed in parseWorkspace docs
+                         additional.sampleID = TRUE),
+                  error = function(e) {
+                     return(NA)
+                  }
+                 ) 
     pData(gs)$FILENAME <- basename(as.character(keyword(gs, "FILENAME")$FILENAME))
     pData(gs)$panel <- unlist(lapply(gs@data@frames, function(x){
                                      markers <- markernames(x)
                                      paste(markers[markers != "-"], collapse = "|")
     }))[rownames(pData(gs))]
+
+    message(paste0("Parsing gating set\ngroupId: ", groupIdNum))
     return(gs)
 }
 
@@ -56,15 +63,26 @@ library(data.table)
 }
 
 .inputFiles <- function(gs, wsid, wsdir, labkeyUrlBase, labkeyUrlPath) {
+    message(gs@guid)
     fcs <- pData(gs)$FILENAME
-    input <- labkey.selectRows(baseUrl = labkeyUrlBase,
+    sample <- labkey.selectRows(baseUrl = labkeyUrlBase,
                                folderPath = labkeyUrlPath,
                                schemaName = "study",
                                queryName = "fcs_sample_files",
-                               colNameOpt = "rname",
+                               colNameOpt = "fieldname",
                                colSelect = c("file_info_name", "ParticipantId",
                                              "biosample_accession", "expsample_accession",
                                              "study_accession"))
+    control <- labkey.selectRows(baseUrl = labkeyUrlBase,
+                                 folderPath = labkeyUrlPath,
+                                 schemaName = "study",
+                                 queryName = "fcs_control_files",
+                                 colNameOpt = "fieldname",
+                                 colSelect = c("control_file", "ParticipantId", 
+                                               "biosample_accession", "expsample_accession",
+                                               "study_accession"))
+    names(control)[1] <- "file_info_name"
+    input <- rbind(control, sample)
     input <- input[input$file_info_name %in% fcs, ]
     input$wsid <- wsid
     input$gating_set <- gs@guid
@@ -77,9 +95,9 @@ library(data.table)
 }
 
 
-#--------------------------
+#------------------------------------------------
 # PIPELINE
-#--------------------------
+#------------------------------------------------
 
 runCreateGS <- function(labkeyUrlBase,
                         labkeyUrlPath,
@@ -92,7 +110,7 @@ runCreateGS <- function(labkeyUrlBase,
     sdy <- gsub("/Studies/", "", labkeyUrlPath)
     wsid <- protocol
 
-    ##---------------CHECK-FOR-FILES---------------##
+    ## CHECK-FOR-FILES-------------------------------------------------------------------------------------------------
     
     # check for workspace file in correct format (xml)
     wsRegex <- paste0(wsid, ".*xml$")
@@ -121,16 +139,18 @@ runCreateGS <- function(labkeyUrlBase,
     # create gating set directory path
     # don't create directory yet...
     # for studies outputting gs using save_gslist wsdir should not exist
-    # for studies outputting gs using save_gs wsdire must exist
+    # for studies outputting gs using save_gs wsdir must exist
     wsdir <- paste0(outpath, wsid) 
     
-    ##---------------HARDCODED-METADATA---------------##
+    ## HARDCODED-METADATA----------------------------------------------------------------------------------------------
     # Manually curate a list to avoid hardcoding throughout
+    # See Notion > Documentation > Flow Cytometry > MetaData for more info
     metaData <- list()
 
-    #*** RmGrp ***#
+    #*** RmGroup ***#
     # If a workspace requires a group to be removed add the logic here and log why
-    # the group has been removed. See Notion Flow Cytometry Docs for more information.
+    # the group has been removed.
+    # sdy = TRUE : remove groups
 
     # SDY113 - Group Number 3 - 885 controls
     # For this study controls were put in their own group as well as the other corrosponding
@@ -156,11 +176,18 @@ runCreateGS <- function(labkeyUrlBase,
     # Some workspaces appear to have been generated by an uncommon version
     # of FlowJo. The prefix/suffix used in the xml need to be modified to
     # be compliant with parseWorkspace.
-    
+    # xmlMod = TRUE : modify the xml and use that instead of original
+
     metaData$xmlMod <- sdy %in% c("SDY372", "SDY301")
 
+    #*** gsList ***#
+    # Workspaces that contain multiple groups with overlapping samples cannot be saved out
+    # as a gatingSetList object. These must be saved out as multiple individual gatingSet objects
+    # gsList = TRUE : use lapply(save_gs) instead of save_gsList
+    
+    metaData$gsList <- sdy %in% c("SDY301")
 
-    ##---------------MODIFY-WORKSPACE-XML---------------##
+    ## MODIFY-WORKSPACE-XML--------------------------------------------------------------------------------------------
     
     if (metaData$xmlMod) {
         con <- file(wsFile, "r")
@@ -178,11 +205,11 @@ runCreateGS <- function(labkeyUrlBase,
         wsFile <- modXmlPath
     }
 
-    ##---------------COMMAND-LINE-RUN-TASKS---------------##
-    
+    ## COMMAND-LINE-RUN-TASKS------------------------------------------------------------------------------------------
     # if the ws is being rerun via the command line the rows in cytometry_processing.GatingSetInputFiles 
     # and cytometry_processing.gatingSetMetaData need to be removed and repopulated. Also need to remove gating sets.
-    if (onCL) {
+    
+    if (onCl) {
         # delete inputfiles
         # get inputFiles row keys
         inputKeys <- labkey.selectRows(baseUrl = labkeyUrlBase,
@@ -226,7 +253,7 @@ runCreateGS <- function(labkeyUrlBase,
 
 
 
-    ##---------------ACCESS-BASIC-WORKSPACE-INFO---------------##
+    ## ACCESS-BASIC-WORKSPACE-INFO-------------------------------------------------------------------------------------
     ws <- openWorkspace(wsFile)
 
     sampleGroups <- getSampleGroups(ws)
@@ -236,12 +263,12 @@ runCreateGS <- function(labkeyUrlBase,
     groups$groupNumber <- seq(1:nrow(groups))
     
     # remove groups as needed
-    if ( metaData$rmGroup$rmGroup ) {
+    if ( all(metaData$rmGroup$rmGroup) ) {
        groups <-  groups[!(groups$groupNumber %in% metaData$rmGroup$group), ]
 
     }
 
-    ##---------------PARSE-WS-AND-OUTPUT-GS---------------##
+    ## PARSE-WS-AND-OUTPUT-GS------------------------------------------------------------------------------------------
     if ( nrow(groups) == 1 ) {
         gs <- .getGS(ws)
         gs@guid <- paste0(sdy, "_", wsid, "_GS", groups$groupID)
@@ -252,10 +279,10 @@ runCreateGS <- function(labkeyUrlBase,
         }
         
         gsdir <- paste0(wsdir, "/", gs@guid)
+        
         if (file.exists(gsdir)) {
             stop('gsdir exists -- must delete before proceeding')
         }
-        
         
         run <- .runData(gs, groups$groupID, groups$groupName, wsid, ws, sdy, labkeyUrlBase, labkeyUrlPath)
         save_gs(gs,
@@ -269,39 +296,46 @@ runCreateGS <- function(labkeyUrlBase,
             groupNum <- groups$groupNumber
             groupId <- groups$groupID
             groupName <- groups$groupName
-
+            
             gsList <- lapply(groupNum, function(num) {
                              .getGS(ws = ws, groupIdNum = num)
             })
-
             guids <- paste0(sdy, "_", wsid, "_GS", groupId)
             gsList <- mapply(.updateGuid, gsList, guids)
 
+            mapply(.runData, gsList, groupId, groupName, 
+                   MoreArgs= list(wsid, ws, sdy, labkeyUrlBase, labkeyUrlPath),
+                   SIMPLIFY = FALSE)
+            
+            if (metaData$gsList) {
+                dir.create(wsdir, recursive = TRUE)
+                lapply(gsList, function(gs) {
+                       gsdir <- paste0(wsdir, "/", gs@guid)
+                       save_gs(gs,
+                               gsdir,
+                               cdf = "copy")
+                          })
+            } else {
+                save_gslist(GatingSetList(gsList),
+                            wsdir,
+                            cdf="copy")            
+            }
 
-            run <- mapply(.runData, gsList, groupId, groupName, 
-                          MoreArgs= list(wsid, ws, sdy, labkeyUrlBase, labkeyUrlPath),
-                          SIMPLIFY = FALSE)
-            run <- data.table(do.call(rbind, run))
-            
-            save_gslist(GatingSetList(gsList),
-                        wsdir,
-                        cdf="copy")            
-            
             lapply(gsList, function(gs) {
                    .inputFiles(gs, wsid, wsdir,  labkeyUrlBase, labkeyUrlPath)
             })
 
         }
 
-    #--------------COPY-OVER-SCRIPT-FILES--------------##
-    # only overwrite if onCL = T
+    ## COPY-OVER-SCRIPT-FILES------------------------------------------------------------------------------------------
+    # only overwrite if onCl = T
     # otherwise no file should be present
     file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/create-gatingset.R",
               to = paste0(analysisDirectory, "/create-gatingset-snapshot.R"),
-              overwrite = onCL)
+              overwrite = onCl)
     file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
               to = paste0(analysisDirectory, "/runGS-snapshot.R"),
-              overwrite = onCL)
+              overwrite = onCl)
 
 
 }
