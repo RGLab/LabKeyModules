@@ -163,7 +163,7 @@ function removeGSs(dataRegion) {
         schemaName: schemaName,
         queryName: 'gatingSetInputFiles',
         containerPath: containerPath,                                                                                                      
-        columns: ['container','file_info_name', 'wsid']
+        columns: ['container','file_info_name', 'wsid', 'key']
     }); 
     var allRows = LABKEY.Query.selectRows({
         schemaName: schemaName,
