@@ -456,11 +456,15 @@ ISR[, study := ifelse(is.na(study), "All", study) ]
 
 # Filter down to connections
 ISR_inits <- ISR[ , list(cnt = .N), by = .(date2, X12, study)]
+
+# create var for conditional eval of following chunks and r statements
+ISR_inits_present <- nrow(ISR_inits) > 0
+usersOverTimeMsg <- 0
 ```
 
 
 ## 9. ImmuneSpaceR Users Over Time
-```{r isr-user}
+```{r isr-user, eval=ISR_inits_present}
 # Filter to single connection per user per day for accurate aggregation
 ISR_users <- ISR_inits[ , list(X12, date2) ]
 ISR_users <- ISR_users[ !duplicated(ISR_users) ]
@@ -481,13 +485,15 @@ if (plotType == "line") {
 } else {
   p %>% add_bars()
 }
+
+usersOverTimeMsg <- ISR_usersOverTime$Users
 ```
-We had **`r round(mean(ISR_usersOverTime$Users, na.rm = TRUE), 2)` ISR users** per *`r dateBy`* on average from `r from` to `r to`.
+We had **`r round(mean(usersOverTimeMsg, na.rm = TRUE), 2)` ISR users** per *`r dateBy`* on average from `r from` to `r to`.
 
 <br>
 
 ## 10. Typical ISR user experience over time from first connection
-```{r typical-isr-user-experience}
+```{r typical-isr-user-experience, eval=ISR_inits_present}
 # prep UI logins
 UI_logins <- copy(allLogins)
 UI_logins <- UI_logins[ UI_logins$Date > from & UI_logins$Date < to ]
@@ -532,7 +538,7 @@ p
 <br>
 
 ## 11. Top ISR users
-```{r isr-top-users}
+```{r isr-top-users, eval=ISR_inits_present}
 topIsrUsers <- ISR_inits[, list(count = .N), by = X12]
 setnames(topIsrUsers, colnames(topIsrUsers), c("Email", "Logins"))
 setorder(topIsrUsers, -Logins)
@@ -620,7 +626,7 @@ sdys %>%
 <br>
 
 ## 15. Studies accessed via ISR
-```{r isr-study}
+```{r isr-study, eval=ISR_inits_present}
 ISR_study <- ISR_inits[ , list(count = .N), by = study]
 setorder(ISR_study, -count)
 datatable(ISR_study,
