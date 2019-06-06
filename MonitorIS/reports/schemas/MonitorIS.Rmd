@@ -21,6 +21,7 @@ library(tidytext)
 library(wordcloud)
 library(tm) # for stopwords
 library(stringr)
+library(rvest)
 ```
 
 ```{r helpers}
@@ -84,7 +85,6 @@ extra_emails <- paste("rglab.org",
                       "patrick.dunn@nih.gov",
                       "cnathe@labkey.org",
                       "hrodgers@fredhutch.org",
-                      "rsautera@fhcrc.org",
                       "wjiang2@fhcrc.org",
                       "hmiller@fredhutch.org",
                       sep = ";")
@@ -100,7 +100,10 @@ extras <- labkey.selectRows(baseUrl = labkey.url.base,
                             containerFilter = NULL)
 
 # Admin emails no longer in the DB
-oldAdminEmails <- c("rsautera@fhcrc.org")
+oldAdminEmails <- c("rsautera@fhcrc.org",
+                    "renan.sauteraud@gmail.com",
+                    "ldashevs@fhcrc.org",
+                    "ldashevs@scharp.org")
 
 # Vectors of people to exclude from counts
 exclusionNames <- paste0(unique(c(admins$`Display Name`, extras$`Display Name`)), collapse = ";")
@@ -151,7 +154,7 @@ totalUsers %>%
   layout(xaxis = list(title = paste0("By ", dateBy)),
          yaxis = list(title = "Cumulative users"),
          title = "Userbase Over Time") %>%
-  add_lines(line = list(shape = "hv"))
+  add_lines(line = list(shape = "spline"))
 ```
 <br>
 
@@ -451,23 +454,24 @@ ISR <- logs_dt[ grepl("ImmuneSpaceR", X11) & !is.na(X12)]
 # Fix study for project level connections
 ISR[, study := ifelse(is.na(study), "All", study) ]
 
-# Get unique CreateConnection calls
-x5Filt <- "GET /project/Studies/getContainers.view?includeSubfolders=0&includeEffectivePermissions=1 HTTP/1.1"
-ISR_inits <- ISR[ (query == "ISC_study_datasets" | X5 == x5Filt) & X1 != "10.10.1.74", ]
+# Filter down to connections
+ISR_inits <- ISR[ , list(cnt = .N), by = .(date2, X12, study)]
+
+# create var for conditional eval of following chunks and r statements
+ISR_inits_present <- nrow(ISR_inits) > 0
+usersOverTimeMsg <- 0
 ```
 
 
 ## 9. ImmuneSpaceR Users Over Time
-```{r isr-user}
-# Remove inits without email or date
-ISR_user <- ISR_inits[!is.na(X12) & !is.na(date2), list(date2, X12)]
+```{r isr-user, eval=ISR_inits_present}
+# Filter to single connection per user per day for accurate aggregation
+ISR_users <- ISR_inits[ , list(X12, date2) ]
+ISR_users <- ISR_users[ !duplicated(ISR_users) ]
 
-# De-dupe to get unique user inits 
-ISR_user <- ISR_user[ !duplicated(ISR_user)]
-
-# Group by break
-tmp <- as.POSIXct(ISR_user$date2, format="%Y-%m-%d", tz="UTC")
-ISR_usersOverTime <- ISR_user[ , Date := as.Date(cut(tmp, breaks = labkey.url.params$by)) ]
+# Group by Date break
+tmp <- as.POSIXct(ISR_users$date2, format="%Y-%m-%d", tz="UTC")
+ISR_usersOverTime <- ISR_users[ , Date := as.Date(cut(tmp, breaks = labkey.url.params$by)) ]
 ISR_usersOverTime <- ISR_usersOverTime[ , list(Users = .N), by = Date ]
 
 p <- ISR_usersOverTime %>%
@@ -481,13 +485,15 @@ if (plotType == "line") {
 } else {
   p %>% add_bars()
 }
+
+usersOverTimeMsg <- ISR_usersOverTime$Users
 ```
-We had **`r round(mean(ISR_usersOverTime$Users, na.rm = TRUE), 2)` ISR users** per *`r dateBy`* on average from `r from` to `r to`.
+We had **`r round(mean(usersOverTimeMsg, na.rm = TRUE), 2)` ISR users** per *`r dateBy`* on average from `r from` to `r to`.
 
 <br>
 
 ## 10. Typical ISR user experience over time from first connection
-```{r typical-isr-user-experience}
+```{r typical-isr-user-experience, eval=ISR_inits_present}
 # prep UI logins
 UI_logins <- copy(allLogins)
 UI_logins <- UI_logins[ UI_logins$Date > from & UI_logins$Date < to ]
@@ -498,8 +504,9 @@ UI_logins <- UI_logins[ !duplicated(UI_logins) ]
 UI_logins <- UI_logins[ , Date := cut(as.POSIXct(UI_logins$Date, format="%Y-%m-%d", tz="UTC"), breaks = "day") ]
 
 # prep ISR Logins
-ISR_logins <- ISR_user[ , list(Date, X12)]
-setnames(ISR_logins, colnames(ISR_logins), c("Date", "Email"))
+ISR_logins <- ISR_inits[ , list(X12, date2) ]
+ISR_logins <- ISR_logins[ !duplicated(ISR_logins) ]
+setnames(ISR_logins, colnames(ISR_logins), c("Email", "Date"))
 ISR_logins$method <- "ISR"
 ISR_logins <- ISR_logins[ , Date := cut(as.POSIXct(ISR_logins$Date, format="%Y-%m-%d", tz="UTC"), breaks = "day") ]
 
@@ -531,7 +538,7 @@ p
 <br>
 
 ## 11. Top ISR users
-```{r isr-top-users}
+```{r isr-top-users, eval=ISR_inits_present}
 topIsrUsers <- ISR_inits[, list(count = .N), by = X12]
 setnames(topIsrUsers, colnames(topIsrUsers), c("Email", "Logins"))
 setorder(topIsrUsers, -Logins)
@@ -619,7 +626,7 @@ sdys %>%
 <br>
 
 ## 15. Studies accessed via ISR
-```{r isr-study}
+```{r isr-study, eval=ISR_inits_present}
 ISR_study <- ISR_inits[ , list(count = .N), by = study]
 setorder(ISR_study, -count)
 datatable(ISR_study,
@@ -647,7 +654,7 @@ datatable(log_study,
 
 ## 17. Modules accessed via UI (pageviews)
 ```{r module-views}
-string <- "(?<=GET /)(DataExplorer|GeneExpressionExplorer|GeneSetEnrichmentAnalysis|ImmuneResponsePredictor)(?=/\\S+/begin.view HTTP/1.1)"
+string <- "(?<=GET /)(DataExplorer|GeneExpressionExplorer|GeneSetEnrichmentAnalysis|ImmuneResponsePredictor|DimensionReduction)(?=/\\S+/begin.view HTTP/1.1)"
 
 log_module <- logs_dt[, module := stringr::str_extract(X5, string)]
 log_module <- log_module[ !is.na(module) ]
@@ -705,6 +712,75 @@ if (plotType == "line") {
 We had **`r round(mean(log_rstudio$Sessions, na.rm = TRUE), 2)` RStudio sessions** per *`r dateBy`* on average from `r from` to `r to`.
 
 ***
+
+# Publications & Citations
+```{r organizing-pub-data}
+# get list of studies and their pubmedids
+df <- labkey.selectRows(baseUrl = labkey.url.base,
+                        folderPath = "/Studies/",
+                        schemaName = "immport",
+                        queryName = "study_pubmed",
+                        colNameOpt = "fieldname")
+
+# For each pubmedid
+base <- "http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid="
+results <- lapply(df$pubmed_id, function(id){
+  page <- read_html(paste0(base, id))
+  nodes <- html_nodes(page, css = '.rslt')
+  res <- lapply(nodes, html_text)
+  parsed <- lapply(res, function(x){
+    spl <- strsplit(x, "\\.")[[1]]
+    title <- spl[[1]]
+    authors <- spl[[2]]
+    pubmedid <- spl[[length(spl)]]
+    pubmedid <- regmatches(pubmedid, regexpr("\\d{8}", pubmedid))
+    return(c(title, authors, pubmedid, id))
+  })
+  parsed <- data.frame(do.call(rbind, parsed))
+})
+allIds <- data.table(do.call(rbind, results))
+cnames <- c("citedby_title",
+            "citedby_authors",
+            "citedby_id",
+            "original_id")
+setnames(allIds, colnames(allIds), cnames)
+
+# Add study
+allIds$study <- df$study_accession[ match(allIds$original_id, df$pubmed_id)]
+allIds$studyNum <- as.numeric(gsub("SDY","", allIds$study))
+```
+
+## 20. Most Cited Studies
+```{r most-cited-study}
+CountByStudy <- allIds[ , list(Citations = .N), by = .(study)]
+setorder(CountByStudy, -Citations)
+setnames(CountByStudy, "study", "Study")
+DT::datatable(CountByStudy)
+```
+
+## 21. Papers that cite ImmuneSpace studies most (top 100)
+```{r papers-using-immunespace}
+CountByPaper <- allIds[ , list(Count = .N, Studies = paste(unique(study), collapse = ", ")), by = .(citedby_title, citedby_id) ]
+CountByPaper$citedby_id <- paste0("<a href='", "https://www.ncbi.nlm.nih.gov/pubmed/?term=", CountByPaper$citedby_id, "'>", 
+                                  CountByPaper$citedby_id, "</a>")
+setorder(CountByPaper, -Count)
+setnames(CountByPaper, c("citedby_title", "citedby_id", "Studies"), c("Paper Title", "Pubmed Id", "Studies Cited") )
+DT::datatable(CountByPaper, escape = FALSE)
+```
+
+## 22. Authors that cite ImmuneSpace studies most (top 100)
+```{r authors-using-immunespace}
+# TODO: Check parsing of html_text results to ensure authors pulled correctly
+authorsList <- unlist(lapply(allIds$citedby_authors, function(x){
+  strsplit(gsub(", ", "," , as.character(x)), ",")[[1]]
+  }))
+author <- authorsList[ grep("^\\w+ \\w{1,2}$", authorsList)]
+tbl <- data.table(table(author))
+setorder(tbl, -N)
+tbl <- tbl[1:100, ]
+setnames(tbl, c("author","N"), c("Author","Count"))
+DT::datatable(tbl)
+```
 
 # Debugging Messages
 

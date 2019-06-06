@@ -26,12 +26,12 @@ jobInfo <- read.table(taskInfo,
                       fill = TRUE,
                       na.strings = "")
 
-pipe.root           <- jobInfo$value[ jobInfo$name == "pipeRoot" ]
-labkey.url.path     <- jobInfo$value[ jobInfo$name == "containerPath" ]
-labkey.url.base     <- jobInfo$value[ jobInfo$name == "baseUrl" ]
-analysis.directory  <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
-data.directory      <- jobInfo$value[ jobInfo$name == "dataDirectory" ]
-output.tsv          <- jobInfo$value[ jobInfo$name == "output.tsv" ]
+pipelineRoot        <- jobInfo$value[ jobInfo$name == "pipeRoot" ]
+labkeyUrlPath       <- jobInfo$value[ jobInfo$name == "containerPath" ]
+labkeyUrlBase       <- jobInfo$value[ jobInfo$name == "baseUrl" ]
+analysisDirectory   <- jobInfo$value[ jobInfo$name == "analysisDirectory" ]
+dataDirectory       <- jobInfo$value[ jobInfo$name == "dataDirectory" ]
+protocol            <- jobInfo$value[ jobInfo$name == "protocol" ]
 
 # From LABKEY.Pipeline.startAnalysis in views/CreateMatrix.html.
 # Vars are interpreted in the create-gatingset.R file generated in
@@ -41,31 +41,16 @@ output.tsv          <- jobInfo$value[ jobInfo$name == "output.tsv" ]
 # You can often find this info though in the gatingset.log file
 # found in the .../create-gatingset/gatingset subdir.
 
-runCreateGS(labkey.url.base = labkey.url.base,
-            labkey.url.path = labkey.url.path,
-            pipeline.root = pipe.root,
-            data.directory = data.directory,
-            analysis.directory = analysis.directory,
-            output.tsv = output.tsv)
+runCreateGS(labkeyUrlBase = labkeyUrlBase,
+            labkeyUrlPath = labkeyUrlPath,
+            pipelineRoot = pipelineRoot,
+            dataDirectory = dataDirectory,
+            analysisDirectory = analysisDirectory,
+            protocol = protocol,
+            onCl = FALSE)
 
 # Notes:
-# for running at command line, use or look at runCGS_allCL.R which
+# for running at command line, use command line function  which
 # generates variables from the matrices currently available instead
 # of trying to parse logs and taskInfo tsv files.
 
-# ${tsvout:tsvfile}
-#write.table(res$run,
-#            file ="${output.tsv}",
-#            sep ="\t",
-#            row.names = FALSE)
-
-#write.table(res$input,
-#            file = paste0(analysis.directory, "/inputFiles.csv"),
-#            sep = ",",
-#            quote = FALSE,
-#            row.names = FALSE)
-
-#file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/create-gatingset.R",
-#         to = paste0(analysis.directory, "/create-gatingset-snapshot.R"))
-#file.copy(from = "/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
-#          to = paste0(analysis.directory, "/runGS-snapshot.R"))

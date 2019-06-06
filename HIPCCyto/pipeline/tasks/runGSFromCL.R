@@ -1,34 +1,38 @@
 # Main CL script
-source("/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/makeAllWsVarsDf.R")
-source("/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/runCreateMx.R") # dependencies sourced here
+source("/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/makeAllWsVarsDf.R")
+source("/share/github/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R") # dependencies sourced here
 
-runMxFromCL <- function(studies = NULL, onTest = TRUE){
+runGSFromCL <- function(studies = NULL, onTest = TRUE) {
+    
+    con <- CreateConnection("", onTest = onTest)
+    gsList <- labkey.selectRows(baseUrl = con$config$labkey.url.base,
+                                folderPath = "/Studies/",
+                                schemaName = "cytometry_processing",
+                                queryName = "gatingSetMetaData",
+                                containerFilter = "CurrentAndSubfolders",
+                                colNameOpt = "fieldname")
+  
+    if (!is.null(studies)) {
+        gsList <- gsList[ gsList$study %in% studies, ]
+    }
 
-  con <- CreateConnection("", onTest = onTest)
-  mats <- con$cache$GE_matrices
+    message("Generating matrix of argument values for runCreateGS() for all current workspaces\n")
+    allVars <- mapply(makeVarList,
+                      sdy = unique(gsList$study), 
+                      wsid = unique(gsList$wsid))
+                     # MoreArgs = list(con = con))
+  
+    df <- data.frame(t(allVars), stringsAsFactors = FALSE)
 
-  if (!is.null(studies)) {
-    mats <- mats[ mats$folder %in% studies, ]
-  }
-
-  message("Generating matrix of argument values for runCreateMx() for all current matrices\n")
-  allLs <- mapply(makeVarList,
-                  sdy = mats$folder,
-                  mx = mats$name,
-                  MoreArgs = list(con = con))
-  df <- data.frame(t(allLs), stringsAsFactors = FALSE)
-
-  message("\nRunning all matrices through runCreateMx()")
-  res <- mapply(runCreateMx,
-              labkey.url.base = df$labkey.url.base,
-              labkey.url.path = df$labkey.url.path,
-              pipeline.root = df$pipeline.root,
-              analysis.directory = df$analysis.directory,
-              selectedBiosamples = df$selectedBiosamples,
-              fasId = df$fasId,
-              taskOutputParams = df$taskOutputParams,
-              output.tsv = df$output.tsv,
-              MoreArgs = list(onCL = TRUE)
-              )
-  message("\nWork completed")
+    message("\nRunning all workspaces through runCreateGS()")
+    res <- mapply(runCreateGS,
+                  labkeyUrlBase = df$labkeyUrlBase,
+                  labkeyUrlPath = df$labkeyUrlPath,
+                  pipelineRoot = df$pipelineRoot,
+                  dataDirectory = df$dataDirectory,
+                  analysisDirectory = df$analysisDirectory,
+                  protocol = df$protocol,
+                  MoreArgs = list(onCL = TRUE)
+                  )
+    message("\nWork completed")
 }

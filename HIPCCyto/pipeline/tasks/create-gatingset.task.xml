@@ -8,8 +8,5 @@
     <inputs>
         <file name='input.txt' splitFiles='true'/>
     </inputs>
-    <outputs>
-        <file name='output.tsv' useProtocolNameAsBaseName='true' outputDir='../../../../analysis/gating_set'/>
-    </outputs>
     <script file='create-gatingset.R'/>
 </task>

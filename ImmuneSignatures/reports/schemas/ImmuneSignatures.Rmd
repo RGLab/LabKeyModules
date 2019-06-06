@@ -148,10 +148,8 @@ studies <- c("SDY212","SDY63","SDY404","SDY400","SDY67","SDY80")
 eset_d0 <- list()
 sdy80all <- "" # need eset with all time points for some figures
 
-# labkey.url.path set by UI report pipeline = "/HIPC/IS1/"
-# labkey.url.base set by UI report pipeline
-onTest <- grepl("test", labkey.url.base)
-con <- CreateConnection("IS1", onTest = onTest)
+# labkey.url.path and labkey.url.base set by pipeline
+con <- CreateConnection()
 
 # Need sdy-less pid aka subject for mapping HAI
 demo <- con$getDataset("demographics")
@@ -344,10 +342,8 @@ To provide a more detailed understanding how the hai data adjustment affects the
 ```{r adjMFC-prep, include=FALSE, fig.width=11, fig.height=9}
 # Get raw data from ImmuneSpace and select only young subjects -------------------------------
 
-onTest <- grepl("test",labkey.url.base)
-rm(labkey.url.base, labkey.url.path) # otherwise connection is still through HIPC/IS1
-sdy404 <- CreateConnection("SDY404", onTest = onTest)
-rawHai <- sdy404$getDataset("hai")
+allHai <- con$getDataset("hai")
+rawHai <- allHai[ grepl("\\.404", allHai$participant_id), ]
 adjHai <- adjust_hai("SDY404", rawHai)
 pd <- adjHai[ adjHai$Age.class == "young", ]
 

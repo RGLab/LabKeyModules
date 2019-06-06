@@ -287,32 +287,6 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
 
 
         /////////////////////////////////////
-        //      Session instanciation      //
-        /////////////////////////////////////
-
-        LABKEY.Report.getSessions({
-            success: function( responseObj ){
-                var i, array = responseObj.reportSessions, length = array.length;
-                for ( i = 0; i < length; i ++ ){
-                    if ( array[i].clientContext == 'GeneExpressionExplorer' + LABKEY.ActionURL.getContainer() ){
-                        reportSessionId = array[i].reportSessionId;
-                        i = length;
-                    }
-                }
-                if ( i == length ){
-                    LABKEY.Report.createSession({
-                        clientContext : 'GeneExpressionExplorer' + LABKEY.ActionURL.getContainer(),
-                        failure: LABKEY.ext.ISCore.onFailure,
-                        success: function(data){
-                            reportSessionId = data.reportSessionId;
-                        }
-                    });
-                }
-            }
-        });
-
-
-        /////////////////////////////////////
         //     ComboBoxes / TextFields     //
         /////////////////////////////////////
 

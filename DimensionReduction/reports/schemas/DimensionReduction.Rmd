@@ -1,6 +1,26 @@
 ---
 output: html_document
 ---
+<style>
+  .tabset-dropdown > .nav-tabs > li.active:before {
+    content: ">";
+    display: inline-block;
+    padding: 10px;
+    border-right: 1px solid #ddd;
+  }
+                      
+  .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+    content: ">";
+    border: none;
+  }
+                                    
+  .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+    content: ">";
+    display: inline-block;
+    padding: 10px;
+    border-right: 1px solid #ddd;
+  }
+</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
@@ -162,7 +182,7 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, timeAs){
 }
 ```
 
-```{r prep-assay-data}
+```{r prep-assay-data, results = 'hide'}
 # Pulling labkey.url.base and labkey.url.path from injected code and using this
 # to set up connection
 con <- CreateConnection()
@@ -186,6 +206,25 @@ nulls <- sapply(aData, is.null)
 aData <- aData[ !nulls ]
 
 # Impute missing values within each assay on per sample or sample_tp (column) basis if selected by user
+# Get number of observations to be imputed
+if ( impute != "none" ) {
+  # Get subjects with missing feature data
+  missingFeaturesBySubject <- lapply(aData, function(df){
+    rownames(df) <- df$participant_id
+    apply(df, 1, function(x)sum(is.na(x)))
+  })
+  
+  missingFeaturesDT <- data.table(subject = names(unlist(missingFeaturesBySubject)),
+                                missing = unlist(missingFeaturesBySubject))
+  missing <- missingFeaturesDT[, .(missing = sum(missing)), subject]
+  missingFeaturesBySubject <- missingFeaturesDT$missing
+  names(missingFeaturesBySubject) <- missing$subject
+
+  missingSubjectsByFeature <- lapply(aData, function(df) {
+    apply(df, 2, function(x)(sum(is.na(x))))
+  })
+}
+
 if(impute == "mean" | impute == "median"){
   fn <- get(impute)
   aData <- lapply(aData, function(df){
@@ -199,9 +238,25 @@ if(impute == "mean" | impute == "median"){
   })
 }else if(impute == "knn"){
   library(impute)
+  # For impute.knn, data should be "An expression matrix
+  # with genes in rows, samples in columns"
+
   aData <- lapply(aData, function(df){ 
-    res <- impute::impute.knn(as.matrix(df))
-    return(res$data)
+    # Transform into correct format
+    if ("participant_id" %in% names(df)) {
+      participant_ids <- df$participant_id
+      df <- df[-which(names(df) == "participant_id")]
+    }
+    mat <- t(df)
+    
+    # Impute
+    res <- impute::impute.knn(as.matrix(mat))
+    
+    # Transform back
+    res_df <- as.data.frame(t(res$data), stringsAsFactors = FALSE)
+    res_df$participant_id <- participant_ids 
+
+    return(res_df)
   })
 }else if(impute == "none"){
   aData <- lapply(aData, function(df){ 
@@ -237,6 +292,11 @@ if(length(subs) < 2){
   stop("R Report Error: Fewer than two subjects available for analysis across all assays. Select imputation method other than 'None' and retry.")
 }
 
+if (impute != "none") {
+  # Subset imputation info to only included subjects
+  missingFeaturesBySubject <- missingFeaturesBySubject[subs]
+}
+
 # Remove subs without all datasets and order for cbind
 aData <- lapply(aData, function(x){
   x <- data.frame(x, stringsAsFactors = FALSE) # imputation may change class
@@ -266,13 +326,18 @@ if( is.null(dim(allMat)) || dim(allMat)[2] < 2){
 ```{r prep-demo-data}
 # Get demographic data and add cohort name
 demo <- con$getDataset("demographics", colFilter = pidsFilt)
-cohortMap <- Rlabkey::labkey.selectRows(baseUrl = con$config$labkey.url.base,
-                                        folderPath = con$config$labkey.url.path,
-                                        schemaName = "study",
-                                        queryName = "cohort",
-                                        showHidden = TRUE,
-                                        colFilter = pidsFilt)
-demo$cohort <- cohortMap$Label[ match(demo$cohort, cohortMap$Rowid) ]
+
+if (impute != "none") {
+  # Add number of of imputed features to demo
+  demo$imputed_values <- missingFeaturesBySubject[demo$participant_id]
+}
+# cohortMap <- Rlabkey::labkey.selectRows(baseUrl = con$config$labkey.url.base,
+#                                         folderPath = con$config$labkey.url.path,
+#                                         schemaName = "study",
+#                                         queryName = "cohort",
+#                                         showHidden = TRUE,
+#                                         colFilter = pidsFilt)
+# demo$cohort <- cohortMap$Label[ match(demo$cohort, cohortMap$Rowid) ]
 ```
 
 ## Parameters
@@ -296,6 +361,11 @@ partial data for the timepoint (e.g. some hai strains but not others).
 - **Number of Observations Removed due to missing data**: `r length(numSubs[ numSubs < length(aData)])`
 - **Number of Features Used (Assay Data)**: `r dim(allMat)[2]`
 - **Number of Features Removed Due to Lack of Variance**: `r sum(noVariance)`
+
+
+`r if ( impute != "none" ) {paste0("- **Number of Observations with imputed values**: ", sum(missingFeaturesBySubject > 0))}`
+`r if ( impute != "none" ) {paste0("- **Total Number of Imputed Values**: ", sum(missingFeaturesBySubject))}`
+
 
 ```{r plot helpers}
 # helper for iterating through multiple components
@@ -374,6 +444,11 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
 
   # Run analysis and get pieces together for plotting
   if(plotType == "tSNE"){
+    # perplexity * 2 < nrow(x) - 1
+    if (perplexity > (nrow(allMat) - 1)/3) {
+      minPerplexity <- floor((nrow(allMat) - 1)/3)
+      stop(paste0("R Report Error: Perplexity is too large for the number of samples. Select perplexity <= ", minPerplexity))
+    }
     set.seed(8)
     # Avoid duplicate rows by adding random noise
     if( any(duplicated(allMat)) ){
@@ -395,7 +470,7 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
 }
 ```
 
-## Plots {.tabset}
+## Plots {.tabset .tabset-fade .tabset-dropdown} 
 
 ### Age
 ```{r  age, fig.align="left"}
@@ -457,26 +532,28 @@ plots <- makePlot(label = "cohort",
 htmltools::tagList(plots)
 ```
 
-### Timepoint
-```{r  timePt, fig.align="left"}
-if(timeAs == "observation"){
-  plots <- makePlot(label = "time",
-                    timeAs = timeAs,
-                    demo = demo,
-                    numComponents = numComponents,
-                    plotType = plotType,
-                    allMat = allMat
-  )
-  htmltools::tagList(plots)
-}else{
-  cat("Plots are only labelled by timepoint if `Use Time As` equals 'observation'.")
-}
+```{r showTime}
+showTime <- timeAs == "observation"
 ```
 
-### Study
-```{r  byStudy, fig.align="left"}
+`r if (showTime) {"### Timepoint"}`
+```{r  timePt, fig.align="left", eval = showTime}
+plots <- makePlot(label = "time",
+                  timeAs = timeAs,
+                  demo = demo,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+)
+htmltools::tagList(plots)
+```
+
+```{r projLvl}
 projLvl <- !grepl("SDY\\d{2,4}", con$config$labkey.url.path)
-if(projLvl == TRUE){
+```
+
+`r if (projLvl) {"### Study"}`
+```{r  byStudy, fig.align="left", eval = projLvl}
   plots <- makePlot(label = "study",
                     timeAs = timeAs,
                     demo = demo,
@@ -485,14 +562,21 @@ if(projLvl == TRUE){
                     allMat = allMat
   )
   htmltools::tagList(plots)
-}else{
-  cat("Plots are only labelled by study if run at the project level through `Data Finder`.")
-}
 ```
 
-### Immune Response
-Note: Not all subjects may have immune response data
-```{r IR, fig.align="left"}
+```{r IRcondition}
+re <- tryCatch(
+  con$getdataset(responseVar, original_view = TRUE),
+  warning = function(w) return(w),
+  error = function(e) return(e)
+)
+IRcondition <- is.null(re$message)
+```
+
+`r if (IRcondition) {"### Immune Response"}`
+`r if (IRcondition) {"Note: Not all subjects may have immune repsonse data"}`
+
+```{r IR, fig.align="left", eval = IRcondition}
 re <- tryCatch(
   con$getDataset(responseVar, original_view = T),
   warning = function(w) return(w),
@@ -511,6 +595,22 @@ if(is.null(re$message)){
   cat(paste0("Response variable ", responseVar, " returns empty data frame from study.  Data is not available for given participants."))
 }
 ```
+
+```{r imputeCondition}
+imputed <- impute != "none"
+```
+`r if (imputed) {"### Imputed Values"}`
+```{r Imputed, fig.align="left", eval = imputed}
+plots <- makePlot(label = "imputed_values",
+                  timeAs = timeAs,
+                  demo = demo,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+)
+htmltools::tagList(plots)
+```
+
 
 
 <script>

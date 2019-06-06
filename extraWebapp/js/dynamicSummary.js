@@ -34,9 +34,9 @@ $(document).ready(function() {
     me.maskNews.show();
 
 
+    // Container and ContextPath are used by selectRows and executeSql to build the url for the api call.
+    LABKEY.container = { path: '/home' };
     LABKEY.contextPath = '';
-    LABKEY.container = {};
-    LABKEY.container.path = '/home';
 
     LABKEY.Query.selectRows({
         failure: me.onFailureSummary.bind( me ),

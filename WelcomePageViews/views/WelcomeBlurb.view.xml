@@ -2,5 +2,6 @@
 <view xmlns='http://labkey.org/data/xml/view' title='Welcome to ImmuneSpace'>
     <dependencies>
         <dependency path='ISCore/Common'/>
+        <dependency path='ISCore/Controller.js'/>
     </dependencies>
 </view>
