@@ -37,7 +37,7 @@ library(plotly)
 library(Rtsne)
 ```
 
-```{r testing, eval = TRUE}
+```{r testing, eval = FALSE}
 labkey.url.base <- "http://140.107.149.233:8080"
 labkey.url.path <- "/Studies"
 labkey.url.params <- list(
