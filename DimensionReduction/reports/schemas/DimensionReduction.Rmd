@@ -42,7 +42,7 @@ labkey.url.base <- "http://140.107.149.233:8080"
 labkey.url.path <- "/Studies/"
 labkey.url.params <- list(
   filteredPids = "SUB102424.28;SUB102425.28;SUB102426.28;SUB102427.28;SUB102428.28;SUB102429.28;SUB102430.28;SUB102431.28;SUB102432.28;SUB102433.28;SUB102434.28;SUB102435.28;SUB102436.28;SUB102437.28;SUB102438.28;SUB102439.28;SUB102440.28;SUB102441.28;SUB102442.28;SUB102443.28;SUB71252.28;SUB71253.28;SUB71254.28;SUB71255.28;SUB71256.28;SUB71257.28;SUB71258.28;SUB71259.28;SUB71260.28;SUB71261.28;SUB71262.28;SUB71263.28;SUB71264.28;SUB71265.28;SUB71266.28;SUB71267.28;SUB71268.28;SUB71269.28;SUB71270.28;SUB71271.28;SUB71272.28;…2272.28;SUB72273.28;SUB72274.28;SUB72275.28;SUB72276.28;SUB72277.28;SUB72278.28;SUB72279.28;SUB72280.28;SUB72281.28;SUB72282.28;SUB72283.28;SUB72284.28;SUB72285.28;SUB72286.28;SUB72287.28;SUB72288.28;SUB72289.28;SUB72290.28;SUB72291.28;SUB72292.28;SUB72293.28;SUB72294.28;SUB72295.28;SUB72296.28;SUB72297.28;SUB72298.28;SUB72299.28;SUB72300.28;SUB72301.28;SUB72302.28;SUB72303.28;SUB72304.28;SUB72305.28;SUB72306.28;SUB72307.28;SUB72308.28;SUB72309.28;SUB72310.28;SUB72311.28;SUB72312.28;SUB72313.28;SUB72314.28",
-  timeAs = "variable",
+  aggregateBy = "subject-tp",
   responseVar = "hai",
   plotType = "PCA",
   timePts = c("1 Days"),
@@ -58,7 +58,7 @@ labkey.url.params <- list(
   filteredPids <- labkey.url.params$filteredPids
 
   # Main Params
-  timeAs <- labkey.url.params$timeAs
+  aggregateBy <- labkey.url.params$aggregateBy
   assays <- strsplit(labkey.url.params$assays, ",")[[1]]
   timePts <- strsplit(labkey.url.params$timePts, ",")[[1]]
   plotType <- labkey.url.params$plotType
@@ -77,7 +77,7 @@ pidsFilt <- Rlabkey::makeFilter(c("participantId", "IN", filteredPids))
 ```
 
 ```{r helper-fn}
-getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, timeAs){
+getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, aggregateBy){
 
   # Get data with default transformation method unless gene expression which
   # needs special treatment to organize in appropriate format
@@ -104,7 +104,7 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, timeAs){
     dat$study_time_collected <- gef$study_time_collected[ matchOrder ]
     dat$study_time_collected_unit <- gef$study_time_collected_unit[ matchOrder]
     ptid <- gef$participant_id[ matchOrder ]
-    if(timeAs == "observation"){
+    if(aggregateBy == "subject-tp"){
       dat$sub_tp <- paste0( ptid, "_", dat$study_time_collected)
     }else{
       dat$participant_id <- ptid
@@ -119,9 +119,9 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, timeAs){
   # Avoid downstream errors by returning NULL if assay does not contain chosen timepoints
   if(nrow(dat) == 0){ return() } 
   
-  # Transform assay data to be in following format depending on timeAs var:
-  # observation: rownames are sub_tp and colnames are grouping variable for value reported
-  # variable: rownames are participant_id and colnames are grouping var concat with stc_key
+  # Transform assay data to be in following format depending on aggregateBy var:
+  # subject-tp: rownames are sub_tp and colnames are grouping variable for value reported
+  # subject: rownames are participant_id and colnames are grouping var concat with stc_key
   
   # ---------------- HAI, NAb ----------------- #
   # Grouping by pid instead of pid * virus, otherwise same mechanics as other assays
@@ -130,7 +130,7 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, timeAs){
     dat <- dat[, lapply(.SD, mean), .(participant_id, stc_key), .SDcols = c("value_reported")]
     sum_col <- paste0("mean_", assay)
     setnames(dat, "value_reported", sum_col)
-    if(timeAs == "observation"){
+    if(aggregateBy == "subject-tp"){
       dat$sub_tp <- paste(dat$participant_id, dat$stc_key, sep = "_")
       dat <- dat[ , grep("sub|mean", colnames(dat)), with = FALSE]
     }else{
@@ -158,7 +158,7 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, timeAs){
     dat[[valCol]] <- as.numeric(dat[[valCol]]) # some assays seem to have issues with types
     keepCols <- c("participant_id", "stc_key", grpByCol, valCol)
     dat <- dat[ , keepCols, with = FALSE ]
-    if(timeAs == "observation"){
+    if(aggregateBy == "subject-tp"){
       dat <- dat[, sub_tp := paste(participant_id, stc_key, sep = "_")]
       byCols <- c("sub_tp", grpByCol)
       keyCol <- grpByCol
@@ -178,7 +178,7 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, timeAs){
     
     
     # Reorganize matrices by gs_timePt as colnames and cbind
-    if(timeAs == "variable"){
+    if(aggregateBy == "subject"){
       
       # Figure out subs with all tp
       subTps <- vapply(unique(dat$participant_id), 
@@ -255,7 +255,7 @@ con <- CreateConnection()
 
 # get assay data
 # NOTES:
-# 1. When timeAs == "variable", GE data is subset to subjects with all timepoints
+# 1. When aggregateBy == "subject", GE data is subset to subjects with all timepoints
 # Otherwise too much imputation is done and would affect subjects score.
 # 2. If impute == "none", then assay data matrix is cut down to only subjects with
 # every assay * timepoint combination. This could be highly limiting in project level work.
@@ -266,7 +266,7 @@ aData <- lapply(assays,
                 pidsFilt = pidsFilt,
                 filteredPids = filteredPids,
                 timePts = timePts,
-                timeAs = timeAs)
+                aggregateBy = aggregateBy)
 
 # Check aData to be sure non-null
 nulls <- sapply(aData, is.null)
@@ -410,7 +410,7 @@ if (impute != "none") {
 ## Parameters
 - **Timepoints**: `r timePts`
 - **Assays**: `r assays`
-- **Time As**: `r timeAs`
+- **Time As**: `r aggregateBy`
 - **Plot Type**: `r plotType`
 - **Number of Components Analyzed**: `r numComponents`
 - **Imputation Method**: `r impute`
@@ -469,7 +469,7 @@ genPlot <- function(i, j, resObj, type, prettyLbl, colorCol){
            showlegend=TRUE)
 }
 
-makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
+makePlot <- function(label, aggregateBy, demo, numComponents, plotType, allMat){
   prettyLbl <- tools::toTitleCase(gsub("_", " ", label))
 
   if(label == "time"){
@@ -498,7 +498,7 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
     re <- re[, response := ifelse(response >= log2(4), "high responder",  "low responder")]
     colorCol <- re$response[order(match(subs, re$participant_id))]
   }else{
-    if(timeAs == "observation"){ subs <- gsub("_.+", "", subs) }
+    if(aggregateBy == "subject-tp"){ subs <- gsub("_.+", "", subs) }
     colorCol <- demo[[label]][ match(subs, demo$participant_id)]
   }
   # create and sort possible component combinations
@@ -542,7 +542,7 @@ makePlot <- function(label, timeAs, demo, numComponents, plotType, allMat){
 ### Age
 ```{r  age, fig.align="left"}
 plots <- makePlot(label = "age_reported",
-                  timeAs = timeAs,
+                  aggregateBy = aggregateBy,
                   demo = demo,
                   numComponents = numComponents,
                   plotType = plotType,
@@ -554,7 +554,7 @@ htmltools::tagList(plots)
 ### Gender
 ```{r  gender, fig.align="left"}
 plots <- makePlot(label = "gender",
-                  timeAs = timeAs,
+                  aggregateBy = aggregateBy,
                   demo = demo,
                   numComponents = numComponents,
                   plotType = plotType,
@@ -566,7 +566,7 @@ htmltools::tagList(plots)
 ### Ethnicity
 ```{r  ethnicity, fig.align="left"}
 plots <- makePlot(label = "ethnicity",
-                  timeAs = timeAs,
+                  aggregateBy = aggregateBy,
                   demo = demo,
                   numComponents = numComponents,
                   plotType = plotType,
@@ -578,7 +578,7 @@ htmltools::tagList(plots)
 ### Race
 ```{r  race, fig.align="left"}
 plots <- makePlot(label = "race",
-                  timeAs = timeAs,
+                  aggregateBy = aggregateBy,
                   demo = demo,
                   numComponents = numComponents,
                   plotType = plotType,
@@ -590,7 +590,7 @@ htmltools::tagList(plots)
 ### Cohort
 ```{r  cohort, fig.align="left"}
 plots <- makePlot(label = "cohort",
-                  timeAs = timeAs,
+                  aggregateBy = aggregateBy,
                   demo = demo,
                   numComponents = numComponents,
                   plotType = plotType,
@@ -600,13 +600,13 @@ htmltools::tagList(plots)
 ```
 
 ```{r showTime}
-showTime <- timeAs == "observation"
+showTime <- aggregateBy == "subject-tp"
 ```
 
 `r if (showTime) {"### Timepoint"}`
 ```{r  timePt, fig.align="left", eval = showTime}
 plots <- makePlot(label = "time",
-                  timeAs = timeAs,
+                  aggregateBy = aggregateBy,
                   demo = demo,
                   numComponents = numComponents,
                   plotType = plotType,
@@ -622,7 +622,7 @@ projLvl <- !grepl("SDY\\d{2,4}", con$config$labkey.url.path)
 `r if (projLvl) {"### Study"}`
 ```{r  byStudy, fig.align="left", eval = projLvl}
   plots <- makePlot(label = "study",
-                    timeAs = timeAs,
+                    aggregateBy = aggregateBy,
                     demo = demo,
                     numComponents = numComponents,
                     plotType = plotType,
@@ -651,7 +651,7 @@ re <- tryCatch(
 )
 if(is.null(re$message)){
   plots <- makePlot(label = responseVar,
-                    timeAs = timeAs,
+                    aggregateBy = aggregateBy,
                     demo = demo,
                     numComponents = numComponents,
                     plotType = plotType,
@@ -669,7 +669,7 @@ imputed <- impute != "none"
 `r if (imputed) {"### Imputed Values"}`
 ```{r Imputed, fig.align="left", eval = imputed}
 plots <- makePlot(label = "imputed_values",
-                  timeAs = timeAs,
+                  aggregateBy = aggregateBy,
                   demo = demo,
                   numComponents = numComponents,
                   plotType = plotType,

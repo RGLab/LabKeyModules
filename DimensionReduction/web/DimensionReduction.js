@@ -27,8 +27,8 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
         var
             me                          = this,
             maskReport                  = undefined,
-            fieldWidth                  = 250,
-            labelWidth                  = 200,
+            fieldWidth                  = 300,
+            labelWidth                  = 250,
             flagAssay                   = undefined
             ;
 
@@ -103,7 +103,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 if (
                     cbAssays.isValid( true ) &&
                     cbTimePoints.isValid( true ) &&
-                    rgTime.isValid( true ) &&
+                    rgAggregate.isValid( true ) &&
                     rgPlotType.isValid( true ) &&
                     currPidCnt != 0
 
@@ -115,7 +115,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
 
                 if (    cbAssays.getValue()              == cbAssays.originalValue &&
                         cbTimePoints.getValue()          == cbTimePoints.originalValue &&
-                        rgTime.getValue()                == rgTime.originalValue &&
+                        rgAggregate.getValue()           == rgAggregate.originalValue &&
                         rgPlotType.getValue()            == rgPlotType.originalValue
                 ){
                     btnReset.setDisabled( true );
@@ -126,7 +126,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
 
             //Help strings
             var
-                timeAs_help = 'Using time as an observation allows for the labeling of points with time, not just by subject.',
+                aggregate_help = 'Aggregating by subject-timepoint allows for the labeling of points with time, not just by subject.',
                 assays_help = 'Assays present in the study.',
                 timepoints_help = 'The official study time collected value.',
                 labels_help = 'Demographic data that can be used to label the scatter plot values from either a PCA or tSNE analysis.',
@@ -155,7 +155,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                         filteredPids:           filteredPids.join(";"),
 
                         // User Selected Main Params
-                        timeAs:                 rgTime.getValue().value,
+                        aggregateBy:              rgAggregate.getValue().value,
                         assays:                 cbAssays.getValue(),
                         timePts:                cbTimePoints.getValue(),
                         plotType:               rgPlotType.getValue().value,
@@ -178,7 +178,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 handler: function(){
                     Ext.each(
                         [
-                            rgTime,
+                            rgAggregate,
                             cbAssays,
                             cbTimePoints,
                             rgPlotType
@@ -197,32 +197,32 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 cls: 'ui-test-reset'
             });
 
-            var rgTime = new Ext.form.RadioGroup({
+            var rgAggregate = new Ext.form.RadioGroup({
                 allowBlank: false,
-                fieldLabel: 'Use Time As',
+                fieldLabel: 'Aggregate By',
                 width: fieldWidth,
                 columns: 2,
                 items: [
                     {
-                        boxLabel: 'Variable',
+                        boxLabel: 'Subject',
                         checked: true,
-                        inputValue: 'Variable',
-                        name: 'Time',
-                        value: 'variable'
+                        inputValue: 'Subject',
+                        name: 'Aggregate',
+                        value: 'subject'
                     },{
-                        boxLabel: 'Observation',
-                        inputValue: 'Observation',
-                        name: 'Time',
-                        value: 'observation'
+                        boxLabel: 'Subject-Timepoint',
+                        inputValue: 'Subject-Timepoint',
+                        name: 'Aggregate',
+                        value: 'subject-tp'
 
                     }        
                 ],
-                value: 'Variable',
+                value: 'Subject',
                 listeners: {
                     blur:       checkBtnsStatus,
                     change:     function(){
                         // force new selection of timepoints and assays because
-                        // assay options are affected by timeAs
+                        // assay options are affected by aggregateBy
                         cbTimePoints.disable();
                         cbTimePoints.clearValue();
                         cbTimePoints.enable();
@@ -284,8 +284,8 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                     var intersect = tpsAvailable.filter( function(val){
                         return( tpsSelected.indexOf(val) !== -1) ;
                     });
-                    var obs = rgTime.getValue().value == 'observation';
-                    if( (!obs & intersect.length > 0) | (obs & intersect.length == tpsSelected.length) ){
+                    var subtp = rgAggregate.getValue().value == 'subject-tp';
+                    if( (!subtp & intersect.length > 0) | (subtp & intersect.length == tpsSelected.length) ){
                         return(true)
                     }
                 });
@@ -576,7 +576,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( rgTime, 'Time Usage', timeAs_help),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( rgAggregate, 'Aggregating', aggregate_help),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Timepoints', timepoints_help ),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbAssays, 'Assays', assays_help ),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( rgPlotType, 'Plot Type', plotTypes_help ),
