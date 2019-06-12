@@ -39,17 +39,17 @@ library(Rtsne)
 
 ```{r testing, eval = FALSE}
 labkey.url.base <- "http://140.107.149.233:8080"
-labkey.url.path <- "/Studies"
+labkey.url.path <- "/Studies/"
 labkey.url.params <- list(
-  filteredPids = "SUB118148.144;SUB118151.144;SUB118153.144;SUB118155.144;SUB118156.144;SUB118157.144;SUB118158.144;SUB118161.144;SUB118164.144;SUB118167.144;SUB118168.144;SUB118169.144;SUB118170.144;SUB118171.144;SUB118174.144;SUB118176.144;SUB118183.144",
-  timeAs = "variable",
+  filteredPids = "SUB153736.597;SUB153737.597;SUB153738.597;SUB153739.597;SUB153740.597;SUB153741.597;SUB153742.597;SUB153743.597;SUB153744.597;SUB153745.597;SUB153746.597;SUB153747.597;SUB153748.597;SUB153749.597;SUB153750.597;SUB153751.597;SUB153752.597;SUB153753.597;SUB153754.597;SUB153755.597",
+  timeAs = "observation",
   responseVar = "hai",
   plotType = "PCA",
-  timePts = c("0 Days"),
+  timePts = c("6 Hours,2 Hours"),
   perplexity = 5,
   numComponents = 2,
-  impute = "knn",
-  assays = c("fcs_analyzed_result","gene_expression_files","hai","neut_ab_titer")
+  impute = "none",
+  assays = c("gene_expression_files")
 )
 ```
 
@@ -175,28 +175,72 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, timeAs){
     # Be sure to only subset by GE timepoints not all assay time points!
     geOnlyTp <- unique(dat$stc_key)
 
-    # Figure out subs with all tp
-    subSums <- sapply(unique(dat$participant_id), function(x){
-      return(length(dat$stc_key[ dat$participant_id == x]))
-    })
-    goodSubs <- names(subSums)[ subSums == length(geOnlyTp)]
+    
     
     # Reorganize matrices by gs_timePt as colnames and cbind
     if(timeAs == "variable"){
+      
+      # Figure out subs with all tp
+      subTps <- vapply(unique(dat$participant_id), 
+                       function(x){list(unique(dat$stc_key[ dat$participant_id == x]))},
+                       FUN.VALUE = list(c("6_hours", "12_hours")))
+      goodSubs <- vapply(names(subTps), 
+                         function(x){all(geOnlyTp %in% subTps[[x]])}, 
+                         FUN.VALUE = TRUE)
+      goodSubs <- names(goodSubs)[goodSubs]
+      
       mats <- lapply(geOnlyTp, function(x){
         mat <- dat[ dat$stc_key == x & dat$participant_id %in% goodSubs, ]
         mat <- mat[, grep("stc_key|study_time_collected", colnames(dat), invert = T)]
         nms <- colnames(mat)[ colnames(mat) != "participant_id" ]
         nms <- paste0(nms, "_", gsub(" Days", "", x))
         colnames(mat) <- c(nms, "participant_id")
+        
+        # Aggregate technical replicates
+        subCounts <- table(mat$participant_id)
+        if (any(subCounts > 1)) {
+          # This creates a matrix with a column for each participant and a row for each feature
+          meanMatrix <- vapply(names(subCounts), function(sub) {
+            subset <- mat[mat$participant_id == sub,]
+            meanValues <- colMeans(subset[,-grep("participant_id", colnames(subset))], na.rm = TRUE)
+            meanValues
+          }, 
+          FUN.VALUE = numeric(ncol(mat) -1),
+          USE.NAMES = TRUE)
+          
+          # Get it back in the right format
+          meanMatrix <- as.data.frame(t(meanMatrix))
+          meanMatrix$participant_id <- rownames(meanMatrix)
+          mat <- meanMatrix
+        }
+        
         mat <- mat[ order(match(mat$participant_id, goodSubs)), ]
         mat <- mat[ , -grep("participant_id", colnames(mat)) ]
+        
         return(mat)
       })
       dat <- Reduce(function(x,y){ cbind(x,y) }, mats)
       dat$participant_id <- goodSubs
     }else{
-      dat <- dat[, grep("stc_key|study_time_collected", colnames(dat), invert = T)]
+      # Aggregate technical replicates
+      subCounts <- table(dat$sub_tp)
+      if (any(subCounts > 1)) {
+        # This creates a matrix with a column for each participant and a row for each feature
+        meanMatrix <- vapply(names(subCounts), function(sub) {
+          subset <- dat[dat$sub_tp == sub,]
+          meanValues <- colMeans(subset[,-grep("sub_tp|study_time_collected|stc", colnames(subset))], na.rm = TRUE)
+          meanValues
+        }, 
+        FUN.VALUE = numeric(ncol(dat) -4),
+        USE.NAMES = TRUE)
+        
+        # Get it back in the right format
+        meanMatrix <- as.data.frame(t(meanMatrix))
+        meanMatrix$sub_tp <- rownames(meanMatrix)
+        dat <- meanMatrix
+      } else {
+        dat <- dat[, grep("stc_key|study_time_collected", colnames(dat), invert = T)]
+      }
     }
   }
 
@@ -215,6 +259,7 @@ con <- CreateConnection()
 # Otherwise too much imputation is done and would affect subjects score.
 # 2. If impute == "none", then assay data matrix is cut down to only subjects with
 # every assay * timepoint combination. This could be highly limiting in project level work.
+# 3. When there are multiple records for a subject at a timepoint, they are aggregated by mean. 
 aData <- lapply(assays,
                 getAssayData,
                 con = con,
