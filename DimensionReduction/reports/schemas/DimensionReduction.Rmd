@@ -38,19 +38,25 @@ library(Rtsne)
 ```
 
 ```{r testing, eval = FALSE}
-labkey.url.base <- "http://140.107.149.233:8080"
-labkey.url.path <- "/Studies/"
+# labkey.url <- function (controller, action, list){paste(labkey.url.base,controller,labkey.url.path,action,".view?",paste(names(list),list,sep="=",collapse="&"),sep="")}
+# labkey.resolveLSID <- function(lsid){paste(labkey.url.base,"experiment/resolveLSID.view?lsid=",lsid,sep="");}
+labkey.user.email="hmiller@fredhutch.org"
+labkey.url.path="/Studies/"
+labkey.url.base="http://140.107.149.233:8080/"
 labkey.url.params <- list(
-  filteredPids = "SUB102424.28;SUB102425.28;SUB102426.28;SUB102427.28;SUB102428.28;SUB102429.28;SUB102430.28;SUB102431.28;SUB102432.28;SUB102433.28;SUB102434.28;SUB102435.28;SUB102436.28;SUB102437.28;SUB102438.28;SUB102439.28;SUB102440.28;SUB102441.28;SUB102442.28;SUB102443.28;SUB71252.28;SUB71253.28;SUB71254.28;SUB71255.28;SUB71256.28;SUB71257.28;SUB71258.28;SUB71259.28;SUB71260.28;SUB71261.28;SUB71262.28;SUB71263.28;SUB71264.28;SUB71265.28;SUB71266.28;SUB71267.28;SUB71268.28;SUB71269.28;SUB71270.28;SUB71271.28;SUB71272.28;…2272.28;SUB72273.28;SUB72274.28;SUB72275.28;SUB72276.28;SUB72277.28;SUB72278.28;SUB72279.28;SUB72280.28;SUB72281.28;SUB72282.28;SUB72283.28;SUB72284.28;SUB72285.28;SUB72286.28;SUB72287.28;SUB72288.28;SUB72289.28;SUB72290.28;SUB72291.28;SUB72292.28;SUB72293.28;SUB72294.28;SUB72295.28;SUB72296.28;SUB72297.28;SUB72298.28;SUB72299.28;SUB72300.28;SUB72301.28;SUB72302.28;SUB72303.28;SUB72304.28;SUB72305.28;SUB72306.28;SUB72307.28;SUB72308.28;SUB72309.28;SUB72310.28;SUB72311.28;SUB72312.28;SUB72313.28;SUB72314.28",
-  aggregateBy = "subject-tp",
-  responseVar = "hai",
-  plotType = "PCA",
-  timePts = c("1 Days"),
-  perplexity = 5,
-  numComponents = 2,
-  impute = "mean",
-  assays = c("elisa,fcs_analyzed_result,gene_expression_files")
-)
+  "timePts"="7 Days,1 Days",
+  "assays"="gene_expression_files,fcs_analysed_results",
+  "responseVar"="hai",
+  "plotType"="PCA",
+  "impute"="none",
+  "perplexity"="5",
+  "aggregateBy"="subject",
+  "filteredPids"="SUB112829.269;SUB112831.269;SUB112832.269;SUB112834.269;SUB112838.269;SUB112842.269;SUB112843.269;SUB112847.269;SUB112850.269;SUB112854.269;SUB112857.269;SUB112858.269;SUB112859.269;SUB112861.269;SUB112866.269;SUB112867.269;SUB112868.269;SUB112869.269;SUB112870.269;SUB112873.269;SUB112877.269;SUB112884.269;SUB119252.180;SUB119254.180;SUB119255.180;SUB119267.180;SUB119268.180;SUB119269.180;SUB119270.180;SUB119272.180;SUB119273.180;SUB119275.180;SUB119276.180;SUB119278.180;SUB119281.180;SUB119284.180;SUB119287.180;SUB119288.180;SUB119289.180;SUB119291.180;SUB119293.180;SUB119294.180;SUB119296.180;SUB153740.597;SUB153741.597;SUB153743.597;SUB153744.597;SUB153746.597;SUB153748.597;SUB153750.597;SUB71252.28;SUB71272.28;SUB71275.28;SUB71308.28;SUB71315.28;SUB71322.28;SUB71326.28;SUB71341.28;SUB71347.28;SUB71389.28;SUB71391.28;SUB71399.28;SUB71401.28;SUB71419.28;SUB71446.28;SUB71461.28;SUB71474.28;SUB71482.28;SUB71497.28;SUB71538.28;SUB71540.28;SUB71574.28;SUB71577.28;SUB71594.28;SUB71613.28;SUB71619.28;SUB71621.28;SUB71628.28;SUB71635.28;SUB71645.28;SUB71647.28;SUB71648.28;SUB71652.28;SUB71654.28;SUB71656.28;SUB71658.28;SUB71659.28;SUB71665.28;SUB71691.28;SUB71692.28;SUB71704.28;SUB71705.28;SUB71724.28;SUB71728.28;SUB71734.28;SUB71763.28;SUB71764.28;SUB71773.28;SUB71782.28;SUB71791.28;SUB71807.28;SUB71814.28;SUB71832.28;SUB71842.28;SUB71850.28;SUB71857.28;SUB71873.28;SUB71884.28;SUB71885.28;SUB71891.28;SUB71901.28;SUB71902.28;SUB71952.28;SUB71959.28;SUB71991.28;SUB71994.28;SUB72000.28;SUB72008.28;SUB72010.28;SUB72018.28;SUB72024.28;SUB72026.28;SUB72035.28;SUB72047.28;SUB72052.28;SUB72078.28;SUB72086.28;SUB72103.28;SUB72111.28;SUB72115.28;SUB72127.28;SUB72132.28;SUB72136.28;SUB72141.28;SUB72151.28;SUB72186.28;SUB72218.28;SUB72234.28;SUB72257.28;SUB72260.28;SUB72261.28;SUB72264.28;SUB72267.28;SUB72274.28;SUB72283.28;SUB72287.28;SUB72307.28;SUB72312.28",
+  "numComponents"="2")
+# labkey.file.root <- "/share/files/Studies/@files"
+# labkey.pipeline.root <- "/share/files/Studies/@files"
+# labkey.sessionCookieName = "JSESSIONID"
+# labkey.sessionCookieContents = "59D7397057B93889ABF693C440BC1EB3"
 ```
 
 ```{r params}
@@ -76,7 +82,211 @@ labkey.url.params <- list(
 pidsFilt <- Rlabkey::makeFilter(c("participantId", "IN", filteredPids))
 ```
 
-```{r helper-fn}
+
+```{r projLvl}
+projLvl <- !grepl("SDY\\d{2,4}", con$config$labkey.url.path)
+```
+
+```{r getAssayData}
+getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, aggregateBy) {
+  # Get data with default transformation method unless gene expression which
+  # needs special treatment to organize in appropriate format
+  if(assay != "gene_expression_files"){
+    original_view <- assay != "mbaa"
+    dat <- con$getDataset(assay, 
+                          original_view = original_view, 
+                          transformMethod = "auto", 
+                          colFilter = pidsFilt)
+  }else{
+    # Use filteredPids to only download matrices for specified studies and then
+    # subset data by filtered gef to ensure only correct pids picked up.
+    tmp <- strsplit(filteredPids, ";")
+    tmp <- lapply(tmp, strsplit, split = "\\.")[[1]]
+    sdys <- paste0("SDY", unique(sapply(tmp, "[", 2)))
+    mats <- con$cache$GE_matrices$name[ con$cache$GE_matrices$folder %in% sdys ]
+    eset <- con$getGEMatrix(mats)
+    dat <- data.frame(t(Biobase::exprs(eset)),stringsAsFactors = FALSE)
+    dat$biosample_accession <- rownames(dat)
+    
+    # Subset by filtered gef and add participant_id and study_time_collected
+    gef <- con$getDataset("gene_expression_files", 
+                          original_view = TRUE, 
+                          colFilter = pidsFilt)
+    
+    dat <- dat[ dat$biosample_accession %in% gef$biosample_accession, ]
+    matchOrder <- match(rownames(dat), gef$biosample_accession)
+    dat$study_time_collected <- gef$study_time_collected[ matchOrder ]
+    dat$study_time_collected_unit <- gef$study_time_collected_unit[ matchOrder]
+    dat$participant_id <- gef$participant_id[ matchOrder ]
+    
+  }
+  
+  # Update stc_key to use underscore and replace negative sign for later use in colnames
+  dat$stc_key <- paste(dat$study_time_collected, dat$study_time_collected_unit, sep = "_")
+  dat <- dat[ dat$stc_key %in% gsub(" ", "_", timePts), ]
+  dat$stc_key <- gsub("-", "neg", dat$stc_key)
+  
+  # Avoid downstream errors by returning NULL if assay does not contain chosen timepoints
+  if(nrow(dat) == 0){ return() } 
+  
+  # Transform assay data to be in following format:
+  # One row for biosample with the following columns:
+  # * biosample_accession
+  # * participant_id
+  # * stc_key
+  # * one column for each feature
+  
+  # ---------------- HAI, NAb ----------------- 
+  # Grouping by biosample instead of biosample * virus, otherwise same mechanics as other assays
+  if( assay %in% c("hai","neut_ab_titer") ){
+    dat$value_reported <- as.numeric(dat$value_reported)
+    dat <- dat[, lapply(.SD, mean), .(biosample_accession, participant_id, stc_key), .SDcols = c("value_reported")]
+    sum_col <- paste0("mean_", assay)
+    setnames(dat, "value_reported", sum_col)
+    
+    
+  # ---- ELISA, ELISPOT, MBAA, PCR, FCS  ------ 
+  } else if ( assay %in% c("elisa", "elispot", "mbaa", "pcr", "fcs_analyzed_result") ) {
+    valCol <- switch( assay,
+          "elisa" = "value_preferred",
+          "elispot" = "spot_number_reported",
+          "mbaa" = "concentration_value",
+          "pcr" = "value_reported",
+          "fcs_analyzed_result" = "population_cell_number"
+        )
+    grpByCol <- switch( assay,
+          "elisa" = "analyte",
+          "elispot" = "analyte",
+          "mbaa" = "analyte",
+          "pcr" = "gene_symbol",
+          "fcs_analyzed_result" = "population_definition_reported"
+        )
+    dat[[valCol]] <- as.numeric(dat[[valCol]]) # some assays seem to have issues with types
+    keepCols <- c("participant_id", "biosample_accession", "stc_key", grpByCol, valCol)
+    dat <- dat[ , keepCols, with = FALSE ]
+    
+    # Aggregate by biosample (should aggregate any technical replicates)
+    dat <- dat[, lapply(.SD, mean), by = c("participant_id", "biosample_accession", "stc_key", grpByCol), .SDcols = c(valCol)]
+    dat <- spread(dat, key = grpByCol, value = valCol)
+    
+  # ------------ Gene Expression ------------
+    } else if ( assay == "gene_expression_files" ) {
+    # Be sure to only subset by GE timepoints not all assay time points!
+    geOnlyTp <- unique(dat$stc_key)
+    
+    # Remove extraneous columns
+    setDT(dat)
+    dat <- dat[, grep("study_time_collected", colnames(dat), invert = T), with = FALSE]
+    
+    # Aggregate by biosample
+    dat <- dat[, if (nrow(.SD) > 1) { lapply(.SD, mean) } else {.SD}, by = c("participant_id", "biosample_accession", "stc_key"), .SDcols = !c("participant_id", "biosample_accession", "stc_key")]
+    }
+  return(dat)
+}
+
+
+# getSampleMetadata: returns a data.table with: 
+# participant_id, cell_type, and (if applicable) FAS
+# Where cell_type is a string with cell type from all assays eg: 
+# GE: PBMC\nFlow: Whole Blood\nMBAA: macrophage
+getSampleMetadata <- function(aData) {
+  # Get participant_ids and biosamples
+  sampleInfo <- setDT(Rlabkey::labkey.selectRows(labkey.url.base, 
+                                  labkey.url.path,
+                                  schemaName = "immport",
+                                  queryName = "dimsample",
+                                  colFilter =  Rlabkey::makeFilter(c("subjectid", "IN", filteredPids)),
+                                  colSelect = c("sampleid", "type"),
+                                  colNameOpt = "fieldname"))
+  
+  participantBiosampleList <- lapply(names(aData), function(assayName){
+    participantBiosampleMap <- aData[[assayName]][, .(participant_id, biosample_accession, assay = assayName)]
+    participantBiosampleMap <- merge(participantBiosampleMap, sampleInfo[, .(sample_type = type), sampleid],
+                                     by.x = "biosample_accession", by.y = "sampleid", 
+                                     all.x = TRUE, all.y = FALSE)
+  })
+  biosampleMetadata <- Reduce(function(x,y){rbind(x,y)}, participantBiosampleList)
+  if ("gene_expression_files" %in% names(aData) ){
+    # add FAS info
+    inputSamplesWithFeatures <- setDT(Rlabkey::labkey.selectRows(labkey.url.base, 
+                                  labkey.url.path,
+                                  schemaName = "assay.ExpressionMatrix.matrix",
+                                  queryName = "inputSamplesWithFeatures",
+                                  colNameOpt = "fieldname",
+                                  colFilter = pidsFilt,
+                                  colSelect = c("Biosample", "featureSet")))
+    fas <- setDT(Rlabkey::labkey.selectRows(labkey.url.base, 
+                                  labkey.url.path,
+                                  schemaName = "microarray",
+                                  queryName = "FeatureAnnotationSet",
+                                  colNameOpt = "fieldname", 
+                                  colSelect = c("RowId", "Name", "Vendor")))
+    sample_fas <- merge(inputSamplesWithFeatures[, .(Biosample, featureSet)], fas, 
+                        by.x = "featureSet", by.y = "RowId",
+                        all.x = TRUE, all.y = FALSE)
+    
+    biosampleMetadata <- merge(biosampleMetadata, sample_fas,
+                                   by.x = "biosample_accession", by.y = "Biosample",
+                                   all.x = TRUE, all.y = FALSE)
+    setnames(biosampleMetadata, c("Name", "Vendor"), c("fasName", "fasVendor"))
+  }
+  
+  # aggregate by participant_id and tp
+  participantMetadata <- biosampleMetadata[, .(sample_type = "", 
+                                               fasName = "",
+                                               fasVendor = ""), participant_id]
+  
+  return(participantMetadata)
+}
+
+aggregateAssayData <- function(dat, aggregateBy) {
+  
+    if (aggregateBy == "subject") {
+      tps <- unique(dat$stc_key)
+      
+      # Exclude subjects that do not have data at all timepoints
+      # Figure out subs with all tp
+      subTps <- vapply(unique(dat$participant_id), 
+                       function(x){list(unique(dat$stc_key[ dat$participant_id == x]))},
+                       FUN.VALUE = list(c("6_hours", "12_hours")))
+      goodSubs <- vapply(names(subTps), 
+                         function(x){all(tps %in% subTps[[x]])}, 
+                         FUN.VALUE = TRUE)
+      goodSubs <- names(goodSubs)[goodSubs]
+      
+      dat <- dat[participant_id %in% goodSubs]
+    }
+  
+  # Aggregate by participant & timepoint
+  datByTp <- dat[, if (nrow(.SD) > 1) { lapply(.SD, mean) } else {.SD}, by = c("participant_id", "stc_key"), .SDcols = !c("participant_id", "biosample_accession", "stc_key")]
+      
+    # } else if (aggregateBy == "subject-tp"){
+    #   # Aggregate by participant & timepoint
+    #   datByTp <- dat[, if (nrow(.SD) > 1) { lapply(.SD, mean) } else {.SD}, by = c("participant_id", "stc_key"), .SDcols = !c("participant_id", "biosample_accession", "stc_key")]
+    # }
+  
+  # Get into correct format depending on aggregateBy
+  if ( aggregateBy == "subject" ) {
+    dats <- lapply(tps, function(tp){
+        mat <- datByTp[ datByTp$stc_key == tp, ]
+        mat <- mat[, -"stc_key", with = FALSE]
+        nms <- colnames(mat)
+        nms <- ifelse(!grepl("participant_id|stc_key", nms), paste0(nms, "_", tp), nms)
+        colnames(mat) <- nms
+        return(mat)
+      })
+      dat <- Reduce(function(x,y){ merge(x, y, by.x = c("participant_id"), by.y = c("participant_id")) }, dats)
+  } else if ( aggregateBy == "subject-tp" ) { 
+    dat$sub_tp <- paste(dat$participant_id, dat$stc_key, sep = "_")
+    dat <- dat[, -"stc_key"]
+  }
+  
+  return(dat)
+}
+```
+
+
+```{r helper-fn, eval = FALSE}
 getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, aggregateBy){
 
   # Get data with default transformation method unless gene expression which
@@ -118,6 +328,13 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, aggregateB
   
   # Avoid downstream errors by returning NULL if assay does not contain chosen timepoints
   if(nrow(dat) == 0){ return() } 
+  
+  # Add biosample_accession column if not present
+  if (projLvl) {
+    if (!"biosample_accession" %in% names(dat)) {
+      dat$biosample_accession <- rownames(dat)
+    }
+  }
   
   # Transform assay data to be in following format depending on aggregateBy var:
   # subject-tp: rownames are sub_tp and colnames are grouping variable for value reported
@@ -178,7 +395,7 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, aggregateB
     
     
     # Reorganize matrices by gs_timePt as colnames and cbind
-    if(aggregateBy == "subject"){
+    if( aggregateBy == "subject" ){
       
       # Figure out subs with all tp
       subTps <- vapply(unique(dat$participant_id), 
@@ -192,9 +409,9 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, aggregateB
       mats <- lapply(geOnlyTp, function(x){
         mat <- dat[ dat$stc_key == x & dat$participant_id %in% goodSubs, ]
         mat <- mat[, grep("stc_key|study_time_collected", colnames(dat), invert = T)]
-        nms <- colnames(mat)[ colnames(mat) != "participant_id" ]
+        nms <- colnames(mat)[ !colnames(mat) %in% c("participant_id", "biosample_accession") ]
         nms <- paste0(nms, "_", gsub(" Days", "", x))
-        colnames(mat) <- c(nms, "participant_id")
+        colnames(mat) <- c(nms, "participant_id", "biosample_accession")
         
         # Aggregate technical replicates
         subCounts <- table(mat$participant_id)
@@ -202,7 +419,7 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, aggregateB
           # This creates a matrix with a column for each participant and a row for each feature
           meanMatrix <- vapply(names(subCounts), function(sub) {
             subset <- mat[mat$participant_id == sub,]
-            meanValues <- colMeans(subset[,-grep("participant_id", colnames(subset))], na.rm = TRUE)
+            meanValues <- colMeans(subset[,-grep("participant_id|biosample_accession", colnames(subset))], na.rm = TRUE)
             meanValues
           }, 
           FUN.VALUE = numeric(ncol(mat) -1),
@@ -267,6 +484,7 @@ aData <- lapply(assays,
                 filteredPids = filteredPids,
                 timePts = timePts,
                 aggregateBy = aggregateBy)
+names(aData) <- assays
 
 # Check aData to be sure non-null
 nulls <- sapply(aData, is.null)
@@ -301,7 +519,7 @@ if(impute == "mean" | impute == "median"){
         x[ is.na(x) ] <- fn(x, na.rm = TRUE)
       }
       return(x)
-    })
+    })l
   })
 }else if(impute == "knn"){
   library(impute)
@@ -405,6 +623,31 @@ if (impute != "none") {
 #                                         showHidden = TRUE,
 #                                         colFilter = pidsFilt)
 # demo$cohort <- cohortMap$Label[ match(demo$cohort, cohortMap$Rowid) ]
+```
+
+
+
+```{r add-project-data, eval = projLvl}
+# If project level, add additional metadata for labelling points
+# --- Cell type ---
+dimSample <- data.table(Rlabkey::labkey.selectRows(baseUrl = labkey.url.base,
+                                          folderPath = labkey.url.path,
+                                          schemaName = "immport", 
+                                          queryName = "dimsample",
+                                          colNameOpt = "fieldname"))
+setnames(dimSample, "type", "sample_type")
+# One row per participant
+sampleTypes <- dimSample[subjectid %in% dat$participant_id]
+sampleTypes <- dimSample[, unique(cellType), ]
+
+# FAS name
+
+# FAS vendor
+
+# Immune Exposure
+
+# Immune Exposure type
+
 ```
 
 ## Parameters
@@ -613,10 +856,6 @@ plots <- makePlot(label = "time",
                   allMat = allMat
 )
 htmltools::tagList(plots)
-```
-
-```{r projLvl}
-projLvl <- !grepl("SDY\\d{2,4}", con$config$labkey.url.path)
 ```
 
 `r if (projLvl) {"### Study"}`
