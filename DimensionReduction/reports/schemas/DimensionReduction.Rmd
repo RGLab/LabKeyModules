@@ -45,10 +45,10 @@ labkey.url.path="/Studies/"
 labkey.url.base="http://140.107.149.233:8080/"
 labkey.url.params <- list(
   "timePts"="7 Days,1 Days",
-  "assays"="gene_expression_files,fcs_analysed_results",
+  "assays"="gene_expression_files,fcs_analyzed_result",
   "responseVar"="hai",
   "plotType"="PCA",
-  "impute"="none",
+  "impute"="mean",
   "perplexity"="5",
   "aggregateBy"="subject",
   "filteredPids"="SUB112829.269;SUB112831.269;SUB112832.269;SUB112834.269;SUB112838.269;SUB112842.269;SUB112843.269;SUB112847.269;SUB112850.269;SUB112854.269;SUB112857.269;SUB112858.269;SUB112859.269;SUB112861.269;SUB112866.269;SUB112867.269;SUB112868.269;SUB112869.269;SUB112870.269;SUB112873.269;SUB112877.269;SUB112884.269;SUB119252.180;SUB119254.180;SUB119255.180;SUB119267.180;SUB119268.180;SUB119269.180;SUB119270.180;SUB119272.180;SUB119273.180;SUB119275.180;SUB119276.180;SUB119278.180;SUB119281.180;SUB119284.180;SUB119287.180;SUB119288.180;SUB119289.180;SUB119291.180;SUB119293.180;SUB119294.180;SUB119296.180;SUB153740.597;SUB153741.597;SUB153743.597;SUB153744.597;SUB153746.597;SUB153748.597;SUB153750.597;SUB71252.28;SUB71272.28;SUB71275.28;SUB71308.28;SUB71315.28;SUB71322.28;SUB71326.28;SUB71341.28;SUB71347.28;SUB71389.28;SUB71391.28;SUB71399.28;SUB71401.28;SUB71419.28;SUB71446.28;SUB71461.28;SUB71474.28;SUB71482.28;SUB71497.28;SUB71538.28;SUB71540.28;SUB71574.28;SUB71577.28;SUB71594.28;SUB71613.28;SUB71619.28;SUB71621.28;SUB71628.28;SUB71635.28;SUB71645.28;SUB71647.28;SUB71648.28;SUB71652.28;SUB71654.28;SUB71656.28;SUB71658.28;SUB71659.28;SUB71665.28;SUB71691.28;SUB71692.28;SUB71704.28;SUB71705.28;SUB71724.28;SUB71728.28;SUB71734.28;SUB71763.28;SUB71764.28;SUB71773.28;SUB71782.28;SUB71791.28;SUB71807.28;SUB71814.28;SUB71832.28;SUB71842.28;SUB71850.28;SUB71857.28;SUB71873.28;SUB71884.28;SUB71885.28;SUB71891.28;SUB71901.28;SUB71902.28;SUB71952.28;SUB71959.28;SUB71991.28;SUB71994.28;SUB72000.28;SUB72008.28;SUB72010.28;SUB72018.28;SUB72024.28;SUB72026.28;SUB72035.28;SUB72047.28;SUB72052.28;SUB72078.28;SUB72086.28;SUB72103.28;SUB72111.28;SUB72115.28;SUB72127.28;SUB72132.28;SUB72136.28;SUB72141.28;SUB72151.28;SUB72186.28;SUB72218.28;SUB72234.28;SUB72257.28;SUB72260.28;SUB72261.28;SUB72264.28;SUB72267.28;SUB72274.28;SUB72283.28;SUB72287.28;SUB72307.28;SUB72312.28",
@@ -84,11 +84,29 @@ pidsFilt <- Rlabkey::makeFilter(c("participantId", "IN", filteredPids))
 
 
 ```{r projLvl}
-projLvl <- !grepl("SDY\\d{2,4}", con$config$labkey.url.path)
+projLvl <- !grepl("SDY\\d{2,4}", labkey.url.path)
 ```
 
-```{r getAssayData}
-getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts, aggregateBy) {
+```{r helpers}
+
+.prettyAssayNames <- function(uglyAssayNames){ 
+  prettyAssayName <- sapply(uglyAssayNames, function(x) {
+    switch(x,
+           "elisa" = "Elisa",
+           "elispot" = "Elispot",
+           "mbaa" = "MBAA",
+           "pcr" = "PCR",
+           "fcs_analyzed_result" = "Flow Cytometry",
+           "gene_expression_files" = "Gene Expression",
+           "hai" = "HAI",
+           "neut_ab_titer" = "Neutralizing Antibody Titer"
+    )
+  }, USE.NAMES = FALSE)
+  return(prettyAssayName)
+}
+
+
+getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts) {
   # Get data with default transformation method unless gene expression which
   # needs special treatment to organize in appropriate format
   if(assay != "gene_expression_files"){
@@ -232,33 +250,33 @@ getSampleMetadata <- function(aData) {
   }
   
   # aggregate by participant_id and tp
-  participantMetadata <- biosampleMetadata[, .(sample_type = "", 
-                                               fasName = "",
-                                               fasVendor = ""), participant_id]
+  # helper for creating sample type text (eg "GE: PBMC\nFlow: Whole Blood\nMBAA: macrophage")
+  createSampleTypeText <- function(assays, sampleTypes) {
+    combos <- unique(data.table(assay = assays, sampleType = sampleTypes))
+    comboText <- lapply(seq_len(nrow(combos)), function(i) {paste0(.prettyAssayNames(combos[i]$assay), ": ", combos[i]$sampleType)})
+    return(paste0(comboText, collapse = "\n"))
+  }
+  
+  participantMetadata <- biosampleMetadata[, .(sample_type = createSampleTypeText(assay, sample_type), 
+                                               fasName = paste0(unique(na.omit(fasName)), collapse = ", "),
+                                               fasVendor = paste0(unique(na.omit(fasVendor)), collapse = ", ")), participant_id]
   
   return(participantMetadata)
 }
 
+
+# aggregateAssayData: given a data.table in the format returned by getAssayData, 
+# this function will: 
+# 1. aggregate any technical replicates (repeated values for the same feature for the same participant at a given timepoint)
+# 2. transform the data based on aggregateBy: 
+#    aggregateBy = "subject" -> One row per subject, one column for each feature-timepoint combo 
+#                               (excludes participants who don't have data at every timepoint)
+#    aggregateBy = "subject-tp" -> One row per subject-timepoint combo, one column for each feature
 aggregateAssayData <- function(dat, aggregateBy) {
   
-    if (aggregateBy == "subject") {
-      tps <- unique(dat$stc_key)
-      
-      # Exclude subjects that do not have data at all timepoints
-      # Figure out subs with all tp
-      subTps <- vapply(unique(dat$participant_id), 
-                       function(x){list(unique(dat$stc_key[ dat$participant_id == x]))},
-                       FUN.VALUE = list(c("6_hours", "12_hours")))
-      goodSubs <- vapply(names(subTps), 
-                         function(x){all(tps %in% subTps[[x]])}, 
-                         FUN.VALUE = TRUE)
-      goodSubs <- names(goodSubs)[goodSubs]
-      
-      dat <- dat[participant_id %in% goodSubs]
-    }
   
   # Aggregate by participant & timepoint
-  datByTp <- dat[, if (nrow(.SD) > 1) { lapply(.SD, mean) } else {.SD}, by = c("participant_id", "stc_key"), .SDcols = !c("participant_id", "biosample_accession", "stc_key")]
+  datByTp <- dat[, if (nrow(.SD) > 1) { lapply(.SD, function(x){mean(x, na.rm = TRUE)}) } else {.SD}, by = c("participant_id", "stc_key"), .SDcols = !c("participant_id", "biosample_accession", "stc_key")]
       
     # } else if (aggregateBy == "subject-tp"){
     #   # Aggregate by participant & timepoint
@@ -482,33 +500,60 @@ aData <- lapply(assays,
                 con = con,
                 pidsFilt = pidsFilt,
                 filteredPids = filteredPids,
-                timePts = timePts,
-                aggregateBy = aggregateBy)
+                timePts = timePts)
 names(aData) <- assays
 
 # Check aData to be sure non-null
 nulls <- sapply(aData, is.null)
 aData <- aData[ !nulls ]
 
-# Impute missing values within each assay on per sample or sample_tp (column) basis if selected by user
-# Get number of observations to be imputed
-if ( impute != "none" ) {
-  # Get subjects with missing feature data
-  missingFeaturesBySubject <- lapply(aData, function(df){
-    rownames(df) <- df$participant_id
-    apply(df, 1, function(x)sum(is.na(x)))
+# When aggregateBy == "subject", GE data is subset to subjects with all timepoints
+# Otherwise too much imputation is done and would affect subjects score.
+if ( aggregateBy == "subject" & "gene_expression_files" %in% assays ) { 
+  dat <- aData$gene_expression_files
+  tps <- unique(dat$stc_key)
+  
+  # Figure out subs with all tp
+  subTps <- vapply(unique(dat$participant_id), 
+                   function(x){list(unique(dat$stc_key[ dat$participant_id == x]))},
+                   FUN.VALUE = list(c("6_hours", "12_hours")))
+  goodSubs <- vapply(names(subTps), 
+                     function(x){all(tps %in% subTps[[x]])}, 
+                     FUN.VALUE = TRUE)
+  goodSubs <- names(goodSubs)[goodSubs]
+  
+  aData$gene_expression_files <- dat[participant_id %in% goodSubs]
+}
+
+# Get sample-level additional data
+if (projLvl) {
+  extraMetadata <- getSampleMetadata(aData)
+}
+
+# Aggregate
+aData <- lapply(aData,
+                aggregateAssayData, 
+                aggregateBy = aggregateBy)
+
+# Deal with missing data (impute and trim) ---------------------
+# Get subjects with missing feature data for plot colored by impute
+if (impute != "none") {
+  missingFeaturesBySubject <- lapply(aData, function(dt){
+    apply(dt, 1, function(x)sum(is.na(x)))
   })
   
   missingFeaturesDT <- data.table(subject = names(unlist(missingFeaturesBySubject)),
-                                missing = unlist(missingFeaturesBySubject))
+                                  missing = unlist(missingFeaturesBySubject))
   missing <- missingFeaturesDT[, .(missing = sum(missing)), subject]
   missingFeaturesBySubject <- missing$missing
   names(missingFeaturesBySubject) <- missing$subject
-
+  
   missingSubjectsByFeature <- lapply(aData, function(df) {
     apply(df, 2, function(x)(sum(is.na(x))))
   })
 }
+
+# Impute missing values within each assay on per sample or sample_tp (column) basis if selected by user
 
 if(impute == "mean" | impute == "median"){
   fn <- get(impute)
@@ -519,7 +564,7 @@ if(impute == "mean" | impute == "median"){
         x[ is.na(x) ] <- fn(x, na.rm = TRUE)
       }
       return(x)
-    })l
+    })
   })
 }else if(impute == "knn"){
   library(impute)
@@ -543,10 +588,15 @@ if(impute == "mean" | impute == "median"){
 
     return(res_df)
   })
+  
 }else if(impute == "none"){
+  
+  # when impute == "none", remove subjects with missing features
   aData <- lapply(aData, function(df){ 
     df <- df[ complete.cases(df), ]
   })
+  
+  # Are there any assays which do not have any subjects without missing features?
   prbAssays <- sapply(aData, function(x){ return(dim(x)[[1]] == 0 )} )
   prbAssays <- assays[ prbAssays ]
   if (length(prbAssays) > 0 ) {
@@ -567,7 +617,7 @@ if(impute == "mean" | impute == "median"){
 }
 
 # Find subs with all datasets
-subs <- sapply(aData, function(x){
+subs <- lapply(aData, function(x){
   x[, grep("sub_tp|participant_id", colnames(x))]
 })
 numSubs <- table(unlist(subs))
@@ -608,47 +658,41 @@ if( is.null(dim(allMat)) || dim(allMat)[2] < 2){
 ```
 
 
-```{r prep-demo-data}
+```{r prep-demog-data}
 # Get demographic data and add cohort name
-demo <- con$getDataset("demographics", colFilter = pidsFilt)
+demog <- con$getDataset("demographics", colFilter = pidsFilt)
+
+# Add immune exposure
+immex <- setDT(Rlabkey::labkey.selectRows(
+  labkey.url.base,
+  labkey.url.path,
+  "immport",
+  "immune_exposure",
+  colNameOpt = "fieldname"
+))
+
+demog$subject_accession <- sub("\\.\\d", "", demog$participant_id)
+demog <- merge(demog, immex[, .(subject_accession, disease_reported, disease_stage_reported, exposure_material_reported, exposure_process_reported)],
+               by = "subject_accession",
+               all.x = TRUE,
+               all.y = FALSE)
 
 if (impute != "none") {
-  # Add number of of imputed features to demo
-  demo$imputed_values <- missingFeaturesBySubject[demo$participant_id]
+  # Add number of of imputed features to demog
+  demog$imputed_values <- missingFeaturesBySubject[demog$participant_id]
 }
-# cohortMap <- Rlabkey::labkey.selectRows(baseUrl = con$config$labkey.url.base,
-#                                         folderPath = con$config$labkey.url.path,
-#                                         schemaName = "study",
-#                                         queryName = "cohort",
-#                                         showHidden = TRUE,
-#                                         colFilter = pidsFilt)
-# demo$cohort <- cohortMap$Label[ match(demo$cohort, cohortMap$Rowid) ]
+
+if (projLvl) {
+  # Add cell type
+  demog <- merge(demog, extraMetadata, 
+                 by = "participant_id",
+                 all.x = TRUE,
+                 all.y = FALSE)
+}
 ```
 
 
 
-```{r add-project-data, eval = projLvl}
-# If project level, add additional metadata for labelling points
-# --- Cell type ---
-dimSample <- data.table(Rlabkey::labkey.selectRows(baseUrl = labkey.url.base,
-                                          folderPath = labkey.url.path,
-                                          schemaName = "immport", 
-                                          queryName = "dimsample",
-                                          colNameOpt = "fieldname"))
-setnames(dimSample, "type", "sample_type")
-# One row per participant
-sampleTypes <- dimSample[subjectid %in% dat$participant_id]
-sampleTypes <- dimSample[, unique(cellType), ]
-
-# FAS name
-
-# FAS vendor
-
-# Immune Exposure
-
-# Immune Exposure type
-
-```
 
 ## Parameters
 - **Timepoints**: `r timePts`
@@ -712,7 +756,7 @@ genPlot <- function(i, j, resObj, type, prettyLbl, colorCol){
            showlegend=TRUE)
 }
 
-makePlot <- function(label, aggregateBy, demo, numComponents, plotType, allMat){
+makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat){
   prettyLbl <- tools::toTitleCase(gsub("_", " ", label))
 
   if(label == "time"){
@@ -742,7 +786,7 @@ makePlot <- function(label, aggregateBy, demo, numComponents, plotType, allMat){
     colorCol <- re$response[order(match(subs, re$participant_id))]
   }else{
     if(aggregateBy == "subject-tp"){ subs <- gsub("_.+", "", subs) }
-    colorCol <- demo[[label]][ match(subs, demo$participant_id)]
+    colorCol <- demog[[label]][ match(subs, demog$participant_id)]
   }
   # create and sort possible component combinations
   poss <- expand.grid(j = 1:numComponents, i = 1:numComponents)
@@ -782,11 +826,12 @@ makePlot <- function(label, aggregateBy, demo, numComponents, plotType, allMat){
 
 ## Plots {.tabset .tabset-fade .tabset-dropdown} 
 
+
 ### Age
 ```{r  age, fig.align="left"}
 plots <- makePlot(label = "age_reported",
                   aggregateBy = aggregateBy,
-                  demo = demo,
+                  demog = demog,
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
@@ -798,7 +843,7 @@ htmltools::tagList(plots)
 ```{r  gender, fig.align="left"}
 plots <- makePlot(label = "gender",
                   aggregateBy = aggregateBy,
-                  demo = demo,
+                  demog = demog,
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
@@ -810,7 +855,7 @@ htmltools::tagList(plots)
 ```{r  ethnicity, fig.align="left"}
 plots <- makePlot(label = "ethnicity",
                   aggregateBy = aggregateBy,
-                  demo = demo,
+                  demog = demog,
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
@@ -822,7 +867,7 @@ htmltools::tagList(plots)
 ```{r  race, fig.align="left"}
 plots <- makePlot(label = "race",
                   aggregateBy = aggregateBy,
-                  demo = demo,
+                  demog = demog,
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
@@ -834,7 +879,7 @@ htmltools::tagList(plots)
 ```{r  cohort, fig.align="left"}
 plots <- makePlot(label = "cohort",
                   aggregateBy = aggregateBy,
-                  demo = demo,
+                  demog = demog,
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
@@ -850,7 +895,7 @@ showTime <- aggregateBy == "subject-tp"
 ```{r  timePt, fig.align="left", eval = showTime}
 plots <- makePlot(label = "time",
                   aggregateBy = aggregateBy,
-                  demo = demo,
+                  demog = demog,
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
@@ -862,7 +907,7 @@ htmltools::tagList(plots)
 ```{r  byStudy, fig.align="left", eval = projLvl}
   plots <- makePlot(label = "study",
                     aggregateBy = aggregateBy,
-                    demo = demo,
+                    demog = demog,
                     numComponents = numComponents,
                     plotType = plotType,
                     allMat = allMat
@@ -891,7 +936,7 @@ re <- tryCatch(
 if(is.null(re$message)){
   plots <- makePlot(label = responseVar,
                     aggregateBy = aggregateBy,
-                    demo = demo,
+                    demog = demog,
                     numComponents = numComponents,
                     plotType = plotType,
                     allMat = allMat
@@ -909,7 +954,7 @@ imputed <- impute != "none"
 ```{r Imputed, fig.align="left", eval = imputed}
 plots <- makePlot(label = "imputed_values",
                   aggregateBy = aggregateBy,
-                  demo = demo,
+                  demog = demog,
                   numComponents = numComponents,
                   plotType = plotType,
                   allMat = allMat
@@ -917,7 +962,17 @@ plots <- makePlot(label = "imputed_values",
 htmltools::tagList(plots)
 ```
 
-
+`r if (projLvl) {"### Sample Type"}`
+```{r Sample, fig.align="left", eval = projLvl}
+plots <- makePlot(label = "sample_type",
+                  aggregateBy = aggregateBy,
+                  demog = demog,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+)
+htmltools::tagList(plots)
+```
 
 <script>
 window.HTMLWidgets.staticRender();
