@@ -2,7 +2,20 @@
 output: html_document
 ---
 
+```{r test, eval = TRUE, echo = FALSE}
+labkey.url.path="/Studies/"
+labkey.url.base="http://140.107.149.233:8080/"
+labkey.url.params <- list("assays"="fcs_analyzed_result",
+                          "timePts"="1 Days,7 Days",
+                          "responseVar"="hai",
+                          "filteredPids"="SUB112829.269;SUB112831.269;SUB112832.269;SUB112834.269;SUB112836.269;SUB112838.269;SUB112839.269;SUB112840.269;SUB112841.269;SUB112842.269;SUB112843.269;SUB112844.269;SUB112845.269;SUB112846.269;SUB112847.269;SUB112848.269;SUB112849.269;SUB112850.269;SUB112851.269;SUB112852.269;SUB112853.269;SUB112854.269;SUB112855.269;SUB112856.269;SUB112857.269;SUB112858.269;SUB112859.269;SUB112860.269;SUB112861.269;SUB112862.269;SUB112863.269;SUB112864.269;SUB112865.269;SUB112866.269;SUB112867.269;SUB112868.269;SUB112869.269;SUB112870.269;SUB112871.269;SUB112872.269;SUB112873.269;SUB112874.269;SUB112875.269;SUB112876.269;SUB112877.269;SUB112878.269;SUB112879.269;SUB112880.269;SUB112881.269;SUB112882.269;SUB112883.269;SUB112884.269;SUB112885.269;SUB112886.269;SUB112887.269;SUB112888.269;SUB119252.180;SUB119253.180;SUB119254.180;SUB119255.180;SUB119256.180;SUB119257.180;SUB119262.180;SUB119263.180;SUB119264.180;SUB119265.180;SUB119266.180;SUB119267.180;SUB119268.180;SUB119269.180;SUB119270.180;SUB119271.180;SUB119272.180;SUB119273.180;SUB119274.180;SUB119275.180;SUB119276.180;SUB119277.180;SUB119278.180;SUB119279.180;SUB119280.180;SUB119281.180;SUB119282.180;SUB119283.180;SUB119284.180;SUB119285.180;SUB119286.180;SUB119287.180;SUB119288.180;SUB119289.180;SUB119290.180;SUB119291.180;SUB119292.180;SUB119293.180;SUB119294.180;SUB119295.180;SUB119296.180;SUB119297.180;SUB153736.597;SUB153737.597;SUB153738.597;SUB153739.597;SUB153740.597;SUB153741.597;SUB153742.597;SUB153743.597;SUB153744.597;SUB153745.597;SUB153746.597;SUB153747.597;SUB153748.597;SUB153749.597;SUB153750.597;SUB153751.597;SUB153752.597;SUB153753.597;SUB153754.597;SUB153755.597;SUB71252.28;SUB71254.28;SUB71263.28;SUB71268.28;SUB71269.28;SUB71271.28;SUB71272.28;SUB71274.28;SUB71275.28;SUB71277.28;SUB71279.28;SUB71284.28;SUB71293.28;SUB71294.28;SUB71308.28;SUB71315.28;SUB71320.28;SUB71322.28;SUB71325.28;SUB71326.28;SUB71327.28;SUB71328.28;SUB71331.28;SUB71336.28;SUB71341.28;SUB71346.28;SUB71347.28;SUB71348.28;SUB71351.28;SUB71352.28;SUB71354.28;SUB71370.28;SUB71371.28;SUB71377.28;SUB71389.28;SUB71391.28;SUB71399.28;SUB71401.28;SUB71407.28;SUB71416.28;SUB71419.28;SUB71446.28;SUB71461.28;SUB71465.28;SUB71467.28;SUB71468.28;SUB71470.28;SUB71474.28;SUB71482.28;SUB71493.28;SUB71497.28;SUB71538.28;SUB71540.28;SUB71544.28;SUB71546.28;SUB71549.28;SUB71559.28;SUB71560.28;SUB71561.28;SUB71568.28;SUB71571.28;SUB71574.28;SUB71577.28;SUB71586.28;SUB71594.28;SUB71613.28;SUB71619.28;SUB71621.28;SUB71626.28;SUB71628.28;SUB71632.28;SUB71635.28;SUB71645.28;SUB71647.28;SUB71648.28;SUB71652.28;SUB71654.28;SUB71656.28;SUB71658.28;SUB71659.28;SUB71665.28;SUB71677.28;SUB71690.28;SUB71691.28;SUB71692.28;SUB71696.28;SUB71699.28;SUB71704.28;SUB71705.28;SUB71724.28;SUB71727.28;SUB71728.28;SUB71730.28;SUB71734.28;SUB71745.28;SUB71755.28;SUB71759.28;SUB71763.28;SUB71764.28;SUB71773.28;SUB71782.28;SUB71789.28;SUB71791.28;SUB71807.28;SUB71814.28;SUB71832.28;SUB71842.28;SUB71850.28;SUB71853.28;SUB71857.28;SUB71873.28;SUB71884.28;SUB71885.28;SUB71891.28;SUB71901.28;SUB71902.28;SUB71908.28;SUB71910.28;SUB71916.28;SUB71939.28;SUB71944.28;SUB71950.28;SUB71952.28;SUB71953.28;SUB71956.28;SUB71959.28;SUB71979.28;SUB71991.28;SUB71992.28;SUB71994.28;SUB72000.28;SUB72005.28;SUB72006.28;SUB72008.28;SUB72010.28;SUB72018.28;SUB72024.28;SUB72026.28;SUB72035.28;SUB72047.28;SUB72052.28;SUB72053.28;SUB72062.28;SUB72078.28;SUB72084.28;SUB72086.28;SUB72103.28;SUB72111.28;SUB72115.28;SUB72123.28;SUB72124.28;SUB72127.28;SUB72132.28;SUB72136.28;SUB72141.28;SUB72151.28;SUB72152.28;SUB72153.28;SUB72157.28;SUB72160.28;SUB72164.28;SUB72169.28;SUB72172.28;SUB72175.28;SUB72177.28;SUB72186.28;SUB72191.28;SUB72203.28;SUB72205.28;SUB72206.28;SUB72210.28;SUB72211.28;SUB72218.28;SUB72222.28;SUB72234.28;SUB72238.28;SUB72248.28;SUB72250.28;SUB72251.28;SUB72252.28;SUB72253.28;SUB72257.28;SUB72258.28;SUB72260.28;SUB72261.28;SUB72264.28;SUB72267.28;SUB72274.28;SUB72275.28;SUB72277.28;SUB72283.28;SUB72287.28;SUB72295.28;SUB72303.28;SUB72307.28;SUB72308.28;SUB72312.28",
+                          "plotType"="tSNE",
+                          "impute"="mean",
+                          "perplexity"="5",
+                          "aggregateBy"="subject-tp",
+                          "numComponents"="2")
 
+```
 <style>
   .tabset-dropdown > .nav-tabs > li.active:before {
     content: ">";
@@ -211,7 +224,7 @@ getSampleMetadata <- function(aData) {
                                   schemaName = "assay.ExpressionMatrix.matrix",
                                   queryName = "inputSamplesWithFeatures",
                                   colNameOpt = "fieldname",
-                                  # colFilter = pidsFilt,
+                                  colFilter = pidsFilt,
                                   colSelect = c("Biosample", "featureSet")))
     fas <- setDT(Rlabkey::labkey.selectRows(labkey.url.base, 
                                   labkey.url.path,
@@ -280,11 +293,21 @@ aggregateAssayData <- function(dat, aggregateBy) {
       })
       dat <- Reduce(function(x,y){ merge(x, y, by.x = c("participant_id"), by.y = c("participant_id")) }, dats)
   } else if ( aggregateBy == "subject-tp" ) { 
+    dat <- datByTp
     dat$sub_tp <- paste(dat$participant_id, dat$stc_key, sep = "_")
     dat <- dat[, -"stc_key"]
+    dat <- dat[, -grep("biosample_accession|participant_id", colnames(dat)), with = FALSE]
   }
   
   return(dat)
+}
+
+# return a matrix with rownames = participant_id and colnames = feature
+datToMat <- function(dat) {
+  featuresDT <- dat[, -grep("participant_id|sub_tp", colnames(dat)), with = FALSE]
+  featuresMat <- apply(featuresDT, 2, as.numeric)
+  rownames(featuresMat) <- unlist(dat[, grep("participant_id|sub_tp", colnames(dat)), with = FALSE])
+  return(featuresMat)
 }
 ```
 
@@ -301,6 +324,8 @@ con <- CreateConnection()
 # 2. If impute == "none", then assay data matrix is cut down to only subjects with
 # every assay * timepoint combination. This could be highly limiting in project level work.
 # 3. When there are multiple records for a subject at a timepoint, they are aggregated by mean. 
+# 4. When impute != "none", variables with > 80% of values missing (for included subjects) will be dropped
+# to limit imputation
 aData <- lapply(assays,
                 getAssayData,
                 con = con,
@@ -342,62 +367,19 @@ aData <- lapply(aData,
                 aggregateAssayData, 
                 aggregateBy = aggregateBy)
 
+# Change datasets to matrices (rownames = participant_id/sub_tp, colnames = feature)
+aData <- lapply(aData,
+                datToMat)
+
+# record of all subjects (before dropping for missing data)
+allSubs <- unique(unlist(lapply(aData, rownames)))
+```
+
+
+```{r missing_data, results="hide"}
+
 # Deal with missing data (impute and trim) ---------------------
-# Get subjects with missing feature data for plot colored by impute
-if (impute != "none") {
-  missingFeaturesList <- lapply(aData, function(dt){
-    missingFeatureCount <- apply(dt, 1, function(x)sum(is.na(x)))
-    data.table(missing = missingFeatureCount, subject = dt$participant_id)
-  })
-  
-  missingFeaturesDT <- Reduce(function(x,y){rbind(x,y)}, missingFeaturesList)
-  missing <- missingFeaturesDT[, .(missing = sum(missing)), subject]
-  missingFeaturesBySubject <- missing$missing
-  names(missingFeaturesBySubject) <- missing$subject
-  
-  missingSubjectsByFeature <- lapply(aData, function(df) {
-    apply(df, 2, function(x)(sum(is.na(x))))
-  })
-}
-
-# Impute missing values within each assay on per sample or sample_tp (column) basis if selected by user
-
-if(impute == "mean" | impute == "median"){
-  fn <- get(impute)
-  aData <- lapply(aData, function(df){
-    df <- apply(df, 2, function(x){
-      if( !grepl("SUB", x[[1]])){
-        x <- as.numeric(x)
-        x[ is.na(x) ] <- fn(x, na.rm = TRUE)
-      }
-      return(x)
-    })
-  })
-}else if(impute == "knn"){
-  library(impute)
-  # For impute.knn, data should be "An expression matrix
-  # with genes in rows, samples in columns"
-
-  aData <- lapply(aData, function(dt){ 
-    
-    # Transform into correct format
-    extraVar <- if(aggregateBy == "subject"){dt$participant_id}else{dt$sub_tp}
-    dt <- if(aggregateBy == "subject"){dt[-which(names(dt) == "participant_id")]}else{dt[-which(names(dt) == "participant_id")]}
-    
-    mat <- t(dt)
-    
-    # Impute
-    res <- impute::impute.knn(as.matrix(mat))
-    
-    # Transform back
-    res_df <- as.data.frame(t(res$data), stringsAsFactors = FALSE)
-    res_df$participant_id <- participant_ids 
-
-    return(res_df)
-  })
-  
-}else if(impute == "none"){
-  
+if ( impute == "none" ) {
   # when impute == "none", remove subjects with missing features
   aData <- lapply(aData, function(df){ 
     df <- df[ complete.cases(df), ]
@@ -409,23 +391,83 @@ if(impute == "mean" | impute == "median"){
   if (length(prbAssays) > 0 ) {
     prbAssays <- sapply(prbAssays, function(x){ 
       x <- switch(x,
-          "elisa" = "Elisa",
-          "elispot" = "Elispot",
-          "mbaa" = "MBAA",
-          "pcr" = "PCR",
-          "fcs_analyzed_result" = "Flow Cytometry",
-          "gene_expression_files" = "Gene Expression",
-          "hai" = "HAI",
-          "neut_ab_titer" = "Neutralizing Antibody Titer"
-        )
+                  "elisa" = "Elisa",
+                  "elispot" = "Elispot",
+                  "mbaa" = "MBAA",
+                  "pcr" = "PCR",
+                  "fcs_analyzed_result" = "Flow Cytometry",
+                  "gene_expression_files" = "Gene Expression",
+                  "hai" = "HAI",
+                  "neut_ab_titer" = "Neutralizing Antibody Titer"
+      )
     })
     stop(paste0("R Report Error: Some assays do not have any subjects with complete cases. Select an imputation method or remove problematic assays (", paste(prbAssays, collapse = ", "), ")."))
   }
 }
 
-# Find subs with all datasets
+if (impute != "none") {
+  
+  missingDataList <- lapply(aData, function(mat){
+    missingData <- is.na(mat)
+  })
+  
+  # Drop any features with > 80% missing values 
+  aData <- mapply(
+    function(mat, missingData) {
+      keepFeatures <- apply(missingData, 2, function(x){sum(x)/length(x) <= 0.8})
+      mat <- mat[, keepFeatures]
+      list(mat)
+    },
+    aData, 
+    missingDataList)
+  
+  # Drop any subjects with > 80% missing values
+  aData <- mapply(
+    function(mat, missingData) {
+      keepSubjects <- apply(missingData[, colnames(mat)], 1, function(x){sum(x)/length(x) <= 0.8})
+      mat <- mat[keepSubjects, ]
+      list(mat)
+    },
+    aData,
+    missingDataList
+  )
+  
+}
+
+
+# Impute missing values within each assay on per sample or sample_tp (column) basis if selected by user
+if(impute == "mean" | impute == "median"){
+  fn <- get(impute)
+  aData <- lapply(aData, function(mat){
+    mat <- apply(mat, 2, function(x){
+      x[ is.na(x) ] <- fn(x, na.rm = TRUE)
+      return(x)
+    })
+  })
+}else if(impute == "knn"){
+  library(impute)
+  # For impute.knn, data should be "An expression matrix
+  # with genes in rows, samples in columns"
+
+  aData <- lapply(aData, function(mat){ 
+    
+    # Impute
+    res <- impute::impute.knn(t(mat))
+    
+    # Transform back
+    mat <- t(res$data)
+
+    return(mat)
+  })
+  
+}
+```
+
+```{r combine_and_prep, results="hide"}
+
+# Find subs with all datasets (drop subjects without all datasets AFTER imputation)
 subs <- lapply(aData, function(x){
-  x[, grep("sub_tp|participant_id", colnames(x)), with = FALSE]
+  rownames(x)
 })
 numSubs <- table(unlist(subs))
 subs <- names(numSubs)[ numSubs == length(aData) ]
@@ -434,26 +476,12 @@ if(length(subs) < 2){
   stop("R Report Error: Fewer than two subjects available for analysis across all assays. Select imputation method other than 'None' and retry.")
 }
 
-if (impute != "none") {
-  # Subset imputation info to only included subjects
-  missingFeaturesBySubject <- missingFeaturesBySubject[subs]
-}
-
-# Remove subs without all datasets and order for cbind
-aData <- lapply(aData, function(x){
-  x <- data.frame(x, stringsAsFactors = FALSE) # imputation may change class
-  nmsCol <- grep("sub_tp|participant_id", colnames(x), value = T)
-  x <- x[ x[[nmsCol]] %in% subs, ]
-  x <- x[ order(match(x[[nmsCol]], subs)), ]
-  x <- x[, -grep(nmsCol, colnames(x)), drop = FALSE ] # ensure remains df in case only one feature
-})
-
-# combine
-allMat <- Reduce(function(x,y){cbind(x,y)}, aData)
-rownames(allMat) <- subs
+# combine, including only subs with all datasets
+allMat <- Reduce(function(x,y){cbind(x[subs,],y[subs,])}, aData)
+allMat <- allMat[subs, ]
 
 # normalize after ensuring numeric
-allMat <- scale(apply(allMat, 2, as.numeric))
+allMat <- scale(allMat)
 
 # remove any features that have no variance
 noVariance <- apply(allMat, 2, function(x){ return(length(unique(x)) == 1)})
@@ -486,7 +514,14 @@ demog <- merge(demog, immex[, .(subject_accession, disease_reported, disease_sta
 
 if (impute != "none") {
   # Add number of of imputed features to demog
-  demog$imputed_values <- missingFeaturesBySubject[demog$participant_id]
+  # 
+  allImputeMat <- Reduce(function(x,y){cbind(x[subs,],y[subs,])}, missingDataList)
+  allImputeMat <- allImputeMat[subs,] # subset to only good subs if length(missingDataList) == 1
+  droppedFeatureCount <- dim(allImputeMat)[2] - dim(allMat)[2] - sum(noVariance)
+  allImputeMat <- allImputeMat[, colnames(allMat)]
+  imputed_values <- apply(allImputeMat, 1, sum)
+  
+  demog[, imputed_values := imputed_values[participant_id]]
 }
 
 if (projLvl) {
@@ -499,6 +534,8 @@ if (projLvl) {
 
 # Replace NA values with "Not Specified"
 demog[is.na(demog)] <- "Not Specified"
+# Make sure numeric columns are numeric
+demog[, c("age_reported", "imputed_values") := .(as.numeric(age_reported), as.numeric(imputed_values))]
 ```
 
 
@@ -523,12 +560,15 @@ partial data for the timepoint (e.g. some hai strains but not others).
 
 - **Number of Observations (Subjects)**: `r dim(allMat)[1]`
 - **Number of Observations Removed due to missing data**: `r length(numSubs[ numSubs < length(aData)])`
+- **Number of Observations Removed due to missing features**: `r length(allSubs) - length(numSubs[ numSubs < length(aData)]) - length(subs)`
 - **Number of Features Used (Assay Data)**: `r dim(allMat)[2]`
 - **Number of Features Removed Due to Lack of Variance**: `r sum(noVariance)`
 
 
-`r if ( impute != "none" ) {paste0("- **Number of Observations with imputed values**: ", sum(missingFeaturesBySubject > 0))}`
-`r if ( impute != "none" ) {paste0("- **Total Number of Imputed Values**: ", sum(missingFeaturesBySubject))}`
+`r if ( impute != "none" ) {paste0("- **Number of Observations with imputed values**: ", sum(imputed_values > 0))}`
+`r if ( impute != "none" ) {paste0("- **Number of Features with imputed values**: ", sum(apply(allImputeMat, 2, sum) > 0))}`
+`r if ( impute != "none" ) {paste0("- **Total Number of Imputed Values**: ", sum(allImputeMat))}`
+`r if ( impute != "none" ) {paste0("- **Number of Features Removed Due to Lack of Data**: ", droppedFeatureCount)}`
 
 
 ```{r plot helpers}
@@ -771,7 +811,7 @@ if(is.null(re$message)){
 ```
 
 `r if (plotLabels$imputed_values) {"### Imputed Values"}`
-```{r Imputed, fig.align="left", eval = plotLabels$imputed_values}
+```{r Imputed, fig.align="left", eval = FALSE}
 plots <- makePlot(label = "imputed_values",
                   aggregateBy = aggregateBy,
                   demog = demog,
