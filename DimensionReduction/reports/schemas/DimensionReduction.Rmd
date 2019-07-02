@@ -307,7 +307,7 @@ aData <- lapply(assays,
                 pidsFilt = pidsFilt,
                 filteredPids = filteredPids,
                 timePts = timePts)
-# aData <- get(load("~/aData_orig.RD  ata"))
+# aData <- get(load("~/aData_orig.RData"))
 names(aData) <- assays
 
 # Check aData to be sure non-null
@@ -425,7 +425,7 @@ if(impute == "mean" | impute == "median"){
 
 # Find subs with all datasets
 subs <- lapply(aData, function(x){
-  x[, grep("sub_tp|participant_id", colnames(x))]
+  x[, grep("sub_tp|participant_id", colnames(x)), with = FALSE]
 })
 numSubs <- table(unlist(subs))
 subs <- names(numSubs)[ numSubs == length(aData) ]
@@ -496,6 +496,9 @@ if (projLvl) {
                  all.x = TRUE,
                  all.y = FALSE)
 }
+
+# Replace NA values with "Not Specified"
+demog[is.na(demog)] <- "Not Specified"
 ```
 
 
@@ -782,6 +785,55 @@ htmltools::tagList(plots)
 `r if (plotLabels$sample_type) {"### Sample Type"}`
 ```{r Sample, fig.align="left", eval = plotLabels$sample_type}
 plots <- makePlot(label = "sample_type",
+                  aggregateBy = aggregateBy,
+                  demog = demog,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+)
+htmltools::tagList(plots)
+```
+
+
+`r if (plotLabels$fas_name) {"### Feature Annotation Set"}`
+```{r FAS, fig.align="left", eval = plotLabels$fas_name}
+plots <- makePlot(label = "fasName",
+                  aggregateBy = aggregateBy,
+                  demog = demog,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+)
+htmltools::tagList(plots)
+```
+
+`r if (plotLabels$fas_vendor) {"### FAS Vendor"}`
+```{r fasVendor, fig.align="left", eval = plotLabels$fas_vendor}
+plots <- makePlot(label = "fasVendor",
+                  aggregateBy = aggregateBy,
+                  demog = demog,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+)
+htmltools::tagList(plots)
+```
+
+`r if (plotLabels$immune_exposure) {"### Immune Exposure Material"}`
+```{r immune_exposure, fig.align="left", eval = plotLabels$immune_exposure}
+plots <- makePlot(label = "exposure_material_reported",
+                  aggregateBy = aggregateBy,
+                  demog = demog,
+                  numComponents = numComponents,
+                  plotType = plotType,
+                  allMat = allMat
+)
+htmltools::tagList(plots)
+```
+
+`r if (plotLabels$immune_exposure_type) {"### Immune Exposure Type"}`
+```{r immune_exposure_type, fig.align="left", eval = plotLabels$immune_exposure_type}
+plots <- makePlot(label = "exposure_process_reported",
                   aggregateBy = aggregateBy,
                   demog = demog,
                   numComponents = numComponents,
