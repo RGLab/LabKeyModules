@@ -132,6 +132,8 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 labels_help = 'Demographic data that can be used to label the scatter plot values from either a PCA or tSNE analysis.',
                 plotTypes_help = 'Either Principle Components Analysis (PCA) or t-distributed Stochastic Neighbor Embedding (tSNE)'
                 perplexity_help = 'Parameter passed to Rtsne',
+                numNeighbors_help = 'Number of neighboring sample points. Larger numbers result in more global views, '+ 
+                                    'while smaller numbers result in more local structure being preserved',
                 numComponents_help = 'Number of PCA components to plot pairwise',
                 impute_help = "Method for imputing missing (NA) values within a single feature in an assay",
                 response_help = "Immune response data that can be used for labels if present"
@@ -163,6 +165,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                         // User Selected Additional Options
                         perplexity:             nmPerplexity.getValue(),
                         numComponents:          nmNumComponents.getValue(),
+                        numNeighbors:           nmNumNeighbors.getValue(),
                         impute:                 rgImpute.getValue().value,
                         responseVar:            rgResponse.getValue().value
                     };
@@ -383,7 +386,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 allowBlank: false,
                 fieldLabel: 'Plot type',
                 width: fieldWidth,
-                columns: 2,
+                columns: 3,
                 items: [
                     {
                         boxLabel: 'PCA',
@@ -396,6 +399,11 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                         inputValue: 'tSNE',
                         name: 'plotType',
                         value: 'tSNE'
+                    },{
+                        boxLabel: 'UMAP',
+                        inputValue: 'UMAP',
+                        name: 'plotType',
+                        value: 'UMAP'
                     }
                 ],
                 value: 'PCA',
@@ -404,8 +412,13 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                     change:     function(){
                         if(this.getValue().value == "tSNE"){
                             nmPerplexity.enable();
+                            nmNumNeighbors.disable();
+                        }else if (this.getValue().value == "UMAP"){
+                            nmPerplexity.disable();
+                            nmNumNeighbors.enable();
                         }else{
                             nmPerplexity.disable();
+                            nmNumNeighbors.disable();
                         }
                         checkBtnsStatus;
                     },
@@ -424,6 +437,18 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 disabled: true,
                 cls: 'ui-test-perplexity'
             });
+
+            var nmNumNeighbors = new Ext.form.NumberField({
+                allowBlank: false,
+                fieldLabel: 'UMAP - Neighborhood Size',
+                width: fieldWidth,
+                value: 15,
+                maxValue: 100,
+                minValue: 2,
+                hidden: false,
+                disabled: true,
+                cls: 'ui-test-nneighbors'
+            })
 
             var nmNumComponents = new Ext.form.NumberField({
                 allowBlank: false,
@@ -510,6 +535,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 collapsible: true,
                 items: [
                     LABKEY.ext.ISCore.factoryTooltipWrapper( nmPerplexity, 'tSNE perplexity', perplexity_help ),
+                    LABKEY.ext.ISCore.factoryTooltipWrapper( nmNumNeighbors, 'UMAP Neighborhood Size', numNeighbors_help),
                     LABKEY.ext.ISCore.factoryTooltipWrapper( nmNumComponents, 'PCA components to plot', numComponents_help ),
                     LABKEY.ext.ISCore.factoryTooltipWrapper( rgImpute, 'Impute', impute_help),
                     LABKEY.ext.ISCore.factoryTooltipWrapper( rgResponse, 'Response', response_help)

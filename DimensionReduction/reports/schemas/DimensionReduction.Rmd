@@ -2,7 +2,6 @@
 output: html_document
 ---
 
-
 <style>
   .tabset-dropdown > .nav-tabs > li.active:before {
     content: ">";
@@ -37,6 +36,7 @@ library(tidyr)
 library(data.table)
 library(plotly)
 library(Rtsne)
+library(uwot)
 ```
 
 ```{r params}
@@ -54,6 +54,7 @@ library(Rtsne)
   numComponents <- as.integer(labkey.url.params$numComponents)
   impute <- labkey.url.params$impute
   responseVar <- labkey.url.params$responseVar
+  numNeighbors <- as.integer(labkey.url.params$numNeighbors)
 ```
 
 ```{r pidsFilter}
@@ -567,7 +568,13 @@ genPlot <- function(i, j, resObj, type, prettyLbl, colorCol){
                      stringsAsFactors = FALSE)
     x_annotation <- ""
     y_annotation <- ""
-  }else{
+  }else if (type == "UMAP"){
+    df <- data.frame(x = resObj[,i],
+                     y = resObj[,j],
+                     stringsAsFactors = FALSE)
+    x_annotation <- ""
+    y_annotation <- ""
+  } else{
     df <- data.frame(x = resObj$x[, paste0("PC",i)],
                      y = resObj$x[, paste0("PC",j)],
                      stringsAsFactors = FALSE)
@@ -640,6 +647,10 @@ makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat)
   poss <- poss[ !duplicated(poss$test), ]
 
   # Run analysis and get pieces together for plotting
+  # Note: for UMAP, using the package uwot (https://github.com/jlmelville/uwot). umap (https://github.com/tkonopka/umap) is
+  # is also a valid option but uwot seems to be more active. Both are on CRAN. umapr (https://github.com/ropenscilabs/umapr)
+  # was the first R implementation but it is not actively developed and includes some bugs. Also, the other packages have R-only
+  # options whereas umapr is just a python wrapper. 
   if(plotType == "tSNE"){
     # perplexity * 2 < nrow(x) - 1
     if (perplexity > (nrow(allMat) - 1)/3) {
@@ -653,6 +664,10 @@ makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat)
     }
     tRes <- Rtsne::Rtsne(allMat, dims = numComponents, perplexity = perplexity)
     moreArgs <- list(resObj = tRes, type = "tSNE", prettyLbl = prettyLbl, colorCol = colorCol)
+  }else if (plotType == "UMAP"){
+    set.seed(8)
+    umap <- uwot::umap(allMat, n_neighbors = numNeighbors, n_components = numComponents)
+    moreArgs <- list(resObj = umap, type = "UMAP", prettyLbl = prettyLbl, colorCol = colorCol)
   }else{
     pca <- prcomp(allMat)
     moreArgs <- list(resObj = pca, type = "PCA", prettyLbl = prettyLbl, colorCol = colorCol)
@@ -880,3 +895,4 @@ htmltools::tagList(plots)
 window.HTMLWidgets.staticRender();
 </script>
 
+      
