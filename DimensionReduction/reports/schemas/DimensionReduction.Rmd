@@ -2,6 +2,7 @@
 output: html_document
 ---
 
+
 <style>
   .tabset-dropdown > .nav-tabs > li.active:before {
     content: ">";
@@ -564,10 +565,14 @@ genPlot <- function(i, j, resObj, type, prettyLbl, colorCol){
     df <- data.frame(x = resObj$Y[,i],
                      y = resObj$Y[,j],
                      stringsAsFactors = FALSE)
+    x_annotation <- ""
+    y_annotation <- ""
   }else{
     df <- data.frame(x = resObj$x[, paste0("PC",i)],
                      y = resObj$x[, paste0("PC",j)],
                      stringsAsFactors = FALSE)
+    x_annotation <- paste0(" (", round(summary(resObj)$importance["Proportion of Variance", i]*100, 2), "%)")
+    y_annotation <- paste0(" (", round(summary(resObj)$importance["Proportion of Variance", j]*100, 2), "%)")
   }
 
   p <- plot_ly(data = df,
@@ -579,8 +584,8 @@ genPlot <- function(i, j, resObj, type, prettyLbl, colorCol){
                color = colorCol,
                hoverinfo = 'text',
                text = paste(prettyLbl, ": ", colorCol, "<br>ID: ", subs)) %>%
-    layout(xaxis = list(title = paste0(type, i)),
-           yaxis = list(title = paste0(type, j)),
+    layout(xaxis = list(title = paste0(type, i, x_annotation)),
+           yaxis = list(title = paste0(type, j, y_annotation)),
            annotations = list(yref = 'paper',
                               xref = 'paper',
                               y = 1.02,
