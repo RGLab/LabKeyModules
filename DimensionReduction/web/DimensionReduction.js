@@ -131,7 +131,9 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 timepoints_help = 'The official study time collected value.',
                 labels_help = 'Demographic data that can be used to label the scatter plot values from either a PCA or tSNE analysis.',
                 plotTypes_help = 'Either Principle Components Analysis (PCA) or t-distributed Stochastic Neighbor Embedding (tSNE)'
-                perplexity_help = 'Parameter passed to Rtsne',
+                perplexity_help = 'tSNE perplexity. This number is related to the balance of local vs global structure and is '+ 
+                                  'a general guess about the number of close neighbors each point has. '+
+                                  'Different perplexity values can alter the perception of clusters in the result.',
                 numNeighbors_help = 'Number of neighboring sample points. Larger numbers result in more global views, '+ 
                                     'while smaller numbers result in more local structure being preserved',
                 numComponents_help = 'Number of PCA components to plot pairwise',
@@ -731,12 +733,29 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to automatically run a PCA or tSNE dimension reduction analysis on selected study assay data and represent the resulting points with demographic-based labels for determining possible QC/QA concerns.',
+                            html: 'This module can be used to automatically run a PCA, tSNE, or UMAP dimension reduction analysis on' +
+                                  ' selected study assay data and represent the resulting points with labels' +
+                                  ' for determining possible QC/QA concerns.',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: 'Text about PCA and tSNE resources here.',
+                            html: '<p>Dimension Reduction is a technique for visualizing and analyzing high-dimensional data '+
+                                  'by reducing it to a smaller number of dimensions. It can be used as a quality control step to '+
+                                  'identify clustering in data which could indicate issues like batch effects which could make it '+
+                                  'hard to analyze without further correction. There are many different dimension reduction techniques '+
+                                  'which have been developed. This module implements three: Principal Component Analysis (PCA), '+
+                                  't-Distributed Stochastic Neighbor Embedding (tSNE), and Uniform Manifold Approximation and Projection (UMAP). </p>'+
+                                  '<p>PCA is a linear dimension reduction technique. As a linear model, its strength is in preserving global structure. '+
+                                  'It creates "principal components", which are linear combinations of the original dimensions, in order of the amount '+
+                                  'of variation explained by each component. The returned plots in this module include the percent of variation '+
+                                  'explained by the components in the axes.</p>'+
+                                  '<p>tSNE is a model described <a href="https://lvdmaaten.github.io/publications/papers">here</a>. '+
+                                  'It is a nonlinear technique which is well-suited to showing local clustering. tSNE plots points '+
+                                  'close together that are close together in high-dimensional space with high likelihood. </p>'+
+                                  '<p>UMAP is a model described <a href ="https://arxiv.org/pdf/1802.03426.pdf">here</a>. '+
+                                  'It is also a nonlinear technique which is comparable to tSNE in showing local clustering while '+
+                                  'generally doing a better job of maintaining global structure, and is much faster computationally than tSNE. </p>',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),
