@@ -558,6 +558,8 @@ partial data for the timepoint (e.g. some hai strains but not others).
 `r if ( impute != "none" ) {paste0("- **Total Number of Imputed Values**: ", sum(allImputeMat))}`
 `r if ( impute != "none" ) {paste0("- **Number of Features Removed Due to Lack of Data**: ", droppedFeatureCount)}`
 
+---
+
 
 ```{r plot helpers}
 # helper for iterating through multiple components
@@ -682,9 +684,9 @@ makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat)
 }
 ```
 
-## Plots {.tabset .tabset-fade .tabset-dropdown} 
 
-```{r getPlots}
+
+```{r getPlotInfo}
 re <- tryCatch(
   con$getdataset(responseVar, original_view = TRUE),
   warning = function(w) return(w),
@@ -692,204 +694,94 @@ re <- tryCatch(
 )
 IRcondition <- is.null(re$message)
 
-plotLabels <- list("age_reported" = TRUE,
-                "gender" = TRUE,
-                "ethnicity" = TRUE,
-                "race" = TRUE,
-                "cohort" = TRUE,
-                "study" = projLvl,
-                "time" = aggregateBy == "subject-tp",
-                "immune_response" = IRcondition,
-                "imputed_values" = impute != "none",
-                "sample_type" = projLvl,
-                "fas_name" = projLvl & "gene_expression_files" %in% assays,
-                "fas_vendor"= projLvl & "gene_expression_files" %in% assays,
-                "immune_exposure" = projLvl,
-                "immune_exposure_type" = projLvl)
+plotInfo <- list(list(plot = TRUE, name = "Age", label = "age_reported"),
+                 list(plot = TRUE, name = "Gender", label = "gender"),
+                 list(plot = TRUE, name = "Ethnicity", label = "ethnicity"),
+                 list(plot = TRUE, name = "Race", label = "race"),
+                 list(plot = TRUE, name = "Cohort", label = "cohort"),
+                 list(plot = projLvl, name = "Study", label = "study"),
+                 list(plot = aggregateBy == "subject-tp", name = "Time", label = "time"),
+                 list(plot = IRcondition, name = "Immune Response", label = "time"),
+                 list(plot = impute != "none", name = "Imputed Values", label = "imputed_values"),
+                 list(plot = projLvl, name = "Sample Type", label = "sample_type"),
+                 list(plot = projLvl & "gene_expression_files" %in% assays, name = "Feature Annotation Set", label = "fas_name"),
+                 list(plot = projLvl & "gene_expression_files" %in% assays, name = "FAS Vendor", label = "fas_vendor"),
+                 list(plot = projLvl, name = "Exposure Material", label = "exposure_material_reported"),
+                 list(plot = projLvl, name = "Immune Exposure Process", label = "exposure_process_reported"))
+
 ```
 
 
+<!-- Using some techniques from http://www.java2s.com/Tutorials/HTML_CSS/Bootstrap_Example/Tab/Link_dropdown_menu_and_tab_content.htm -->
+<!-- to hack Rmd... -->
 
-`r if (plotLabels$age_reported) {"### Age"}`
-```{r  Age, fig.align="left", eval = plotLabels$age_reported}
-  plots <- makePlot(label = "age_reported",
-                    aggregateBy = aggregateBy,
-                    demog = demog,
-                    numComponents = numComponents,
-                    plotType = plotType,
-                    allMat = allMat
-  )
-  htmltools::tagList(plots)
-```
-
-`r if (plotLabels$gender) {"### Gender"}`
-```{r  gender, fig.align="left", eval = plotLabels$gender}
-plots <- makePlot(label = "gender",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
-```
-
-`r if (plotLabels$ethnicity) {"### Ethnicity"}`
-```{r  ethnicity, fig.align="left", eval = plotLabels$ethnicity}
-plots <- makePlot(label = "ethnicity",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
-```
-
-`r if (plotLabels$race) {"### Race"}`
-```{r  race, fig.align="left", eval = plotLabels$race}
-plots <- makePlot(label = "race",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
-```
-
-
-`r if (plotLabels$study) {"### Study"}`
-```{r  study, fig.align="left", eval = plotLabels$study}
-plots <- makePlot(label = "study",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
-```
-
-`r if (plotLabels$cohort) {"### Cohort"}`
-```{r  cohort, fig.align="left", eval = plotLabels$cohort}
-plots <- makePlot(label = "cohort",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
-```
-
-`r if (plotLabels$time) {"### Timepoint"}`
-```{r  timePt, fig.align="left", eval = plotLabels$time}
-plots <- makePlot(label = "time",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
-```
-
-`r if (plotLabels$immune_response) {"### Immune Response"}`
-`r if (plotLabels$immune_response) {"Note: Not all subjects may have immune repsonse data"}`
-
-```{r IR, fig.align="left", eval = plotLabels$immune_response}
-re <- tryCatch(
-  con$getDataset(responseVar, original_view = T),
-  warning = function(w) return(w),
-  error = function(e) return(e)
-)
-if(is.null(re$message)){
-  plots <- makePlot(label = responseVar,
-                    aggregateBy = aggregateBy,
-                    demog = demog,
-                    numComponents = numComponents,
-                    plotType = plotType,
-                    allMat = allMat
-  )
-  htmltools::tagList(plots)
-}else{
-  cat(paste0("Response variable ", responseVar, " returns empty data frame from study.  Data is not available for given participants."))
-}
-```
-
-`r if (plotLabels$imputed_values) {"### Imputed Values"}`
-```{r Imputed, fig.align="left", eval = plotLabels$imputed_values}
-plots <- makePlot(label = "imputed_values",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
-```
-
-`r if (plotLabels$sample_type) {"### Sample Type"}`
-```{r Sample, fig.align="left", eval = plotLabels$sample_type}
-plots <- makePlot(label = "sample_type",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
+```{r Plots}
+library(htmltools)
+div(id = "plots",
+    div(
+          
+          # Dropdown menu -----------------
+      div(class = "btn-group",
+          tags$button(class = "dropdown-toggle",
+                      "data-toggle" = "dropdown",
+                      "Select Plot Type",
+                      span(class = "caret")),
+          tags$ul(class = "dropdown-menu",
+                  tags$li(class = "active",
+                          tags$a(href = paste0("#",names(plotInfo[[1]]$label)),
+                                 "data-toggle" = "tab",
+                                 plotInfo[[1]]$name)),
+                  tagList(
+                    lapply(plotInfo[-1],
+                           function(thisPlotInfo){
+                             if (thisPlotInfo$plot) {
+                               tags$li(class = "",
+                                       tags$a(href = paste0("#",thisPlotInfo$label),
+                                              "data-toggle" = "tab",
+                                              thisPlotInfo$name))
+                             }
+                           }))
+          )),
+      div(class = "tab-content",
+          div(id = plotInfo[[1]]$label, class = "tab-pane active",
+              h2(plotInfo[[1]]$name),
+              makePlot(label = plotInfo[[1]]$label,
+                       aggregateBy = aggregateBy,
+                       demog = demog,
+                       numComponents = numComponents,
+                       plotType = plotType,
+                       allMat = allMat
+              )),
+          tagList(
+            lapply(plotInfo[-1], 
+                   function(thisPlotInfo){
+                     if (thisPlotInfo$plot) {
+                       tags$div(id = thisPlotInfo$label, class = "tab-pane",
+                                h2(thisPlotInfo$name),
+                                makePlot(label = thisPlotInfo$label,
+                                         aggregateBy = aggregateBy,
+                                         demog = demog,
+                                         numComponents = numComponents,
+                                         plotType = plotType,
+                                         allMat = allMat
+                                ))
+                     }
+                     
+                   })))
+    ))
 ```
 
 
-`r if (plotLabels$fas_name) {"### Feature Annotation Set"}`
-```{r FAS, fig.align="left", eval = plotLabels$fas_name}
-plots <- makePlot(label = "fasName",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
-```
+<script type='text/javascript'>
+// This makes the dropdown work
+$('a[data-toggle="tab"]').click(function (e) {
+    $('.dropdown-menu li.active').removeClass('active');
+    $(this).parent('li').addClass('active');
+    $('.tab-content div.active').removeClass('active');
+    $($(this).attr("href")).addClass('active');
+})
+</script>
 
-`r if (plotLabels$fas_vendor) {"### FAS Vendor"}`
-```{r fasVendor, fig.align="left", eval = plotLabels$fas_vendor}
-plots <- makePlot(label = "fasVendor",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
-```
-
-`r if (plotLabels$immune_exposure) {"### Immune Exposure Material"}`
-```{r immune_exposure, fig.align="left", eval = plotLabels$immune_exposure}
-plots <- makePlot(label = "exposure_material_reported",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
-```
-
-`r if (plotLabels$immune_exposure_type) {"### Immune Exposure Type"}`
-```{r immune_exposure_type, fig.align="left", eval = plotLabels$immune_exposure_type}
-plots <- makePlot(label = "exposure_process_reported",
-                  aggregateBy = aggregateBy,
-                  demog = demog,
-                  numComponents = numComponents,
-                  plotType = plotType,
-                  allMat = allMat
-)
-htmltools::tagList(plots)
-```
 
 <script>
 window.HTMLWidgets.staticRender();
