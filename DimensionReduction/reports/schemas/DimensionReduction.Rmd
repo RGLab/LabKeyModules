@@ -2,6 +2,7 @@
 output: html_document
 ---
 
+
 <style>
   .tabset-dropdown > .nav-tabs > li.active:before {
     content: ">";
@@ -29,6 +30,7 @@ output: html_document
 
 </style>
 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(ImmuneSpaceR)
@@ -37,6 +39,7 @@ library(data.table)
 library(plotly)
 library(Rtsne)
 library(uwot)
+library(htmltools)
 ```
 
 ```{r params}
@@ -370,7 +373,16 @@ allSubs <- unique(unlist(lapply(aData, rownames)))
 if ( impute == "none" ) {
   # when impute == "none", remove subjects with missing features
   aData <- lapply(aData, function(df){ 
-    df <- df[ complete.cases(df), ]
+    # when there is only one column this will transform df to a numeric vector
+    # so add extra column...
+    if (ncol(df) == 1) {
+      colname <- colnames(df)
+      df <- t(t(df[ which(complete.cases(df)), ]))
+      colnames(df) <- colname 
+      df
+    } else {
+      df <- df[ which(complete.cases(df)), ]
+    }
   })
   
   # Are there any assays which do not have any subjects without missing features?
@@ -715,73 +727,80 @@ plotInfo <- list(list(plot = TRUE, name = "Age", label = "age_reported"),
 <!-- Using some techniques from http://www.java2s.com/Tutorials/HTML_CSS/Bootstrap_Example/Tab/Link_dropdown_menu_and_tab_content.htm -->
 <!-- to hack Rmd... -->
 
-```{r Plots}
-library(htmltools)
-div(id = "plots",
-    div(
-          
-          # Dropdown menu -----------------
-      div(class = "btn-group",
-          tags$button(class = "dropdown-toggle",
-                      "data-toggle" = "dropdown",
-                      "Select Plot Type",
-                      span(class = "caret")),
-          tags$ul(class = "dropdown-menu",
-                  tags$li(class = "active",
-                          tags$a(href = paste0("#",names(plotInfo[[1]]$label)),
-                                 "data-toggle" = "tab",
-                                 plotInfo[[1]]$name)),
-                  tagList(
-                    lapply(plotInfo[-1],
-                           function(thisPlotInfo){
-                             if (thisPlotInfo$plot) {
-                               tags$li(class = "",
-                                       tags$a(href = paste0("#",thisPlotInfo$label),
-                                              "data-toggle" = "tab",
-                                              thisPlotInfo$name))
-                             }
-                           }))
-          )),
-      div(class = "tab-content",
-          div(id = plotInfo[[1]]$label, class = "tab-pane active",
-              h2(plotInfo[[1]]$name),
-              makePlot(label = plotInfo[[1]]$label,
-                       aggregateBy = aggregateBy,
-                       demog = demog,
-                       numComponents = numComponents,
-                       plotType = plotType,
-                       allMat = allMat
-              )),
-          tagList(
-            lapply(plotInfo[-1], 
-                   function(thisPlotInfo){
-                     if (thisPlotInfo$plot) {
-                       tags$div(id = thisPlotInfo$label, class = "tab-pane",
-                                h2(thisPlotInfo$name),
-                                makePlot(label = thisPlotInfo$label,
-                                         aggregateBy = aggregateBy,
-                                         demog = demog,
-                                         numComponents = numComponents,
-                                         plotType = plotType,
-                                         allMat = allMat
-                                ))
-                     }
-                     
-                   })))
-    ))
+<div id="plots">
+<div class="dropdown">
+<button class="dropdown-toggle" type="button" data-toggle="dropdown">
+Select Plot Type
+<span class="caret"></span>
+</button>
+<ul class="dropdown-menu">
+      
+```{r}
+tagList(
+  lapply(plotInfo,
+         function(thisPlotInfo){
+           if (thisPlotInfo$name == "Age"){
+             tags$li(class = "active",
+                     tags$a(href = paste0("#",thisPlotInfo$label),
+                            class = "dropdown-tab",
+                            thisPlotInfo$name))
+           } else if (thisPlotInfo$plot) {
+               tags$li(class = "",
+                       tags$a(href = paste0("#",thisPlotInfo$label),
+                              class = "dropdown-tab",
+                              thisPlotInfo$name))
+           }
+           
+         }))
 ```
+      
+</ul>
+</div>
+<div class="tab-content">
+    
+```{r}
+tagList(
+  lapply(plotInfo, 
+         function(thisPlotInfo){
+           if (thisPlotInfo$name == "Age") {
+             div(id = plotInfo$label, class = "tab-pane active",
+                 h2(thisPlotInfo$name),
+                 makePlot(label = thisPlotInfo$label,
+                          aggregateBy = aggregateBy,
+                          demog = demog,
+                          numComponents = numComponents,
+                          plotType = plotType,
+                          allMat = allMat))
+           } else {
+             if (thisPlotInfo$plot) {
+               tags$div(id = thisPlotInfo$label, class = "tab-pane",
+                        h2(thisPlotInfo$name),
+                        makePlot(label = thisPlotInfo$label,
+                          aggregateBy = aggregateBy,
+                          demog = demog,
+                          numComponents = numComponents,
+                          plotType = plotType,
+                          allMat = allMat))
+             }
+           }
+         })
+)
+```
+</div>
+</div>
+
+
 
 
 <script type='text/javascript'>
-// This makes the dropdown work
-$('a[data-toggle="tab"]').click(function (e) {
+// This makes the dropdown work  
+$('.dropdown-tab').click(function (e) {
     $('.dropdown-menu li.active').removeClass('active');
     $(this).parent('li').addClass('active');
     $('.tab-content div.active').removeClass('active');
     $($(this).attr("href")).addClass('active');
 })
 </script>
-
 
 <script>
 window.HTMLWidgets.staticRender();
