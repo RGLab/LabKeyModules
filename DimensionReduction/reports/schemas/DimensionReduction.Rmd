@@ -37,22 +37,6 @@ library(plotly)
 library(Rtsne)
 ```
 
-```{r testing, eval = TRUE}
-labkey.url.base <- "http://140.107.149.233:8080"
-labkey.url.path <- "/Studies"
-labkey.url.params <- list(
-  filteredPids = "SUB118148.144;SUB118151.144;SUB118153.144;SUB118155.144;SUB118156.144;SUB118157.144;SUB118158.144;SUB118161.144;SUB118164.144;SUB118167.144;SUB118168.144;SUB118169.144;SUB118170.144;SUB118171.144;SUB118174.144;SUB118176.144;SUB118183.144",
-  timeAs = "variable",
-  responseVar = "hai",
-  plotType = "PCA",
-  timePts = c("0 Days"),
-  perplexity = 5,
-  numComponents = 2,
-  impute = "knn",
-  assays = c("fcs_analyzed_result","gene_expression_files","hai","neut_ab_titer")
-)
-```
-
 ```{r params}
   # Non-User Selected Params
   filteredPids <- labkey.url.params$filteredPids
