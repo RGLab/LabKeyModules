@@ -3,6 +3,7 @@ output: html_document
 ---
 
 
+
 <style>
   .tabset-dropdown > .nav-tabs > li.active:before {
     content: ">";
@@ -476,12 +477,34 @@ if(length(subs) < 2){
   stop("R Report Error: Fewer than two subjects available for analysis across all assays. Select imputation method other than 'None' and retry.")
 }
 
+# Standardize: 
+# Unless GE, center then scale so each feature has a variance of 1.
+# For GE, center and scale so the whole matrix has a variance of 1, 
+# but the variances of individual features may vary. 
+
+# From https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1006907: 
+# "When the units of all variables are the same, e.g., in high-throughput assays, 
+# normalizing feature variances is not advised, because it results in shrinkage 
+# of features containing strong signals and inflation of features with no signal"
+aData <- lapply(names(aData), function(assay){
+  if (assay == "gene_expression_files") {
+    mat <- scale(aData[[assay]], scale = FALSE)
+    if (sd(as.vector(mat)) > 0) {
+      mat <- mat/sd(as.vector(mat))
+    }
+    return(mat)
+  } else {
+    return(scale(aData[[assay]], scale = TRUE))
+  }
+})
+
+
 # combine, including only subs with all datasets
 allMat <- Reduce(function(x,y){cbind(x[subs,],y[subs,])}, aData)
 allMat <- allMat[subs, ]
 
 # normalize after ensuring numeric
-allMat <- scale(allMat)
+# allMat <- scale(allMat)
 
 # remove any features that have no variance
 noVariance <- apply(allMat, 2, function(x){ return(length(unique(x)) == 1)})
