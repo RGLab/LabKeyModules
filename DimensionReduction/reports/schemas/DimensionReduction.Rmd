@@ -1,35 +1,6 @@
 ---
-output: html_document
+output: html_document_base
 ---
-
-
-
-<style>
-  .tabset-dropdown > .nav-tabs > li.active:before {
-    content: ">";
-    display: inline-block;
-    padding: 10px;
-    border-right: 1px solid #ddd;
-  }
-                      
-  .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-    content: ">";
-    border: none;
-  }
-                                    
-  .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-    content: ">";
-    display: inline-block;
-    padding: 10px;
-    border-right: 1px solid #ddd;
-  }
-  
-  .nav-tabs>li {
-    float:left;
-    margin-bottom:0; 
-  }
-
-</style>
 
 
 ```{r setup, include=FALSE}
@@ -786,7 +757,7 @@ tagList(
   lapply(plotInfo, 
          function(thisPlotInfo){
            if (thisPlotInfo$name == "Age") {
-             div(id = plotInfo$label, class = "tab-pane active",
+             div(id = thisPlotInfo$label, class = "tab-pane active",
                  h2(thisPlotInfo$name),
                  makePlot(label = thisPlotInfo$label,
                           aggregateBy = aggregateBy,
