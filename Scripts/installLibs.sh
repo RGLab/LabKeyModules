@@ -46,6 +46,8 @@ apt-get -y install libxml2-dev
 apt-get -y install openmpi-bin
 apt-get -y install openmpi-common
 apt-get -y install openssl
+apt-get -y install xfonts-75dpi
+apt-get -y install xfonts-100dpi
 apt-get -y install xorg-dev
 apt-get -y install xvfb
 
