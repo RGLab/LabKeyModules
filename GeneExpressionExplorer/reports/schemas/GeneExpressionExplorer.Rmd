@@ -167,7 +167,7 @@ p <- ggplot(data = data, aes(x = value, y = response)) +
   geom_text(aes(x = r2x, y = r2y, label = r2), hjust = 0, vjust = 1, data = data, parse = TRUE) +
   theme_IS(base_size = textSize) # theme(text = element_text(size = textSize))
 if(facet == "grid") {
-  p <- p + facet_grid(aes(cohort_type, gene_symbol), scales = "free")
+  p <- p + facet_grid(vars(cohort_type), vars(gene_symbol), scales = "free")
 } else{
   p <- p + facet_wrap(~cohort_type + gene_symbol, scales = "free")
 }

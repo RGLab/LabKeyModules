@@ -20,6 +20,12 @@ output: html_document
     padding: 10px;
     border-right: 1px solid #ddd;
   }
+  
+  .nav-tabs>li {
+    float:left;
+    margin-bottom:0; 
+  }
+
 </style>
 
 ```{r setup, include=FALSE}

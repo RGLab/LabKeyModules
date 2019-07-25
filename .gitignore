@@ -20,3 +20,6 @@ Thumbs.db
 vcs.properties
 
 ImmuneSpace/config/module.xml
+
+# Rproj-related files 
+*.Rproj*

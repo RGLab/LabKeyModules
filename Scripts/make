@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ `hostname | tail -c7` != 'rserve' ];then # RServe machine
+if [ `hostname | tail -c8` != 'Rserve2' ];then # RServe machine
     echo "This script should be executed on the RServe machine."
     exit 1
 fi
@@ -43,9 +43,9 @@ ${DIR}/getRpkgs.sh
 
 if [ $2 ] ; then
     BUILD_TYPE=$2
-elif [ `hostname | head -c10` = 'immunetest' ] ; then
+elif [ `hostname | head -c10` = 'ImmuneTest' ] ; then
     BUILD_TYPE=dev
-elif [ `hostname | head -c10` = 'immuneprod' ] ; then
+elif [ `hostname | head -c10` = 'ImmuneProd' ] ; then
     BUILD_TYPE=master
 else
     echo 'Build type cannot be detected, must be specified as the second parameter'
