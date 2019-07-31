@@ -1,7 +1,42 @@
-
 <script type='text/javascript' src='js/ext-4.2.1/ext-all-sandbox.js'></script>
 <script type='text/javascript' src='js/labkey.js'></script>
 <script type='text/javascript' src='js/clientapi.min.js'></script>
+<style>
+
+.wrapper {
+    width: 300px;
+}
+
+.filter-indicator {
+  width:100%;
+  border-radius:10px;
+  color:white;
+  margin:2px;
+  white-space:normal !important;
+  word-wrap: break-word; 
+  padding: 0;
+  text-align: left;
+  display:inline-block;
+}
+
+.filter-indicator-text {
+  width: 90%;
+  float: left;
+  padding-left:5px;
+}
+
+.filter-indicator-text.study {
+  background:#54278F;
+}
+
+.filter-indicator-text.participant {
+  background:#6BAED6;
+}
+
+.filter-indicator-text.sample {
+  background:#238B45;
+}
+</style>
 
 
 <!--
@@ -49,23 +84,104 @@
 -->
 
 <body>
-<div id="title"></div>
+    <div id="title"></div>
 
-<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.21.1/babel.min.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.21.1/babel.min.js"></script>
 
-<script type='text/babel'>
+    <script type='text/babel'>
 const rootElement = document.getElementById('title',)
-const Message = (props) => <div>{props.children}</div>
+const filterMembers = {
+    "study": ["Study", "Species", "Condition", "ExposureMaterial", "ExposureProcess", "ResearchFocus"],
+    "participant": ["Gender", "Race", "Age"],
+    "sample": ["Assay", "SampleType", "Timepoint"]
+}
+
+
+
+function FilterSummary(props) {
+    // props: object with filter organized by study, participant, sample
+    
+    return (
+    <div>
+        <FilterIndicatorList 
+            filterClass = {"study"} 
+            filters = {props.filters.study} 
+            title = {"Study Design"}/>
+        <FilterIndicatorList
+            filterClass = {"participant"}
+            filters = {props.filters.participant}
+            title = {"Participant Characteristics"}/>
+        <FilterIndicatorList
+            filterClass = {"sample"}
+            filters = {props.filters.sample}
+            title = {"Participant Data Includes"}/>
+    </div>
+    )
+}
+
+function FilterIndicatorFlag(props) {
+    // props: filter class, filter
+    var text = props.filter.name + " is " 
+    props.filter.members.forEach((e, i, a) => {
+        text = text + getFilter(e);
+        if (i < a.length - 1) text = text + " " + props.filter.operator + " ";
+    });
+    return (
+        <div className = "filter-indicator">
+            <div className = {"filter-indicator-text " + props.filterClass}>{text}</div>
+        </div>
+    )
+}
+
+function FilterIndicatorList(props) {
+    // props: filter class, filters, title text
+    var filterFlags;
+    if (props.filters.length == 0) {
+        filterFlags = <em>No filters currently applied</em>
+    } else {
+        filterFlags = props.filters.map((filter) => 
+            <FilterIndicatorFlag key = {filter.name} filterClass={props.filterClass} filter={filter} />
+        )
+    }
+    return (
+        <div>
+        <h4>{props.title}</h4>
+        {filterFlags}
+        </div>
+    )
+}
+
+function getFilter(filter) {
+    const re = /\[[\w\s]+\]$/;
+    return filter.match(re);
+}
+
+const allFilters = JSON.parse(localStorage.getItem(localStorage.key(0)));
+const filterKeys = Object.keys(allFilters)
+var filters = {"study": [], "participant": [], "sample": []};
+console.log(allFilters)
+console.log(filterKeys)
+filterKeys.forEach((key) => {
+    console.log(key)
+    if (filterMembers.study.includes(key)) {
+        filters.study.push(allFilters[key])
+    } else if (filterMembers.participant.includes(key)) {
+        filters.participant.push(allFilters[key])
+    } else if (filterMembers.sample.includes(key)) {
+        filters.sample.push(allFilters[key])
+    }
+})
+console.log(filters);
+
+
 const title = (
-    <div className='container'>
-        <Message>ImmuneSpace Data Finder Summary</Message>
-        <Message>Query Information</Message>
+    <div className='container wrapper'>
+        <FilterSummary filters = {filters} />
     </div>
 )
 
 ReactDOM.render(title, rootElement)
 </script>
 </body>
-
