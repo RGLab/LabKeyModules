@@ -5,36 +5,52 @@
 
 .wrapper {
     width: 300px;
+    background-color: #f7f7f9;
+    padding:15px;
+    border: 2px solid #aaaaaa;
 }
 
 .filter-indicator {
   width:100%;
   border-radius:10px;
-  color:white;
   margin:2px;
   white-space:normal !important;
   word-wrap: break-word; 
   padding: 0;
   text-align: left;
   display:inline-block;
+  margin-left: 15px;
 }
 
 .filter-indicator-text {
   width: 90%;
   float: left;
   padding-left:5px;
+  padding-top:2px;
+  padding-bottom:2px;
 }
 
 .filter-indicator-text.study {
   background:#54278F;
+  color: white;
 }
 
 .filter-indicator-text.participant {
   background:#6BAED6;
+  color:white;
 }
 
 .filter-indicator-text.sample {
   background:#238B45;
+  color:white;
+}
+
+button {
+    float: inline-end;
+}
+
+h2 {
+    display:inline;
 }
 </style>
 
@@ -99,7 +115,7 @@ const filterMembers = {
 }
 
 
-
+// Filter stuff... ========================================================
 function FilterSummary(props) {
     // props: object with filter organized by study, participant, sample
     
@@ -116,21 +132,22 @@ function FilterSummary(props) {
         <FilterIndicatorList
             filterClass = {"sample"}
             filters = {props.filters.sample}
-            title = {"Participant Data Includes"}/>
+            title = {"Available Data"}/>
     </div>
     )
 }
 
 function FilterIndicatorFlag(props) {
     // props: filter class, filter
-    var text = props.filter.name + " is " 
+    var text = ""
     props.filter.members.forEach((e, i, a) => {
         text = text + getFilter(e);
         if (i < a.length - 1) text = text + " " + props.filter.operator + " ";
     });
     return (
         <div className = "filter-indicator">
-            <div className = {"filter-indicator-text " + props.filterClass}>{text}</div>
+            <div className = {"filter-indicator-text " + props.filterClass}>
+                <b>{props.filter.name}: </b>{text}</div>
         </div>
     )
 }
@@ -139,7 +156,7 @@ function FilterIndicatorList(props) {
     // props: filter class, filters, title text
     var filterFlags;
     if (props.filters.length == 0) {
-        filterFlags = <em>No filters currently applied</em>
+        filterFlags = <em className = "filter-indicator">No filters currently applied</em>
     } else {
         filterFlags = props.filters.map((filter) => 
             <FilterIndicatorFlag key = {filter.name} filterClass={props.filterClass} filter={filter} />
@@ -154,34 +171,82 @@ function FilterIndicatorList(props) {
 }
 
 function getFilter(filter) {
-    const re = /\[[\w\s]+\]$/;
+    const re = /\[[^\[\]]+\]$/;
     return filter.match(re);
 }
 
-const allFilters = JSON.parse(localStorage.getItem(localStorage.key(0)));
-const filterKeys = Object.keys(allFilters)
-var filters = {"study": [], "participant": [], "sample": []};
-console.log(allFilters)
-console.log(filterKeys)
-filterKeys.forEach((key) => {
-    console.log(key)
-    if (filterMembers.study.includes(key)) {
-        filters.study.push(allFilters[key])
-    } else if (filterMembers.participant.includes(key)) {
-        filters.participant.push(allFilters[key])
-    } else if (filterMembers.sample.includes(key)) {
-        filters.sample.push(allFilters[key])
+
+
+// Summary ==============================================================
+
+function App(props) {
+    const [participantCount, setParticipantCount] = React.useState(0);
+    const [studyCount, setStudyCount] = React.useState(0);
+    const [filters, setFilters] = React.useState({"study": [], "participant": [], "sample": []})
+
+
+    LABKEY.contextPath = '';
+    LABKEY.container = {path: 'Studies'};
+
+    React.useEffect(() => update(), [])
+
+    // update 
+    function update() {
+
+        // Summary 
+        LABKEY.Query.selectRows({
+            schemaName: 'study',
+            queryName: "StudyProperties",
+            success: (data) => {setStudyCount(data.rowCount);}
+        });
+        LABKEY.Query.selectRows({
+            schemaName: "study",
+            queryName: "demographics",
+            success: (data) => {setParticipantCount(data.rowCount);}
+        })
+
+        // Filters
+        const filters_tmp = {"study": [], "participant": [], "sample": []}
+        const allFilters = JSON.parse(localStorage.getItem(localStorage.key(0)));
+        const filterKeys = Object.keys(allFilters)
+        filterKeys.forEach((key) => {
+            console.log(key)
+            if (filterMembers.study.includes(key)) {
+                filters_tmp.study.push(allFilters[key])
+            } else if (filterMembers.participant.includes(key)) {
+                filters_tmp.participant.push(allFilters[key])
+            } else if (filterMembers.sample.includes(key)) {
+                filters_tmp.sample.push(allFilters[key])
+            }
+        })
+        setFilters(filters_tmp);
     }
-})
-console.log(filters);
 
+    // Get summary counts
+    LABKEY.contextPath = '';
+    LABKEY.container = {path: 'Studies'};
+    LABKEY.Query.selectRows({
+        schemaName: 'study',
+        queryName: "StudyProperties",
+        success: (data) => {setStudyCount(data.rowCount);}
+    });
+    LABKEY.Query.selectRows({
+        schemaName: "study",
+        queryName: "demographics",
+        success: (data) => {setParticipantCount(data.rowCount);}
+    })
 
-const title = (
-    <div className='container wrapper'>
-        <FilterSummary filters = {filters} />
-    </div>
-)
+    return(
+        <div className='container wrapper'>
+            <h2>Current Filters</h2>
+            <button type="button" onClick={update}>Update</button>
+            <p><em>{participantCount} participants from {studyCount} studies</em></p>
+            <FilterSummary filters = {filters} />
+        </div>
+    )
 
-ReactDOM.render(title, rootElement)
+}
+ReactDOM.render(<App/>, rootElement);
+
 </script>
 </body>
