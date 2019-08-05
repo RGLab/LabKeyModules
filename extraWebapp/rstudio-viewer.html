@@ -183,6 +183,16 @@ function App(props) {
     const [participantCount, setParticipantCount] = React.useState(0);
     const [studyCount, setStudyCount] = React.useState(0);
     const [filters, setFilters] = React.useState({"study": [], "participant": [], "sample": []})
+    
+    var filterKey = "";
+    var filterFound = false;
+    var i = 0;
+    var re = /filterSet/
+    while (!filterFound & i < localStorage.length ) {
+        filterKey = localStorage.key(i);
+        filterFound = re.test(filterKey);
+        i++
+    }
 
 
     LABKEY.contextPath = '';
@@ -207,10 +217,9 @@ function App(props) {
 
         // Filters
         const filters_tmp = {"study": [], "participant": [], "sample": []}
-        const allFilters = JSON.parse(localStorage.getItem(localStorage.key(0)));
+        const allFilters = JSON.parse(localStorage.getItem(filterKey));
         const filterKeys = Object.keys(allFilters)
         filterKeys.forEach((key) => {
-            console.log(key)
             if (filterMembers.study.includes(key)) {
                 filters_tmp.study.push(allFilters[key])
             } else if (filterMembers.participant.includes(key)) {
