@@ -1,0 +1,17 @@
+<p>Hello, <script>
+    document.write(LABKEY.Security.currentUser.displayName);
+    </script>!</p>
+    
+<p>Your account info: </p>
+<table>
+    <tr><td>id</td><td><script>document.write(LABKEY.Security.currentUser.id); </script><td></tr>
+    <tr><td>displayName</td><td><script>document.write(LABKEY.Security.currentUser.displayName); </script><td></tr>
+    <tr><td>email</td><td><script>document.write(LABKEY.Security.currentUser.email); </script><td></tr>
+    <tr><td>canInsert</td><td><script>document.write(LABKEY.Security.currentUser.canInsert); </script><td></tr>
+    <tr><td>canUpdate</td><td><script>document.write(LABKEY.Security.currentUser.canUpdate); </script><td></tr>
+    <tr><td>canUpdateOwn</td><td><script>document.write(LABKEY.Security.currentUser.canUpdateOwn); </script><td></tr>
+    <tr><td>canDelete</td><td><script>document.write(LABKEY.Security.currentUser.canDelete); </script><td></tr>
+    <tr><td>isAdmin</td><td><script>document.write(LABKEY.Security.currentUser.isAdmin); </script><td></tr>
+    <tr><td>isGuest</td><td><script>document.write(LABKEY.Security.currentUser.isGuest); </script><td></tr>
+    <tr><td>isSystemAdmin</td><td><script>document.write(LABKEY.Security.currentUser.isSystemAdmin); </script><td></tr>
+</table>
