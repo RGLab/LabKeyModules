@@ -1,4 +1,4 @@
 <webpart xmlns="http://labkey.org/data/xml/webpart" 
-  title="Dev Play Module">
-    <view name="begin"/>
+  title="React Play Module">
+    <view name="play"/>
 </webpart>

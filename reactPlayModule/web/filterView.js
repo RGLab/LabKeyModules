@@ -1,4 +1,4 @@
-const rootElement = document.getElementById('filter-summary',)
+const rootElement = document.getElementById('react-app',)
 const filterMembers = {
     "study": ["Study", "Species", "Condition", "ExposureMaterial", "ExposureProcess", "ResearchFocus"],
     "participant": ["Gender", "Race", "Age"],
