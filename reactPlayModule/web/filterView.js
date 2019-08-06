@@ -1,4 +1,4 @@
-const rootElement = document.getElementById('react-app',)
+const rootElement = document.getElementById('filter-view',)
 const filterMembers = {
     "study": ["Study", "Species", "Condition", "ExposureMaterial", "ExposureProcess", "ResearchFocus"],
     "participant": ["Gender", "Race", "Age"],
@@ -70,7 +70,7 @@ function getFilter(filter) {
 
 // Summary ==============================================================
 
-function App(props) {
+function FilterView(props) {
     const [participantCount, setParticipantCount] = React.useState(0);
     const [studyCount, setStudyCount] = React.useState(0);
     const [filters, setFilters] = React.useState({"study": [], "participant": [], "sample": []})
@@ -152,4 +152,4 @@ function App(props) {
     )
 
 }
-ReactDOM.render(<App/>, rootElement);
+ReactDOM.render(<FilterView/>, rootElement);
