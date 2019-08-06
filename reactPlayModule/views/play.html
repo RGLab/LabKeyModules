@@ -1,13 +1,16 @@
-<script src="<%=contextPath%>/src/react.js"></script>
-<script src="<%=contextPath%>/src/react-dom.js"></script>
-<script src="<%=contextPath%>/src/babel.min.js"></script>
+<script src="<%=contextPath%>/modules/react.js"></script>
+<script src="<%=contextPath%>/modules/react-dom.js"></script>
+<script src="<%=contextPath%>/modules/babel.min.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
 <link rel="stylesheet" href="<%=contextPath%>/filterView.css"></link>
 <link rel="stylesheet" href="<%=contextPath%>/studyCard.css"></link>
 
 <body>
     <div id="filter-view"></div>
     <div id="study-card"></div>
+    <div id="heatmap"></div>
 
     <script src="<%=contextPath%>/filterView.js" type='text/babel'></script>
     <script src="<%=contextPath%>/studyCard.js" type='text/babel'></script>
+    <script src="<%=contextPath%>/heatmap.js" type="text/babel"></script>
 </body>
