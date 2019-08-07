@@ -1,4 +1,6 @@
-const rootElement = document.getElementById('study-card',)
+
+
+const rootElement = document.getElementById('study-panel',)
 
 function StudyProperty(props) {
     const labelStyle = {
@@ -44,22 +46,19 @@ function StudyProgressBar(props) {
 }
 
 function StudyCard(props) {
+    const study = props.study;
     const studyProperties = [
         {
-            label: "Exposure Material",
-            value: "Fluvirin"
-        },
-        {
             label: "Condition",
-            value: "Influenza"
+            value: study.condition_studied
         },
         {
             label: "Sample Type",
-            value: "Other, Serum, PBMC"
+            value: study.sample_type[0]
         },
         {
             label: "Assays",
-            value: "Gene Expression, Neutralizing Antibody, ELISPOT, Flow Cytometry"
+            value: study.assays[0]
         }
     ]
 
@@ -69,17 +68,17 @@ function StudyCard(props) {
                 <div className="checkbox">
                     <label>
                         <input type="checkbox" name="study" value="SDY28"/>
-                        <span className="study-id">SDY28</span>
+                        <span className="study-id">{study.study_accession}</span>
                     </label>
                 </div>
-                <span className="study-pi">Gregory Poland</span>
+                <span className="study-pi">{study.pi_names}</span>
             </div>
             <hr/>
-            <a href="./SDY28/begin.view?" className="labkey-text-link labkey-study-card-goto">
+            <a href={"./" + study.study_accession + "/begin.view?"} className="labkey-text-link labkey-study-card-goto">
                 Go to study
             </a>
             <div className="study-title">
-                Humoral and Cell-Mediated Immune Responses to Vaccinia Virus Immunization
+                {study.brief_title}
             </div>
             <StudyProgressBar totalParticipantCount={145} selectedParticipantCount={59} />
             <StudyProperties studyProperties={studyProperties}/>
@@ -88,4 +87,27 @@ function StudyCard(props) {
     )
 }
 
-ReactDOM.render(<StudyCard/>, rootElement);
+function StudyPanel(props) {
+    const [studyData, setStudyData] = React.useState([])
+    const update = () => {
+        LABKEY.Query.selectRows({
+        schemaName: 'immport', 
+        queryName: 'dataFinder_studyCard',
+        success: (data) => {console.log(data);setStudyData(data.rows)} })
+    }
+    
+    React.useEffect(() => update(), [])
+    
+    return (
+        <div>
+            {studyData.map((study) => {
+                return(
+                    <StudyCard study={study}/>
+                )
+                
+            })}
+        </div>
+            )
+}
+
+ReactDOM.render(<StudyPanel/>, rootElement);

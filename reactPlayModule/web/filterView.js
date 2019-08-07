@@ -1,3 +1,8 @@
+LABKEY.Query.selectRows({
+        schemaName: 'immport', 
+        queryName: 'dataFinder_studyCard',
+        success: (data) => console.log(data)})
+
 const rootElement = document.getElementById('filter-view',)
 const filterMembers = {
     "study": ["Study", "Species", "Condition", "ExposureMaterial", "ExposureProcess", "ResearchFocus"],
