@@ -1,0 +1,90 @@
+<!-- Cube definition -->
+<!-- https://mondrian.pentaho.com/documentation/schema.php -->
+<!-- Another example at https://github.com/LabKey/platform/blob/develop/query/resources/olap/junit.xml -->
+
+<Schema name="DataFinder" description="Cube for Data Finder">
+   <Cube name="DataFinderCube" visible="true" defaultMeasure="RowCount" cache="true" enabled="true">
+
+        <Table schema="immport" name="dimDemographic" >
+        </Table>
+
+
+        <Dimension visible="true" highCardinality="false" name="Subject">
+            <Hierarchy visible="true" hasAll="true" uniqueKeyLevelName="Subject">
+                <Level name="Subject" visible="true" column="SubjectId" type="String" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="Race" visible="true" hasAll="true">
+                <Level name="Race" visible="true" column="race" type="String" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="Age" visible="true" hasAll="true">
+                <Level name="Age" visible="true" column="age" type="String" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="Gender" visible="true" hasAll="true">
+                <Level name="Gender" visible="true" column="gender" type="String" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="Species" visible="true" hasAll="true">
+                <Level name="Species" visible="true" column="species" type="String" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="ExposureMaterial" visible="true" hasAll="true">
+                <Level name="ExposureMaterial" visible="true" column="exposure_material" type="String" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="ExposureProcess" visible="true" hasAll="true">
+                <Level name="ExposureProcess" visible="true" column="exposure_process" type="String" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+        </Dimension>
+
+
+        <Dimension name="Study" visible="true" highCardinality="false" foreignKey="study">
+            <Hierarchy hasAll="true" primaryKey="study" uniqueKeyLevelName="Name">
+                <Table name="dimStudy" schema="immport"/>
+                <Level name="Name" visible="true" nameColumn="study" column="sortOrder" type="Integer" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="Program" hasAll="true" primaryKey="study">
+                <Table name="dimStudy" schema="immport"/>
+                <Level name="Program" visible="true" column="program" type="String" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="Type" hasAll="true" primaryKey="study">
+                <Table name="dimStudy" schema="immport"/>
+                <Level name="Type" visible="true" column="type" type="String" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="Conditions" hasAll="true" primaryKey="study">
+                <Table name="dimStudyCondition" schema="immport"/>
+                <Level name="Condition" visible="true" table="dimStudyCondition" column="condition" type="String" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="Principal" hasAll="true" primaryKey="study">
+                <Table name="dimStudyPrincipals" schema="immport"/>
+                <Level name="Principal" visible="true" table="dimStudyPrincipals" type="String" column="full_name" ordinalColumn="sortorder" levelType="Regular" hideMemberIf="Never">
+                </Level>
+            </Hierarchy>
+            <Hierarchy name="Category" hasAll="true" primaryKey="study_accession">
+                <Table name="study_categorization" schema="immport" />
+                <Level name="Category" visible="true" table="study_categorization" type="String" column="research_focus" levelType="Regular" hideMemberIf="Never">
+                </Level>
+            </Hierarchy>
+        </Dimension>
+        
+        <Dimension name="Sample" visible="true" highCardinality="false" foreignKey="subjectid">
+            <Hierarchy hasAll="true" primaryKey="sampleid" uniqueKeyLevelName="sampleid">
+                <Table name="dimsample" schema="immport"/>
+                <Level name="Sample" visible="true" column="sampleid" nameColumn="sampleid" type="String" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="Timepoint" hasAll="true" primaryKey="sampleid">
+                <Table name="dimsample" schema="immport"/>
+                <Level name="Timepoint" visible="true" column="timepoint" table="dimsample" type="String" ordinalColumn="timepoint_sortorder" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="SampleType" visible="true" primaryKey="sampleid">
+                <Table name="dimsample" schema="immport"/>
+                <Level name="SampleType" visible="true" table="dimsample" type="String" column="type" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+            <Hierarchy name="Assay" visible="true" primaryKey="sampleid">
+                <Table name="dimsampleassay" schema="immport"/>
+                <Level name="Assay" visible="true" table="dimsampleassay" type="String" column="assay" levelType="Regular" hideMemberIf="Never"/>
+            </Hierarchy>
+        </Dimension>
+
+        <Measure name="RowCount" column="participantid" aggregator="count" visible="true">
+        </Measure>
+    </Cube>
+
+
+</Schema>
