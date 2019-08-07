@@ -3,12 +3,11 @@
 <!-- Another example at https://github.com/LabKey/platform/blob/develop/query/resources/olap/junit.xml -->
 
 <Schema name="DataFinder" description="Cube for Data Finder">
-   <Cube name="DataFinderCube" visible="true" defaultMeasure="RowCount" cache="true" enabled="true">
+   <Cube name="DataFinderCube" visible="true" defaultMeasure="StudyCount" cache="true" enabled="true">
 
-        <Table schema="immport" name="dimDemographic" >
-        </Table>
-
-
+        <!-- the Fact table -->
+        <Table schema="immport" name="dimDemographic" />
+        
         <Dimension visible="true" highCardinality="false" name="Subject">
             <Hierarchy visible="true" hasAll="true" uniqueKeyLevelName="Subject">
                 <Level name="Subject" visible="true" column="SubjectId" type="String" levelType="Regular" hideMemberIf="Never"/>
@@ -32,8 +31,7 @@
                 <Level name="ExposureProcess" visible="true" column="exposure_process" type="String" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
         </Dimension>
-
-
+        
         <Dimension name="Study" visible="true" highCardinality="false" foreignKey="study">
             <Hierarchy hasAll="true" primaryKey="study" uniqueKeyLevelName="Name">
                 <Table name="dimStudy" schema="immport"/>
@@ -63,27 +61,26 @@
             </Hierarchy>
         </Dimension>
         
-        <Dimension name="Sample" visible="true" highCardinality="false" foreignKey="subjectid">
-            <Hierarchy hasAll="true" primaryKey="sampleid" uniqueKeyLevelName="sampleid">
-                <Table name="dimsample" schema="immport"/>
-                <Level name="Sample" visible="true" column="sampleid" nameColumn="sampleid" type="String" levelType="Regular" hideMemberIf="Never"/>
+        <Dimension name="Data" visible="true" highCardinality="false" foreignKey="subjectid">
+            <Hierarchy name="Timepoint" hasAll="true" primaryKey="subjectid">
+                <Table name="dataFinder_dimData" schema="immport" />
+                <Level name="Timepoint" visible="true" column="timepoint" type="String" ordinalColumn="timepoint_sortorder" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
-            <Hierarchy name="Timepoint" hasAll="true" primaryKey="sampleid">
-                <Table name="dimsample" schema="immport"/>
-                <Level name="Timepoint" visible="true" column="timepoint" table="dimsample" type="String" ordinalColumn="timepoint_sortorder" levelType="Regular" hideMemberIf="Never"/>
+            <Hierarchy name="SampleType" visible="true" primaryKey="subjectid">
+                <Table name="dataFinder_dimData" schema="immport" />
+                <Level name="SampleType" visible="true" type="String" column="cell_type" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
-            <Hierarchy name="SampleType" visible="true" primaryKey="sampleid">
-                <Table name="dimsample" schema="immport"/>
-                <Level name="SampleType" visible="true" table="dimsample" type="String" column="type" levelType="Regular" hideMemberIf="Never"/>
+            <Hierarchy name="Assay" visible="true" primaryKey ="subjectid">
+                <Table name="dataFinder_dimData" schema="immport" />
+                <Level name="Assay" visible="true" type="String" column="assay" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
-            <Hierarchy name="Assay" visible="true" primaryKey="sampleid">
-                <Table name="dimsampleassay" schema="immport"/>
-                <Level name="Assay" visible="true" table="dimsampleassay" type="String" column="assay" levelType="Regular" hideMemberIf="Never"/>
-            </Hierarchy>
-        </Dimension>
+        </Dimension>        
+        
 
-        <Measure name="RowCount" column="participantid" aggregator="count" visible="true">
+        <Measure name="ParticipantCount" column="subjectid" aggregator="distict-count" visible="true">
         </Measure>
+        
+        <Measure name="StudyCount" column="studyid" aggregator="distinct-count" visible="true" />
     </Cube>
 
 
