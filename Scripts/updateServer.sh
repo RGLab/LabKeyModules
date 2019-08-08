@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ `hostname | tail -c4` != 'web' ];then # Web server machine
+if [ `hostname | tail -c5` != 'Web2' ];then # Web server machine
   echo "ERROR: This script should be executed on the Web server machine."
   exit 1
 fi
