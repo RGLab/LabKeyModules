@@ -2,7 +2,6 @@
 
 function AssayTpHeatmap(props) {
   const [selected, setSelected] = React.useState([]);
-  const [data, setData] = React.useState([]);
   const [options, setOptions] = React.useState({});
 
   function handleClick(id) {
@@ -21,10 +20,7 @@ function AssayTpHeatmap(props) {
 
   React.useEffect(() => {
     // load the data
-    if (data.length == 0 && options.breaks == undefined) {
-      $.getJSON("/data/data.json", function(json) {
-        setData(json);
-      });
+    if (options.breaks == undefined) {
       $.getJSON("/data/options.json", function(json) {
         setOptions(json);
       });
@@ -35,7 +31,7 @@ function AssayTpHeatmap(props) {
   return (
     <div>
       <Heatmap
-        data={data}
+        data={props.data}
         options={options}
         selected={selected}
         height={250}
@@ -59,12 +55,6 @@ function Heatmap(props) {
   return <div className={props.name} />;
 }
 
-ReactDOM.render(
-  <div>
-    <AssayTpHeatmap />
-  </div>,
-  document.getElementById("heatmap")
-);
 
 // ================================================================== //
 /* 
