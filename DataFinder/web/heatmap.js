@@ -21,12 +21,12 @@ function AssayTpHeatmap(props) {
   React.useEffect(() => {
     // load the data
     if (options.breaks == undefined) {
-      $.getJSON("/data/options.json", function(json) {
+      $.getJSON("/data/options.json", function (json) {
         setOptions(json);
       });
     }
   });
-  
+
 
   return (
     <div>
@@ -156,7 +156,7 @@ function drawHeatmap(props) {
   }
 
   // y-axis tags
-  var yAxisTagPoints = function(assay) {
+  var yAxisTagPoints = function (assay) {
     var x1 = xaxisScale(0) - xaxisScale.bandwidth() - margin.left + 5,
       x2 = xaxisScale(0) - xaxisScale.bandwidth() - 5,
       x3 = xaxisScale(0) - xaxisScale.bandwidth(),
@@ -191,16 +191,16 @@ function drawHeatmap(props) {
   yaxistext
     .enter()
     .append("text")
-    .attr("x", function(d) {
+    .attr("x", function (d) {
       return xaxisScale(0) - xaxisScale.bandwidth() - margin.left / 2;
     })
-    .attr("y", function(d) {
+    .attr("y", function (d) {
       return yaxisScale(d) + yaxisScale.bandwidth() / 2;
     })
     .attr("text-anchor", "middle")
     .attr("font-size", ".8em")
     .attr("dominant-baseline", "central")
-    .text(function(d) {
+    .text(function (d) {
       return d;
     });
 
@@ -208,18 +208,18 @@ function drawHeatmap(props) {
   yaxispolygons
     .enter()
     .append("polygon")
-    .attr("points", function(d) {
+    .attr("points", function (d) {
       return yAxisTagPoints(d);
     })
     .attr("fill", "transparent")
     .attr("stroke", "#e5e5e5")
-    .on("mouseover", function(d) {
+    .on("mouseover", function (d) {
       // Change style
       d3.select(this)
         .attr("stroke-width", "2px")
         .attr("stroke", "black");
     })
-    .on("mouseout", function(d) {
+    .on("mouseout", function (d) {
       // Reset to original
       d3.select(this)
         .attr("stroke-width", "1px")
@@ -227,7 +227,7 @@ function drawHeatmap(props) {
     });
 
   // x-axis tags
-  var xAxisTagPoints = function(tp) {
+  var xAxisTagPoints = function (tp) {
     var x1 = xaxisScale(tp) + 1,
       x2 = xaxisScale(tp) + xaxisScale.bandwidth() / 2,
       x3 = xaxisScale(tp) + xaxisScale.bandwidth() - 1,
@@ -264,33 +264,33 @@ function drawHeatmap(props) {
     xaxis
       .enter()
       .append("text")
-      .attr("x", function(d) {
+      .attr("x", function (d) {
         return xaxisScale(d) + xaxisScale.bandwidth() / 2;
       })
-      .attr("y", function(d) {
+      .attr("y", function (d) {
         return 17;
       })
       .attr("text-anchor", "middle")
       .attr("font-size", ".8em")
-      .text(function(d) {
+      .text(function (d) {
         return d;
       });
 
     xaxis
       .enter()
       .append("polygon")
-      .attr("points", function(d) {
+      .attr("points", function (d) {
         return xAxisTagPoints(d);
       })
       .attr("fill", "transparent")
       .attr("stroke", "#e5e5e5")
-      .on("mouseover", function(d) {
+      .on("mouseover", function (d) {
         // Change style
         d3.select(this)
           .attr("stroke-width", "2px")
           .attr("stroke", "black");
       })
-      .on("mouseout", function(d) {
+      .on("mouseout", function (d) {
         // Reset to original
         d3.select(this)
           .attr("stroke-width", "1px")
@@ -311,29 +311,29 @@ function drawHeatmap(props) {
   boxes
     .enter()
     .append("rect")
-    .attr("x", function(d) {
+    .attr("x", function (d) {
       return xaxisScale(d.timepoint);
     })
     .attr("width", xaxisScale.bandwidth() - 1)
-    .attr("y", function(d) {
+    .attr("y", function (d) {
       return yaxisScale(d.assay);
     })
     .attr("height", yaxisScale.bandwidth() - 1)
-    .attr("id", function(d) {
+    .attr("id", function (d) {
       return d.id;
     })
-    .style("fill", function(d) {
+    .style("fill", function (d) {
       return colorScale(d.participantCount);
     })
     .attr("stroke-width", "1px")
-    .attr("stroke", function(d) {
+    .attr("stroke", function (d) {
       if (selected.includes(this.id)) {
         return "#111111";
       } else {
         return "transparent";
       }
     })
-    .on("mouseover", function(d, i) {
+    .on("mouseover", function (d, i) {
       // Tooltip coordinates
       var r = coord.right - margin.left - coord.x - xaxisScale(d.timepoint);
       var t =
@@ -358,21 +358,21 @@ function drawHeatmap(props) {
       tooltip
         .html(
           d.participantCount +
-            " participants <br>" +
-            d.studyCount +
-            " studies <br>" +
-            d.assay +
-            " at day " +
-            d.timepoint
+          " participants <br>" +
+          d.studyCount +
+          " studies <br>" +
+          d.assay +
+          " at day " +
+          d.timepoint
         )
         .style("right", r - xaxisScale.bandwidth() / 2 + "px")
         .style("top", t - yaxisScale.bandwidth() - 50 - 12 + "px");
     })
-    .on("mouseout", function(d) {
+    .on("mouseout", function (d) {
       // Reset to original
       d3.select(this)
         .attr("stroke-width", "1px")
-        .attr("stroke", function(d) {
+        .attr("stroke", function (d) {
           if (selected.includes(this.id)) {
             return "#111111";
           } else {
@@ -389,7 +389,7 @@ function drawHeatmap(props) {
         .duration(100)
         .style("opacity", 0);
     })
-    .on("click", function(d, i) {
+    .on("click", function (d, i) {
       var id = this.id;
       props.handleClick(id);
     });
@@ -397,25 +397,25 @@ function drawHeatmap(props) {
   boxes
     .transition()
     .duration(100)
-    .attr("x", function(d) {
+    .attr("x", function (d) {
       return xaxisScale(d.timepoint);
     })
     .attr("width", xaxisScale.bandwidth() - 1)
-    .attr("y", function(d) {
+    .attr("y", function (d) {
       return yaxisScale(d.assay);
     })
     .attr("height", yaxisScale.bandwidth() - 1)
-    .attr("id", function(d, i) {
+    .attr("id", function (d, i) {
       return d.id;
     })
-    .style("fill", function(d) {
+    .style("fill", function (d) {
       if (selected.includes(this.id)) {
         return "#fff766";
       } else {
         return colorScale(d.participantCount);
       }
     })
-    .attr("stroke", function(d) {
+    .attr("stroke", function (d) {
       if (selected.includes(this.id)) {
         return "#111111";
       } else {
@@ -426,22 +426,22 @@ function drawHeatmap(props) {
   yaxistext
     .transition()
     .duration(0)
-    .attr("x", function(d) {
+    .attr("x", function (d) {
       return xaxisScale(0) - xaxisScale.bandwidth() - margin.left / 2;
     })
-    .attr("y", function(d) {
+    .attr("y", function (d) {
       return yaxisScale(d) + yaxisScale.bandwidth() / 2;
     })
     .attr("text-anchor", "middle")
     .attr("font-size", ".8em")
     .attr("dominant-baseline", "central")
-    .text(function(d) {
+    .text(function (d) {
       return d;
     });
   yaxispolygons
     .transition()
     .duration(0)
-    .attr("points", function(d) {
+    .attr("points", function (d) {
       return yAxisTagPoints(d);
     })
     .attr("fill", "transparent")

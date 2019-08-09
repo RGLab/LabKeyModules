@@ -1,9 +1,10 @@
 LABKEY.Query.selectRows({
-        schemaName: 'immport', 
-        queryName: 'dataFinder_studyCard',
-        success: (data) => console.log(data)})
+    schemaName: 'immport',
+    queryName: 'dataFinder_studyCard',
+    success: (data) => console.log(data)
+})
 
-const rootElement = document.getElementById('filter-view',)
+const rootElement = document.getElementById('filter-view')
 const filterMembers = {
     "study": ["Study", "Species", "Condition", "ExposureMaterial", "ExposureProcess", "ResearchFocus"],
     "participant": ["Gender", "Race", "Age"],
@@ -14,22 +15,22 @@ const filterMembers = {
 // Filter stuff... ========================================================
 function FilterSummary(props) {
     // props: object with filter organized by study, participant, sample
-    
+
     return (
-    <div>
-        <FilterIndicatorList 
-            filterClass = {"study"} 
-            filters = {props.filters.study} 
-            title = {"Study Design"}/>
-        <FilterIndicatorList
-            filterClass = {"participant"}
-            filters = {props.filters.participant}
-            title = {"Participant Characteristics"}/>
-        <FilterIndicatorList
-            filterClass = {"sample"}
-            filters = {props.filters.sample}
-            title = {"Available Data"}/>
-    </div>
+        <div>
+            <FilterIndicatorList
+                filterClass={"study"}
+                filters={props.filters.study}
+                title={"Study Design"} />
+            <FilterIndicatorList
+                filterClass={"participant"}
+                filters={props.filters.participant}
+                title={"Participant Characteristics"} />
+            <FilterIndicatorList
+                filterClass={"sample"}
+                filters={props.filters.sample}
+                title={"Available Data"} />
+        </div>
     )
 }
 
@@ -41,8 +42,8 @@ function FilterIndicatorFlag(props) {
         if (i < a.length - 1) text = text + " " + props.filter.operator + " ";
     });
     return (
-        <div className = "filter-indicator">
-            <div className = {"filter-indicator-text " + props.filterClass}>
+        <div className="filter-indicator">
+            <div className={"filter-indicator-text " + props.filterClass}>
                 <b>{props.filter.name}: </b>{text}</div>
         </div>
     )
@@ -52,16 +53,16 @@ function FilterIndicatorList(props) {
     // props: filter class, filters, title text
     var filterFlags;
     if (props.filters.length == 0) {
-        filterFlags = <em className = "filter-indicator">No filters currently applied</em>
+        filterFlags = <em className="filter-indicator">No filters currently applied</em>
     } else {
-        filterFlags = props.filters.map((filter) => 
-            <FilterIndicatorFlag key = {filter.name} filterClass={props.filterClass} filter={filter} />
+        filterFlags = props.filters.map((filter) =>
+            <FilterIndicatorFlag key={filter.name} filterClass={props.filterClass} filter={filter} />
         )
     }
     return (
         <div>
-        <h4>{props.title}</h4>
-        {filterFlags}
+            <h4>{props.title}</h4>
+            {filterFlags}
         </div>
     )
 }
@@ -78,13 +79,13 @@ function getFilter(filter) {
 function FilterView(props) {
     const [participantCount, setParticipantCount] = React.useState(0);
     const [studyCount, setStudyCount] = React.useState(0);
-    const [filters, setFilters] = React.useState({"study": [], "participant": [], "sample": []})
-    
+    const [filters, setFilters] = React.useState({ "study": [], "participant": [], "sample": [] })
+
     var filterKey = "";
     var filterFound = false;
     var i = 0;
     var re = /filterSet/
-    while (!filterFound & i < localStorage.length ) {
+    while (!filterFound & i < localStorage.length) {
         filterKey = localStorage.key(i);
         filterFound = re.test(filterKey);
         i++
@@ -92,7 +93,7 @@ function FilterView(props) {
 
 
     LABKEY.contextPath = '';
-    LABKEY.container = {path: 'Studies'};
+    LABKEY.container = { path: 'Studies' };
 
     React.useEffect(() => update(), [])
 
@@ -103,16 +104,16 @@ function FilterView(props) {
         LABKEY.Query.selectRows({
             schemaName: 'study',
             queryName: "StudyProperties",
-            success: (data) => {setStudyCount(data.rowCount);}
+            success: (data) => { setStudyCount(data.rowCount); }
         });
         LABKEY.Query.selectRows({
             schemaName: "study",
             queryName: "demographics",
-            success: (data) => {setParticipantCount(data.rowCount);}
+            success: (data) => { setParticipantCount(data.rowCount); }
         })
 
         // Filters
-        const filters_tmp = {"study": [], "participant": [], "sample": []}
+        const filters_tmp = { "study": [], "participant": [], "sample": [] }
         const allFilters = JSON.parse(localStorage.getItem(filterKey));
         const filterKeys = Object.keys(allFilters)
         filterKeys.forEach((key) => {
@@ -134,27 +135,27 @@ function FilterView(props) {
 
     // Get summary counts
     LABKEY.contextPath = '';
-    LABKEY.container = {path: 'Studies'};
+    LABKEY.container = { path: 'Studies' };
     LABKEY.Query.selectRows({
         schemaName: 'study',
         queryName: "StudyProperties",
-        success: (data) => {setStudyCount(data.rowCount);}
+        success: (data) => { setStudyCount(data.rowCount); }
     });
     LABKEY.Query.selectRows({
         schemaName: "study",
         queryName: "demographics",
-        success: (data) => {setParticipantCount(data.rowCount);}
+        success: (data) => { setParticipantCount(data.rowCount); }
     })
 
-    return(
+    return (
         <div className='container wrapper'>
             <h2>Current Filters</h2>
             <button type="button" onClick={update}>Update</button>
             <button type="button"><a href="./begin.view?">Edit</a></button>
             <p><em>{participantCount} participants from {studyCount} studies</em></p>
-            <FilterSummary filters = {filters} />
+            <FilterSummary filters={filters} />
         </div>
     )
 
 }
-ReactDOM.render(<FilterView/>, rootElement);
+ReactDOM.render(<FilterView />, rootElement);

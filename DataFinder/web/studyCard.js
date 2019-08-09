@@ -1,31 +1,31 @@
 
 
-const rootElement = document.getElementById('study-panel',)
+const rootElement = document.getElementById('study-panel')
 
 function StudyProperty(props) {
     const labelStyle = {
         fontWeight: "bold",
     }
-    return(
+    return (
         <p className="card-text"><span style={labelStyle}>{props.label}: </span>{props.value}</p>
     )
 }
 
 function StudyProperties(props) {
 
-    return(
+    return (
         props.studyProperties.map((property) => {
             return (
                 <StudyProperty key={property.label} label={property.label} value={property.value} />
             )
         })
     )
-    
+
 }
 
 function StudyProgressBar(props) {
     const pbarStyle = {
-        width: ( props.selectedParticipantCount / props.totalParticipantCount * 100 ) + "%"
+        width: (props.selectedParticipantCount / props.totalParticipantCount * 100) + "%"
     }
     return (
         <div>
@@ -62,18 +62,18 @@ function StudyCard(props) {
         }
     ]
 
-    return(
-        <div className = "study-card">
+    return (
+        <div className="study-card">
             <div className="study-label">
                 <div className="checkbox">
                     <label>
-                        <input type="checkbox" name="study" value="SDY28"/>
+                        <input type="checkbox" name="study" value="SDY28" />
                         <span className="study-id">{study.study_accession}</span>
                     </label>
                 </div>
                 <span className="study-pi">{study.pi_names}</span>
             </div>
-            <hr/>
+            <hr />
             <a href={"./" + study.study_accession + "/begin.view?"} className="labkey-text-link labkey-study-card-goto">
                 Go to study
             </a>
@@ -81,7 +81,7 @@ function StudyCard(props) {
                 {study.brief_title}
             </div>
             <StudyProgressBar totalParticipantCount={145} selectedParticipantCount={59} />
-            <StudyProperties studyProperties={studyProperties}/>
+            <StudyProperties studyProperties={studyProperties} />
             {/* <TinyHeatmap data={props.data}/> */}
         </div>
     )
@@ -91,23 +91,24 @@ function StudyPanel(props) {
     const [studyData, setStudyData] = React.useState([])
     const update = () => {
         LABKEY.Query.selectRows({
-        schemaName: 'immport', 
-        queryName: 'dataFinder_studyCard',
-        success: (data) => {console.log(data);setStudyData(data.rows)} })
+            schemaName: 'immport',
+            queryName: 'dataFinder_studyCard',
+            success: (data) => { console.log(data); setStudyData(data.rows) }
+        })
     }
-    
+
     React.useEffect(() => update(), [])
-    
+
     return (
         <div>
             {studyData.map((study) => {
-                return(
-                    <StudyCard study={study}/>
+                return (
+                    <StudyCard study={study} />
                 )
-                
+
             })}
         </div>
-            )
+    )
 }
 
-ReactDOM.render(<StudyPanel/>, rootElement);
+ReactDOM.render(<StudyPanel />, rootElement);
