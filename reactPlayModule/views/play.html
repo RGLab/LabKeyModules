@@ -1,19 +1,15 @@
-<script src="<%=contextPath%>/modules/react.js"></script>
-<script src="<%=contextPath%>/modules/react-dom.js"></script>
-<script src="<%=contextPath%>/modules/babel.min.js"></script>
-<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<!-- Dependencies -->
+<script src="<%=contextPath%>/dependencies/react.js"></script>
+<script src="<%=contextPath%>/dependencies/react-dom.js"></script>
+<script src="<%=contextPath%>/dependencies/babel.min.js"></script>
 <link rel="stylesheet" href="<%=contextPath%>/filterView.css"></link>
-<link rel="stylesheet" href="<%=contextPath%>/studyCard.css"></link>
-<script src="/query/olap.js?892172600" type="text/javascript"></script>
+
+<!-- Cube js -->
+<script src="/query/olap.js?892172600" type="text/javascript"></script> 
 
 <body>
-    <div id="filter-view" style="float: left;"></div>
-    <div id="heatmap" style="margin-bottom: 50px;"></div>
-    <hr/>
-    <div id="study-panel"></div>
+    <div id="filter-view"></div>
 
     <script src="<%=contextPath%>/filterView.js" type='text/babel'></script>
-    <script src="<%=contextPath%>/studyCard.js" type='text/babel'></script>
-    <script src="<%=contextPath%>/heatmap.js" type="text/babel"></script>
-    <script src="<%=contextPath%>/cube.js" type="text/babel"></script>
 </body>

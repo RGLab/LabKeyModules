@@ -1,9 +1,7 @@
-LABKEY.Query.selectRows({
-        schemaName: 'immport', 
-        queryName: 'dataFinder_studyCard',
-        success: (data) => console.log(data)})
-
 const rootElement = document.getElementById('filter-view',)
+
+// These are the members of each class of filters: 
+// Used for parsing filters from localStorage
 const filterMembers = {
     "study": ["Study", "Species", "Condition", "ExposureMaterial", "ExposureProcess", "ResearchFocus"],
     "participant": ["Gender", "Race", "Age"],
@@ -131,20 +129,6 @@ function FilterView(props) {
     function goToDF() {
         window.location.href = './begin.view?'
     }
-
-    // Get summary counts
-    LABKEY.contextPath = '';
-    LABKEY.container = {path: 'Studies'};
-    LABKEY.Query.selectRows({
-        schemaName: 'study',
-        queryName: "StudyProperties",
-        success: (data) => {setStudyCount(data.rowCount);}
-    });
-    LABKEY.Query.selectRows({
-        schemaName: "study",
-        queryName: "demographics",
-        success: (data) => {setParticipantCount(data.rowCount);}
-    })
 
     return(
         <div className='container wrapper'>
