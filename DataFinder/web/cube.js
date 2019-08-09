@@ -1,7 +1,7 @@
 var dfcube = LABKEY.query.olap.CubeManager.getCube({
-    configId: 'reactPlayModule:/dataFinderCube',
+    configId: 'DataFinder:/DataFinderCube',
     schemaName: 'immport',
-    name: 'dataFinderCube',
+    name: 'DataFinderCube',
     deferLoad: false,
     memberExclusionFields:["[Subject].[Subject]"]
 });
@@ -93,13 +93,13 @@ function getHeatmapData(mdx, countFilter) {
     var participantCells;
     mdx.query({
         "sql": true,
-        configId: "reactPlayModule:/dataFinderCube",
+        configId: "DataFinder:/DataFinderCube",
         schemaName: 'immport',
         success: function(cs, mdx, config) {
             participantCells = cs; 
             mdx.query({
                 "sql": true,
-                configId: "reactPlayModule:/dataFinderCube",
+                configId: "DataFinder:/DataFinderCube",
                 schemaName: 'immport',
                 success: function(cs, mdx, config) {
                     studyCells = cs; 
@@ -112,13 +112,13 @@ function getHeatmapData(mdx, countFilter) {
                         document.getElementById("heatmap")
                     );
                 },
-                name: 'dataFinderCube',
+                name: 'DataFinderCube',
                 onRows: {level: "[Data.Assay].[Timepoint]", members: "members"},
                 countFilter: countFilter,
                 countDistinctLevel: "[Study].[Name]"
             })
         },
-        name: 'dataFinderCube',
+        name: 'DataFinderCube',
         onRows: {level: "[Data.Assay].[Timepoint]", members: "members"},
         countFilter: countFilter,
         countDistinctLevel: "[Subject].[Subject]"
