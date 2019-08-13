@@ -1,4 +1,5 @@
 <!-- Cube definition -->
+<!-- This is an example of a cube definition and is a copy of the cube in the Data Finder module -->
 <!-- https://mondrian.pentaho.com/documentation/schema.php -->
 <!-- Another example at https://github.com/LabKey/platform/blob/develop/query/resources/olap/junit.xml -->
 
