@@ -35,6 +35,7 @@ apt-get -y install graphviz-dev
 apt-get -y install libbz2-dev
 apt-get -y install libcairo2-dev
 apt-get -y install libcurl4-openssl-dev
+apt-get -y install libgeos-dev
 apt-get -y install libgsl0-dev
 apt-get -y install libhdf5-serial-dev
 apt-get -y install libicu-dev

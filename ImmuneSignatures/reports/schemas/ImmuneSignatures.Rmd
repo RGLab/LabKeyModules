@@ -642,6 +642,8 @@ coordDfs <- lapply(yng_res$combinedPDF$QSlist, makeCoordDf, FALSE, loc, discSF)
 coordDfs[[5]] <- makeCoordDf(yng_res$combinedPDF, TRUE, loc, discSF)
 names(coordDfs) <- c(discoverySDY, "Meta-Analysis")
 
+# Post Ubuntu 18.04 Migration the legend no longer needs to be explicitly
+# generated and in fact causes issues when done that way
 discPlot <- ggplot() +
                 geom_line(data = coordDfs$SDY212, aes(x,y, color="SDY212")) +
                 geom_line(data = coordDfs$SDY63, aes(x,y, color="SDY63")) +
@@ -657,8 +659,7 @@ discPlot <- ggplot() +
                 xlim(-1,1) +
                 xlab("Gene Module Activity") +
                 ylab("Density") +
-                geom_vline(xintercept = 0) +
-                theme(legend.text = element_text(c(discoverySDY,"Meta-Analysis")))
+                geom_vline(xintercept = 0) 
 
 # B. validation plot-------------------------------------------------------
 valSF <- qusage:::pdfScaleFactor(yng_res$valPDF)
@@ -775,7 +776,7 @@ DT::datatable(dn, fillContainer = TRUE)
 
 #### Figure 4 - Forest Plots of Significant Genes in Discovery Studies
 These Forest plots show significant genes from the discovery studies, both up and down regulated. Code developed by F. Vallenia @ Stanford.
-```{r sga-disc-forestplot}
+```{r sga-disc-forestplot, include=FALSE}
 customForestPlot <- function(geneName, metaObject, summaryTbl){
 
   # Prep and subsetting
