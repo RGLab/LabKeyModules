@@ -10,7 +10,7 @@ if [ $# -eq 0 ] ; then
     if [ `hostname` = 'ImmuneTestWeb2' ] ; then
         t='dev'
     else
-        if [ `hostname` = 'ImmuneProdWeb2' ] ; then
+        if [ `hostname` = 'ImmuneProdWebPeer2' ] ; then
             t='prod'
         else
             echo 'Script must be run on one of the web server machines. Unknown host, exiting...'
