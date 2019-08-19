@@ -10,7 +10,7 @@ if [ `whoami` != 'immunespace' ];then
   exit 1
 fi
 
-if [ `hostname | tail -c7` != 'rserve' ];then # RServe machine
+if [ `hostname | tail -c8` != 'Rserve2' ];then # RServe machine
   echo "ERROR: This script should be executed on the RServe machine."
   exit 1
 fi

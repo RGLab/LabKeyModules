@@ -2,7 +2,6 @@
 output: html_document_base
 ---
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(ImmuneSpaceR)
@@ -237,7 +236,11 @@ aggregateAssayData <- function(dat, aggregateBy) {
   
   tps <- unique(dat$stc_key)
   # Aggregate by participant & timepoint
-  datByTp <- dat[, if (nrow(.SD) > 1) { lapply(.SD, function(x){mean(x, na.rm = TRUE)}) } else {.SD}, by = c("participant_id", "stc_key"), .SDcols = !c("participant_id", "biosample_accession", "stc_key")]
+  datByTp <- dat[, if (nrow(.SD) > 1) { 
+      lapply(.SD, function(x){if(sum(!is.na(x)) == 0){as.numeric(NA)}else{mean(x, na.rm = TRUE)}}) 
+    } else {.SD}, 
+    by = c("participant_id", "stc_key"), 
+    .SDcols = !c("participant_id", "biosample_accession", "stc_key")]
       
     # } else if (aggregateBy == "subject-tp"){
     #   # Aggregate by participant & timepoint
@@ -428,6 +431,9 @@ if(impute == "mean" | impute == "median"){
     
     # Transform back
     mat <- t(res$data)
+    if (any(is.na(mat))) {
+      mat <- apply(mat, 2, function(x){m <- mean(x, na.rm = TRUE); ifelse(is.na(x), m, x)})
+    }
 
     return(mat)
   })
