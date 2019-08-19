@@ -77,6 +77,10 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts) {
     tmp <- lapply(tmp, strsplit, split = "\\.")[[1]]
     sdys <- paste0("SDY", unique(sapply(tmp, "[", 2)))
     mats <- con$cache$GE_matrices$name[ con$cache$GE_matrices$folder %in% sdys ]
+    # Don't include SDY67 batch 2!
+    if ("SDY67_Batch2_HealthyAdult" %in% mats) {
+      mats <- mats[-which(mats == "SDY67_Batch2_HealthyAdult")]
+    }
     eset <- con$getGEMatrix(mats)
     dat <- data.frame(t(Biobase::exprs(eset)),stringsAsFactors = FALSE)
     dat$biosample_accession <- rownames(dat)
