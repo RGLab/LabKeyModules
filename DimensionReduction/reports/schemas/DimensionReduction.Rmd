@@ -2,6 +2,7 @@
 output: html_document_base
 ---
 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(ImmuneSpaceR)
@@ -77,10 +78,6 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts) {
     tmp <- lapply(tmp, strsplit, split = "\\.")[[1]]
     sdys <- paste0("SDY", unique(sapply(tmp, "[", 2)))
     mats <- con$cache$GE_matrices$name[ con$cache$GE_matrices$folder %in% sdys ]
-    # Don't include SDY67 batch 2!
-    if ("SDY67_Batch2_HealthyAdult" %in% mats) {
-      mats <- mats[-which(mats == "SDY67_Batch2_HealthyAdult")]
-    }
     eset <- con$getGEMatrix(mats)
     dat <- data.frame(t(Biobase::exprs(eset)),stringsAsFactors = FALSE)
     dat$biosample_accession <- rownames(dat)
@@ -240,11 +237,7 @@ aggregateAssayData <- function(dat, aggregateBy) {
   
   tps <- unique(dat$stc_key)
   # Aggregate by participant & timepoint
-  datByTp <- dat[, if (nrow(.SD) > 1) { 
-      lapply(.SD, function(x){if(sum(!is.na(x)) == 0){as.numeric(NA)}else{mean(x, na.rm = TRUE)}}) 
-    } else {.SD}, 
-    by = c("participant_id", "stc_key"), 
-    .SDcols = !c("participant_id", "biosample_accession", "stc_key")]
+  datByTp <- dat[, if (nrow(.SD) > 1) { lapply(.SD, function(x){mean(x, na.rm = TRUE)}) } else {.SD}, by = c("participant_id", "stc_key"), .SDcols = !c("participant_id", "biosample_accession", "stc_key")]
       
     # } else if (aggregateBy == "subject-tp"){
     #   # Aggregate by participant & timepoint
@@ -393,8 +386,11 @@ if (impute != "none") {
   # Drop any features with > 80% missing values 
   aData <- mapply(
     function(mat, missingData) {
+      cnames <- colnames(mat)
       keepFeatures <- apply(missingData, 2, function(x){sum(x)/length(x) <= 0.8})
-      mat <- mat[, keepFeatures]
+      # If only one column mat[, keepFeatures] will transform mat to a vector
+      mat <- as.matrix(mat[, keepFeatures])
+      colnames(mat) <- cnames
       list(mat)
     },
     aData, 
@@ -403,8 +399,11 @@ if (impute != "none") {
   # Drop any subjects with > 80% missing values
   aData <- mapply(
     function(mat, missingData) {
-      keepSubjects <- apply(missingData[, colnames(mat)], 1, function(x){sum(x)/length(x) <= 0.8})
-      mat <- mat[keepSubjects, ]
+      cnames <- colnames(mat)
+      keepSubjects <- apply(as.matrix(missingData[, cnames]), 1, function(x){sum(x)/length(x) <= 0.8})
+      # There should be more than one subject, so should not have problem transforming mat to vector
+      mat <- as.matrix(mat[keepSubjects, ])
+      colnames(mat) <- cnames
       list(mat)
     },
     aData,
@@ -435,9 +434,6 @@ if(impute == "mean" | impute == "median"){
     
     # Transform back
     mat <- t(res$data)
-    if (any(is.na(mat))) {
-      mat <- apply(mat, 2, function(x){m <- mean(x, na.rm = TRUE); ifelse(is.na(x), m, x)})
-    }
 
     return(mat)
   })
@@ -482,6 +478,8 @@ aData <- lapply(names(aData), function(assay){
 
 # combine, including only subs with all datasets
 allMat <- Reduce(function(x,y){cbind(x[subs,],y[subs,])}, aData)
+# make sure all column names are maintained 
+colnames(allMat) <- unlist(lapply(aData, colnames))
 allMat <- allMat[subs, ]
 
 # normalize after ensuring numeric
@@ -520,6 +518,7 @@ if (impute != "none") {
   # Add number of of imputed features to demog
   # 
   allImputeMat <- Reduce(function(x,y){cbind(x[subs,],y[subs,])}, missingDataList)
+  colnames(allImputeMat) <- unlist(lapply(missingDataList, colnames))
   allImputeMat <- allImputeMat[subs,] # subset to only good subs if length(missingDataList) == 1
   droppedFeatureCount <- dim(allImputeMat)[2] - dim(allMat)[2] - sum(noVariance)
   allImputeMat <- allImputeMat[, colnames(allMat)]
@@ -631,7 +630,17 @@ makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat)
     colorCol <- gsub("^SUB\\d{5,6}\\.", "", subs)
     colorCol <- paste0("SDY", gsub("_\\d+$", "", colorCol))
   }else if(label %in% c("hai", "neut_ab_titer")){
-    re <- re[participant_id %in% subs ]
+    re <- con$getDataset(responseVar, original_view = TRUE)
+    # add subs column with study time collected if aggregateBy = subject-timepoint
+    if (aggregateBy == "subject-tp") {
+      subIDs <- gsub("_.+", "", subs)
+      subIDs <- unique(subIDs)
+      stc_keys <- sub("SUB\\d+\\.\\d+", "", subs)
+      stc_keys <- unique(stc_keys)
+    } else {
+      subIDs <- subs
+    }
+    re <- re[participant_id %in% subIDs ]
     # create response value from fold-change compared to baseline for each virus
     re <- re[, list(arm_accession, study_time_collected, study_time_collected_unit,
                     response = value_reported/mean(value_reported[study_time_collected<=0])),
@@ -649,6 +658,16 @@ makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat)
     # Dichotomize the participants into high and low responders arbitrarily at log2(4)
     # based on default values in IRP
     re <- re[, response := ifelse(response >= log2(4), "high responder",  "low responder")]
+    # for aggregate = subject-tp, add rows for subjectid_stc_key
+    if (aggregateBy == "subject-tp") {
+      re_keys <- lapply(stc_keys, function(key) {
+        tmp <- re
+        tmp[, participant_stc := paste0(participant_id, key)]
+        return(tmp)
+      })
+      Reduce(function(x,y){rbind(x,y)}, re_keys)
+    }
+    
     colorCol <- re$response[order(match(subs, re$participant_id))]
   }else if (label == "imputed_values") {
     colorCol <- imputed_values
@@ -704,11 +723,16 @@ makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat)
 
 ```{r getPlotInfo}
 re <- tryCatch(
-  con$getdataset(responseVar, original_view = TRUE),
+  con$getDataset(responseVar, original_view = TRUE),
   warning = function(w) return(w),
   error = function(e) return(e)
 )
 IRcondition <- is.null(re$message)
+showImputed <- ifelse(impute == "none", 
+                      FALSE,
+                      ifelse(max(imputed_values) > 0, 
+                             TRUE,
+                             FALSE))
 
 plotInfo <- list(list(plot = TRUE, name = "Age", label = "age_reported"),
                  list(plot = TRUE, name = "Gender", label = "gender"),
@@ -717,8 +741,8 @@ plotInfo <- list(list(plot = TRUE, name = "Age", label = "age_reported"),
                  list(plot = TRUE, name = "Cohort", label = "cohort"),
                  list(plot = projLvl, name = "Study", label = "study"),
                  list(plot = aggregateBy == "subject-tp", name = "Time", label = "time"),
-                 list(plot = IRcondition, name = "Immune Response", label = "time"),
-                 list(plot = (impute != "none" & max(imputed_values) > 0), name = "Imputed Values", label = "imputed_values"),
+                 list(plot = IRcondition, name = "Immune Response", label = responseVar),
+                 list(plot = showImputed, name = "Imputed Values", label = "imputed_values"),
                  list(plot = projLvl, name = "Sample Type", label = "sample_type"),
                  list(plot = projLvl & "gene_expression_files" %in% assays, name = "Feature Annotation Set", label = "fas_name"),
                  list(plot = projLvl & "gene_expression_files" %in% assays, name = "FAS Vendor", label = "fas_vendor"),
