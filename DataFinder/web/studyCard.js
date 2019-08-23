@@ -16,7 +16,7 @@ function DataFinderController(props) {
         deferLoad: false,
         memberExclusionFields: ["[Subject].[Subject]"]
     }))
-    const selectedStudiesArray = getSelectedStudiesArray()
+    const [selectedStudiesArray, setSelectedStudiesArray] = React.useState([])
 
 
     function handleInputChange(event) {
@@ -35,6 +35,8 @@ function DataFinderController(props) {
                     setSelectedParticipantCounts(selectedParticipants);
                     console.log("selectedParticipants")
                     console.log(selectedParticipants)
+                }).then(() => {
+                    getSelectedStudiesArray();
                 })
         })
     }
@@ -46,7 +48,9 @@ function DataFinderController(props) {
             selectedStudies[studyName] = {};
             selectedStudies[studyName] = { ...selectedParticipantCounts[studyName], ...studyDict[studyName] }
         })
-        return (Object.values(selectedStudies))
+        setSelectedStudiesArray(Object.values(selectedStudies));
+        console.log("SelectedStudiesArray")
+        console.log(selectedStudiesArray)
     }
 
     // console.log("studyDict")
@@ -65,8 +69,13 @@ function DataFinderController(props) {
                 return getSelectedParticipants(mdx, filters);
             }).then((selectedParticipants) => {
                 setSelectedParticipantCounts(selectedParticipants);
+            }).then(() => {
+                submitFilters();
+            }).then(() => {
+                getSelectedStudiesArray()
             })
         })
+
     }, [])
 
 
@@ -179,6 +188,9 @@ function DataFinderController(props) {
     return (
         <div>
             <div>
+                <BarplotController dfcube={dfcube} countFilter={filters} />
+            </div>
+            <div>
                 <label>
                     Filters:
                 </label>
@@ -284,6 +296,190 @@ function StudyCard(props) {
         </div>
     )
 }
+
+// React stuff ==================================== //
+
+function BarplotController(props) {
+    const dfcube = props.dfcube;
+    const countFilter = props.countFilter;
+    const [data, setData] = React.useState([])
+
+    React.useEffect(() => {
+        // Get the data from the cube
+        dfcube.onReady((mdx) => {
+            mdx.query({
+                "sql": true,
+                configId: "DataFinder:/DataFinderCube",
+                schemaName: 'immport',
+                success: function (cs, mdx, config) {
+                    console.log(cs);
+                    setData(formatBarplotData(cs));
+                },
+                name: 'DataFinderCube',
+                onRows: { level: "[Subject.Gender].[Gender]", members: "members" },
+                countFilter: countFilter,
+                countDistinctLevel: "[Subject].[Subject]",
+                showEmpty: true
+            });
+        })
+    }, [countFilter])
+
+    function formatBarplotData(cs) {
+        var bpd = new Array(cs.cells.length);
+        var cells = cs.cells;
+        cells.forEach((e, i) => {
+            var uniqueName = e[0].positions[1][0].uniqueName;
+            var label = uniqueName.split(/\./g).map(s => s.replace(/[\[\]]/g, ""))[2]
+            bpd[i] = {
+                label: label,
+                value: e[0].value
+            }
+        })
+        console.log("got the data")
+        return (bpd)
+    }
+
+    return (
+        <div>
+            <Barplot
+                data={data}
+                height={250}
+                name={"gender"}
+                width={800}
+            />
+        </div>
+    );
+}
+// console.log(BarplotController);
+
+function Barplot(props) {
+    React.useEffect(() => {
+        if (props.data.length > 0) {
+            drawBarplot(props);
+        }
+    });
+
+    return (
+        <div className={props.name} >
+            <svg id={"barplot-" + props.name}></svg>
+        </div>
+    );
+}
+
+
+// ================================================================== //
+/* 
+This is a barplot component which takes the following arguments in 
+the props: 
+  * data
+  * name (id for the div to stick it in)
+  * width
+  * height
+
+*/
+
+function drawBarplot(props) {
+    const data = props.data;
+    const name = props.name;
+    const labels = [];
+    const dataRange = [0, 0];
+
+    data.map((e, i) => {
+        labels.push(e.label);
+        if (e.value > dataRange[1]) dataRange[1] = e.value;
+    });
+
+
+    var svg = d3
+        .select("#barplot-" + name)
+        .attr("height", props.height)
+        .attr("width", props.width)
+        .attr("id", "barplot-" + name);
+
+    // Create margins
+    var margin = { top: 20, right: 0, bottom: 40, left: 175 },
+        width = props.width - margin.left - margin.right,
+        height = props.height - margin.top - margin.bottom;
+
+    // Set scales using options
+
+    var yaxisScale = d3
+        .scaleLinear()
+        .domain([0, 3500])
+        .range([height, 0]);
+
+    var xaxisScale = d3
+        .scaleBand()
+        .domain(labels)
+        .range([0, width]);
+
+    // Create body and axes
+    // svg.append("g")
+    //     .call(d3.axisLeft(yaxisScale));
+
+    // svg.append("g")
+    //     .call(d3.axisBottom(xaxisScale));
+
+    if (svg.selectAll("g").empty()) {
+
+
+
+        var barplot = svg
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .attr("id", "barplot" + name);
+        svg.append("g")
+            .attr("id", "xaxis-labels")
+            .attr(
+                "transform",
+                "translate(" + margin.left + ", " + (height + margin.top) + ")"
+            )
+            .call(d3.axisBottom(xaxisScale));
+
+        svg.append("g")
+            .attr("id", "yaxis-labels")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .call(d3.axisLeft(yaxisScale));
+    } else {
+        var barplot = svg.select("#barplot" + name)
+    }
+
+
+
+    // add data
+    var boxes = barplot.selectAll("rect").data(data);
+    boxes
+        .enter()
+        .append("rect")
+        .attr("x", function (d) {
+            return xaxisScale(d.label);
+        })
+        .attr("width", xaxisScale.bandwidth() - 5)
+        .attr("y", function (d) {
+            return yaxisScale(d.value);
+        })
+        .attr("height", function (d) {
+            return height - yaxisScale(d.value);
+        })
+        .style("fill", "steelblue")
+    boxes
+        .transition()
+        .duration(300)
+        .attr("x", function (d) {
+            return xaxisScale(d.label);
+        })
+        .attr("width", xaxisScale.bandwidth() - 5)
+        .attr("y", function (d) {
+            return yaxisScale(d.value);
+        })
+        .attr("height", function (d) {
+            return height - yaxisScale(d.value);
+        })
+
+    boxes.exit().remove();
+}
+
+
 
 
 ReactDOM.render(<DataFinderController />, rootElement);

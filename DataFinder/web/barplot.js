@@ -1,19 +1,37 @@
 // React stuff ==================================== //
-ReactDOM.render(
-    <div>
-        <BarplotController />
-    </div>,
-    document.getElementById("gender-barplot")
-);
 
 function BarplotController(props) {
+    const dfcube = props.dfcube;
+    const countFilter = props.countFilter;
+    const [data, setData] = React.useState([])
 
     // Get the data from the cube
-    const data = [
-        { label: "Female", value: 55 },
-        { label: "Male", value: 14 },
-        { label: "Other", value: 31 }
-    ]
+    dfcube.onReady((mdx) => {
+        mdx.query({
+            "sql": true,
+            configId: "DataFinder:/DataFinderCube",
+            schemaName: 'immport',
+            success: function (cs, mdx, config) {
+                console.log(cs);
+                data_tmp = formatBarplotData(cs);
+                setData(data_tmp);
+            },
+            name: 'DataFinderCube',
+            onRows: { level: "[Data.Assay].[Timepoint]", members: "members" },
+            countFilter: countFilter,
+            countDistinctLevel: "[Subject].[Subject]"
+        });
+    })
+
+    function formatBarplotData(cs) {
+        return (
+            [
+                { label: "Female", value: 55 },
+                { label: "Male", value: 14 },
+                { label: "Other", value: 31 }
+            ]
+        )
+    }
 
     return (
         <div>
@@ -26,6 +44,7 @@ function BarplotController(props) {
         </div>
     );
 }
+console.log(BarplotController);
 
 function Barplot(props) {
     React.useEffect(() => {
