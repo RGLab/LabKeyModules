@@ -1,8 +1,14 @@
 const rootElement = document.getElementById('study-panel')
 
 function DataFinderController(props) {
+    const studyFilter = {
+        level: "[Study].[Name]",
+        membersQuery: { level: "[Study].[Name]", members: ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[SDY1291]", "[Study].[SDY903]", "[Study].[SDY28]", "[Study].[SDY514]", "[Study].[SDY387]", "[Study].[SDY34]", "[Study].[SDY1370]", "[Study].[SDY1373]", "[Study].[SDY789]", "[Study].[SDY1260]", "[Study].[SDY1264]", "[Study].[SDY1276]", "[Study].[SDY1328]", "[Study].[SDY296]", "[Study].[SDY301]", "[Study].[SDY63]", "[Study].[SDY74]", "[Study].[SDY312]", "[Study].[SDY314]", "[Study].[SDY315]", "[Study].[SDY478]", "[Study].[SDY113]", "[Study].[SDY305]", "[Study].[SDY472]", "[Study].[SDY395]", "[Study].[SDY406]", "[Study].[SDY460]", "[Study].[SDY773]", "[Study].[SDY421]", "[Study].[SDY461]", "[Study].[SDY675]", "[Study].[SDY400]", "[Study].[SDY404]", "[Study].[SDY614]", "[Study].[SDY112]", "[Study].[SDY888]", "[Study].[SDY1109]", "[Study].[SDY67]", "[Study].[SDY61]", "[Study].[SDY508]", "[Study].[SDY517]", "[Study].[SDY520]", "[Study].[SDY640]", "[Study].[SDY144]", "[Study].[SDY162]", "[Study].[SDY167]", "[Study].[SDY18]", "[Study].[SDY180]", "[Study].[SDY207]", "[Study].[SDY820]", "[Study].[SDY887]", "[Study].[SDY269]", "[Study].[SDY1289]", "[Study].[SDY1293]", "[Study].[SDY1324]", "[Study].[SDY984]", "[Study].[SDY522]", "[Study].[SDY753]", "[Study].[SDY56]", "[Study].[SDY278]", "[Study].[SDY1294]", "[Study].[SDY1325]", "[Study].[SDY1364]", "[Study].[SDY1368]", "[Study].[SDY80]", "[Study].[SDY270]", "[Study].[SDY515]", "[Study].[SDY422]", "[Study].[SDY506]", "[Study].[SDY523]", "[Study].[SDY756]", "[Study].[SDY299]", "[Study].[SDY300]", "[Study].[SDY364]", "[Study].[SDY368]", "[Study].[SDY369]", "[Study].[SDY372]", "[Study].[SDY376]", "[Study].[SDY645]", "[Study].[SDY416]", "[Study].[SDY597]", "[Study].[SDY667]", "[Study].[SDY87]", "[Study].[SDY89]", "[Study].[SDY690]", "[Study].[SDY212]", "[Study].[SDY215]", "[Study].[SDY519]", "[Study].[SDY224]", "[Study].[SDY232]", "[Study].[SDY241]", "[Study].[SDY1041]", "[Study].[SDY1097]"] }
+    }
     const [studyDict, setStudyDict] = React.useState({});
     const [selectedParticipantCounts, setSelectedParticipantCounts] = React.useState({});
+    const [inputText, setInputText] = React.useState('[{"level": "[Subject].[Subject]","membersQuery": {"level": "[Subject.Age].[Age]", "members": "[Subject.Age].[> 70]"}}]');
+    const [filters, setFilters] = React.useState([studyFilter]);
     const [dfcube, setCube] = React.useState(LABKEY.query.olap.CubeManager.getCube({
         configId: 'DataFinder:/DataFinderCube',
         schemaName: 'immport',
@@ -11,41 +17,58 @@ function DataFinderController(props) {
         memberExclusionFields: ["[Subject].[Subject]"]
     }))
     const selectedStudiesArray = getSelectedStudiesArray()
-    const studyFilter = {
-        level: "[Study].[Name]",
-        membersQuery: { level: "[Study].[Name]", members: ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[SDY1291]", "[Study].[SDY903]", "[Study].[SDY28]", "[Study].[SDY514]", "[Study].[SDY387]", "[Study].[SDY34]", "[Study].[SDY1370]", "[Study].[SDY1373]", "[Study].[SDY789]", "[Study].[SDY1260]", "[Study].[SDY1264]", "[Study].[SDY1276]", "[Study].[SDY1328]", "[Study].[SDY296]", "[Study].[SDY301]", "[Study].[SDY63]", "[Study].[SDY74]", "[Study].[SDY312]", "[Study].[SDY314]", "[Study].[SDY315]", "[Study].[SDY478]", "[Study].[SDY113]", "[Study].[SDY305]", "[Study].[SDY472]", "[Study].[SDY395]", "[Study].[SDY406]", "[Study].[SDY460]", "[Study].[SDY773]", "[Study].[SDY421]", "[Study].[SDY461]", "[Study].[SDY675]", "[Study].[SDY400]", "[Study].[SDY404]", "[Study].[SDY614]", "[Study].[SDY112]", "[Study].[SDY888]", "[Study].[SDY1109]", "[Study].[SDY67]", "[Study].[SDY61]", "[Study].[SDY508]", "[Study].[SDY517]", "[Study].[SDY520]", "[Study].[SDY640]", "[Study].[SDY144]", "[Study].[SDY162]", "[Study].[SDY167]", "[Study].[SDY18]", "[Study].[SDY180]", "[Study].[SDY207]", "[Study].[SDY820]", "[Study].[SDY887]", "[Study].[SDY269]", "[Study].[SDY1289]", "[Study].[SDY1293]", "[Study].[SDY1324]", "[Study].[SDY984]", "[Study].[SDY522]", "[Study].[SDY753]", "[Study].[SDY56]", "[Study].[SDY278]", "[Study].[SDY1294]", "[Study].[SDY1325]", "[Study].[SDY1364]", "[Study].[SDY1368]", "[Study].[SDY80]", "[Study].[SDY270]", "[Study].[SDY515]", "[Study].[SDY422]", "[Study].[SDY506]", "[Study].[SDY523]", "[Study].[SDY756]", "[Study].[SDY299]", "[Study].[SDY300]", "[Study].[SDY364]", "[Study].[SDY368]", "[Study].[SDY369]", "[Study].[SDY372]", "[Study].[SDY376]", "[Study].[SDY645]", "[Study].[SDY416]", "[Study].[SDY597]", "[Study].[SDY667]", "[Study].[SDY87]", "[Study].[SDY89]", "[Study].[SDY690]", "[Study].[SDY212]", "[Study].[SDY215]", "[Study].[SDY519]", "[Study].[SDY224]", "[Study].[SDY232]", "[Study].[SDY241]", "[Study].[SDY1041]", "[Study].[SDY1097]"] }
+
+
+    function handleInputChange(event) {
+        setInputText(event.target.value);
     }
 
+    function submitFilters() {
+        const parsedFilters = JSON.parse(inputText);
+        const allFilters = [studyFilter, ...parsedFilters];
+        setFilters(allFilters);
+        console.log("updating participant counts")
+        dfcube.onReady((mdx) => {
+            console.log("really updating those counts now...")
+            getSelectedParticipants(mdx, filters)
+                .then((selectedParticipants) => {
+                    setSelectedParticipantCounts(selectedParticipants);
+                    console.log("selectedParticipants")
+                    console.log(selectedParticipants)
+                })
+        })
+    }
 
     function getSelectedStudiesArray() {
         const selectedStudies = {};
         Object.keys(selectedParticipantCounts).map((e, i) => {
             const studyName = e;
             selectedStudies[studyName] = {};
-            selectedStudies[studyName] = {...selectedParticipantCounts[studyName], ...studyDict[studyName]}
+            selectedStudies[studyName] = { ...selectedParticipantCounts[studyName], ...studyDict[studyName] }
         })
         return (Object.values(selectedStudies))
     }
 
-    console.log("studyDict")
-    console.log(studyDict)
-    console.log("selectedParticipantCounts")
-    console.log(selectedParticipantCounts);
-    console.log("selectedStudiesArray")
-    console.log(selectedStudiesArray);
+    // console.log("studyDict")
+    // console.log(studyDict)
+    // console.log("selectedParticipantCounts")
+    // console.log(selectedParticipantCounts);
+    // console.log("selectedStudiesArray")
+    // console.log(selectedStudiesArray);
 
-    
+
 
     React.useEffect(() => {
         dfcube.onReady((mdx) => {
             getTheData(mdx).then((theData) => {
                 setStudyDict(theData);
-                return getSelectedParticipants(mdx);
+                return getSelectedParticipants(mdx, filters);
             }).then((selectedParticipants) => {
                 setSelectedParticipantCounts(selectedParticipants);
             })
         })
-    }, [])    
+    }, [])
+
 
     // Whenever a filter changes, just update selectedParticipantCounts
 
@@ -143,15 +166,7 @@ function DataFinderController(props) {
                 name: 'DataFinderCube',
                 onRows: { level: "[Study].[Name]", members: "members" },
                 countFilter: [
-                    {
-                        level: "[Subject].[Subject]",
-                        membersQuery: { level: "[Data.Assay].[SampleType]", members: ["[Data.Assay].[Gene Expression].[0].[B cell]", "[Data.Assay].[Gene Expression].[0].[PBMC]"] }
-                    },
-                    {
-                        level: "[Subject].[Subject]",
-                        membersQuery: { level: "[Data.Assay].[Timepoint]", members: ["[Data.Assay].[HAI].[28]"] }
-                    },
-                    studyFilter
+                    countFilter
                 ],
                 countDistinctLevel: "[Subject].[Subject]",
                 showEmpty: false
@@ -163,17 +178,27 @@ function DataFinderController(props) {
 
     return (
         <div>
-            {selectedStudiesArray.map((study) => {
-                return (
-                    <StudyCard key={study.study_accession} study={study} />
-                )
+            <div>
+                <label>
+                    Filters:
+                </label>
+                <button onClick={submitFilters}>Submit</button>
+                <textarea value={inputText} onChange={handleInputChange} rows="10" cols="50" />
+                <br />
+                <br />
+            </div>
+            <div id="df-study-panel">
+                {selectedStudiesArray.map((study) => {
+                    return (
+                        <StudyCard key={study.study_accession} study={study} />
+                    )
 
-            })}
+                })}
+            </div>
         </div>
     )
 
 }
-
 
 function StudyProperty(props) {
     const labelStyle = {

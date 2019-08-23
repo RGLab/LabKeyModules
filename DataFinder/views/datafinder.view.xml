@@ -1,4 +1,14 @@
 <view xmlns="http://labkey.org/data/xml/view"
   title="Data Finder"
   frame="portal">
+  <!-- <dependencies>
+        <dependency path="internal/jQuery"/>
+        <dependency path="query/olap.js"/>
+        <dependency path="clientapi/core/SQL.js"/>
+        <dependency path="modules/react.js"/>
+        <dependency path="modules/react-dom.js"/>
+        <dependency path="modules/react.js"/>
+        <dependency path="studyCard.js"/>
+        <dependency path="studyCard.css"/>
+    </dependencies> -->
 </view>
