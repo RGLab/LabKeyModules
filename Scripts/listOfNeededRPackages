@@ -6,6 +6,7 @@ DT
 FactoMineR
 GEOquery
 ImmPortR
+Kmisc
 MetaIntegrator
 RColorBrewer
 RJSONIO
@@ -43,6 +44,7 @@ heatmaply
 hgu133a2cdf
 hgu133plus2cdf
 hthgu133pluspmcdf
+htmltools
 huex10stv2cdf
 hugene10stv1cdf
 hursta2a520709cdf
@@ -74,4 +76,5 @@ stringr
 tidyr
 tidytext
 tm
+uwot
 wordcloud
