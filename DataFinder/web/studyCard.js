@@ -5,8 +5,8 @@ function DataFinderController(props) {
         level: "[Study].[Name]",
         membersQuery: { level: "[Study].[Name]", members: ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[SDY1291]", "[Study].[SDY903]", "[Study].[SDY28]", "[Study].[SDY514]", "[Study].[SDY387]", "[Study].[SDY34]", "[Study].[SDY1370]", "[Study].[SDY1373]", "[Study].[SDY789]", "[Study].[SDY1260]", "[Study].[SDY1264]", "[Study].[SDY1276]", "[Study].[SDY1328]", "[Study].[SDY296]", "[Study].[SDY301]", "[Study].[SDY63]", "[Study].[SDY74]", "[Study].[SDY312]", "[Study].[SDY314]", "[Study].[SDY315]", "[Study].[SDY478]", "[Study].[SDY113]", "[Study].[SDY305]", "[Study].[SDY472]", "[Study].[SDY395]", "[Study].[SDY406]", "[Study].[SDY460]", "[Study].[SDY773]", "[Study].[SDY421]", "[Study].[SDY461]", "[Study].[SDY675]", "[Study].[SDY400]", "[Study].[SDY404]", "[Study].[SDY614]", "[Study].[SDY112]", "[Study].[SDY888]", "[Study].[SDY1109]", "[Study].[SDY67]", "[Study].[SDY61]", "[Study].[SDY508]", "[Study].[SDY517]", "[Study].[SDY520]", "[Study].[SDY640]", "[Study].[SDY144]", "[Study].[SDY162]", "[Study].[SDY167]", "[Study].[SDY18]", "[Study].[SDY180]", "[Study].[SDY207]", "[Study].[SDY820]", "[Study].[SDY887]", "[Study].[SDY269]", "[Study].[SDY1289]", "[Study].[SDY1293]", "[Study].[SDY1324]", "[Study].[SDY984]", "[Study].[SDY522]", "[Study].[SDY753]", "[Study].[SDY56]", "[Study].[SDY278]", "[Study].[SDY1294]", "[Study].[SDY1325]", "[Study].[SDY1364]", "[Study].[SDY1368]", "[Study].[SDY80]", "[Study].[SDY270]", "[Study].[SDY515]", "[Study].[SDY422]", "[Study].[SDY506]", "[Study].[SDY523]", "[Study].[SDY756]", "[Study].[SDY299]", "[Study].[SDY300]", "[Study].[SDY364]", "[Study].[SDY368]", "[Study].[SDY369]", "[Study].[SDY372]", "[Study].[SDY376]", "[Study].[SDY645]", "[Study].[SDY416]", "[Study].[SDY597]", "[Study].[SDY667]", "[Study].[SDY87]", "[Study].[SDY89]", "[Study].[SDY690]", "[Study].[SDY212]", "[Study].[SDY215]", "[Study].[SDY519]", "[Study].[SDY224]", "[Study].[SDY232]", "[Study].[SDY241]", "[Study].[SDY1041]", "[Study].[SDY1097]"] }
     }
+    const [filterUpdate, setFilterUpdate] = React.useState(0);
     const [studyDict, setStudyDict] = React.useState({});
-    const [selectedParticipantCounts, setSelectedParticipantCounts] = React.useState({});
     const [inputText, setInputText] = React.useState('[{"level": "[Subject].[Subject]","membersQuery": {"level": "[Subject.Age].[Age]", "members": "[Subject.Age].[> 70]"}}]');
     const [filters, setFilters] = React.useState([studyFilter]);
     const [dfcube, setCube] = React.useState(LABKEY.query.olap.CubeManager.getCube({
@@ -19,72 +19,78 @@ function DataFinderController(props) {
     const [selectedStudiesArray, setSelectedStudiesArray] = React.useState([])
 
 
+    // keep inputText up-to-date with any changes to the text box
     function handleInputChange(event) {
         setInputText(event.target.value);
     }
 
+    function clearFilters() {
+        setInputText("[]")
+        const allFilters = [studyFilter];
+        setFilters(allFilters);
+        setFilterUpdate(filterUpdate + 1);
+    }
+
+    function resetFilters() {
+        const text = '[{"level": "[Subject].[Subject]","membersQuery": {"level": "[Subject.Age].[Age]", "members": "[Subject.Age].[> 70]"}}]'
+        setInputText(text);
+        const parsedFilters = JSON.parse(text);
+        const allFilters = [studyFilter, ...parsedFilters];
+        setFilters(allFilters);
+        setFilterUpdate(filterUpdate + 1);
+    }
+
     function submitFilters() {
+        // Parse filters, update filters in state and increment filterupdate counter to 
+        // set off new study data query
         const parsedFilters = JSON.parse(inputText);
         const allFilters = [studyFilter, ...parsedFilters];
         setFilters(allFilters);
-        console.log("updating participant counts")
-        dfcube.onReady((mdx) => {
-            console.log("really updating those counts now...")
-            getSelectedParticipants(mdx, filters)
-                .then((selectedParticipants) => {
-                    setSelectedParticipantCounts(selectedParticipants);
-                    console.log("selectedParticipants")
-                    console.log(selectedParticipants)
-                }).then(() => {
-                    getSelectedStudiesArray();
-                })
-        })
+        setFilterUpdate(filterUpdate + 1);
     }
 
-    function getSelectedStudiesArray() {
+    // helper function which combines studies and selected participants to get
+    // an array with info about currently selected studies
+    function getSelectedStudiesArray(studies, selectedParticipants) {
         const selectedStudies = {};
-        Object.keys(selectedParticipantCounts).map((e, i) => {
+        Object.keys(selectedParticipants).map((e, i) => {
             const studyName = e;
             selectedStudies[studyName] = {};
-            selectedStudies[studyName] = { ...selectedParticipantCounts[studyName], ...studyDict[studyName] }
+            selectedStudies[studyName] = { ...selectedParticipants[studyName], ...studies[studyName] }
         })
-        setSelectedStudiesArray(Object.values(selectedStudies));
-        console.log("SelectedStudiesArray")
-        console.log(selectedStudiesArray)
+        return Object.values(selectedStudies);
+
     }
 
-    // console.log("studyDict")
-    // console.log(studyDict)
-    // console.log("selectedParticipantCounts")
-    // console.log(selectedParticipantCounts);
-    // console.log("selectedStudiesArray")
-    // console.log(selectedStudiesArray);
-
-
-
-    React.useEffect(() => {
-        dfcube.onReady((mdx) => {
-            getTheData(mdx).then((theData) => {
-                setStudyDict(theData);
-                return getSelectedParticipants(mdx, filters);
-            }).then((selectedParticipants) => {
-                setSelectedParticipantCounts(selectedParticipants);
-            }).then(() => {
-                submitFilters();
-            }).then(() => {
-                getSelectedStudiesArray()
-            })
-        })
-
+    // Submit the example filters when the page loads
+    React.useState(() => {
+        submitFilters()
     }, [])
 
+    // Update data every time the filter update button is clicked
+    React.useEffect(() => {
 
-    // Whenever a filter changes, just update selectedParticipantCounts
+        dfcube.onReady((mdx) => {
+            Promise.all([getTheData(mdx), getSelectedParticipants(mdx, filters)])
+                .then((values) => {
+                    setStudyDict(values[0])
+                    const selectedStudies = getSelectedStudiesArray(values[0], values[1]);
+                    setSelectedStudiesArray(selectedStudies);
+                })
+        })
 
+    }, [filterUpdate])
+
+
+    // Returns a promise which will get studyDict with all the static info about studies
     function getTheData(mdx) {
-        console.log("getting the data")
 
-        // define a promise to get the first state
+        // return cached data if it has already been loaded
+        if (studyDict.hasOwnProperty("SDY269")) {
+            return studyDict;
+        }
+
+        // define a promise to get info from query
         const studyInfo = new Promise((resolve, reject) => {
             LABKEY.Query.selectRows({
                 schemaName: 'immport',
@@ -93,6 +99,7 @@ function DataFinderController(props) {
             })
         })
 
+        // Define a promise to get study counts
         const studyCounts = new Promise((resolve, reject) => {
             mdx.query({
                 configId: "DataFinder:/DataFinderCube",
@@ -116,8 +123,8 @@ function DataFinderController(props) {
             })
         })
 
-        // combine results after they have all been loaded (using Promise.all...?)
-        // combine results and return
+        // combine results after they have all been loaded
+        // Return the promise which will return results once completed
         return Promise.all([studyInfo, studyCounts]).then((values) => {
             // combine results and return them
             const studyInfo = values[0];
@@ -155,6 +162,7 @@ function DataFinderController(props) {
         })
     }
 
+    // Returns a promise which will get selected participants based on filter
     function getSelectedParticipants(mdx, countFilter) {
 
         const selectedParticipants = new Promise((resolve, reject) => {
@@ -185,19 +193,30 @@ function DataFinderController(props) {
         return selectedParticipants;
     }
 
+    // Render everything
+    // TODO:  Use the same controller for BarplotController
+    const colstyle = {
+        width: '45%',
+        padding: '5px',
+        display: 'inline-block'
+    }
     return (
         <div>
             <div>
-                <BarplotController dfcube={dfcube} countFilter={filters} />
-            </div>
-            <div>
-                <label>
-                    Filters:
-                </label>
-                <button onClick={submitFilters}>Submit</button>
-                <textarea value={inputText} onChange={handleInputChange} rows="10" cols="50" />
-                <br />
-                <br />
+                <div style={colstyle}>
+                    <div >
+                        <label>Filters:</label>
+                        <button onClick={submitFilters}>Submit</button>
+                        <button onClick={resetFilters}>Reset</button>
+                        <button onClick={clearFilters}>Clear</button>
+                    </div>
+                    <div >
+                        <textarea value={inputText} onChange={handleInputChange} rows="10" cols="50" />
+                    </div>
+                </div>
+                <div style={colstyle}>
+                    <BarplotController dfcube={dfcube} countFilter={filters} width={400} height={200}/>
+                </div>
             </div>
             <div id="df-study-panel">
                 {selectedStudiesArray.map((study) => {
@@ -212,6 +231,8 @@ function DataFinderController(props) {
 
 }
 
+
+// Components
 function StudyProperty(props) {
     const labelStyle = {
         fontWeight: "bold",
@@ -297,6 +318,9 @@ function StudyCard(props) {
     )
 }
 
+// Barplot ---------------------------------------- //
+
+
 // React stuff ==================================== //
 
 function BarplotController(props) {
@@ -312,7 +336,6 @@ function BarplotController(props) {
                 configId: "DataFinder:/DataFinderCube",
                 schemaName: 'immport',
                 success: function (cs, mdx, config) {
-                    console.log(cs);
                     setData(formatBarplotData(cs));
                 },
                 name: 'DataFinderCube',
@@ -335,7 +358,6 @@ function BarplotController(props) {
                 value: e[0].value
             }
         })
-        console.log("got the data")
         return (bpd)
     }
 
@@ -343,9 +365,9 @@ function BarplotController(props) {
         <div>
             <Barplot
                 data={data}
-                height={250}
+                height={props.height}
                 name={"gender"}
-                width={800}
+                width={props.width}
             />
         </div>
     );
@@ -397,21 +419,21 @@ function drawBarplot(props) {
         .attr("id", "barplot-" + name);
 
     // Create margins
-    var margin = { top: 20, right: 0, bottom: 40, left: 175 },
+    var margin = { top: 20, right: 0, bottom: 30, left: 50 },
         width = props.width - margin.left - margin.right,
         height = props.height - margin.top - margin.bottom;
 
     // Set scales using options
 
-    var yaxisScale = d3
+    var xaxisScale = d3
         .scaleLinear()
         .domain([0, 3500])
-        .range([height, 0]);
+        .range([0, width]);
 
-    var xaxisScale = d3
+    var yaxisScale = d3
         .scaleBand()
         .domain(labels)
-        .range([0, width]);
+        .range([height, 0]);
 
     // Create body and axes
     // svg.append("g")
@@ -451,30 +473,27 @@ function drawBarplot(props) {
     boxes
         .enter()
         .append("rect")
-        .attr("x", function (d) {
-            return xaxisScale(d.label);
+        .attr("class", "rect")
+        .attr("x", xaxisScale(0))
+        .attr("width", function (d) {
+            return xaxisScale(d.value);
         })
-        .attr("width", xaxisScale.bandwidth() - 5)
         .attr("y", function (d) {
-            return yaxisScale(d.value);
+            return yaxisScale(d.label);
         })
-        .attr("height", function (d) {
-            return height - yaxisScale(d.value);
-        })
+        .attr("height", yaxisScale.bandwidth() - 5)
         .style("fill", "steelblue")
     boxes
         .transition()
         .duration(300)
-        .attr("x", function (d) {
-            return xaxisScale(d.label);
+        .attr("x", xaxisScale(0))
+        .attr("width", function (d) {
+            return xaxisScale(d.value);
         })
-        .attr("width", xaxisScale.bandwidth() - 5)
         .attr("y", function (d) {
-            return yaxisScale(d.value);
+            return yaxisScale(d.label);
         })
-        .attr("height", function (d) {
-            return height - yaxisScale(d.value);
-        })
+        .attr("height", yaxisScale.bandwidth() - 5)
 
     boxes.exit().remove();
 }
