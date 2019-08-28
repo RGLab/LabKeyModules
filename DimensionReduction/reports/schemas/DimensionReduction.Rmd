@@ -1,8 +1,6 @@
 ---
 output: html_document_base
 ---
-
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(ImmuneSpaceR)
@@ -65,15 +63,60 @@ projLvl <- !grepl("SDY\\d{2,4}", labkey.url.path)
 getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts) {
   # Get data with default transformation method unless gene expression which
   # needs special treatment to organize in appropriate format
-  if(assay != "gene_expression_files"){
+  if ( assay != "gene_expression_files" ) {
     original_view <- assay != "mbaa"
+    valCol <- switch( assay,
+          "elisa" = "value_preferred",
+          "elispot" = "spot_number_reported",
+          "mbaa" = "concentration_value",
+          "pcr" = "value_reported",
+          "fcs_analyzed_result" = "population_cell_number",
+          "hai" = "value_reported",
+          "neut_ab_titer" = "value_reported"
+        )
+    grpByCol <- switch( assay,
+          "elisa" = "analyte",
+          "elispot" = "analyte",
+          "mbaa" = "analyte",
+          "pcr" = "gene_symbol",
+          "fcs_analyzed_result" = "population_definition_reported",
+          "hai" = "virus",
+          "neut_ab_titer" = "virus"
+        )
+    cols <- c("ParticipantId", "biosample_accession", "study_time_collected", "study_time_collected_unit", grpByCol, valCol)
     dat <- con$getDataset(assay, 
-                          original_view = original_view, 
+                          original_view = original_view,
                           transformMethod = "auto", 
-                          colFilter = pidsFilt)
+                          colFilter = pidsFilt,
+                          colSelect = cols)
+    
   }else{
     # Use filteredPids to only download matrices for specified studies and then
     # subset data by filtered gef to ensure only correct pids picked up.
+    # Get cohorts
+      cohort_membership <- con$getDataset("cohort_membership", 
+                                           colFilter = pidsFilt,
+                                           colSelect = c("name", "study_accession", "ParticipantId"))
+      
+      # Get gem names for those cohorts
+      folderFilter <- Rlabkey::makeFilter(
+        c("Folder/Name", "IN", paste0(unique(cohort_membership$study_accession), collapse = ";") )
+      )
+      runs <- Rlabkey::labkey.selectRows(con$config$labkey.url.base,
+                               "Studies",
+                               "assay.ExpressionMatrix.matrix",
+                               "Runs",
+                               colFilter = folderFilter)
+      all <- merge(runs, unique(cohort_membership[, .(study_accession, name)]), 
+                  by.x = c("Cohort", "Study"), by.y = c("name", "study_accession"),
+                  all.x = FALSE,
+                  all.y = FALSE)
+      mats <- unique(all$Name)
+      
+      
+      
+      
+      
     tmp <- strsplit(filteredPids, ";")
     tmp <- lapply(tmp, strsplit, split = "\\.")[[1]]
     sdys <- paste0("SDY", unique(sapply(tmp, "[", 2)))
@@ -321,7 +364,7 @@ if ( aggregateBy == "subject" & "gene_expression_files" %in% assays ) {
 }
 
 # Get sample-level additional data
-if (projLvl) {
+if ( projLvl ) {
   extraMetadata <- getSampleMetadata(aData)
 }
 
@@ -390,7 +433,7 @@ if (impute != "none") {
       keepFeatures <- apply(missingData, 2, function(x){sum(x)/length(x) <= 0.8})
       # If only one column mat[, keepFeatures] will transform mat to a vector
       mat <- as.matrix(mat[, keepFeatures])
-      colnames(mat) <- cnames
+      colnames(mat) <- cnames[keepFeatures]
       list(mat)
     },
     aData, 
@@ -401,7 +444,6 @@ if (impute != "none") {
     function(mat, missingData) {
       cnames <- colnames(mat)
       keepSubjects <- apply(as.matrix(missingData[, cnames]), 1, function(x){sum(x)/length(x) <= 0.8})
-      # There should be more than one subject, so should not have problem transforming mat to vector
       mat <- as.matrix(mat[keepSubjects, ])
       colnames(mat) <- cnames
       list(mat)
@@ -508,7 +550,7 @@ immex <- setDT(Rlabkey::labkey.selectRows(
   colNameOpt = "fieldname"
 ))
 
-demog$subject_accession <- sub("\\.\\d", "", demog$participant_id)
+demog$subject_accession <- gsub("\\.\\d+", "", demog$participant_id)
 demog <- merge(demog, immex[, .(subject_accession, disease_reported, disease_stage_reported, exposure_material_reported, exposure_process_reported)],
                by = "subject_accession",
                all.x = TRUE,
@@ -723,11 +765,16 @@ makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat)
 
 ```{r getPlotInfo}
 re <- tryCatch(
-  con$getDataset(responseVar, original_view = TRUE),
+  con$getDataset(responseVar, original_view = TRUE,
+                 colFilter = pidsFilt),
   warning = function(w) return(w),
   error = function(e) return(e)
 )
-IRcondition <- is.null(re$message)
+IRcondition <- ifelse(is.null(re$message),
+                      ifelse(nrow(re) > 0, 
+                             TRUE,
+                             FALSE),
+                      FALSE)
 showImputed <- ifelse(impute == "none", 
                       FALSE,
                       ifelse(max(imputed_values) > 0, 
@@ -744,8 +791,8 @@ plotInfo <- list(list(plot = TRUE, name = "Age", label = "age_reported"),
                  list(plot = IRcondition, name = "Immune Response", label = responseVar),
                  list(plot = showImputed, name = "Imputed Values", label = "imputed_values"),
                  list(plot = projLvl, name = "Sample Type", label = "sample_type"),
-                 list(plot = projLvl & "gene_expression_files" %in% assays, name = "Feature Annotation Set", label = "fas_name"),
-                 list(plot = projLvl & "gene_expression_files" %in% assays, name = "FAS Vendor", label = "fas_vendor"),
+                 list(plot = projLvl & "gene_expression_files" %in% assays, name = "Feature Annotation Set", label = "fasName"),
+                 list(plot = projLvl & "gene_expression_files" %in% assays, name = "FAS Vendor", label = "fasVendor"),
                  list(plot = projLvl, name = "Exposure Material", label = "exposure_material_reported"),
                  list(plot = projLvl, name = "Immune Exposure Process", label = "exposure_process_reported"))
 
