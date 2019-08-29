@@ -62,7 +62,8 @@ projLvl <- !grepl("SDY\\d{2,4}", labkey.url.path)
 
 getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts) {
   # Get data with default transformation method unless gene expression which
-  # needs special treatment to organize in appropriate format
+  # needs special treatment to organize in appropriate format. be sure to get all 
+  # necessary columns
   if ( assay != "gene_expression_files" ) {
     original_view <- assay != "mbaa"
     valCol <- switch( assay,
@@ -93,48 +94,16 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts) {
   }else{
     # Use filteredPids to only download matrices for specified studies and then
     # subset data by filtered gef to ensure only correct pids picked up.
-    # Get cohorts
-      cohort_membership <- con$getDataset("cohort_membership", 
-                                           colFilter = pidsFilt,
-                                           colSelect = c("name", "study_accession", "ParticipantId"))
+    mats <- con$listGEMatrices(participantIds = strsplit(filteredPids, ";")[[1]])
       
-      # Get gem names for those cohorts
-      folderFilter <- Rlabkey::makeFilter(
-        c("Folder/Name", "IN", paste0(unique(cohort_membership$study_accession), collapse = ";") )
-      )
-      runs <- Rlabkey::labkey.selectRows(con$config$labkey.url.base,
-                               "Studies",
-                               "assay.ExpressionMatrix.matrix",
-                               "Runs",
-                               colFilter = folderFilter)
-      all <- merge(runs, unique(cohort_membership[, .(study_accession, name)]), 
-                  by.x = c("Cohort", "Study"), by.y = c("name", "study_accession"),
-                  all.x = FALSE,
-                  all.y = FALSE)
-      mats <- unique(all$Name)
-      
-      
-      
-      
-      
-    tmp <- strsplit(filteredPids, ";")
-    tmp <- lapply(tmp, strsplit, split = "\\.")[[1]]
-    sdys <- paste0("SDY", unique(sapply(tmp, "[", 2)))
-    mats <- con$cache$GE_matrices$name[ con$cache$GE_matrices$folder %in% sdys ]
-    eset <- con$getGEMatrix(mats)
+    eset <- con$getGEMatrix(mats$name)
+    eset <- eset[, eset$participant_id %in% strsplit(filteredPids, ";")[[1]] ]
+    
     dat <- data.frame(t(Biobase::exprs(eset)),stringsAsFactors = FALSE)
     dat$biosample_accession <- rownames(dat)
-    
-    # Subset by filtered gef and add participant_id and study_time_collected
-    gef <- con$getDataset("gene_expression_files", 
-                          original_view = TRUE, 
-                          colFilter = pidsFilt)
-    
-    dat <- dat[ dat$biosample_accession %in% gef$biosample_accession, ]
-    matchOrder <- match(rownames(dat), gef$biosample_accession)
-    dat$study_time_collected <- gef$study_time_collected[ matchOrder ]
-    dat$study_time_collected_unit <- gef$study_time_collected_unit[ matchOrder]
-    dat$participant_id <- gef$participant_id[ matchOrder ]
+    dat$participant_id <- eset$participant_id
+    dat$study_time_collected <- eset$study_time_collected
+    dat$study_time_collected_unit <- eset$study_time_collected_unit
     
   }
   
@@ -765,21 +734,16 @@ makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat)
 
 ```{r getPlotInfo}
 re <- tryCatch(
-  con$getDataset(responseVar, original_view = TRUE,
-                 colFilter = pidsFilt),
+  con$getDataset(responseVar, original_view = TRUE),
   warning = function(w) return(w),
   error = function(e) return(e)
 )
 IRcondition <- ifelse(is.null(re$message),
-                      ifelse(nrow(re) > 0, 
-                             TRUE,
-                             FALSE),
+                      nrow(re) > 0, 
                       FALSE)
 showImputed <- ifelse(impute == "none", 
                       FALSE,
-                      ifelse(max(imputed_values) > 0, 
-                             TRUE,
-                             FALSE))
+                      max(imputed_values) > 0)
 
 plotInfo <- list(list(plot = TRUE, name = "Age", label = "age_reported"),
                  list(plot = TRUE, name = "Gender", label = "gender"),
