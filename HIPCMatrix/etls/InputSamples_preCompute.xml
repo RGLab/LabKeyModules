@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etl xmlns="http://labkey.org/etl/xml">
+    <name>Cache result of InputSamples in a list for performance</name>
+    <transforms>
+        <transform id="copy" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="assay.ExpressionMatrix.matrix" queryName="InputSamples" containerFilter="CurrentAndSubfolders"/>
+            <destination schemaName="HIPCMatrix" queryName="InputSamples_precompute" targetOption="truncate" >
+            </destination>
+        </transform>
+    </transforms>
+    <incrementalFilter className="SelectAllFilterStrategy" />
+    <!-- run at midnight -->
+    <schedule><cron expression="0 0 0 * * ?" /></schedule>
+</etl>

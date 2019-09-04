@@ -10,19 +10,24 @@
                 <ns:isKeyField>true</ns:isKeyField>
             </ns:column>
             <ns:column columnName="TargetProtocolApplication">
-                <ns:isHidden>true</ns:isHidden>
+                <!-- <ns:isHidden>true</ns:isHidden> -->
             </ns:column>
             <ns:column columnName="Material">
-                <ns:isHidden>true</ns:isHidden>
+                <!-- <ns:isHidden>true</ns:isHidden> -->
             </ns:column>
             <ns:column columnName="Biosample"/>
             <ns:column columnName="Role">
-                <ns:isHidden>true</ns:isHidden>
+                <!-- <ns:isHidden>true</ns:isHidden> -->
             </ns:column>
             <ns:column columnName="Container">
-                <ns:isHidden>true</ns:isHidden>
+                <!-- <ns:isHidden>true</ns:isHidden> -->
             </ns:column>
-            <ns:column columnName="Folder"/>
+            <ns:column columnName="Material_Folder">
+                <!-- <ns:isHidden>true</ns:isHidden> -->
+            </ns:column>
+            <ns:column columnName="Material_RowId">
+                <!-- <ns:isHidden>true</ns:isHidden> -->
+            </ns:column>
         </ns:columns>
     </ns:table>
 
