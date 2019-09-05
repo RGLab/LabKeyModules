@@ -13,5 +13,5 @@ CREATE TABLE HIPCMatrix.InputSamples_precompute
     Material_RowId               VARCHAR    NOT NULL,
 
 
-    PRIMARY KEY (RowId)
+    CONSTRAINT PK_InputSamples_precompute PRIMARY KEY (RowId)
 );

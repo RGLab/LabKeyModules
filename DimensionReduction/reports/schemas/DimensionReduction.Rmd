@@ -194,27 +194,17 @@ getSampleMetadata <- function(aData) {
   biosampleMetadata <- Reduce(function(x,y){rbind(x,y)}, participantBiosampleList)
   if ("gene_expression_files" %in% names(aData) ){
     # add FAS info
-    inputSamplesWithFeatures <- setDT(Rlabkey::labkey.selectRows(labkey.url.base, 
-                                  labkey.url.path,
-                                  schemaName = "assay.ExpressionMatrix.matrix",
-                                  queryName = "inputSamplesWithFeatures",
-                                  colNameOpt = "fieldname",
-                                  colFilter = pidsFilt,
-                                  colSelect = c("Biosample", "featureSet")))
-    fas <- setDT(Rlabkey::labkey.selectRows(labkey.url.base, 
-                                  labkey.url.path,
-                                  schemaName = "microarray",
-                                  queryName = "FeatureAnnotationSet",
-                                  colNameOpt = "fieldname", 
-                                  colSelect = c("RowId", "Name", "Vendor")))
-    sample_fas <- merge(inputSamplesWithFeatures[, .(Biosample, featureSet)], fas, 
-                        by.x = "featureSet", by.y = "RowId",
-                        all.x = TRUE, all.y = FALSE)
+    ge_biosampleMetadata <- Rlabkey::labkey.selectRows(labkey.url.base,
+                                                       labkey.url.path,
+                                                       "study",
+                                                       "DimRedux_biosample_metadata",
+                                                       containerFilter = "CurrentAndSubfolders",
+                                                       colNameOpt = "fieldname",
+                                                       colSelect = c("biosample_accession", "featureset", "fas_vendor", "fas_name"))
     
-    biosampleMetadata <- merge(biosampleMetadata, sample_fas,
-                                   by.x = "biosample_accession", by.y = "Biosample",
+    biosampleMetadata <- merge(biosampleMetadata, ge_biosampleMetadata,
+                                   by.x = "biosample_accession", by.y = "biosample_accession",
                                    all.x = TRUE, all.y = FALSE)
-    setnames(biosampleMetadata, c("Name", "Vendor"), c("fasName", "fasVendor"))
   }
   
   # aggregate by participant_id and tp
@@ -227,8 +217,8 @@ getSampleMetadata <- function(aData) {
   
   if ("gene_expression_files" %in% names(aData) ) {
       participantMetadata <- biosampleMetadata[, .(sample_type = createSampleTypeText(assay, sample_type), 
-                                               fasName = paste0(unique(na.omit(fasName)), collapse = ", "),
-                                               fasVendor = paste0(unique(na.omit(fasVendor)), collapse = ", ")), participant_id]
+                                               fas_name = paste0(unique(na.omit(fas_name)), collapse = ", "),
+                                               fas_vendor = paste0(unique(na.omit(fas_vendor)), collapse = ", ")), participant_id]
   } else {
     participantMetadata <- biosampleMetadata[, .(sample_type = createSampleTypeText(assay, sample_type)), participant_id]
   }
@@ -639,6 +629,9 @@ makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat)
     colorCol <- gsub("^SUB\\d{5,6}\\.\\d{2,4}_", "", subs)
   }else if(label == "study"){
     colorCol <- gsub("^SUB\\d{5,6}\\.", "", subs)
+    if (aggregateBy == "subject-tp") {
+      colorCol <- gsub("_.+", "", colorCol)
+    }
     colorCol <- paste0("SDY", gsub("_\\d+$", "", colorCol))
   }else if(label %in% c("hai", "neut_ab_titer")){
     re <- con$getDataset(responseVar, original_view = TRUE)
@@ -755,8 +748,8 @@ plotInfo <- list(list(plot = TRUE, name = "Age", label = "age_reported"),
                  list(plot = IRcondition, name = "Immune Response", label = responseVar),
                  list(plot = showImputed, name = "Imputed Values", label = "imputed_values"),
                  list(plot = projLvl, name = "Sample Type", label = "sample_type"),
-                 list(plot = projLvl & "gene_expression_files" %in% assays, name = "Feature Annotation Set", label = "fasName"),
-                 list(plot = projLvl & "gene_expression_files" %in% assays, name = "FAS Vendor", label = "fasVendor"),
+                 list(plot = projLvl & "gene_expression_files" %in% assays, name = "Feature Annotation Set", label = "fas_name"),
+                 list(plot = projLvl & "gene_expression_files" %in% assays, name = "FAS Vendor", label = "fas_vendor"),
                  list(plot = projLvl, name = "Exposure Material", label = "exposure_material_reported"),
                  list(plot = projLvl, name = "Immune Exposure Process", label = "exposure_process_reported"))
 

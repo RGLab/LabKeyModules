@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <ns:tables xmlns:ns='http://labkey.org/data/xml'>
-    <ns:table tableName="InputSamples_preCompute" tableDbType="TABLE">
+    <ns:table tableName="InputSamples_precompute" tableDbType="TABLE">
         <ns:description>
-            The 'InputSamples_preCompute' table stores a pre-computed version of the query by the same name in order to improve speed in the module.
+            The 'InputSamples_precompute' table stores a pre-computed version of the query by the same name in order to improve speed in the module.
         </ns:description>
         <ns:columns>
             <ns:column columnName="Run"/>

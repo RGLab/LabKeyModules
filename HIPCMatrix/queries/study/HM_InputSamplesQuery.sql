@@ -6,12 +6,12 @@ gef.ParticipantId AS ParticipantId,
 gef.arm_name AS cohort,
 gef.arm_name || '_' || gef.type AS cohort_type,
 gef.biosample_accession as biosample_accession @title='biosample_accession',
-mat.folder.entityid as container,
+mat.container.entityid as container,
 mat.Run,
 runs.Name AS expression_matrix_accession,
-mat.Run.featureset as featureset
+runs.featureset as featureset
 FROM
-assay.ExpressionMatrix.matrix.InputSamples AS mat,
+hipcmatrix.InputSamples_precompute AS mat,
 study.gene_expression_files AS gef,
 assay.ExpressionMatrix.matrix.Runs AS runs
 WHERE
