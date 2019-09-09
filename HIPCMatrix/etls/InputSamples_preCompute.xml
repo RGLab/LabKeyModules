@@ -5,6 +5,13 @@
         <transform id="copy" type="org.labkey.di.pipeline.TransformTask">
             <source schemaName="assay.ExpressionMatrix.matrix" queryName="InputSamples" containerFilter="CurrentAndSubfolders"/>
             <destination schemaName="HIPCMatrix" queryName="InputSamples_precompute" targetOption="truncate" >
+                <columnTransforms>
+                    <!-- NOTE:  LabKey automatically creates a "Folder" column which is populated
+                    with whichever folder the etl is run from, so this preserves the
+                    "Folder" column in InputSamples, which will be copied into the "Folder"
+                    column in InputSamples_computed -->
+                    <column source="Folder" target="Source_Container"/>
+                </columnTransforms>
             </destination>
         </transform>
     </transforms>

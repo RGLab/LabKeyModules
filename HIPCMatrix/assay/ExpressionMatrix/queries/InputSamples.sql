@@ -4,7 +4,8 @@ SELECT
   MI.Material,
   MI.Material.Name AS Biosample,
   MI.Role,
-  -- MI.TargetProtocolApplication.Run.Folder as Container,
+  -- NOTE:  "Folder" will be copied into InputSamples_precompute as the "source_container" column
+  -- and then into InputSamples_computed as the "Folder" column again
   MI.TargetProtocolApplication.Run.Folder as Folder
 FROM exp.MaterialInputs MI
 WHERE
