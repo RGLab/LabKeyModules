@@ -455,6 +455,10 @@ if(length(subs) < 2){
   stop("R Report Error: Fewer than two subjects available for analysis across all assays. Select imputation method other than 'None' and retry.")
 }
 
+if (plotType == "UMAP" && length(subs) <= numNeighbors) {
+    stop(paste0("R Report Error: UMAP neighborhood size must be smaller than the number of subjects analyzed. Select neighborhood size > ", numNeighbors, ". Alternatively, selecting an imputation method will help retain subjects with missing data."))
+}
+
 # Standardize: 
 # Unless GE, center then scale so each feature has a variance of 1.
 # For GE, center and scale so the whole matrix has a variance of 1, 

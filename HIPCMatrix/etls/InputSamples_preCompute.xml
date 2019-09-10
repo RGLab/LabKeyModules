@@ -3,7 +3,7 @@
     <name>Cache result of InputSamples in a list for performance</name>
     <transforms>
         <transform id="copy" type="org.labkey.di.pipeline.TransformTask">
-            <source schemaName="assay.ExpressionMatrix.matrix" queryName="InputSamples" containerFilter="CurrentAndSubfolders"/>
+            <source schemaName="assay.ExpressionMatrix.matrix" queryName="InputSamples" containerFilter="AllFolders"/>
             <destination schemaName="HIPCMatrix" queryName="InputSamples_precompute" targetOption="truncate" >
                 <columnTransforms>
                     <!-- NOTE:  LabKey automatically creates a "Folder" column which is populated
