@@ -268,7 +268,8 @@ LABKEY.ext.PublicStudyOverview = Ext.extend( Ext.Panel, {
                     requiredVersion: 12.3,
                     schemaName: 'immport.public',
                     queryName: 'dimstudyassay',
-                    columns: 'label',
+                    columns: ['label','name'],
+                    sort: 'name',
                     filterArray: [
                         LABKEY.Filter.create(
                             'study',
