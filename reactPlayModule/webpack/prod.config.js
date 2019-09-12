@@ -20,7 +20,7 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
             inject: false,
             name: entryPoint.name,
             title: entryPoint.title,
-            permission: entryPoint.permission,
+            frame: entryPoint.frame,
             filename: '../../../views/' + entryPoint.name + '.view.xml',
             template: 'webpack/app.view.template.xml'
         }),
@@ -31,10 +31,17 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
         }),
         new HtmlWebpackPlugin({
             inject: false,
-            mode: 'dev',
             name: entryPoint.name,
             title: entryPoint.title,
-            permission: entryPoint.permission,
+            filename: '../../../views/' + entryPoint.name + '.webpart.xml',
+            template: 'webpack/app.webpart.template.xml'
+        }),
+        new HtmlWebpackPlugin({
+            inject: false,
+            mode: 'dev',
+            name: entryPoint.name + "Dev",
+            title: entryPoint.title + " Dev",
+            frame: entryPoint.frame,
             filename: '../../../views/' + entryPoint.name + 'Dev.view.xml',
             template: 'webpack/app.view.template.xml'
         }),
@@ -44,6 +51,14 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
             name: entryPoint.name,
             filename: '../../../views/' + entryPoint.name + 'Dev.html',
             template: 'webpack/app.template.html'
+        }),
+        new HtmlWebpackPlugin({
+            inject: false,
+            mode: 'dev',
+            name: entryPoint.name + "Dev",
+            title: entryPoint.title + " Dev",
+            filename: '../../../views/' + entryPoint.name + 'Dev.webpart.xml',
+            template: 'webpack/app.webpart.template.xml'
         })
     ]);
 }

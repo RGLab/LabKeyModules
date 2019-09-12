@@ -1,5 +1,5 @@
 {
-  "name": "reactPlayModule",
+  "name": "play",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -20,7 +20,7 @@
     "build:prod": {
       "command": "webpack --config webpack/prod.config.js --progress --profile --colors",
       "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "development"
       }
     },
     "build:style": {

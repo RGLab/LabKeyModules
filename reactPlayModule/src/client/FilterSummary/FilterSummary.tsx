@@ -52,7 +52,7 @@ function FilterIndicatorList(props) {
     // props: filter class, filters, title text
     var filterFlags;
     if (props.filters.length == 0) {
-        filterFlags = <em className = "filter-indicator">No filters currently applied</em>
+        filterFlags = <em className = "filter-indicator">No Filters Applied</em>
     } else {
         filterFlags = props.filters.map((filter) => 
             <FilterIndicatorFlag key = {filter.name} filterClass={props.filterClass} filter={filter} />

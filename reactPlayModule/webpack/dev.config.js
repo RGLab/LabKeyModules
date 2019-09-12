@@ -9,8 +9,8 @@ const constants = require('./constants');
 const entryPoints = require('./entryPoints');
 
 const devServer = {
-    host: '140.107.149.233',
-    port: 8080,
+    host: 'localhost',
+    port: 3001,
 
     // enable the HMR on the server
     hot: true,
