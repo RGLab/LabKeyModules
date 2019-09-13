@@ -24,3 +24,8 @@ ImmuneSpace/config/module.xml
 # Rproj-related files 
 *.Rproj*
 .Rproj.user
+
+# npm-generated client files
+*/node_modules/
+DataFinder/resources/views/
+DataFinder/resources/web/
