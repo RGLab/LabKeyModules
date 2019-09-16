@@ -1,4 +1,5 @@
 SELECT DISTINCT
+    arm_accession,
     cohort,
     cohort_type,
     cohort_type || ' (' || Containers.Name || ')' AS display,
