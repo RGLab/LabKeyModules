@@ -1,5 +1,22 @@
 import * as React from 'react';
 
+// Helpers ===============================================================
+
+// Types
+interface FlagProps {
+    filter: Filter;
+    filterClass: string;
+}
+interface ListProps {
+    filterClass: string;
+    filters: Array<Filter>;
+    title: string;
+}
+interface AppliedFilterProps {
+    filters: GroupedFilters
+}
+
+
 // These are the members of each class of filters: 
 // Used for parsing filters from localStorage
 export const filterMembers = {
@@ -8,11 +25,15 @@ export const filterMembers = {
     "sample": ["Assay", "SampleType", "Timepoint"]
 }
 
+function getFilter(filter: string) {
+    const re = /\[[^\[\]]+\]$/;
+    return filter.match(re);
+}
 
 // Filter stuff... ========================================================
 
 
-function FilterIndicatorFlag(props: FlagProps) {
+const FilterIndicatorFlag: React.FC<FlagProps> = (props) => {
     // props: filter class, filter
     let text = ""
     props.filter.members.forEach((e, i, a) => {
@@ -28,7 +49,7 @@ function FilterIndicatorFlag(props: FlagProps) {
     )
 }
 
-function FilterIndicatorList(props: ListProps) {
+const FilterIndicatorList: React.FC<ListProps> = (props) => {
     let filterFlags: JSX.Element[];
     if (props.filters.length == 0) {
         filterFlags = [<em className="filter-indicator">No Filters Applied</em>];
@@ -45,12 +66,10 @@ function FilterIndicatorList(props: ListProps) {
     )
 }
 
-function getFilter(filter: string) {
-    const re = /\[[^\[\]]+\]$/;
-    return filter.match(re);
-}
 
-export function AppliedFilters(props: AppliedFilterProps) {
+// Exports ================================================================
+
+export const AppliedFilters: React.FC<AppliedFilterProps> = (props) => {
 
     return (
         <div>

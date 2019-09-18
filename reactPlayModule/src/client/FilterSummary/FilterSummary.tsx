@@ -3,7 +3,7 @@ import * as LABKEY from '@labkey/api';
 import {AppliedFilters, filterMembers} from './components/AppliedFilters'
 
 // Use a stateful functional component as the "controller" 
-function FilterView() {
+const FilterView: React.FC = () => {
     // State variables ------------------------------------------------------
     const [participantCount, setParticipantCount] = React.useState(0);
     const [studyCount, setStudyCount] = React.useState(0);
@@ -77,7 +77,7 @@ function FilterView() {
 }
 
 // Need to export a component called "App"
-export function App() {
+export const App: React.FC = () => {
 
     return <FilterView />
 

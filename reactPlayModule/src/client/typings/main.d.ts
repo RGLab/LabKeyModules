@@ -39,22 +39,6 @@ interface GroupedFilters {
     study: Filter[];
 }
 
-// Component props
-interface FlagProps {
-    filter: Filter;
-    filterClass: string;
-}
-interface ListProps {
-    filterClass: string;
-    filters: Array<Filter>;
-    title: string;
-}
-interface AppliedFilterProps {
-    filters: GroupedFilters
-}
-
-
-
 /* App globals */
 declare const LABKEY: LabKey;
 
