@@ -4,7 +4,7 @@ import $ from 'jquery'
 
 import { AppContainer } from 'react-hot-loader'
 
-import { App } from './FilterSummary'
+import { App } from './Hello'
 
 const render = () => {
     ReactDOM.render(

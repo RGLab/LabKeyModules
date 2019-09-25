@@ -6,12 +6,11 @@
 module.exports = {
     apps: [
         // For each webpart, include an object matching
-        // the form for FilterSummary. 
+        // the form for Hello. 
         {
-            name: 'FilterSummary',
+            name: 'Hello',
             frame: 'portal',
-            title: 'Filter Summary',
-            permission: 'admin',
-            path: './src/client/FilterSummary'
+            title: 'Hello',
+            path: './src/client/Hello'
         }]
 };
