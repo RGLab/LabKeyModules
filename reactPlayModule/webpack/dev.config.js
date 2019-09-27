@@ -4,7 +4,6 @@
  * Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
  */
 const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const constants = require('./constants');
 const entryPoints = require('./entryPoints');
 
@@ -46,6 +45,7 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
 }
 
 module.exports = {
+    // Note:  __dirname is a node-generated global variable, which is the directory of this file.
     context: constants.context(__dirname),
 
     mode: 'development',
@@ -65,7 +65,7 @@ module.exports = {
     },
 
     module: {
-        rules: constants.loaders.TYPESCRIPT_LOADERS_DEV
+        rules: constants.loaders.TYPESCRIPT_LOADERS_DEV.concat(constants.loaders.STYLE_LOADERS)
     },
 
     plugins: [

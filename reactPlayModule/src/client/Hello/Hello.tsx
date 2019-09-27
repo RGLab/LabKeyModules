@@ -1,5 +1,6 @@
 // Imports
 import * as React from 'react';
+import "./Hello.scss"
 
 // Define Components
 const Hello: React.FC = () => {
