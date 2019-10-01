@@ -167,6 +167,21 @@ library(illuminaio)
   return(mxList)
 }
 
+
+# Download Gsm supplementary files, unzip and return path
+.getGsmSuppFiles <- function(gsm, baseDir){
+  info <- getGEOSuppFiles(gsm, makeDirectory = FALSE, baseDir = baseDir)
+  GEOquery::gunzip(rownames(info), overwrite = TRUE, remove = TRUE)
+  return( gsub("\\.gz", "", rownames(info)) )
+}
+
+# mxList to flat file
+.mxListToFlatFile <- function(mxList, baseDir, study){
+  em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
+  inputFiles <- .writeSingleMx(em, baseDir, study)
+}
+
+
 # Generate flat files that are ready for processing from GEO "raw" data.
 # Warning! Raw data is highly variable for gse supplementary files
 .prepGeoFls <- function(study, gef, metaData){
@@ -182,17 +197,14 @@ library(illuminaio)
       colnames(tbl)[[2]] <- x
       return(tbl)
     })
-    em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
-    inputFiles <- .writeSingleMx(em, baseDir, study)
+    inputFiles <- .mxListToFlatFile(mxList, baseDir, study)
 
   } else {
     if (metaData$useGsmSuppFls == TRUE) {
       # Case 2: raw data in gsm supp files - Illumina
       if (metaData$platform == "Illumina") {
         mxList <- lapply(gef$geo_accession, function(gsm){
-          info <- getGEOSuppFiles(gsm, makeDirectory = FALSE, baseDir = baseDir)
-          GEOquery::gunzip(rownames(info), overwrite = TRUE, remove = TRUE)
-          path <- gsub("\\.gz", "", rownames(info))
+          path <- .getGsmSuppFiles(gsm, baseDir)
 
           if (study %in% names(metaData$illuminaManifestFile)) {
             res <- read.idat(idatfiles = path,
@@ -214,9 +226,6 @@ library(illuminaio)
           return(em)
         })
 
-        em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
-        inputFiles <- .writeSingleMx(em, baseDir, study)
-
         # Case 3: raw data in gsm supp files - Affymetrix
       } else if (metaData$platform == "Affymetrix") {
         inputFiles <- .dlSuppFls(accList = gef$geo_accession, baseDir, study)
@@ -224,9 +233,7 @@ library(illuminaio)
         # Case 4: raw data in gsm supp files - Stanford custom HEEBO
       } else if (grepl("Stanford", metaData$platform)) {
         mxList <- lapply(gef$geo_accession, function(gsm){
-          info <- getGEOSuppFiles(gsm, makeDirectory = FALSE, baseDir = baseDir)
-          GEOquery::gunzip(rownames(info), overwrite = TRUE, remove = TRUE)
-          path <- gsub("\\.gz", "", rownames(info))
+          path <- .getGsmSuppFiles(gsm, baseDir)
           # Because of two colors, do background correction and processing here
           # to generate single expression value per probe
           em <- .processTwoColorArray(path)
@@ -234,11 +241,21 @@ library(illuminaio)
           return(em)
         })
 
-        em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
-        inputFiles <- .writeSingleMx(em, baseDir, study)
+        # Case 5: raw data in gsm supp files - RNAseq
+      } else if (metaData$platform == "NA"){
+        mxList <- lapply(gef$geo_accession, function(gsm){
+          path <- .getGsmSuppFiles(gsm, baseDir)
+          em <- fread(path)
+          setnames(em, "V2", gsm) # ensemblId as 'V1'
+          return(em)
+        })
       }
 
-      # Cases 5 and 6: raw data in gse supp files - Illumina / RNAseq
+      if (metaData$platform != "Affymetrix"){
+        inputFiles <- .mxListToFlatFile(mxList, baseDir, study)
+      }
+
+      # Cases 6 and 7: raw data in gse supp files - Illumina / RNAseq
     } else {
       accList <- unique(unlist(lapply(gef$geo_accession, function(x){
         gsm <- getGEO(x)
@@ -248,7 +265,7 @@ library(illuminaio)
       mxList <- lapply(inputFiles, fread)
       mxList <- .fixHeaders(mxList, study)
 
-      # Case 5: Illumina raw data in gse supp files
+      # Case 6: Illumina raw data in gse supp files
       # Because multiple raw files need to be combined, must
       # address header issues prior to combination otherwise
       # untreated "Detection Pval" cols will cause dup error
@@ -278,7 +295,7 @@ library(illuminaio)
 
       em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
 
-      # Case 6: RNAseq in gse supp files
+      # Case 7: RNAseq in gse supp files
       # Header mapping assumes that names are in getGEO(gsm) object.
       # Need to check on a per study basis and tweak if need be.
       if (metaData$platform == "NA") {
@@ -307,8 +324,8 @@ library(illuminaio)
     mxList <- lapply(inputFiles, fread)
     mxList <- .fixHeaders(mxList, study)
   }
-  em <- Reduce(f = function(x, y) {merge(x, y)}, mxList)
-  inputFiles <- .writeSingleMx(em, baseDir, study)
+
+  inputFiles <- .mxListToFlatFile(mxList, baseDir, study)
   return(inputFiles)
 }
 
@@ -695,7 +712,8 @@ runCreateMx <- function(labkey.url.base,
                                          "SDY406", "SDY984", "SDY1260", "SDY1264",
                                          "SDY1293", "SDY270", "SDY1291", "SDY212",
                                          "SDY315", "SDY305", "SDY1328", "SDY1368",
-                                         "SDY1370", "SDY1119", "SDY1294")
+                                         "SDY1370", "SDY1119", "SDY1294", "SDY1256",
+                                         "SDY1412", "SDY1267")
 
   #**illuminaManifestFile**: for studies with Illumina idat files that need bgx
   # manifest files.  These are found through the Illumina website and stored in
