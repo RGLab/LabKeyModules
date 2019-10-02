@@ -1,8 +1,6 @@
 ---
 output: html_document_base
 ---
-
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(ImmuneSpaceR)
@@ -64,34 +62,48 @@ projLvl <- !grepl("SDY\\d{2,4}", labkey.url.path)
 
 getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts) {
   # Get data with default transformation method unless gene expression which
-  # needs special treatment to organize in appropriate format
-  if(assay != "gene_expression_files"){
+  # needs special treatment to organize in appropriate format. be sure to get all 
+  # necessary columns
+  if ( assay != "gene_expression_files" ) {
     original_view <- assay != "mbaa"
+    valCol <- switch( assay,
+          "elisa" = "value_preferred",
+          "elispot" = "spot_number_reported",
+          "mbaa" = "concentration_value",
+          "pcr" = "value_reported",
+          "fcs_analyzed_result" = "population_cell_number",
+          "hai" = "value_reported",
+          "neut_ab_titer" = "value_reported"
+        )
+    grpByCol <- switch( assay,
+          "elisa" = "analyte",
+          "elispot" = "analyte",
+          "mbaa" = "analyte",
+          "pcr" = "gene_symbol",
+          "fcs_analyzed_result" = "population_definition_reported",
+          "hai" = "virus",
+          "neut_ab_titer" = "virus"
+        )
+    cols <- c("ParticipantId", "biosample_accession", "study_time_collected", "study_time_collected_unit", grpByCol, valCol)
     dat <- con$getDataset(assay, 
-                          original_view = original_view, 
+                          original_view = original_view,
                           transformMethod = "auto", 
-                          colFilter = pidsFilt)
+                          colFilter = pidsFilt,
+                          colSelect = cols)
+    
   }else{
     # Use filteredPids to only download matrices for specified studies and then
     # subset data by filtered gef to ensure only correct pids picked up.
-    tmp <- strsplit(filteredPids, ";")
-    tmp <- lapply(tmp, strsplit, split = "\\.")[[1]]
-    sdys <- paste0("SDY", unique(sapply(tmp, "[", 2)))
-    mats <- con$cache$GE_matrices$name[ con$cache$GE_matrices$folder %in% sdys ]
-    eset <- con$getGEMatrix(mats)
+    mats <- con$listGEMatrices(participantIds = strsplit(filteredPids, ";")[[1]])
+      
+    eset <- con$getGEMatrix(mats$name)
+    eset <- eset[, eset$participant_id %in% strsplit(filteredPids, ";")[[1]] ]
+    
     dat <- data.frame(t(Biobase::exprs(eset)),stringsAsFactors = FALSE)
     dat$biosample_accession <- rownames(dat)
-    
-    # Subset by filtered gef and add participant_id and study_time_collected
-    gef <- con$getDataset("gene_expression_files", 
-                          original_view = TRUE, 
-                          colFilter = pidsFilt)
-    
-    dat <- dat[ dat$biosample_accession %in% gef$biosample_accession, ]
-    matchOrder <- match(rownames(dat), gef$biosample_accession)
-    dat$study_time_collected <- gef$study_time_collected[ matchOrder ]
-    dat$study_time_collected_unit <- gef$study_time_collected_unit[ matchOrder]
-    dat$participant_id <- gef$participant_id[ matchOrder ]
+    dat$participant_id <- eset$participant_id
+    dat$study_time_collected <- eset$study_time_collected
+    dat$study_time_collected_unit <- eset$study_time_collected_unit
     
   }
   
@@ -182,27 +194,17 @@ getSampleMetadata <- function(aData) {
   biosampleMetadata <- Reduce(function(x,y){rbind(x,y)}, participantBiosampleList)
   if ("gene_expression_files" %in% names(aData) ){
     # add FAS info
-    inputSamplesWithFeatures <- setDT(Rlabkey::labkey.selectRows(labkey.url.base, 
-                                  labkey.url.path,
-                                  schemaName = "assay.ExpressionMatrix.matrix",
-                                  queryName = "inputSamplesWithFeatures",
-                                  colNameOpt = "fieldname",
-                                  colFilter = pidsFilt,
-                                  colSelect = c("Biosample", "featureSet")))
-    fas <- setDT(Rlabkey::labkey.selectRows(labkey.url.base, 
-                                  labkey.url.path,
-                                  schemaName = "microarray",
-                                  queryName = "FeatureAnnotationSet",
-                                  colNameOpt = "fieldname", 
-                                  colSelect = c("RowId", "Name", "Vendor")))
-    sample_fas <- merge(inputSamplesWithFeatures[, .(Biosample, featureSet)], fas, 
-                        by.x = "featureSet", by.y = "RowId",
-                        all.x = TRUE, all.y = FALSE)
+    ge_biosampleMetadata <- Rlabkey::labkey.selectRows(labkey.url.base,
+                                                       labkey.url.path,
+                                                       "study",
+                                                       "DimRedux_biosample_metadata",
+                                                       containerFilter = "CurrentAndSubfolders",
+                                                       colNameOpt = "fieldname",
+                                                       colSelect = c("biosample_accession", "featureset", "fas_vendor", "fas_name"))
     
-    biosampleMetadata <- merge(biosampleMetadata, sample_fas,
-                                   by.x = "biosample_accession", by.y = "Biosample",
+    biosampleMetadata <- merge(biosampleMetadata, ge_biosampleMetadata,
+                                   by.x = "biosample_accession", by.y = "biosample_accession",
                                    all.x = TRUE, all.y = FALSE)
-    setnames(biosampleMetadata, c("Name", "Vendor"), c("fasName", "fasVendor"))
   }
   
   # aggregate by participant_id and tp
@@ -215,8 +217,8 @@ getSampleMetadata <- function(aData) {
   
   if ("gene_expression_files" %in% names(aData) ) {
       participantMetadata <- biosampleMetadata[, .(sample_type = createSampleTypeText(assay, sample_type), 
-                                               fasName = paste0(unique(na.omit(fasName)), collapse = ", "),
-                                               fasVendor = paste0(unique(na.omit(fasVendor)), collapse = ", ")), participant_id]
+                                               fas_name = paste0(unique(na.omit(fas_name)), collapse = ", "),
+                                               fas_vendor = paste0(unique(na.omit(fas_vendor)), collapse = ", ")), participant_id]
   } else {
     participantMetadata <- biosampleMetadata[, .(sample_type = createSampleTypeText(assay, sample_type)), participant_id]
   }
@@ -321,7 +323,7 @@ if ( aggregateBy == "subject" & "gene_expression_files" %in% assays ) {
 }
 
 # Get sample-level additional data
-if (projLvl) {
+if ( projLvl ) {
   extraMetadata <- getSampleMetadata(aData)
 }
 
@@ -390,7 +392,7 @@ if (impute != "none") {
       keepFeatures <- apply(missingData, 2, function(x){sum(x)/length(x) <= 0.8})
       # If only one column mat[, keepFeatures] will transform mat to a vector
       mat <- as.matrix(mat[, keepFeatures])
-      colnames(mat) <- cnames
+      colnames(mat) <- cnames[keepFeatures]
       list(mat)
     },
     aData, 
@@ -401,7 +403,6 @@ if (impute != "none") {
     function(mat, missingData) {
       cnames <- colnames(mat)
       keepSubjects <- apply(as.matrix(missingData[, cnames]), 1, function(x){sum(x)/length(x) <= 0.8})
-      # There should be more than one subject, so should not have problem transforming mat to vector
       mat <- as.matrix(mat[keepSubjects, ])
       colnames(mat) <- cnames
       list(mat)
@@ -452,6 +453,10 @@ subs <- names(numSubs)[ numSubs == length(aData) ]
 
 if(length(subs) < 2){
   stop("R Report Error: Fewer than two subjects available for analysis across all assays. Select imputation method other than 'None' and retry.")
+}
+
+if (plotType == "UMAP" && length(subs) <= numNeighbors) {
+    stop(paste0("R Report Error: UMAP neighborhood size must be smaller than the number of subjects analyzed. Select neighborhood size > ", numNeighbors, ". Alternatively, selecting an imputation method will help retain subjects with missing data."))
 }
 
 # Standardize: 
@@ -508,7 +513,7 @@ immex <- setDT(Rlabkey::labkey.selectRows(
   colNameOpt = "fieldname"
 ))
 
-demog$subject_accession <- sub("\\.\\d", "", demog$participant_id)
+demog$subject_accession <- gsub("\\.\\d+", "", demog$participant_id)
 demog <- merge(demog, immex[, .(subject_accession, disease_reported, disease_stage_reported, exposure_material_reported, exposure_process_reported)],
                by = "subject_accession",
                all.x = TRUE,
@@ -628,6 +633,9 @@ makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat)
     colorCol <- gsub("^SUB\\d{5,6}\\.\\d{2,4}_", "", subs)
   }else if(label == "study"){
     colorCol <- gsub("^SUB\\d{5,6}\\.", "", subs)
+    if (aggregateBy == "subject-tp") {
+      colorCol <- gsub("_.+", "", colorCol)
+    }
     colorCol <- paste0("SDY", gsub("_\\d+$", "", colorCol))
   }else if(label %in% c("hai", "neut_ab_titer")){
     re <- con$getDataset(responseVar, original_view = TRUE)
@@ -727,12 +735,12 @@ re <- tryCatch(
   warning = function(w) return(w),
   error = function(e) return(e)
 )
-IRcondition <- is.null(re$message)
+IRcondition <- ifelse(is.null(re$message),
+                      nrow(re) > 0, 
+                      FALSE)
 showImputed <- ifelse(impute == "none", 
                       FALSE,
-                      ifelse(max(imputed_values) > 0, 
-                             TRUE,
-                             FALSE))
+                      max(imputed_values) > 0)
 
 plotInfo <- list(list(plot = TRUE, name = "Age", label = "age_reported"),
                  list(plot = TRUE, name = "Gender", label = "gender"),
