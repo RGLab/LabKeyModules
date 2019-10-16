@@ -5,8 +5,8 @@ if [[ `hostname` == *"Immune"* ]]; then
     exit 1
 fi
 
-# Copy matrices for SDY180 and SDY269
-studies=(SDY180 SDY269)
+# Copy matrices for studies used in UITesting and ImmuneSpaceR Testing
+studies=(SDY180 SDY269 SDY56 SDY300 SDY1328 SDY1364)
 for study in ${studies[@]};
 do
   echo "${study}:"
