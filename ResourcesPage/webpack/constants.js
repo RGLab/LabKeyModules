@@ -100,6 +100,6 @@ module.exports = {
         ]
     },
     outputPath: function(dir) {
-        return path.resolve(dir, '../resources/web/reactPlayModule/gen');
+        return path.resolve(dir, '../resources/web/ResourcesPage/gen');
     }
 };

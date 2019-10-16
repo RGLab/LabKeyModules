@@ -31,7 +31,7 @@ Scripts/pandoc-1.19.1-1-amd64.deb
 
 */node_modules/
 
-reactPlayModule/resources/views/
-reactPlayModule/resources/web/
+ResourcesPage/resources/views/
+ResourcesPage/resources/web/
 DataFinder/resources/views
 DataFinder/resources/web
