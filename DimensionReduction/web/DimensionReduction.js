@@ -27,8 +27,8 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
         var
             me                          = this,
             maskReport                  = undefined,
-            fieldWidth                  = 250,
-            labelWidth                  = 200,
+            fieldWidth                  = 300,
+            labelWidth                  = 250,
             flagAssay                   = undefined
             ;
 
@@ -103,7 +103,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 if (
                     cbAssays.isValid( true ) &&
                     cbTimePoints.isValid( true ) &&
-                    rgTime.isValid( true ) &&
+                    rgAggregate.isValid( true ) &&
                     rgPlotType.isValid( true ) &&
                     currPidCnt != 0
 
@@ -115,7 +115,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
 
                 if (    cbAssays.getValue()              == cbAssays.originalValue &&
                         cbTimePoints.getValue()          == cbTimePoints.originalValue &&
-                        rgTime.getValue()                == rgTime.originalValue &&
+                        rgAggregate.getValue()           == rgAggregate.originalValue &&
                         rgPlotType.getValue()            == rgPlotType.originalValue
                 ){
                     btnReset.setDisabled( true );
@@ -126,12 +126,16 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
 
             //Help strings
             var
-                timeAs_help = 'Using time as an observation allows for the labeling of points with time, not just by subject.',
+                aggregate_help = 'Aggregating by subject-timepoint allows for the labeling of points with time, not just by subject.',
                 assays_help = 'Assays present in the study.',
                 timepoints_help = 'The official study time collected value.',
                 labels_help = 'Demographic data that can be used to label the scatter plot values from either a PCA or tSNE analysis.',
                 plotTypes_help = 'Either Principle Components Analysis (PCA) or t-distributed Stochastic Neighbor Embedding (tSNE)'
-                perplexity_help = 'Parameter passed to Rtsne',
+                perplexity_help = 'tSNE perplexity. This number is related to the balance of local vs global structure and is '+ 
+                                  'a general guess about the number of close neighbors each point has. '+
+                                  'Different perplexity values can alter the perception of clusters in the result.',
+                numNeighbors_help = 'Number of neighboring sample points. Larger numbers result in more global views, '+ 
+                                    'while smaller numbers result in more local structure being preserved',
                 numComponents_help = 'Number of PCA components to plot pairwise',
                 impute_help = "Method for imputing missing (NA) values within a single feature in an assay",
                 response_help = "Immune response data that can be used for labels if present"
@@ -155,7 +159,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                         filteredPids:           filteredPids.join(";"),
 
                         // User Selected Main Params
-                        timeAs:                 rgTime.getValue().value,
+                        aggregateBy:              rgAggregate.getValue().value,
                         assays:                 cbAssays.getValue(),
                         timePts:                cbTimePoints.getValue(),
                         plotType:               rgPlotType.getValue().value,
@@ -163,6 +167,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                         // User Selected Additional Options
                         perplexity:             nmPerplexity.getValue(),
                         numComponents:          nmNumComponents.getValue(),
+                        numNeighbors:           nmNumNeighbors.getValue(),
                         impute:                 rgImpute.getValue().value,
                         responseVar:            rgResponse.getValue().value
                     };
@@ -178,7 +183,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 handler: function(){
                     Ext.each(
                         [
-                            rgTime,
+                            rgAggregate,
                             cbAssays,
                             cbTimePoints,
                             rgPlotType
@@ -197,32 +202,32 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 cls: 'ui-test-reset'
             });
 
-            var rgTime = new Ext.form.RadioGroup({
+            var rgAggregate = new Ext.form.RadioGroup({
                 allowBlank: false,
-                fieldLabel: 'Use Time As',
+                fieldLabel: 'Aggregate By',
                 width: fieldWidth,
                 columns: 2,
                 items: [
                     {
-                        boxLabel: 'Variable',
+                        boxLabel: 'Subject',
                         checked: true,
-                        inputValue: 'Variable',
-                        name: 'Time',
-                        value: 'variable'
+                        inputValue: 'Subject',
+                        name: 'Aggregate',
+                        value: 'subject'
                     },{
-                        boxLabel: 'Observation',
-                        inputValue: 'Observation',
-                        name: 'Time',
-                        value: 'observation'
+                        boxLabel: 'Subject-Timepoint',
+                        inputValue: 'Subject-Timepoint',
+                        name: 'Aggregate',
+                        value: 'subject-tp'
 
                     }        
                 ],
-                value: 'Variable',
+                value: 'Subject',
                 listeners: {
                     blur:       checkBtnsStatus,
                     change:     function(){
                         // force new selection of timepoints and assays because
-                        // assay options are affected by timeAs
+                        // assay options are affected by aggregateBy
                         cbTimePoints.disable();
                         cbTimePoints.clearValue();
                         cbTimePoints.enable();
@@ -284,8 +289,8 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                     var intersect = tpsAvailable.filter( function(val){
                         return( tpsSelected.indexOf(val) !== -1) ;
                     });
-                    var obs = rgTime.getValue().value == 'observation';
-                    if( (!obs & intersect.length > 0) | (obs & intersect.length == tpsSelected.length) ){
+                    var subtp = rgAggregate.getValue().value == 'subject-tp';
+                    if( (!subtp & intersect.length > 0) | (subtp & intersect.length == tpsSelected.length) ){
                         return(true)
                     }
                 });
@@ -383,7 +388,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 allowBlank: false,
                 fieldLabel: 'Plot type',
                 width: fieldWidth,
-                columns: 2,
+                columns: 3,
                 items: [
                     {
                         boxLabel: 'PCA',
@@ -396,6 +401,11 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                         inputValue: 'tSNE',
                         name: 'plotType',
                         value: 'tSNE'
+                    },{
+                        boxLabel: 'UMAP',
+                        inputValue: 'UMAP',
+                        name: 'plotType',
+                        value: 'UMAP'
                     }
                 ],
                 value: 'PCA',
@@ -404,8 +414,13 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                     change:     function(){
                         if(this.getValue().value == "tSNE"){
                             nmPerplexity.enable();
+                            nmNumNeighbors.disable();
+                        }else if (this.getValue().value == "UMAP"){
+                            nmPerplexity.disable();
+                            nmNumNeighbors.enable();
                         }else{
                             nmPerplexity.disable();
+                            nmNumNeighbors.disable();
                         }
                         checkBtnsStatus;
                     },
@@ -424,6 +439,18 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 disabled: true,
                 cls: 'ui-test-perplexity'
             });
+
+            var nmNumNeighbors = new Ext.form.NumberField({
+                allowBlank: false,
+                fieldLabel: 'UMAP - Neighborhood Size',
+                width: fieldWidth,
+                value: 15,
+                maxValue: 100,
+                minValue: 2,
+                hidden: false,
+                disabled: true,
+                cls: 'ui-test-nneighbors'
+            })
 
             var nmNumComponents = new Ext.form.NumberField({
                 allowBlank: false,
@@ -510,6 +537,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 collapsible: true,
                 items: [
                     LABKEY.ext.ISCore.factoryTooltipWrapper( nmPerplexity, 'tSNE perplexity', perplexity_help ),
+                    LABKEY.ext.ISCore.factoryTooltipWrapper( nmNumNeighbors, 'UMAP Neighborhood Size', numNeighbors_help),
                     LABKEY.ext.ISCore.factoryTooltipWrapper( nmNumComponents, 'PCA components to plot', numComponents_help ),
                     LABKEY.ext.ISCore.factoryTooltipWrapper( rgImpute, 'Impute', impute_help),
                     LABKEY.ext.ISCore.factoryTooltipWrapper( rgResponse, 'Response', response_help)
@@ -576,7 +604,7 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                 new Ext.form.FieldSet({
                     autoScroll: true,
                     items: [
-                        LABKEY.ext.ISCore.factoryTooltipWrapper( rgTime, 'Time Usage', timeAs_help),
+                        LABKEY.ext.ISCore.factoryTooltipWrapper( rgAggregate, 'Aggregating', aggregate_help),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbTimePoints, 'Timepoints', timepoints_help ),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( cbAssays, 'Assays', assays_help ),
                         LABKEY.ext.ISCore.factoryTooltipWrapper( rgPlotType, 'Plot Type', plotTypes_help ),
@@ -705,12 +733,29 @@ LABKEY.ext.DimensionReduction = Ext.extend( Ext.Panel, {
                     items: [
                         new Ext.form.Label(),
                         new Ext.form.FieldSet({
-                            html: 'This module can be used to automatically run a PCA or tSNE dimension reduction analysis on selected study assay data and represent the resulting points with demographic-based labels for determining possible QC/QA concerns.',
+                            html: 'This module can be used to automatically run a PCA, tSNE, or UMAP dimension reduction analysis on' +
+                                  ' selected study assay data and represent the resulting points with labels' +
+                                  ' for determining possible QC/QA concerns.',
                             style: 'margin-top: 5px;',
                             title: 'Description'
                         }),
                         new Ext.form.FieldSet({
-                            html: 'Text about PCA and tSNE resources here.',
+                            html: '<p>Dimension Reduction is a technique for visualizing and analyzing high-dimensional data '+
+                                  'by reducing it to a smaller number of dimensions. It can be used as a quality control step to '+
+                                  'identify clustering in data which could indicate issues like batch effects which could make it '+
+                                  'hard to analyze without further correction. There are many different dimension reduction techniques '+
+                                  'which have been developed. This module implements three: Principal Component Analysis (PCA), '+
+                                  't-Distributed Stochastic Neighbor Embedding (tSNE), and Uniform Manifold Approximation and Projection (UMAP). </p>'+
+                                  '<p>PCA is a linear dimension reduction technique. As a linear model, its strength is in preserving global structure. '+
+                                  'It creates "principal components", which are linear combinations of the original dimensions, in order of the amount '+
+                                  'of variation explained by each component. The returned plots in this module include the percent of variation '+
+                                  'explained by the components in the axes.</p>'+
+                                  '<p>tSNE is a model described <a href="https://lvdmaaten.github.io/publications/papers">here</a>. '+
+                                  'It is a nonlinear technique which is well-suited to showing local clustering. tSNE plots points '+
+                                  'close together that are close together in high-dimensional space with high likelihood. </p>'+
+                                  '<p>UMAP is a model described <a href ="https://arxiv.org/pdf/1802.03426.pdf">here</a>. '+
+                                  'It is also a nonlinear technique which is comparable to tSNE in showing local clustering while '+
+                                  'generally doing a better job of maintaining global structure, and is much faster computationally than tSNE. </p>',
                             style: 'margin-top: 5px;',
                             title: 'Details'
                         }),

@@ -177,7 +177,6 @@ for(sdy in studies){
   if(sdy == "SDY212"){
     # expr matrix
     em <- Biobase::exprs(es)
-    em <- em[ -(grep("ILMN_2137536", rownames(em))), ]
     cnames <- colnames(em)
     rnames <- rownames(em)
     em <- preprocessCore::normalize.quantiles(log2(em))
@@ -187,7 +186,6 @@ for(sdy in studies){
 
     # features
     features <- fData(es)
-    features <- features[ -(grep("ILMN_2137536", features$FeatureId)), ]
     rownames(features) <- features$FeatureId
 
     # pheno
