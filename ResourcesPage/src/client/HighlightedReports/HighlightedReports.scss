@@ -1,0 +1,19 @@
+@import '../theme/_ResourcesPage.scss';
+  
+.hr-infoCol {
+    width: 70%;
+    padding: 10px
+}
+
+.hr-imgCol {
+    width: 15%
+}
+
+.hr-staticImg {
+    margin: auto;
+    width: 80%; //This is percent of col
+    height: auto;
+    border: 2px solid black;
+    padding: 5px
+}
+
