@@ -85,10 +85,10 @@ getResponse <- function(con, responseVar, subjects, dichotomize, dichValue) {
   re <- re[, list(arm_accession, study_time_collected, study_time_collected_unit,
                     response = value_preferred/mean(value_preferred[study_time_collected<=0])),
                by = "virus,participant_id"]
-  re <- re[, mr := mean(response), by="study_time_collected"]
+  re <- re[, mr := mean(response, na.rm = TRUE), by="study_time_collected"]
   re <- re[, ma := max(mr), by = "arm_accession"]
   peak <- unique(re[mr == ma, list(study_time_collected, arm_accession)])
-  re<- merge(re, peak, by=c("study_time_collected", "arm_accession"))
+  re <- merge(re, peak, by=c("study_time_collected", "arm_accession"))
   re <- re[, list(response = log2(max(response))), by = "participant_id"]
   if(dichotomize) {
     re <- re[,response := ifelse(response >= log2(dichValue), TRUE,  FALSE)]
@@ -182,13 +182,13 @@ if(param$timepoint > 0){
 }
 
 rownames(FC) <- pd[match(rownames(FC), pd$biosample_accession), participant_id]
-response <- getResponse(con,
-                        param$responseVar,
-                        pids,
-                        param$dichotomize,
-                        param$dichValue)
-response_pids <- unique(response$participant_id)
-FC <- FC[rownames(FC) %in% response_pids,]
+response <- getResponse(con = con,
+                        responseVar = param$responseVar,
+                        subjects = pids,
+                        dichotomize = param$dichotomize,
+                        dichValue = param$dichValue)
+response <- response[ !is.na(response) ] # remove any participants with NA values 
+FC <- FC[rownames(FC) %in% unique(response$participant_id),]
 pd <- unique(pd[participant_id %in% rownames(FC), list(participant_id, cohort_type)])
 
 pd <- pd[, cohort_label := ifelse(cohort_type %in% param$cohortsTesting,
@@ -216,6 +216,7 @@ if(param$timepoint > 0){
     }
   }
 }
+
 response_train <- response[participant_id %in% train_pids, response]
 if( length(unique(response_train)) == 1 ){
     stop("All response calls in training cohort are the same, which causes the glmnet() to fail as 'y' is constant and the null deviance cannot be calculated in order to standardize the data. Please select a different training cohort.")

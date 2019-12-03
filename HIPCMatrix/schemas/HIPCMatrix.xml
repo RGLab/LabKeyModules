@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns:tables xmlns:ns='http://labkey.org/data/xml'>
+    <ns:table tableName="InputSamples_precompute" tableDbType="TABLE">
+        <ns:description>
+            The 'InputSamples_precompute' table stores a pre-computed version of the query by the same name in order to improve speed in the module.
+        </ns:description>
+        <ns:columns>
+            <ns:column columnName="Container">
+            </ns:column>
+            <ns:column columnName="RowId">
+                <ns:isKeyField>true</ns:isKeyField>
+            </ns:column>
+            <ns:column columnName="Source_Container">
+                <ns:fk>
+                    <ns:fkDbSchema>core</ns:fkDbSchema>
+                    <ns:fkTable>Containers</ns:fkTable>
+                    <ns:fkColumnName>EntityId</ns:fkColumnName>
+                </ns:fk>
+            </ns:column>
+            <ns:column columnName="Run">
+                <ns:fk>
+                    <ns:fkDbSchema>exp</ns:fkDbSchema>
+                    <ns:fkTable>experimentrun</ns:fkTable>
+                    <ns:fkColumnName>RowId</ns:fkColumnName>
+                </ns:fk>
+            </ns:column>
+            <ns:column columnName="TargetProtocolApplication">
+                <ns:fk>
+                    <ns:fkDbSchema>exp</ns:fkDbSchema>
+                    <ns:fkTable>ProtocolApplications</ns:fkTable>
+                    <ns:fkColumnName>RowId</ns:fkColumnName>
+                </ns:fk>
+            </ns:column>
+            <ns:column columnName="Material">
+                <!-- <ns:fk>
+                    <ns:fkDbSchema>exp</ns:fkDbSchema>
+                    <ns:fkTable>Materials</ns:fkTable>
+                    <ns:fkColumnName>RowId</ns:fkColumnName>
+                </ns:fk> -->
+            </ns:column>
+            <ns:column columnName="Biosample">
+                <ns:fk>
+                    <ns:fkDbSchema>study</ns:fkDbSchema>
+                    <ns:fkTable>gene_expression_files</ns:fkTable>
+                    <ns:fkColumnName>biosample_accession</ns:fkColumnName>
+                </ns:fk>
+            </ns:column>
+            <ns:column columnName="Role">
+            </ns:column>
+        </ns:columns>
+    </ns:table>
+</ns:tables>

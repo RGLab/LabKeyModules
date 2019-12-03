@@ -68,14 +68,17 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
         var loadResponse = function(){
             var
                 response    = cbResponse.getValue(),
-                cohorts     = cbCohorts.getCheckedValue( 'cohort' )
+                // Must use arm_accession instead of arm_accession/name
+                // because may have ';' or other problematic characters
+                // in name
+                cohorts     = cbCohorts.getCheckedValue( 'arm_accession' )
             ;
 
             cntPlot.update( '<div style=\'height: 10px\'></div>' );
 
             if ( response !== '' && cbTimePoint.getValue() !== '' && cohorts !== '' ){
-                if (
-                    ! qwpResponse ||
+                if ( 
+                      !qwpResponse ||
                     ( qwpResponse && ( qwpResponse.queryName != response || cohortsCache != cohorts ) )
                 ){
                     cohortsCache = cohorts;
@@ -89,7 +92,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                         },
                         filters: [
                             LABKEY.Filter.create(
-                                'arm_accession/name',
+                                'arm_accession',
                                 cohorts,
                                 LABKEY.Filter.Types.IN
                             )
@@ -377,7 +380,7 @@ LABKEY.ext.GeneExpressionExplorer = Ext.extend( Ext.Panel, {
                 cleared:    manageCbGenesState,
                 select:     manageCbGenesState
             },
-            separator: ';', // ';' IS IMPORTANT FOR LABKEY FILTERING, MUST ADJUST DOWNSTREAM LOGIC
+            separator: ',', // ';' IS IMPORTANT FOR LABKEY FILTERING, MUST ADJUST DOWNSTREAM LOGIC
             store: strCohort,
             valueField: 'display',
             width: fieldWidth,
