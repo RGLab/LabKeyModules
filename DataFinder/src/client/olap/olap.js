@@ -879,7 +879,7 @@
 
             if (copy.filter && copy.countFilter) {
                 console.error('OLAP: Both filter and countFilter are specified. These are the same, using countFilter is recommended.');
-            }
+            }            
 
             if (copy.filter) {
                 copy.countFilter = copy.filter.slice();

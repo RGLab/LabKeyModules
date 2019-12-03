@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { BarplotData } from '../../typings/Viz';
+import { BarplotDatum, BarplotProps } from '../../typings/Viz';
 
 // ================================================================== //
 /* 
@@ -12,22 +12,16 @@ the props:
 
 */
 // Types
-interface DrawBarplotProps {
-    data: BarplotData[];
-    name: string;
-    width: number;
-    height: number;
-}
 
-export function drawBarplot(props: DrawBarplotProps) {
+export function drawBarplot(props: BarplotProps) {
     const data = props.data;
     const name = props.name;
     const labels = [];
-    const dataRange = [0, 0];
+    const dataRange = props.dataRange;
 
     data.map((e, i) => {
         labels.push(e.label);
-        if (e.value > dataRange[1]) dataRange[1] = e.value;
+        // if (e.value > dataRange[1]) dataRange[1] = e.value;
     });
 
 
@@ -38,7 +32,7 @@ export function drawBarplot(props: DrawBarplotProps) {
         .attr("id", "barplot-" + name);
 
     // Create margins
-    const margin = { top: 20, right: 0, bottom: 30, left: 50 },
+    const margin = { top: 20, right: 15, bottom: 30, left: 50 },
         width = props.width - margin.left - margin.right,
         height = props.height - margin.top - margin.bottom;
 
@@ -46,7 +40,7 @@ export function drawBarplot(props: DrawBarplotProps) {
 
     const xaxisScale = d3
         .scaleLinear()
-        .domain([0, 3500])
+        .domain(dataRange)
         .range([0, width]);
 
     const yaxisScale = d3
@@ -91,10 +85,10 @@ export function drawBarplot(props: DrawBarplotProps) {
         .append("rect")
         .attr("class", "rect")
         .attr("x", xaxisScale(0))
-        .attr("width", function (d: BarplotData) {
+        .attr("width", function (d: BarplotDatum) {
             return xaxisScale(d.value);
         })
-        .attr("y", function (d: BarplotData) {
+        .attr("y", function (d: BarplotDatum) {
             return yaxisScale(d.label);
         })
         .attr("height", yaxisScale.bandwidth() - 5)
@@ -103,10 +97,10 @@ export function drawBarplot(props: DrawBarplotProps) {
         .transition()
         .duration(300)
         .attr("x", xaxisScale(0))
-        .attr("width", function (d: BarplotData) {
+        .attr("width", function (d: BarplotDatum) {
             return xaxisScale(d.value);
         })
-        .attr("y", function (d: BarplotData) {
+        .attr("y", function (d: BarplotDatum) {
             return yaxisScale(d.label);
         })
         .attr("height", yaxisScale.bandwidth() - 5)

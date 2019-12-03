@@ -1,10 +1,11 @@
 import * as React from 'react';
 import * as LABKEY from '@labkey/api';
-import { olap }  from '../olap/olap.js'
-import {StudyCard} from './components/StudyCard'
-import {BarplotController} from './components/Barplot'
+import { olap } from '../olap/olap.js'
+import { StudyCard } from './components/StudyCard'
+import { BarplotController } from './components/Barplot'
 import * as Cube from '../typings/Cube'
 import * as StudyCardTypes from '../typings/StudyCard'
+import { HeatmapDatum } from '../typings/Viz'
 
 const DataFinderController: React.FC = () => {
     // Constants -------------------------------------
@@ -33,11 +34,83 @@ const DataFinderController: React.FC = () => {
         memberExclusionFields: ["[Subject].[Subject]"]
     }))
     const [selectedStudiesArray, setSelectedStudiesArray] = React.useState<StudyCardTypes.CurrentStudyInfo[]>([])
-
+    const [barplotCategories, setBarplotCategories] = React.useState(
+        {
+            study: { unionArgs: [], members: [] },
+            participant: { unionArgs: [], members: [] }
+        })
     // Effects  -------------------------------------
-    // Submit the example filters when the page loads
+
     React.useEffect(() => {
+        // Submit the example filters when the page loads
         submitFilters()
+        // Get categories for barplots
+        const studyUnionArgs = [
+            { level: "[Subject.Species].[Species]" },
+            { level: "[Study.Condition].[Condition]" },
+            { level: "[Subject.ExposureMaterial].[ExposureMaterial]" }
+        ]
+        const participantUnionArgs = [
+            { level: "[Subject.Age].[Age]" },
+            { level: "[Subject.Race].[Race]" },
+            { level: "[Subject.Gender].[Gender]" }
+        ]
+        // subject-level
+        dfcube.onReady((mdx) => {
+            mdx.query({
+                "sql": true,
+                configId: "DataFinder:/DataFinderCube",
+                schemaName: 'immport',
+                success: function (cs: Cube.CellSet, mdx, config) {
+                    const members = cs.axes[1].positions.map((position) => {
+                        return(position[0].uniqueName)
+                    })
+                    const bpc = barplotCategories;
+                    bpc.participant = {
+                        unionArgs: participantUnionArgs,
+                        members: members
+                    }
+                    setBarplotCategories(bpc)
+                },
+                name: 'DataFinderCube',
+                onRows: {
+                    operator: "UNION",
+                    arguments: participantUnionArgs,
+                    members: "members"
+                },
+                countFilter: [studyFilter],
+                countDistinctLevel: "[Subject].[Subject]",
+                showEmpty: false
+            });
+        })
+        // study-level
+        dfcube.onReady((mdx) => {
+            mdx.query({
+                "sql": true,
+                configId: "DataFinder:/DataFinderCube",
+                schemaName: 'immport',
+                success: function (cs: Cube.CellSet, mdx, config) {
+                    const members = cs.axes[1].positions.map((position) => {
+                        return(position[0].uniqueName)
+                    })
+                    const bpc = barplotCategories;
+                    bpc.study = {
+                        unionArgs: studyUnionArgs,
+                        members: members
+                    }
+                    setBarplotCategories(bpc)
+                },
+                name: 'DataFinderCube',
+                onRows: {
+                    operator: "UNION",
+                    arguments: studyUnionArgs,
+                    members: "members"
+                },
+                countFilter: [studyFilter],
+                countDistinctLevel: "[Study].[Name]",
+                showEmpty: false
+            });
+        })
     }, [])
 
     // Update data every time the filter update button is clicked
@@ -155,28 +228,47 @@ const DataFinderController: React.FC = () => {
                 studyDict[studyName] = studyInfo;
                 studyDict[studyName] = { ...e }
             })
+            // console.log(studyCounts)
             studyCounts.axes[1].positions.map((e, i) => {
                 const studyName = e[0].name;
                 const totalParticipantCount = studyCounts.cells[i][0].value;
                 if (studyDict.hasOwnProperty(studyName)) {
                     studyDict[studyName] = { totalParticipantCount, ...studyDict[studyName] }
                     studyDict[studyName].heatmapData = studyCounts.axes[0].positions.map((f, j) => {
-                        if (j > 0) {
-                            const positionInfo = dataAssayNameToInfo(f[0].uniqueName)
-                            const positionCount = studyCounts.cells[i][j].value;
-                            const heatmapData: StudyCardTypes.HeatmapData = { ...positionInfo, count: positionCount };
-                            return heatmapData
-                        }
+                        // if (j > 0) {
+                        const positionInfo = dataAssayNameToInfo(f[0].uniqueName, true)
+                        const positionCount = studyCounts.cells[i][j].value;
+                        const heatmapDatum: HeatmapDatum = { ...positionInfo, count: positionCount };
+                        return heatmapDatum
+                        // }
 
                     })
                 }
             })
 
             //console.log(studyDict)
-            function dataAssayNameToInfo(name: string) {
-                var s = name.slice(13).split(/\./g).map(s => s.replace(/[\[\]]/g, ""))
+            function dataAssayNameToInfo(name: string, shortAssayNames: boolean = false) {
+                if (/(All)/.test(name)) { return { assay: undefined, timepoint: undefined, sampleType: undefined } }
+                const s = name.slice(13).split(/\./g).map(s => s.replace(/[\[\]]/g, ""))
+                const info = { assay: s[0], timepoint: s[1], sampleType: s[2] }
+                if (shortAssayNames) {
+                    const shortAssayNameMap = {
+                        "PCR": "PCR",
+                        "Neutralizing Antibody": "NAb",
+                        "MBAA": "MBAA",
+                        "HLA Typing": "HLA",
+                        "HAI": "HAI",
+                        "Gene Expression": "GE",
+                        "Flow Cytometry": "Flow",
+                        "ELISPOT": "ELISPOT",
+                        "ELISA": "ELISA",
+                        "CyTOF": "CyTOF",
+                        "KIR": "KIR"
+                    }
+                    info.assay = shortAssayNameMap[info.assay];
+                }
                 return (
-                    { assay: s[0], timepoint: s[1], sampleType: s[2] }
+                    info
                 )
             }
             return studyDict
@@ -238,7 +330,7 @@ const DataFinderController: React.FC = () => {
                     </div>
                 </div>
                 <div style={colstyle}>
-                    <BarplotController dfcube={dfcube} countFilter={filters} width={400} height={200}/>
+                    <BarplotController dfcube={dfcube} categories = {barplotCategories} countFilter={filters} width={400} height={200} />
                 </div>
             </div>
             <div id="df-study-panel">

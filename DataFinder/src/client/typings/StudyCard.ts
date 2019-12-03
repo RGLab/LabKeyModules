@@ -1,3 +1,5 @@
+import {HeatmapDatum} from './Viz'
+
 export interface Filter {
     level: string;
     membersQuery: {
@@ -5,17 +7,11 @@ export interface Filter {
         members: string[];
     }
 }
-export interface HeatmapData {
-    assay: string;
-    timepoint: string;
-    sampleType: string;
-    count: number;
-}
 export interface StaticStudyInfo {
     assays?: string[];
     brief_title?: string;
     condition_studied?: string;
-    heatmapData?: HeatmapData[];
+    heatmapData?: HeatmapDatum[];
     pi_names?: string[];
     program_title?: string;
     restricted?: boolean;

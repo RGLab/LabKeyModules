@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { CurrentStudyInfo } from '../../typings/StudyCard';
+import { TinyHeatmap } from '../components/TinyHeatmap';
 
 // Types
 interface StudyPropertyProps {
@@ -91,6 +92,23 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             value: study.assays[0]
         }
     ]
+    const heatmapColors = [
+        "#FFFFFF",
+        "#EDF8E9",
+        "#C7E9C0",
+        "#A1D99B",
+        "#74C476",
+        "#41AB5D",
+        "#238B45",
+        "#005A32"
+    ];
+    const heatmapBreaks = [
+        1,5,10,20,50,100
+    ]
+    const assays = [];
+    study.heatmapData.map((e, i) => {
+        if (e.assay !== undefined && assays.indexOf(e.assay) === -1 && e.count > 0) assays.push(e.assay);
+    });
 
     return (
         <div className="study-card">
@@ -112,7 +130,16 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             </div>
             <StudyProgressBar totalParticipantCount={study.totalParticipantCount} selectedParticipantCount={study.selectedParticipantCount} />
             <StudyProperties studyProperties={studyProperties} />
-            {/* <TinyHeatmap data={props.data}/> */}
+            <TinyHeatmap 
+                name={study.study_accession} 
+                width={260} 
+                height={30 + 10 * assays.length} 
+                data={study.heatmapData} 
+                colors={heatmapColors}
+                colorBreaks={heatmapBreaks}
+                assays={assays}/>
+
+            
         </div>
     )
 }

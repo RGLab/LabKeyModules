@@ -47,7 +47,7 @@
                 <Table name="dimStudy" schema="immport"/>
                 <Level name="Type" visible="true" column="type" type="String" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
-            <Hierarchy name="Conditions" hasAll="true" primaryKey="study">
+            <Hierarchy name="Condition" hasAll="true" primaryKey="study">
                 <Table name="dimStudyCondition" schema="immport"/>
                 <Level name="Condition" visible="true" table="dimStudyCondition" column="condition" type="String" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
