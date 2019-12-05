@@ -1,8 +1,9 @@
 import * as React from 'react';
 import * as LABKEY from '@labkey/api';
+import "./DataFinder.scss";
 import { olap } from '../olap/olap.js'
 import { StudyCard } from './components/StudyCard'
-import { BarplotController } from './components/Barplot'
+import { BarplotController, BarplotCategories } from './components/Barplot'
 import * as Cube from '../typings/Cube'
 import * as StudyCardTypes from '../typings/StudyCard'
 import { HeatmapDatum } from '../typings/Viz'
@@ -34,7 +35,7 @@ const DataFinderController: React.FC = () => {
         memberExclusionFields: ["[Subject].[Subject]"]
     }))
     const [selectedStudiesArray, setSelectedStudiesArray] = React.useState<StudyCardTypes.CurrentStudyInfo[]>([])
-    const [barplotCategories, setBarplotCategories] = React.useState(
+    const [barplotCategories, setBarplotCategories] = React.useState<BarplotCategories>(
         {
             study: { unionArgs: [], members: [] },
             participant: { unionArgs: [], members: [] }
@@ -348,7 +349,8 @@ const DataFinderController: React.FC = () => {
 
 
 
-export function App() {
+
+export const App: React.FC = () => {
 
     return <DataFinderController />
 

@@ -1,10 +1,6 @@
-/*
- * Copyright (c) 2019 LabKey Corporation
- *
- * Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
- */
-const webpack = require('webpack');
+
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const constants = require('./constants');
 const entryPoints = require('./entryPoints');
 
@@ -39,7 +35,7 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
         new HtmlWebpackPlugin({
             inject: false,
             mode: 'dev',
-            name: entryPoint.name,
+            name: entryPoint.name + "Dev",
             title: entryPoint.title + " Dev",
             frame: entryPoint.frame,
             filename: '../../../views/' + entryPoint.name + 'Dev.view.xml',
@@ -63,6 +59,8 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
     ]);
 }
 
+plugins.push(new MiniCssExtractPlugin());
+
 module.exports = {
     context: constants.context(__dirname),
 
@@ -79,20 +77,12 @@ module.exports = {
     },
 
     module: {
-        rules: constants.loaders.TYPESCRIPT_LOADERS
+        rules: constants.loaders.TYPESCRIPT_LOADERS.concat(constants.loaders.STYLE_LOADERS)
     },
 
     resolve: {
         extensions: constants.extensions.TYPESCRIPT
     },
-
-    // TODO: re-enable this once we understand the interactions of the chunks and splitting better
-    //       NOTE: that this will require changes to the app.view.template.xml
-    // optimization: {
-    //     splitChunks: {
-    //         chunks: 'all'
-    //     }
-    // },
 
     plugins: plugins
 };

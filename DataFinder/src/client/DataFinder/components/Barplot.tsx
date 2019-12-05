@@ -13,7 +13,7 @@ interface BarplotControllerProps {
     height: number;
     width: number;
 }
-interface BarplotCategories {
+export interface BarplotCategories {
     study: {
         unionArgs: {level: string}[];
         members: string[];
@@ -25,7 +25,10 @@ interface BarplotCategories {
 }
 
 
-export const BarplotController: React.FC<BarplotControllerProps> = (props) => {
+export const BarplotController: React.FC<BarplotControllerProps> = (props: BarplotControllerProps) => {
+    if (props.categories.participant.unionArgs.length == 0) {
+        return <div></div>
+    }
     // Constants -------------------------------------
     const dfcube = props.dfcube;
     const countFilter = props.countFilter;
@@ -49,7 +52,7 @@ export const BarplotController: React.FC<BarplotControllerProps> = (props) => {
                 name: 'DataFinderCube',
                 onRows: {
                     operator: "UNION",
-                    arguments: categories.participant.unionArgs,
+                    arguments: props.categories.participant.unionArgs,
                     members: "members"
                 },
                 countFilter: countFilter,

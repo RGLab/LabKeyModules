@@ -1,13 +1,10 @@
 <view xmlns="http://labkey.org/data/xml/view" 
     frame="<%= htmlWebpackPlugin.options.frame %>" 
     title="<%= htmlWebpackPlugin.options.title %>">
-    <dependencies>
-        <dependency path="DataFinder/gen/DataFinder-styles.css" />
-        <% if (htmlWebpackPlugin.options.mode !== 'dev') { %>
-         <dependency path="DataFinder/gen/<%= htmlWebpackPlugin.options.name %>.js"/>
-        <% } else { %>
-         <dependency path="http://localhost:3001/<%= htmlWebpackPlugin.options.name %>.js" />
-        <% } %>
-
-    </dependencies>
+     <% if (htmlWebpackPlugin.options.mode !== 'dev') { %>
+        <dependencies>
+            <dependency path="DataFinder/gen/<%= htmlWebpackPlugin.options.name %>.js"/>
+            <dependency path="DataFinder/gen/<%= htmlWebpackPlugin.options.name %>.css" />
+        </dependencies>
+    <% } %>
 </view>
