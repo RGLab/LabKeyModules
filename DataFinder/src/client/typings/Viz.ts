@@ -27,6 +27,7 @@ export interface BarplotProps {
         width: number;
         height: number;
         dataRange: number[];
+        labels: string[];
     }
 
 export interface BarplotData {

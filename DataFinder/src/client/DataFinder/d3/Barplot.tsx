@@ -16,14 +16,14 @@ the props:
 export function drawBarplot(props: BarplotProps) {
     const data = props.data;
     const name = props.name;
-    const labels = [];
+    const labels = props.labels;
     const dataRange = props.dataRange;
+    // const newLabels = [];
 
-    data.map((e, i) => {
-        labels.push(e.label);
-        // if (e.value > dataRange[1]) dataRange[1] = e.value;
-    });
-
+    // data.map((e, i) => {
+    //     newLabels.push(e.label);
+    //     // if (e.value > dataRange[1]) dataRange[1] = e.value;
+    // });
 
     const svg = d3
         .select("#barplot-" + name)
@@ -73,6 +73,7 @@ export function drawBarplot(props: BarplotProps) {
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
             .call(d3.axisLeft(yaxisScale));
     } else {
+        console.log("not empty")
         barplot = svg.select("#barplot" + name)
     }
 
@@ -95,7 +96,7 @@ export function drawBarplot(props: BarplotProps) {
         .style("fill", "steelblue")
     boxes
         .transition()
-        .duration(300)
+        .duration(500)
         .attr("x", xaxisScale(0))
         .attr("width", function (d: BarplotDatum) {
             return xaxisScale(d.value);

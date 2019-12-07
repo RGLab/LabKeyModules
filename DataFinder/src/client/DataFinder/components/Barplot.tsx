@@ -66,7 +66,7 @@ export const BarplotController: React.FC<BarplotControllerProps> = (props: Barpl
                 configId: "DataFinder:/DataFinderCube",
                 schemaName: 'immport',
                 success: function (cs: Cube.CellSet, mdx, config) {
-                    console.log(cs)
+                    // console.log(cs)
                     const bpData = formatBarplotData(cs);
                     // console.log(bpData);
                     setStudyData(bpData);
@@ -147,21 +147,24 @@ export const BarplotController: React.FC<BarplotControllerProps> = (props: Barpl
                     name={"gender"}
                     width={props.width}
                     dataRange={[0,3500]}
+                    labels = {["Unknown", "Other", "Male", "Female"]}
                 />
-                <Barplot
+                {/* <Barplot
                     data={subjectData.age}
                     height={props.height}
                     name={"age"}
                     width={props.width}
                     dataRange={[0,3500]}
+                    labels = {["> 70", "61-70", "51-60", "41-50", "31-40", "21-30", "11-20", "0-10"]}
                 />
                 <Barplot
-                    data={subjectData.gender}
+                    data={subjectData.race}
                     height={props.height}
                     name={"race"}
                     width={props.width}
                     dataRange={[0,3500]}
-                />
+                    labels = {[ "American Indian or Alaska Native", "Asian", "Black or African American", "Native Hawaiian or Other Pacific Islander", "Not Specified", "Not_Specified", "Other", "Unknown", "White" ]}
+                /> */}
             </div>
         
     } 
@@ -170,12 +173,13 @@ export const BarplotController: React.FC<BarplotControllerProps> = (props: Barpl
     if (studyData.hasOwnProperty("species")) {
         studyPlots = 
             <div>
-                <Barplot
+                {/* <Barplot
                     data={studyData.species}
                     height={props.height}
                     name={"species"}
                     width={props.width}
                     dataRange={[0,30]}
+                    labels = {["Homo Sapiens", "Mus Musculus"]}
                 />
                 <Barplot
                     data={studyData.condition}
@@ -183,14 +187,16 @@ export const BarplotController: React.FC<BarplotControllerProps> = (props: Barpl
                     name={"condition"}
                     width={props.width}
                     dataRange={[0,30]}
-                />
-                <Barplot
+                    labels = {[ "dengue disease", "Dengue hemorrhagic fever", "encephalitis", "Hepatitis C", "Meningitis", "meningoencephalitis", "Other", "West Nile encephalitits", "West Nile fever", "Zika fever", "Zika virus disease" ]}
+                /> */}
+                {/* <Barplot
                     data={studyData.material}
                     height={props.height}
                     name={"exposure-material"}
                     width={props.width}
                     dataRange={[0,30]}
-                />
+                    labels = {[]}
+                /> */}
             </div>
         
     } 

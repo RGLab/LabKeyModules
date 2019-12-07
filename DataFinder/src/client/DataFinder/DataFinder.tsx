@@ -7,6 +7,7 @@ import { BarplotController, BarplotCategories } from './components/Barplot'
 import * as Cube from '../typings/Cube'
 import * as StudyCardTypes from '../typings/StudyCard'
 import { HeatmapDatum } from '../typings/Viz'
+import { FilterDropdown } from "./components/FilterDropdown"
 
 const DataFinderController: React.FC = () => {
     // Constants -------------------------------------
@@ -25,13 +26,6 @@ const DataFinderController: React.FC = () => {
         schemaName: 'immport',
         name: 'DataFinderCube',
         deferLoad: false,
-        // console.log(olap.CubeManager.getCube({
-        //     configId: 'DataFinder:/DataFinderCube',
-        //     schemaName: 'immport',
-        //     name: 'DataFinderCube',
-        //     deferLoad: false,
-        //     memberExclusionFields: ["[Subject].[Subject]"]
-        // }))
         memberExclusionFields: ["[Subject].[Subject]"]
     }))
     const [selectedStudiesArray, setSelectedStudiesArray] = React.useState<StudyCardTypes.CurrentStudyInfo[]>([])
@@ -40,8 +34,11 @@ const DataFinderController: React.FC = () => {
             study: { unionArgs: [], members: [] },
             participant: { unionArgs: [], members: [] }
         })
+
+
     // Effects  -------------------------------------
 
+    // On page load
     React.useEffect(() => {
         // Submit the example filters when the page loads
         submitFilters()
@@ -330,6 +327,7 @@ const DataFinderController: React.FC = () => {
                         <textarea value={inputText} onChange={handleInputChange} rows={10} cols={50} />
                     </div>
                 </div>
+                <FilterDropdown dimension={"Study"} level={"Species"} members={["Homo Sapiens", "Mus Musculus"]} onSelect={(member)=>{return(() => {console.log("selected!" + member)})}}></FilterDropdown>
                 <div style={colstyle}>
                     <BarplotController dfcube={dfcube} categories = {barplotCategories} countFilter={filters} width={400} height={200} />
                 </div>
