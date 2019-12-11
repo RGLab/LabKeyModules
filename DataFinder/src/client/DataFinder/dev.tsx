@@ -8,10 +8,18 @@ import { App } from './DataFinder'
 const render = () => {
     ReactDOM.render(
         <AppContainer>
-            <App/>
+            <App />
         </AppContainer>,
         document.getElementById('app')
     )
+
+    // const menu = document.getElementsByClassName('dropdown-menu')
+
+    // for (var i = 0; i < menu.length; i++) {
+    //     menu[i].addEventListener('click', (e) => {
+    //         console.log("stopping...."); e.stopPropagation()
+    //     })
+    // }
 };
 
 declare const module: any;
@@ -22,3 +30,4 @@ window.addEventListener('DOMContentLoaded', () => {
         module.hot.accept();
     }
 });
+

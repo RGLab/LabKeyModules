@@ -9,6 +9,8 @@ import * as StudyCardTypes from '../typings/StudyCard'
 import { HeatmapDatum } from '../typings/Viz'
 import { FilterDropdown } from "./components/FilterDropdown"
 
+
+
 const DataFinderController: React.FC = () => {
     // Constants -------------------------------------
     const studyFilter: StudyCardTypes.Filter = {
@@ -353,3 +355,5 @@ export const App: React.FC = () => {
     return <DataFinderController />
 
 }
+
+

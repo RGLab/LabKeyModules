@@ -16,7 +16,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropd
             <div className="btn-group filterselector" role="group" >
                 <button className="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
                     <span>{props.dimension}</span>
-                    <span>{"&#9660;"}</span>
+                    <span>&#9660;</span>
                 </button>
                 <div className="dropdown-menu filter-dropdown">
                     <div id={props.level} className="form-group">
