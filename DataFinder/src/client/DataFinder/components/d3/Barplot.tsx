@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { BarplotDatum, BarplotProps } from '../../typings/Viz';
+import { BarplotDatum, BarplotProps } from '../../../typings/Viz';
 
 // ================================================================== //
 /* 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { drawTinyHeatmap } from '../d3/TinyHeatmap'
+import { drawTinyHeatmap } from './d3/TinyHeatmap'
 import { TinyHeatmapProps } from '../../typings/Viz'
 // Barplot ---------------------------------------- //
 

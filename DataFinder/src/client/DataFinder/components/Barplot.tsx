@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { drawBarplot } from '../d3/Barplot'
+import { drawBarplot } from './d3/Barplot'
 
 import * as Cube from '../../typings/Cube'
 import * as StudyCardTypes from '../../typings/StudyCard'

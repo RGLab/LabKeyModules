@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { HeatmapDatum, TinyHeatmapProps } from '../../typings/Viz';
+import { HeatmapDatum, TinyHeatmapProps } from '../../../typings/Viz';
 import { number } from 'prop-types';
 
 // ================================================================== //
