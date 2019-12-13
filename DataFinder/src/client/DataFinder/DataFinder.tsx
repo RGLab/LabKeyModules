@@ -1,5 +1,9 @@
 import React from 'react';
 import { olap } from '../olap/olap.js'
+import { CubeData } from '../typings/CubeData.js';
+import { Barplot } from './components/Barplot'
+import { createCubeData } from './helpers/CubeHelpers'
+import { SelectedFilters } from '../typings/CubeData'
 
 interface DataFinderControllerProps {
     mdx: any
@@ -9,12 +13,36 @@ interface DataFinderControllerProps {
 const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFinderControllerProps) => {
     // Constants -------------------------------------
     const mdx = props.mdx;
+    const emptyCubeData: CubeData = {
+        subject: {
+            race: [],
+            age: [],
+            gender: []
+        },
+        study: {
+            name: [],
+            program: [],
+            condition: [],
+            species: [],
+            exposureMaterial: [],
+            exposureProcess: []
+        },
+        data: {
+            assay: {
+                assay: [],
+                timepoint: [],
+                sampleType: []
+            },
+            timepoint: [],
+            sampleType: []
+        }
+    }
 
 
     // State variables -------------------------------------
     // Data objects (model)
-    const [SelectedFilters, setSelectedFilters] = React.useState([])
-    const [CubeData, setCubeData] = React.useState([])
+    const [SelectedFilters, setSelectedFilters] = React.useState<SelectedFilters>([])
+    const [CubeData, setCubeData] = React.useState(emptyCubeData)
     const [StudyDict, setStudyDict] = React.useState([])
 
     // Listeners
@@ -27,11 +55,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // Do these things only when the page loads
     React.useEffect(() => {
-        // loadData
-        // const cubeData = createCubeData(mdx)
-        // setCubeData(cubeData)
-        // const studyDict = createStudyDict(mdx)
-        // setStudyDict(studyDict)
+        // get filters from localStorage
+        // load data
+        applyFilters()
     }, [])
 
     // Do these things when certain variables are incremented 
@@ -39,8 +65,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     React.useEffect(() => {
         // set local storage
         // call to sessionParticipantGroup.api
-        // update CubeData
-        // update StudyDict
+         // write this asychronosouly? 
+         const cd = createCubeData(mdx, SelectedFilters)
+         setCubeData(cd)
+         // const sd = createStudyDict(mdx, SelectedFilters)
+         // setStudyDict(sd)
     }, [applyCounter])
 
 
@@ -50,9 +79,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     React.useEffect(() => {
         // load group
-        // make api calls
-        // update CubeData
-        // update StudyDict
+        // make api calls 
+        applyFilters()
     }, [loadedGroup, groupCounter])
 
     // Helper functions ---------------------------------------------
@@ -85,7 +113,16 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     return (
         <div>
             ready!
+            {/* banner */}
+            <Barplot data={CubeData.subject.age} name={"age"} height={300} width={500} dataRange={[0,300]} labels={["0-10","11-20","21-30"]} /> 
+            {/* <Dropdown /> */}
+            {/* <StudyCards /> */}
+            {/* various buttons */}
+            {/* query summary text */}
+            {/* heatmap selector */ }
         </div>
+
+
     )
 
 }

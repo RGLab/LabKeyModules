@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { drawBarplot } from './d3/Barplot'
+import { drawBarplot } from './d3/Barplot.d3'
 
 import * as Cube from '../../typings/Cube'
 import * as StudyCardTypes from '../../typings/StudyCard'
-import * as Viz from '../../typings/Viz'
+import * as CubeData from '../../typings/CubeData'
+import * as Components from '../../typings/Components'
+
 // Barplot ---------------------------------------- //
 // Types 
 interface BarplotControllerProps {
@@ -25,7 +27,7 @@ export interface BarplotCategories {
 }
 
 
-export const BarplotController: React.FC<BarplotControllerProps> = (props: BarplotControllerProps) => {
+const BarplotController: React.FC<BarplotControllerProps> = (props: BarplotControllerProps) => {
     if (props.categories.participant.unionArgs.length == 0) {
         return <div></div>
     }
@@ -35,8 +37,8 @@ export const BarplotController: React.FC<BarplotControllerProps> = (props: Barpl
     const categories = props.categories;
 
     // State Variables -------------------------------------
-    const [subjectData, setSubjectData] = React.useState<Viz.BarplotData>({})
-    const [studyData, setStudyData] = React.useState<Viz.BarplotData>({})
+    const [subjectData, setSubjectData] = React.useState<CubeData.BarplotData>({})
+    const [studyData, setStudyData] = React.useState<CubeData.BarplotData>({})
 
     React.useEffect(() => {
         // Get the data from the cube
@@ -209,7 +211,7 @@ export const BarplotController: React.FC<BarplotControllerProps> = (props: Barpl
 }
 
 // render the d3 barplot element
-const Barplot: React.FC<Viz.BarplotProps> = (props) => {
+export const Barplot: React.FC<Components.BarplotProps> = (props) => {
     React.useEffect(() => {
         // if (props.data.length > 0) {
             drawBarplot(props);

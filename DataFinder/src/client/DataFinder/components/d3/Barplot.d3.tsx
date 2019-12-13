@@ -1,5 +1,6 @@
 import * as d3 from 'd3'
-import { BarplotDatum, BarplotProps } from '../../../typings/Viz';
+import { BarplotProps } from '../../../typings/Components';
+import { BarplotDatum } from '../../../typings/CubeData';
 
 // ================================================================== //
 /* 

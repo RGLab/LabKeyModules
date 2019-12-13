@@ -55,3 +55,33 @@ export interface CellSet {
     cells: CubeCell[][];
     metadata: CubeMetadata;
 }
+
+export interface CubeMdx {
+    query: (config : MdxConfig) => void;
+}
+
+export interface MdxConfig {
+        sql: boolean;
+        configId: string;
+        schemaName: string;
+        success: (cs: CellSet, mdx: CubeMdx, config: MdxConfig) => void;
+        name: string;
+        onRows: MembersConfig;
+        onCols?: MembersConfig;
+        sliceFilter?: CubeFilter[];
+        countFilter: CubeFilter[];
+        countDistinctLevel: string;
+        showEmpty: boolean;
+        includeNullMemberInCount?: boolean;
+    }
+
+
+export interface CubeFilter {
+    level: string;
+    membersQuery: MembersConfig;
+}
+
+export interface MembersConfig {
+    level: string;
+    members: string[];
+}

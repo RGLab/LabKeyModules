@@ -1,4 +1,18 @@
-import { BarplotDatum, HeatmapDatum } from "./Viz";
+export interface BarplotDatum {
+    label: string;
+    value: number;
+}
+
+export interface BarplotData {
+    [index: string] : BarplotDatum[]
+}
+
+export interface HeatmapDatum {
+    assay: string;
+    timepoint: string;
+    sampleType?: string;
+    count: number;
+}
 
 export interface CubeData {
     subject: {
@@ -25,6 +39,16 @@ export interface CubeData {
     }
 }
 
+// export interface CollectCubeData 
+//     (mdx: Cube)
+// }
+
+export interface Filter {
+    dim: string;
+    level: string;
+    label: string;
+}
+
 export interface SelectedFilters {
-    
+    [index: number] : Filter
 }

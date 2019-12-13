@@ -1,4 +1,4 @@
-import {HeatmapDatum} from './Viz'
+import {HeatmapDatum} from './CubeData'
 
 export interface Filter {
     level: string;

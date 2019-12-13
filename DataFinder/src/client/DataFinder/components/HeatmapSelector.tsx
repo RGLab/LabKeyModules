@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {drawHeatmap} from "./d3/HeatmapSelector"
+import {drawHeatmap} from "./d3/HeatmapSelector.d3"
 
 // React stuff ==================================== //
 

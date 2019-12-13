@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { drawTinyHeatmap } from './d3/TinyHeatmap'
-import { TinyHeatmapProps } from '../../typings/Viz'
+import { drawTinyHeatmap } from './d3/TinyHeatmap.d3'
+import { TinyHeatmapProps } from '../../typings/Components'
 // Barplot ---------------------------------------- //
 
 export const TinyHeatmap: React.FC<TinyHeatmapProps> = (props) => {

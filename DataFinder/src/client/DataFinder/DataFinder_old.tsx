@@ -6,7 +6,7 @@ import { StudyCard } from './components/StudyCard'
 import { BarplotController, BarplotCategories } from './components/Barplot'
 import * as Cube from '../typings/Cube'
 import * as StudyCardTypes from '../typings/StudyCard'
-import { HeatmapDatum } from '../typings/Viz'
+import { HeatmapDatum } from '../typings/CubeData'
 import { FilterDropdown } from "./components/FilterDropdown"
 
 
