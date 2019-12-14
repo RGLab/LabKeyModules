@@ -41,7 +41,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // State variables -------------------------------------
     // Data objects (model)
-    const [SelectedFilters, setSelectedFilters] = React.useState<SelectedFilters>([])
+    const [SelectedFilters, setSelectedFilters] = React.useState<SelectedFilters>({})
     const [CubeData, setCubeData] = React.useState(emptyCubeData)
     const [StudyDict, setStudyDict] = React.useState([])
 
@@ -106,7 +106,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     const clearFilters = () => {
-        setSelectedFilters([]);
+        setSelectedFilters({});
         applyFilters()
     }
 

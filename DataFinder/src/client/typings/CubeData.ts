@@ -50,5 +50,8 @@ export interface Filter {
 }
 
 export interface SelectedFilters {
-    [index: number] : Filter
+    [index: string]: {
+        members: Filter[],
+        operator: string
+    }
 }

@@ -29,30 +29,30 @@ interface SelectRowsMetadata {
 
 
 // Filter-related types
-interface Filter {
-    name: string;
-    members: Array<string>;
-    operator: string;
-}
-interface GroupedFilters {
-    participant: Filter[];
-    sample: Filter[];
-    study: Filter[];
-}
+// interface Filter {
+//     name: string;
+//     members: Array<string>;
+//     operator: string;
+// }
+// interface GroupedFilters {
+//     participant: Filter[];
+//     sample: Filter[];
+//     study: Filter[];
+// }
 
-// Component props
-interface FlagProps {
-    filter: Filter;
-    filterClass: string;
-}
-interface ListProps {
-    filterClass: string;
-    filters: Array<Filter>;
-    title: string;
-}
-interface AppliedFilterProps {
-    filters: GroupedFilters
-}
+// // Component props
+// interface FlagProps {
+//     filter: Filter;
+//     filterClass: string;
+// }
+// interface ListProps {
+//     filterClass: string;
+//     filters: Array<Filter>;
+//     title: string;
+// }
+// interface AppliedFilterProps {
+//     filters: GroupedFilters
+// }
 
 
 
