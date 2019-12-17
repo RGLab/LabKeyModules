@@ -1,9 +1,16 @@
 import React from 'react';
 import { olap } from '../olap/olap.js'
-import { CubeData } from '../typings/CubeData.js';
+import { CubeData, Filter } from '../typings/CubeData';
 import { Barplot } from './components/Barplot'
-import { createCubeData } from './helpers/CubeHelpers'
+import { createCubeData, createStudyDict, getStudyParticipantCounts } from './helpers/CubeHelpers'
 import { SelectedFilters } from '../typings/CubeData'
+import { toggleFilter } from './helpers/SelectedFilters';
+import { FilterDropdown } from './components/FilterDropdown';
+import { string } from 'prop-types';
+import { StudyParticipantCount } from '../typings/StudyCard'
+import { StudyCard } from './components/StudyCard'
+import { ParticipantGroup } from '@labkey/api';
+import { getStudyNabGraphURL } from '@labkey/api/dist/labkey/Assay';
 
 interface DataFinderControllerProps {
     mdx: any
@@ -43,7 +50,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // Data objects (model)
     const [SelectedFilters, setSelectedFilters] = React.useState<SelectedFilters>({})
     const [CubeData, setCubeData] = React.useState(emptyCubeData)
-    const [StudyDict, setStudyDict] = React.useState([])
+    const [StudyDict, setStudyDict] = React.useState({})
+    const [StudyParticipantCounts, setStudyParticipantCounts] = React.useState<StudyParticipantCount[]>([])
 
     // Listeners
     const [saveCounter, setSaveCounter] = React.useState<number>(0)
@@ -57,7 +65,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     React.useEffect(() => {
         // get filters from localStorage
         // load data
-        applyFilters()
+        createStudyDict(mdx, SelectedFilters).then((sd) => {
+            setStudyDict(sd)
+            console.log(StudyDict)
+            applyFilters()}
+         )
     }, [])
 
     // Do these things when certain variables are incremented 
@@ -68,8 +80,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
          // write this asychronosouly? 
          const cd = createCubeData(mdx, SelectedFilters)
          setCubeData(cd)
-         // const sd = createStudyDict(mdx, SelectedFilters)
-         // setStudyDict(sd)
+         const spc = getStudyParticipantCounts(mdx, SelectedFilters)
+         setStudyParticipantCounts(spc)
     }, [applyCounter])
 
 
@@ -87,9 +99,13 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // These are functions which will get passed down to those components
     // which can cause updates to the page
 
-    const toggleFilter = (dim: string, level: string, label: string) => {
-        // get filter from arguments
-        // if in selected filters, remove it. Otherwise, add to selectedFilters
+    const filterClick = (filter: Filter) => {
+        // make a copy of SelectedFilters
+        let sf: SelectedFilters = JSON.parse(JSON.stringify(SelectedFilters))
+        return(() => {
+            sf = toggleFilter(filter, sf)
+            setSelectedFilters(sf)
+        })
     }
 
     const applyFilters = () => {
@@ -112,11 +128,25 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     return (
         <div>
-            ready!
             {/* banner */}
             <Barplot data={CubeData.subject.age} name={"age"} height={300} width={500} dataRange={[0,300]} labels={["0-10","11-20","21-30"]} /> 
-            {/* <Dropdown /> */}
-            {/* <StudyCards /> */}
+            <FilterDropdown dimension={"subject"} 
+                            level={"age"} 
+                            members={CubeData.subject.age.map((e)=>{return(e.label)})}
+                            filterClick={filterClick} />
+            <FilterDropdown dimension={"study"}
+                            level={"species"}
+                            members={CubeData.study.species.map((e)=>{return(e.label)})}
+                            filterClick={filterClick} />
+            <span>{JSON.stringify(SelectedFilters)}</span>
+            {StudyParticipantCounts.map((sdy) => {
+                if(sdy.participantCount > 0 && StudyDict[sdy.studyName]) {
+                    return(
+                        <StudyCard key={sdy.studyName} study={StudyDict[sdy.studyName]} participantCount={sdy.participantCount} />
+                    )
+                }
+
+            })}
             {/* various buttons */}
             {/* query summary text */}
             {/* heatmap selector */ }
@@ -151,4 +181,12 @@ export const App: React.FC = () => {
     return <div></div>
 }
 
+interface TestTextProps {
+    sf: SelectedFilters;
+}
 
+const TestText: React.FC<TestTextProps> = (props) => {
+    return(
+        <span>{JSON.stringify(props.sf)}</span>
+    )
+}

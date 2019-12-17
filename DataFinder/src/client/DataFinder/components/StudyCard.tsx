@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { CurrentStudyInfo } from '../../typings/StudyCard';
+import { StaticStudyInfo } from '../../typings/StudyCard';
 import { TinyHeatmap } from '../components/TinyHeatmap';
 
 // Types
@@ -25,7 +25,8 @@ interface StudyProperty {
 
 interface StudyCardProps {
     key: string;
-    study: CurrentStudyInfo;
+    study: StaticStudyInfo;
+    participantCount: number;
 }
 
 // Components
@@ -128,7 +129,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             <div className="study-title">
                 {study.brief_title}
             </div>
-            <StudyProgressBar totalParticipantCount={study.totalParticipantCount} selectedParticipantCount={study.selectedParticipantCount} />
+            <StudyProgressBar totalParticipantCount={study.totalParticipantCount} selectedParticipantCount={props.participantCount} />
             <StudyProperties studyProperties={studyProperties} />
             <TinyHeatmap 
                 name={study.study_accession} 

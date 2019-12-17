@@ -31,3 +31,8 @@ export interface SelectedStudies {
 export interface CurrentStudyInfo extends StaticStudyInfo {
     selectedParticipantCount: number;
 }
+
+export interface StudyParticipantCount {
+        studyName: string;
+        participantCount: number;
+}

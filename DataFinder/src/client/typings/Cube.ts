@@ -61,13 +61,13 @@ export interface CubeMdx {
 }
 
 export interface MdxConfig {
-        sql: boolean;
+        sql?: boolean;
         configId: string;
         schemaName: string;
         success: (cs: CellSet, mdx: CubeMdx, config: MdxConfig) => void;
         name: string;
         onRows: MembersConfig;
-        onCols?: MembersConfig;
+        onCols?: UnionConfig;
         sliceFilter?: CubeFilter[];
         countFilter: CubeFilter[];
         countDistinctLevel: string;
@@ -78,10 +78,14 @@ export interface MdxConfig {
 
 export interface CubeFilter {
     level: string;
-    membersQuery: MembersConfig;
+    membersQuery: MembersConfig[];
 }
 
 export interface MembersConfig {
     level: string;
     members: string[];
+}
+export interface UnionConfig {
+    operator: string;
+    arguments: MembersConfig[]
 }
