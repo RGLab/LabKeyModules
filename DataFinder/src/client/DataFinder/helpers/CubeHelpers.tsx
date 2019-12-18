@@ -10,8 +10,46 @@ import { StudyParticipantCount } from '../../typings/StudyCard'
 
 // Create appropriate queries from SelectedFilters to create appropriate filters for cube request
 
-// Create StudyDict
+
 export const createStudyDict = (mdx: CubeMdx, filters: SelectedFilters) => {
+    const studyDict = new Promise<StudyCardTypes.StudyDict>((resolve, reject) => {
+        const si1: StudyCardTypes.StaticStudyInfo = {
+            assays: ["HAI", "GE"],
+            brief_title: "Very Important Study",
+            condition_studied: "influenza",
+            sample_type: ["PBMC"],
+            heatmapData: [{assay: "HAI", timepoint: "4", count: 15},
+                          {assay: "HAI", timepoint: "2", count: 30}],
+            pi_names: ["Helen Miller"],
+            program_title: "Program 1",
+            restricted: false,
+            study_accession: "SDY269",
+            totalParticipantCount: 100
+        }
+        const si2: StudyCardTypes.StaticStudyInfo = {
+            assays: ["HAI", "GE"],
+            brief_title: "Very Important Study",
+            condition_studied: "influenza",
+            sample_type: ["PBMC"],
+            heatmapData: [{assay: "HAI", timepoint: "4", count: 15},
+                          {assay: "HAI", timepoint: "2", count: 30}],
+            pi_names: ["Helen Miller"],
+            program_title: "Program 1",
+            restricted: false,
+            study_accession: "SDY28",
+            totalParticipantCount: 40
+        }
+        resolve(
+            {SDY269: si1,
+             SDY28: si2}
+        )
+    })
+    return studyDict
+}
+
+
+// Create StudyDict
+const createStudyDict_old = (mdx: CubeMdx, filters: SelectedFilters) => {
     console.log("creating study dict")
     const cubeFilters = createCubeFilters(filters);
 
@@ -87,38 +125,39 @@ export const createStudyDict = (mdx: CubeMdx, filters: SelectedFilters) => {
 
         return studyDict
     })
-    //console.log(studyDict)
-    function dataAssayNameToInfo(name: string, shortAssayNames: boolean = false) {
-        if (/(All)/.test(name)) { return { assay: undefined, timepoint: undefined, sampleType: undefined } }
-        const s = name.slice(13).split(/\./g).map(s => s.replace(/[\[\]]/g, ""))
-        const info = { assay: s[0], timepoint: s[1], sampleType: s[2] }
-        if (shortAssayNames) {
-            const shortAssayNameMap = {
-                "PCR": "PCR",
-                "Neutralizing Antibody": "NAb",
-                "MBAA": "MBAA",
-                "HLA Typing": "HLA",
-                "HAI": "HAI",
-                "Gene Expression": "GE",
-                "Flow Cytometry": "Flow",
-                "ELISPOT": "ELISPOT",
-                "ELISA": "ELISA",
-                "CyTOF": "CyTOF",
-                "KIR": "KIR"
-            }
-            info.assay = shortAssayNameMap[info.assay];
+    
+}
+//console.log(studyDict)
+const dataAssayNameToInfo = (name: string, shortAssayNames: boolean = false) => {
+    if (/(All)/.test(name)) { return { assay: undefined, timepoint: undefined, sampleType: undefined } }
+    const s = name.slice(13).split(/\./g).map(s => s.replace(/[\[\]]/g, ""))
+    const info = { assay: s[0], timepoint: s[1], sampleType: s[2] }
+    if (shortAssayNames) {
+        const shortAssayNameMap = {
+            "PCR": "PCR",
+            "Neutralizing Antibody": "NAb",
+            "MBAA": "MBAA",
+            "HLA Typing": "HLA",
+            "HAI": "HAI",
+            "Gene Expression": "GE",
+            "Flow Cytometry": "Flow",
+            "ELISPOT": "ELISPOT",
+            "ELISA": "ELISA",
+            "CyTOF": "CyTOF",
+            "KIR": "KIR"
         }
-        return (
-            info
-        )
+        info.assay = shortAssayNameMap[info.assay];
     }
+    return (
+        info
+    )
 }
 
 // Update StudyParticipantCounts from Cube response
 export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
     const spc: StudyParticipantCount[] = [
         { studyName: "SDY269", participantCount: 98 },
-        { studyName: "SDY28", participantCount: 18 }]
+        { studyName: "SDY28", participantCount: 1 }]
     return (spc)
 }
 

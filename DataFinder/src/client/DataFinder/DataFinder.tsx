@@ -1,16 +1,15 @@
 import React from 'react';
 import { olap } from '../olap/olap.js'
-import { CubeData, Filter } from '../typings/CubeData';
+import { CubeData, Filter, SelectedFilters } from '../typings/CubeData';
 import { Barplot } from './components/Barplot'
 import { createCubeData, createStudyDict, getStudyParticipantCounts } from './helpers/CubeHelpers'
-import { SelectedFilters } from '../typings/CubeData'
 import { toggleFilter } from './helpers/SelectedFilters';
 import { FilterDropdown } from './components/FilterDropdown';
-import { string } from 'prop-types';
 import { StudyParticipantCount } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
-import { ParticipantGroup } from '@labkey/api';
-import { getStudyNabGraphURL } from '@labkey/api/dist/labkey/Assay';
+import { ActionButton } from './components/ActionButton';
+import { FilterSummary } from './components/FilterIndicator'
+
 
 interface DataFinderControllerProps {
     mdx: any
@@ -99,6 +98,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // These are functions which will get passed down to those components
     // which can cause updates to the page
 
+    const getFilters = () => {
+        // get filters from local storage
+        // set SelectedFilters
+    }
+
     const filterClick = (filter: Filter) => {
         // make a copy of SelectedFilters
         let sf: SelectedFilters = JSON.parse(JSON.stringify(SelectedFilters))
@@ -129,7 +133,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     return (
         <div>
             {/* banner */}
-            <Barplot data={CubeData.subject.age} name={"age"} height={300} width={500} dataRange={[0,300]} labels={["0-10","11-20","21-30"]} /> 
+            <ActionButton text={"Apply"} onClick={applyFilters} />
+            <ActionButton text={"Save"} onClick={saveParticipantGroup} />
+            <ActionButton text={"Clear"} onClick={clearFilters} />
+            <ActionButton text={"Reset"} onClick={getFilters} />
+            <FilterSummary filters={SelectedFilters}/>
             <FilterDropdown dimension={"subject"} 
                             level={"age"} 
                             members={CubeData.subject.age.map((e)=>{return(e.label)})}
@@ -138,7 +146,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             level={"species"}
                             members={CubeData.study.species.map((e)=>{return(e.label)})}
                             filterClick={filterClick} />
-            <span>{JSON.stringify(SelectedFilters)}</span>
+            <Barplot data={CubeData.subject.age} name={"age"} height={300} width={500} dataRange={[0,300]} labels={["0-10","11-20","21-30"]} /> 
             {StudyParticipantCounts.map((sdy) => {
                 if(sdy.participantCount > 0 && StudyDict[sdy.studyName]) {
                     return(
@@ -147,8 +155,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 }
 
             })}
-            {/* various buttons */}
-            {/* query summary text */}
+            
             {/* heatmap selector */ }
         </div>
 
@@ -179,14 +186,4 @@ export const App: React.FC = () => {
         return <DataFinderController mdx = {dfcube.mdx} />
     }
     return <div></div>
-}
-
-interface TestTextProps {
-    sf: SelectedFilters;
-}
-
-const TestText: React.FC<TestTextProps> = (props) => {
-    return(
-        <span>{JSON.stringify(props.sf)}</span>
-    )
 }

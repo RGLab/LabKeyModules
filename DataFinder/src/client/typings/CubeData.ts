@@ -49,6 +49,11 @@ export interface Filter {
     label: string;
 }
 
+export interface SelectedFilter {
+    members: string[],
+    operator: string
+}
+
 export interface SelectedFilters {
     [index: string]: {
         members: string[],
