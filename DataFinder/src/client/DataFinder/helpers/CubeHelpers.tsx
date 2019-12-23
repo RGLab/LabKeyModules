@@ -7,6 +7,7 @@ import { HeatmapDatum } from '../../typings/CubeData'
 import { createCubeFilters } from './SelectedFilters'
 import * as StudyCardTypes from '../../typings/StudyCard'
 import { StudyParticipantCount } from '../../typings/StudyCard'
+import * as Immutable from 'immutable'
 
 // Create appropriate queries from SelectedFilters to create appropriate filters for cube request
 
@@ -162,34 +163,34 @@ export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters
 }
 
 // Create CubeData object from cube response
-export const createCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
-    const cd: CubeData = {
-        subject: {
-            race: [],
-            age: [{ label: "0-10", value: 15 },
-            { label: "11-20", value: 86 }],
-            gender: []
-        },
-        study: {
-            name: [],
-            program: [],
-            condition: [],
-            species: [{ label: "Homo Sapiens", value: 90 },
-            { label: "Mus Musculus", value: 7 }],
-            exposureMaterial: [],
-            exposureProcess: []
-        },
-        data: {
-            assay: {
-                assay: [],
-                timepoint: [],
-                sampleType: []
-            },
-            timepoint: [],
-            sampleType: []
-        }
-    }
-    return (
-        cd
-    )
-}
+// export const createCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
+//     const cd: CubeData = {
+//         subject: {
+//             race: [],
+//             age: [{ label: "0-10", value: 15 },
+//             { label: "11-20", value: 86 }],
+//             gender: []
+//         },
+//         study: {
+//             name: [],
+//             program: [],
+//             condition: [],
+//             species: [{ label: "Homo Sapiens", value: 90 },
+//             { label: "Mus Musculus", value: 7 }],
+//             exposureMaterial: [],
+//             exposureProcess: []
+//         },
+//         data: {
+//             assay: {
+//                 assay: [],
+//                 timepoint: [{assay: "HAI", timepoint: "0", count: 86}, {assay: "Gene Expression", timepoint: "8", count: 1408}],
+//                 sampleType: []
+//             },
+//             timepoint: [],
+//             sampleType: []
+//         }
+//     }
+//     return (
+//         cd
+//     )
+// }

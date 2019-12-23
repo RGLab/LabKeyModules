@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
-import { App } from './DataFinder'
+import { App } from './DataFinder_immutable'
 
 
 window.addEventListener('DOMContentLoaded', (event) => {
