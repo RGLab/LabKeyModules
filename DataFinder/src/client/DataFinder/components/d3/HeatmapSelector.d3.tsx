@@ -1,4 +1,6 @@
 import * as d3 from 'd3'
+import { HeatmapDatum } from '../../../typings/CubeData';
+import { number } from 'prop-types';
 // ================================================================== //
 /* 
 This is a heatmap component which was translated from an r2d3 fuction.
@@ -27,7 +29,21 @@ It takes the following arguments:
      )
 */
 
-export function drawHeatmap(props) {
+interface DrawHeatmapProps {
+  data: HeatmapDatum[];
+  name: string;
+  width: number;
+  height: number;
+  options: {
+    breaks: number[];
+    colors: string[];
+    xaxis: string[];
+    yaxis: string[];
+  }
+  selected: string[];
+}
+
+export const drawHeatmap = (props: DrawHeatmapProps) => {
     const data = props.data;
     const name = props.name;
     const options = props.options;
@@ -57,7 +73,7 @@ export function drawHeatmap(props) {
     // Set scales using options
     // color scale
     var colorScale = d3
-      .scaleThreshold()
+      .scaleThreshold<number, string>()
       .domain(options.breaks)
       .range(options.colors);
   
@@ -72,9 +88,10 @@ export function drawHeatmap(props) {
       .range([0, height]);
   
     // Create body and axes
+    let heatmap: d3.Selection<SVGElement, any, HTMLElement, any>;
   
     if (svg.selectAll("g").empty()) {
-      var heatmap = svg
+      heatmap = svg
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         .attr("id", "heatmap");
@@ -93,16 +110,16 @@ export function drawHeatmap(props) {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       //.call(d3.axisLeft(yaxisScale));
     } else {
-      var heatmap = svg.select("#heatmap"),
+      heatmap = svg.select("#heatmap"),
         xaxislabels = svg.select("#xaxis-labels"),
         yaxislabels = svg.select("#yaxis-labels");
     }
   
     // y-axis tags
-    var yAxisTagPoints = function (assay) {
-      var x1 = xaxisScale(0) - xaxisScale.bandwidth() - margin.left + 5,
-        x2 = xaxisScale(0) - xaxisScale.bandwidth() - 5,
-        x3 = xaxisScale(0) - xaxisScale.bandwidth(),
+    var yAxisTagPoints = function (assay: string) {
+      var x1 = xaxisScale("0") - xaxisScale.bandwidth() - margin.left + 5,
+        x2 = xaxisScale("0") - xaxisScale.bandwidth() - 5,
+        x3 = xaxisScale("0") - xaxisScale.bandwidth(),
         y1 = yaxisScale(assay) + yaxisScale.bandwidth() - 1,
         y2 = yaxisScale(assay) + yaxisScale.bandwidth() / 2,
         y3 = yaxisScale(assay) + 1;
@@ -135,7 +152,7 @@ export function drawHeatmap(props) {
       .enter()
       .append("text")
       .attr("x", function (d) {
-        return xaxisScale(0) - xaxisScale.bandwidth() - margin.left / 2;
+        return xaxisScale("0") - xaxisScale.bandwidth() - margin.left / 2;
       })
       .attr("y", function (d) {
         return yaxisScale(d) + yaxisScale.bandwidth() / 2;
@@ -222,18 +239,18 @@ export function drawHeatmap(props) {
       xaxis
         .enter()
         .append("polygon")
-        .attr("points", function (d) {
+        .attr("points", (d) => {
           return xAxisTagPoints(d);
         })
         .attr("fill", "transparent")
         .attr("stroke", "#e5e5e5")
-        .on("mouseover", function (d) {
+        .on("mouseover", (d) => {
           // Change style
           d3.select(this)
             .attr("stroke-width", "2px")
             .attr("stroke", "black");
         })
-        .on("mouseout", function (d) {
+        .on("mouseout", (d) => {
           // Reset to original
           d3.select(this)
             .attr("stroke-width", "1px")
@@ -262,23 +279,20 @@ export function drawHeatmap(props) {
         return yaxisScale(d.assay);
       })
       .attr("height", yaxisScale.bandwidth() - 1)
-      .attr("id", function (d) {
-        return d.id;
-      })
       .style("fill", function (d) {
-        return colorScale(d.participantCount);
+        return colorScale(d.count);
       })
       .attr("stroke-width", "1px")
       .attr("stroke", function (d) {
-        if (selected.includes(this.id)) {
-          return "#111111";
-        } else {
+        // if (selected.indexO(this.id)) {
+        //   return "#111111";
+        // } else {
           return "transparent";
-        }
+        // }
       })
       .on("mouseover", function (d, i) {
         // Tooltip coordinates
-        var r = coord.right - margin.left - coord.x - xaxisScale(d.timepoint);
+        var r = coord.right - margin.left  - xaxisScale(d.timepoint);
         var t =
           coord.top + margin.top + yaxisScale(d.assay) + yaxisScale.bandwidth();
         // Change style
@@ -300,10 +314,10 @@ export function drawHeatmap(props) {
           .style("top", t - yaxisScale.bandwidth() - 12 + "px");
         tooltip
           .html(
-            d.participantCount +
+            d.count +
             " participants <br>" +
-            d.studyCount +
-            " studies <br>" +
+            // d.studyCount +
+            // " studies <br>" +
             d.assay +
             " at day " +
             d.timepoint
@@ -316,11 +330,11 @@ export function drawHeatmap(props) {
         d3.select(this)
           .attr("stroke-width", "1px")
           .attr("stroke", function (d) {
-            if (selected.includes(this.id)) {
-              return "#111111";
-            } else {
+            // if (selected.indexOf(this.id) > -1) {
+            //   return "#111111";
+            // } else {
               return "transparent";
-            }
+            // }
           })
           .attr("z-index", 10);
         tooltip
@@ -332,10 +346,10 @@ export function drawHeatmap(props) {
           .duration(100)
           .style("opacity", 0);
       })
-      .on("click", function (d, i) {
-        var id = this.id;
-        props.handleClick(id);
-      });
+      // .on("click", function (d, i) {
+      //   var id = this.id;
+      //   props.handleClick(id);
+      // });
   
     boxes
       .transition()
@@ -348,29 +362,29 @@ export function drawHeatmap(props) {
         return yaxisScale(d.assay);
       })
       .attr("height", yaxisScale.bandwidth() - 1)
-      .attr("id", function (d, i) {
-        return d.id;
-      })
+      // .attr("id", function (d, i) {
+      //   return d.id;
+      // })
       .style("fill", function (d) {
-        if (selected.includes(this.id)) {
-          return "#fff766";
-        } else {
-          return colorScale(d.participantCount);
-        }
+        // if (selected.indexOf(this.id) > -1) {
+        //   return "#fff766";
+        // } else {
+          return colorScale(d.count);
+        // }
       })
       .attr("stroke", function (d) {
-        if (selected.includes(this.id)) {
-          return "#111111";
-        } else {
+        // if (selected.includes(this.id)) {
+        //   return "#111111";
+        // } else {
           return "transparent";
-        }
+        // }
       });
   
     yaxistext
       .transition()
       .duration(0)
       .attr("x", function (d) {
-        return xaxisScale(0) - xaxisScale.bandwidth() - margin.left / 2;
+        return xaxisScale("0") - xaxisScale.bandwidth() - margin.left / 2;
       })
       .attr("y", function (d) {
         return yaxisScale(d) + yaxisScale.bandwidth() / 2;

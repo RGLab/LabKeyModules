@@ -32,11 +32,11 @@
     "@types/react": "16.8.19",
     "@types/react-bootstrap": "0.32.19",
     "@types/react-dom": "16.8.4",
-    "immutable": "3.8.2",
+    "d3": "^5.12.0",
+    "immutable": "^3.8.2",
     "react": "16.8.6",
     "react-bootstrap": "0.32.4",
-    "react-dom": "16.8.6",
-    "d3": "^5.12.0"
+    "react-dom": "16.8.6"
   },
   "devDependencies": {
     "@babel/core": "7.4.5",
