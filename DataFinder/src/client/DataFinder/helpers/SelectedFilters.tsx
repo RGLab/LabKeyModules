@@ -1,3 +1,11 @@
+// NOTE:  This will define what filters look like, include functions
+// for translating between the filters passed around in state, and
+// filters to send off to a cube query. "toggleFilter" is an important
+// function, which takes a filter and "selectedFilters" object, turning
+// the specified filter on or off in the "selectedFilters" object, and 
+// returning the new "selectedFilters." It is passed down into the various
+// filter selector buttons as well as the heatmap. 
+
 import { Filter, SelectedFilters } from '../../typings/CubeData'
 // toggle filter
 

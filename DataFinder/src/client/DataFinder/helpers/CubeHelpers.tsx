@@ -1,19 +1,27 @@
+// NOTE: 
+// While experimenting with immutable and typings, I found that I couldn't
+// return an immutable object in a typed promise. So I return a regular
+// js object, then have an additional function which translates it into the 
+// proper immutable object. I'm open to other suggestions. -HM
+
 import { CubeMdx } from "../../typings/Cube";
 import * as LABKEY from '@labkey/api';
 import { SelectedFilters, CubeData, ICubeData } from "../../typings/CubeData";
-import { values } from "d3";
 import * as Cube from '../../typings/Cube'
 import { HeatmapDatum } from '../../typings/CubeData'
 import { createCubeFilters } from './SelectedFilters'
 import * as StudyCardTypes from '../../typings/StudyCard'
 import { StudyParticipantCount } from '../../typings/StudyCard'
 import * as Immutable from 'immutable'
-import { string } from "prop-types";
 
-// Create appropriate queries from SelectedFilters to create appropriate filters for cube request
+// TODO: Create appropriate queries from SelectedFilters to create appropriate filters for cube request
+// TODO: Edit all functions in this file to actually make API calls using selected filters
 
-
+// Study info ---- 
 export const getStudyInfoArray = (mdx: CubeMdx, filters: SelectedFilters) => {
+
+
+    console.log("getStudyInfoArray()")
     const studyInfoPromise = new Promise<StudyCardTypes.IStudyInfo[]>((resolve, reject) => {
         const si1: StudyCardTypes.StudyInfo = new StudyCardTypes.StudyInfo({
             assays: ["HAI", "GE"],
@@ -47,7 +55,7 @@ export const getStudyInfoArray = (mdx: CubeMdx, filters: SelectedFilters) => {
 }
 
 export const createStudyDict = (studyInfoArray: StudyCardTypes.IStudyInfo[]) => {
-    // const studyDict: Map<string, StudyCardTypes.StudyInfo> = 
+    console.log("createStudyDict()")
 
     const studyInfo = studyInfoArray.map((si: StudyCardTypes.IStudyInfo) => {
         return ([si.study_accession, new StudyCardTypes.StudyInfo(si)])
@@ -58,6 +66,8 @@ export const createStudyDict = (studyInfoArray: StudyCardTypes.IStudyInfo[]) => 
 
 // Update StudyParticipantCounts from Cube response
 export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
+    console.log("getStudyParticipantCounts()")
+
     const studyParticipantCountPromise = new Promise<StudyCardTypes.IStudyParticipantCount[]>((resolve, reject) => {
         const spc: StudyCardTypes.IStudyParticipantCount[] = [
             { studyName: "SDY269", participantCount: 98 },
@@ -67,6 +77,8 @@ export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters
     return (studyParticipantCountPromise)
 }
 export const createStudyParticipantCounts = (studyParticipantCountArray: StudyCardTypes.IStudyParticipantCount[]) => {
+    console.log("createStudyParticipantCounts()")
+
     const studyParticipantCounts = studyParticipantCountArray.map((spc: StudyCardTypes.IStudyParticipantCount) => {
         return (new StudyCardTypes.StudyParticipantCount(spc))
     })
@@ -75,15 +87,17 @@ export const createStudyParticipantCounts = (studyParticipantCountArray: StudyCa
 }
 
 export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
+    console.log("getCubeData()")
+
     const cubeData = new Promise<ICubeData>((resolve, reject) => {
         const cd: ICubeData = {
-            subject: {
+            subject: Immutable.fromJS({
                 race: [],
                 age: [{ label: "0-10", value: 15 },
                 { label: "11-20", value: 86 }],
                 gender: []
-            },
-            study: {
+            }),
+            study: Immutable.fromJS({
                 name: [],
                 program: [],
                 condition: [],
@@ -91,15 +105,15 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
                 { label: "Mus Musculus", value: 7 }],
                 exposureMaterial: [],
                 exposureProcess: []
-            },
+            }),
             data: {
-                assay: {
+                assay: Immutable.fromJS({
                     assay: [],
                     timepoint: [{ assay: "HAI", timepoint: "0", count: 86 }, { assay: "Gene Expression", timepoint: "8", count: 1408 }],
                     sampleType: []
-                },
-                timepoint: [],
-                sampleType: []
+                }),
+                timepoint: Immutable.fromJS([]),
+                sampleType: Immutable.fromJS([])
             }
         }
         resolve(cd);
@@ -108,6 +122,8 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
 }
 
 export const createCubeData = (cubeData: ICubeData) => {
+    console.log("createCubeData()")
+
     return new CubeData(cubeData);
 }
 
@@ -216,38 +232,3 @@ const dataAssayNameToInfo = (name: string, shortAssayNames: boolean = false) => 
         info
     )
 }
-
-
-
-// Create CubeData object from cube response
-// export const createCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
-//     const cd: CubeData = {
-//         subject: {
-//             race: [],
-//             age: [{ label: "0-10", value: 15 },
-//             { label: "11-20", value: 86 }],
-//             gender: []
-//         },
-//         study: {
-//             name: [],
-//             program: [],
-//             condition: [],
-//             species: [{ label: "Homo Sapiens", value: 90 },
-//             { label: "Mus Musculus", value: 7 }],
-//             exposureMaterial: [],
-//             exposureProcess: []
-//         },
-//         data: {
-//             assay: {
-//                 assay: [],
-//                 timepoint: [{assay: "HAI", timepoint: "0", count: 86}, {assay: "Gene Expression", timepoint: "8", count: 1408}],
-//                 sampleType: []
-//             },
-//             timepoint: [],
-//             sampleType: []
-//         }
-//     }
-//     return (
-//         cd
-//     )
-// }

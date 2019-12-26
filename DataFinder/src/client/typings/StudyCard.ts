@@ -1,7 +1,5 @@
 import {HeatmapDatum} from './CubeData'
 import { Record } from 'immutable';
-import { bisectRight } from 'd3';
-import { string } from 'prop-types';
 
 // export interface Filter {
 //     level: string;
