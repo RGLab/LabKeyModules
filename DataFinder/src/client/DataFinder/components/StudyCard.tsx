@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StaticStudyInfo } from '../../typings/StudyCard';
+import { StudyInfo } from '../../typings/StudyCard';
 import { TinyHeatmap } from '../components/TinyHeatmap';
 
 // Types
@@ -25,7 +25,7 @@ interface StudyProperty {
 
 interface StudyCardProps {
     key: string;
-    study: StaticStudyInfo;
+    study: StudyInfo;
     participantCount: number;
 }
 

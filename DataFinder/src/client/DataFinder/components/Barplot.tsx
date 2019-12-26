@@ -11,7 +11,7 @@ import * as Components from '../../typings/Components'
 interface BarplotControllerProps {
     dfcube: any;
     categories: BarplotCategories;
-    countFilter: StudyCardTypes.Filter[];
+    countFilter: CubeData.FilterQuery[];
     height: number;
     width: number;
 }

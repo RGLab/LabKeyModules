@@ -65,27 +65,28 @@ export class CubeData extends Record({
         sampleType: []
     })
 }) {
-    subject: {
-        race: BarplotDatum[];
-        age: BarplotDatum[];
-        gender: BarplotDatum[]};
-    study: {
-        name: BarplotDatum[];
-        program: BarplotDatum[];
-        condition: BarplotDatum[];
-        species: BarplotDatum[];
-        exposureMaterial: BarplotDatum[];
-        exposureProcess: BarplotDatum[];
-    };
-    data: {
-        assay: {
-            assay: BarplotDatum[];
-            timepoint: HeatmapDatum[];
-            sampleType: HeatmapDatum[];
+        subject: {
+            race: BarplotDatum[];
+            age: BarplotDatum[];
+            gender: BarplotDatum[]};
+        study: {
+            name: BarplotDatum[];
+            program: BarplotDatum[];
+            condition: BarplotDatum[];
+            species: BarplotDatum[];
+            exposureMaterial: BarplotDatum[];
+            exposureProcess: BarplotDatum[];
         };
-        timepoint: BarplotDatum[];
-        sampleType: BarplotDatum[];
-    };
+        data: {
+            assay: {
+                assay: BarplotDatum[];
+                timepoint: HeatmapDatum[];
+                sampleType: HeatmapDatum[];
+            };
+            timepoint: BarplotDatum[];
+            sampleType: BarplotDatum[];
+        };
+    
 
     constructor(params?: ICubeData) {
         params ? super(params) : super()
@@ -145,4 +146,12 @@ export interface SelectedFilters {
         members: string[],
         operator: string
     }
+}
+
+export interface FilterQuery {
+    level: string;
+    membersQuery: {
+        level: string;
+        members: string[];
+    }[]
 }

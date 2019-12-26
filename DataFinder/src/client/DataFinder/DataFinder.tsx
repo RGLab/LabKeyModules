@@ -9,7 +9,7 @@ import { StudyParticipantCount } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
 import { ActionButton } from './components/ActionButton';
 import { FilterSummary } from './components/FilterIndicator'
-import { HeatmapSelector } from './components/HeatmapSelector'
+
 
 interface DataFinderControllerProps {
     mdx: any
@@ -156,7 +156,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
             })}
             
-            <HeatmapSelector data={CubeData.data.assay.timepoint}/>
+            {/* heatmap selector */ }
         </div>
 
 
