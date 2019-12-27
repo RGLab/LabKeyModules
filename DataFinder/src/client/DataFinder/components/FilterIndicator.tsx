@@ -1,21 +1,24 @@
 import * as React from 'react'
 import * as LABKEY from '@labkey/api'
 import { Filter, SelectedFilters, SelectedFilter } from "../../typings/CubeData";
+import {Map} from 'immutable'
 
 interface FilterSummaryProps {
     filters: SelectedFilters
 }
 
-interface FilterIndicatorFlagProps {
-    dim: string;
-    filter: FilterInfo;
+interface FilterIndicatorListProps {
+    filterClass: string;
+    filters: Map<string, SelectedFilter>;
+    title: string;
 }
 
-interface FilterInfo {
-    name: string;
-    members: string[];
-    operator: string;
+interface FilterIndicatorFlagProps {
+    dim: string;
+    filter: SelectedFilter;
+    level: string;
 }
+
 
 const filterMembers = {
     "study": ["Study", "Species", "Condition", "ExposureMaterial", "ExposureProcess", "ResearchFocus"],
@@ -25,47 +28,39 @@ const filterMembers = {
 
 
 // Filter stuff... ========================================================
-export const FilterSummary: React.FC<FilterSummaryProps> = (props) => {
-    // organize props by study, subject, data
-    const studyFilters: FilterInfo[] = []
-    const participantFilters: FilterInfo[] = []
-    const dataFilters: FilterInfo[] = []
-    Object.keys(props.filters).forEach((e, i) => {
-        const dimlevel = e.split(".")
-        const filterInfo: FilterInfo = {name: dimlevel[1], ...props.filters[e]}
-        if(dimlevel[0] == "study") studyFilters.push(filterInfo)
-        if(dimlevel[0] == "subject") participantFilters.push(filterInfo)
-        if(dimlevel[0] == "data") dataFilters.push(filterInfo)
-    })
-
+export const FilterSummary = (props: FilterSummaryProps) => {
+    
+    // if (props.filters.subject.size != 0) debugger;
     
     return (
     <div>
         <FilterIndicatorList 
             filterClass = {"study"} 
-            filters = {studyFilters} 
+            filters = {props.filters.study} 
             title = {"Study Design"}/>
         <FilterIndicatorList
             filterClass = {"participant"}
-            filters = {participantFilters}
+            filters = {props.filters.subject}
             title = {"Participant Characteristics"}/>
         <FilterIndicatorList
             filterClass = {"sample"}
-            filters = {dataFilters}
+            filters = {props.filters.data}
             title = {"Available Data"}/>
     </div>
     )
 }
 
-function FilterIndicatorList(props) {
+const FilterIndicatorList: React.FC<FilterIndicatorListProps> = (props) => {
     // props: filter class, filters, title text
-    var filterFlags;
-    if (props.filters.length == 0) {
+    let filterFlags
+    // debugger;
+    if (props.filters.size == 0) {
         filterFlags = <em className = "filter-indicator">No filters currently applied</em>
     } else {
-        filterFlags = props.filters.map((filter) => 
-            <FilterIndicatorFlag key = {filter.name} dim={props.filterClass} filter={filter} />
-        )
+        const filterKeys = props.filters.keySeq();
+        filterFlags = filterKeys.map((key:string) => {
+            return(<FilterIndicatorFlag key = {props.filters.getIn([key, "members"])} dim={props.filterClass} filter={props.filters.get(key)} level={key} />)
+        })
     }
     return (
         <div>
@@ -80,7 +75,7 @@ const FilterIndicatorFlag: React.FC<FilterIndicatorFlagProps> = (props) => {
     return (
         <div className = "filter-indicator">
             <div className = {"filter-indicator-text " + props.dim}>
-                <b>{props.filter.name}: </b>{text}</div>
+                <b>{props.level}: </b>{text}</div>
         </div>
     )
 }

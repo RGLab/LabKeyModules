@@ -5,8 +5,6 @@ import {FilterDropdownProps} from '../../typings/Components'
 
 
 export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropdownProps) => {
-    console.log("filter dropdown members")
-    console.log(props.members)
     return (
         <div className={"dropdown"}>
             <div className="btn-group filterselector" role="group" >

@@ -6,7 +6,7 @@
 // returning the new "selectedFilters." It is passed down into the various
 // filter selector buttons as well as the heatmap. 
 
-import { Filter, SelectedFilters, SelectedFilter } from '../../typings/CubeData'
+import { Filter, SelectedFilters, SelectedFilter, ISelectedFilters } from '../../typings/CubeData'
 import { List, Set } from 'immutable';
 // toggle filter
 
@@ -28,17 +28,23 @@ export const createCubeFilters = (filters: SelectedFilters) => {
 
 export const toggleFilter = (dim: string, level: string, member: string, selectedFilters: SelectedFilters) => {
     console.log("toggleFilter")
+    // debugger;
 
-    let sf = new SelectedFilters();
+    let sf;
+
     // let newSelectedFilters = new SelectedFilter();
     if (selectedFilters.getIn([dim, level]) == undefined) {
-        sf = selectedFilters.setIn([dim, level], new SelectedFilter({members: List([member])})).toJS()
+        sf = selectedFilters.setIn([dim, level], new SelectedFilter({members: List([member])}))
     } else if (selectedFilters.getIn([dim, level]).members.includes(member)) {
-        sf = selectedFilters.setIn([dim, level, "members"], List(Set(selectedFilters.getIn([dim, level, "members"])).subtract([member]) )).toJS()  
+        sf = selectedFilters.setIn([dim, level, "members"], List(Set(selectedFilters.getIn([dim, level, "members"])).subtract([member]) ))
     } else {
-        sf = selectedFilters.setIn([dim, level, "members"], List(Set(selectedFilters.getIn([dim, level, "members"])).union([member]) )).toJS()
+        sf = selectedFilters.setIn([dim, level, "members"], List(Set(selectedFilters.getIn([dim, level, "members"])).union([member]) ))
+    }
+
+    if (sf.getIn([dim, level, "members"]).size == 0) {
+        sf = sf.deleteIn([dim, level])
     }
 
     // return(sf)
-    return(selectedFilters)
+    return(sf)
 }
