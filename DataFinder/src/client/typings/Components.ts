@@ -23,5 +23,5 @@ export interface FilterDropdownProps {
     dimension: string;
     level: string;
     members: string[];
-    filterClick: (filter: Filter) => () => void;
+    filterClick: (dim: string, filter: Filter) => () => void;
 }

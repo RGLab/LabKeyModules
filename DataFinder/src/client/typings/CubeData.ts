@@ -1,4 +1,4 @@
-import {Record, fromJS} from 'immutable'; 
+import {Record, fromJS, List, Map} from 'immutable'; 
 
 export interface BarplotDatum {
     label: string;
@@ -97,6 +97,57 @@ export class CubeData extends Record({
     }
 }
 
+export interface Filter {
+    level: string,
+    member: string
+}
+
+export interface ISelectedFilter {
+    members?: List<string>;
+    operator?: string
+}
+
+export class SelectedFilter extends Record({
+    members: List<string>(),
+    operator: "OR"
+}) {
+    members: List<string>;
+    operator: string
+
+    constructor(params?: ISelectedFilter) {
+        params ? super(params) : super()
+    }
+} 
+
+export interface ISelectedFilters {
+    subject?: Map<string, SelectedFilter>
+    study?: Map<string, SelectedFilter>
+    data?: Map<string, SelectedFilter>
+}
+
+export class SelectedFilters extends Record({
+    subject: Map<string, SelectedFilter>(),
+    study: Map<string, SelectedFilter>(),
+    data: Map<string, SelectedFilter>()
+}) {
+    subject: Map<string, SelectedFilter>;
+    study: Map<string, SelectedFilter>;
+    data: Map<string, SelectedFilter>;
+
+    constructor(params?: ISelectedFilters) {
+        params ? super(params) : super()
+    }
+}
+
+export interface FilterQuery {
+    level: string;
+    membersQuery: {
+        level: string;
+        members: string[]|string;
+    }[]
+}
+
+
 
 // export class CubeData extends CubeDataRecord implements ICubeData {
 //     subject: {
@@ -129,29 +180,3 @@ export class CubeData extends Record({
 // export interface CollectCubeData 
 //     (mdx: Cube)
 // }
-
-export interface Filter {
-    dim: string;
-    level: string;
-    label: string;
-}
-
-export interface SelectedFilter {
-    members: string[],
-    operator: string
-}
-
-export interface SelectedFilters {
-    [index: string]: {
-        members: string[],
-        operator: string
-    }
-}
-
-export interface FilterQuery {
-    level: string;
-    membersQuery: {
-        level: string;
-        members: string[];
-    }[]
-}

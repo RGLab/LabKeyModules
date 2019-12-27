@@ -21,12 +21,13 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // Constants -------------------------------------
     const mdx = props.mdx;
     const cd = new CubeData({})
+    const sf = new SelectedFilters();
 
     // state -----
     const [cubeData, setCubeData] = React.useState<CubeData>(cd)
     const [studyDict, setStudyDict] = React.useState<Map<string, StudyInfo>>(Map()); // this should only be loaded once
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
-    const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>({})
+    const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(sf)
 
     // Listeners
     const [saveCounter, setSaveCounter] = React.useState<number>(0)
@@ -88,12 +89,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         // set SelectedFilters
     }
 
-    const filterClick = (filter: Filter) => {
+    const filterClick = (dim: string, filter: Filter) => {
         console.log("filterClick()")
-        // make a copy of SelectedFilters
-        let sf: SelectedFilters = JSON.parse(JSON.stringify(selectedFilters))
         return (() => {
-            sf = toggleFilter(filter, sf)
+            const sf = toggleFilter(dim, filter.level, filter.member, selectedFilters)
             setSelectedFilters(sf)
         })
     }
@@ -115,7 +114,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     const clearFilters = () => {
-        setSelectedFilters({});
+        setSelectedFilters(new SelectedFilters());
         applyFilters()
     }
 
@@ -136,11 +135,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             <FilterSummary filters={selectedFilters}/>
             <FilterDropdown dimension={"subject"} 
                             level={"age"} 
-                            members={cubeData.getIn(["subject", "age"]).map((e)=>{return(e.label)})}
+                            members={cubeData.getIn(["subject", "age"]).map((e)=>{return(e.get("label"))})}
                             filterClick={filterClick} />
             <FilterDropdown dimension={"study"}
                             level={"species"}
-                            members={cubeData.getIn(["study", "species"]).map((e)=>{return(e.label)})}
+                            members={cubeData.getIn(["study", "species"]).map((e)=>{return(e.get("label"))})}
                             filterClick={filterClick} />
             <Barplot data={cubeData.getIn(["subject", "age"])} name={"age"} height={300} width={500} dataRange={[0,300]} labels={["0-10","11-20","21-30"]} /> 
             {studyParticipantCounts.map((sdy) => {

@@ -5,7 +5,8 @@ import {FilterDropdownProps} from '../../typings/Components'
 
 
 export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropdownProps) => {
-
+    console.log("filter dropdown members")
+    console.log(props.members)
     return (
         <div className={"dropdown"}>
             <div className="btn-group filterselector" role="group" >
@@ -19,7 +20,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropd
                             return (
                                 <div className="checkbox" key={e}>
                                     <label >
-                                        <input onClick={props.filterClick({dim: props.dimension, level: props.level, label: e})} type="checkbox" name={props.level} value={e}/>
+                                        <input onClick={props.filterClick(props.dimension, {level: props.level, member: e})} type="checkbox" name={props.level} value={e}/>
                                         <span>{e}</span>
                                     </label>
                                 </div>
