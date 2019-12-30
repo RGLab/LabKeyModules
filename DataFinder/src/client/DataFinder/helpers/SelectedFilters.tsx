@@ -7,7 +7,7 @@
 // filter selector buttons as well as the heatmap. 
 
 import { Filter, SelectedFilters, SelectedFilter, ISelectedFilters } from '../../typings/CubeData'
-import { List, Set } from 'immutable';
+import { List, Set, Map } from 'immutable';
 // toggle filter
 
 const createCubeFilter = (dim: string, filter: Filter) => {
@@ -27,24 +27,30 @@ export const createCubeFilters = (filters: SelectedFilters) => {
 
 
 export const toggleFilter = (dim: string, level: string, member: string, selectedFilters: SelectedFilters) => {
-    console.log("toggleFilter")
-    // debugger;
+    console.log("toggleFilter()")
+    
+
+    let filterIn: string[];
+    if (/\./.test(level)) {
+        const l = level.split(".")
+        filterIn = [dim, l[0], l[1]]
+    } else {
+        filterIn = [dim, level]
+    }
 
     let sf;
-
-    // let newSelectedFilters = new SelectedFilter();
-    if (selectedFilters.getIn([dim, level]) == undefined) {
-        sf = selectedFilters.setIn([dim, level], new SelectedFilter({members: List([member])}))
-    } else if (selectedFilters.getIn([dim, level]).members.includes(member)) {
-        sf = selectedFilters.setIn([dim, level, "members"], List(Set(selectedFilters.getIn([dim, level, "members"])).subtract([member]) ))
+    let filters: string[];
+    if (selectedFilters.getIn(filterIn) == undefined) {
+        sf = selectedFilters.setIn(filterIn, new SelectedFilter({members: List([member])}))
+    } else if (selectedFilters.getIn(filterIn).members.includes(member)) {
+        sf = selectedFilters.setIn([...filterIn, "members"], List(Set(selectedFilters.getIn([...filterIn, "members"])).subtract([member]) ))
     } else {
-        sf = selectedFilters.setIn([dim, level, "members"], List(Set(selectedFilters.getIn([dim, level, "members"])).union([member]) ))
+        sf = selectedFilters.setIn([...filterIn, "members"], List(Set(selectedFilters.getIn([...filterIn, "members"])).union([member])))
     }
 
-    if (sf.getIn([dim, level, "members"]).size == 0) {
-        sf = sf.deleteIn([dim, level])
+    if (sf.getIn([...filterIn, "members"]).size == 0) {
+        sf = sf.deleteIn(filterIn)
     }
 
-    // return(sf)
     return(sf)
 }

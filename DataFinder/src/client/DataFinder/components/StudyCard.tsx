@@ -108,7 +108,10 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
     ]
     const assays = [];
     study.heatmapData.map((e, i) => {
-        if (e.assay !== undefined && assays.indexOf(e.assay) === -1 && e.count > 0) assays.push(e.assay);
+        const assay = e.member.split(/\./)[e.level.split(/\./).indexOf("assay")]
+        if ( assays.indexOf(assay) === -1 && e.count > 0) {
+            assays.push(assay);
+        }
     });
 
     return (

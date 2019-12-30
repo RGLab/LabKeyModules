@@ -1,4 +1,4 @@
-import {HeatmapDatum} from './CubeData'
+import {CubeDatum} from './CubeData'
 import { Record } from 'immutable';
 
 // export interface Filter {
@@ -12,7 +12,7 @@ export interface IStudyInfo {
     assays?: string[];
     brief_title?: string;
     condition_studied?: string;
-    heatmapData?: HeatmapDatum[];
+    heatmapData?: CubeDatum[];
     pi_names?: string[];
     program_title?: string;
     restricted?: boolean;
@@ -38,7 +38,7 @@ export class StudyInfo extends Record({
     assays: string[];
     brief_title: string;
     condition_studied: string;
-    heatmapData: HeatmapDatum[];
+    heatmapData: CubeDatum[];
     pi_names: string[];
     program_title: string;
     restricted: boolean;

@@ -153,7 +153,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 }
 
             })}
-            <HeatmapSelector data={cubeData.getIn(["data", "assay", "timepoint"]).toJS()}/>
+            {/* <HeatmapSelector data={cubeData.data.toJS()} filterClick={filterClick}/> */}
         </div>
 
 

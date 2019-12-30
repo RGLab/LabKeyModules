@@ -1,7 +1,7 @@
-import { HeatmapDatum, BarplotDatum, Filter } from "./CubeData"
+import { CubeDatum, Filter } from "./CubeData"
 
 export interface TinyHeatmapProps {
-    data: HeatmapDatum[];
+    data: CubeDatum[];
     name: string;
     width: number;
     height: number;
@@ -11,7 +11,7 @@ export interface TinyHeatmapProps {
 }
 
 export interface BarplotProps {
-    data: BarplotDatum[];
+    data: CubeDatum[];
     name: string;
     width: number;
     height: number;
@@ -25,3 +25,16 @@ export interface FilterDropdownProps {
     members: string[];
     filterClick: (dim: string, filter: Filter) => () => void;
 }
+
+export interface HeatmapProps {
+    data: CubeDatum[];
+    name: string;
+    width: number;
+    height: number;
+    xaxis: { label: string; data: any }[];
+    yaxis: { label: string; data: any }[]
+    breaks: number[];
+    colors: string[];
+    selected: string[];
+    handleClick: (d: CubeDatum) => void
+  }

@@ -20,9 +20,9 @@ export function drawTinyHeatmap(props: TinyHeatmapProps) {
     const colors = props.colors;
     const colorBreaks = props.colorBreaks;
 
-    data.map((e, i) => {
-        if (e.assay !== undefined && assays.indexOf(e.assay) === -1 && e.count > 0) assays.push(e.assay);
-    });
+    // data.map((e, i) => {
+    //     if (e.assay !== undefined && assays.indexOf(e.assay) === -1 && e.count > 0) assays.push(e.assay);
+    // });
     assays.sort();
     // console.log(props.name);
     // console.log(props.data);

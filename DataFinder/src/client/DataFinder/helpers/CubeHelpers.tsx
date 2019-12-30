@@ -28,8 +28,8 @@ export const getStudyInfoArray = (mdx: CubeMdx, filters: SelectedFilters) => {
             brief_title: "Very Important Study",
             condition_studied: "influenza",
             sample_type: ["PBMC"],
-            heatmapData: [{ assay: "HAI", timepoint: "4", count: 15 },
-            { assay: "HAI", timepoint: "2", count: 30 }],
+            heatmapData: [{ level: "assay.timepoint", member: "HAI.4", count: 15 },
+            { level: "assay.timepoint", member: "HAI.2", count: 30 }],
             pi_names: ["Helen Miller"],
             program_title: "Program 1",
             restricted: false,
@@ -41,8 +41,8 @@ export const getStudyInfoArray = (mdx: CubeMdx, filters: SelectedFilters) => {
             brief_title: "Very Important Study",
             condition_studied: "influenza",
             sample_type: ["PBMC"],
-            heatmapData: [{ assay: "HAI", timepoint: "4", count: 15 },
-            { assay: "HAI", timepoint: "2", count: 30 }],
+            heatmapData: [{ level: "assay.timepoint", member: "HAI.4", count: 15 },
+            { level: "assay.timepoint", member: "HAI.2", count: 30 }],
             pi_names: ["Helen Miller"],
             program_title: "Program 1",
             restricted: false,
@@ -101,7 +101,7 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
                 name: [],
                 program: [],
                 condition: [],
-                species: [{ label: "Homo Sapiens", value: 90 },
+                species: [{ level: "species", member: "Homo Sapiens", count: 90 },
                 { label: "Mus Musculus", value: 7 }],
                 exposureMaterial: [],
                 exposureProcess: []
@@ -109,7 +109,7 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
             data: Immutable.fromJS({
                 assay: {
                     assay: [],
-                    timepoint: [{ assay: "HAI", timepoint: "0", count: 86 }, { assay: "Gene Expression", timepoint: "8", count: 1408 }],
+                    timepoint: [{ level: "assay.timepoint", member: "HAI.0", count: 86 }, { level: "assay.timepoint", member: "Gene Expression.8", count: 1408 }],
                     sampleType: []
                 },
                 timepoint: Immutable.fromJS([]),

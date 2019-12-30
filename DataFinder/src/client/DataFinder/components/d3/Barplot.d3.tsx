@@ -1,6 +1,6 @@
 import * as d3 from 'd3'
 import { BarplotProps } from '../../../typings/Components';
-import { BarplotDatum } from '../../../typings/CubeData';
+import { CubeDatum } from '../../../typings/CubeData';
 
 // ================================================================== //
 /* 
@@ -87,11 +87,11 @@ export function drawBarplot(props: BarplotProps) {
         .append("rect")
         .attr("class", "rect")
         .attr("x", xaxisScale(0))
-        .attr("width", function (d: BarplotDatum) {
-            return xaxisScale(d.value);
+        .attr("width", function (d: CubeDatum) {
+            return xaxisScale(d.count);
         })
-        .attr("y", function (d: BarplotDatum) {
-            return yaxisScale(d.label);
+        .attr("y", function (d: CubeDatum) {
+            return yaxisScale(d.level);
         })
         .attr("height", yaxisScale.bandwidth() - 5)
         .style("fill", "steelblue")
@@ -99,11 +99,11 @@ export function drawBarplot(props: BarplotProps) {
         .transition()
         .duration(500)
         .attr("x", xaxisScale(0))
-        .attr("width", function (d: BarplotDatum) {
-            return xaxisScale(d.value);
+        .attr("width", function (d: CubeDatum) {
+            return xaxisScale(d.count);
         })
-        .attr("y", function (d: BarplotDatum) {
-            return yaxisScale(d.label);
+        .attr("y", function (d: CubeDatum) {
+            return yaxisScale(d.level);
         })
         .attr("height", yaxisScale.bandwidth() - 5)
 
