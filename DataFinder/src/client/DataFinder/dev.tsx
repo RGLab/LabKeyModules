@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom'
 
 import { AppContainer } from 'react-hot-loader'
 
-import { App } from './DataFinder_immutable'
+import { App } from './DataFinder'
 
 const render = () => {
     ReactDOM.render(

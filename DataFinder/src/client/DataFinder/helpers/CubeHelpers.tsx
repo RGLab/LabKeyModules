@@ -106,15 +106,15 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
                 exposureMaterial: [],
                 exposureProcess: []
             }),
-            data: {
-                assay: Immutable.fromJS({
+            data: Immutable.fromJS({
+                assay: {
                     assay: [],
                     timepoint: [{ assay: "HAI", timepoint: "0", count: 86 }, { assay: "Gene Expression", timepoint: "8", count: 1408 }],
                     sampleType: []
-                }),
+                },
                 timepoint: Immutable.fromJS([]),
                 sampleType: Immutable.fromJS([])
-            }
+            })
         }
         resolve(cd);
     })
@@ -125,6 +125,8 @@ export const createCubeData = (cubeData: ICubeData) => {
     console.log("createCubeData()")
 
     return new CubeData(cubeData);
+
+    // return new CubeData(cubeData);
 }
 
 
