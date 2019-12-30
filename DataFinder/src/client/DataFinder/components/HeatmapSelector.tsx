@@ -24,6 +24,7 @@ interface HeatmapProps {
 }
 
 export const HeatmapSelector: React.FC<HeatmapSelectorProps> = (props) => {
+  // debugger;
     const [selected, setSelected] = React.useState([]);
 
     const options = {

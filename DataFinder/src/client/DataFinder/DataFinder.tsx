@@ -1,15 +1,17 @@
 import React from 'react';
-import { olap } from '../olap/olap.js'
+// import { olap } from '../olap/olap.js'
 import { CubeData, Filter, SelectedFilters } from '../typings/CubeData';
-import { Barplot } from './components/Barplot'
-import { createCubeData, createStudyDict, getStudyParticipantCounts } from './helpers/CubeHelpers'
+import * as CubeHelpers from './helpers/CubeHelpers';
+import * as ParticipantGroupHelpers from './helpers/ParticipantGroup';
 import { toggleFilter } from './helpers/SelectedFilters';
-import { FilterDropdown } from './components/FilterDropdown';
-import { StudyParticipantCount } from '../typings/StudyCard'
+import { StudyParticipantCount, StudyInfo } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
-import { ActionButton } from './components/ActionButton';
+import { Map, List } from 'immutable';
+import { ActionButton } from './components/ActionButton'
+import { FilterDropdown } from './components/FilterDropdown'
 import { FilterSummary } from './components/FilterIndicator'
-import { HeatmapSelector } from './components/HeatmapSelector'
+import { Barplot } from './components/Barplot'
+import { HeatmapSelector } from './components/HeatmapSelector';
 
 interface DataFinderControllerProps {
     mdx: any
@@ -19,38 +21,14 @@ interface DataFinderControllerProps {
 const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFinderControllerProps) => {
     // Constants -------------------------------------
     const mdx = props.mdx;
-    const emptyCubeData: CubeData = {
-        subject: {
-            race: [],
-            age: [],
-            gender: []
-        },
-        study: {
-            name: [],
-            program: [],
-            condition: [],
-            species: [],
-            exposureMaterial: [],
-            exposureProcess: []
-        },
-        data: {
-            assay: {
-                assay: [],
-                timepoint: [],
-                sampleType: []
-            },
-            timepoint: [],
-            sampleType: []
-        }
-    }
+    const cd = new CubeData({})
+    const sf = new SelectedFilters();
 
-
-    // State variables -------------------------------------
-    // Data objects (model)
-    const [SelectedFilters, setSelectedFilters] = React.useState<SelectedFilters>({})
-    const [CubeData, setCubeData] = React.useState(emptyCubeData)
-    const [StudyDict, setStudyDict] = React.useState({})
-    const [StudyParticipantCounts, setStudyParticipantCounts] = React.useState<StudyParticipantCount[]>([])
+    // state -----
+    const [cubeData, setCubeData] = React.useState<CubeData>(cd)
+    const [studyDict, setStudyDict] = React.useState<Map<string, StudyInfo>>(Map()); // this should only be loaded once
+    const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
+    const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(sf)
 
     // Listeners
     const [saveCounter, setSaveCounter] = React.useState<number>(0)
@@ -58,36 +36,44 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const [loadedGroup, setLoadedGroup] = React.useState<string>()
     const [groupCounter, setGroupCounter] = React.useState<number>(0);
 
+
+
     // Effects  -------------------------------------
 
-    // Do these things only when the page loads
+
+    // Do these things only when the page loads --------
     React.useEffect(() => {
         // get filters from localStorage
         // load data
-        createStudyDict(mdx, SelectedFilters).then((sd) => {
-            setStudyDict(sd)
-            console.log(StudyDict)
-            applyFilters()}
-         )
+        CubeHelpers.getStudyInfoArray(mdx, selectedFilters).then((sia) => {
+            setStudyDict(CubeHelpers.createStudyDict(sia))
+            console.log(studyDict)
+            applyFilters()
+        })
     }, [])
 
-    // Do these things when certain variables are incremented 
+    // Do these things when certain variables are incremented --------
     // Apply filters
     React.useEffect(() => {
         // set local storage
         // call to sessionParticipantGroup.api
-         // write this asychronosouly? 
-         const cd = createCubeData(mdx, SelectedFilters)
-         setCubeData(cd)
-         const spc = getStudyParticipantCounts(mdx, SelectedFilters)
-         setStudyParticipantCounts(spc)
+        // Update local state
+        Promise.all([
+            CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters),
+            CubeHelpers.getCubeData(mdx, selectedFilters)]).then(
+                ([spc, cd]) => {
+                    setStudyParticipantCounts(CubeHelpers.createStudyParticipantCounts(spc))
+                    setCubeData(CubeHelpers.createCubeData(cd))
+                })
     }, [applyCounter])
 
 
+    // Save group
     React.useEffect(() => {
         // saveGroup(selectedFilters)
     }, [saveCounter])
 
+    // Load group
     React.useEffect(() => {
         // load group
         // make api calls 
@@ -99,64 +85,75 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // which can cause updates to the page
 
     const getFilters = () => {
+        console.log("getFilters()")
         // get filters from local storage
         // set SelectedFilters
     }
 
-    const filterClick = (filter: Filter) => {
-        // make a copy of SelectedFilters
-        let sf: SelectedFilters = JSON.parse(JSON.stringify(SelectedFilters))
-        return(() => {
-            sf = toggleFilter(filter, sf)
+    const filterClick = (dim: string, filter: Filter) => {
+        console.log("filterClick()")
+        return (() => {
+            const sf = toggleFilter(dim, filter.level, filter.member, selectedFilters)
             setSelectedFilters(sf)
         })
     }
 
     const applyFilters = () => {
+        console.log("applyFilters()")
         setApplyCounter(applyCounter + 1)
     }
 
     const saveParticipantGroup = () => {
+        ParticipantGroupHelpers.saveParticipantGroup("group")
         setSaveCounter(saveCounter + 1)
     }
 
     const loadParticipantGroup = (groupName: string) => {
+        ParticipantGroupHelpers.loadParticipantGroup(groupName)
         setLoadedGroup(groupName)
         setGroupCounter(groupCounter + 1)
     }
 
     const clearFilters = () => {
-        setSelectedFilters({});
+        setSelectedFilters(new SelectedFilters());
         applyFilters()
     }
 
+
+
+
+
     return (
         <div>
-            {/* banner */}
+            {/* <pre>
+                {JSON.stringify(cubeData.toJS(), undefined, 2)}
+                {JSON.stringify(studyDict.toJS(), undefined, 2)}
+            </pre> */}
             <ActionButton text={"Apply"} onClick={applyFilters} />
             <ActionButton text={"Save"} onClick={saveParticipantGroup} />
             <ActionButton text={"Clear"} onClick={clearFilters} />
             <ActionButton text={"Reset"} onClick={getFilters} />
-            <FilterSummary filters={SelectedFilters}/>
+            <FilterSummary filters={selectedFilters}/>
             <FilterDropdown dimension={"subject"} 
                             level={"age"} 
-                            members={CubeData.subject.age.map((e)=>{return(e.label)})}
+                            members={cubeData.getIn(["subject", "age"]).map((e)=>{return(e.get("label"))})}
                             filterClick={filterClick} />
             <FilterDropdown dimension={"study"}
                             level={"species"}
-                            members={CubeData.study.species.map((e)=>{return(e.label)})}
+                            members={cubeData.getIn(["study", "species"]).map((e)=>{return(e.get("label"))})}
                             filterClick={filterClick} />
-            <Barplot data={CubeData.subject.age} name={"age"} height={300} width={500} dataRange={[0,300]} labels={["0-10","11-20","21-30"]} /> 
-            {StudyParticipantCounts.map((sdy) => {
-                if(sdy.participantCount > 0 && StudyDict[sdy.studyName]) {
-                    return(
-                        <StudyCard key={sdy.studyName} study={StudyDict[sdy.studyName]} participantCount={sdy.participantCount} />
+            <Barplot data={cubeData.getIn(["subject", "age"]).toJS()} name={"age"} height={300} width={500} dataRange={[0,300]} labels={["0-10","11-20","21-30"]} /> 
+            {studyParticipantCounts.map((sdy) => {
+                if (sdy.participantCount > 0 && studyDict.get(sdy.studyName)) {
+                    return (
+                        <StudyCard key={sdy.studyName}
+                            study={studyDict.get(sdy.studyName)}
+                            participantCount={sdy.participantCount} />
                     )
                 }
 
             })}
-            
-            <HeatmapSelector data={CubeData.data.assay.timepoint}/>
+            <HeatmapSelector data={cubeData.getIn(["data", "assay", "timepoint"]).toJS()}/>
         </div>
 
 
@@ -168,22 +165,22 @@ export const App: React.FC = () => {
 
     const [cubeReady, setCubeReady] = React.useState(false)
 
-    const dfcube = olap.CubeManager.getCube({
-        configId: 'DataFinder:/DataFinderCube',
-        schemaName: 'immport',
-        name: 'DataFinderCube',
-        deferLoad: false,
-        memberExclusionFields: ["[Subject].[Subject]"]
-    })
+    // const dfcube = olap.CubeManager.getCube({
+    //     configId: 'DataFinder:/DataFinderCube',
+    //     schemaName: 'immport',
+    //     name: 'DataFinderCube',
+    //     deferLoad: false,
+    //     memberExclusionFields: ["[Subject].[Subject]"]
+    // })
 
     React.useEffect(() => {
-        dfcube.onReady((mdx) => {
-            setCubeReady(true)
-        })
+        // dfcube.onReady((mdx) => {
+        setCubeReady(true)
+        // })
     }, [])
 
     if (cubeReady) {
-        return <DataFinderController mdx = {dfcube.mdx} />
+        return <DataFinderController mdx={{}} />
     }
     return <div></div>
 }
