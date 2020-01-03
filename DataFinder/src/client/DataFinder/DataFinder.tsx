@@ -139,13 +139,15 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 dimension={"subject"}
                 level={"age"}
                 members={cubeData.getIn(["subject", "age"]).map((e) => { return (e.get("member")) })}
-                filterClick={filterClick} />
+                filterClick={filterClick}
+                selected={selectedFilters.subject.get("age")} />
             <FilterDropdown
                 key={"study"}
                 dimension={"study"}
                 level={"species"}
                 members={cubeData.getIn(["study", "species"]).map((e) => { return (e.get("member")) })}
-                filterClick={filterClick} />
+                filterClick={filterClick}
+                selected={selectedFilters.study.get("species")} />
             <Barplot data={cubeData.getIn(["subject", "age"]).toJS()} name={"age"} height={300} width={500} dataRange={[0, 300]} labels={["0-10", "11-20", "21-30"]} />
             {studyParticipantCounts.map((sdy) => {
                 if (sdy.participantCount > 0 && studyDict.get(sdy.studyName)) {
@@ -162,7 +164,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 filterClick={filterClick}
                 showSampleType={false}
                 selected={selectedFilters.data} />
-            {/* <pre>{JSON.stringify(selectedFilters.toJS(), null, 2)}</pre> */}
+            <pre>{JSON.stringify(selectedFilters.toJS(), null, 2)}</pre>
         </div>
 
 

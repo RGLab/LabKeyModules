@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Filter } from '../../typings/CubeData'
+import { Filter, SelectedFilter } from '../../typings/CubeData'
+import { Map } from 'immutable'
 
 // Types 
 export interface FilterDropdownProps {
@@ -7,6 +8,7 @@ export interface FilterDropdownProps {
     level: string;
     members: string[];
     filterClick: (dim: string, filter: Filter) => () => void;
+    selected: Map<string, SelectedFilter>;
 }
 
 export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropdownProps) => {
@@ -20,11 +22,25 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropd
                 <div className="dropdown-menu filter-dropdown">
                     <div id={props.level} className="form-group">
                         {props.members.map((e) => {
-                            // debugger;
+                            let checked: boolean;
+                            if (props.selected == undefined) {
+                                checked = false
+                            } else if (props.selected.get("members").includes(e)) {
+                                checked = true;
+                            } else {
+                                checked = false;
+                            }
+
                             return (
                                 <div className="checkbox" key={e}>
                                     <label >
-                                        <input onClick={props.filterClick(props.dimension, {level: props.level, member: e})} type="checkbox" name={props.level} value={e}/>
+                                        <input
+                                            onClick={props.filterClick(props.dimension, { level: props.level, member: e })}
+                                            type="checkbox"
+                                            name={props.level}
+                                            value={e}
+                                            checked={checked} 
+                                            readOnly/>
                                         <span>{e}</span>
                                     </label>
                                 </div>
