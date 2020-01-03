@@ -161,7 +161,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 data={cubeData.data.toJS()} 
                 filterClick={filterClick}
                 showSampleType={false}
-                selected={selectedFilters.data.toJS()} />
+                selected={selectedFilters.data} />
+            {/* <pre>{JSON.stringify(selectedFilters.toJS(), null, 2)}</pre> */}
         </div>
 
 

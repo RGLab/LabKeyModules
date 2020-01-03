@@ -65,7 +65,7 @@ const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props
             "Assay.Timepoint": props.filters.getIn(["assay", "timepoint"]),
             "Assay.SampleType": props.filters.getIn(["assay", "sampleType"]),
             "SampleType.SampleType": props.filters.getIn(["sampleType", "sampleType"]),
-            "Timepoint": props.filters.getIn(["timepoint"])
+            "Timepoint": props.filters.get("timepoint")
         })
         const filterText = filters.map((e, i) => {
             if (e == undefined) return (undefined);

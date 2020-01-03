@@ -2,6 +2,7 @@ import * as d3 from 'd3'
 import { HeatmapDatum, IAssayData, CubeDatum, Filter } from '../../../typings/CubeData';
 import { HeatmapProps } from '../HeatmapSelector';
 import { AxisDatum } from '../HeatmapSelector';
+import { Axis } from 'd3';
 // ================================================================== //
 /* 
 This is a heatmap component which was translated from an r2d3 fuction.
@@ -162,7 +163,14 @@ export const drawHeatmap = (props: HeatmapProps) => {
       return yAxisTagPoints(d.label);
     })
     .attr("fill", "transparent")
-    .attr("stroke", "#e5e5e5")
+    .attr("stroke", function (d) {
+      if (selected.getIn(["assay", "assay","members"]) != undefined) {
+        if (selected.getIn(["assay", "assay","members"]).includes(d.label)) {
+          return ("black")
+        }
+      }
+      return( "#e5e5e5")
+    })
     .on("mouseover", function (d) {
       // Change style
       d3.select(this)
@@ -173,7 +181,14 @@ export const drawHeatmap = (props: HeatmapProps) => {
       // Reset to original
       d3.select(this)
         .attr("stroke-width", "1px")
-        .attr("stroke", "#e5e5e5");
+        .attr("stroke", function (d: AxisDatum<Filter>) {
+          if (selected.getIn(["assay", "assay","members"]) != undefined) {
+            if (selected.getIn(["assay", "assay","members"]).includes(d.label)) {
+              return ("black")
+            }
+          }
+          return( "#e5e5e5")
+        })
     })
     .on("click", function(d) {
       props.handleClick(d.data);
@@ -236,7 +251,14 @@ export const drawHeatmap = (props: HeatmapProps) => {
         return xAxisTagPoints(d.label);
       })
       .attr("fill", "transparent")
-      .attr("stroke", "#e5e5e5")
+      .attr("stroke", function (d) {
+        if (selected.getIn(["timepoint","members"]) != undefined) {
+          if (selected.getIn(["timepoint","members"]).includes(d.label)) {
+            return ("black")
+          }
+        }
+        return( "#e5e5e5")
+      })
       .on("mouseover", function (d) {
         // Change style
         d3.select(this)
@@ -247,7 +269,14 @@ export const drawHeatmap = (props: HeatmapProps) => {
         // Reset to original
         d3.select(this)
           .attr("stroke-width", "1px")
-          .attr("stroke", "#e5e5e5");
+          .attr("stroke", function (d: AxisDatum<Filter>) {
+            if (selected.getIn(["timepoint","members"]) != undefined) {
+              if (selected.getIn(["timepoint","members"]).includes(d.label)) {
+                return ("black")
+              }
+            }
+            return( "#e5e5e5")
+          })
       })
       .on("click", function(d) {
         props.handleClick(d.data);
@@ -268,23 +297,24 @@ export const drawHeatmap = (props: HeatmapProps) => {
     .enter()
     .append("rect")
     .attr("x", (d) => {
-      return xaxisScale(d.x);
+      return xaxisScale(d.x) + 3;
     })
-    .attr("width", xaxisScale.bandwidth() - 1)
+    .attr("width", xaxisScale.bandwidth() - 6)
     .attr("y", (d) => {
-      return yaxisScale(d.y);
+      return yaxisScale(d.y) + 3;
     })
-    .attr("height", yaxisScale.bandwidth() - 1)
+    .attr("height", yaxisScale.bandwidth() - 6)
     .style("fill", (d) => {
       return colorScale(d.count);
     })
     .attr("stroke-width", "1px")
-    .attr("stroke", (d) => {
-      // if (selected.indexO(this.id)) {
-      //   return "#111111";
-      // } else {
-      return "transparent";
-      // }
+    .attr("stroke", function (d: HeatmapDatum<Filter>) {
+      if (selected.getIn(["assay", "timepoint","members"]) != undefined) {
+        if (selected.getIn(["assay", "timepoint","members"]).includes(d.y + "." +  d.x)) {
+          return ("black")
+        }
+      }
+      return( "transparent")
     })
     .on("mouseover", function (d, i) {
       // // Tooltip coordinates
@@ -325,12 +355,13 @@ export const drawHeatmap = (props: HeatmapProps) => {
       // Reset to original
       d3.select(this)
         .attr("stroke-width", "1px")
-        .attr("stroke", (d) => {
-          // if (selected.indexOf(this.id) > -1) {
-          //   return "#111111";
-          // } else {
-          return "transparent";
-          // }
+        .attr("stroke", function (d: HeatmapDatum<Filter>) {
+          if (selected.getIn(["assay", "timepoint","members"]) != undefined) {
+            if (selected.getIn(["assay", "timepoint","members"]).includes(d.y + "." +  d.x)) {
+              return ("black")
+            }
+          }
+          return( "transparent")
         })
         .attr("z-index", 10);
       // tooltip

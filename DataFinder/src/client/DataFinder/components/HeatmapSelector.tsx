@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { drawHeatmap } from "./d3/HeatmapSelector.d3"
-import { HeatmapDatum, Filter,IAssayData, CubeDatum, SelectedFilter } from '../../typings/CubeData';
+import { HeatmapDatum, Filter,IAssayData, CubeDatum, SelectedFilter, ISelectedFilter } from '../../typings/CubeData';
 import { Cube } from '../../typings/Cube';
 import { Axis } from 'd3';
+import { Map } from 'immutable'
 
 // React stuff ==================================== //
 
@@ -16,7 +17,7 @@ export interface HeatmapProps {
   yaxis: { label: string; data: Filter }[]
   breaks: number[];
   colors: string[];
-  selected: {[index: string]: {[index: string]: SelectedFilter}|SelectedFilter};
+  selected: Map<string, Map<string, SelectedFilter>|SelectedFilter>;
   handleClick: (d: Filter) => void
 }
 
@@ -24,7 +25,7 @@ interface HeatmapSelectorProps {
   data: IAssayData;
   filterClick: (dim: string, filter: Filter) => () => void
   showSampleType: boolean;
-  selected: {[index: string]: {[index: string]: SelectedFilter}|SelectedFilter}
+  selected: Map<string, Map<string, SelectedFilter>|SelectedFilter>
 }
 
 export interface AxisDatum<data> {

@@ -154,7 +154,7 @@ export class SelectedFilter extends Record({
     operator: string
 
     constructor(params?: ISelectedFilter) {
-        params ? super(params) : super()
+        params ? super(fromJS(params)) : super()
     }
 }
 
