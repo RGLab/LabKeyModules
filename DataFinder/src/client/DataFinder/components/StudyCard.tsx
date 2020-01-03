@@ -108,11 +108,23 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
     ]
     const assays = [];
     study.heatmapData.map((e, i) => {
-        const assay = e.member.split(/\./)[e.level.split(/\./).indexOf("assay")]
+        const assay = e.member.split(/\./)[e.level.split(/\./).indexOf("Assay")]
         if ( assays.indexOf(assay) === -1 && e.count > 0) {
             assays.push(assay);
         }
     });
+    const heatmapData = study.heatmapData.map((e, i) => {
+        const assay = e.member.split(/\./)[e.level.split(/\./).indexOf("Assay")]
+        const timepoint = e.member.split(/\./)[e.level.split(/\./).indexOf("Timepoint")]
+        return (
+            {
+                x: timepoint,
+                y: assay,
+                count: e.count,
+                data: undefined
+            }
+        )
+    })
 
     return (
         <div className="study-card">
@@ -138,7 +150,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
                 name={study.study_accession} 
                 width={260} 
                 height={30 + 10 * assays.length} 
-                data={study.heatmapData} 
+                data={heatmapData} 
                 colors={heatmapColors}
                 colorBreaks={heatmapBreaks}
                 assays={assays}/>

@@ -102,16 +102,16 @@ export function drawTinyHeatmap(props: TinyHeatmapProps) {
     boxes
         .enter()
         .append("rect")
-        .attr("x", (d: HeatmapDatum) => {
-            return xaxisScale(d.timepoint);
+        .attr("x", (d: HeatmapDatum<any>) => {
+            return xaxisScale(d.x);
         })
         .attr("width", xaxisScale.bandwidth() - 1)
-        .attr("y", function (d: HeatmapDatum) {
-            return yaxisScale(d.assay);
+        .attr("y", function (d: HeatmapDatum<any>) {
+            return yaxisScale(d.y);
         })
         .attr("height", yaxisScale.bandwidth() - 1)
-        .style("fill", function (d: HeatmapDatum) {
-            if (d.count === 0 || d.assay === undefined) return "transparent";
+        .style("fill", function (d: HeatmapDatum<any>) {
+            if (d.count === 0 || d.y === undefined) return "transparent";
             return colorScale(d.count);
         })
         .attr("stroke-width", "1px")

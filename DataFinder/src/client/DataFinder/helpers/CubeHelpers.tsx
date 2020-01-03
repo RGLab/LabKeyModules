@@ -93,8 +93,8 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
         const cd: ICubeData = {
             subject: Immutable.fromJS({
                 race: [],
-                age: [{ label: "0-10", value: 15 },
-                { label: "11-20", value: 86 }],
+                age: [{ level: "age", member: "0-10", count: 15 },
+                { level: "age", member: "11-20", count: 86 }],
                 gender: []
             }),
             study: Immutable.fromJS({
@@ -102,17 +102,20 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
                 program: [],
                 condition: [],
                 species: [{ level: "species", member: "Homo Sapiens", count: 90 },
-                { label: "Mus Musculus", value: 7 }],
+                { level: "species", member: "Mus Musculus", count: 7 }],
                 exposureMaterial: [],
                 exposureProcess: []
             }),
             data: Immutable.fromJS({
                 assay: {
-                    assay: [],
-                    timepoint: [{ level: "assay.timepoint", member: "HAI.0", count: 86 }, { level: "assay.timepoint", member: "Gene Expression.8", count: 1408 }],
+                    assay: [{ level: "assay.assay", member: "HAI", count: 99}, {level: "assay.assay", member: "Gene Expression", count: 800}],
+                    timepoint: [{ level: "assay.timepoint", member: "HAI.0", count: 86 }, { level: "assay.timepoint", member: "Gene Expression.3", count: 1408 }],
                     sampleType: []
                 },
-                timepoint: Immutable.fromJS([]),
+                timepoint: Immutable.fromJS([
+                    { level: "timepoint", member: "0", count: 199 },
+                    { level: "timepoint", member: "1", count: 208 },
+                    { level: "timepoint", member: "3", count: 800 }]),
                 sampleType: Immutable.fromJS([])
             })
         }

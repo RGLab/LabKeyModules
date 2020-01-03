@@ -133,16 +133,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             <ActionButton text={"Save"} onClick={saveParticipantGroup} />
             <ActionButton text={"Clear"} onClick={clearFilters} />
             <ActionButton text={"Reset"} onClick={getFilters} />
-            <FilterSummary filters={selectedFilters}/>
-            <FilterDropdown dimension={"subject"} 
-                            level={"age"} 
-                            members={cubeData.getIn(["subject", "age"]).map((e)=>{return(e.get("label"))})}
-                            filterClick={filterClick} />
-            <FilterDropdown dimension={"study"}
-                            level={"species"}
-                            members={cubeData.getIn(["study", "species"]).map((e)=>{return(e.get("label"))})}
-                            filterClick={filterClick} />
-            <Barplot data={cubeData.getIn(["subject", "age"]).toJS()} name={"age"} height={300} width={500} dataRange={[0,300]} labels={["0-10","11-20","21-30"]} /> 
+            <FilterSummary filters={selectedFilters} />
+            <FilterDropdown
+                key={"subject"}
+                dimension={"subject"}
+                level={"age"}
+                members={cubeData.getIn(["subject", "age"]).map((e) => { return (e.get("member")) })}
+                filterClick={filterClick} />
+            <FilterDropdown
+                key={"study"}
+                dimension={"study"}
+                level={"species"}
+                members={cubeData.getIn(["study", "species"]).map((e) => { return (e.get("member")) })}
+                filterClick={filterClick} />
+            <Barplot data={cubeData.getIn(["subject", "age"]).toJS()} name={"age"} height={300} width={500} dataRange={[0, 300]} labels={["0-10", "11-20", "21-30"]} />
             {studyParticipantCounts.map((sdy) => {
                 if (sdy.participantCount > 0 && studyDict.get(sdy.studyName)) {
                     return (
@@ -153,7 +157,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 }
 
             })}
-            {/* <HeatmapSelector data={cubeData.data.toJS()} filterClick={filterClick}/> */}
+            <HeatmapSelector
+                data={cubeData.data.toJS()} 
+                filterClick={filterClick}
+                showSampleType={false}
+                selected={selectedFilters.data.toJS()} />
         </div>
 
 

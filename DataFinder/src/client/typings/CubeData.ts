@@ -6,13 +6,11 @@ export interface CubeDatum {
     count: number;
 }
 
-export interface HeatmapDatum {
-    level: string;
-    member?: string;
-    assay?: string;
-    timepoint?: string;
-    sampleType?: string;
-    count: number;
+export interface HeatmapDatum<data> {
+    x: string;
+    y: string;
+    count :number;
+    data: data;
 }
 
 export interface ISubjectData {
@@ -71,7 +69,10 @@ export interface IAssayData {
         sampleType?: CubeDatum[];
     },
     timepoint?: CubeDatum[];
-    sampleType?: CubeDatum[];
+    sampleType?: {
+        sampleType?: CubeDatum[];
+        assay?: CubeDatum[];
+    };
 }
 
 export class AssayData extends Record({
@@ -81,7 +82,10 @@ export class AssayData extends Record({
         sampleType: List<CubeDatum>(),
     }),
     timepoint: List<CubeDatum>(),
-    sampleType: List<CubeDatum>()
+    sampleType: Map({
+        sampleType: List<CubeDatum>(),
+        assay: List<CubeDatum>()
+    })
 }) {
     assay: Map<string, List<CubeDatum>>;
     timepoint: List<CubeDatum>;
@@ -157,17 +161,17 @@ export class SelectedFilter extends Record({
 export interface ISelectedFilters {
     subject?: Map<string, SelectedFilter>
     study?: Map<string, SelectedFilter>
-    data?: Map<string, SelectedFilter>
+    data?: Map<string, Map<string, SelectedFilter>|SelectedFilter>
 }
 
 export class SelectedFilters extends Record({
     subject: Map<string, SelectedFilter>(),
     study: Map<string, SelectedFilter>(),
-    data: Map<string, SelectedFilter>()
+    data: Map<string, Map<string, SelectedFilter>|SelectedFilter>()
 }) {
     subject: Map<string, SelectedFilter>;
     study: Map<string, SelectedFilter>;
-    data: Map<string, SelectedFilter>;
+    data: Map<string, Map<string, SelectedFilter>|SelectedFilter>;
 
     constructor(params?: ISelectedFilters) {
         params ? super(fromJS(params)) : super()

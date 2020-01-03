@@ -1,4 +1,4 @@
-import {CubeDatum} from './CubeData'
+import {CubeDatum, HeatmapDatum} from './CubeData'
 import { Record } from 'immutable';
 
 // export interface Filter {
