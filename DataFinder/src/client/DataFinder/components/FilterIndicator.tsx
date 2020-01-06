@@ -57,7 +57,10 @@ export const FilterSummary = (props: FilterSummaryProps) => {
 
 const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props) => {
     let filterFlags;
-    if (props.filters.size == 0) {
+    if (props.filters.size == 0 || 
+        (props.filters.getIn(["assay", "timepoint"]) == undefined && 
+        props.filters.getIn(["assay", "assay"]) == undefined && 
+        props.filters.get("timepoint") == undefined)) {
         filterFlags = <em className="filter-indicator">No filters currently applied</em>
     } else {
         const filters = Map<string, SelectedFilter>({

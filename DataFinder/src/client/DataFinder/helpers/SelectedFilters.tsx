@@ -49,7 +49,8 @@ export const toggleFilter = (dim: string, level: string, member: string, selecte
     }
 
     if (sf.getIn([...filterIn, "members"]).size == 0) {
-        sf = sf.deleteIn([dim, level.split(".")[0]])
+        // debugger
+        sf = sf.deleteIn(filterIn)
     }
 
     return(sf)
