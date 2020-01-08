@@ -79,7 +79,7 @@
             <Hierarchy name="SampleType" visible="true" primaryKey="subjectid">
                 <Table name="dataFinder_dimData" schema="immport" />
                 <Level name="SampleType" visible="true" type="String" column="cell_type" levelType="Regular" hideMemberIf="Never"/>
-                <Level name="Assay" visible="true" type="String" column="assay" levelType="Regular" hideMemberIf="Never">
+                <Level name="Assay" visible="true" type="String" column="assay" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
         </Dimension>        
         
