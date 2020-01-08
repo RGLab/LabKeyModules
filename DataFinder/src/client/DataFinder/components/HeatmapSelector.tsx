@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { drawHeatmap } from "./d3/HeatmapSelector.d3"
-import { HeatmapDatum, Filter,IAssayData, CubeDatum,} from '../../typings/CubeData';
+import { HeatmapDatum, Filter, IAssayData, CubeDatum, } from '../../typings/CubeData';
 import { Cube } from '../../typings/Cube';
 import { Axis } from 'd3';
 import { Map, List } from 'immutable'
@@ -17,15 +17,16 @@ export interface HeatmapProps {
   yaxis: { label: string; data: Filter }[]
   breaks: number[];
   colors: string[];
-  selected: Map<string, Map<string, List<List<string>>>|List<List<string>>>
-  handleClick: (d: Filter) => void
+  selected: Map<string, Map<string, List<List<string>>> | List<List<string>>>
+  handleClick: (d: Filter) => void;
+  showSampleType: boolean
 }
 
 interface HeatmapSelectorProps {
   data: IAssayData;
   filterClick: (dim: string, filter: Filter) => () => void
   showSampleType: boolean;
-  selected: Map<string, Map<string, List<List<string>>>|List<List<string>>>
+  selected: Map<string, Map<string, List<List<string>>> | List<List<string>>>
 }
 
 export interface AxisDatum<data> {
@@ -74,7 +75,7 @@ const createHeatmapData = (data: IAssayData, showSampleType: boolean) => {
       }
     })
   }
-  return(heatmapData)
+  return (heatmapData)
 }
 
 const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean) => {
@@ -82,15 +83,16 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean)
   let d: CubeDatum[]
   let axisData: AxisDatum<Filter>[];
   if (axis == "x") {
-    const d = data.timepoint
-    axisData = d.map((cd) => {return({label: cd.member, data: {level: cd.level, member: cd.member}})})
+    d = data.timepoint
+    axisData = d.map((cd) => { return ({ label: cd.member, data: { level: cd.level, member: cd.member } }) })
   } else if (axis == "y") {
     if (showSampleType) {
-      const d = data.assay.sampleType
-      
+      d = data.sampleType.assay
+      const getAxisText = member => (member.split(/\./)[1] + " (" + member.split(/\./)[0] + ")")
+      axisData = d.map(cd => ({ label: getAxisText(cd.member), data: { level: cd.level, member: cd.member } }))
     } else {
-      const d = data.assay.assay
-      axisData = d.map((cd) => {return({label: cd.member, data: {level: cd.level, member: cd.member}})})
+      d = data.assay.assay
+      axisData = d.map((cd) => { return ({ label: cd.member, data: { level: cd.level, member: cd.member } }) })
     }
   }
 
@@ -100,13 +102,13 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean)
     if (a.label < b.label) return -1;
   })
 
-  return(axisData)
+  return (axisData)
 }
 
 
 export const HeatmapSelector: React.FC<HeatmapSelectorProps> = (props) => {
   // debugger;
-  
+
   // Transform data into appropriate format
   const heatmapData: HeatmapDatum<Filter>[] = createHeatmapData(props.data, props.showSampleType)
   const xaxisData: AxisDatum<Filter>[] = createAxisData(props.data, "x", props.showSampleType)
@@ -170,7 +172,7 @@ export const HeatmapSelector: React.FC<HeatmapSelectorProps> = (props) => {
   }
 
   function handleClick(d: Filter) {
-      props.filterClick("data", d)()
+    props.filterClick("data", d)()
   }
 
 
@@ -188,6 +190,7 @@ export const HeatmapSelector: React.FC<HeatmapSelectorProps> = (props) => {
         colors={options.colors}
         handleClick={handleClick}
         selected={props.selected}
+        showSampleType={props.showSampleType}
       />
     </div>
   );
@@ -195,8 +198,21 @@ export const HeatmapSelector: React.FC<HeatmapSelectorProps> = (props) => {
 
 function Heatmap(props: HeatmapProps) {
   React.useEffect(() => {
-      drawHeatmap(props);
+    drawHeatmap(props);
   });
 
-  return <div className={props.name} />;
+  return <>
+    <div className={props.name} />
+    <div id="heatmap-label" />
+    <div className="arrow-down" />
+  </>;
+}
+
+export const SampleTypeCheckbox = ({ toggleShowSampleType, showSampleType }) => {
+  return (
+    <div>
+      <input type="checkbox" onClick={toggleShowSampleType} checked={showSampleType} />
+      Show Sample Type
+    </div>
+  )
 }

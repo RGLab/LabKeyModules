@@ -110,13 +110,16 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
                 assay: {
                     assay: [{ level: "assay.assay", member: "HAI", count: 99}, {level: "assay.assay", member: "Gene Expression", count: 800}],
                     timepoint: [{ level: "assay.timepoint", member: "HAI.0", count: 86 }, { level: "assay.timepoint", member: "Gene Expression.3", count: 1408 }],
-                    sampleType: []
+                    sampleType: [{ level: "assay.sampleType", member: "HAI.0.plasma", count: 50}]
                 },
                 timepoint: Immutable.fromJS([
                     { level: "timepoint", member: "0", count: 199 },
                     { level: "timepoint", member: "1", count: 208 },
                     { level: "timepoint", member: "3", count: 800 }]),
-                sampleType: Immutable.fromJS([])
+                sampleType: {
+                    sampleType: Immutable.fromJS([{ level: "sampleType.sampleType", member: "plasma", count: 90}]),
+                    assay: Immutable.fromJS([{ level: "sampleType.assay", member: "plasma.HAI", count: 50}])
+                }
             })
         }
         resolve(cd);

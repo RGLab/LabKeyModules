@@ -35,6 +35,7 @@ It takes the following arguments:
 
 
 export const drawHeatmap = (props: HeatmapProps) => {
+  // debugger
   const data = props.data;
   const name = props.name;
   const selected = props.selected;
@@ -47,8 +48,7 @@ export const drawHeatmap = (props: HeatmapProps) => {
     .attr("width", props.width)
     .attr("id", "heatmap-" + name);
 
-  // get position
-  var coord = svg.node().getBoundingClientRect();
+  // debugger
   // x, y, width, top, right, left, height, bottom
 
   // Create margins
@@ -56,7 +56,7 @@ export const drawHeatmap = (props: HeatmapProps) => {
     width = props.width - margin.left - margin.right,
     height = props.height - margin.top - margin.bottom;
 
-  // // Define the div for the tooltip
+  // Define the div for the tooltip
   var tooltip = d3.select("#heatmap-label");
   var arrow = d3.select(".arrow-down");
 
@@ -155,6 +155,7 @@ export const drawHeatmap = (props: HeatmapProps) => {
     });
 
   var yaxispolygons = yaxislabels.selectAll("polygon").data(props.yaxis);
+  // debugger
   yaxispolygons
     .enter()
     .append("polygon")
@@ -163,11 +164,17 @@ export const drawHeatmap = (props: HeatmapProps) => {
     })
     .attr("fill", "transparent")
     .attr("stroke", function (d) {
-      if (selected.getIn(["assay", "assay"]) != undefined) {
+      if (selected.getIn(["assay", "assay"]) != undefined || selected.getIn(["sampleType", "assay"]) != undefined) {
         let s = false
-        selected.getIn(["assay", "assay"]).forEach(memberList => {
-          if (memberList.includes(d.label)) s = true
-        });
+        if (props.showSampleType) {
+          selected.getIn(["sampleType", "assay"]).forEach(memberList => {
+            if (memberList.includes(d.data.member)) s = true
+          })
+        } else {
+          selected.getIn(["assay", "assay"]).forEach(memberList => {
+            if (memberList.includes(d.label)) s = true
+          });
+        }
         if (s) return "black"
       }
       return ("#e5e5e5")
@@ -176,20 +183,13 @@ export const drawHeatmap = (props: HeatmapProps) => {
       // Change style
       d3.select(this)
         .attr("stroke-width", "3px")
-        // .attr("stroke", "black");
+      // .attr("stroke", "black");
     })
     .on("mouseout", function (d) {
       // Reset to original
       d3.select(this)
         .attr("stroke-width", "1px")
-        // .attr("stroke", function (d: AxisDatum<Filter>) {
-        //   if (selected.getIn(["assay", "assay", "members"]) != undefined) {
-        //     if (selected.getIn(["assay", "assay", "members"]).includes(d.label)) {
-        //       return ("black")
-        //     }
-        //   }
-        //   return ("#e5e5e5")
-        // })
+
     })
     .on("click", function (d) {
       props.handleClick(d.data);
@@ -266,20 +266,12 @@ export const drawHeatmap = (props: HeatmapProps) => {
         // Change style
         d3.select(this)
           .attr("stroke-width", "3px")
-          // .attr("stroke", "black");
+        // .attr("stroke", "black");
       })
       .on("mouseout", function (d) {
         // Reset to original
         d3.select(this)
           .attr("stroke-width", "1px")
-          // .attr("stroke", function (d: AxisDatum<Filter>) {
-          //   if (selected.getIn(["timepoint", "members"]) != undefined) {
-          //     if (selected.getIn(["timepoint", "members"]).includes(d.label)) {
-          //       return ("black")
-          //     }
-          //   }
-          //   return ("#e5e5e5")
-          // })
       })
       .on("click", function (d) {
         props.handleClick(d.data);
@@ -312,71 +304,70 @@ export const drawHeatmap = (props: HeatmapProps) => {
     })
     .attr("stroke-width", "1px")
     .attr("stroke", function (d: HeatmapDatum<Filter>) {
-      if (selected.getIn(["assay", "timepoint"]) != undefined) {
+      if (selected.getIn(["assay", "timepoint"]) != undefined || selected.getIn(["assay", "sampleType"]) != undefined) {
         let s = false
-        selected.getIn(["assay", "timepoint"]).forEach((memberList) => {
-          if (memberList.includes(d.y + "." + d.x)) s = true
-        });
+        if (props.showSampleType) {
+          selected.getIn(["assay", "sampleType"]).forEach((memberList) => {
+            if (memberList.includes(d.data.member)) s = true
+          })
+        } else {
+          selected.getIn(["assay", "timepoint"]).forEach((memberList) => {
+            if (memberList.includes(d.data.member)) s = true
+          });
+        }
         if (s) return "black"
       }
       return ("#e5e5e5")
     })
     .on("mouseover", function (d, i) {
-      // // Tooltip coordinates
-      // var r = coord.right - margin.left - xaxisScale(d.timepoint);
-      // var t =
-      //   coord.top + margin.top + yaxisScale(d.assay) + yaxisScale.bandwidth();
-      // // Change style
+      // get position
+      var coord = this.getBoundingClientRect();
+      // Tooltip coordinates
+      var r = (coord.right + window.scrollX);
+      var t = coord.top + window.scrollY;
+      // Change style
       d3.select(this)
         .attr("stroke-width", "3px")
         // .attr("stroke", "black")
         .attr("z-index", "10000");
-      // // Tooltip
-      // tooltip
-      //   .transition()
-      //   .duration(100)
-      //   .style("opacity", 0.9);
-      // arrow
-      //   .transition()
-      //   .duration(100)
-      //   .style("opacity", 0.9);
-      // arrow
-      //   .style("right", r - (xaxisScale.bandwidth() / 2 - 5) + "px")
-      //   .style("top", t - yaxisScale.bandwidth() - 12 + "px");
-      // tooltip
-      //   .html(
-      //     d.count +
-      //     " participants <br>" +
-      //     // d.studyCount +
-      //     // " studies <br>" +
-      //     d.assay +
-      //     " at day " +
-      //     d.timepoint
-      //   )
-      //   .style("right", r - xaxisScale.bandwidth() / 2 + "px")
-      //   .style("top", t - yaxisScale.bandwidth() - 50 - 12 + "px");
+      // Tooltip
+      tooltip
+        .transition()
+        .duration(100)
+        .style("opacity", 0.9);
+      arrow
+        .transition()
+        .duration(100)
+        .style("opacity", 0.9);
+      arrow
+        .style("left", r - (xaxisScale.bandwidth() / 2 - 5) + "px")
+        .style("top", t - 12 + "px");
+      tooltip
+        .html(
+          d.count +
+          " participants <br>" +
+          // d.studyCount +
+          // " studies <br>" +
+          d.y +
+          " at day " +
+          d.x
+        )
+        .style("left", r - xaxisScale.bandwidth() / 2 + "px")
+        .style("top", t - 35 - 12 + "px");
     })
     .on("mouseout", function (d, i) {
       // Reset to original
       d3.select(this)
         .attr("stroke-width", "1px")
-        // .attr("stroke", function (d: HeatmapDatum<Filter>) {
-        //   if (selected.getIn(["assay", "timepoint", "members"]) != undefined) {
-        //     if (selected.getIn(["assay", "timepoint", "members"]).includes(d.y + "." + d.x)) {
-        //       return ("black")
-        //     }
-        //   }
-        //   return ("transparent")
-        // })
         .attr("z-index", 10);
-      // tooltip
-      //   .transition()
-      //   .duration(100)
-      //   .style("opacity", 0);
-      // arrow
-      //   .transition()
-      //   .duration(100)
-      //   .style("opacity", 0);
+      tooltip
+        .transition()
+        .duration(100)
+        .style("opacity", 0);
+      arrow
+        .transition()
+        .duration(100)
+        .style("opacity", 0);
     })
     .on("click", function (d, i) {
       props.handleClick(d.data);

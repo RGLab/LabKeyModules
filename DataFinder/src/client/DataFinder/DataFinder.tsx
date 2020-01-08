@@ -12,7 +12,7 @@ import { ActionButton } from './components/ActionButton'
 import { FilterDropdown } from './components/FilterDropdown'
 import { FilterSummary } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
-import { HeatmapSelector } from './components/HeatmapSelector';
+import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
 
 interface DataFinderControllerProps {
     mdx: any
@@ -30,6 +30,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const [studyDict, setStudyDict] = React.useState<Map<string, StudyInfo>>(Map()); // this should only be loaded once
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
     const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(sf)
+    const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
 
     // Listeners
     const [saveCounter, setSaveCounter] = React.useState<number>(0)
@@ -85,6 +86,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // These are functions which will get passed down to those components
     // which can cause updates to the page
 
+    // ------ filter-related -------
     const getFilters = () => {
         console.log("getFilters()")
         // get filters from local storage
@@ -104,6 +106,13 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         setApplyCounter(applyCounter + 1)
     }
 
+    const clearFilters = () => {
+        setSelectedFilters(new SelectedFilters());
+        applyFilters()
+    }
+    // ----------------
+
+    // ----- participant group-related -----
     const saveParticipantGroup = () => {
         ParticipantGroupHelpers.saveParticipantGroup("group")
         setSaveCounter(saveCounter + 1)
@@ -115,9 +124,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         setGroupCounter(groupCounter + 1)
     }
 
-    const clearFilters = () => {
-        setSelectedFilters(new SelectedFilters());
-        applyFilters()
+
+    // ------ Other ------
+    const toggleSampleType = () => {
+        setShowSampleType(!showSampleType)
     }
 
 
@@ -158,12 +168,14 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             participantCount={sdy.participantCount} />
                     )
                 }
-
             })}
+            <SampleTypeCheckbox
+                toggleShowSampleType={toggleSampleType}
+                showSampleType={showSampleType}/>
             <HeatmapSelector
                 data={cubeData.data.toJS()} 
                 filterClick={filterClick}
-                showSampleType={false}
+                showSampleType={showSampleType}
                 selected={selectedFilters.data} />
             <pre>{JSON.stringify(selectedFilters.toJS(), null, 2)}</pre>
         </div>

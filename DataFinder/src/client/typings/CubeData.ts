@@ -119,7 +119,10 @@ export class CubeData extends Record({
             sampleType: []
         },
         timepoint: [],
-        sampleType: []
+        sampleType: {
+            sampleType: [],
+            assay: []
+        }
     })
 }) {
     subject: SubjectData;
