@@ -157,7 +157,7 @@ const FilterIndicatorFlag: React.FC<FilterIndicatorFlagProps> = (props) => {
     const text = props.filter.map((memberList) => {
         if (memberList.size == 1) return memberList.get(0)
         if (memberList.size > 1) return "(" + memberList.join(" OR ") + ")"
-    })
+    }).join(" AND ")
 
     // (e.map((memberList) => {
     //     if (memberList.size == 1) return memberList.get(0)

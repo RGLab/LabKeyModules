@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Filter } from '../../typings/CubeData'
-import { Map, List } from 'immutable'
+import { Map, List, fromJS } from 'immutable'
 
 // Types 
 export interface FilterDropdownProps {
@@ -12,6 +12,7 @@ export interface FilterDropdownProps {
 }
 
 export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropdownProps) => {
+    // if (props.selected != undefined) debugger
     return (
         <div className={"dropdown"}>
             <div className="btn-group filterselector" role="group" >
@@ -25,7 +26,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropd
                             let checked: boolean;
                             if (props.selected == undefined) {
                                 checked = false
-                            } else if (props.selected.includes(List(e))) {
+                            } else if (props.selected.includes(List([e]))) {
                                 checked = true;
                             } else {
                                 checked = false;
@@ -39,8 +40,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropd
                                             type="checkbox"
                                             name={props.level}
                                             value={e}
-                                            checked={checked} 
-                                            readOnly/>
+                                            checked={checked} />
                                         <span>{e}</span>
                                     </label>
                                 </div>
