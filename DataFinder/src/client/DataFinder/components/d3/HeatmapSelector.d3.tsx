@@ -3,6 +3,7 @@ import { HeatmapDatum, IAssayData, CubeDatum, Filter } from '../../../typings/Cu
 import { HeatmapProps } from '../HeatmapSelector';
 import { AxisDatum } from '../HeatmapSelector';
 import { Axis } from 'd3';
+import { List } from 'immutable';
 // ================================================================== //
 /* 
 This is a heatmap component which was translated from an r2d3 fuction.
@@ -34,7 +35,6 @@ It takes the following arguments:
 
 
 export const drawHeatmap = (props: HeatmapProps) => {
-  // if (props.data.length > 0) debugger;
   const data = props.data;
   const name = props.name;
   const selected = props.selected;
@@ -145,7 +145,6 @@ export const drawHeatmap = (props: HeatmapProps) => {
       return xaxisScale("0") - margin.left / 2;
     })
     .attr("y", (d) => {
-      // debugger;
       return yaxisScale((d.label)) + yaxisScale.bandwidth() / 2;
     })
     .attr("text-anchor", "middle")
@@ -164,10 +163,12 @@ export const drawHeatmap = (props: HeatmapProps) => {
     })
     .attr("fill", "transparent")
     .attr("stroke", function (d) {
-      if (selected.getIn(["assay", "assay", "members"]) != undefined) {
-        if (selected.getIn(["assay", "assay", "members"]).includes(d.label)) {
-          return ("black")
-        }
+      if (selected.getIn(["assay", "assay"]) != undefined) {
+        let s = false
+        selected.getIn(["assay", "assay"]).forEach(memberList => {
+          if (memberList.includes(d.label)) s = true
+        });
+        if (s) return "black"
       }
       return ("#e5e5e5")
     })
@@ -252,10 +253,12 @@ export const drawHeatmap = (props: HeatmapProps) => {
       })
       .attr("fill", "transparent")
       .attr("stroke", function (d) {
-        if (selected.getIn(["timepoint", "members"]) != undefined) {
-          if (selected.getIn(["timepoint", "members"]).includes(d.label)) {
-            return ("black")
-          }
+        if (selected.getIn(["timepoint"]) != undefined) {
+          let s = false
+          selected.getIn(["timepoint"]).forEach((memberList) => {
+            if (memberList.includes(d.label)) s = true
+          });
+          if (s) return "black"
         }
         return ("#e5e5e5")
       })
@@ -309,10 +312,12 @@ export const drawHeatmap = (props: HeatmapProps) => {
     })
     .attr("stroke-width", "1px")
     .attr("stroke", function (d: HeatmapDatum<Filter>) {
-      if (selected.getIn(["assay", "timepoint", "members"]) != undefined) {
-        if (selected.getIn(["assay", "timepoint", "members"]).includes(d.y + "." + d.x)) {
-          return ("black")
-        }
+      if (selected.getIn(["assay", "timepoint"]) != undefined) {
+        let s = false
+        selected.getIn(["assay", "timepoint"]).forEach((memberList) => {
+          if (memberList.includes(d.y + "." + d.x)) s = true
+        });
+        if (s) return "black"
       }
       return ("#e5e5e5")
     })

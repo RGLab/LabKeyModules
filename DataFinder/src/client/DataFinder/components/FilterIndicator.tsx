@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as LABKEY from '@labkey/api'
-import { Filter, SelectedFilters, SelectedFilter, CubeData } from "../../typings/CubeData";
-import { Map } from 'immutable'
+import { Filter, SelectedFilters, CubeData } from "../../typings/CubeData";
+import { Map, List } from 'immutable'
 
 interface FilterSummaryProps {
     filters: SelectedFilters
@@ -9,18 +9,18 @@ interface FilterSummaryProps {
 
 interface FilterIndicatorListProps {
     filterClass: string;
-    filters: Map<string, SelectedFilter>;
+    filters: Map<string, List<List<string>>>;
     title: string;
 }
 
 interface AssayFilterIndicatorListProps {
-    filters: Map<string, Map<string, SelectedFilter> | SelectedFilter>;
+    filters: Map<string, Map<string, List<List<string>>> | List<List<string>>>;
     title: string
 }
 
 interface FilterIndicatorFlagProps {
     dim: string;
-    filter: SelectedFilter;
+    filter: List<List<string>>;
     level: string;
 }
 
@@ -57,13 +57,13 @@ export const FilterSummary = (props: FilterSummaryProps) => {
 
 const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props) => {
     let filterFlags;
-    if (props.filters.size == 0 || 
-        (props.filters.getIn(["assay", "timepoint"]) == undefined && 
-        props.filters.getIn(["assay", "assay"]) == undefined && 
-        props.filters.get("timepoint") == undefined)) {
+    if (props.filters.size == 0 ||
+        (props.filters.getIn(["assay", "timepoint"]) == undefined &&
+            props.filters.getIn(["assay", "assay"]) == undefined &&
+            props.filters.get("timepoint") == undefined)) {
         filterFlags = <em className="filter-indicator">No filters currently applied</em>
     } else {
-        const filters = Map<string, SelectedFilter>({
+        const filters = Map<string, List<List<string>>>({
             "Assay.Assay": props.filters.getIn(["assay", "assay"]),
             "Assay.Timepoint": props.filters.getIn(["assay", "timepoint"]),
             "Assay.SampleType": props.filters.getIn(["assay", "sampleType"]),
@@ -72,24 +72,46 @@ const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props
         })
         const filterText = filters.map((e, i) => {
             if (e == undefined) return (undefined);
-            if (i == "Assay.Timepoint") {
-                const textArray = e.members.map((m) => {
-                    const assay = m.split(/\./)[0]
-                    const timepoint = m.split(/\./)[1]
-                    return (assay + " at " + timepoint + " days")
-                })
-                return (textArray.join(" " + e.operator + " "))
-            }
-            if (i == "Assay.SampleType") {
-                const textArray = e.members.map((m) => {
+            const getText = (m: string, st: boolean) => {
+                if (st) {
                     const assay = m.split(/\./)[0]
                     const timepoint = m.split(/\./)[1]
                     const sampleType = m.split(/\./)[2]
                     return (assay + " (" + sampleType + ") at " + timepoint + " days")
-                })
-                return (textArray.join(" " + e.operator + " "))
+                }
+                const assay = m.split(/\./)[0]
+                const timepoint = m.split(/\./)[1]
+                return (assay + " at " + timepoint + " days")
+
             }
-            return (i.split(/\./)[0] + " is " + e.members.join(" " + e.operator + " "))
+            if (i == "Assay.Timepoint") {
+                const textArray = e.map((memberList) => {
+                    if (memberList.size == 1) {
+                        return (getText(memberList.get(0), false))
+                    } else if (memberList.size > 1) {
+                        const mText = memberList.map(m => getText(m, false)
+                        ).join(" OR ")
+                        return ("(" + mText + ")")
+                    }
+                })
+                return (textArray.join(" AND "))
+            }
+            if (i == "Assay.SampleType") {
+                const textArray = e.map((memberList) => {
+                    if (memberList.size == 1) {
+                        return (getText(memberList.get(0), true))
+                    } else if (memberList.size > 1) {
+                        const mText = memberList.map(m => getText(m, true)).join(" OR ")
+                        return (mText)
+                    }
+                })
+                return (textArray.join(" AND "))
+            }
+            return (i.split(/\./)[0] + " is " + (e.map((memberList) => {
+                if (memberList.size == 1) return memberList.get(0)
+                if (memberList.size > 1) return "(" + memberList.join(" OR ") + ")"
+            }).join(" AND "))
+            )
         })
 
         filterFlags = filterText.valueSeq().map((text, i) => {
@@ -132,7 +154,18 @@ const FilterIndicatorList: React.FC<FilterIndicatorListProps> = (props) => {
 }
 
 const FilterIndicatorFlag: React.FC<FilterIndicatorFlagProps> = (props) => {
-    const text = props.filter.members.join(" " + props.filter.operator + " ")
+    const text = props.filter.map((memberList) => {
+        if (memberList.size == 1) return memberList.get(0)
+        if (memberList.size > 1) return "(" + memberList.join(" OR ") + ")"
+    })
+
+    // (e.map((memberList) => {
+    //     if (memberList.size == 1) return memberList.get(0)
+    //     if (memberList.size > 1) return "(" + memberList.join(" OR ") + ")"
+    // }).join(" AND "))
+
+
+
     return (
         <div className="filter-indicator">
             <div className={"filter-indicator-text " + props.dim}>

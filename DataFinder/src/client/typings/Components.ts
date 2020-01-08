@@ -1,4 +1,4 @@
-import { CubeDatum, Filter, HeatmapDatum, SelectedFilter } from "./CubeData"
+import { HeatmapDatum} from "./CubeData"
 
 export interface TinyHeatmapProps {
     data: HeatmapDatum<any>[];

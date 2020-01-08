@@ -141,37 +141,34 @@ export interface Filter {
     member: string
 }
 
-export interface ISelectedFilter {
-    members?: List<string>;
-    operator?: string
-}
+// export interface ISelectedFilter {}
 
-export class SelectedFilter extends Record({
-    members: List<string>(),
-    operator: "OR"
-}) {
-    members: List<string>;
-    operator: string
+// export class SelectedFilter extends Record({
+//     members: List<string>(),
+//     operator: "OR"
+// }) {
+//     members: List<string>;
+//     operator: string
 
-    constructor(params?: ISelectedFilter) {
-        params ? super(fromJS(params)) : super()
-    }
-}
+//     constructor(params?: ISelectedFilter) {
+//         params ? super(fromJS(params)) : super()
+//     }
+// }
 
 export interface ISelectedFilters {
-    subject?: Map<string, SelectedFilter>
-    study?: Map<string, SelectedFilter>
-    data?: Map<string, Map<string, SelectedFilter>|SelectedFilter>
+    subject?: Map<string, List<List<string>>>
+    study?: Map<string, List<List<string>>>
+    data?: Map<string, Map<string, List<List<string>>>|List<List<string>>>
 }
 
 export class SelectedFilters extends Record({
-    subject: Map<string, SelectedFilter>(),
-    study: Map<string, SelectedFilter>(),
-    data: Map<string, Map<string, SelectedFilter>|SelectedFilter>()
+    subject: Map<string, List<List<string>>>(),
+    study: Map<string, List<List<string>>>(),
+    data: Map<string, Map<string, List<List<string>>>>()
 }) {
-    subject: Map<string, SelectedFilter>;
-    study: Map<string, SelectedFilter>;
-    data: Map<string, Map<string, SelectedFilter>|SelectedFilter>;
+    subject: Map<string, List<List<string>>>;
+    study: Map<string, List<List<string>>>;
+    data: Map<string, Map<string, List<List<string>>>|List<List<string>>>;
 
     constructor(params?: ISelectedFilters) {
         params ? super(fromJS(params)) : super()

@@ -1,5 +1,5 @@
 import "./DataFinder.scss";
-import React from 'react';
+import React, { useCallback } from 'react';
 // import { olap } from '../olap/olap.js'
 import { CubeData, Filter, SelectedFilters } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
