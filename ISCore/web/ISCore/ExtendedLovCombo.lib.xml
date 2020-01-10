@@ -1,8 +1,9 @@
 <libraries xmlns='http://labkey.org/clientLibrary/xml/'> 
     <library compileInProductionMode='false'>
-        <script path='Ext.ux.form.LovCombo.css'/>
-        <script path='Ext.ux.form.LovCombo.js'/>
         <script path='ISCore/ExtendedLovCombo.js'/>
     </library>
+    <dependencies compileInProductionMode='false'>
+        <dependency path='Ext.ux.form.LovCombo.css'/>
+        <dependency path='Ext.ux.form.LovCombo.js'/>
+    </dependencies>
 </libraries>
-
