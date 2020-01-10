@@ -40,7 +40,8 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropd
                                             type="checkbox"
                                             name={props.level}
                                             value={e}
-                                            checked={checked} />
+                                            checked={checked}
+                                            readOnly />
                                         <span>{e}</span>
                                     </label>
                                 </div>

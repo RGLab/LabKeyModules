@@ -1,5 +1,5 @@
 import "./DataFinder.scss";
-import React, { useCallback } from 'react';
+import React, { memo } from 'react';
 // import {olap} from '../olap/olap'
 import { CubeData, Filter, SelectedFilters } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
@@ -18,18 +18,18 @@ interface DataFinderControllerProps {
     mdx: any
 }
 
-
 const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFinderControllerProps) => {
     // Constants -------------------------------------
     const mdx = props.mdx;
     const cd = new CubeData({})
-    const sf = new SelectedFilters();
+    const sf = new SelectedFilters(JSON.parse(localStorage.getItem("dataFinderSelectedFilters")));
 
     // state -----
     const [cubeData, setCubeData] = React.useState<CubeData>(cd)
     const [studyDict, setStudyDict] = React.useState<Map<string, StudyInfo>>(Map()); // this should only be loaded once
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
-    const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(sf)
+    const [appliedFilters, setAppliedFilters] = React.useState<SelectedFilters>(sf)
+    const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(appliedFilters)
     const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
 
     // Listeners
@@ -45,21 +45,26 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // Do these things only when the page loads --------
     React.useEffect(() => {
-        // get filters from localStorage
         // load data
-        CubeHelpers.getStudyInfoArray(mdx, selectedFilters).then((sia) => {
+        CubeHelpers.getStudyInfoArray(mdx, appliedFilters).then((sia) => {
             setStudyDict(CubeHelpers.createStudyDict(sia))
-            console.log(studyDict)
-            applyFilters()
         })
     }, [])
 
     // Do these things when certain variables are incremented --------
     // Apply filters
     React.useEffect(() => {
+        // set applied filters
+        setAppliedFilters(selectedFilters)
         // set local storage
+        localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(selectedFilters))
         // call to sessionParticipantGroup.api
+
+    }, [applyCounter])
+
+    React.useEffect(() => {
         // Update local state
+        // separated from above effect so filters can pop up in banner before data is finished updating
         Promise.all([
             CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters),
             CubeHelpers.getCubeData(mdx, selectedFilters)]).then(
@@ -67,7 +72,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     setStudyParticipantCounts(CubeHelpers.createStudyParticipantCounts(spc))
                     setCubeData(CubeHelpers.createCubeData(cd))
                 })
-    }, [applyCounter])
+    }, [appliedFilters])
 
 
     // Save group
@@ -85,6 +90,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // Helper functions ---------------------------------------------
     // These are functions which will get passed down to those components
     // which can cause updates to the page
+    const Banner = memo(FilterSummary)
 
     // ------ filter-related -------
     const getFilters = () => {
@@ -140,11 +146,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 {JSON.stringify(cubeData.toJS(), undefined, 2)}
                 {JSON.stringify(studyDict.toJS(), undefined, 2)}
             </pre> */}
+            <Banner filters={appliedFilters} />
             <ActionButton text={"Apply"} onClick={applyFilters} />
             <ActionButton text={"Save"} onClick={saveParticipantGroup} />
             <ActionButton text={"Clear"} onClick={clearFilters} />
             <ActionButton text={"Reset"} onClick={getFilters} />
-            <FilterSummary filters={selectedFilters} />
             <FilterDropdown
                 key={"Subject"}
                 dimension={"Subject"}

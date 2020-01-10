@@ -3,7 +3,7 @@ import * as LABKEY from '@labkey/api'
 import { Filter, SelectedFilters, CubeData } from "../../typings/CubeData";
 import { Map, List } from 'immutable'
 
-interface FilterSummaryProps {
+export interface FilterSummaryProps {
     filters: SelectedFilters
 }
 
@@ -155,21 +155,21 @@ const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props
     )
 }
 
-const FilterIndicatorList: React.FC<FilterIndicatorListProps> = (props) => {
+const FilterIndicatorList: React.FC<FilterIndicatorListProps> = ({filterClass, filters, title}) => {
     // props: filter class, filters, title text
     let filterFlags
     // debugger;
-    if (props.filters.size == 0) {
+    if (filters.size == 0) {
         filterFlags = <em className="filter-indicator">No filters currently applied</em>
     } else {
-        const filterKeys = props.filters.keySeq();
+        const filterKeys = filters.keySeq();
         filterFlags = filterKeys.map((key: string) => {
-            return (<FilterIndicatorFlag key={props.filters.getIn([key, "members"])} dim={props.filterClass} filter={props.filters.get(key)} level={key} />)
+            return (<FilterIndicatorFlag key={filters.getIn([key, "members"])} dim={filterClass} filter={filters.get(key)} level={key} />)
         })
     }
     return (
         <div>
-            <h4>{props.title}</h4>
+            <h4>{title}</h4>
             {filterFlags}
         </div>
     )

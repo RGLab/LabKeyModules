@@ -130,8 +130,6 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
             configId: "DataFinder:/DataFinderCube",
             schemaName: 'immport',
             success: function (cs: Cube.CellSet, mdx, config) {
-                // resolve(cs2cd(cs))
-                console.log(cs2cd(cs))
                 resolve(cs2cd(cs))
             },
             name: 'DataFinderCube',
@@ -158,38 +156,6 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
             showEmpty: false
 
         })
-        // resolve({
-        //     ubject: Immutable.fromJS({
-        //         race: [],
-        //         age: [{ level: "age", member: "0-10", count: 15 },
-        //         { level: "age", member: "11-20", count: 86 }],
-        //         gender: []
-        //     }),
-        //     study: Immutable.fromJS({
-        //         name: [],
-        //         program: [],
-        //         condition: [],
-        //         species: [{ level: "species", member: "Homo Sapiens", count: 90 },
-        //         { level: "species", member: "Mus Musculus", count: 7 }],
-        //         exposureMaterial: [],
-        //         exposureProcess: []
-        //     }),
-        //     data: Immutable.fromJS({
-        //         assay: {
-        //             assay: [{ level: "assay.assay", member: "HAI", participantCount: 99, studyCount: 4 }, { level: "assay.assay", member: "Gene Expression", participantCount: 800, studyCount: 12 }],
-        //             timepoint: [{ level: "assay.timepoint", member: "HAI.0", participantCount: 86, studyCount: 12 }, { level: "assay.timepoint", member: "Gene Expression.3", participantCount: 1408, studyCount: 30 }],
-        //             sampleType: [{ level: "assay.sampleType", member: "HAI.0.plasma", participantCount: 50 }]
-        //         },
-        //         timepoint: Immutable.fromJS([
-        //             { level: "timepoint", member: "0", count: 199 },
-        //             { level: "timepoint", member: "1", count: 208 },
-        //             { level: "timepoint", member: "3", count: 800 }]),
-        //         sampleType: {
-        //             sampleType: Immutable.fromJS([{ level: "sampleType.sampleType", member: "plasma", participantCount: 90 }]),
-        //             assay: Immutable.fromJS([{ level: "sampleType.assay", member: "plasma.HAI", participantCount: 50 }])
-        //         }
-        //     })
-        // })
 
     })
     return (cubeData)
@@ -200,7 +166,6 @@ export const createCubeData = (cubeData: ICubeData) => {
 
     return new CubeData(cubeData);
 
-    // return new CubeData(cubeData);
 }
 
 

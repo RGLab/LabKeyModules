@@ -7,7 +7,7 @@ module.exports = {
     webparts: [
         {
             name: 'DataFinder',
-            frame: 'portal',
+            frame: 'none',
             title: 'Data Finder',
             path: './src/client/DataFinder'
         }],

@@ -6,5 +6,5 @@ import { Banner } from './FilterBanner'
 
 
 window.addEventListener('DOMContentLoaded', (event) => {
-    ReactDOM.render(<Banner/>, document.getElementById('filter-banner'));
+    ReactDOM.render(<Banner show={window.location.search != "" && window.location.pathname == "/project/Studies/begin.view"}/>, document.getElementById('filter-banner'));
 });
