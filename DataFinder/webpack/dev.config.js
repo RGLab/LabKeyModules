@@ -22,8 +22,8 @@ const devServer = {
 const devServerURL = 'http://' + devServer.host + ':' + devServer.port;
 
 let entries = {};
-for (let i = 0; i < entryPoints.apps.length; i++) {
-    const entryPoint = entryPoints.apps[i];
+for (let i = 0; i < entryPoints.webparts.length; i++) {
+    const entryPoint = entryPoints.webparts[i];
 
     entries[entryPoint.name] = [
         // activate HMR for React
@@ -38,7 +38,18 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
         entryPoint.path + '/dev.tsx'
     ];
 }
+entries[entryPoints.banner.name] = [
+            // activate HMR for React
+            'react-hot-loader/patch',
 
+            // bundle the client for webpack-dev-server
+            // and connect to the provided endpoint
+            'webpack-dev-server/client?' + devServerURL,
+    
+            'webpack/hot/only-dev-server',
+    
+            entryPoints.banner.path + '/dev.tsx'
+]
 module.exports = {
     context: constants.context(__dirname),
 

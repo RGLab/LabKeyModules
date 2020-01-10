@@ -6,12 +6,12 @@ const entryPoints = require('./entryPoints');
 
 let entries = {};
 let plugins = [];
-for (let i = 0; i < entryPoints.apps.length; i++) {
-    const entryPoint = entryPoints.apps[i];
+for (let i = 0; i < entryPoints.webparts.length; i++) {
+    const entryPoint = entryPoints.webparts[i];
 
     entries[entryPoint.name] = entryPoint.path + '/app.tsx';
 
-    plugins = plugins.concat([
+    plugins = plugins.concat([        
         new HtmlWebpackPlugin({
             inject: false,
             name: entryPoint.name,
@@ -58,6 +58,14 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
         })
     ]);
 }
+
+// ----- BANNER -----
+entries[entryPoints.banner.name] = entryPoints.banner.path + '/app.tsx' 
+plugins.push(new HtmlWebpackPlugin({
+    inject: false,
+    filename: '../../../views/_banner.html',
+    template: 'webpack/_banner.template.html'
+}))
 
 plugins.push(new MiniCssExtractPlugin());
 
