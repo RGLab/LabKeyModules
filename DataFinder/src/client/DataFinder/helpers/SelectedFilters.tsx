@@ -28,6 +28,7 @@ export const createCubeFilters = (filters: SelectedFilters) => {
 
 export const toggleFilter = (dim: string, level: string, member: string, selectedFilters: SelectedFilters) => {
     console.log("toggleFilter()")
+    // debugger
 
     let filterIn: string[];
     if (/\./.test(level)) {

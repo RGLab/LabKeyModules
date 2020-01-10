@@ -89,7 +89,7 @@ export function drawBarplot(props: BarplotProps) {
         .attr("class", "rect")
         .attr("x", xaxisScale(0))
         .attr("width", function (d: CubeDatum) {
-            return xaxisScale(d.count);
+            return xaxisScale(d.participantCount);
         })
         .attr("y", function (d: CubeDatum) {
             return yaxisScale(d.member);
@@ -101,7 +101,7 @@ export function drawBarplot(props: BarplotProps) {
         .duration(500)
         .attr("x", xaxisScale(0))
         .attr("width", function (d: CubeDatum) {
-            return xaxisScale(d.count);
+            return xaxisScale(d.participantCount);
         })
         .attr("y", function (d: CubeDatum) {
             return yaxisScale(d.member);

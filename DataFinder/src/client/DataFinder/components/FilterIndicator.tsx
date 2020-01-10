@@ -42,14 +42,14 @@ export const FilterSummary = (props: FilterSummaryProps) => {
         <div>
             <FilterIndicatorList
                 filterClass={"study"}
-                filters={props.filters.study}
+                filters={props.filters.Study}
                 title={"Study Design"} />
             <FilterIndicatorList
                 filterClass={"participant"}
-                filters={props.filters.subject}
+                filters={props.filters.Subject}
                 title={"Participant Characteristics"} />
             <AssayFilterIndicatorList
-                filters={props.filters.data}
+                filters={props.filters.Data}
                 title={"Available Data"} />
         </div>
     )
@@ -58,37 +58,37 @@ export const FilterSummary = (props: FilterSummaryProps) => {
 const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props) => {
     let filterFlags;
     if (props.filters.size == 0 ||
-        (props.filters.getIn(["assay", "timepoint"]) == undefined &&
-            props.filters.getIn(["assay", "assay"]) == undefined &&
-            props.filters.getIn(["assay", "sampleType"]) == undefined &&
-            props.filters.getIn(["sampleType", "sampleType"]) == undefined &&
-            props.filters.getIn(["sampleType", "assay"]) == undefined &&
-            props.filters.get("timepoint") == undefined )) {
+        (props.filters.getIn(["Assay", "Timepoint"]) == undefined &&
+            props.filters.getIn(["Assay", "Assay"]) == undefined &&
+            props.filters.getIn(["Assay", "SampleType"]) == undefined &&
+            props.filters.getIn(["SampleType", "SampleType"]) == undefined &&
+            props.filters.getIn(["SampleType", "Assay"]) == undefined &&
+            props.filters.get("Timepoint") == undefined )) {
         filterFlags = <em className="filter-indicator">No filters currently applied</em>
     } else {
         const filters = Map<string, List<List<string>>>({
-            "Assay.Assay": props.filters.getIn(["assay", "assay"]),
-            "Assay.Timepoint": props.filters.getIn(["assay", "timepoint"]),
-            "Assay.SampleType": props.filters.getIn(["assay", "sampleType"]),
-            "SampleType.SampleType": props.filters.getIn(["sampleType", "sampleType"]),
-            "SampleType.Assay": props.filters.getIn(["sampleType", "assay"]),
-            "Timepoint": props.filters.get("timepoint")
+            "Assay.Assay": props.filters.getIn(["Assay", "Assay"]),
+            "Assay.Timepoint": props.filters.getIn(["Assay", "Timepoint"]),
+            "Assay.SampleType": props.filters.getIn(["Assay", "SampleType"]),
+            "SampleType.SampleType": props.filters.getIn(["SampleType", "SampleType"]),
+            "SampleType.Assay": props.filters.getIn(["SampleType", "Assay"]),
+            "Timepoint": props.filters.get("Timepoint")
         })
         const filterText = filters.map((e, i) => {
             if (e == undefined) return (undefined);
             const getText = (m: string, level: string) => {
-                if (level == "assay.sampleType") {
+                if (level == "Assay.SampleType") {
                     const assay = m.split(/\./)[0]
                     const timepoint = m.split(/\./)[1]
                     const sampleType = m.split(/\./)[2]
                     return (assay + " (" + sampleType + ") at " + timepoint + " days")
                 }
-                if (level == "assay.timepoint") {
+                if (level == "Assay.Timepoint") {
                     const assay = m.split(/\./)[0]
                     const timepoint = m.split(/\./)[1]
                     return (assay + " at " + timepoint + " days")
                 }
-                if (level == "sampleType.assay") {
+                if (level == "SampleType.Assay") {
                     const assay = m.split(/\./)[1]
                     const sampleType = m.split(/\./)[0]
                     return (assay + " (" + sampleType + ")")
@@ -98,9 +98,9 @@ const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props
             if (i == "Assay.Timepoint") {
                 const textArray = e.map((memberList) => {
                     if (memberList.size == 1) {
-                        return (getText(memberList.get(0), "assay.timepoint"))
+                        return (getText(memberList.get(0), "Assay.Timepoint"))
                     } else if (memberList.size > 1) {
-                        const mText = memberList.map(m => getText(m, "assay.timepoint")
+                        const mText = memberList.map(m => getText(m, "Assay.Timepoint")
                         ).join(" OR ")
                         return ("(" + mText + ")")
                     }
@@ -110,9 +110,9 @@ const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props
             if (i == "Assay.SampleType") {
                 const textArray = e.map((memberList) => {
                     if (memberList.size == 1) {
-                        return (getText(memberList.get(0), "assay.sampleType"))
+                        return (getText(memberList.get(0), "Assay.SampleType"))
                     } else if (memberList.size > 1) {
-                        const mText = memberList.map(m => getText(m, "assay.sampleType")).join(" OR ")
+                        const mText = memberList.map(m => getText(m, "Assay.SampleType")).join(" OR ")
                         return (mText)
                     }
                 })
@@ -121,9 +121,9 @@ const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props
             if (i == "SampleType.Assay") {
                 const textArray = e.map((memberList) => {
                     if (memberList.size == 1) {
-                        return (getText(memberList.get(0), "sampleType.assay"))
+                        return (getText(memberList.get(0), "SampleType.assay"))
                     } else if (memberList.size > 1) {
-                        const mText = memberList.map(m => getText(m, "sampleType.assay")).join(" OR ")
+                        const mText = memberList.map(m => getText(m, "SampleType.assay")).join(" OR ")
                         return mText
                     }
                 })

@@ -3,30 +3,32 @@ import { Record, fromJS, List, Map } from 'immutable';
 export interface CubeDatum {
     level: string;
     member: string;
-    count: number;
+    participantCount?: number;
+    studyCount?: number
 }
 
 export interface HeatmapDatum<data> {
     x: string;
     y: string;
-    count :number;
+    participantCount :number;
+    studyCount: number;
     data: data;
 }
 
 export interface ISubjectData {
-    race?: CubeDatum[];
-    age?: CubeDatum[];
-    gender?: CubeDatum[];
+    Race?: CubeDatum[];
+    Age?: CubeDatum[];
+    Gender?: CubeDatum[];
 }
 
 export class SubjectData extends Record({
-    race: List<CubeDatum>(),
-    age: List<CubeDatum>(),
-    gender: List<CubeDatum>(),
+    Race: List<CubeDatum>(),
+    Age: List<CubeDatum>(),
+    Gender: List<CubeDatum>(),
 }) {
-    race: List<CubeDatum>;
-    age: List<CubeDatum>;
-    gender: List<CubeDatum>;
+    Race: List<CubeDatum>;
+    Age: List<CubeDatum>;
+    Gender: List<CubeDatum>;
 
     constructor(params?: ISubjectData) {
         params ? super(fromJS(params)) : super()
@@ -34,28 +36,28 @@ export class SubjectData extends Record({
 }
 
 export interface IStudyData {
-    name?: CubeDatum[];
-    program?: CubeDatum[];
-    condition?: CubeDatum[];
-    species?: CubeDatum[];
-    exposureMaterial?: CubeDatum[];
-    exposureProcess?: CubeDatum[];
+    Name?: CubeDatum[];
+    Program?: CubeDatum[];
+    Condition?: CubeDatum[];
+    Species?: CubeDatum[];
+    ExposureMaterial?: CubeDatum[];
+    ExposureProcess?: CubeDatum[];
 }
 
 export class StudyData extends Record({
-    name: List<CubeDatum>(),
-    program: List<CubeDatum>(),
-    condition: List<CubeDatum>(),
-    species: List<CubeDatum>(),
-    exposureMaterial: List<CubeDatum>(),
-    exposureProcess: List<CubeDatum>()
+    Name: List<CubeDatum>(),
+    Program: List<CubeDatum>(),
+    Condition: List<CubeDatum>(),
+    Species: List<CubeDatum>(),
+    ExposureMaterial: List<CubeDatum>(),
+    ExposureProcess: List<CubeDatum>()
 }) {
-    name: List<CubeDatum>;
-    program: List<CubeDatum>;
-    condition: List<CubeDatum>;
-    species: List<CubeDatum>;
-    exposureMaterial: List<CubeDatum>;
-    exposureProcess: List<CubeDatum>;
+    Name: List<CubeDatum>;
+    Program: List<CubeDatum>;
+    Condition: List<CubeDatum>;
+    Species: List<CubeDatum>;
+    ExposureMaterial: List<CubeDatum>;
+    ExposureProcess: List<CubeDatum>;
 
     constructor(params?: IStudyData) {
         params ? super(fromJS(params)) : super()
@@ -63,33 +65,33 @@ export class StudyData extends Record({
 }
 
 export interface IAssayData {
-    assay?: {
-        assay?: CubeDatum[];
-        timepoint?: CubeDatum[];
-        sampleType?: CubeDatum[];
+    Assay?: {
+        Assay?: CubeDatum[];
+        Timepoint?: CubeDatum[];
+        SampleType?: CubeDatum[];
     },
-    timepoint?: CubeDatum[];
-    sampleType?: {
-        sampleType?: CubeDatum[];
-        assay?: CubeDatum[];
+    Timepoint?: CubeDatum[];
+    SampleType?: {
+        SampleType?: CubeDatum[];
+        Assay?: CubeDatum[];
     };
 }
 
 export class AssayData extends Record({
-    assay: Map({
-        assay: List<CubeDatum>(),
-        timepoint: List<CubeDatum>(),
-        sampleType: List<CubeDatum>(),
+    Assay: Map({
+        Assay: List<CubeDatum>(),
+        Timepoint: List<CubeDatum>(),
+        SampleType: List<CubeDatum>(),
     }),
-    timepoint: List<CubeDatum>(),
-    sampleType: Map({
-        sampleType: List<CubeDatum>(),
-        assay: List<CubeDatum>()
+    Timepoint: List<CubeDatum>(),
+    SampleType: Map({
+        SampleType: List<CubeDatum>(),
+        Assay: List<CubeDatum>()
     })
 }) {
-    assay: Map<string, List<CubeDatum>>;
-    timepoint: List<CubeDatum>;
-    sampleType: List<CubeDatum>;
+    Assay: Map<string, List<CubeDatum>>;
+    Timepoint: List<CubeDatum>;
+    SampleType: List<CubeDatum>;
 
     constructor(params?: ISubjectData) {
         params ? super(fromJS(params)) : super()
@@ -97,37 +99,37 @@ export class AssayData extends Record({
 }
 
 export interface ICubeData {
-    subject?: SubjectData,
-    study?: StudyData,
-    data?: AssayData
+    Subject?: SubjectData,
+    Study?: StudyData,
+    Data?: AssayData
 }
 
 export class CubeData extends Record({
-    subject: new SubjectData(),
-    study: fromJS({
-        name: [],
-        program: [],
-        condition: [],
-        species: [],
-        exposureMaterial: [],
-        exposureProcess: []
+    Subject: new SubjectData(),
+    Study: fromJS({
+        Name: [],
+        Program: [],
+        Condition: [],
+        Species: [],
+        ExposureMaterial: [],
+        ExposureProcess: []
     }),
-    data: fromJS({
-        assay: {
-            assay: [],
-            timepoint: [],
-            sampleType: []
+    Data: fromJS({
+        Assay: {
+            Assay: [],
+            Timepoint: [],
+            SampleType: []
         },
-        timepoint: [],
-        sampleType: {
-            sampleType: [],
-            assay: []
+        Timepoint: [],
+        SampleType: {
+            SampleType: [],
+            Assay: []
         }
     })
 }) {
-    subject: SubjectData;
-    study: StudyData;
-    data: AssayData;
+    Subject: SubjectData;
+    Study: StudyData;
+    Data: AssayData;
 
 
     constructor(params?: ICubeData) {
@@ -137,6 +139,7 @@ export class CubeData extends Record({
     with(values: ICubeData) {
         return this.merge(fromJS(values)) as this;
     }
+
 }
 
 export interface Filter {
@@ -165,13 +168,13 @@ export interface ISelectedFilters {
 }
 
 export class SelectedFilters extends Record({
-    subject: Map<string, List<List<string>>>(),
-    study: Map<string, List<List<string>>>(),
-    data: Map<string, Map<string, List<List<string>>>>()
+    Subject: Map<string, List<List<string>>>(),
+    Study: Map<string, List<List<string>>>(),
+    Data: Map<string, Map<string, List<List<string>>>>()
 }) {
-    subject: Map<string, List<List<string>>>;
-    study: Map<string, List<List<string>>>;
-    data: Map<string, Map<string, List<List<string>>>|List<List<string>>>;
+    Subject: Map<string, List<List<string>>>;
+    Study: Map<string, List<List<string>>>;
+    Data: Map<string, Map<string, List<List<string>>>|List<List<string>>>;
 
     constructor(params?: ISelectedFilters) {
         params ? super(fromJS(params)) : super()

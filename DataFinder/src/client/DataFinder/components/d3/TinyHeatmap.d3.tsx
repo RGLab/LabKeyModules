@@ -111,8 +111,8 @@ export function drawTinyHeatmap(props: TinyHeatmapProps) {
         })
         .attr("height", yaxisScale.bandwidth() - 1)
         .style("fill", function (d: HeatmapDatum<any>) {
-            if (d.count === 0 || d.y === undefined) return "transparent";
-            return colorScale(d.count);
+            if (d.participantCount === 0 || d.y === undefined) return "transparent";
+            return colorScale(d.participantCount);
         })
         .attr("stroke-width", "1px")
         .attr("stroke", "transparent");

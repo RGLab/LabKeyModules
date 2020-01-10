@@ -2,7 +2,7 @@ import * as d3 from 'd3'
 import { HeatmapDatum, IAssayData, CubeDatum, Filter } from '../../../typings/CubeData';
 import { HeatmapProps } from '../HeatmapSelector';
 import { AxisDatum } from '../HeatmapSelector';
-import { Axis } from 'd3';
+import { Axis, select } from 'd3';
 import { List } from 'immutable';
 // ================================================================== //
 /* 
@@ -35,10 +35,12 @@ It takes the following arguments:
 
 
 export const drawHeatmap = (props: HeatmapProps) => {
-  // debugger
+  // if (props.showSampleType) debugger
   const data = props.data;
   const name = props.name;
   const selected = props.selected;
+
+  // if (data.length > 0) debugger
 
   d3.select("." + name + " > *").remove();
   var svg = d3
@@ -113,28 +115,7 @@ export const drawHeatmap = (props: HeatmapProps) => {
       y1 = yaxisScale(assay) + yaxisScale.bandwidth() - 1,
       y2 = yaxisScale(assay) + yaxisScale.bandwidth() / 2,
       y3 = yaxisScale(assay) + 1;
-    return (
-      x1 +
-      "," +
-      y3 +
-      " " +
-      x2 +
-      "," +
-      y3 +
-      " " +
-      x3 +
-      "," +
-      y2 +
-      " " +
-      x2 +
-      "," +
-      y1 +
-      " " +
-      x1 +
-      "," +
-      y1 +
-      " "
-    );
+    return (`${x1},${y3} ${x2},${y3} ${x3},${y2} ${x2},${y1} ${x1},${y1} `);
   };
 
   var yaxistext = yaxislabels.selectAll("text").data(props.yaxis);
@@ -164,16 +145,21 @@ export const drawHeatmap = (props: HeatmapProps) => {
     })
     .attr("fill", "transparent")
     .attr("stroke", function (d) {
-      if (selected.getIn(["assay", "assay"]) != undefined || selected.getIn(["sampleType", "assay"]) != undefined) {
+      if (selected.getIn(["Assay", "Assay"]) != undefined || selected.getIn(["SampleType", "Assay"]) != undefined) {
         let s = false
         if (props.showSampleType) {
-          selected.getIn(["sampleType", "assay"]).forEach(memberList => {
-            if (memberList.includes(d.data.member)) s = true
-          })
+          // debugger
+          if (selected.getIn(["SampleType", "Assay"])) {
+            selected.getIn(["SampleType", "Assay"]).forEach(memberList => {
+              if (memberList.includes(d.data.member)) s = true
+            })
+          }
         } else {
-          selected.getIn(["assay", "assay"]).forEach(memberList => {
-            if (memberList.includes(d.label)) s = true
-          });
+          if (selected.getIn(["Assay", "Assay"])) {
+            selected.getIn(["Assay", "Assay"]).forEach(memberList => {
+              if (memberList.includes(d.label)) s = true
+            });
+          }
         }
         if (s) return "black"
       }
@@ -203,28 +189,7 @@ export const drawHeatmap = (props: HeatmapProps) => {
       y1 = 0,
       y2 = y1 + 5,
       y3 = y1 + 20;
-    return (
-      x1 +
-      "," +
-      y3 +
-      " " +
-      x1 +
-      "," +
-      y2 +
-      " " +
-      x2 +
-      "," +
-      y1 +
-      " " +
-      x3 +
-      "," +
-      y2 +
-      " " +
-      x3 +
-      "," +
-      y3 +
-      " "
-    );
+    return (`${x1},${y3} ${x1},${y2} ${x2},${y1} ${x3},${y2} ${x3},${y3} `);
   };
 
   var xaxis = xaxislabels.selectAll("labels").data(props.xaxis);
@@ -253,9 +218,9 @@ export const drawHeatmap = (props: HeatmapProps) => {
       })
       .attr("fill", "transparent")
       .attr("stroke", function (d) {
-        if (selected.getIn(["timepoint"]) != undefined) {
+        if (selected.getIn(["Timepoint"])) {
           let s = false
-          selected.getIn(["timepoint"]).forEach((memberList) => {
+          selected.getIn(["Timepoint"]).forEach((memberList) => {
             if (memberList.includes(d.label)) s = true
           });
           if (s) return "black"
@@ -294,29 +259,27 @@ export const drawHeatmap = (props: HeatmapProps) => {
     .attr("x", (d) => {
       return xaxisScale(d.x) + 3;
     })
-    .attr("width", xaxisScale.bandwidth() - 6)
+    .attr("width", xaxisScale.bandwidth() - 3)
     .attr("y", (d) => {
       return yaxisScale(d.y) + 3;
     })
-    .attr("height", yaxisScale.bandwidth() - 6)
+    .attr("height", yaxisScale.bandwidth() - 3)
     .style("fill", (d) => {
-      return colorScale(d.count);
+      return colorScale(d.participantCount);
     })
     .attr("stroke-width", "1px")
     .attr("stroke", function (d: HeatmapDatum<Filter>) {
-      if (selected.getIn(["assay", "timepoint"]) != undefined || selected.getIn(["assay", "sampleType"]) != undefined) {
         let s = false
-        if (props.showSampleType) {
-          selected.getIn(["assay", "sampleType"]).forEach((memberList) => {
+        if (props.showSampleType && selected.getIn(["Assay", "SampleType"])) {
+          selected.getIn(["Assay", "SampleType"]).forEach((memberList) => {
             if (memberList.includes(d.data.member)) s = true
           })
-        } else {
-          selected.getIn(["assay", "timepoint"]).forEach((memberList) => {
+        } else if (selected.getIn(["Assay", "Timepoint"])) {
+          selected.getIn(["Assay", "Timepoint"]).forEach((memberList) => {
             if (memberList.includes(d.data.member)) s = true
           });
         }
         if (s) return "black"
-      }
       return ("#e5e5e5")
     })
     .on("mouseover", function (d, i) {
@@ -328,7 +291,6 @@ export const drawHeatmap = (props: HeatmapProps) => {
       // Change style
       d3.select(this)
         .attr("stroke-width", "3px")
-        // .attr("stroke", "black")
         .attr("z-index", "10000");
       // Tooltip
       tooltip
@@ -344,16 +306,16 @@ export const drawHeatmap = (props: HeatmapProps) => {
         .style("top", t - 12 + "px");
       tooltip
         .html(
-          d.count +
+          d.participantCount +
           " participants <br>" +
-          // d.studyCount +
-          // " studies <br>" +
+          d.studyCount +
+          " studies <br>" +
           d.y +
           " at day " +
           d.x
         )
         .style("left", r - xaxisScale.bandwidth() / 2 + "px")
-        .style("top", t - 35 - 12 + "px");
+        .style("top", t - 50 - 12 + "px");
     })
     .on("mouseout", function (d, i) {
       // Reset to original
@@ -384,47 +346,13 @@ export const drawHeatmap = (props: HeatmapProps) => {
       return yaxisScale(d.y);
     })
     .attr("height", yaxisScale.bandwidth() - 1)
-    // .attr("id", function (d, i) {
-    //   return d.id;
-    // })
     .style("fill", (d) => {
-      // if (selected.indexOf(this.id) > -1) {
-      //   return "#fff766";
-      // } else {
-      return colorScale(d.count);
-      // }
+      return colorScale(d.participantCount);
     })
     .attr("stroke", (d) => {
-      // if (selected.includes(this.id)) {
-      //   return "#111111";
-      // } else {
       return "transparent";
       // }
     });
-
-  // yaxistext
-  //   .transition()
-  //   .duration(0)
-  //   .attr("x", (d) => {
-  //     return xaxisScale("0") - xaxisScale.bandwidth() - margin.left / 2;
-  //   })
-  //   .attr("y", (d) => {
-  //     return yaxisScale(d) + yaxisScale.bandwidth() / 2;
-  //   })
-  //   .attr("text-anchor", "middle")
-  //   .attr("font-size", ".8em")
-  //   .attr("dominant-baseline", "central")
-  //   .text((d) => {
-  //     return d;
-  //   });
-  // yaxispolygons
-  //   .transition()
-  //   .duration(0)
-  //   .attr("points", (d) => {
-  //     return yAxisTagPoints(d);
-  //   })
-  //   .attr("fill", "transparent")
-  //   .attr("stroke", "#e5e5e5");
 
   boxes.exit().remove();
   yaxistext.exit().remove();

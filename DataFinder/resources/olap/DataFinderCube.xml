@@ -1,13 +1,13 @@
-<!-- Cube definition -->
-<!-- https://mondrian.pentaho.com/documentation/schema.php -->
-<!-- Another example at https://github.com/LabKey/platform/blob/develop/query/resources/olap/junit.xml -->
-
 <Schema name="DataFinder" description="Cube for Data Finder">
+    <!-- Cube definition -->
+    <!-- https://mondrian.pentaho.com/documentation/schema.php -->
+    <!-- Another example at https://github.com/LabKey/platform/blob/develop/query/resources/olap/junit.xml -->
    <Cube name="DataFinderCube" visible="true" defaultMeasure="ParticipantCount" cache="true" enabled="true">
 
-        <!-- the Fact table -->
-        <Table schema="immport" name="dimDemographic" />
-        
+        <Table schema="immport" name="dimDemographic" >
+        </Table>
+
+
         <!-- Subject dimension == Essentially adding some filtering options to the fact table -->
         <Dimension visible="true" highCardinality="false" name="Subject">
             <Hierarchy visible="true" hasAll="true" uniqueKeyLevelName="Subject">
@@ -32,7 +32,8 @@
                 <Level name="ExposureProcess" visible="true" column="exposure_process" type="String" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
         </Dimension>
-        
+
+
         <!-- Study dimension == For study-level filters -->
         <Dimension name="Study" visible="true" highCardinality="false" foreignKey="study">
             <Hierarchy hasAll="true" primaryKey="study" uniqueKeyLevelName="Name">
@@ -62,7 +63,7 @@
                 </Level>
             </Hierarchy>
         </Dimension>
-        
+
         <!-- "Data" dimension == For filtering on available data. You can filter on the [Data.Assay] hierarchy for intersections of assay, timepoint, sample type -->
         <!-- or just by timepoint or sample type -->
         <Dimension name="Data" visible="true" highCardinality="false" foreignKey="subjectid">
@@ -81,8 +82,9 @@
                 <Level name="SampleType" visible="true" type="String" column="cell_type" levelType="Regular" hideMemberIf="Never"/>
                 <Level name="Assay" visible="true" type="String" column="assay" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
-        </Dimension>        
-        
+        </Dimension>       
+
+
 
         <Measure name="ParticipantCount" column="subjectid" aggregator="count" visible="true">
         </Measure>

@@ -7,6 +7,7 @@ interface LabKey {
     moduleContext: any;
     user: any;
     vis: any;
+    query: any;
 }
 interface SelectRowsResponse {
     schemaName: string;

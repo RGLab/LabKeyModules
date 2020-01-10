@@ -36,21 +36,22 @@ export interface AxisDatum<data> {
 
 // helpers
 const createHeatmapData = (data: IAssayData, showSampleType: boolean) => {
-  // if (data.assay.timepoint.length > 0) debugger;
+  // if (data.Assay.Timepoint.length > 0) debugger;
   let d: CubeDatum[];
   let heatmapData: HeatmapDatum<Filter>[];
   if (showSampleType) {
-    d = data.assay.sampleType
+    // debugger
+    d = data.Assay.SampleType
     heatmapData = d.map((cd) => {
       const m = cd.member.split(/\./)
-      const l = cd.level.split(/\./)
-      const timepoint = m[l.indexOf("timepoint")]
-      const assay = m[l.indexOf("assay")]
-      const sampleType = m[l.indexOf("sampleType")]
+      const timepoint = m[1]
+      const assay = m[0]
+      const sampleType = m[2]
       return {
         x: timepoint,
         y: assay + " (" + sampleType + ")",
-        count: cd.count,
+        participantCount: cd.participantCount,
+        studyCount: cd.studyCount,
         data: {
           level: cd.level,
           member: cd.member
@@ -58,16 +59,17 @@ const createHeatmapData = (data: IAssayData, showSampleType: boolean) => {
       }
     })
   } else {
-    d = data.assay.timepoint
+    d = data.Assay.Timepoint
     heatmapData = d.map((cd) => {
       const m = cd.member.split(/\./)
       const l = cd.level.split(/\./)
-      const timepoint = m[l.indexOf("timepoint")]
-      const assay = m[l.indexOf("assay")]
+      const timepoint = m[l.indexOf("Timepoint")]
+      const assay = m[l.indexOf("Assay")]
       return {
         x: timepoint,
         y: assay,
-        count: cd.count,
+        participantCount: cd.participantCount,
+        studyCount: cd.studyCount,
         data: {
           level: cd.level,
           member: cd.member
@@ -83,15 +85,15 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean)
   let d: CubeDatum[]
   let axisData: AxisDatum<Filter>[];
   if (axis == "x") {
-    d = data.timepoint
+    d = data.Timepoint
     axisData = d.map((cd) => { return ({ label: cd.member, data: { level: cd.level, member: cd.member } }) })
   } else if (axis == "y") {
     if (showSampleType) {
-      d = data.sampleType.assay
+      d = data.SampleType.Assay
       const getAxisText = member => (member.split(/\./)[1] + " (" + member.split(/\./)[0] + ")")
       axisData = d.map(cd => ({ label: getAxisText(cd.member), data: { level: cd.level, member: cd.member } }))
     } else {
-      d = data.assay.assay
+      d = data.Assay.Assay
       axisData = d.map((cd) => { return ({ label: cd.member, data: { level: cd.level, member: cd.member } }) })
     }
   }
@@ -172,9 +174,10 @@ export const HeatmapSelector: React.FC<HeatmapSelectorProps> = (props) => {
   }
 
   function handleClick(d: Filter) {
-    props.filterClick("data", d)()
+    props.filterClick("Data", d)()
   }
 
+  const height = yaxisData.length * 24
 
 
   return (
@@ -182,7 +185,7 @@ export const HeatmapSelector: React.FC<HeatmapSelectorProps> = (props) => {
       <Heatmap
         data={heatmapData}
         name={"heatmap"}
-        height={250}
+        height={height}
         width={800}
         xaxis={xaxisData}
         yaxis={yaxisData}

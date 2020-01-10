@@ -1,6 +1,6 @@
 import "./DataFinder.scss";
 import React, { useCallback } from 'react';
-// import { olap } from '../olap/olap.js'
+// import {olap} from '../olap/olap'
 import { CubeData, Filter, SelectedFilters } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup';
@@ -146,20 +146,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             <ActionButton text={"Reset"} onClick={getFilters} />
             <FilterSummary filters={selectedFilters} />
             <FilterDropdown
-                key={"subject"}
-                dimension={"subject"}
-                level={"age"}
-                members={cubeData.getIn(["subject", "age"]).map((e) => { return (e.get("member")) })}
+                key={"Subject"}
+                dimension={"Subject"}
+                level={"Age"}
+                members={cubeData.getIn(["Subject", "Age"]).map((e) => { return (e.get("member")) })}
                 filterClick={filterClick}
-                selected={selectedFilters.subject.get("age")} />
+                selected={selectedFilters.Subject.get("Age")} />
             <FilterDropdown
                 key={"study"}
                 dimension={"study"}
                 level={"species"}
-                members={cubeData.getIn(["study", "species"]).map((e) => { return (e.get("member")) })}
+                members={cubeData.getIn(["Study", "Species"]).map((e) => { return (e.get("member")) })}
                 filterClick={filterClick}
-                selected={selectedFilters.study.get("species")} />
-            <Barplot data={cubeData.getIn(["subject", "age"]).toJS()} name={"age"} height={300} width={500} dataRange={[0, 300]} labels={["0-10", "11-20", "21-30"]} />
+                selected={selectedFilters.Study.get("Species")} />
+            <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name={"Age"} height={300} width={500} dataRange={[0, 3000]} labels={["0-10", "11-20", "21-30"]} />
             {studyParticipantCounts.map((sdy) => {
                 if (sdy.participantCount > 0 && studyDict.get(sdy.studyName)) {
                     return (
@@ -171,12 +171,12 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             })}
             <SampleTypeCheckbox
                 toggleShowSampleType={toggleSampleType}
-                showSampleType={showSampleType}/>
+                showSampleType={showSampleType} />
             <HeatmapSelector
-                data={cubeData.data.toJS()} 
+                data={cubeData.Data.toJS()}
                 filterClick={filterClick}
                 showSampleType={showSampleType}
-                selected={selectedFilters.data} />
+                selected={selectedFilters.Data} />
             <pre>{JSON.stringify(selectedFilters.toJS(), null, 2)}</pre>
         </div>
 
@@ -188,23 +188,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 export const App: React.FC = () => {
 
     const [cubeReady, setCubeReady] = React.useState(false)
-
-    // const dfcube = olap.CubeManager.getCube({
-    //     configId: 'DataFinder:/DataFinderCube',
-    //     schemaName: 'immport',
-    //     name: 'DataFinderCube',
-    //     deferLoad: false,
-    //     memberExclusionFields: ["[Subject].[Subject]"]
-    // })
-
+    // debugger
+    const dfcube = LABKEY.query.olap.CubeManager.getCube({
+        configId: 'DataFinder:/DataFinderCube',
+        schemaName: 'DataFinder',
+        name: 'DataFinderCube'
+    })
     React.useEffect(() => {
-        // dfcube.onReady((mdx) => {
-        setCubeReady(true)
-        // })
+        dfcube.onReady((mdx) => {
+            setCubeReady(true)
+        })
     }, [])
 
     if (cubeReady) {
-        return <DataFinderController mdx={{}} />
+        return <DataFinderController mdx={dfcube.mdx} />
     }
     return <div></div>
 }

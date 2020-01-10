@@ -109,7 +109,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
     const assays = [];
     study.heatmapData.map((e, i) => {
         const assay = e.member.split(/\./)[e.level.split(/\./).indexOf("assay")]
-        if ( assays.indexOf(assay) === -1 && e.count > 0) {
+        if ( assays.indexOf(assay) === -1 && e.participantCount > 0) {
             assays.push(assay);
         }
     });
@@ -121,7 +121,8 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             {
                 x: timepoint,
                 y: assay,
-                count: e.count,
+                participantCount: e.participantCount,
+                studyCount: e.studyCount,
                 data: undefined
             }
         )

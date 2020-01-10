@@ -25,7 +25,7 @@ export interface CubeLevel {
     id: string;
     name: string;
     propertyName: string[];
-    uniquename: string;
+    uniqueName: string;
 }
 export interface CubeCell {
     coordinateList: number[];
@@ -66,8 +66,8 @@ export interface MdxConfig {
         schemaName: string;
         success: (cs: CellSet, mdx: CubeMdx, config: MdxConfig) => void;
         name: string;
-        onRows: MembersConfig;
-        onCols?: UnionConfig;
+        onRows: any;
+        onCols?: any;
         sliceFilter?: CubeFilter[];
         countFilter: CubeFilter[];
         countDistinctLevel: string;
@@ -78,7 +78,7 @@ export interface MdxConfig {
 
 export interface CubeFilter {
     level: string;
-    membersQuery: MembersConfig[];
+    membersQuery: any;
 }
 
 export interface MembersConfig {
@@ -87,5 +87,5 @@ export interface MembersConfig {
 }
 export interface UnionConfig {
     operator: string;
-    arguments: MembersConfig[]
+    arguments: any
 }
