@@ -8,6 +8,8 @@ interface LabKey {
     user: any;
     vis: any;
     query: any;
+    Ajax: any;
+    ActionURL: any
 }
 interface SelectRowsResponse {
     schemaName: string;

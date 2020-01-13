@@ -1,5 +1,4 @@
 import * as d3 from 'd3'
-import { BarplotProps } from '../Barplot';
 import { CubeDatum } from '../../../typings/CubeData';
 
 // ================================================================== //
@@ -13,14 +12,24 @@ the props:
 
 */
 // Types
+interface DrawBarplotProps {
+    data: CubeDatum[];
+    name: string;
+    width: number;
+    height: number;
+    dataRange: number[];
+    labels: string[];
+}
 
-export function drawBarplot(props: BarplotProps) {
+
+export function drawBarplot(props: DrawBarplotProps) {
     // debugger;
 
     const data = props.data;
     const name = props.name;
     const labels = props.labels;
     const dataRange = props.dataRange;
+    // debugger
     // const newLabels = [];
 
     // data.map((e, i) => {

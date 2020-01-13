@@ -58,8 +58,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         setAppliedFilters(selectedFilters)
         // set local storage
         localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(selectedFilters))
-        // call to sessionParticipantGroup.api
-
     }, [applyCounter])
 
     React.useEffect(() => {
@@ -67,11 +65,14 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         // separated from above effect so filters can pop up in banner before data is finished updating
         Promise.all([
             CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters),
-            CubeHelpers.getCubeData(mdx, selectedFilters)]).then(
-                ([spc, cd]) => {
-                    setStudyParticipantCounts(CubeHelpers.createStudyParticipantCounts(spc))
-                    setCubeData(CubeHelpers.createCubeData(cd))
-                })
+            CubeHelpers.getCubeData(mdx, selectedFilters),
+            CubeHelpers.getParticipantIds(mdx, selectedFilters)]
+        ).then(
+            ([spc, cd, pids]) => {
+                setStudyParticipantCounts(CubeHelpers.createStudyParticipantCounts(spc))
+                setCubeData(CubeHelpers.createCubeData(cd))
+                ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids)
+            })       
     }, [appliedFilters])
 
 
@@ -146,11 +147,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 {JSON.stringify(cubeData.toJS(), undefined, 2)}
                 {JSON.stringify(studyDict.toJS(), undefined, 2)}
             </pre> */}
-            <Banner filters={appliedFilters} />
             <ActionButton text={"Apply"} onClick={applyFilters} />
             <ActionButton text={"Save"} onClick={saveParticipantGroup} />
             <ActionButton text={"Clear"} onClick={clearFilters} />
             <ActionButton text={"Reset"} onClick={getFilters} />
+            <Banner filters={appliedFilters} />
             <FilterDropdown
                 key={"Subject"}
                 dimension={"Subject"}
@@ -165,7 +166,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 members={cubeData.getIn(["Study", "Species"]).map((e) => { return (e.get("member")) })}
                 filterClick={filterClick}
                 selected={selectedFilters.Study.get("Species")} />
-            <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name={"Age"} height={300} width={500} dataRange={[0, 3000]} labels={["0-10", "11-20", "21-30"]} />
+            <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name={"Age"} height={300} width={500} dataRange={[0, 3000]} />
             {studyParticipantCounts.map((sdy) => {
                 if (sdy.participantCount > 0 && studyDict.get(sdy.studyName)) {
                     return (

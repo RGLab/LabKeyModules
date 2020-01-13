@@ -10,19 +10,30 @@ import { Filter, SelectedFilters, ISelectedFilters } from '../../typings/CubeDat
 import { List, Set, Map, fromJS } from 'immutable';
 // toggle filter
 
-const createCubeFilter = (dim: string, filter: Filter) => {
-    const level: string[] = [dim, ...filter.level.split(".").map((d) => { return ("[" + d + "]") })]
-    const label: string[] = [dim, ...filter.member.split(".").map((d) => { return ("[" + d + "]") })]
-
-    return ({
-        level: level.join("."),
-        membersQuery: [label.join(".")]
-    })
-}
-
 export const createCubeFilters = (filters: SelectedFilters) => {
-    // TODO:  add filters, join where necessary
-    return ([{ "level": "[Subject].[Subject]", "membersQuery": [{ "level": "[Subject.Age].[Age]", "members": ["[Subject.Age].[> 70]"] }] }])
+    // Subject
+
+    const subjectSelectedFilters = filters.Subject
+    let subjectFilters
+    if (subjectSelectedFilters.size == 0) {
+        subjectFilters = []
+    } else {
+        // if (subjectSelectedFilters.get("Age").size > 2) debugger
+        subjectFilters = subjectSelectedFilters.map((filterList, level) => {
+            const cubeFilters = {
+                level: "[Subject].[Subject]", membersQuery: {
+                    level: "[Subject." + level + "].[" + level + "]",
+                    members: filterList.map((memberList) => ("[Subject." + level + "].[" + memberList.get(0) + "]")).toJS()
+                }
+            }
+            return (cubeFilters)
+        })
+
+
+
+
+    }
+    return ([{ "level": "[Subject].[Subject]", "membersQuery": { "level": "[Subject.Age].[Age]", "members": ["[Subject.Age].[> 70]"] } }])
 }
 
 

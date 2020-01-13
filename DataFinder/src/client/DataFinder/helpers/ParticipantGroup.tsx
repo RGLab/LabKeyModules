@@ -28,3 +28,13 @@ export const saveParticipantGroup = (groupName: string) => {
     console.log("saveParticipantGroup(" + groupName + ")")
     return(true)
 }
+
+export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
+    LABKEY.Ajax.request({
+        method: "POST",
+        url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
+        jsonData: {
+            participantIds: participantIds
+        }
+    });
+}
