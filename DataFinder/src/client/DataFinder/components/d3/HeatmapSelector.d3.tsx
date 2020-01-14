@@ -337,7 +337,7 @@ export const drawHeatmap = (props: HeatmapProps) => {
 
   boxes
     .transition()
-    .duration(100)
+    .duration(300)
     .attr("x", (d) => {
       return xaxisScale(d.x);
     })

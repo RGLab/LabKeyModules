@@ -26,7 +26,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // state -----
     const [cubeData, setCubeData] = React.useState<CubeData>(cd)
-    const [studyDict, setStudyDict] = React.useState<Map<string, StudyInfo>>(Map()); // this should only be loaded once
+    const [studyDict, setStudyDict] = React.useState({}); // this should only be loaded once
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
     const [appliedFilters, setAppliedFilters] = React.useState<SelectedFilters>(sf)
     const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(appliedFilters)
@@ -46,8 +46,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // Do these things only when the page loads --------
     React.useEffect(() => {
         // load data
-        CubeHelpers.getStudyInfoArray(mdx, appliedFilters).then((sia) => {
-            setStudyDict(CubeHelpers.createStudyDict(sia))
+        CubeHelpers.getStudyDict(mdx, appliedFilters).then((sd) => {
+            setStudyDict(sd)
         })
     }, [])
 
@@ -171,16 +171,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 members={cubeData.getIn(["Study", "Species"]).map((e) => { return (e.get("member")) })}
                 filterClick={filterClick}
                 selected={selectedFilters.Study.get("Species")} />
-            <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name={"Age"} height={300} width={500} dataRange={[0, 3000]} />
-            {studyParticipantCounts.map((sdy) => {
-                if (sdy.participantCount > 0 && studyDict.get(sdy.studyName)) {
-                    return (
-                        <StudyCard key={sdy.studyName}
-                            study={studyDict.get(sdy.studyName)}
-                            participantCount={sdy.participantCount} />
-                    )
-                }
-            })}
+            <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name={"Age"} height={200} width={500} dataRange={[0, 3000]} />
+
             <SampleTypeCheckbox
                 toggleShowSampleType={toggleSampleType}
                 showSampleType={showSampleType} />
@@ -189,10 +181,17 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 filterClick={filterClick}
                 showSampleType={showSampleType}
                 selected={selectedFilters.Data} />
+            {studyParticipantCounts.map((sdy) => {
+                if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
+                    return (
+                        <StudyCard key={sdy.studyName}
+                            study={studyDict[sdy.studyName]}
+                            participantCount={sdy.participantCount} />
+                    )
+                }
+            })}
             <pre>{JSON.stringify(selectedFilters.toJS(), null, 2)}</pre>
         </div>
-
-
     )
 
 }

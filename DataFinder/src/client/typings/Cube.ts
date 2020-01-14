@@ -69,7 +69,7 @@ export interface MdxConfig {
         onRows: any;
         onCols?: any;
         sliceFilter?: CubeFilter[];
-        countFilter: CubeFilter[];
+        countFilter?: CubeFilter[];
         countDistinctLevel: string;
         showEmpty: boolean;
         includeNullMemberInCount?: boolean;

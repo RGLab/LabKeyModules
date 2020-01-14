@@ -18,61 +18,113 @@ import * as Immutable from 'immutable'
 // TODO: Edit all functions in this file to actually make API calls using selected filters
 
 // Study info ---- 
-export const getStudyInfoArray = (mdx: CubeMdx, filters: SelectedFilters) => {
+export const getStudyDict = (mdx: CubeMdx, filters: SelectedFilters) => {
 
 
-    console.log("getStudyInfoArray()")
-    const studyInfoPromise = new Promise<StudyCardTypes.IStudyInfo[]>((resolve, reject) => {
-        const si1: StudyCardTypes.StudyInfo = new StudyCardTypes.StudyInfo({
-            assays: ["HAI", "GE"],
-            brief_title: "Very Important Study",
-            condition_studied: "influenza",
-            sample_type: ["PBMC"],
-            heatmapData: [{ level: "assay.timepoint", member: "HAI.4", participantCount: 15 },
-            { level: "assay.timepoint", member: "HAI.2", participantCount: 30 }],
-            pi_names: ["Helen Miller"],
-            program_title: "Program 1",
-            restricted: false,
-            study_accession: "SDY269",
-            totalParticipantCount: 100
+    console.log("getStudyDict")
+
+    // define a promise to get info from query
+    const studyInfo = new Promise<SelectRowsResponse>((resolve, reject) => {
+        console.log("getting studyinfo")
+        LABKEY.Query.selectRows({
+            schemaName: 'immport',
+            queryName: 'dataFinder_studyCard',
+            success: (data: SelectRowsResponse) => { resolve(data) }
         })
-        const si2: StudyCardTypes.StudyInfo = new StudyCardTypes.StudyInfo({
-            assays: ["HAI", "GE"],
-            brief_title: "Very Important Study",
-            condition_studied: "influenza",
-            sample_type: ["PBMC"],
-            heatmapData: [{ level: "assay.timepoint", member: "HAI.4", participantCount: 15 },
-            { level: "assay.timepoint", member: "HAI.2", participantCount: 30 }],
-            pi_names: ["Helen Miller"],
-            program_title: "Program 1",
-            restricted: false,
-            study_accession: "SDY28",
-            totalParticipantCount: 40
-        })
-        resolve([si1, si2])
     })
-    return studyInfoPromise
+
+
+    // Define a promise to get study counts
+    const studyCounts = new Promise<Cube.CellSet>((resolve, reject) => {
+        console.log("getting study counts")
+        mdx.query({
+            configId: "DataFinder:/DataFinderCube",
+            schemaName: 'immport',
+            success: function (cs: Cube.CellSet) {
+                console.log("got study counts")
+                resolve(cs);
+            },
+            name: 'DataFinderCube',
+            onRows: { level: "[Study].[Name]", members: "members" },
+            onCols: {
+                operator: "UNION",
+                arguments: [
+                    { level: "[Subject].[(All)]", members: "members" },
+                    { level: "[Data.Assay].[Timepoint]", members: "members" }
+                ]
+            },
+            countDistinctLevel: "[Subject].[Subject]",
+            showEmpty: false
+
+        })
+    })
+    // combine results after they have all been loaded
+    // Return the promise which will return results once completed
+    return Promise.all([studyInfo, studyCounts]).then(([studyInfoCs, studyCountCs]) => {
+        console.log("combining results")
+        // combine results and return them
+        
+        const studyDict: StudyCardTypes.StudyDict = {};
+        studyInfoCs.rows.map((e, i) => {
+            const studyInfo = {}
+            const studyName = e.study_accession;
+            // studyDict[studyName] = studyInfo;
+            studyDict[studyName] = { ...e }
+        })
+        studyCountCs.axes[1].positions.map((e, i) => {
+            const studyName = e[0].name;
+            const totalParticipantCount = studyCountCs.cells[i][0].value;
+            if (studyDict.hasOwnProperty(studyName)) {
+                studyDict[studyName] = { totalParticipantCount, ...studyDict[studyName] }
+                studyDict[studyName].heatmapData = studyCountCs.axes[0].positions.map((f, j) => {
+                    // if (j > 0) {
+                    const positionInfo = dataAssayNameToInfo(f[0].uniqueName, true)
+                    const positionCount = studyCountCs.cells[i][j].value;
+                    const heatmapDatum: CubeDatum = {
+                        level: "Assay.Timepoint",
+                        member: positionInfo.assay + "." + positionInfo.timepoint,
+                        participantCount: positionCount
+                    };
+                    return heatmapDatum
+                    // }
+
+                })
+            }
+        })
+        return(studyDict)
+    })
 }
 
-export const createStudyDict = (studyInfoArray: StudyCardTypes.IStudyInfo[]) => {
-    console.log("createStudyDict()")
 
-    const studyInfo = studyInfoArray.map((si: StudyCardTypes.IStudyInfo) => {
-        return ([si.study_accession, new StudyCardTypes.StudyInfo(si)])
-    })
-    const studyMap = Immutable.Map<string, StudyCardTypes.StudyInfo>(studyInfo)
-    return (studyMap)
-}
 
 // Update StudyParticipantCounts from Cube response
 export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
     console.log("getStudyParticipantCounts()")
 
     const studyParticipantCountPromise = new Promise<StudyCardTypes.IStudyParticipantCount[]>((resolve, reject) => {
-        const spc: StudyCardTypes.IStudyParticipantCount[] = [
-            { studyName: "SDY269", participantCount: 98 },
-            { studyName: "SDY28", participantCount: 1 }]
-        resolve(spc)
+        mdx.query({
+            configId: "DataFinder:/DataFinderCube",
+            schemaName: 'immport',
+            success: function (cs: Cube.CellSet) {
+                const spc: StudyCardTypes.IStudyParticipantCount[] = cs.cells.map((cell) => {
+                    const studyName = cell[0].positions[1][0].name
+                    const participantCount = cell[0].value
+                    return({
+                        studyName: studyName,
+                        participantCount: participantCount
+                    })
+                })
+                resolve(spc);
+            },
+            name: 'DataFinderCube',
+            onRows: { level: "[Study].[Name]", members: "members" },
+            countFilter: [{
+                level: "[Subject].[Subject]",
+                membersQuery: { level: "[Study].[Name]", members: ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[SDY1291]", "[Study].[SDY903]", "[Study].[SDY28]", "[Study].[SDY514]", "[Study].[SDY387]", "[Study].[SDY34]", "[Study].[SDY1370]", "[Study].[SDY1373]", "[Study].[SDY789]", "[Study].[SDY1260]", "[Study].[SDY1264]", "[Study].[SDY1276]", "[Study].[SDY1328]", "[Study].[SDY296]", "[Study].[SDY301]", "[Study].[SDY63]", "[Study].[SDY74]", "[Study].[SDY312]", "[Study].[SDY314]", "[Study].[SDY315]", "[Study].[SDY478]", "[Study].[SDY113]", "[Study].[SDY305]", "[Study].[SDY472]", "[Study].[SDY395]", "[Study].[SDY406]", "[Study].[SDY460]", "[Study].[SDY773]", "[Study].[SDY421]", "[Study].[SDY461]", "[Study].[SDY675]", "[Study].[SDY400]", "[Study].[SDY404]", "[Study].[SDY614]", "[Study].[SDY112]", "[Study].[SDY888]", "[Study].[SDY1109]", "[Study].[SDY67]", "[Study].[SDY61]", "[Study].[SDY508]", "[Study].[SDY517]", "[Study].[SDY520]", "[Study].[SDY640]", "[Study].[SDY144]", "[Study].[SDY162]", "[Study].[SDY167]", "[Study].[SDY18]", "[Study].[SDY180]", "[Study].[SDY207]", "[Study].[SDY820]", "[Study].[SDY887]", "[Study].[SDY269]", "[Study].[SDY1289]", "[Study].[SDY1293]", "[Study].[SDY1324]", "[Study].[SDY984]", "[Study].[SDY522]", "[Study].[SDY753]", "[Study].[SDY56]", "[Study].[SDY278]", "[Study].[SDY1294]", "[Study].[SDY1325]", "[Study].[SDY1364]", "[Study].[SDY1368]", "[Study].[SDY80]", "[Study].[SDY270]", "[Study].[SDY515]", "[Study].[SDY422]", "[Study].[SDY506]", "[Study].[SDY523]", "[Study].[SDY756]", "[Study].[SDY299]", "[Study].[SDY300]", "[Study].[SDY364]", "[Study].[SDY368]", "[Study].[SDY369]", "[Study].[SDY372]", "[Study].[SDY376]", "[Study].[SDY645]", "[Study].[SDY416]", "[Study].[SDY597]", "[Study].[SDY667]", "[Study].[SDY87]", "[Study].[SDY89]", "[Study].[SDY690]", "[Study].[SDY212]", "[Study].[SDY215]", "[Study].[SDY519]", "[Study].[SDY224]", "[Study].[SDY232]", "[Study].[SDY241]", "[Study].[SDY1041]", "[Study].[SDY1097]"] }
+            }, ...createCubeFilters(filters)],
+            countDistinctLevel: "[Subject].[Subject]",
+            showEmpty: false
+        })
     })
     return (studyParticipantCountPromise)
 }
@@ -87,41 +139,7 @@ export const createStudyParticipantCounts = (studyParticipantCountArray: StudyCa
 }
 
 const cs2cd = (cs: Cube.CellSet) => {
-    // TODO:  Make this much faster!
-    // { level: "[Subject.Race].[Race]" },
-    // { level: "[Subject.Age].[Age]"},
-    // { level: "[Subject.Gender].[Gender]"},
-    // { level: "[Study.Condition].[Condition]"},
-    // { level: "[Data.Assay].[Assay]"},
-    // { level: "[Data.Assay].[Timepoint]"},
-    // { level: "[Data.Assay].[SampleType]"},
-    // { level: "[Data.Timepoint].[Timepoint]"},
-    // { level: "[Data.SampleType].[SampleType]"},
-    // { level: "[Data.SampleType].[Assay]"}
-    // const cubeData: {
-    //     Subject: {
-    //         Race: [],
-    //         Age: [],
-    //         Gender: []
-    //     },
-    //     Study: {
-    //         Condition: [],
-    //     },
-    //     Data: {
-    //         Assay: {
-    //             Assay: [],
-    //             Timepoint: [],
-    //             SampleType: []
-    //         },
-    //         SampleType: {
-    //             SampleType: [],
-    //             Assay: []
-    //         },
-    //         Timepoint: []
-    //     }
-    // }
-
-    const results : {dim: string, levelArray: string[], data: CubeDatum}[] = cs.cells.map((cell) => {
+    const results: { dim: string, levelArray: string[], data: CubeDatum }[] = cs.cells.map((cell) => {
         const hierarchy = cell[0].positions[1][0].level.uniqueName.replace(/\[|\]/g, "") // remove "[" and "]"
         const dim = hierarchy.replace(/\..+/, "") // remove everything after and including the first "."
         let level = hierarchy.replace(/\w+\./, "") // remove everything before and including the first "."
@@ -141,7 +159,7 @@ const cs2cd = (cs: Cube.CellSet) => {
             data: {
                 level: level,
                 member: member,
-                participantCount : count
+                participantCount: count
             }
         })
     })
@@ -156,12 +174,6 @@ const cs2cd = (cs: Cube.CellSet) => {
 
 export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
     console.log("getCubeData()")
-    // const studyFilter = [{
-    //     level: "[Study].[Name]",
-    //     membersQuery: { level: "[Study].[Name]", members: ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[SDY1291]", "[Study].[SDY903]", "[Study].[SDY28]", "[Study].[SDY514]", "[Study].[SDY387]", "[Study].[SDY34]", "[Study].[SDY1370]", "[Study].[SDY1373]", "[Study].[SDY789]", "[Study].[SDY1260]", "[Study].[SDY1264]", "[Study].[SDY1276]", "[Study].[SDY1328]", "[Study].[SDY296]", "[Study].[SDY301]", "[Study].[SDY63]", "[Study].[SDY74]", "[Study].[SDY312]", "[Study].[SDY314]", "[Study].[SDY315]", "[Study].[SDY478]", "[Study].[SDY113]", "[Study].[SDY305]", "[Study].[SDY472]", "[Study].[SDY395]", "[Study].[SDY406]", "[Study].[SDY460]", "[Study].[SDY773]", "[Study].[SDY421]", "[Study].[SDY461]", "[Study].[SDY675]", "[Study].[SDY400]", "[Study].[SDY404]", "[Study].[SDY614]", "[Study].[SDY112]", "[Study].[SDY888]", "[Study].[SDY1109]", "[Study].[SDY67]", "[Study].[SDY61]", "[Study].[SDY508]", "[Study].[SDY517]", "[Study].[SDY520]", "[Study].[SDY640]", "[Study].[SDY144]", "[Study].[SDY162]", "[Study].[SDY167]", "[Study].[SDY18]", "[Study].[SDY180]", "[Study].[SDY207]", "[Study].[SDY820]", "[Study].[SDY887]", "[Study].[SDY269]", "[Study].[SDY1289]", "[Study].[SDY1293]", "[Study].[SDY1324]", "[Study].[SDY984]", "[Study].[SDY522]", "[Study].[SDY753]", "[Study].[SDY56]", "[Study].[SDY278]", "[Study].[SDY1294]", "[Study].[SDY1325]", "[Study].[SDY1364]", "[Study].[SDY1368]", "[Study].[SDY80]", "[Study].[SDY270]", "[Study].[SDY515]", "[Study].[SDY422]", "[Study].[SDY506]", "[Study].[SDY523]", "[Study].[SDY756]", "[Study].[SDY299]", "[Study].[SDY300]", "[Study].[SDY364]", "[Study].[SDY368]", "[Study].[SDY369]", "[Study].[SDY372]", "[Study].[SDY376]", "[Study].[SDY645]", "[Study].[SDY416]", "[Study].[SDY597]", "[Study].[SDY667]", "[Study].[SDY87]", "[Study].[SDY89]", "[Study].[SDY690]", "[Study].[SDY212]", "[Study].[SDY215]", "[Study].[SDY519]", "[Study].[SDY224]", "[Study].[SDY232]", "[Study].[SDY241]", "[Study].[SDY1041]", "[Study].[SDY1097]"] }
-    // }]
-    // const cubeFilters = createCubeFilters(filters)
-    // debugger
 
     const cubeData = new Promise<Cube.CellSet>((resolve, reject) => {
         // debugger
@@ -177,19 +189,19 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
                 operator: "UNION",
                 arguments: [
                     { level: "[Subject.Race].[Race]" },
-                    { level: "[Subject.Age].[Age]"},
-                    { level: "[Subject.Gender].[Gender]"},
-                    { level: "[Study.Condition].[Condition]"},
-                    { level: "[Data.Assay].[Assay]"},
-                    { level: "[Data.Assay].[Timepoint]"},
-                    { level: "[Data.Assay].[SampleType]"},
-                    { level: "[Data.Timepoint].[Timepoint]"},
-                    { level: "[Data.SampleType].[SampleType]"},
-                    { level: "[Data.SampleType].[Assay]"}
+                    { level: "[Subject.Age].[Age]" },
+                    { level: "[Subject.Gender].[Gender]" },
+                    { level: "[Study.Condition].[Condition]" },
+                    { level: "[Data.Assay].[Assay]" },
+                    { level: "[Data.Assay].[Timepoint]" },
+                    { level: "[Data.Assay].[SampleType]" },
+                    { level: "[Data.Timepoint].[Timepoint]" },
+                    { level: "[Data.SampleType].[SampleType]" },
+                    { level: "[Data.SampleType].[Assay]" }
                 ]
             },
             countFilter: [{
-                level: "[Study].[Name]",
+                level: "[Subject].[Subject]",
                 membersQuery: { level: "[Study].[Name]", members: ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[SDY1291]", "[Study].[SDY903]", "[Study].[SDY28]", "[Study].[SDY514]", "[Study].[SDY387]", "[Study].[SDY34]", "[Study].[SDY1370]", "[Study].[SDY1373]", "[Study].[SDY789]", "[Study].[SDY1260]", "[Study].[SDY1264]", "[Study].[SDY1276]", "[Study].[SDY1328]", "[Study].[SDY296]", "[Study].[SDY301]", "[Study].[SDY63]", "[Study].[SDY74]", "[Study].[SDY312]", "[Study].[SDY314]", "[Study].[SDY315]", "[Study].[SDY478]", "[Study].[SDY113]", "[Study].[SDY305]", "[Study].[SDY472]", "[Study].[SDY395]", "[Study].[SDY406]", "[Study].[SDY460]", "[Study].[SDY773]", "[Study].[SDY421]", "[Study].[SDY461]", "[Study].[SDY675]", "[Study].[SDY400]", "[Study].[SDY404]", "[Study].[SDY614]", "[Study].[SDY112]", "[Study].[SDY888]", "[Study].[SDY1109]", "[Study].[SDY67]", "[Study].[SDY61]", "[Study].[SDY508]", "[Study].[SDY517]", "[Study].[SDY520]", "[Study].[SDY640]", "[Study].[SDY144]", "[Study].[SDY162]", "[Study].[SDY167]", "[Study].[SDY18]", "[Study].[SDY180]", "[Study].[SDY207]", "[Study].[SDY820]", "[Study].[SDY887]", "[Study].[SDY269]", "[Study].[SDY1289]", "[Study].[SDY1293]", "[Study].[SDY1324]", "[Study].[SDY984]", "[Study].[SDY522]", "[Study].[SDY753]", "[Study].[SDY56]", "[Study].[SDY278]", "[Study].[SDY1294]", "[Study].[SDY1325]", "[Study].[SDY1364]", "[Study].[SDY1368]", "[Study].[SDY80]", "[Study].[SDY270]", "[Study].[SDY515]", "[Study].[SDY422]", "[Study].[SDY506]", "[Study].[SDY523]", "[Study].[SDY756]", "[Study].[SDY299]", "[Study].[SDY300]", "[Study].[SDY364]", "[Study].[SDY368]", "[Study].[SDY369]", "[Study].[SDY372]", "[Study].[SDY376]", "[Study].[SDY645]", "[Study].[SDY416]", "[Study].[SDY597]", "[Study].[SDY667]", "[Study].[SDY87]", "[Study].[SDY89]", "[Study].[SDY690]", "[Study].[SDY212]", "[Study].[SDY215]", "[Study].[SDY519]", "[Study].[SDY224]", "[Study].[SDY232]", "[Study].[SDY241]", "[Study].[SDY1041]", "[Study].[SDY1097]"] }
             }, ...createCubeFilters(filters)],
             countDistinctLevel: "[Subject].[Subject]",
@@ -219,7 +231,8 @@ export const getParticipantIds = (mdx: CubeMdx, filters: SelectedFilters) => {
                 resolve(pids)
             },
             name: 'DataFinderCube',
-            onRows: { level: "[Subject].[Subject]"
+            onRows: {
+                level: "[Subject].[Subject]"
             },
             countFilter: [{
                 level: "[Study].[Name]",

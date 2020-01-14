@@ -58,7 +58,7 @@ export class StudyInfo extends Record({
 
 
 export interface StudyDict {
-    [index: string]: StudyInfo;
+    [index: string]: IStudyInfo;
 }
 
 export interface SelectedStudies {
