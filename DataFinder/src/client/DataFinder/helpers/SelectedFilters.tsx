@@ -10,11 +10,21 @@ import { Filter, SelectedFilters, ISelectedFilters } from '../../typings/CubeDat
 import { List, Set, Map, fromJS } from 'immutable';
 // toggle filter
 
+interface CubeFilter {
+    level: string;
+    membersQuery: {
+        level: string;
+        members: string[] | string;
+    }
+}
+
 export const createCubeFilters = (filters: SelectedFilters) => {
     // Subject
 
     const subjectSelectedFilters = filters.Subject
-    let subjectFilters
+    const studySelectedFilters = filters.Study
+    const dataSelectedFilters = filters.Data
+    let subjectFilters, studyFilters, dataFilters
     if (subjectSelectedFilters.size == 0) {
         subjectFilters = []
     } else {
@@ -22,19 +32,64 @@ export const createCubeFilters = (filters: SelectedFilters) => {
         subjectFilters = subjectSelectedFilters.map((filterList, level) => {
             const cubeFilters = {
                 level: "[Subject].[Subject]", membersQuery: {
-                    level: "[Subject." + level + "].[" + level + "]",
-                    members: filterList.map((memberList) => ("[Subject." + level + "].[" + memberList.get(0) + "]")).toJS()
+                    level: `[Subject.${level}].[${level}]`,
+                    members: filterList.map((memberList) => (`[Subject.${level}].[${memberList.get(0)}]`)).toJS()
                 }
             }
             return (cubeFilters)
-        })
-
-
-
-
+        }).valueSeq().toJS()
     }
-    return ([{ "level": "[Subject].[Subject]", "membersQuery": { "level": "[Subject.Age].[Age]", "members": ["[Subject.Age].[> 70]"] } }])
+    if (studySelectedFilters.size == 0) {
+        studyFilters = []
+    } else {
+        studyFilters = studySelectedFilters.map((filterList, level) => {
+            const cubeFilters = {
+                level: "[Subject].[Subject]", membersQuery: {
+                    level: `[Study.${level}].[${level}]`,
+                    members: filterList.map((memberList) => (`[Study.${level}].[${memberList.get(0)}]`)).toJS()
+                }
+            }
+            return (cubeFilters)
+        }).valueSeq().toJS()
+    }
+    if (dataSelectedFilters.size == 0) {
+        dataFilters = []
+    } else {
+        dataFilters = dataSelectedFilters.map((filterListOrMap: any, hierarchy) => {
+            if (hierarchy == "Assay" || hierarchy == "SampleType") {
+                // debugger
+                const hierarchyFilters = filterListOrMap.map((filterList: List<List<string>>, level: string) => {
+                    const cubeFilters = filterList.map((memberList) => {
+                        const cubeFilter = {
+                            level: "[Subject].[Subject]", membersQuery: {
+                                level: `[Data.${hierarchy}].[${level}]`,
+                                members: memberList.map(m => ("[Data." + hierarchy + "].[" + m.split(".").join("].[") + "]")).toJS()
+                            }
+                        }
+                        return (cubeFilter)
+                    })
+                    return (cubeFilters).toJS()
+                })
+                return (hierarchyFilters.valueSeq())
+            } else if (hierarchy == "Timepoint") {
+                const cubeFilters = filterListOrMap.map((memberList: List<string>) => {
+                    const cubeFilter = {
+                        level: "[Subject].[Subject]",
+                        membersQuery: {
+                            level: "[Data.Timepoint].[Timepoint]",
+                            members: memberList.map(m => (`[Data.Timepoint].[${m}]`))
+                        }
+                    }
+                    return (cubeFilter)
+                })
+                return (cubeFilters)
+            }
+        }).valueSeq().toJS()
+    }
+    // debugger
+    return [...subjectFilters, ...studyFilters, ...dataFilters.flat(2)]
 }
+
 
 
 export const toggleFilter = (dim: string, level: string, member: string, selectedFilters: SelectedFilters) => {

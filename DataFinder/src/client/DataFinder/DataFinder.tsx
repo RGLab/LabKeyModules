@@ -65,15 +65,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         // separated from above effect so filters can pop up in banner before data is finished updating
         Promise.all([
             CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters),
-            CubeHelpers.getCubeData(mdx, selectedFilters),
-            CubeHelpers.getParticipantIds(mdx, selectedFilters)]
+            CubeHelpers.getCubeData(mdx, selectedFilters)]
         ).then(
-            ([spc, cd, pids]) => {
+            ([spc, cd]) => {
                 setStudyParticipantCounts(CubeHelpers.createStudyParticipantCounts(spc))
                 setCubeData(CubeHelpers.createCubeData(cd))
-                ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids)
-            })       
+
+            })
     }, [appliedFilters])
+
+    React.useEffect(() => {
+        CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) =>
+            ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids)
+        )
+    }, [cubeData])
 
 
     // Save group

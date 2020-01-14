@@ -87,6 +87,40 @@ export const createStudyParticipantCounts = (studyParticipantCountArray: StudyCa
 }
 
 const cs2cd = (cs: Cube.CellSet) => {
+    // TODO:  Make this much faster!
+    // { level: "[Subject.Race].[Race]" },
+    // { level: "[Subject.Age].[Age]"},
+    // { level: "[Subject.Gender].[Gender]"},
+    // { level: "[Study.Condition].[Condition]"},
+    // { level: "[Data.Assay].[Assay]"},
+    // { level: "[Data.Assay].[Timepoint]"},
+    // { level: "[Data.Assay].[SampleType]"},
+    // { level: "[Data.Timepoint].[Timepoint]"},
+    // { level: "[Data.SampleType].[SampleType]"},
+    // { level: "[Data.SampleType].[Assay]"}
+    // const cubeData: {
+    //     Subject: {
+    //         Race: [],
+    //         Age: [],
+    //         Gender: []
+    //     },
+    //     Study: {
+    //         Condition: [],
+    //     },
+    //     Data: {
+    //         Assay: {
+    //             Assay: [],
+    //             Timepoint: [],
+    //             SampleType: []
+    //         },
+    //         SampleType: {
+    //             SampleType: [],
+    //             Assay: []
+    //         },
+    //         Timepoint: []
+    //     }
+    // }
+
     const results : {dim: string, levelArray: string[], data: CubeDatum}[] = cs.cells.map((cell) => {
         const hierarchy = cell[0].positions[1][0].level.uniqueName.replace(/\[|\]/g, "") // remove "[" and "]"
         const dim = hierarchy.replace(/\..+/, "") // remove everything after and including the first "."
@@ -111,14 +145,13 @@ const cs2cd = (cs: Cube.CellSet) => {
             }
         })
     })
-    let cubeData = new CubeData()
+    let cubeData: any = new CubeData()
     results.forEach((result) => {
         // debugger
         const members: Immutable.List<string> = cubeData.getIn([result.dim, ...result.levelArray]).push(result.data)
-        cubeData = Immutable.fromJS(cubeData.setIn([result.dim, ...result.levelArray], members).toJS())
+        cubeData = cubeData.setIn([result.dim, ...result.levelArray], members)
     });
-    // debugger
-    return cubeData
+    return Immutable.fromJS(cubeData.toJS())
 }
 
 export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
@@ -130,13 +163,14 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
     // const cubeFilters = createCubeFilters(filters)
     // debugger
 
-    const cubeData = new Promise<ICubeData>((resolve, reject) => {
+    const cubeData = new Promise<Cube.CellSet>((resolve, reject) => {
         // debugger
         mdx.query({
             configId: "DataFinder:/DataFinderCube",
             schemaName: 'immport',
             success: function (cs: Cube.CellSet, mdx, config) {
-                resolve(cs2cd(cs))
+                console.log("gotCubeData!")
+                resolve(cs)
             },
             name: 'DataFinderCube',
             onRows: {
@@ -167,13 +201,14 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
     return (cubeData)
 }
 
-export const createCubeData = (cubeData: ICubeData) => {
+export const createCubeData = (cellSet: Cube.CellSet) => {
     console.log("createCubeData()")
+    const cubeData = cs2cd(cellSet)
     return new CubeData(cubeData);
 }
 
 export const getParticipantIds = (mdx: CubeMdx, filters: SelectedFilters) => {
-    console.log("getCubeData()")
+    console.log("getParticipantIds()")
     const participantIds = new Promise<string[]>((resolve, reject) => {
         // debugger
         mdx.query({
