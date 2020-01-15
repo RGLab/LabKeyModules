@@ -13,6 +13,7 @@ import { FilterDropdown } from './components/FilterDropdown'
 import { FilterSummary } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
+import Tabs from "./components/Tabs";
 
 interface DataFinderControllerProps {
     mdx: any
@@ -142,7 +143,90 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
 
+    // ----- define the various tabs -----
+    const tabs = {
+        intro: {
+            content: <h1>Find Groups</h1>,
+            id: "intro",
+            tag: "intro",
+            text: "Groups"
+        },
+        data: {
+            content: <>
 
+                <ActionButton text={"Apply"} onClick={applyFilters} />
+                <SampleTypeCheckbox
+                    toggleShowSampleType={toggleSampleType}
+                    showSampleType={showSampleType} />
+                <HeatmapSelector
+                    data={cubeData.Data.toJS()}
+                    filterClick={filterClick}
+                    showSampleType={showSampleType}
+                    selected={selectedFilters.Data} />
+            </>,
+            id: "data",
+            tag: "find-data",
+            text: "By Available Data",
+            tabClass: "pull-right"
+        },
+        participant: {
+            content: <>
+
+                <ActionButton text={"Apply"} onClick={applyFilters} />
+                <FilterDropdown
+                    key={"Subject"}
+                    dimension={"Subject"}
+                    level={"Age"}
+                    members={cubeData.getIn(["Subject", "Age"]).map((e) => { return (e.get("member")) })}
+                    filterClick={filterClick}
+                    selected={selectedFilters.Subject.get("Age")} />
+                <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name={"Age"} height={200} width={500} dataRange={[0, 3000]} />
+            </>,
+            id: "participant",
+            tag: "find-participant",
+            text: "By Participant Characteristics",
+            tabClass: "pull-right"
+        },
+        study: {
+            content: <>
+                <div className="row">
+                    <div className="col-sm-3">
+                        <h2>Study Characteristics</h2>
+                        <p>
+                          Study characteristics available based on current filters
+                          <br/>
+                          <em>View individual studies in the "studies" tab</em>
+                        </p>
+                    </div>
+                    <div className="col-sm-3">
+                        <Barplot data={cubeData.getIn(["Study", "Condition"]).toJS()} name="Condition" height={200} width={300} dataRange={[0,200]}/>
+                    </div>
+                </div>
+                <ActionButton text={"Apply"} onClick={applyFilters} />
+                <FilterDropdown
+                    key={"Study"}
+                    dimension={"Study"}
+                    level={"Condition"}
+                    members={cubeData.getIn(["Study", "Condition"]).map((e) => { return (e.get("member")) })}
+                    filterClick={filterClick}
+                    selected={selectedFilters.Study.get("Condition")} />
+
+                {studyParticipantCounts.map((sdy) => {
+                    if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
+                        return (
+                            <StudyCard key={sdy.studyName}
+                                study={studyDict[sdy.studyName]}
+                                participantCount={sdy.participantCount} />
+                        )
+                    }
+                })}
+            </>,
+            id: "study",
+            tag: "find-study",
+            text: "By Study Design",
+            tabClass: "pull-right",
+        },
+    }
 
 
     return (
@@ -151,47 +235,16 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 {JSON.stringify(cubeData.toJS(), undefined, 2)}
                 {JSON.stringify(studyDict.toJS(), undefined, 2)}
             </pre> */}
-
-            <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
-            <ActionButton text={"Apply"} onClick={applyFilters} />
             <ActionButton text={"Save"} onClick={saveParticipantGroup} />
             <ActionButton text={"Clear"} onClick={clearFilters} />
             <ActionButton text={"Reset"} onClick={getFilters} />
+            <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
             <Banner filters={appliedFilters} />
-            <FilterDropdown
-                key={"Subject"}
-                dimension={"Subject"}
-                level={"Age"}
-                members={cubeData.getIn(["Subject", "Age"]).map((e) => { return (e.get("member")) })}
-                filterClick={filterClick}
-                selected={selectedFilters.Subject.get("Age")} />
-            <FilterDropdown
-                key={"study"}
-                dimension={"study"}
-                level={"species"}
-                members={cubeData.getIn(["Study", "Species"]).map((e) => { return (e.get("member")) })}
-                filterClick={filterClick}
-                selected={selectedFilters.Study.get("Species")} />
-            <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name={"Age"} height={200} width={500} dataRange={[0, 3000]} />
 
-            <SampleTypeCheckbox
-                toggleShowSampleType={toggleSampleType}
-                showSampleType={showSampleType} />
-            <HeatmapSelector
-                data={cubeData.Data.toJS()}
-                filterClick={filterClick}
-                showSampleType={showSampleType}
-                selected={selectedFilters.Data} />
-            {studyParticipantCounts.map((sdy) => {
-                if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
-                    return (
-                        <StudyCard key={sdy.studyName}
-                            study={studyDict[sdy.studyName]}
-                            participantCount={sdy.participantCount} />
-                    )
-                }
-            })}
-            <pre>{JSON.stringify(selectedFilters.toJS(), null, 2)}</pre>
+            <Tabs tabs={tabs} defaultActive="intro" />
+
+
+            {/* <pre>{JSON.stringify(selectedFilters.toJS(), null, 2)}</pre> */}
         </div>
     )
 

@@ -23,15 +23,16 @@ interface LoadDropdownProps {
 
 export const ActionButton: React.FC<ActionButtonProps> = (props) => {
     return (
-        <button onClick={props.onClick}>
+        <button onClick={props.onClick} disabled={false}>
             {props.text}
         </button>
+
     )
 }
 
 export const ActionDropdown: React.FC<ActionDropdownProps> = (props) => {
     return (
-        <div className={"dropdown"}>
+        <div className="dropdown" style={{width: "50px"}}>
             <div className="btn-group filterselector" role="group" >
                 <button className="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
                     <span>{props.title}</span>
@@ -64,11 +65,11 @@ export const LoadDropdown: React.FC<LoadDropdownProps> = ({ groups, loadParticip
         )
     })
     const clickGroup = (label, value) => {
-        return(
+        return (
             () => loadParticipantGroup(label)
         )
     }
     return (
-        <ActionDropdown title={"Load"} buttons={buttons} onClick={clickGroup}/>
+        <ActionDropdown title={"Load"} buttons={buttons} onClick={clickGroup} />
     )
 }

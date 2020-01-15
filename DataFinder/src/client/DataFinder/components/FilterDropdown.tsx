@@ -14,7 +14,7 @@ export interface FilterDropdownProps {
 export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropdownProps) => {
     // if (props.selected != undefined) debugger
     return (
-        <div className={"dropdown"}>
+        <div className={"dropdown"} style={{width: "50px"}}>
             <div className="btn-group filterselector" role="group" >
                 <button className="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
                     <span>{props.level}</span>

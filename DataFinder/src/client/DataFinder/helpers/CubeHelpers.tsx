@@ -14,12 +14,9 @@ import * as StudyCardTypes from '../../typings/StudyCard'
 import { StudyParticipantCount } from '../../typings/StudyCard'
 import * as Immutable from 'immutable'
 
-// TODO: Create appropriate queries from SelectedFilters to create appropriate filters for cube request
-// TODO: Edit all functions in this file to actually make API calls using selected filters
 
 // Study info ---- 
 export const getStudyDict = (mdx: CubeMdx, filters: SelectedFilters) => {
-
 
     console.log("getStudyDict")
 
@@ -191,6 +188,7 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
                     { level: "[Subject.Age].[Age]" },
                     { level: "[Subject.Gender].[Gender]" },
                     { level: "[Study.Condition].[Condition]" },
+                    { level: "[Study.Category].[Category]"},
                     { level: "[Data.Assay].[Assay]" },
                     { level: "[Data.Assay].[Timepoint]" },
                     { level: "[Data.Assay].[SampleType]" },
@@ -246,87 +244,6 @@ export const getParticipantIds = (mdx: CubeMdx, filters: SelectedFilters) => {
     return (participantIds)
 }
 
-
-// // Create StudyDict
-// const createStudyDict_old = (mdx: CubeMdx, filters: SelectedFilters) => {
-//     console.log("creating study dict")
-//     const cubeFilters = createCubeFilters(filters);
-
-//     // define a promise to get info from query
-//     const studyInfo = new Promise<SelectRowsResponse>((resolve, reject) => {
-//         LABKEY.Query.selectRows({
-//             schemaName: 'immport',
-//             queryName: 'dataFinder_studyCard',
-//             success: (data: SelectRowsResponse) => { resolve(data) }
-//         })
-//     })
-
-//     // Define a promise to get study counts
-//     const studyCounts = new Promise<Cube.CellSet>((resolve, reject) => {
-//         console.log("getting study counts")
-//         console.log(mdx)
-//         console.log(cubeFilters)
-//         mdx.query({
-//             configId: "DataFinder:/DataFinderCube",
-//             schemaName: 'immport',
-//             success: function (cs: Cube.CellSet, mdx, config) {
-//                 console.log("got study counts")
-//                 resolve(cs);
-//             },
-//             name: 'DataFinderCube',
-//             onRows: { level: "[Study].[Name]", members: ["members"] },
-//             onCols: {
-//                 operator: "UNION",
-//                 arguments: [
-//                     { level: "[Subject].[(All)]", members: ["members"] },
-//                     { level: "[Data.Assay].[Timepoint]", members: ["members"] }
-//                 ]
-//             },
-//             countFilter: cubeFilters,
-//             countDistinctLevel: "[Subject].[Subject]",
-//             showEmpty: false
-
-//         })
-//     })
-
-//     // combine results after they have all been loaded
-//     // Return the promise which will return results once completed
-//     return Promise.all([studyInfo, studyCounts]).then((values) => {
-//         console.log("combining results")
-//         // combine results and return them
-//         const studyInfo = values[0];
-//         const studyCounts = values[1]
-//         const studyDict: StudyCardTypes.StudyDict = {};
-//         studyInfo.rows.map((e, i) => {
-//             const studyInfo: StudyCardTypes.StaticStudyInfo = {}
-//             const studyName = e.study_accession;
-//             studyDict[studyName] = studyInfo;
-//             studyDict[studyName] = { ...e }
-//         })
-//         // console.log(studyCounts)
-//         studyCounts.axes[1].positions.map((e, i) => {
-//             const studyName = e[0].name;
-//             const totalParticipantCount = studyCounts.cells[i][0].value;
-//             if (studyDict.hasOwnProperty(studyName)) {
-//                 studyDict[studyName] = { totalParticipantCount, ...studyDict[studyName] }
-//                 studyDict[studyName].heatmapData = studyCounts.axes[0].positions.map((f, j) => {
-//                     // if (j > 0) {
-//                     const positionInfo = dataAssayNameToInfo(f[0].uniqueName, true)
-//                     const positionCount = studyCounts.cells[i][j].value;
-//                     const heatmapDatum: HeatmapDatum = { ...positionInfo, count: positionCount };
-//                     return heatmapDatum
-//                     // }
-
-//                 })
-//             }
-//         })
-
-
-//         return studyDict
-//     })
-
-// }
-//console.log(studyDict)
 const dataAssayNameToInfo = (name: string, shortAssayNames: boolean = false) => {
     if (/(All)/.test(name)) { return { assay: undefined, timepoint: undefined, sampleType: undefined } }
     const s = name.slice(13).split(/\./g).map(s => s.replace(/[\[\]]/g, ""))
