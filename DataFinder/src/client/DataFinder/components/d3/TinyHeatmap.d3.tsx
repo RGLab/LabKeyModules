@@ -9,7 +9,7 @@ import { number } from 'prop-types';
 
 
 
-export function drawTinyHeatmap(props: TinyHeatmapProps) {
+export function drawTinyHeatmap(props: TinyHeatmapProps) { 
     const data = props.data;
     const name = props.name;
     const timepoints = [

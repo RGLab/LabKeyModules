@@ -193,6 +193,19 @@ export interface FilterQuery {
     }[]
 }
 
+export interface participantGroupInfo {
+    id: number;
+    label: string;
+    selected: boolean;
+    filters: {
+        [index: string]: {
+            name: string;
+            operator: string;
+            members: string[]
+        }
+    }
+}
+
 
 
 // export class CubeData extends CubeDataRecord implements ICubeData {

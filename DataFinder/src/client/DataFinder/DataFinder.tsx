@@ -8,7 +8,7 @@ import { toggleFilter } from './helpers/SelectedFilters';
 import { StudyParticipantCount, StudyInfo } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
 import { Map, List } from 'immutable';
-import { ActionButton } from './components/ActionButton'
+import { ActionButton, LoadDropdown } from './components/ActionButton'
 import { FilterDropdown } from './components/FilterDropdown'
 import { FilterSummary } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
@@ -31,6 +31,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const [appliedFilters, setAppliedFilters] = React.useState<SelectedFilters>(sf)
     const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(appliedFilters)
     const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
+    const [availableGroups, setAvailableGroups] = React.useState([])
 
     // Listeners
     const [saveCounter, setSaveCounter] = React.useState<number>(0)
@@ -49,6 +50,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         CubeHelpers.getStudyDict(mdx, appliedFilters).then((sd) => {
             setStudyDict(sd)
         })
+        ParticipantGroupHelpers.getAvailableGroups().then((data) => {
+            const groups = ParticipantGroupHelpers.createAvailableGroups(data)
+            setAvailableGroups(groups)
+            console.log(groups)
+        })
     }, [])
 
     // Do these things when certain variables are incremented --------
@@ -63,22 +69,15 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     React.useEffect(() => {
         // Update local state
         // separated from above effect so filters can pop up in banner before data is finished updating
-        Promise.all([
-            CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters),
-            CubeHelpers.getCubeData(mdx, selectedFilters)]
-        ).then(
-            ([spc, cd]) => {
-                setStudyParticipantCounts(CubeHelpers.createStudyParticipantCounts(spc))
-                setCubeData(CubeHelpers.createCubeData(cd))
-
-            })
-    }, [appliedFilters])
-
-    React.useEffect(() => {
+        CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters)
+            .then((spc) => setStudyParticipantCounts(CubeHelpers.createStudyParticipantCounts(spc)))
+        CubeHelpers.getCubeData(mdx, selectedFilters)
+            .then((cd) => setCubeData(CubeHelpers.createCubeData(cd)))
         CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) =>
             ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids)
         )
-    }, [cubeData])
+    }, [appliedFilters])
+
 
 
     // Save group
@@ -152,6 +151,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 {JSON.stringify(cubeData.toJS(), undefined, 2)}
                 {JSON.stringify(studyDict.toJS(), undefined, 2)}
             </pre> */}
+
+            <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
             <ActionButton text={"Apply"} onClick={applyFilters} />
             <ActionButton text={"Save"} onClick={saveParticipantGroup} />
             <ActionButton text={"Clear"} onClick={clearFilters} />

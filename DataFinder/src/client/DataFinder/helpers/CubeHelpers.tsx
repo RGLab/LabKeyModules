@@ -63,7 +63,7 @@ export const getStudyDict = (mdx: CubeMdx, filters: SelectedFilters) => {
     return Promise.all([studyInfo, studyCounts]).then(([studyInfoCs, studyCountCs]) => {
         console.log("combining results")
         // combine results and return them
-        
+
         const studyDict: StudyCardTypes.StudyDict = {};
         studyInfoCs.rows.map((e, i) => {
             const studyInfo = {}
@@ -77,21 +77,20 @@ export const getStudyDict = (mdx: CubeMdx, filters: SelectedFilters) => {
             if (studyDict.hasOwnProperty(studyName)) {
                 studyDict[studyName] = { totalParticipantCount, ...studyDict[studyName] }
                 studyDict[studyName].heatmapData = studyCountCs.axes[0].positions.map((f, j) => {
-                    // if (j > 0) {
-                    const positionInfo = dataAssayNameToInfo(f[0].uniqueName, true)
-                    const positionCount = studyCountCs.cells[i][j].value;
-                    const heatmapDatum: CubeDatum = {
-                        level: "Assay.Timepoint",
-                        member: positionInfo.assay + "." + positionInfo.timepoint,
-                        participantCount: positionCount
-                    };
-                    return heatmapDatum
-                    // }
+                        const positionInfo = dataAssayNameToInfo(f[0].uniqueName, true)
+                        const positionCount = studyCountCs.cells[i][j].value;
+                        const heatmapDatum: CubeDatum = {
+                            level: "Assay.Timepoint",
+                            member: positionInfo.assay + "." + positionInfo.timepoint,
+                            participantCount: positionCount
+                        };
+                        return heatmapDatum
 
                 })
             }
         })
-        return(studyDict)
+        // debugger
+        return (studyDict)
     })
 }
 
@@ -109,7 +108,7 @@ export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters
                 const spc: StudyCardTypes.IStudyParticipantCount[] = cs.cells.map((cell) => {
                     const studyName = cell[0].positions[1][0].name
                     const participantCount = cell[0].value
-                    return({
+                    return ({
                         studyName: studyName,
                         participantCount: participantCount
                     })

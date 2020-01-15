@@ -108,15 +108,16 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
     ]
     const assays = [];
     study.heatmapData.map((e, i) => {
-        const assay = e.member.split(/\./)[e.level.split(/\./).indexOf("assay")]
+        if (!e) return
+        const assay = e.member.split(/\./)[0]
         if ( assays.indexOf(assay) === -1 && e.participantCount > 0) {
             assays.push(assay);
         }
     });
     const heatmapData = study.heatmapData.map((e, i) => {
-        // debugger;
-        const assay = e.member.split(/\./)[e.level.split(/\./).indexOf("assay")]
-        const timepoint = e.member.split(/\./)[e.level.split(/\./).indexOf("timepoint")]
+        if (!e) return
+        const assay = e.member.split(/\./)[0]
+        const timepoint = e.member.split(/\./)[1]
         return (
             {
                 x: timepoint,
@@ -127,6 +128,8 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             }
         )
     })
+
+    const TinyHeatmapMemo = React.memo(TinyHeatmap, () => true)
 
     return (
         <div className="study-card">
@@ -148,7 +151,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             </div>
             <StudyProgressBar totalParticipantCount={study.totalParticipantCount} selectedParticipantCount={props.participantCount} />
             <StudyProperties studyProperties={studyProperties} />
-            <TinyHeatmap 
+            <TinyHeatmap
                 name={study.study_accession} 
                 width={260} 
                 height={30 + 10 * assays.length} 
