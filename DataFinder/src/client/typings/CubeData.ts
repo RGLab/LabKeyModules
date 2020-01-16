@@ -39,6 +39,7 @@ export interface IStudyData {
     Name?: CubeDatum[];
     Program?: CubeDatum[];
     Condition?: CubeDatum[];
+    Category: CubeDatum[];
     Species?: CubeDatum[];
     ExposureMaterial?: CubeDatum[];
     ExposureProcess?: CubeDatum[];
@@ -48,6 +49,7 @@ export class StudyData extends Record({
     Name: List<CubeDatum>(),
     Program: List<CubeDatum>(),
     Condition: List<CubeDatum>(),
+    Category: List<CubeDatum>(),
     Species: List<CubeDatum>(),
     ExposureMaterial: List<CubeDatum>(),
     ExposureProcess: List<CubeDatum>()
@@ -110,6 +112,7 @@ export class CubeData extends Record({
         Name: [],
         Program: [],
         Condition: [],
+        Category: [],
         Species: [],
         ExposureMaterial: [],
         ExposureProcess: []

@@ -39,18 +39,24 @@ export const FilterSummary = (props: FilterSummaryProps) => {
 
 
     return (
-        <div>
-            <FilterIndicatorList
-                filterClass={"study"}
-                filters={props.filters.Study}
-                title={"Study Design"} />
-            <FilterIndicatorList
-                filterClass={"participant"}
-                filters={props.filters.Subject}
-                title={"Participant Characteristics"} />
+        <div className="row filterbar">
+            <div className="col-sm-4">
+                <FilterIndicatorList
+                    filterClass={"study"}
+                    filters={props.filters.Study}
+                    title={"Study Design"} />
+            </div>
+            <div className="col-sm-4">
+                <FilterIndicatorList
+                    filterClass={"participant"}
+                    filters={props.filters.Subject}
+                    title={"Participant Characteristics"} />
+            </div>
+            <div className="col-sm-4">
             <AssayFilterIndicatorList
                 filters={props.filters.Data}
                 title={"Available Data"} />
+            </div>
         </div>
     )
 }
@@ -63,7 +69,7 @@ const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props
             props.filters.getIn(["Assay", "SampleType"]) == undefined &&
             props.filters.getIn(["SampleType", "SampleType"]) == undefined &&
             props.filters.getIn(["SampleType", "Assay"]) == undefined &&
-            props.filters.get("Timepoint") == undefined )) {
+            props.filters.get("Timepoint") == undefined)) {
         filterFlags = <em className="filter-indicator">No filters currently applied</em>
     } else {
         const filters = Map<string, List<List<string>>>({
@@ -155,7 +161,7 @@ const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props
     )
 }
 
-const FilterIndicatorList: React.FC<FilterIndicatorListProps> = ({filterClass, filters, title}) => {
+const FilterIndicatorList: React.FC<FilterIndicatorListProps> = ({ filterClass, filters, title }) => {
     // props: filter class, filters, title text
     let filterFlags
     // debugger;

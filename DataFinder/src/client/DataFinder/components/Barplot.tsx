@@ -34,9 +34,10 @@ export const Barplot: React.FC<BarplotProps> = (props) => {
         }
     });
 
+
     return (
         <div className={props.name} >
-            <svg id={"barplot-" + props.name}></svg>
+            <svg id={"barplot-container-" + props.name} ></svg>
         </div>
     );
 }

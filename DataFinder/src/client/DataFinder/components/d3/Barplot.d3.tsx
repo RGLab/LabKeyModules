@@ -28,7 +28,8 @@ export function drawBarplot(props: DrawBarplotProps) {
     const data = props.data;
     const name = props.name;
     const labels = props.labels;
-    const dataRange = props.dataRange;
+    const dataRange = [0,0];
+    data.forEach((v) => (v.participantCount > dataRange[1]) && (dataRange[1] = v.participantCount) )
     // debugger
     // const newLabels = [];
 
@@ -38,10 +39,11 @@ export function drawBarplot(props: DrawBarplotProps) {
     // });
 
     const svg = d3
-        .select("#barplot-" + name)
+        .select("#barplot-container-" + name)
         .attr("height", props.height)
         .attr("width", props.width)
-        .attr("id", "barplot-" + name);
+        .attr("id", "barplot-container-" + name)
+
 
     // Create margins
     const margin = { top: 20, right: 15, bottom: 30, left: 50 },
@@ -52,7 +54,7 @@ export function drawBarplot(props: DrawBarplotProps) {
 
     const xaxisScale = d3
         .scaleLinear()
-        .domain(dataRange)
+        .domain(dataRange).nice()
         .range([0, width]);
 
     const yaxisScale = d3
@@ -67,26 +69,29 @@ export function drawBarplot(props: DrawBarplotProps) {
     // svg.append("g")
     //     .call(d3.axisBottom(xaxisScale));
     let barplot: d3.Selection<SVGElement, any, HTMLElement, any>;
-    if (svg.selectAll("g").empty()) {
-        barplot = svg
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-            .attr("id", "barplot" + name);
-        svg.append("g")
-            .attr("id", "xaxis-labels")
-            .attr(
-                "transform",
-                "translate(" + margin.left + ", " + (height + margin.top) + ")"
-            )
-            .call(d3.axisBottom(xaxisScale));
-
-        svg.append("g")
-            .attr("id", "yaxis-labels")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-            .call(d3.axisLeft(yaxisScale));
+    if (!svg.selectAll("g").empty()) {
+        svg.select("#xaxis-labels").remove()
+        barplot=svg.select("#barplot" + name)
     } else {
-        barplot = svg.select("#barplot" + name)
+        barplot = svg
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .attr("id", "barplot" + name);
+    
+    svg.append("g")
+        .attr("id", "yaxis-labels")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .call(d3.axisLeft(yaxisScale));
     }
+
+    svg.append("g")
+        .attr("id", "xaxis-labels")
+        .attr(
+            "transform",
+            "translate(" + margin.left + ", " + (height + margin.top) + ")"
+        )
+        .call(d3.axisBottom(xaxisScale));
+
 
 
 

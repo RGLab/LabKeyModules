@@ -161,7 +161,6 @@ const cs2cd = (cs: Cube.CellSet) => {
     })
     let cubeData: any = new CubeData()
     results.forEach((result) => {
-        // debugger
         const members: Immutable.List<string> = cubeData.getIn([result.dim, ...result.levelArray]).push(result.data)
         cubeData = cubeData.setIn([result.dim, ...result.levelArray], members)
     });

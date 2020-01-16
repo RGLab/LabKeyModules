@@ -14,6 +14,7 @@ import { FilterSummary } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
 import Tabs from "./components/Tabs";
+import * as d3 from 'd3'
 
 interface DataFinderControllerProps {
     mdx: any
@@ -54,7 +55,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         ParticipantGroupHelpers.getAvailableGroups().then((data) => {
             const groups = ParticipantGroupHelpers.createAvailableGroups(data)
             setAvailableGroups(groups)
-            console.log(groups)
         })
     }, [])
 
@@ -119,6 +119,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     const clearFilters = () => {
+        d3.select("#barplot-Age")
+        // debugger;
         setSelectedFilters(new SelectedFilters());
         applyFilters()
     }
@@ -171,16 +173,40 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         },
         participant: {
             content: <>
-
+                <div className="row">
+                    <div className="col-sm-3">
+                        <h2>Participant Characteristics</h2>
+                        <p>Participant data available based on current filters</p>
+                    </div>
+                    <div className="col-sm-3">
+                        <Barplot data={cubeData.getIn(["Subject", "Gender"]).toJS()} name={"Gender"} height={200} width={250} dataRange={[0, 3000]} />
+                    </div>
+                    <div className="col-sm-3">
+                        <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name="Age" height={200} width={250} dataRange={[0,3000]} />
+                    </div>
+                </div>
                 <ActionButton text={"Apply"} onClick={applyFilters} />
                 <FilterDropdown
-                    key={"Subject"}
+                    key={"Age"}
                     dimension={"Subject"}
                     level={"Age"}
                     members={cubeData.getIn(["Subject", "Age"]).map((e) => { return (e.get("member")) })}
                     filterClick={filterClick}
                     selected={selectedFilters.Subject.get("Age")} />
-                <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name={"Age"} height={200} width={500} dataRange={[0, 3000]} />
+                <FilterDropdown
+                    key={"Race"}
+                    dimension={"Subject"}
+                    level={"Race"}
+                    members={cubeData.getIn(["Subject", "Race"]).map((e) => { return (e.get("member")) })}
+                    filterClick={filterClick}
+                    selected={selectedFilters.Subject.get("Race")} />
+                <FilterDropdown
+                    key={"Gender"}
+                    dimension={"Subject"}
+                    level={"Gender"}
+                    members={cubeData.getIn(["Subject", "Gender"]).map((e) => { return (e.get("member")) })}
+                    filterClick={filterClick}
+                    selected={selectedFilters.Subject.get("Gender")} />
             </>,
             id: "participant",
             tag: "find-participant",
@@ -193,13 +219,13 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     <div className="col-sm-3">
                         <h2>Study Characteristics</h2>
                         <p>
-                          Study characteristics available based on current filters
-                          <br/>
-                          <em>View individual studies in the "studies" tab</em>
+                            Study characteristics available based on current filters
+                          <br />
+                            <em>View individual studies in the "studies" tab</em>
                         </p>
                     </div>
                     <div className="col-sm-3">
-                        <Barplot data={cubeData.getIn(["Study", "Condition"]).toJS()} name="Condition" height={200} width={300} dataRange={[0,200]}/>
+                        <Barplot data={cubeData.getIn(["Study", "Condition"]).toJS()} name="Condition" height={200} width={300} dataRange={[0, 200]} />
                     </div>
                 </div>
                 <ActionButton text={"Apply"} onClick={applyFilters} />
@@ -210,6 +236,13 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     members={cubeData.getIn(["Study", "Condition"]).map((e) => { return (e.get("member")) })}
                     filterClick={filterClick}
                     selected={selectedFilters.Study.get("Condition")} />
+                <FilterDropdown
+                    key={"Category"}
+                    dimension={"Study"}
+                    level={"Category"}
+                    members={cubeData.getIn(["Study", "Category"]).map((e) => { return (e.get("member")) })}
+                    filterClick={filterClick}
+                    selected={selectedFilters.Study.get("Category")} />
 
                 {studyParticipantCounts.map((sdy) => {
                     if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
