@@ -1,12 +1,188 @@
 // Imports
 import * as React from 'react';
+import * as LABKEY from '@labkey/api';
+import 'regenerator-runtime/runtime';
 import './HighlightedReports.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+// @ts-ignore
+import {XYPlot, XAxis, YAxis, HorizontalBarSeries} from 'react-vis';
+
+// @ts-ignore
+// import { Barplot, BarPlotDatum, BarPlotTitles, BarPlotProps } from './components/barPlots'
 
 const ResourcesPage: React.FC = () => {
     // state using hooks
     // Keep state that must change simple (not nested)
     const [divToShow, setDivToShow] = React.useState<string>("About");
+
+    /*  -----------------------------------
+            Get data for StudyStats
+        ----------------------------------- */
+    const apiBase = LABKEY.ActionURL.getBaseURL() + '_rapi/'
+           
+    // Most Accessed
+    // const [maData, setMaData] = React.useState<Object>({}); 
+    // const [maHasError, setMaErrors] = React.useState(false);
+
+    // async function fetchLogData() {
+    //     const res = await fetch(apiBase + 'log_data');
+    //     res
+    //         .json()
+    //         .then(res => setMaData(res))
+    //         .catch(err => setMaErrors(err));
+    // }
+
+    // Most Cited
+    const [pmData, setPmData] = React.useState({}); 
+    const [pmPlotData, setPmPlotData] = React.useState([]);
+    const [pmHasError, setPmErrors] = React.useState(false);
+    // const [transformedPmData, setTransformedPmData] = React.useState({
+    //     byPubId: Array<BarPlotDatum>()
+    // });
+    // const [pmDataRange, setPmDataRange] = React.useState({
+    //     byPubId: Array<number>()
+    // });
+    // const [pmPlotData, setPmPlotData] = React.useState<BarPlotProps>({
+    //     data: [{
+    //         label: '',
+    //         value: 0,
+    //         hoverOverText: '',
+    //         datePublished: '',
+    //         studyNum: 0
+    //     }],
+    //     titles: {
+    //         x: '',
+    //         y: '',
+    //         main: ''
+    //     },
+    //     name: "",
+    //     height: 500,
+    //     width: 500,
+    //     dataRange: [],
+    //     linkBaseText: ''
+    // });
+    const [orderBy, setOrderBy] = React.useState("datePublished")
+
+    async function fetchCiteData() {
+        const res = await fetch(apiBase + 'pubmed_data');
+        res
+            .json()
+            .then(res => setPmData(res))
+            .catch(err => setPmErrors(err));
+    }
+
+    // Similar Studies
+    const [ssData, setSsData] = React.useState<Object>({}); 
+    const [ssHasError, setSsErrors] = React.useState(false);
+
+    async function fetchSdyData() {
+        const res = await fetch(apiBase + 'sdy_metadata');
+        res
+            .json()
+            .then(res => setSsData(res))
+            .catch(err => setSsErrors(err));
+    }
+        
+    React.useEffect(() => {
+        // fetchLogData();
+        fetchCiteData();
+        fetchSdyData();
+    }, []); // empty array as second arg to useEffect means only loaded on mount, not update
+
+     /*  -----------------------------------
+            Run StudyStats Transformations
+        ----------------------------------- */
+
+    // function getRangeforPlot(objectArray, elementName){
+    //     const values = objectArray.map(a => parseInt(a[elementName]))
+    //     const max = Math.max(...values)
+    //     const min = Math.min(...values)
+    //     return([min, max])
+    // }
+
+    // OLD version
+    // function transformCiteData(){
+    //     const tmpPlotData = {
+    //         // byStudy: [],
+    //         byPubId: []
+    //     };
+    //     if(Object.keys(pmData).length !== 0){
+    //         Object.keys(pmData).forEach(function(key){
+    //             let datum: BarPlotDatum =
+    //             {
+    //                 label: pmData[key].study + ": " + key,
+    //                 value: parseInt(pmData[key].citations),
+    //                 hoverOverText: pmData[key].title + " //" + pmData[key].datePublished,
+    //                 datePublished: pmData[key].datePublished,
+    //                 studyNum: pmData[key].studyNum
+    //             }
+    //             tmpPlotData.byPubId.push(datum)
+    //             // tmp.byStudy.push(
+    //             //     {
+    //             //         value: pmData[key].Citations,
+    //             //         label: pmData[key].study + ": " + pmData[key].original_id,
+    //             //         hoverOver: "http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=" + pmData[key].original_id
+    //             //     }
+    //             // )
+    //         })
+    //         setTransformedPmData(tmpPlotData);
+            
+    //         let tmpRangeData = {byPubId: Array<number>()}
+    //         tmpRangeData['byPubId'] = getRangeforPlot(tmpPlotData.byPubId, "value")
+    //         setPmDataRange(tmpRangeData)
+    //     }
+    // }
+    function transformCiteData(){
+        const data = []
+        if(Object.keys(pmData).length !== 0){
+                Object.keys(pmData).forEach(function(key){
+                    const datum =
+                    {
+                        x: parseInt(pmData[key].citations),
+                        y: pmData[key].study + ": " + key
+                        // hoverOverText: pmData[key].title + " //" + pmData[key].datePublished,
+                        // datePublished: pmData[key].datePublished,
+                        // studyNum: parseInt(pmData[key].studyNum)
+                    }
+                    data.push(datum)
+            })
+        }
+        setPmPlotData(data);
+    }
+    
+    React.useEffect(() => {
+        transformCiteData();
+    }, [pmData])
+
+    // React.useEffect(() => {
+    //     // logic for changing order
+    //     // by # citations
+    //     transformedPmData.byPubId.sort((a,b) => (a[orderBy] > b[orderBy]) ? 1 : -1)
+
+    //     // logic for updating titles
+    //     const titles: BarPlotTitles = {
+    //         x: 'Number of Citations',
+    //         y: 'Study and PubMed Id',
+    //         main: 'Number of Citations by PubMed Id'
+    //     }
+
+    //     // logic for updating props
+    //     let plotProps: BarPlotProps = {
+    //         data: transformedPmData.byPubId,
+    //         titles: titles,
+    //         name: "byPubId",
+    //         width: 1000,
+    //         height: 1000,
+    //         dataRange: pmDataRange.byPubId,
+    //         linkBaseText: 'https://www.ncbi.nlm.nih.gov/pubmed/'
+    //     }
+    //     setPmPlotData(plotProps)
+    // }, [transformedPmData, pmDataRange])
+
+    React.useEffect(() => {
+        // update ordering when orderBy changes
+    }, [orderBy])
 
     // --------- ABOUT -----------------
     const About: React.FC = () => { 
@@ -137,11 +313,57 @@ const ResourcesPage: React.FC = () => {
 
     // --------- StudyStats -----------------
     const StudyStats: React.FC = () => { 
+
+        
+       // Offer selection of plots
+
+       // update component if selection changes
+
+
         return(
             <div id="StudyStats">
-                <div id="#most-accessed">Most Accessed</div>
-                <div id="#most-cited">Most Cited</div>
-                <div id="#similar-studies">Similar Studies</div>
+                <div id="#most-accessed">
+                    <span> Most Accessed</span>
+                    {/* <span>{JSON.stringify(maData)}</span>
+                    <hr />
+                    <span>Has error: {JSON.stringify(maHasError)}</span> */}
+                </div>
+                <br></br>
+                <div id="#most-cited">
+                    <span> Most Cited</span>
+                    <br></br>
+                    {/* <span>{pmPlotData.byPubId.toString()}</span> */}
+                    {/* <span>{JSON.stringify(pmPlotData)}</span> */}
+                    {/* <Barplot data={pmPlotData.data} 
+                             titles={pmPlotData.titles}
+                             name={pmPlotData.name} 
+                             height={pmPlotData.height} 
+                             width={pmPlotData.width} 
+                             dataRange={pmPlotData.dataRange}
+                             linkBaseText={pmPlotData.linkBaseText}/> */}
+                    <XYPlot 
+                        yType={'ordinal'} 
+                        height={1000} 
+                        width={800}
+                        margin={{
+                            bottom: 50,
+                            left: 150,
+                            right: 10,
+                            top: 50
+                        }}>
+                        <HorizontalBarSeries data={pmPlotData} />
+                        <XAxis />
+                        <YAxis />
+                    </XYPlot>
+                </div>
+                <br></br>
+                <div id="#similar-studies">
+                    <span> Similar Studies</span>
+                    <br></br>
+                    {/* <span>{JSON.stringify(ssData)}</span> */}
+                    <hr />
+                    <span>Has error: {JSON.stringify(ssHasError)}</span>
+                </div>
             </div>
         )
     }
@@ -214,28 +436,31 @@ const ResourcesPage: React.FC = () => {
                 const className = "nav-item dropdown" + (divToShow == el.tag ? " active" : "");
                 const dropDownId = el.tag + "Dropdown"
 
-                const subMenuHtml = el.subMenu.map(function(subel){
+                const subMenuHtml = el.subMenu.map(function(subel, i){
                     const tag = "#" + subel.tag
                     return(
-                        <a className="dropdown-item" href={tag} onClick={() => setDivToShow(el.tag)}>{subel.text}</a>
+                        <li>
+                            <a key={i} id={subel.tag} href={tag} onClick={() => setDivToShow(el.tag)}>{subel.text}</a>
+                        </li>
                     )
                 })
 
                 return(
                     <li id={itemId} className={className}>
-                        <a className="nav-link dropdown-toggle" href={href} id={dropDownId} role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            {el.text}
+                        <a className="dropdown-toggle" href={href} id={dropDownId} role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {el.text} <span className="caret"></span>
                         </a>
-                        <div className="dropdown-menu" aria-labelledby={dropDownId}>
+                        <ul className="dropdown-menu">
                             {subMenuHtml}
-                        </div>
+                        </ul>
+                        
                     </li>
                 )
             }else{
-                const className = "nav-item" + (divToShow == el.tag ? " active" : "");
+                const className = divToShow == el.tag ? " active" : "";
                 return(
                     <li id = {itemId} className = {className}>
-                        <a className = "nav-link" href = {href} onClick={() => setDivToShow(el.tag)}>
+                        <a href = {href} onClick={() => setDivToShow(el.tag)}>
                             {el.text}
                         </a>
                     </li>
@@ -244,10 +469,12 @@ const ResourcesPage: React.FC = () => {
         })
 
         return(
-            <nav className="navbar navbar-expand-lg navbar-light bg-light">
-                <ul className="navbar-nav">
-                    {navBarElements}
-                </ul>
+            <nav className="navbar navbar-default">
+                <div className="container-fluid">
+                    <ul className="nav navbar-nav">
+                        {navBarElements}
+                    </ul>
+                </div>
             </nav>
         )
     }

@@ -1,6 +1,31 @@
-# REST API for ResourcesPage data processing
+# ---- REST API for ResourcesPage data processing ----
+# ResourcesPage/API/cronjob.R should do major pre-processing.
+# This script does any parameterized processing work and
+# serves the endpoints via the R utility Plumber.
+
+#############################################
+###              LIBRARIES                ###
+#############################################
+
 library(data.table)
 library(rjson)
+
+#############################################
+###                HELPERS                ###
+#############################################
+
+loadLocalFile <- function(fileName){
+    # pull most recent file in case any old objects persist
+    fl <- grep(paste0("\\d{4}-\\d{2}-\\d{2}_", fileName),
+               list.files(path = "/app/"), value = TRUE)
+    fl <- sort(fl, decreasing = TRUE)[[1]]
+    ret <- readRDS(paste0("/app/", fl))
+}
+
+
+#############################################
+###               ENDPOINTS               ###
+#############################################
 
 #* Most commonly downloaded (via ImmuneSpaceR) and viewed (via UI) Studies
 #* @param from The start date
@@ -16,8 +41,7 @@ function(from = NULL, to = NULL){
   if(is.null(to)){ to <- Sys.Date() }
   to <- as.POSIXct(as.Date(to), format = format)
 
-  fl <- grep("logs", list.files(path = "/app/"), value = TRUE)
-  logs_dt <- readRDS(paste0("/app/", fl))
+  logs_dt <- loadLocalFile("logs")
 
   # ImmuneSpaceR connections to a study
   ISR <- logs_dt[ grepl("ImmuneSpaceR", X11) & !is.na(X12) ]
@@ -41,29 +65,45 @@ function(from = NULL, to = NULL){
   studyStats <- merge(ISR_study, UI_study, by = "study")
 
   # Return as json object
-  return(toJSON(studyStats))
+  return(studyStats)
 }
 
 #* Studies with most citations (for use also to show most recently published papers)
 #* @get /pubmed_data
 function(){
-  fl <- grep("pubmedInfo", list.files(path = "/app/"), value = TRUE)
-  allIds <- readRDS(paste0("/app/", fl))
+  allIds <- loadLocalFile("pubmedInfo")
 
   # Get counts and order by count
-  countByStudy <- allIds[ , list(Citations = .N), by = .(study)]
-  setorder(countByStudy, -Citations)
+  countByPubId <- allIds[, .(Citations = .N,
+                             study = unique(study),
+                             datePublished = unique(datePublished),
+                             title = unique(original_title),
+                             studyNum = unique(studyNum)),
+                           by = .(original_id)]
+  setorder(countByPubId, -Citations)
+
+  # Setup for easy use in render named list with original_id
+  # as key and value {Citations: X, Study: Y, datePublished: Z}
+  res <- list()
+  for(i in seq(1:nrow(countByPubId))){
+      tmp <- as.vector(countByPubId[i,])
+      res[[i]] <- list(citations = tmp$Citations,
+                       study = tmp$study,
+                       datePublished = tmp$datePublished,
+                       studyNum = tmp$studyNum,
+                       title = tmp$title)
+  }
+  names(res) <- countByPubId$original_id
 
   # Return as json object
-  return(toJSON(countByStudy))
+  return(res)
 
 }
 
 #* Get study clusters using UMAP
 #* @get /sdy_metadata
 function(){
-  fl <- grep("sdyMetaData", list.files(path = "/app/"), value = TRUE)
-  sdyMetaData <- readRDS(paste0("/app/", fl))
+  sdyMetaData <- loadLocalFile("sdyMetaData")
 
   # Generate UMAP results
   set.seed(8)
@@ -73,5 +113,5 @@ function(){
                    stringsAsFactors = FALSE)
 
   # Return UMAP input and output for plotting
-  res <- toJSON(list(sdyMetaData, df))
+  res <- list(sdyMetaData, df)
 }

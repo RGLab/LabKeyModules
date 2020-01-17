@@ -57,8 +57,11 @@ module.exports = {
     output: {
         path: constants.outputPath(__dirname),
         publicPath: devServerURL + '/',
-        filename: "[name].js"
+        filename: "[name].js",
+        crossOriginLoading: 'anonymous'
     },
+
+    // devtool: "cheap-module-source-map", // to handle cross-origin errors
 
     resolve: {
         extensions: constants.extensions.TYPESCRIPT
