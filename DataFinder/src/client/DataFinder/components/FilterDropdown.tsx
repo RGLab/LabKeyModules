@@ -11,7 +11,7 @@ export interface FilterDropdownProps {
     selected: List<List<string>>;
 }
 
-export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropdownProps) => {
+export const FilterDropdown: React.FC<FilterDropdownProps> = (props) => {
     // if (props.selected != undefined) debugger
     return (
         <div className={"dropdown"} style={{width: "50px"}}>
@@ -49,6 +49,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = (props: FilterDropd
                         })}
                     </div>
                 </div>
+                {props.children}
 
             </div>
         </div>

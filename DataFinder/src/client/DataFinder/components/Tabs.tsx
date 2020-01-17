@@ -11,10 +11,11 @@ export interface TabProps {
             tabClass?: string;
         }
     },
-    defaultActive: string
+    defaultActive: string,
+    tabFunction?: (tabName: string) => void;
 }
 
-const Tabs: React.FC<TabProps> = ({ tabs, defaultActive }) => {
+const Tabs: React.FC<TabProps> = ({ tabs, defaultActive, tabFunction }) => {
     const [activeTab, setActiveTab] = React.useState<string>(defaultActive)
     return (
         <>
@@ -25,7 +26,7 @@ const Tabs: React.FC<TabProps> = ({ tabs, defaultActive }) => {
                             (tabs[tabName].tabClass ? tabs[tabName].tabClass : "") +
                             (tabName == activeTab ? " active" : "")}
 
-                            onClick={() => { setActiveTab(tabName) }}>
+                            onClick={() => { setActiveTab(tabName); if(tabFunction) tabFunction(tabName) }}>
                             <a href={"#tab-" + tabs[tabName].tag}
                                 data-toggle="tab"
                                 data-value={tabs[tabName].id}>{tabs[tabName].text}</a>

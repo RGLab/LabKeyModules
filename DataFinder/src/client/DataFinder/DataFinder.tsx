@@ -10,7 +10,7 @@ import { StudyCard } from './components/StudyCard'
 import { Map, List } from 'immutable';
 import { ActionButton, LoadDropdown } from './components/ActionButton'
 import { FilterDropdown } from './components/FilterDropdown'
-import { FilterSummary, Flag } from './components/FilterIndicator'
+import { FilterSummary, Flag, AssayFilterIndicatorList } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
 import Tabs from "./components/Tabs";
@@ -40,6 +40,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // Webparts
     const [participantDataWebpart, setParticipantDataWebpart] = React.useState()
+    const [dataViewsWebpart, setDataViewsWebpart] = React.useState()
 
     // Other view settings set by user
     const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
@@ -53,7 +54,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // Effects  -------------------------------------
 
-
+    // Setup ----- 
     // Do these things only when the page loads --------
     React.useEffect(() => {
         // load data
@@ -65,7 +66,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             setAvailableGroups(groups)
         })
 
-        const wp = new LABKEY.QueryWebPart({
+        const pd_wp = new LABKEY.QueryWebPart({
             renderTo: "participant-data",
             autoScroll: true,
             schemaName: 'study',
@@ -83,8 +84,15 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 wpDataRegion.disableHeaderLock();
             },
             scope: this
-        });
-        setParticipantDataWebpart(wp)
+        })
+        setParticipantDataWebpart(pd_wp)
+
+        const dv_wp = new LABKEY.WebPart({
+            partName: "Data Views",
+            renderTo: "data-views",
+            frame: "none"
+        })
+        setDataViewsWebpart(dv_wp)
     }, [])
 
     // Do these things when certain variables are incremented --------
@@ -104,8 +112,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         CubeHelpers.getCubeData(mdx, selectedFilters)
             .then((cd) => setCubeData(CubeHelpers.createCubeData(cd)))
         CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) =>
-            ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(participantDataWebpart && participantDataWebpart.render())
-        )
+            ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
+                participantDataWebpart && participantDataWebpart.render()
+            }
+            ))
     }, [appliedFilters])
 
     React.useEffect(() => {
@@ -180,7 +190,15 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         setShowSampleType(!showSampleType)
     }
 
+    const renderWepart = (tabName: string) => {
+        console.log("renderWebpart(" + tabName + ")")
+        if (tabName == "participant") { participantDataWebpart.render(); return }
+        if (tabName == "data") { dataViewsWebpart.render(); return }
+        return
+    }
 
+    // Define re-used components
+    const participantSummary = <div style={{ margin: "30px 0px" }}>{totalCounts.participant} participants from {totalCounts.study} studies</div>
     // ----- define the various tabs -----
     const tabs = {
         intro: {
@@ -191,16 +209,97 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         },
         data: {
             content: <>
+                <div className="row">
+                    <div className="col-sm-3">
+                        <h2>Assay Data Available</h2>
+                        <p>Participant Data available based on current filters</p>
+                        <br />
+                        <em>Click on a box in the heatmap to start building a filter</em>
+                    </div>
+                    <div className="col-sm-9">
+                        <SampleTypeCheckbox
+                            toggleShowSampleType={toggleSampleType}
+                            showSampleType={showSampleType} />
+                        <HeatmapSelector
+                            data={cubeData.Data.toJS()}
+                            filterClick={filterClick}
+                            showSampleType={showSampleType}
+                            selected={selectedFilters.Data} />
+                    </div>
+                </div>
+                <hr />
+                <div className="row">
 
-                <ActionButton text={"Apply"} onClick={applyFilters} />
-                <SampleTypeCheckbox
-                    toggleShowSampleType={toggleSampleType}
-                    showSampleType={showSampleType} />
-                <HeatmapSelector
-                    data={cubeData.Data.toJS()}
-                    filterClick={filterClick}
-                    showSampleType={showSampleType}
-                    selected={selectedFilters.Data} />
+                    <div className="col-sm-3">
+                        <div className="row">
+                            <div className="col-sm-6">
+                                <div className="filters-title">Filters</div>
+                            </div>
+                            <div className="col-sm-6">
+                                <ActionButton text={"Apply"} onClick={applyFilters} />
+                            </div>
+                        </div>
+                        {participantSummary}
+                    </div>
+                    <div className="col-sm-9" id="heatmap-container">
+                        <div style={{ width: "20em", float: "left", margin: "25px" }}>
+                            {selectedFilters.Data.getIn(["Assay", "Assay"]) && selectedFilters.Data.getIn(["Assay", "Assay"]).map((memberList) => {
+                                return (
+                                    <>
+                                    < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.Assay", member: memberList.get(0) })} >
+                                        {memberList.get(0) + " at any time point"}
+                                    </Flag>
+                                    AND
+                                    </>
+                                )
+                            })}
+                            {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint"]).map((memberList) => {
+                                return (
+                                    <>
+                                    < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: memberList.get(0) })} >
+                                        {memberList.get(0).split(".").join(" at ") + " days"}
+                                    </Flag>
+                                    AND
+                                    </>
+                                )
+                            })}
+                            {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType"]).map((memberList) => {
+                                const memberSplit = memberList.get(0).split(".")
+                                return (
+                                    <>
+                                    < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.SampleType", member: memberList.get(0) })} >
+                                        {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
+                                    </Flag>
+                                    AND
+                                    </>
+                                )
+                            })}
+                            {selectedFilters.Data.get("Timepoint") && selectedFilters.Data.getIn(["Timepoint"]).map((memberList) => {
+                                return (
+                                    <>
+                                    < Flag dim="sample" onDelete={filterClick("Data", { level: "Timepoint", member: memberList.get(0) })} >
+                                        {"Any assay at " + memberList.get(0) + " days"}
+                                    </Flag>
+                                    AND
+                                    </>
+                                )
+                            })}    
+                            {selectedFilters.Data.getIn(["SampleType", "Assay"]) && selectedFilters.Data.getIn(["SampleType", "Assay"]).map((memberList) => {
+                                const memberSplit = memberList.get(0).split(".")
+                                return (
+                                    <>
+                                    < Flag dim="sample" onDelete={filterClick("Data", { level: "SampleType.Assay", member: memberList.get(0) })} >
+                                        {`${memberSplit[1]} (${memberSplit[0]}) at any day`}
+                                    </Flag>
+                                    AND
+                                    </>
+                                )
+                            })}
+                            <br />
+                        </div>
+                    </div>
+                </div>
+                <div id="data-views" />
             </>,
             id: "data",
             tag: "find-data",
@@ -236,7 +335,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                 <ActionButton text={"Apply"} onClick={applyFilters} />
                             </div>
                         </div>
-                        <div style={{ margin: "30px 0px" }}>{totalCounts.participant} participants from {totalCounts.study} studies</div>
+                        {participantSummary}
                     </div>
                     <div className="col-sm-3">
                         <FilterDropdown
@@ -245,16 +344,19 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             level={"Gender"}
                             members={cubeData.getIn(["Subject", "Gender"]).map((e) => { return (e.get("member")) })}
                             filterClick={filterClick}
-                            selected={selectedFilters.Subject.get("Gender")} />
-                        {selectedFilters.Subject.get("Gender") && selectedFilters.Subject.get("Gender").map((memberList) => {
-                            return (
-                                <div style={{ width: "10em" }}>
-                                    < Flag dim="participant" onDelete={filterClick("Subject", { level: "Gender", member: memberList.get(0) })} >
-                                        {memberList.get(0)}
-                                    </Flag>
-                                </div>
-                            )
-                        })}
+                            selected={selectedFilters.Subject.get("Gender")}>
+                            <>
+                                {selectedFilters.Subject.get("Gender") && selectedFilters.Subject.get("Gender").map((memberList) => {
+                                    return (
+                                        <div style={{ width: "10em" }}>
+                                            < Flag dim="participant" onDelete={filterClick("Subject", { level: "Gender", member: memberList.get(0) })} >
+                                                {memberList.get(0)}
+                                            </Flag>
+                                        </div>
+                                    )
+                                })}
+                            </>
+                        </FilterDropdown>
                     </div>
                     <div className="col-sm-3">
                         <FilterDropdown
@@ -263,16 +365,21 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             level={"Age"}
                             members={cubeData.getIn(["Subject", "Age"]).map((e) => { return (e.get("member")) })}
                             filterClick={filterClick}
-                            selected={selectedFilters.Subject.get("Age")} />
-                        {selectedFilters.Subject.get("Age") && selectedFilters.Subject.get("Age").map((memberList) => {
-                            return (
-                                <div style={{ width: "10em" }}>
-                                    < Flag dim="participant" onDelete={filterClick("Subject", { level: "Age", member: memberList.get(0) })} >
-                                        {memberList.get(0)}
-                                    </Flag>
-                                </div>
-                            )
-                        })}
+                            selected={selectedFilters.Subject.get("Age")}>
+                            <>
+                                {selectedFilters.Subject.get("Age") && selectedFilters.Subject.get("Age").map((memberList) => {
+                                    return (
+                                        <div style={{ width: "10em" }}>
+                                            < Flag dim="participant" onDelete={filterClick("Subject", { level: "Age", member: memberList.get(0) })} >
+                                                {memberList.get(0)}
+                                            </Flag>
+                                        </div>
+                                    )
+                                })}
+                            </>
+
+                        </FilterDropdown>
+
                     </div>
                     <div className="col-sm-3">
                         <FilterDropdown
@@ -281,16 +388,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             level={"Race"}
                             members={cubeData.getIn(["Subject", "Race"]).map((e) => { return (e.get("member")) })}
                             filterClick={filterClick}
-                            selected={selectedFilters.Subject.get("Race")} />
-                        {selectedFilters.Subject.get("Race") && selectedFilters.Subject.get("Race").map((memberList) => {
-                            return (
-                                <div style={{ width: "10em" }}>
-                                    < Flag dim="participant" onDelete={filterClick("Subject", { level: "Race", member: memberList.get(0) })} >
-                                        {memberList.get(0)}
-                                    </Flag>
-                                </div>
-                            )
-                        })}
+                            selected={selectedFilters.Subject.get("Race")}>
+                            <>
+                                {selectedFilters.Subject.get("Race") && selectedFilters.Subject.get("Race").map((memberList) => {
+                                    return (
+                                        <div style={{ width: "10em" }}>
+                                            < Flag dim="participant" onDelete={filterClick("Subject", { level: "Race", member: memberList.get(0) })} >
+                                                {memberList.get(0)}
+                                            </Flag>
+                                        </div>
+                                    )
+                                })}
+                            </>
+                        </FilterDropdown>
+
                     </div>
                 </div>
                 <hr></hr>
@@ -365,7 +476,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
             <Banner filters={appliedFilters} />
 
-            <Tabs tabs={tabs} defaultActive="participant" />
+            <Tabs tabs={tabs} defaultActive="data" tabFunction={renderWepart} />
+
+            {/* Tooltip */}
+            <div id="heatmap-label" />
+            <div className="arrow-down" />
 
 
             {/* <pre>{JSON.stringify(selectedFilters.toJS(), null, 2)}</pre> */}

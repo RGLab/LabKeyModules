@@ -15,7 +15,7 @@ interface FilterIndicatorListProps {
 
 interface AssayFilterIndicatorListProps {
     filters: Map<string, Map<string, List<List<string>>> | List<List<string>>>;
-    title: string
+    title?: string
 }
 
 interface FilterIndicatorFlagProps {
@@ -61,7 +61,7 @@ export const FilterSummary = (props: FilterSummaryProps) => {
     )
 }
 
-const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props) => {
+export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props) => {
     let filterFlags;
     if (props.filters.size == 0 ||
         (props.filters.getIn(["Assay", "Timepoint"]) == undefined &&
@@ -155,7 +155,7 @@ const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props
 
     return (
         <div>
-            <h4>{props.title}</h4>
+            {props.title && <h4>{props.title}</h4>}
             {filterFlags}
         </div>
     )

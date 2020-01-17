@@ -206,8 +206,6 @@ function Heatmap(props: HeatmapProps) {
 
   return <>
     <div className={props.name} />
-    <div id="heatmap-label" />
-    <div className="arrow-down" />
   </>;
 }
 
