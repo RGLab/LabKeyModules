@@ -72,11 +72,15 @@ export const saveParticipantGroup = (groupName: string) => {
 }
 
 export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
-    LABKEY.Ajax.request({
-        method: "POST",
-        url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
-        jsonData: {
-            participantIds: participantIds
-        }
-    });
+    return new Promise((resolve, reject) => {
+        LABKEY.Ajax.request({
+            method: "POST",
+            url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
+            jsonData: {
+                participantIds: participantIds
+            },
+            success: ()=>{resolve()}
+        });
+    })
+    
 }

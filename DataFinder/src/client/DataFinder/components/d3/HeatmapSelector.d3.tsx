@@ -169,7 +169,6 @@ export const drawHeatmap = (props: HeatmapProps) => {
       // Change style
       d3.select(this)
         .attr("stroke-width", "3px")
-      // .attr("stroke", "black");
     })
     .on("mouseout", function (d) {
       // Reset to original

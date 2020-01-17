@@ -209,6 +209,11 @@ export interface participantGroupInfo {
     }
 }
 
+export interface TotalCounts {
+    study: number,
+    participant: number
+}
+
 
 
 // export class CubeData extends CubeDataRecord implements ICubeData {

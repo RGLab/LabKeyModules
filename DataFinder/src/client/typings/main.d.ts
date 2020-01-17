@@ -10,7 +10,9 @@ interface LabKey {
     query: any;
     Ajax: any;
     ActionURL: any;
-    Utils: any
+    Utils: any;
+    WebPart: any;
+    QueryWebPart: any;
 }
 interface SelectRowsResponse {
     schemaName: string;

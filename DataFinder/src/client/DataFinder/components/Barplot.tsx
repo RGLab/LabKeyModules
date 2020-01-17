@@ -7,7 +7,6 @@ export interface BarplotProps {
     name: string;
     width: number;
     height: number;
-    dataRange: number[];
 }
 
 
@@ -28,7 +27,6 @@ export const Barplot: React.FC<BarplotProps> = (props) => {
             name: props.name,
             width: props.width,
             height: props.height,
-            dataRange: props.dataRange,
             labels: createAxisData(props.data)
         });
         }

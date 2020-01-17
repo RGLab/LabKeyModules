@@ -1,7 +1,7 @@
 import "./DataFinder.scss";
 import React, { memo } from 'react';
 // import {olap} from '../olap/olap'
-import { CubeData, Filter, SelectedFilters } from '../typings/CubeData';
+import { CubeData, Filter, SelectedFilters, TotalCounts } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup';
 import { toggleFilter } from './helpers/SelectedFilters';
@@ -27,21 +27,29 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const sf = new SelectedFilters(JSON.parse(localStorage.getItem("dataFinderSelectedFilters")));
 
     // state -----
+    // Data (updated by API calls)
     const [cubeData, setCubeData] = React.useState<CubeData>(cd)
     const [studyDict, setStudyDict] = React.useState({}); // this should only be loaded once
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
+    const [availableGroups, setAvailableGroups] = React.useState([])
+    const [totalCounts, setTotalCounts] = React.useState<TotalCounts>({study: 0, participant: 0})
+
+    // Filters (updated by user)
     const [appliedFilters, setAppliedFilters] = React.useState<SelectedFilters>(sf)
     const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(appliedFilters)
+
+    // Webparts
+    const [participantDataWebpart, setParticipantDataWebpart] = React.useState()
+
+    // Other view settings set by user
     const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
-    const [availableGroups, setAvailableGroups] = React.useState([])
+
 
     // Listeners
     const [saveCounter, setSaveCounter] = React.useState<number>(0)
     const [applyCounter, setApplyCounter] = React.useState<number>(0)
     const [loadedGroup, setLoadedGroup] = React.useState<string>()
     const [groupCounter, setGroupCounter] = React.useState<number>(0);
-
-
 
     // Effects  -------------------------------------
 
@@ -56,6 +64,27 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             const groups = ParticipantGroupHelpers.createAvailableGroups(data)
             setAvailableGroups(groups)
         })
+    
+        const wp = new LABKEY.QueryWebPart({
+            renderTo: "participant-data",
+            autoScroll: true,
+            schemaName: 'study',
+            queryName: "demographics",
+            frame: 'none',
+            border: false,
+            showRecordSelectors: false,
+            showUpdateColumn: false,
+            buttonBar: {
+                position: 'top',
+                includeStandardButtons: true
+            },
+            success: function (wpDataRegion) {
+                // issue 26329: don't use header locking for a QWP in an Ext dialog window
+                wpDataRegion.disableHeaderLock();
+            },
+            scope: this
+        });
+        setParticipantDataWebpart(wp)
     }, [])
 
     // Do these things when certain variables are incremented --------
@@ -75,19 +104,26 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         CubeHelpers.getCubeData(mdx, selectedFilters)
             .then((cd) => setCubeData(CubeHelpers.createCubeData(cd)))
         CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) =>
-            ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids)
+            ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(participantDataWebpart && participantDataWebpart.render())
         )
     }, [appliedFilters])
 
-
+    React.useEffect(() => {
+        CubeHelpers.getTotalCounts(mdx, selectedFilters)
+            .then((counts) => {
+                setTotalCounts(counts)
+            })
+    }, [selectedFilters])
 
     // Save group
     React.useEffect(() => {
+        // TODO  
         // saveGroup(selectedFilters)
     }, [saveCounter])
 
     // Load group
     React.useEffect(() => {
+        // TODO  
         // load group
         // make api calls 
         applyFilters()
@@ -168,7 +204,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             </>,
             id: "data",
             tag: "find-data",
-            text: "By Available Data",
+            text: "By Available Assay Data",
             tabClass: "pull-right"
         },
         participant: {
@@ -179,34 +215,62 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         <p>Participant data available based on current filters</p>
                     </div>
                     <div className="col-sm-3">
-                        <Barplot data={cubeData.getIn(["Subject", "Gender"]).toJS()} name={"Gender"} height={200} width={250} dataRange={[0, 3000]} />
+                        <Barplot data={cubeData.getIn(["Subject", "Gender"]).toJS()} name={"Gender"} height={200} width={250} />
                     </div>
                     <div className="col-sm-3">
-                        <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name="Age" height={200} width={250} dataRange={[0,3000]} />
+                        <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name="Age" height={200} width={250} />
+                    </div>
+                    <div className="col-sm-3">
+                        <Barplot data={cubeData.getIn(["Subject", "Race"]).toJS()} name="Race" height={200} width={250} />
+                    </div>
+
+                </div>
+                <hr />
+                <div className="row">
+                    <div className="col-sm-3">
+                        <div className="row">
+                            <div className="col-sm-6">
+                                <div className="filters-title">Filters</div>
+                            </div>
+                            <div className="col-sm-6">
+                                <ActionButton text={"Apply"} onClick={applyFilters} />
+                            </div>
+                        </div>
+                        <div style={{margin: "30px 0px"}}>{totalCounts.participant} participants from {totalCounts.study} studies</div>
+                    </div>
+                    <div className="col-sm-3">
+                        <FilterDropdown
+                            key={"Gender"}
+                            dimension={"Subject"}
+                            level={"Gender"}
+                            members={cubeData.getIn(["Subject", "Gender"]).map((e) => { return (e.get("member")) })}
+                            filterClick={filterClick}
+                            selected={selectedFilters.Subject.get("Gender")} />
+                    </div>
+                    <div className="col-sm-3">
+                        <FilterDropdown
+                            key={"Age"}
+                            dimension={"Subject"}
+                            level={"Age"}
+                            members={cubeData.getIn(["Subject", "Age"]).map((e) => { return (e.get("member")) })}
+                            filterClick={filterClick}
+                            selected={selectedFilters.Subject.get("Age")} />
+                    </div>
+                    <div className="col-sm-3">
+                        <FilterDropdown
+                            key={"Race"}
+                            dimension={"Subject"}
+                            level={"Race"}
+                            members={cubeData.getIn(["Subject", "Race"]).map((e) => { return (e.get("member")) })}
+                            filterClick={filterClick}
+                            selected={selectedFilters.Subject.get("Race")} />
                     </div>
                 </div>
-                <ActionButton text={"Apply"} onClick={applyFilters} />
-                <FilterDropdown
-                    key={"Age"}
-                    dimension={"Subject"}
-                    level={"Age"}
-                    members={cubeData.getIn(["Subject", "Age"]).map((e) => { return (e.get("member")) })}
-                    filterClick={filterClick}
-                    selected={selectedFilters.Subject.get("Age")} />
-                <FilterDropdown
-                    key={"Race"}
-                    dimension={"Subject"}
-                    level={"Race"}
-                    members={cubeData.getIn(["Subject", "Race"]).map((e) => { return (e.get("member")) })}
-                    filterClick={filterClick}
-                    selected={selectedFilters.Subject.get("Race")} />
-                <FilterDropdown
-                    key={"Gender"}
-                    dimension={"Subject"}
-                    level={"Gender"}
-                    members={cubeData.getIn(["Subject", "Gender"]).map((e) => { return (e.get("member")) })}
-                    filterClick={filterClick}
-                    selected={selectedFilters.Subject.get("Gender")} />
+                <hr></hr>
+                <div className="row">
+                    <div id="participant-data" className="df-embedded-webpart"></div>
+                </div>
+
             </>,
             id: "participant",
             tag: "find-participant",
@@ -220,15 +284,15 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         <h2>Study Characteristics</h2>
                         <p>
                             Study characteristics available based on current filters
-                          <br />
-                            <em>View individual studies in the "studies" tab</em>
                         </p>
                     </div>
                     <div className="col-sm-3">
-                        <Barplot data={cubeData.getIn(["Study", "Condition"]).toJS()} name="Condition" height={200} width={300} dataRange={[0, 200]} />
+                        <Barplot data={cubeData.getIn(["Study", "Condition"]).toJS()} name="Condition" height={200} width={300} />
                     </div>
                 </div>
-                <ActionButton text={"Apply"} onClick={applyFilters} />
+
+
+
                 <FilterDropdown
                     key={"Study"}
                     dimension={"Study"}
@@ -274,7 +338,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
             <Banner filters={appliedFilters} />
 
-            <Tabs tabs={tabs} defaultActive="intro" />
+            <Tabs tabs={tabs} defaultActive="participant" />
 
 
             {/* <pre>{JSON.stringify(selectedFilters.toJS(), null, 2)}</pre> */}
