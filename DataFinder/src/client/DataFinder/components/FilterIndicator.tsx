@@ -53,9 +53,9 @@ export const FilterSummary = (props: FilterSummaryProps) => {
                     title={"Participant Characteristics"} />
             </div>
             <div className="col-sm-4">
-            <AssayFilterIndicatorList
-                filters={props.filters.Data}
-                title={"Available Data"} />
+                <AssayFilterIndicatorList
+                    filters={props.filters.Data}
+                    title={"Available Data"} />
             </div>
         </div>
     )
@@ -145,9 +145,9 @@ const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props
         filterFlags = filterText.valueSeq().map((text, i) => {
             if (text == undefined) return (undefined)
             return (
-                <div key={i} className="filter-indicator">
-                    <div className={"filter-indicator-text sample"}>{text}</div>
-                </div>
+                <Flag key={i} dim="sample" >
+                    {text}
+                </Flag>
             )
         })
     }
@@ -180,6 +180,23 @@ const FilterIndicatorList: React.FC<FilterIndicatorListProps> = ({ filterClass, 
         </div>
     )
 }
+interface FlagProps {
+    dim: string;
+    onDelete?: () => void;
+}
+export const Flag: React.FC<FlagProps> = ({ dim, onDelete,  children }) => {
+    return (
+        <div className="filter-indicator">
+            <div className={"filter-indicator-text " + dim} style={{width: onDelete ? "80%" : "100%"}}>
+                {children}
+            </div>
+            {onDelete && 
+            <button className="filterdeletor" style={{ width: "20%" }} onClick={onDelete}>
+                <span className="glyphicon glyphicon-remove">X</span>
+            </button>}
+        </div>
+    )
+}
 
 const FilterIndicatorFlag: React.FC<FilterIndicatorFlagProps> = (props) => {
     const text = props.filter.map((memberList) => {
@@ -187,20 +204,14 @@ const FilterIndicatorFlag: React.FC<FilterIndicatorFlagProps> = (props) => {
         if (memberList.size > 1) return "(" + memberList.join(" OR ") + ")"
     }).join(" AND ")
 
-    // (e.map((memberList) => {
-    //     if (memberList.size == 1) return memberList.get(0)
-    //     if (memberList.size > 1) return "(" + memberList.join(" OR ") + ")"
-    // }).join(" AND "))
-
-
-
     return (
-        <div className="filter-indicator">
-            <div className={"filter-indicator-text " + props.dim}>
-                <b>{props.level}: </b>{text}</div>
-        </div>
+        <Flag dim={props.dim}>
+            <b>{props.level}: </b>{text}
+        </Flag>
     )
 }
+
+
 
 
 

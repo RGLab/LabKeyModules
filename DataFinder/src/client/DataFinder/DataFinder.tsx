@@ -10,7 +10,7 @@ import { StudyCard } from './components/StudyCard'
 import { Map, List } from 'immutable';
 import { ActionButton, LoadDropdown } from './components/ActionButton'
 import { FilterDropdown } from './components/FilterDropdown'
-import { FilterSummary } from './components/FilterIndicator'
+import { FilterSummary, Flag } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
 import Tabs from "./components/Tabs";
@@ -32,7 +32,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const [studyDict, setStudyDict] = React.useState({}); // this should only be loaded once
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
     const [availableGroups, setAvailableGroups] = React.useState([])
-    const [totalCounts, setTotalCounts] = React.useState<TotalCounts>({study: 0, participant: 0})
+    const [totalCounts, setTotalCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
 
     // Filters (updated by user)
     const [appliedFilters, setAppliedFilters] = React.useState<SelectedFilters>(sf)
@@ -64,7 +64,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             const groups = ParticipantGroupHelpers.createAvailableGroups(data)
             setAvailableGroups(groups)
         })
-    
+
         const wp = new LABKEY.QueryWebPart({
             renderTo: "participant-data",
             autoScroll: true,
@@ -236,7 +236,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                 <ActionButton text={"Apply"} onClick={applyFilters} />
                             </div>
                         </div>
-                        <div style={{margin: "30px 0px"}}>{totalCounts.participant} participants from {totalCounts.study} studies</div>
+                        <div style={{ margin: "30px 0px" }}>{totalCounts.participant} participants from {totalCounts.study} studies</div>
                     </div>
                     <div className="col-sm-3">
                         <FilterDropdown
@@ -246,6 +246,15 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             members={cubeData.getIn(["Subject", "Gender"]).map((e) => { return (e.get("member")) })}
                             filterClick={filterClick}
                             selected={selectedFilters.Subject.get("Gender")} />
+                        {selectedFilters.Subject.get("Gender") && selectedFilters.Subject.get("Gender").map((memberList) => {
+                            return (
+                                <div style={{ width: "10em" }}>
+                                    < Flag dim="participant" onDelete={filterClick("Subject", { level: "Gender", member: memberList.get(0) })} >
+                                        {memberList.get(0)}
+                                    </Flag>
+                                </div>
+                            )
+                        })}
                     </div>
                     <div className="col-sm-3">
                         <FilterDropdown
@@ -255,6 +264,15 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             members={cubeData.getIn(["Subject", "Age"]).map((e) => { return (e.get("member")) })}
                             filterClick={filterClick}
                             selected={selectedFilters.Subject.get("Age")} />
+                        {selectedFilters.Subject.get("Age") && selectedFilters.Subject.get("Age").map((memberList) => {
+                            return (
+                                <div style={{ width: "10em" }}>
+                                    < Flag dim="participant" onDelete={filterClick("Subject", { level: "Age", member: memberList.get(0) })} >
+                                        {memberList.get(0)}
+                                    </Flag>
+                                </div>
+                            )
+                        })}
                     </div>
                     <div className="col-sm-3">
                         <FilterDropdown
@@ -264,6 +282,15 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             members={cubeData.getIn(["Subject", "Race"]).map((e) => { return (e.get("member")) })}
                             filterClick={filterClick}
                             selected={selectedFilters.Subject.get("Race")} />
+                        {selectedFilters.Subject.get("Race") && selectedFilters.Subject.get("Race").map((memberList) => {
+                            return (
+                                <div style={{ width: "10em" }}>
+                                    < Flag dim="participant" onDelete={filterClick("Subject", { level: "Race", member: memberList.get(0) })} >
+                                        {memberList.get(0)}
+                                    </Flag>
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
                 <hr></hr>
