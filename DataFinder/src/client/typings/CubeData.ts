@@ -1,5 +1,18 @@
 import { Record, fromJS, List, Map } from 'immutable';
 
+export interface GroupInfo {
+    id: number;
+    label: string;
+    selected: boolean;
+    filters: {
+        [index: string]: {
+            members: string[];
+            name: string;
+            operator: string
+        }} | SelectedFilters;
+    new?: boolean
+}
+
 export interface CubeDatum {
     level: string;
     member: string;

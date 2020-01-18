@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { participantGroupInfo } from '../../typings/CubeData';
-import { loadParticipantGroup } from '../helpers/ParticipantGroup';
+import { participantGroupInfo, GroupInfo } from '../../typings/CubeData';
 
 interface ActionButtonProps {
     onClick: () => void;
@@ -18,7 +17,7 @@ interface ActionDropdownProps {
 
 interface LoadDropdownProps {
     groups: participantGroupInfo[],
-    loadParticipantGroup: (groupName: string) => void
+    loadParticipantGroup: (groupInfo: GroupInfo) => void
 }
 
 export const ActionButton: React.FC<ActionButtonProps> = (props) => {
@@ -56,20 +55,27 @@ export const ActionDropdown: React.FC<ActionDropdownProps> = (props) => {
 }
 
 export const LoadDropdown: React.FC<LoadDropdownProps> = ({ groups, loadParticipantGroup }) => {
-    const buttons = groups.map((group) => {
-        return (
-            {
-                label: group.label,
-                value: group.id
-            }
-        )
-    })
-    const clickGroup = (label, value) => {
-        return (
-            () => loadParticipantGroup(label)
-        )
-    }
+
     return (
-        <ActionDropdown title={"Load"} buttons={buttons} onClick={clickGroup} />
+        <div className="dropdown" style={{width: "50px"}}>
+            <div className="btn-group filterselector" role="group" >
+                <button className="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
+                    <span>Load</span>
+                    <span>&#9660;</span>
+                </button>
+                <div className="dropdown-menu filter-dropdown">
+                    <div className="form-group">
+                        {groups.map((group) => {
+                            return (
+                                <button key={group.label} onClick={() => loadParticipantGroup(group)}>
+                                    {group.label}
+                                </button>
+                            )
+                        })}
+                    </div>
+                </div>
+
+            </div>
+        </div>
     )
 }

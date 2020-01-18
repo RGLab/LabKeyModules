@@ -1,7 +1,7 @@
 import "./DataFinder.scss";
 import React, { memo } from 'react';
 // import {olap} from '../olap/olap'
-import { CubeData, Filter, SelectedFilters, TotalCounts } from '../typings/CubeData';
+import { CubeData, Filter, SelectedFilters, TotalCounts, GroupInfo } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup';
 import { toggleFilter } from './helpers/SelectedFilters';
@@ -173,14 +173,14 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // ----------------
 
     // ----- participant group-related -----
-    const saveParticipantGroup = () => {
-        ParticipantGroupHelpers.saveParticipantGroup("group")
+    const saveParticipantGroup = (groupName: string) => {
+        ParticipantGroupHelpers.saveParticipantGroup(groupName)
         setSaveCounter(saveCounter + 1)
     }
 
-    const loadParticipantGroup = (groupName: string) => {
-        ParticipantGroupHelpers.loadParticipantGroup(groupName)
-        setLoadedGroup(groupName)
+    const loadParticipantGroup = (groupInfo: GroupInfo) => {
+        ParticipantGroupHelpers.loadParticipantGroup(groupInfo)
+        setLoadedGroup(groupInfo.label)
         setGroupCounter(groupCounter + 1)
     }
 
@@ -470,7 +470,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 {JSON.stringify(cubeData.toJS(), undefined, 2)}
                 {JSON.stringify(studyDict.toJS(), undefined, 2)}
             </pre> */}
-            <ActionButton text={"Save"} onClick={saveParticipantGroup} />
+            <ActionButton text={"Save"} onClick={() => saveParticipantGroup("group")} />
             <ActionButton text={"Clear"} onClick={clearFilters} />
             <ActionButton text={"Reset"} onClick={getFilters} />
             <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />

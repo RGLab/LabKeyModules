@@ -1,8 +1,8 @@
 // Functions for manipulating the selected participant group, and interfacing with 
 // the sessionParticipantGroup api
 
-import { SelectedFilters } from "../../typings/CubeData";
-import { group } from "d3";
+import { SelectedFilters, GroupInfo } from "../../typings/CubeData";
+import { local } from "d3";
 
 // TODO:
 // get list of available participant groups
@@ -32,34 +32,38 @@ export const createAvailableGroups = (data) => {
         for (var i = 0; i < data.groups.length; i++) {
             if (data.groups[i].filters !== undefined) {
                 var groupFilters = JSON.parse(data.groups[i].filters);
-                // debugger
+                console.log(groupFilters)
 
                 // remove duplicates from the filters members array
-                Object.keys(groupFilters).forEach((key) => {
+                // Object.keys(groupFilters).forEach((key) => {
                     // if (groupFilters[key].isArray) {
                     //     groupFilters[key].members = Ext4.Array.unique(value.members);
                     // }
+
                     groups.push({
                         "id": data.groups[i].id,
                         "label": data.groups[i].label,
                         "selected": false,
                         "filters": groupFilters
                     });
-                })
             }
         }
     }
+    console.log(groups)
     return groups;
 }
 
 
 // load participant group
-export const loadParticipantGroup = (groupName: string) => {
-    // get participant group info
+export const loadParticipantGroup = (groupInfo: GroupInfo) => {
+
     // set local storage
+    if (groupInfo.new) {
+        localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(groupInfo.filters))
+    }
     // set selected participants
 
-    console.log("loadParticipantGroup(" + groupName + ")")
+    console.log("loadParticipantGroup(" + groupInfo.label + ")")
     return (true);
 }
 
@@ -84,3 +88,12 @@ export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
     })
     
 }
+
+// export const loadGroupFilters = (filters: SelectedFilters | {
+//     [index: string]: {
+//         members: string[];
+//         name: string;
+//         operator: string
+//     }}) => {
+//         if filters
+//     }
