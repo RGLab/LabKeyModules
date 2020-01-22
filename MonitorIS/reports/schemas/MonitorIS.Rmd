@@ -732,7 +732,6 @@ df <- df[ df$study_accession %in% sdysInIS$name, ]
 # For each pubmedid
 base <- "http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid="
 results <- lapply(df$pubmed_id, function(id){
-    print(id)
     if(grepl("^\\d{6,10}$", id)){
         page <- read_html(paste0(base, id))
         nodes <- html_nodes(page, css = '.rslt')
