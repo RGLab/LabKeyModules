@@ -33,7 +33,6 @@ export const createAvailableGroups = (data) => {
         for (var i = 0; i < data.groups.length; i++) {
             if (data.groups[i].filters !== undefined) {
                 var groupFilters = JSON.parse(data.groups[i].filters);
-                console.log(groupFilters)
 
                 // remove duplicates from the filters members array
                 // Object.keys(groupFilters).forEach((key) => {
@@ -50,7 +49,6 @@ export const createAvailableGroups = (data) => {
             }
         }
     }
-    console.log(groups)
     return groups;
 }
 

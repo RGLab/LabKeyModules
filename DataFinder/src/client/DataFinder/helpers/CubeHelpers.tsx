@@ -164,7 +164,6 @@ const cs2cd = (cs: Cube.CellSet) => {
         const members: Immutable.List<string> = cubeData.getIn([result.dim, ...result.levelArray]).push(result.data)
         cubeData = cubeData.setIn([result.dim, ...result.levelArray], members)
     });
-    debugger
     return Immutable.fromJS(cubeData.toJS())
 }
 
