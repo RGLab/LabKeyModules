@@ -5,8 +5,23 @@
   border: 2px solid #aaaaaa;
 }
 
+.datafinder-wrapper {
+  padding: 15px;
+}
+
+.datafinder-wrapper > .tab-content {
+  background-color: #fff;
+  padding: 15px;
+  border: 1px solid #dddddd;
+  border-top: transparent;
+}
+
+.nav-tabs > li > a {
+  margin-right: 0
+}
+
 .custom-action-button {
-  margin-bottom:5px;
+  margin-bottom: 5px;
 }
 
 .filterbar {
@@ -80,10 +95,10 @@
 }
 
 .filter-dropdown {
-  padding:10px;
+  padding: 10px;
   /*left:100%;*/
   /*top:10px;*/
-  height:auto;
+  height: auto;
   max-height: 15em;
   overflow: scroll;
 }

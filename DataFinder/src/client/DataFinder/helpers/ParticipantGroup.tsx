@@ -3,6 +3,7 @@
 
 import { SelectedFilters, GroupInfo } from "../../typings/CubeData";
 import { local } from "d3";
+import { List, fromJS } from "immutable";
 
 // TODO:
 // get list of available participant groups
@@ -56,10 +57,22 @@ export const createAvailableGroups = (data) => {
 
 // load participant group
 export const loadParticipantGroup = (groupInfo: GroupInfo) => {
-
+    let sf: any
+    sf = new SelectedFilters()
+    let dim: string;
     // set local storage
     if (groupInfo.new) {
         localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(groupInfo.filters))
+    } else {
+        // convert from old filters and warn user
+        Object.keys(groupInfo.filters).forEach((level) => {
+            if (["Age", "Gender", "Race"].indexOf(level) != -1) {
+                const members = groupInfo.filters[level].members.map((uniqueName) => {
+                    return([uniqueName.split(".")[1].replace(/[\[\]]/g, "")])
+                })
+                sf = sf.setIn(["Subject",level], fromJS(members))
+            } else if (["Assay", "Category", "Condition", "SampleType", "Species", "Timepoint"]) {}
+        })
     }
     // set selected participants
 

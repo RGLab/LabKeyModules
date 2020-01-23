@@ -30,8 +30,9 @@ export const createCubeFilters = (filters: SelectedFilters) => {
     } else {
         // if (subjectSelectedFilters.get("Age").size > 2) debugger
         subjectFilters = subjectSelectedFilters.map((filterList, level) => {
+            const filterLevel = level == "Species" ? "[Study].[Name]" : "[Subject].[Subject]"
             const cubeFilters = {
-                level: "[Subject].[Subject]", membersQuery: {
+                level: filterLevel, membersQuery: {
                     level: `[Subject.${level}].[${level}]`,
                     members: filterList.map((memberList) => (`[Subject.${level}].[${memberList.get(0)}]`)).toJS()
                 }

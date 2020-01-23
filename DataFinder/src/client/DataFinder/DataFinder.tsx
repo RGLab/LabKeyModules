@@ -246,20 +246,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             {selectedFilters.Data.getIn(["Assay", "Assay"]) && selectedFilters.Data.getIn(["Assay", "Assay"]).map((memberList) => {
                                 return (
                                     <>
-                                    < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.Assay", member: memberList.get(0) })} >
-                                        {memberList.get(0) + " at any time point"}
-                                    </Flag>
-                                    AND
+                                        < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.Assay", member: memberList.get(0) })} >
+                                            {memberList.get(0) + " at any time point"}
+                                        </Flag>
+                                        AND
                                     </>
                                 )
                             })}
                             {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint"]).map((memberList) => {
                                 return (
                                     <>
-                                    < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: memberList.get(0) })} >
-                                        {memberList.get(0).split(".").join(" at ") + " days"}
-                                    </Flag>
-                                    AND
+                                        < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: memberList.get(0) })} >
+                                            {memberList.get(0).split(".").join(" at ") + " days"}
+                                        </Flag>
+                                        AND
                                     </>
                                 )
                             })}
@@ -267,31 +267,31 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                 const memberSplit = memberList.get(0).split(".")
                                 return (
                                     <>
-                                    < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.SampleType", member: memberList.get(0) })} >
-                                        {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
-                                    </Flag>
-                                    AND
+                                        < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.SampleType", member: memberList.get(0) })} >
+                                            {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
+                                        </Flag>
+                                        AND
                                     </>
                                 )
                             })}
                             {selectedFilters.Data.get("Timepoint") && selectedFilters.Data.getIn(["Timepoint"]).map((memberList) => {
                                 return (
                                     <>
-                                    < Flag dim="sample" onDelete={filterClick("Data", { level: "Timepoint", member: memberList.get(0) })} >
-                                        {"Any assay at " + memberList.get(0) + " days"}
-                                    </Flag>
-                                    AND
+                                        < Flag dim="sample" onDelete={filterClick("Data", { level: "Timepoint", member: memberList.get(0) })} >
+                                            {"Any assay at " + memberList.get(0) + " days"}
+                                        </Flag>
+                                        AND
                                     </>
                                 )
-                            })}    
+                            })}
                             {selectedFilters.Data.getIn(["SampleType", "Assay"]) && selectedFilters.Data.getIn(["SampleType", "Assay"]).map((memberList) => {
                                 const memberSplit = memberList.get(0).split(".")
                                 return (
                                     <>
-                                    < Flag dim="sample" onDelete={filterClick("Data", { level: "SampleType.Assay", member: memberList.get(0) })} >
-                                        {`${memberSplit[1]} (${memberSplit[0]}) at any day`}
-                                    </Flag>
-                                    AND
+                                        < Flag dim="sample" onDelete={filterClick("Data", { level: "SampleType.Assay", member: memberList.get(0) })} >
+                                            {`${memberSplit[1]} (${memberSplit[0]}) at any day`}
+                                        </Flag>
+                                        AND
                                     </>
                                 )
                             })}
@@ -475,8 +475,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             <ActionButton text={"Reset"} onClick={getFilters} />
             <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
             <Banner filters={appliedFilters} />
-
-            <Tabs tabs={tabs} defaultActive="data" tabFunction={renderWepart} />
+            <div className="datafinder-wrapper">
+                <Tabs tabs={tabs} defaultActive="data" tabFunction={renderWepart} />
+            </div>
 
             {/* Tooltip */}
             <div id="heatmap-label" />

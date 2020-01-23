@@ -84,8 +84,6 @@
             </Hierarchy>
         </Dimension>       
 
-
-
         <Measure name="ParticipantCount" column="subjectid" aggregator="count" visible="true">
         </Measure>
         

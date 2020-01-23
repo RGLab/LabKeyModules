@@ -137,9 +137,9 @@ export const createStudyParticipantCounts = (studyParticipantCountArray: StudyCa
 const cs2cd = (cs: Cube.CellSet) => {
     const results: { dim: string, levelArray: string[], data: CubeDatum }[] = cs.cells.map((cell) => {
         const hierarchy = cell[0].positions[1][0].level.uniqueName.replace(/\[|\]/g, "") // remove "[" and "]"
-        const dim = hierarchy.replace(/\..+/, "") // remove everything after and including the first "."
+        const cubeDim = hierarchy.replace(/\..+/, "") // remove everything after and including the first "."
         let level = hierarchy.replace(/\w+\./, "") // remove everything before and including the first "."
-        // console.log(level)
+        const dim = ["Species.Species", "ExposureMaterial.ExposureMaterial", "ExposureProcess.ExposureProcess"].indexOf(level) > -1 ? "Study" : cubeDim
         let levelArray: string[]
         if (level.match("Assay") || level.match("SampleType")) {
             levelArray = level.split(".")
@@ -164,6 +164,7 @@ const cs2cd = (cs: Cube.CellSet) => {
         const members: Immutable.List<string> = cubeData.getIn([result.dim, ...result.levelArray]).push(result.data)
         cubeData = cubeData.setIn([result.dim, ...result.levelArray], members)
     });
+    debugger
     return Immutable.fromJS(cubeData.toJS())
 }
 
@@ -186,6 +187,9 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
                     { level: "[Subject.Race].[Race]" },
                     { level: "[Subject.Age].[Age]" },
                     { level: "[Subject.Gender].[Gender]" },
+                    { level: "[Subject.ExposureMaterial].[ExposureMaterial]"},
+                    { level: "[Subject.ExposureProcess].[ExposureProcess]"},
+                    { level: "[Subject.Species].[Species]"},
                     { level: "[Study.Condition].[Condition]" },
                     { level: "[Study.Category].[Category]"},
                     { level: "[Data.Assay].[Assay]" },
