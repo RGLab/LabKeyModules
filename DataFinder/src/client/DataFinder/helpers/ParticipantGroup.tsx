@@ -49,33 +49,59 @@ export const createAvailableGroups = (data) => {
             }
         }
     }
+    console.log(groups)
     return groups;
 }
 
 
 // load participant group
-export const loadParticipantGroup = (groupInfo: GroupInfo) => {
+export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
+
+    console.log("loadParticipantGroup(" + groupInfo.label + ")")
     let sf: any
     sf = new SelectedFilters()
     let dim: string;
     // set local storage
     if (groupInfo.new) {
-        localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(groupInfo.filters))
+        sf = groupInfo.filters
     } else {
+        const missingDimensions = []
         // convert from old filters and warn user
         Object.keys(groupInfo.filters).forEach((level) => {
-            if (["Age", "Gender", "Race"].indexOf(level) != -1) {
-                const members = groupInfo.filters[level].members.map((uniqueName) => {
-                    return([uniqueName.split(".")[1].replace(/[\[\]]/g, "")])
-                })
-                sf = sf.setIn(["Subject",level], fromJS(members))
-            } else if (["Assay", "Category", "Condition", "SampleType", "Species", "Timepoint"]) {}
+            const andMembers = groupInfo.filters[level].members.map((uniqueName) => {
+                return([uniqueName.split("].[")[1].replace(/[\[\]]/g, "")])
+            })
+            const orMembers = [groupInfo.filters[level].members.map((uniqueName) => {
+                return(uniqueName.split("].[")[1].replace(/[\[\]]/g, ""))
+            })]
+            if (["Age", "Gender", "Race", "ExposureMaterial", "ExposureProcess", "Species"].indexOf(level) > -1) {
+                sf = sf.setIn(["Subject",level], fromJS(andMembers))
+            } else if (["Category", "Condition"].indexOf(level) > -1) {
+                sf = sf.setIn(["Study",level], fromJS(andMembers))
+            } else if (level == "Assay") {
+                const assayMembers = groupInfo.filters[level].operator == "OR" ? orMembers : andMembers
+                sf = sf.setIn(["Data", "Assay", "Assay"], fromJS(assayMembers))
+            } else if (level == "Timepoint") {
+                const timepointMembers = groupInfo.filters[level].operator == "OR" ? orMembers : andMembers
+                sf = sf.setIn(["Data", "Timepoint"], fromJS(timepointMembers))
+            } else if (level == "SampleType") {
+                const sampleTypeMembers = groupInfo.filters[level].operator == "OR" ? orMembers : andMembers
+                sf = sf.setIn(["Data", "SampleType", "SampleType"], fromJS(sampleTypeMembers))
+            } else {
+                missingDimensions.push(groupInfo.filters[level].name)
+            }
         })
+        // debugger
+        let msg = "Note: Converting filters from old version of Data Finder. Use 'Save' to update this filter.\n\n"
+        if (missingDimensions.length > 0) {
+            msg += "Additionally: sSome parts of this saved filter can no longer be applied. \n"
+            for (const m in missingDimensions) {
+                msg += "Filter aspect '" + missingDimensions[m] + "' not found.\n"
+            }
+        }
+        alert(msg)
     }
-    // set selected participants
-
-    console.log("loadParticipantGroup(" + groupInfo.label + ")")
-    return (true);
+    return (sf);
 }
 
 // save participant group

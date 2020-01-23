@@ -152,7 +152,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     const filterClick = (dim: string, filter: Filter) => {
-        console.log("filterClick()")
         return (() => {
             const sf = toggleFilter(dim, filter.level, filter.member, selectedFilters)
             setSelectedFilters(sf)
@@ -179,9 +178,12 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     const loadParticipantGroup = (groupInfo: GroupInfo) => {
-        ParticipantGroupHelpers.loadParticipantGroup(groupInfo)
+        const pgFilters = ParticipantGroupHelpers.getParticipantGroupFilters(groupInfo)
+        localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(pgFilters))
+        setSelectedFilters(pgFilters)
         setLoadedGroup(groupInfo.label)
         setGroupCounter(groupCounter + 1)
+        applyFilters()
     }
 
 
@@ -428,11 +430,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         <Barplot data={cubeData.getIn(["Study", "Condition"]).toJS()} name="Condition" height={200} width={300} />
                     </div>
                 </div>
-
-
-
+                <ActionButton text={"Apply"} onClick={applyFilters} />
                 <FilterDropdown
-                    key={"Study"}
+                    key={"Condition"}
                     dimension={"Study"}
                     level={"Condition"}
                     members={cubeData.getIn(["Study", "Condition"]).map((e) => { return (e.get("member")) })}
@@ -445,6 +445,29 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     members={cubeData.getIn(["Study", "Category"]).map((e) => { return (e.get("member")) })}
                     filterClick={filterClick}
                     selected={selectedFilters.Study.get("Category")} />
+                <FilterDropdown
+                    key={"ExposureMaterial"}
+                    dimension={"Subject"}
+                    level={"ExposureMaterial"}
+                    members={cubeData.getIn(["Subject", "ExposureMaterial"]).map((e) => { return (e.get("member")) })}
+                    filterClick={filterClick}
+                    selected={selectedFilters.Subject.get("ExposureMaterial")} />
+                <FilterDropdown
+                    key={"ExposureProcess"}
+                    dimension={"Subject"}
+                    level={"ExposureProcess"}
+                    members={cubeData.getIn(["Subject", "ExposureProcess"]).map((e) => { return (e.get("member")) })}
+                    filterClick={filterClick}
+                    selected={selectedFilters.Subject.get("ExposureProcess")} />
+                <FilterDropdown
+                    key={"Species"}
+                    dimension={"Subject"}
+                    level={"Species"}
+                    members={cubeData.getIn(["Subject", "Species"]).map((e) => { return (e.get("member")) })}
+                    filterClick={filterClick}
+                    selected={selectedFilters.Subject.get("Species")} />
+
+                {participantSummary}
 
                 {studyParticipantCounts.map((sdy) => {
                     if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {

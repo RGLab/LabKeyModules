@@ -32,16 +32,25 @@ export interface ISubjectData {
     Race?: CubeDatum[];
     Age?: CubeDatum[];
     Gender?: CubeDatum[];
+    Species?: CubeDatum[];
+    ExposureMaterial?: CubeDatum[];
+    ExposureProcess?: CubeDatum[];
 }
 
 export class SubjectData extends Record({
     Race: List<CubeDatum>(),
     Age: List<CubeDatum>(),
     Gender: List<CubeDatum>(),
+    Species: List<CubeDatum>(),
+    ExposureMaterial: List<CubeDatum>(),
+    ExposureProcess: List<CubeDatum>()
 }) {
     Race: List<CubeDatum>;
     Age: List<CubeDatum>;
     Gender: List<CubeDatum>;
+    Species: List<CubeDatum>;
+    ExposureMaterial: List<CubeDatum>;
+    ExposureProcess: List<CubeDatum>;
 
     constructor(params?: ISubjectData) {
         params ? super(fromJS(params)) : super()
@@ -126,9 +135,6 @@ export class CubeData extends Record({
         Program: [],
         Condition: [],
         Category: [],
-        Species: [],
-        ExposureMaterial: [],
-        ExposureProcess: []
     }),
     Data: fromJS({
         Assay: {

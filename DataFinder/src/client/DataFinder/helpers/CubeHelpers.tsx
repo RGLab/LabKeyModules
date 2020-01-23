@@ -137,9 +137,10 @@ export const createStudyParticipantCounts = (studyParticipantCountArray: StudyCa
 const cs2cd = (cs: Cube.CellSet) => {
     const results: { dim: string, levelArray: string[], data: CubeDatum }[] = cs.cells.map((cell) => {
         const hierarchy = cell[0].positions[1][0].level.uniqueName.replace(/\[|\]/g, "") // remove "[" and "]"
-        const cubeDim = hierarchy.replace(/\..+/, "") // remove everything after and including the first "."
+        const dim = hierarchy.replace(/\..+/, "") // remove everything after and including the first "."
         let level = hierarchy.replace(/\w+\./, "") // remove everything before and including the first "."
-        const dim = ["Species.Species", "ExposureMaterial.ExposureMaterial", "ExposureProcess.ExposureProcess"].indexOf(level) > -1 ? "Study" : cubeDim
+        // Move some subject filters to "study design"
+        // const dim = ["Species.Species", "ExposureMaterial.ExposureMaterial", "ExposureProcess.ExposureProcess"].indexOf(level) > -1 ? "Study" : cubeDim
         let levelArray: string[]
         if (level.match("Assay") || level.match("SampleType")) {
             levelArray = level.split(".")
