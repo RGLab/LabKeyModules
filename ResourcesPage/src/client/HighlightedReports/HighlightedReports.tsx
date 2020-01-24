@@ -2,14 +2,12 @@
 import * as React from 'react';
 import * as LABKEY from '@labkey/api';
 import 'regenerator-runtime/runtime';
+import Dropdown from 'react-dropdown';
 import './HighlightedReports.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // @ts-ignore
-import {XYPlot, XAxis, YAxis, HorizontalBarSeries} from 'react-vis';
-
-// @ts-ignore
-// import { Barplot, BarPlotDatum, BarPlotTitles, BarPlotProps } from './components/barPlots'
+import { Barplot, BarPlotDatum, BarPlotTitles, BarPlotProps } from './components/barPlots'
 
 const ResourcesPage: React.FC = () => {
     // state using hooks
@@ -35,34 +33,36 @@ const ResourcesPage: React.FC = () => {
 
     // Most Cited
     const [pmData, setPmData] = React.useState({}); 
-    const [pmPlotData, setPmPlotData] = React.useState([]);
+    // const [pmPlotData, setPmPlotData] = React.useState([]);
     const [pmHasError, setPmErrors] = React.useState(false);
-    // const [transformedPmData, setTransformedPmData] = React.useState({
-    //     byPubId: Array<BarPlotDatum>()
-    // });
-    // const [pmDataRange, setPmDataRange] = React.useState({
-    //     byPubId: Array<number>()
-    // });
-    // const [pmPlotData, setPmPlotData] = React.useState<BarPlotProps>({
-    //     data: [{
-    //         label: '',
-    //         value: 0,
-    //         hoverOverText: '',
-    //         datePublished: '',
-    //         studyNum: 0
-    //     }],
-    //     titles: {
-    //         x: '',
-    //         y: '',
-    //         main: ''
-    //     },
-    //     name: "",
-    //     height: 500,
-    //     width: 500,
-    //     dataRange: [],
-    //     linkBaseText: ''
-    // });
-    const [orderBy, setOrderBy] = React.useState("datePublished")
+    const [transformedPmData, setTransformedPmData] = React.useState({
+        byPubId: Array<BarPlotDatum>()
+    });
+    const [pmDataRange, setPmDataRange] = React.useState({
+        byPubId: Array<number>()
+    });
+    const [pmPlotData, setPmPlotData] = React.useState<BarPlotProps>({
+        data: [{
+            label: '',
+            value: 0,
+            hoverOverText: '',
+            datePublishedStr: '',
+            datePublishedFloat: 0,
+            datePublishedPercent: 0,
+            studyNum: 0
+        }],
+        titles: {
+            x: '',
+            y: '',
+            main: ''
+        },
+        name: "",
+        height: 500,
+        width: 500,
+        dataRange: [],
+        linkBaseText: ''
+    });
+    const [orderBy, setOrderBy] = React.useState("studyNum")
 
     async function fetchCiteData() {
         const res = await fetch(apiBase + 'pubmed_data');
@@ -94,94 +94,101 @@ const ResourcesPage: React.FC = () => {
             Run StudyStats Transformations
         ----------------------------------- */
 
-    // function getRangeforPlot(objectArray, elementName){
-    //     const values = objectArray.map(a => parseInt(a[elementName]))
-    //     const max = Math.max(...values)
-    //     const min = Math.min(...values)
-    //     return([min, max])
-    // }
+    function getRangeFromIntArray(objectArray, elementName){
+        const values = objectArray.map(a => parseFloat(a[elementName]))
+        const max = Math.max(...values)
+        const min = Math.min(...values)
+        return([min, max])
+    }
+
+    function convertDatePublishedToFloat(date: string){
+        let dateSplit = date.split("-")
+        let months = dateSplit[1] == '1' || dateSplit[1] == 'NA' ? 0 : (parseInt(dateSplit[1]) - 1) / 12
+        let monthsStr = months.toString().split('.')[1]
+        let newDate = dateSplit[0] + "." + monthsStr
+        return(parseFloat(newDate))
+    }
+
+    // Create color scale
+    function convertDateToPercent(date: number, dateRange: number[]){
+        return( (date - dateRange[0]) / (dateRange[1] - dateRange[0]) )
+    }
 
     // OLD version
-    // function transformCiteData(){
-    //     const tmpPlotData = {
-    //         // byStudy: [],
-    //         byPubId: []
-    //     };
-    //     if(Object.keys(pmData).length !== 0){
-    //         Object.keys(pmData).forEach(function(key){
-    //             let datum: BarPlotDatum =
-    //             {
-    //                 label: pmData[key].study + ": " + key,
-    //                 value: parseInt(pmData[key].citations),
-    //                 hoverOverText: pmData[key].title + " //" + pmData[key].datePublished,
-    //                 datePublished: pmData[key].datePublished,
-    //                 studyNum: pmData[key].studyNum
-    //             }
-    //             tmpPlotData.byPubId.push(datum)
-    //             // tmp.byStudy.push(
-    //             //     {
-    //             //         value: pmData[key].Citations,
-    //             //         label: pmData[key].study + ": " + pmData[key].original_id,
-    //             //         hoverOver: "http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=" + pmData[key].original_id
-    //             //     }
-    //             // )
-    //         })
-    //         setTransformedPmData(tmpPlotData);
-            
-    //         let tmpRangeData = {byPubId: Array<number>()}
-    //         tmpRangeData['byPubId'] = getRangeforPlot(tmpPlotData.byPubId, "value")
-    //         setPmDataRange(tmpRangeData)
-    //     }
-    // }
     function transformCiteData(){
-        const data = []
+        const tmpPlotData = {
+            // byStudy: [],
+            byPubId: []
+        };
         if(Object.keys(pmData).length !== 0){
-                Object.keys(pmData).forEach(function(key){
-                    const datum =
-                    {
-                        x: parseInt(pmData[key].citations),
-                        y: pmData[key].study + ": " + key
-                        // hoverOverText: pmData[key].title + " //" + pmData[key].datePublished,
-                        // datePublished: pmData[key].datePublished,
-                        // studyNum: parseInt(pmData[key].studyNum)
-                    }
-                    data.push(datum)
+            Object.keys(pmData).forEach(function(key){
+                let datum: BarPlotDatum =
+                {
+                    label: pmData[key].study + ": " + key,
+                    value: parseInt(pmData[key].citations),
+                    hoverOverText: pmData[key].title + " // " + pmData[key].datePublished,
+                    datePublishedStr: pmData[key].datePublished.toString(),
+                    datePublishedFloat: convertDatePublishedToFloat(pmData[key].datePublished.toString()),
+                    studyNum: parseInt(pmData[key].studyNum),
+                    datePublishedPercent: null
+                }
+                tmpPlotData.byPubId.push(datum)
+                // tmp.byStudy.push(
+                //     {
+                //         value: pmData[key].Citations,
+                //         label: pmData[key].study + ": " + pmData[key].original_id,
+                //         hoverOver: "http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=" + pmData[key].original_id
+                //     }
+                // )
             })
+            
+            let tmpRangeData = {byPubId: Array<number>()}
+            tmpRangeData['byPubId'] = getRangeFromIntArray(tmpPlotData.byPubId, "value")
+            setPmDataRange(tmpRangeData)
+
+            let tmpRangeDates = getRangeFromIntArray(tmpPlotData.byPubId, "datePublishedFloat")
+
+            tmpPlotData.byPubId = tmpPlotData.byPubId.map(function(el){
+                el.datePublishedPercent = convertDateToPercent(el.datePublishedFloat, tmpRangeDates)
+                return(el)
+            })
+
+            setTransformedPmData(tmpPlotData);
         }
-        setPmPlotData(data);
     }
     
     React.useEffect(() => {
         transformCiteData();
     }, [pmData])
 
-    // React.useEffect(() => {
-    //     // logic for changing order
-    //     // by # citations
-    //     transformedPmData.byPubId.sort((a,b) => (a[orderBy] > b[orderBy]) ? 1 : -1)
-
-    //     // logic for updating titles
-    //     const titles: BarPlotTitles = {
-    //         x: 'Number of Citations',
-    //         y: 'Study and PubMed Id',
-    //         main: 'Number of Citations by PubMed Id'
-    //     }
-
-    //     // logic for updating props
-    //     let plotProps: BarPlotProps = {
-    //         data: transformedPmData.byPubId,
-    //         titles: titles,
-    //         name: "byPubId",
-    //         width: 1000,
-    //         height: 1000,
-    //         dataRange: pmDataRange.byPubId,
-    //         linkBaseText: 'https://www.ncbi.nlm.nih.gov/pubmed/'
-    //     }
-    //     setPmPlotData(plotProps)
-    // }, [transformedPmData, pmDataRange])
-
     React.useEffect(() => {
-        // update ordering when orderBy changes
+        // logic for changing order
+        // by # citations
+        transformedPmData.byPubId.sort((a,b) => (a[orderBy] > b[orderBy]) ? 1 : -1)
+
+        // logic for updating titles
+        const titles: BarPlotTitles = {
+            x: 'Number of Citations',
+            y: 'Study and PubMed Id',
+            main: 'Number of Citations by PubMed Id'
+        }
+
+        // logic for updating props
+        let plotProps: BarPlotProps = {
+            data: transformedPmData.byPubId,
+            titles: titles,
+            name: "byPubId",
+            width: 1000,
+            height: 1000,
+            dataRange: pmDataRange.byPubId,
+            linkBaseText: 'https://www.ncbi.nlm.nih.gov/pubmed/'
+        }
+        setPmPlotData(plotProps)
+    }, [transformedPmData, pmDataRange])
+
+    // update ordering when orderBy changes
+    React.useEffect(() => {
+        transformedPmData.byPubId.sort((a,b) => (a[orderBy] > b[orderBy]) ? 1 : -1)
     }, [orderBy])
 
     // --------- ABOUT -----------------
@@ -316,6 +323,11 @@ const ResourcesPage: React.FC = () => {
 
         
        // Offer selection of plots
+       const dropdownOptions = [
+        {value: 'value', label: 'Most Cited'},
+        {value: 'studyNum', label:  'Study ID'},
+        {value: 'datePublishedFloat', label: 'Most Recent'}
+       ]
 
        // update component if selection changes
 
@@ -332,29 +344,24 @@ const ResourcesPage: React.FC = () => {
                 <div id="#most-cited">
                     <span> Most Cited</span>
                     <br></br>
-                    {/* <span>{pmPlotData.byPubId.toString()}</span> */}
-                    {/* <span>{JSON.stringify(pmPlotData)}</span> */}
-                    {/* <Barplot data={pmPlotData.data} 
-                             titles={pmPlotData.titles}
-                             name={pmPlotData.name} 
-                             height={pmPlotData.height} 
-                             width={pmPlotData.width} 
-                             dataRange={pmPlotData.dataRange}
-                             linkBaseText={pmPlotData.linkBaseText}/> */}
-                    <XYPlot 
-                        yType={'ordinal'} 
-                        height={1000} 
-                        width={800}
-                        margin={{
-                            bottom: 50,
-                            left: 150,
-                            right: 10,
-                            top: 50
-                        }}>
-                        <HorizontalBarSeries data={pmPlotData} />
-                        <XAxis />
-                        <YAxis />
-                    </XYPlot>
+                    <Dropdown 
+                        options={dropdownOptions}
+                        onChange={function(option){ 
+                            console.log(option)
+                            setOrderBy(option.value)
+                        }}
+                        placeholder="Select Order for Publications"
+                    />
+                    <Barplot 
+                        data={pmPlotData.data} 
+                        titles={pmPlotData.titles}
+                        name={pmPlotData.name} 
+                        height={pmPlotData.height} 
+                        width={pmPlotData.width} 
+                        dataRange={pmPlotData.dataRange}
+                        linkBaseText={pmPlotData.linkBaseText}
+                    />
+                    
                 </div>
                 <br></br>
                 <div id="#similar-studies">

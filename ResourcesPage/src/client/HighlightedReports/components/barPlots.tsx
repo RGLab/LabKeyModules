@@ -6,8 +6,10 @@ export interface BarPlotDatum {
         label: string, 
         value: number,
         hoverOverText: string,
-        datePublished: string,
         studyNum: number
+        datePublishedStr: string,
+        datePublishedFloat: number,
+        datePublishedPercent: number
 }
 
 export interface BarPlotTitles {
@@ -34,7 +36,7 @@ export const Barplot: React.FC<BarPlotProps> = (props) => {
     });
 
     return (
-        <div className={props.name} >
+        <div id={props.name} >
             <svg id={"barplot-" + props.name}></svg>
         </div>
     );

@@ -1,4 +1,3 @@
-// @ts-ignore
 import * as d3 from 'd3';
 
 import { BarPlotProps } from '../barPlots';
@@ -83,47 +82,32 @@ export function drawBarPlot(props: BarPlotProps) {
     svg.selectAll("text")
         .filter(function(d){ return typeof(d) == "string"})
         .style("cursor","pointer")
+        .on("mouseover", function(d, i){
+            d3.select(this)
+                .style("color","green")
+        })
+        .on("mouseout", function(d, i){
+            d3.select(this)
+                .style("color","black")
+        })
         .on("click", function(d){ 
             document.location.href = linkBaseText + (d as String).split(': ')[1]
         })
     
-    // Tooltip
-    var Tooltip = d3
-        .select("#barplot-" + name)
+        // +
+        // "<br><a href=https://www.ncbi.nlm.nih.gov/pubmed/" +
+        // d.label +
+        // ">PubMed Link</a>"
+    
+    var tooltip = d3.select('#' + name)
         .append("div")
-        .style("opacity", 0)
         .attr("class", "tooltip")
+        .style("opacity", 0)
         .style("background-color", "white")
         .style("border", "solid")
         .style("border-width", "2px")
         .style("border-radius", "5px")
         .style("padding", "5px")
-    
-    // Have black outline on mouseover
-    var mouseover = function(d) {
-        Tooltip
-            .style("opacity", 1)
-        d3.select(this)
-            .style("stroke", "black")
-            .style("opacity", 1)
-        }
-
-    // Show hover over text on mouse move
-    var mousemove = function(d) {
-        Tooltip
-            .html(d.hoverOverText)
-            .style("left", (d3.mouse(this)[0]+70) + "px")
-            .style("top", (d3.mouse(this)[1]) + "px")
-        }
-
-    // Change opacity on leave to show rect has been visited
-    var mouseleave = function(d) {
-        Tooltip
-            .style("opacity", 0)
-        d3.select(this)
-            .style("stroke", "none")
-            .style("opacity", 0.8)
-        }
 
     // add values
     svg.selectAll("rect")
@@ -132,11 +116,32 @@ export function drawBarPlot(props: BarPlotProps) {
         .append("rect")
             .attr("class", "rect")
             .attr("x", margin.left)
-            .attr("y", function(d) { return yaxisScale(d.label) + margin.top; })
+            .attr("y", function(d) { 
+                return yaxisScale(d.label) + margin.top; 
+            })
             .attr("height", yaxisScale.bandwidth())
-            .attr("width", function(d) { return xaxisScale(d.value); })
-            .attr("fill", "#69b3a2")
-        .on("mouseover", mouseover)
-        .on("mousemove", mousemove)
-        .on("mouseleave", mouseleave)
+            .attr("width", function(d) { 
+                return xaxisScale(d.value); 
+            })
+            .attr("fill", function(d) { 
+                return d3.interpolateRdBu(d.datePublishedPercent).toString()
+            })
+            .on("mouseover", function(d){
+                tooltip
+                    .transition()
+                    .duration(50)
+                    .style("opacity", .9);		
+                tooltip.html(
+                        "<b>Publication Info</b>: <br>" + 
+                        d.hoverOverText
+                    )	
+                    .style("left", (d3.event.pageX) + "px")		
+                    .style("top", (d3.event.pageY - 28) + "px");	
+                })		
+            .on("mouseout", function(d){
+                tooltip
+                    .transition()
+                    .duration(100)
+                    .style("opacity", 0)
+            })
 }

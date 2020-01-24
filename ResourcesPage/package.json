@@ -34,9 +34,11 @@
     "@types/react-dom": "16.8.4",
     "bootstrap": "^3.4.1",
     "d3": "^5.14.2",
+    "d3-color": "^1.4.0",
     "immutable": "3.8.2",
     "react": "16.8.6",
     "react-dom": "16.8.6",
+    "react-dropdown": "^1.6.4",
     "react-vis": "^1.11.7",
     "regenerator-runtime": "^0.13.3"
   },
