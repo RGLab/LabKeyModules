@@ -4,6 +4,8 @@
 import { SelectedFilters, GroupInfo } from "../../typings/CubeData";
 import { local } from "d3";
 import { List, fromJS } from "immutable";
+import { createStudyParticipantCounts } from "./CubeHelpers";
+import { StudyParticipantCount, StudyDict, IStudyParticipantCount } from "../../typings/StudyCard";
 
 // TODO:
 // get list of available participant groups
@@ -36,16 +38,16 @@ export const createAvailableGroups = (data) => {
 
                 // remove duplicates from the filters members array
                 // Object.keys(groupFilters).forEach((key) => {
-                    // if (groupFilters[key].isArray) {
-                    //     groupFilters[key].members = Ext4.Array.unique(value.members);
-                    // }
+                // if (groupFilters[key].isArray) {
+                //     groupFilters[key].members = Ext4.Array.unique(value.members);
+                // }
 
-                    groups.push({
-                        "id": data.groups[i].id,
-                        "label": data.groups[i].label,
-                        "selected": false,
-                        "filters": groupFilters
-                    });
+                groups.push({
+                    "id": data.groups[i].id,
+                    "label": data.groups[i].label,
+                    "selected": false,
+                    "filters": groupFilters
+                });
             }
         }
     }
@@ -69,15 +71,15 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
         // convert from old filters and warn user
         Object.keys(groupInfo.filters).forEach((level) => {
             const andMembers = groupInfo.filters[level].members.map((uniqueName) => {
-                return([uniqueName.split("].[")[1].replace(/[\[\]]/g, "")])
+                return ([uniqueName.split("].[")[1].replace(/[\[\]]/g, "")])
             })
             const orMembers = [groupInfo.filters[level].members.map((uniqueName) => {
-                return(uniqueName.split("].[")[1].replace(/[\[\]]/g, ""))
+                return (uniqueName.split("].[")[1].replace(/[\[\]]/g, ""))
             })]
             if (["Age", "Gender", "Race", "ExposureMaterial", "ExposureProcess", "Species"].indexOf(level) > -1) {
-                sf = sf.setIn(["Subject",level], fromJS(andMembers))
+                sf = sf.setIn(["Subject", level], fromJS(andMembers))
             } else if (["Category", "Condition"].indexOf(level) > -1) {
-                sf = sf.setIn(["Study",level], fromJS(andMembers))
+                sf = sf.setIn(["Study", level], fromJS(andMembers))
             } else if (level == "Assay") {
                 const assayMembers = groupInfo.filters[level].operator == "OR" ? orMembers : andMembers
                 sf = sf.setIn(["Data", "Assay", "Assay"], fromJS(assayMembers))
@@ -120,10 +122,27 @@ export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
             jsonData: {
                 participantIds: participantIds
             },
-            success: ()=>{resolve()}
+            success: () => { resolve() }
         });
     })
-    
+
+}
+
+// update container filter
+
+export const updateContainerFilter = (studyParticipantCounts: IStudyParticipantCount[], studyDict: StudyDict) => {
+    const containers = []
+    studyParticipantCounts.forEach((participantCount) => {
+        if (participantCount.participantCount > 0 && studyDict[participantCount.studyName]) {
+            containers.push(studyDict[participantCount.studyName].container_id)
+        }
+    })
+
+    LABKEY.Ajax.request({
+        url: LABKEY.ActionURL.buildURL('study-shared', 'sharedStudyContainerFilter.api'),
+        method: 'POST',
+        jsonData: { containers: containers }
+    });
 }
 
 // export const loadGroupFilters = (filters: SelectedFilters | {

@@ -17,6 +17,7 @@ declare const module: any;
 
 window.addEventListener('DOMContentLoaded', () => {
     render();
+    document.getElementById("filter-banner").parentElement.style.width = "100%"
     if (module.hot) {
         module.hot.accept();
     }

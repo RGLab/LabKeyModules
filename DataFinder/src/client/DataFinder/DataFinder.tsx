@@ -29,7 +29,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // state -----
     // Data (updated by API calls)
     const [cubeData, setCubeData] = React.useState<CubeData>(cd)
-    const [studyDict, setStudyDict] = React.useState({}); // this should only be loaded once
+    const [studyDict, setStudyDict] = React.useState(null); // this should only be loaded once
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
     const [availableGroups, setAvailableGroups] = React.useState([])
     const [totalCounts, setTotalCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
@@ -98,27 +98,36 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // Do these things when certain variables are incremented --------
     // Apply filters
     React.useEffect(() => {
+        console.log("----- apply filters -----")
         // set applied filters
         setAppliedFilters(selectedFilters)
         // set local storage
         localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(selectedFilters))
+
+        CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters)
+            .then((spc) => {
+                setStudyParticipantCounts(CubeHelpers.createStudyParticipantCounts(spc))
+                if (studyDict) {
+                    ParticipantGroupHelpers.updateContainerFilter(spc, studyDict)
+                }
+            })
+        CubeHelpers.getCubeData(mdx, selectedFilters)
+            .then((cd) => setCubeData(CubeHelpers.createCubeData(cd)))
+        CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) =>
+            ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
+                if (participantDataWebpart) participantDataWebpart.render() 
+            }
+            ))
     }, [applyCounter])
 
     React.useEffect(() => {
         // Update local state
         // separated from above effect so filters can pop up in banner before data is finished updating
-        CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters)
-            .then((spc) => setStudyParticipantCounts(CubeHelpers.createStudyParticipantCounts(spc)))
-        CubeHelpers.getCubeData(mdx, selectedFilters)
-            .then((cd) => setCubeData(CubeHelpers.createCubeData(cd)))
-        CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) =>
-            ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
-                participantDataWebpart && participantDataWebpart.render()
-            }
-            ))
+
     }, [appliedFilters])
 
     React.useEffect(() => {
+        console.log("----- get total counts -----")
         CubeHelpers.getTotalCounts(mdx, selectedFilters)
             .then((counts) => {
                 setTotalCounts(counts)
@@ -127,12 +136,14 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // Save group
     React.useEffect(() => {
+        console.log("----- save group -----")
         // TODO  
         // saveGroup(selectedFilters)
     }, [saveCounter])
 
     // Load group
     React.useEffect(() => {
+        console.log("----- load group -----")
         // TODO  
         // load group
         // make api calls 
@@ -428,6 +439,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     </div>
                     <div className="col-sm-3">
                         <Barplot data={cubeData.getIn(["Study", "Condition"]).toJS()} name="Condition" height={200} width={300} />
+                        <Barplot data={cubeData.getIn(["Study", "Category"]).toJS()} name="Category" height={200} width={300} />
+
+                        <Barplot data={cubeData.getIn(["Subject", "ExposureMaterial"]).toJS()} name="ExposureProcess" height={200} width={300} />
                     </div>
                 </div>
                 <ActionButton text={"Apply"} onClick={applyFilters} />
@@ -470,7 +484,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 {participantSummary}
 
                 {studyParticipantCounts.map((sdy) => {
-                    if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
+                    if (sdy.participantCount > 0 && studyDict && studyDict[sdy.studyName]) {
                         return (
                             <StudyCard key={sdy.studyName}
                                 study={studyDict[sdy.studyName]}

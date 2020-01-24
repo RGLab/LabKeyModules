@@ -1,4 +1,4 @@
-SELECT study.study_accession, brief_title, shared_study, restricted, condition_studied, P.name as program_title, pi_names, assays, sample_type
+SELECT study.study_accession, brief_title, shared_study, restricted, condition_studied, P.name as program_title, pi_names, assays, sample_type, container_id
 FROM immport.study 
 LEFT OUTER JOIN 
 	(
@@ -35,3 +35,9 @@ LEFT OUTER JOIN
 		GROUP BY studyid
 	) st
 	ON study.study_accession = st.study_accession
+RIGHT OUTER JOIN 
+	(
+		SELECT Label as study_name, Container as container_id 
+		FROM study.StudyProperties
+	) containers
+	ON study.study_accession = containers.study_name

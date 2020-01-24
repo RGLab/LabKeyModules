@@ -20,6 +20,7 @@ export interface IStudyInfo {
     shared_study?: string;
     study_accession?: string;
     totalParticipantCount?: number;
+    container_id: string;
 }
 
 export class StudyInfo extends Record({

@@ -124,7 +124,7 @@ export function drawBarplot(props: DrawBarplotProps) {
         .attr("y", function (d: CubeDatum) {
             return yaxisScale(d.member);
         })
-        .attr("height", yaxisScale.bandwidth() - 5)
+        .attr("height", yaxisScale.bandwidth() - 1)
         .style("fill", "steelblue")
     boxes
         .transition()
@@ -136,7 +136,7 @@ export function drawBarplot(props: DrawBarplotProps) {
         .attr("y", function (d: CubeDatum) {
             return yaxisScale(d.member);
         })
-        .attr("height", yaxisScale.bandwidth() - 5)
+        .attr("height", yaxisScale.bandwidth() - 1)
 
     boxes.exit().remove();
 }
