@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { participantGroupInfo, GroupInfo } from '../../typings/CubeData';
+import { GroupInfo } from '../../typings/CubeData';
 
 interface ActionButtonProps {
     onClick: () => void;
@@ -16,7 +16,7 @@ interface ActionDropdownProps {
 }
 
 interface LoadDropdownProps {
-    groups: participantGroupInfo[],
+    groups: GroupInfo[],
     loadParticipantGroup: (groupInfo: GroupInfo) => void
 }
 

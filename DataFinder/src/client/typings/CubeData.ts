@@ -13,6 +13,8 @@ export interface GroupInfo {
     new?: boolean
 }
 
+
+
 export interface CubeDatum {
     level: string;
     member: string;
@@ -215,18 +217,6 @@ export interface FilterQuery {
     }[]
 }
 
-export interface participantGroupInfo {
-    id: number;
-    label: string;
-    selected: boolean;
-    filters: {
-        [index: string]: {
-            name: string;
-            operator: string;
-            members: string[]
-        }
-    }
-}
 
 export interface TotalCounts {
     study: number,

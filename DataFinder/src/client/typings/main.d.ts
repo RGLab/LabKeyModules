@@ -14,6 +14,11 @@ interface LabKey {
     WebPart: any;
     QueryWebPart: any;
 }
+
+interface Ext4 {
+    create: any
+}
+
 interface SelectRowsResponse {
     schemaName: string;
     queryName: string;
@@ -64,3 +69,4 @@ interface SelectRowsMetadata {
 
 /* App globals */
 declare const LABKEY: LabKey;
+declare const Ext4: Ext4;

@@ -107,11 +107,21 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
 }
 
 // save participant group
-export const saveParticipantGroup = (groupName: string) => {
+export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel) => {
     // save the group with applied filters in localStorage
 
-    console.log("saveParticipantGroup(" + groupName + ")")
-    return (true)
+    console.log("saveParticipantGroup()")
+    const win = Ext4.create('Study.window.ParticipantGroup', {
+        subject: studySubject,
+        groupLabel: "",
+        participantIds: pids,
+        filters: appliedFilters,
+        goToSendAfterSave: false
+    });
+    win.show()
+
+    
+    return (win)
 }
 
 export const saveParticipantIdGroupInSession = (participantIds: string[]) => {

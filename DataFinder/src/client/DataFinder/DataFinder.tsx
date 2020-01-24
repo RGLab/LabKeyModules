@@ -25,31 +25,39 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const mdx = props.mdx;
     const cd = new CubeData({})
     const sf = new SelectedFilters(JSON.parse(localStorage.getItem("dataFinderSelectedFilters")));
+    const studySubject = {
+        nounSingular: 'Participant',
+        nounPlural: 'Participants',
+        tableName: 'Participant',
+        columnName: 'ParticipantId'
+    }
 
     // state -----
     // Data (updated by API calls)
     const [cubeData, setCubeData] = React.useState<CubeData>(cd)
     const [studyDict, setStudyDict] = React.useState(null); // this should only be loaded once
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
-    const [availableGroups, setAvailableGroups] = React.useState([])
+    const [availableGroups, setAvailableGroups] = React.useState<GroupInfo[]>([])
     const [totalCounts, setTotalCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
+    const [participantIds, setParticipantIds] = React.useState<string[]>(null)
 
     // Filters (updated by user)
     const [appliedFilters, setAppliedFilters] = React.useState<SelectedFilters>(sf)
     const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(appliedFilters)
 
-    // Webparts
-    const [participantDataWebpart, setParticipantDataWebpart] = React.useState()
-    const [dataViewsWebpart, setDataViewsWebpart] = React.useState()
 
     // Other view settings set by user
     const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
 
 
+    // Webparts
+    const [participantDataWebpart, setParticipantDataWebpart] = React.useState()
+    const [dataViewsWebpart, setDataViewsWebpart] = React.useState()
+
     // Listeners
     const [saveCounter, setSaveCounter] = React.useState<number>(0)
     const [applyCounter, setApplyCounter] = React.useState<number>(0)
-    const [loadedGroup, setLoadedGroup] = React.useState<string>()
+    const [loadedGroup, setLoadedGroup] = React.useState<GroupInfo>()
     const [groupCounter, setGroupCounter] = React.useState<number>(0);
 
     // Effects  -------------------------------------
@@ -120,11 +128,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             ))
     }, [applyCounter])
 
-    React.useEffect(() => {
-        // Update local state
-        // separated from above effect so filters can pop up in banner before data is finished updating
-
-    }, [appliedFilters])
 
     React.useEffect(() => {
         console.log("----- get total counts -----")
@@ -139,6 +142,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         console.log("----- save group -----")
         // TODO  
         // saveGroup(selectedFilters)
+
     }, [saveCounter])
 
     // Load group
@@ -183,16 +187,28 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // ----------------
 
     // ----- participant group-related -----
-    const saveParticipantGroup = (groupName: string) => {
-        ParticipantGroupHelpers.saveParticipantGroup(groupName)
-        setSaveCounter(saveCounter + 1)
+    const saveButtonClick = () => {
+        let saveWindow
+        CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) => {
+            saveWindow = ParticipantGroupHelpers.openSaveWindow(studySubject, pids, appliedFilters, "group")
+        })
+        saveWindow.on("aftersave", (data, goToSend) => {
+            ParticipantGroupHelpers.getAvailableGroups().then((data) => {
+                const groups = ParticipantGroupHelpers.createAvailableGroups(data)
+                setAvailableGroups(groups)
+            })
+        })
+    }
+
+    const updateParticipantGroup = (groupName: string) => {
+
     }
 
     const loadParticipantGroup = (groupInfo: GroupInfo) => {
         const pgFilters = ParticipantGroupHelpers.getParticipantGroupFilters(groupInfo)
         localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(pgFilters))
         setSelectedFilters(pgFilters)
-        setLoadedGroup(groupInfo.label)
+        setLoadedGroup(groupInfo)
         setGroupCounter(groupCounter + 1)
         applyFilters()
     }
@@ -507,7 +523,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 {JSON.stringify(cubeData.toJS(), undefined, 2)}
                 {JSON.stringify(studyDict.toJS(), undefined, 2)}
             </pre> */}
-            <ActionButton text={"Save"} onClick={() => saveParticipantGroup("group")} />
+            <ActionButton text={"Save"} onClick={() => saveButtonClick()} />
             <ActionButton text={"Clear"} onClick={clearFilters} />
             <ActionButton text={"Reset"} onClick={getFilters} />
             <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
