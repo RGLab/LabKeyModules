@@ -1,18 +1,20 @@
 // Imports
 import * as React from 'react';
 import * as LABKEY from '@labkey/api';
+import 'react-bootstrap' // 0.33.1 to work with LabKey CSS
 import 'regenerator-runtime/runtime';
-import Dropdown from 'react-dropdown';
 import './HighlightedReports.scss';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css'; // v3
 
 // @ts-ignore
 import { Barplot, BarPlotDatum, BarPlotTitles, BarPlotProps } from './components/barPlots'
+import { DropdownButton, MenuItem } from 'react-bootstrap';
 
 const ResourcesPage: React.FC = () => {
     // state using hooks
     // Keep state that must change simple (not nested)
     const [divToShow, setDivToShow] = React.useState<string>("About");
+    const [plotToShow, setPlotToShow] = React.useState<string>("most-cited")
 
     /*  -----------------------------------
             Get data for StudyStats
@@ -162,8 +164,6 @@ const ResourcesPage: React.FC = () => {
     }, [pmData])
 
     React.useEffect(() => {
-        // logic for changing order
-        // by # citations
         transformedPmData.byPubId.sort((a,b) => (a[orderBy] > b[orderBy]) ? 1 : -1)
 
         // logic for updating titles
@@ -178,18 +178,13 @@ const ResourcesPage: React.FC = () => {
             data: transformedPmData.byPubId,
             titles: titles,
             name: "byPubId",
-            width: 1000,
-            height: 1000,
+            width: 700,
+            height: 700,
             dataRange: pmDataRange.byPubId,
             linkBaseText: 'https://www.ncbi.nlm.nih.gov/pubmed/'
         }
         setPmPlotData(plotProps)
-    }, [transformedPmData, pmDataRange])
-
-    // update ordering when orderBy changes
-    React.useEffect(() => {
-        transformedPmData.byPubId.sort((a,b) => (a[orderBy] > b[orderBy]) ? 1 : -1)
-    }, [orderBy])
+    }, [transformedPmData, pmDataRange, orderBy])
 
     // --------- ABOUT -----------------
     const About: React.FC = () => { 
@@ -321,37 +316,39 @@ const ResourcesPage: React.FC = () => {
     // --------- StudyStats -----------------
     const StudyStats: React.FC = () => { 
 
-        
-       // Offer selection of plots
-       const dropdownOptions = [
-        {value: 'value', label: 'Most Cited'},
-        {value: 'studyNum', label:  'Study ID'},
-        {value: 'datePublishedFloat', label: 'Most Recent'}
-       ]
+        const MostCited: React.FC = () => {
+            // Offer selection of plots
+            const dropdownOptions = [
+                {value: 'value', label: 'Most Cited'},
+                {value: 'studyNum', label:  'Study ID'},
+                {value: 'datePublishedFloat', label: 'Most Recent'}
+            ]
 
-       // update component if selection changes
+            function onSelectChangeOrder(eventKey){
+                setOrderBy(eventKey)
+            }
 
-
-        return(
-            <div id="StudyStats">
-                <div id="#most-accessed">
-                    <span> Most Accessed</span>
-                    {/* <span>{JSON.stringify(maData)}</span>
-                    <hr />
-                    <span>Has error: {JSON.stringify(maHasError)}</span> */}
-                </div>
-                <br></br>
+            return(
                 <div id="#most-cited">
-                    <span> Most Cited</span>
+                    <h2>Most Cited Publications Related to Studies to ImmuneSpace</h2>
+                    <p><b>For More Information:</b></p>
+                    <ul>
+                        <li>Hover over each bar for publication information</li>
+                        <li>Click on the Y-axis label to go to PubMed page for the publication</li>
+                        <li>Update the ordering of the publications using the dropdown menu below</li>
+                    </ul>
                     <br></br>
-                    <Dropdown 
-                        options={dropdownOptions}
-                        onChange={function(option){ 
-                            console.log(option)
-                            setOrderBy(option.value)
-                        }}
-                        placeholder="Select Order for Publications"
-                    />
+                    <DropdownButton title='Select Order' id='order-select-dropdown'>
+                        <MenuItem eventKey={dropdownOptions[0].value} onSelect={onSelectChangeOrder}>
+                            {dropdownOptions[0].label}
+                        </MenuItem>
+                        <MenuItem eventKey={dropdownOptions[1].value} onSelect={onSelectChangeOrder}>
+                            {dropdownOptions[1].label}
+                        </MenuItem>
+                        <MenuItem eventKey={dropdownOptions[2].value} onSelect={onSelectChangeOrder}>
+                            {dropdownOptions[2].label}
+                        </MenuItem>
+                    </DropdownButton>
                     <Barplot 
                         data={pmPlotData.data} 
                         titles={pmPlotData.titles}
@@ -361,16 +358,33 @@ const ResourcesPage: React.FC = () => {
                         dataRange={pmPlotData.dataRange}
                         linkBaseText={pmPlotData.linkBaseText}
                     />
-                    
                 </div>
-                <br></br>
-                <div id="#similar-studies">
-                    <span> Similar Studies</span>
-                    <br></br>
-                    {/* <span>{JSON.stringify(ssData)}</span> */}
-                    <hr />
-                    <span>Has error: {JSON.stringify(ssHasError)}</span>
+            )
+        }
+       
+        const MostAccessed: React.FC = () => {
+            return(
+                <div>
+                    <span>Placeholder - most accessed</span>
                 </div>
+            )
+        }
+
+        const SimilarStudies: React.FC = () => {
+            return(
+                <div>
+                    <span>Placeholder - most accessed</span>
+                </div>
+            )
+        }
+       
+
+
+        return(
+            <div id="StudyStats">
+                { plotToShow == "most-cited" ? <MostCited/> : null}
+                { plotToShow == "most-accessed" ? <MostAccessed/> : null}
+                { plotToShow == "similar-studies" ? <SimilarStudies/> : null}
             </div>
         )
     }
@@ -447,7 +461,15 @@ const ResourcesPage: React.FC = () => {
                     const tag = "#" + subel.tag
                     return(
                         <li>
-                            <a key={i} id={subel.tag} href={tag} onClick={() => setDivToShow(el.tag)}>{subel.text}</a>
+                            <a  key={i} 
+                                id={subel.tag} 
+                                href={tag} 
+                                onClick={function(){
+                                    setDivToShow(el.tag)
+                                    setPlotToShow(subel.tag)
+                                }}>
+                                    {subel.text}
+                            </a>
                         </li>
                     )
                 })

@@ -21,9 +21,9 @@ export function drawBarPlot(props: BarPlotProps) {
 
     // set margins
     const margin = {
-                top: 30, 
+                top: 50, 
                 right: 30, 
-                bottom: 70, 
+                bottom: 30, 
                 left: 130
         },
         width  = props.width - margin.left - margin.right,
@@ -51,16 +51,16 @@ export function drawBarPlot(props: BarPlotProps) {
         .attr("id", "xaxis-labels")
         .attr(
             "transform",
-            "translate(" + margin.left + ", " + (height + margin.top) + ")"
+            "translate(" + margin.left + ", " + margin.top + ")"
         )
-        .call(d3.axisBottom(xaxisScale));
+        .call(d3.axisTop(xaxisScale));
 
     // x-axis title
     svg.append("text")
         .attr("class", "x label")
         .attr("text-anchor", "middle")
         .attr("x", props.width / 2)
-        .attr("y", height + margin.top + margin.bottom / 2)
+        .attr("y", margin.top / 2)
         .text(titles.x);
 
     // y-axis
@@ -75,7 +75,7 @@ export function drawBarPlot(props: BarPlotProps) {
         .attr("text-anchor", "middle")
         .attr("transform", "rotate(-90)")
         .attr("y", 10)
-        .attr("x", -(props.height/2))
+        .attr("x", - (props.height / 3))
         .text(titles.y);
 
     // add clickable-links
@@ -85,19 +85,16 @@ export function drawBarPlot(props: BarPlotProps) {
         .on("mouseover", function(d, i){
             d3.select(this)
                 .style("color","green")
+                .style("font-weight", "bold")
         })
         .on("mouseout", function(d, i){
             d3.select(this)
                 .style("color","black")
+                .style("font-weight", "normal")
         })
         .on("click", function(d){ 
             document.location.href = linkBaseText + (d as String).split(': ')[1]
         })
-    
-        // +
-        // "<br><a href=https://www.ncbi.nlm.nih.gov/pubmed/" +
-        // d.label +
-        // ">PubMed Link</a>"
     
     var tooltip = d3.select('#' + name)
         .append("div")
