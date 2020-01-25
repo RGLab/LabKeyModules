@@ -38,8 +38,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const [studyDict, setStudyDict] = React.useState(null); // this should only be loaded once
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
     const [availableGroups, setAvailableGroups] = React.useState<GroupInfo[]>([])
+
+    // Groups
+    const [loadedGroup, setLoadedGroup] = React.useState<GroupInfo>()
     const [totalCounts, setTotalCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
-    const [participantIds, setParticipantIds] = React.useState<string[]>(null)
+
 
     // Filters (updated by user)
     const [appliedFilters, setAppliedFilters] = React.useState<SelectedFilters>(sf)
@@ -55,10 +58,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const [dataViewsWebpart, setDataViewsWebpart] = React.useState()
 
     // Listeners
-    const [saveCounter, setSaveCounter] = React.useState<number>(0)
     const [applyCounter, setApplyCounter] = React.useState<number>(0)
-    const [loadedGroup, setLoadedGroup] = React.useState<GroupInfo>()
-    const [groupCounter, setGroupCounter] = React.useState<number>(0);
 
     // Effects  -------------------------------------
 
@@ -137,23 +137,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             })
     }, [selectedFilters])
 
-    // Save group
-    React.useEffect(() => {
-        console.log("----- save group -----")
-        // TODO  
-        // saveGroup(selectedFilters)
-
-    }, [saveCounter])
-
-    // Load group
-    React.useEffect(() => {
-        console.log("----- load group -----")
-        // TODO  
-        // load group
-        // make api calls 
-        applyFilters()
-    }, [loadedGroup, groupCounter])
-
     // Helper functions ---------------------------------------------
     // These are functions which will get passed down to those components
     // which can cause updates to the page
@@ -182,6 +165,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         d3.select("#barplot-Age")
         // debugger;
         setSelectedFilters(new SelectedFilters());
+        setLoadedGroup(null)
         applyFilters()
     }
     // ----------------
@@ -200,8 +184,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         })
     }
 
-    const updateParticipantGroup = (groupName: string) => {
-
+    const updateParticipantGroup = (groupInfo: GroupInfo) => {
+        CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) => {
+            ParticipantGroupHelpers.updateParticipantGroup(pids, appliedFilters, loadedGroup)
+        })
     }
 
     const loadParticipantGroup = (groupInfo: GroupInfo) => {
@@ -209,7 +195,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(pgFilters))
         setSelectedFilters(pgFilters)
         setLoadedGroup(groupInfo)
-        setGroupCounter(groupCounter + 1)
         applyFilters()
     }
 
@@ -523,9 +508,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 {JSON.stringify(cubeData.toJS(), undefined, 2)}
                 {JSON.stringify(studyDict.toJS(), undefined, 2)}
             </pre> */}
-            <ActionButton text={"Save"} onClick={() => saveButtonClick()} />
+            <ActionButton text={"Save As"} onClick={() => saveButtonClick()} />
             <ActionButton text={"Clear"} onClick={clearFilters} />
             <ActionButton text={"Reset"} onClick={getFilters} />
+            <ActionButton text={"Update"} onClick={() => updateParticipantGroup(loadedGroup)} />
             <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
             <Banner filters={appliedFilters} />
             <div className="datafinder-wrapper">
