@@ -1,15 +1,15 @@
 import * as React from 'react';
-import { drawBarPlot } from './d3/barPlots.d3'
+import { drawBarPlot } from './d3/mostCitedBarPlot.d3'
 
 // Create Typing for bar plot data
 export interface BarPlotDatum {
-        label: string, 
-        value: number,
-        hoverOverText: string,
-        studyNum: number
-        datePublishedStr: string,
-        datePublishedFloat: number,
-        datePublishedPercent: number
+    label: string, 
+    value: number,
+    hoverOverText: string,
+    studyNum: number
+    datePublishedStr: string,
+    datePublishedFloat: number,
+    datePublishedPercent: number
 }
 
 export interface BarPlotTitles {
@@ -29,7 +29,7 @@ export interface BarPlotProps {
 }
 
 // render the d3 barplot element
-export const Barplot: React.FC<BarPlotProps> = (props) => {
+export const BarPlot: React.FC<BarPlotProps> = (props) => {
     // This will look for the id given by props.name to svg-element
     React.useEffect(() => {
             drawBarPlot(props);

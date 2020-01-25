@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-import { BarPlotProps } from '../barPlots';
+import { BarPlotProps } from '../mostCitedBarPlot';
 
 // ================================================================== //
 
@@ -38,7 +38,6 @@ export function drawBarPlot(props: BarPlotProps) {
     const yaxisScale = d3
         .scaleBand()
         .domain(data.map(function(d) { return d.label; }))
-        //.attr("xlink:href", data.map(function(d){ return d.url}))
         .range([height, 0])
 
     // Create body and axes - read more about d3.Selection
@@ -49,10 +48,7 @@ export function drawBarPlot(props: BarPlotProps) {
     // x-axis
     svg.append("g")
         .attr("id", "xaxis-labels")
-        .attr(
-            "transform",
-            "translate(" + margin.left + ", " + margin.top + ")"
-        )
+        .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
         .call(d3.axisTop(xaxisScale));
 
     // x-axis title

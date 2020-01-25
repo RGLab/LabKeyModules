@@ -1,41 +1,39 @@
-// Imports
+// Function imports
 import * as React from 'react';
 import * as LABKEY from '@labkey/api';
-import 'react-bootstrap' // 0.33.1 to work with LabKey CSS
+import * as Bootstrap from 'react-bootstrap';
 import 'regenerator-runtime/runtime';
+
+// @ts-ignore
+import {BarPlot,
+        BarPlotDatum,
+        BarPlotProps,
+        BarPlotTitles} from './components/mostCitedBarPlot'
+import {ScatterPlot,
+        ScatterPlotDatum,
+        ScatterPlotProps,
+        ScatterPlotDataRange} from './components/similarStudyScatterPlot';
+
+// Styling imports
 import './HighlightedReports.scss';
 import 'bootstrap/dist/css/bootstrap.min.css'; // v3
 
-// @ts-ignore
-import { Barplot, BarPlotDatum, BarPlotTitles, BarPlotProps } from './components/barPlots'
-import { DropdownButton, MenuItem } from 'react-bootstrap';
-
 const ResourcesPage: React.FC = () => {
-    // state using hooks
-    // Keep state that must change simple (not nested)
+    
+    /*  -----------------------------------
+            Global State
+        ----------------------------------- */
+
     const [divToShow, setDivToShow] = React.useState<string>("About");
     const [plotToShow, setPlotToShow] = React.useState<string>("most-cited")
+    const apiBase = LABKEY.ActionURL.getBaseURL() + '_rapi/'
 
     /*  -----------------------------------
-            Get data for StudyStats
+            StudyStats State
         ----------------------------------- */
-    const apiBase = LABKEY.ActionURL.getBaseURL() + '_rapi/'
-           
-    // Most Accessed
-    // const [maData, setMaData] = React.useState<Object>({}); 
-    // const [maHasError, setMaErrors] = React.useState(false);
 
-    // async function fetchLogData() {
-    //     const res = await fetch(apiBase + 'log_data');
-    //     res
-    //         .json()
-    //         .then(res => setMaData(res))
-    //         .catch(err => setMaErrors(err));
-    // }
-
-    // Most Cited
+    // --- Most Cited
     const [pmData, setPmData] = React.useState({}); 
-    // const [pmPlotData, setPmPlotData] = React.useState([]);
     const [pmHasError, setPmErrors] = React.useState(false);
     const [transformedPmData, setTransformedPmData] = React.useState({
         byPubId: Array<BarPlotDatum>()
@@ -66,6 +64,21 @@ const ResourcesPage: React.FC = () => {
     });
     const [orderBy, setOrderBy] = React.useState("studyNum")
 
+    // --- Similar Studies
+    const [ssData, setSsData] = React.useState<ScatterPlotDatum[]>() 
+    const [ssHasError, setSsErrors] = React.useState(false)
+    const [ssDataRange, setSsDataRange] = React.useState<ScatterPlotDataRange>({x: [], y: []})
+    const [ssPlotList, setSsPlotList] = React.useState([])
+    const [ssPlotsToShow, setSsPlotsToShow] = React.useState("Assay")
+
+    // --- Most Accessed
+    // const [maData, setMaData] = React.useState<Object>({}); 
+    // const [maHasError, setMaErrors] = React.useState(false);
+
+    /*  -----------------------------------
+            Get StudyStats Data via API
+        ----------------------------------- */
+
     async function fetchCiteData() {
         const res = await fetch(apiBase + 'pubmed_data');
         res
@@ -74,10 +87,6 @@ const ResourcesPage: React.FC = () => {
             .catch(err => setPmErrors(err));
     }
 
-    // Similar Studies
-    const [ssData, setSsData] = React.useState<Object>({}); 
-    const [ssHasError, setSsErrors] = React.useState(false);
-
     async function fetchSdyData() {
         const res = await fetch(apiBase + 'sdy_metadata');
         res
@@ -85,17 +94,26 @@ const ResourcesPage: React.FC = () => {
             .then(res => setSsData(res))
             .catch(err => setSsErrors(err));
     }
-        
+
+    // async function fetchLogData() {
+    //     const res = await fetch(apiBase + 'log_data');
+    //     res
+    //         .json()
+    //         .then(res => setMaData(res))
+    //         .catch(err => setMaErrors(err));
+    // }
+
     React.useEffect(() => {
-        // fetchLogData();
         fetchCiteData();
         fetchSdyData();
+        // fetchLogData();
     }, []); // empty array as second arg to useEffect means only loaded on mount, not update
 
      /*  -----------------------------------
-            Run StudyStats Transformations
+            StudyStats Transformations
         ----------------------------------- */
 
+    // --- Helpers
     function getRangeFromIntArray(objectArray, elementName){
         const values = objectArray.map(a => parseFloat(a[elementName]))
         const max = Math.max(...values)
@@ -111,12 +129,11 @@ const ResourcesPage: React.FC = () => {
         return(parseFloat(newDate))
     }
 
-    // Create color scale
     function convertDateToPercent(date: number, dateRange: number[]){
         return( (date - dateRange[0]) / (dateRange[1] - dateRange[0]) )
     }
 
-    // OLD version
+    // --- Main
     function transformCiteData(){
         const tmpPlotData = {
             // byStudy: [],
@@ -163,6 +180,11 @@ const ResourcesPage: React.FC = () => {
         transformCiteData();
     }, [pmData])
 
+
+    /*  -----------------------------------
+            StudyStats Set Plot Data
+        ----------------------------------- */
+
     React.useEffect(() => {
         transformedPmData.byPubId.sort((a,b) => (a[orderBy] > b[orderBy]) ? 1 : -1)
 
@@ -185,6 +207,50 @@ const ResourcesPage: React.FC = () => {
         }
         setPmPlotData(plotProps)
     }, [transformedPmData, pmDataRange, orderBy])
+
+
+    React.useEffect(() => {
+        // filter out x, y, and hoverText from keys
+        const labels = [] //Object.keys(ssData)
+        createSdyPlotList(labels)
+    }, [ssDataRange])
+
+    React.useEffect(() => {
+        // Calculate the x, y ranges
+        const xRange = getRangeFromIntArray(ssData, "x")
+        const yRange = getRangeFromIntArray(ssData, "x")
+        setSsDataRange({x: xRange, y: yRange})
+    }, [ssData])
+
+    function createSdyPlotList(labels){
+        // instantiate list to hold all plots
+        const plotList = []
+
+        // for each label create plot and add to list
+        labels.forEach(function(label){
+            const res = createSingleSdyPlot(label)
+            plotList.push({
+                label: res
+            })
+        })
+
+        // no return, just set the SdyPlotList state element
+        setSsPlotList(plotList)
+    }
+
+    function createSingleSdyPlot(label){
+        return(
+            <ScatterPlot 
+                data={ssData}
+                name={label}
+                width={200}
+                height={200}
+                dataRange={ssDataRange}
+                linkBaseText={apiBase + "/project/Studies/"}
+            />
+        )
+    }    
+
 
     // --------- ABOUT -----------------
     const About: React.FC = () => { 
@@ -317,6 +383,7 @@ const ResourcesPage: React.FC = () => {
     const StudyStats: React.FC = () => { 
 
         const MostCited: React.FC = () => {
+            
             // Offer selection of plots
             const dropdownOptions = [
                 {value: 'value', label: 'Most Cited'},
@@ -338,18 +405,18 @@ const ResourcesPage: React.FC = () => {
                         <li>Update the ordering of the publications using the dropdown menu below</li>
                     </ul>
                     <br></br>
-                    <DropdownButton title='Select Order' id='order-select-dropdown'>
-                        <MenuItem eventKey={dropdownOptions[0].value} onSelect={onSelectChangeOrder}>
+                    <Bootstrap.DropdownButton title='Select Order' id='order-select-dropdown'>
+                        <Bootstrap.MenuItem eventKey={dropdownOptions[0].value} onSelect={onSelectChangeOrder}>
                             {dropdownOptions[0].label}
-                        </MenuItem>
-                        <MenuItem eventKey={dropdownOptions[1].value} onSelect={onSelectChangeOrder}>
+                        </Bootstrap.MenuItem>
+                        <Bootstrap.MenuItem eventKey={dropdownOptions[1].value} onSelect={onSelectChangeOrder}>
                             {dropdownOptions[1].label}
-                        </MenuItem>
-                        <MenuItem eventKey={dropdownOptions[2].value} onSelect={onSelectChangeOrder}>
+                        </Bootstrap.MenuItem>
+                        <Bootstrap.MenuItem eventKey={dropdownOptions[2].value} onSelect={onSelectChangeOrder}>
                             {dropdownOptions[2].label}
-                        </MenuItem>
-                    </DropdownButton>
-                    <Barplot 
+                        </Bootstrap.MenuItem>
+                    </Bootstrap.DropdownButton>
+                    <BarPlot
                         data={pmPlotData.data} 
                         titles={pmPlotData.titles}
                         name={pmPlotData.name} 
@@ -363,17 +430,102 @@ const ResourcesPage: React.FC = () => {
         }
        
         const MostAccessed: React.FC = () => {
-            return(
-                <div>
-                    <span>Placeholder - most accessed</span>
-                </div>
-            )
+             return(
+                 <div>
+                     <span>
+                         TMP
+                     </span>
+                 </div>
+             )
         }
 
         const SimilarStudies: React.FC = () => {
+            // Offer selection of plots
+            // Offer selection of plots
+            const dropdownOptions = [
+                {value: 'Assay', label: 'Assay Data'},
+                {value: 'StudyDesign', label:  'Study Design'},
+            ]
+
+            function onSelectChangeOrder(eventKey){
+                setSsPlotsToShow(eventKey)
+            }
+
+            const PlotGridAssay: React.FC = () => {
+                const labels = [
+                    'elisa',
+                    'elispot',
+                    'hai',
+                    'nab',
+                    'ge',
+                    'cyto',
+                    'pcr',
+                    'mbaa'
+                ]
+
+                // filter plot list
+
+                // create 3x3 grid
+
+                return(
+                    <div>
+                        Assay Plot Grid
+                    </div>
+                )
+            }
+
+            const PlotGridSdyDesign: React.FC = () => {
+                const labels = [
+                    'author',
+                    'sponsor',
+                    'minAge',
+                    'maxAge',
+                    'numSubjects',
+                    'condition'
+                ]
+
+                // filter plot list
+
+                // create 2x3 grid
+
+                return(
+                    <div>
+                        Study Design Plot Grid
+                    </div>
+                )
+            }
+        
+            // show small multiples grid (select set)
+            // assay data: elisa, elispot, flow, geneExpr, hai, nab, pcr, mbaa
+            // Study Design: author, sponsoring org, condition studied, min age, max age, number pids
+
+            // --- onMouseOver
+            // Show study id
+
+            // --- onClick
+            // make bigger and go to study page
+
             return(
-                <div>
-                    <span>Placeholder - most accessed</span>
+                <div id="#similar-studies">
+                    {/* <span>{JSON.stringify(ssData)}</span> */}
+                    <h2>Similar Studies based on Assay Data or Study Design</h2>
+                    <p><b>For More Information:</b></p>
+                    <ul>
+                        <li>Click on a point to go to the study overview page</li>
+                        <li>Update the plot sets using the dropdown menu</li>
+                    </ul>
+                    <br></br>
+                    <Bootstrap.DropdownButton title='Select Plot Set' id='order-select-dropdown'>
+                        <Bootstrap.MenuItem eventKey={dropdownOptions[0].value} onSelect={onSelectChangeOrder}>
+                            {dropdownOptions[0].label}
+                        </Bootstrap.MenuItem>
+                        <Bootstrap.MenuItem eventKey={dropdownOptions[1].value} onSelect={onSelectChangeOrder}>
+                            {dropdownOptions[1].label}
+                        </Bootstrap.MenuItem>
+                    </Bootstrap.DropdownButton>
+                    <div>
+                        { ssPlotsToShow == "Assay" ? <PlotGridAssay/> : <PlotGridSdyDesign/>}
+                    </div>
                 </div>
             )
         }
