@@ -55,7 +55,6 @@ export const ActionDropdown: React.FC<ActionDropdownProps> = (props) => {
 }
 
 export const LoadDropdown: React.FC<LoadDropdownProps> = ({ groups, loadParticipantGroup }) => {
-
     return (
         <div className="dropdown" style={{width: "50px"}}>
             <div className="btn-group filterselector" role="group" >

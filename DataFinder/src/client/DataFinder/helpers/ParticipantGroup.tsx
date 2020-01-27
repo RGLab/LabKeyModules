@@ -135,38 +135,25 @@ export const updateParticipantGroup = (pids: string[], appliedFilters: SelectedF
         filters: JSON.stringify(appliedFilters),
         rowId: groupInfo.id
     }
-    LABKEY.Ajax.request({
-        url: (LABKEY.ActionURL.buildURL("participant-group", 'updateParticipantGroup.api')),
-        method: 'POST',
-        jsonData : groupData,
-        success : function(response)
-        {
-            var res = JSON.parse(response.responseText);
-            if (res.success) {
-            // {
-            //     // find and replace the record's filters in the groupList
-            //     var updatedFilters = res.group.filters === undefined ? [] : JSON.parse(res.group.filters);
-            //     , function(listGroup)
-            //     {
-            //         if (listGroup.id === res.group.rowId)
-            //         {
-            //             listGroup.filters = updatedFilters;
-            //             $scope.applySubjectGroupFilter(listGroup);
-            //             return false; // break;
-            //         }
-            //     });
-
-            //     $scope.currentGroupHasChanges = false;
-            //     console_log("currentGroupHasChanges = false");
-            //     if (goToSendAfterSave)
-            //         $scope.goToSend($scope.currentGroup.id);
+    return new Promise((resolve, reject) => {
+        LABKEY.Ajax.request({
+            url: (LABKEY.ActionURL.buildURL("participant-group", 'updateParticipantGroup.api')),
+            method: 'POST',
+            jsonData : groupData,
+            success : function(response)
+            {
+                var res = JSON.parse(response.responseText);
+                if (res.success) {
+                    resolve(true)
+                }
+            },
+            failure : function(response, options)
+            {
+                LABKEY.Utils.displayAjaxErrorResponse(response, options, false, "An error occurred trying to save:  ");
             }
-        },
-        failure : function(response, options)
-        {
-            LABKEY.Utils.displayAjaxErrorResponse(response, options, false, "An error occurred trying to save:  ");
-        }
-    });
+        });
+    })
+    
 }
 
 export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
