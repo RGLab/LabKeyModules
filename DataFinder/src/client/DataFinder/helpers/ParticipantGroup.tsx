@@ -64,9 +64,10 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
     sf = new SelectedFilters()
     let dim: string;
     // set local storage
-    if (groupInfo.new) {
-        sf = groupInfo.filters
+    if (groupInfo.filters.Data) {
+        sf = new SelectedFilters(fromJS(groupInfo.filters))
     } else {
+        console.log("--------- OLD FILTERS ------")
         const missingDimensions = []
         // convert from old filters and warn user
         Object.keys(groupInfo.filters).forEach((level) => {
