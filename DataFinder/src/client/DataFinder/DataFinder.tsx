@@ -15,6 +15,7 @@ import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
 import Tabs from "./components/Tabs";
 import * as d3 from 'd3'
+import { Banner } from "./components/Banner";
 
 interface DataFinderControllerProps {
     mdx: any
@@ -41,8 +42,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // Groups
     const [loadedGroup, setLoadedGroup] = React.useState<GroupInfo>()
-    const [totalCounts, setTotalCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
-
+    const [totalSelectedCounts, setTotalSelectedCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
+    const [totalAppliedCounts, setTotalAppliedCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
 
     // Filters (updated by user)
     const [appliedFilters, setAppliedFilters] = React.useState<SelectedFilters>(sf)
@@ -101,6 +102,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             frame: "none"
         })
         setDataViewsWebpart(dv_wp)
+        CubeHelpers.getTotalCounts(mdx, selectedFilters)
+            .then((counts) => {
+                setTotalAppliedCounts(counts)
+            })
     }, [])
 
     // Do these things when certain variables are incremented --------
@@ -123,9 +128,14 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             .then((cd) => setCubeData(CubeHelpers.createCubeData(cd)))
         CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) =>
             ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
-                if (participantDataWebpart) participantDataWebpart.render() 
+                if (participantDataWebpart) participantDataWebpart.render()
             }
             ))
+        CubeHelpers.getTotalCounts(mdx, selectedFilters)
+            .then((counts) => {
+                setTotalAppliedCounts(counts)
+                setTotalSelectedCounts(counts)
+            })
     }, [applyCounter])
 
 
@@ -133,14 +143,14 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         console.log("----- get total counts -----")
         CubeHelpers.getTotalCounts(mdx, selectedFilters)
             .then((counts) => {
-                setTotalCounts(counts)
+                setTotalSelectedCounts(counts)
             })
     }, [selectedFilters])
 
     // Helper functions ---------------------------------------------
     // These are functions which will get passed down to those components
     // which can cause updates to the page
-    const Banner = memo(FilterSummary)
+    const BannerMemo = memo(Banner)
 
     // ------ filter-related -------
     const getFilters = () => {
@@ -212,7 +222,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     // Define re-used components
-    const participantSummary = <div style={{ margin: "30px 0px" }}>{totalCounts.participant} participants from {totalCounts.study} studies</div>
+    const participantSummary = <div style={{ margin: "30px 0px" }}>{totalSelectedCounts.participant} participants from {totalSelectedCounts.study} studies</div>
     // ----- define the various tabs -----
     const tabs = {
         intro: {
@@ -513,7 +523,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             <ActionButton text={"Reset"} onClick={getFilters} />
             <ActionButton text={"Update"} onClick={() => updateParticipantGroup(loadedGroup)} />
             <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
-            <Banner filters={appliedFilters} />
+            <BannerMemo filters={appliedFilters} groupInfo={loadedGroup} counts={totalAppliedCounts} />
             <div className="datafinder-wrapper">
                 <Tabs tabs={tabs} defaultActive="data" tabFunction={renderWepart} />
             </div>
