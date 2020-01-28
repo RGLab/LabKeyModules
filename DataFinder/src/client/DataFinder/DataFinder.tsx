@@ -1,14 +1,14 @@
 import "./DataFinder.scss";
 import React, { memo } from 'react';
 // import {olap} from '../olap/olap'
-import { CubeData, Filter, SelectedFilters, TotalCounts, GroupInfo } from '../typings/CubeData';
+import { CubeData, Filter, SelectedFilters, TotalCounts, GroupInfo, BannerInfo } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup';
 import { toggleFilter } from './helpers/SelectedFilters';
 import { StudyParticipantCount, StudyInfo } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
 import { Map, List } from 'immutable';
-import { ActionButton, LoadDropdown } from './components/ActionButton'
+import { ActionButton, LoadDropdown, SaveDropdown, ClearDropdown } from './components/ActionButton'
 import { FilterDropdown } from './components/FilterDropdown'
 import { FilterSummary, Flag, AssayFilterIndicatorList } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
@@ -50,17 +50,24 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const [appliedFilters, setAppliedFilters] = React.useState<SelectedFilters>(sf)
     const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(appliedFilters)
 
-
     // Other view settings set by user
     const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
-
 
     // Webparts
     const [participantDataWebpart, setParticipantDataWebpart] = React.useState()
     const [dataViewsWebpart, setDataViewsWebpart] = React.useState()
 
-    // Listeners
-    const [applyCounter, setApplyCounter] = React.useState<number>(0)
+    // Banner
+    const [bannerInfo, setBannerInfoState] = React.useState<BannerInfo>(new BannerInfo(JSON.parse(localStorage.getItem("dataFinderBannerInfo"))))
+    const setBannerInfo = (bi: BannerInfo) => {
+        // debugger
+        setBannerInfoState(bi)
+        localStorage.setItem("dataFinderBannerInfo", JSON.stringify(bi))
+    }
+    if (bannerInfo == null) {
+        setBannerInfo(new BannerInfo({ counts: totalSelectedCounts }))
+    }
+
 
     // Effects  -------------------------------------
 
@@ -74,6 +81,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         ParticipantGroupHelpers.getAvailableGroups().then((data) => {
             const groups = ParticipantGroupHelpers.createAvailableGroups(data)
             setAvailableGroups(groups)
+            groups.forEach((group) => {
+                if (group.label == bannerInfo.groupName) {
+                    setLoadedGroup(group)
+                }
+            })
         })
 
         const pd_wp = new LABKEY.QueryWebPart({
@@ -107,13 +119,15 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             .then((counts) => {
                 setTotalAppliedCounts(counts)
             })
+        applyFilters()
+
     }, [])
 
     // Do these things when certain variables are incremented --------
     // Apply filters
-    React.useEffect(() => {
+    // React.useEffect(() => {
 
-    }, [applyCounter])
+    // }, [applyCounter])
 
 
     React.useEffect(() => {
@@ -130,11 +144,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const BannerMemo = memo(Banner)
 
     // ------ filter-related -------
-    const getFilters = () => {
-        console.log("getFilters()")
-        // get filters from local storage
-        // set SelectedFilters
-    }
 
     const filterClick = (dim: string, filter: Filter) => {
         return (() => {
@@ -143,36 +152,42 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         })
     }
 
-    const applyFilters = () => {
+    const applyFilters = (filters = selectedFilters, customUnsavedFilters = false, groupName = null) => {
         console.log("----- apply filters -----")
         // set applied filters
-        setAppliedFilters(selectedFilters)
+        setAppliedFilters(filters)
         // set local storage
-        localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(selectedFilters))
-
-        CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters)
+        localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(filters))
+        CubeHelpers.getStudyParticipantCounts(mdx, filters)
             .then((spc) => {
                 setStudyParticipantCounts(CubeHelpers.createStudyParticipantCounts(spc))
                 if (studyDict) {
                     ParticipantGroupHelpers.updateContainerFilter(spc, studyDict)
                 }
             })
-        CubeHelpers.getCubeData(mdx, selectedFilters)
+        CubeHelpers.getCubeData(mdx, filters)
             .then((cd) => setCubeData(CubeHelpers.createCubeData(cd)))
-        CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) =>
+        CubeHelpers.getParticipantIds(mdx, filters).then((pids) =>
             ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
                 if (participantDataWebpart) participantDataWebpart.render()
             }
             ))
-        CubeHelpers.getTotalCounts(mdx, selectedFilters)
+        let unsavedFiltersValue = customUnsavedFilters
+        if (customUnsavedFilters == null) {
+            if (loadedGroup && !unsavedFilters) {
+                unsavedFiltersValue = true
+            }
+        }
+        setUnsavedFilters(unsavedFiltersValue)
+        CubeHelpers.getTotalCounts(mdx, filters)
             .then((counts) => {
                 setTotalAppliedCounts(counts)
                 setTotalSelectedCounts(counts)
+                setBannerInfo(bannerInfo.with({unsavedFilters: unsavedFiltersValue, counts: counts, groupName: groupName || bannerInfo.groupName}))
             })
-        if (loadedGroup && !unsavedFilters) {
-            setUnsavedFilters(true)
-        } 
-        setApplyCounter(applyCounter + 1)
+
+
+        // setApplyCounter(applyCounter + 1)
     }
 
     const clearFilters = () => {
@@ -180,7 +195,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         // debugger;
         setSelectedFilters(new SelectedFilters());
         setLoadedGroup(null)
-        applyFilters()
+        applyFilters(new SelectedFilters(), false, "Unsaved Participant Group")
     }
     // ----------------
 
@@ -209,6 +224,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 })
         })
         setUnsavedFilters(false)
+        setBannerInfo(bannerInfo.with({ unsavedFilters: false }))
     }
 
     const loadParticipantGroup = (groupInfo: GroupInfo) => {
@@ -216,8 +232,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(pgFilters))
         setSelectedFilters(pgFilters)
         setLoadedGroup(groupInfo)
-        applyFilters()
-        setUnsavedFilters(false)
+        applyFilters(pgFilters, false, groupInfo.label)
     }
 
 
@@ -272,7 +287,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                 <div className="filters-title">Filters</div>
                             </div>
                             <div className="col-sm-6">
-                                <ActionButton text={"Apply"} onClick={applyFilters} />
+                                <ActionButton text={"Apply"} onClick={() => applyFilters()} />
                             </div>
                         </div>
                         {participantSummary}
@@ -530,12 +545,17 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 {JSON.stringify(cubeData.toJS(), undefined, 2)}
                 {JSON.stringify(studyDict.toJS(), undefined, 2)}
             </pre> */}
-            <ActionButton text={"Save As"} onClick={() => saveButtonClick()} />
-            <ActionButton text={"Clear"} onClick={clearFilters} />
-            <ActionButton text={"Reset"} onClick={getFilters} />
-            <ActionButton text={"Update"} onClick={() => updateParticipantGroup(loadedGroup)} />
             <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
-            <BannerMemo filters={appliedFilters} groupInfo={loadedGroup} counts={totalAppliedCounts} unsavedFilters={unsavedFilters} />
+            <ClearDropdown clearAll={clearFilters} reset={() => { loadedGroup ? loadParticipantGroup(loadedGroup) : clearFilters() }} />
+            <SaveDropdown
+                saveAs={() => saveButtonClick()}
+                save={() => updateParticipantGroup(loadedGroup)}
+                disableSave={!loadedGroup} />
+            <BannerMemo
+                filters={appliedFilters}
+                groupName={loadedGroup ? loadedGroup.label : "Unsaved Participant Group"}
+                counts={totalAppliedCounts}
+                unsavedFilters={unsavedFilters} />
             <div className="datafinder-wrapper">
                 <Tabs tabs={tabs} defaultActive="data" tabFunction={renderWepart} />
             </div>

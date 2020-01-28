@@ -223,6 +223,28 @@ export interface TotalCounts {
     participant: number
 }
 
+export interface IBannerInfo {
+    groupName?: string,
+    counts?: TotalCounts,
+    unsavedFilters?: boolean
+}
+export class BannerInfo extends Record({
+    groupName: "",
+    counts: {study: 0, participant: 0},
+    unsavedFilters: false
+}) {
+    groupName: string
+    counts: TotalCounts
+    unsavedFilters: boolean
+
+    constructor(params?: IBannerInfo) {
+        params ? super(params) : super()
+    }
+
+    with(values: IBannerInfo) {
+        return this.merge(values) as this;
+    }
+}
 
 
 // export class CubeData extends CubeDataRecord implements ICubeData {

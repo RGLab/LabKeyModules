@@ -6,20 +6,6 @@ interface ActionButtonProps {
     text: string;
 }
 
-interface ActionDropdownProps {
-    title: string;
-    buttons: {
-        label: string;
-        value: any;
-    }[]
-    onClick: (label: string, value: string) => () => void;
-}
-
-interface LoadDropdownProps {
-    groups: GroupInfo[],
-    loadParticipantGroup: (groupInfo: GroupInfo) => void
-}
-
 export const ActionButton: React.FC<ActionButtonProps> = (props) => {
     return (
         <button onClick={props.onClick} disabled={false}>
@@ -29,45 +15,95 @@ export const ActionButton: React.FC<ActionButtonProps> = (props) => {
     )
 }
 
-export const ActionDropdown: React.FC<ActionDropdownProps> = (props) => {
+interface LoadDropdownProps {
+    groups: GroupInfo[],
+    loadParticipantGroup: (groupInfo: GroupInfo) => void
+}
+export const LoadDropdown: React.FC<LoadDropdownProps> = ({ groups, loadParticipantGroup }) => {
+    const buttonData = groups.map((group) => {
+        return({
+            label: group.label,
+            action: () => loadParticipantGroup(group),
+            disabled: false
+        })
+    })
     return (
-        <div className="dropdown" style={{width: "50px"}}>
-            <div className="btn-group filterselector" role="group" >
-                <button className="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
-                    <span>{props.title}</span>
-                    <span>&#9660;</span>
-                </button>
-                <div className="dropdown-menu filter-dropdown">
-                    <div className="form-group">
-                        {props.buttons.map((e) => {
-                            return (
-                                <button key={e.label} onClick={props.onClick(e.label, e.value)}>
-                                    {e.label}
-                                </button>
-                            )
-                        })}
-                    </div>
-                </div>
-
-            </div>
-        </div>
+        <DropdownButtons buttonData={buttonData} title={"Load"} />
     )
 }
 
-export const LoadDropdown: React.FC<LoadDropdownProps> = ({ groups, loadParticipantGroup }) => {
+interface SaveDropdownProps {
+    saveAs: () => void; 
+    save: () => void;
+    disableSave: boolean
+}
+
+export const SaveDropdown: React.FC<SaveDropdownProps> = ({saveAs, save, disableSave}) => {
+    const buttonData = [
+        {
+            label: "Save",
+            action: save,
+            disabled: disableSave
+        },
+        {
+            label: "Save As",
+            action: saveAs,
+            disabled: false
+        }
+    ]
+    return(
+        <DropdownButtons title="Save" buttonData={buttonData}/>
+    )
+}
+
+interface ClearDropdownProps {
+    clearAll: () => void;
+    reset: () => void;
+}
+
+export const ClearDropdown: React.FC<ClearDropdownProps> = ({clearAll, reset}) => {
+    const buttonData = [
+        {
+            label: "Clear All",
+            action: clearAll,
+            disabled: false
+        },
+        {
+            label: "Clear Unsaved Filters",
+            action: reset,
+            disabled: false
+        }
+    ]
+    return(
+        <DropdownButtons title={"Clear"} buttonData={buttonData} />
+    )
+}
+
+
+
+
+interface DropdownButtonProps { 
+    title: string
+    buttonData: {
+        label: string;
+        action: () => void;
+        disabled: boolean
+    }[]
+}
+const DropdownButtons: React.FC<DropdownButtonProps> = ({title, buttonData}) => {
     return (
         <div className="dropdown" style={{width: "50px"}}>
             <div className="btn-group filterselector" role="group" >
                 <button className="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
-                    <span>Load</span>
+                    <span>{title}</span>
                     <span>&#9660;</span>
                 </button>
                 <div className="dropdown-menu filter-dropdown">
                     <div className="form-group">
-                        {groups.map((group) => {
+                        {buttonData.map((button) => {
                             return (
-                                <button key={group.label} onClick={() => loadParticipantGroup(group)}>
-                                    {group.label}
+                                <button key={button.label} onClick={button.action} disabled={button.disabled}>
+                                    {button.label}
                                 </button>
                             )
                         })}
