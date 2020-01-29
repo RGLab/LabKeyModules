@@ -3,20 +3,47 @@ import { drawScatterPlot } from './d3/similarStudyScatterPlot.d3'
 
 // Create Typing for scatter plot data
 export interface ScatterPlotDatum {
-    elisa: number,
-    elispot: number,
-    hai: number,
-    nab: number,
-    ge: number,
-    cyto: number,
-    author: string,
-    sponsor: string,
-    maxAge: number,
-    minAge: number,
-    condition: string,
+    assays: {
+        elisa: number,
+        elispot: number,
+        hai: number,
+        neutralizingAntibodyTiter: number,
+        geneExpression: number,
+        flowCytometry: number,
+        pcr: number,
+        mbaa: number
+    },
+    studyDesign: {
+        author: string, // not doing
+        sponsor: string, // cat
+        maximumAge: number, // ord
+        minimumAge: number, // ord
+        numberOfParticipants: number, // ord
+        clinicalTrial: string, // cat
+        initialDataReleaseDate: Date // not doing
+    },
+    condition: {
+        dengue: number,
+        dermatomyositis: number,
+        ebola: number,
+        healthy: number,
+        hepatitis: number,
+        hiv: number,
+        influenza: number,
+        malaria: number,
+        meningitis: number,
+        smallpox: number,
+        tuberculosis: number,
+        unknown: number,
+        varicellaZoster: number,
+        westNile: number,
+        yellowFever: number,
+        zika: number,
+        cmv: number
+    }
     x: number,
     y: number,
-    hoverOverText: string,
+    study: string
 }
 
 export interface ScatterPlotDataRange {
@@ -25,12 +52,15 @@ export interface ScatterPlotDataRange {
 }
 
 export interface ScatterPlotProps {
-    data: ScatterPlotDatum[];
-    name: string;
-    width: number;
-    height: number;
-    dataRange: ScatterPlotDataRange;
-    linkBaseText: string
+    data: ScatterPlotDatum[],
+    name: string,
+    width: number,
+    height: number,
+    dataRange: ScatterPlotDataRange,
+    linkBaseText: string,
+    colorIndex: number,
+    categoricalVar: boolean,
+    dataType: string
 }
 
 // render the d3 barplot element

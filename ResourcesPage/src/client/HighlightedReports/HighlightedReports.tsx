@@ -17,6 +17,7 @@ import {ScatterPlot,
 // Styling imports
 import './HighlightedReports.scss';
 import 'bootstrap/dist/css/bootstrap.min.css'; // v3
+import { keys } from 'd3';
 
 const ResourcesPage: React.FC = () => {
     
@@ -65,11 +66,14 @@ const ResourcesPage: React.FC = () => {
     const [orderBy, setOrderBy] = React.useState("studyNum")
 
     // --- Similar Studies
-    const [ssData, setSsData] = React.useState<ScatterPlotDatum[]>() 
+    const [ssData, setSsData] = React.useState({}) 
+    const [ssTransformedData, setSsTransformedData] = React.useState(
+        Array<ScatterPlotDatum>()
+    )
     const [ssHasError, setSsErrors] = React.useState(false)
     const [ssDataRange, setSsDataRange] = React.useState<ScatterPlotDataRange>({x: [], y: []})
-    const [ssPlotList, setSsPlotList] = React.useState([])
-    const [ssPlotsToShow, setSsPlotsToShow] = React.useState("Assay")
+    const [ssPlotPropsList, setSsPlotPropsList] = React.useState({})
+    const [ssPlotsToShow, setSsPlotsToShow] = React.useState("assays")
 
     // --- Most Accessed
     // const [maData, setMaData] = React.useState<Object>({}); 
@@ -180,11 +184,78 @@ const ResourcesPage: React.FC = () => {
         transformCiteData();
     }, [pmData])
 
+    function transformSdyMetaData(){
+        const data = []
+        if(Object.keys(ssData).length !== 0){
+            Object.keys(ssData).forEach(function(key){
+                let datum: ScatterPlotDatum = 
+                {
+                    assays: {
+                        elisa: parseInt(ssData[key].elisa[0]),
+                        elispot: parseInt(ssData[key].elispot[0]),
+                        hai: parseInt(ssData[key].hai[0]),
+                        neutralizingAntibodyTiter: parseInt(ssData[key].neut_ab_titer[0]),
+                        geneExpression: parseInt(ssData[key].gene_expression[0]),
+                        flowCytometry: parseInt(ssData[key].fcs[0]),
+                        pcr: parseInt(ssData[key].pcr),
+                        mbaa: parseInt(ssData[key].mbaa)
+                    },
+                    studyDesign: {
+                        author: ssData[key].person_accession[0],
+                        sponsor: ssData[key].sponsoring_organization[0],
+                        maximumAge: parseInt(ssData[key].newMaxAge[0]),
+                        minimumAge: parseInt(ssData[key].newMinAge[0]),
+                        numberOfParticipants: parseInt(ssData[key].actual_enrollment[0]),
+                        clinicalTrial: ssData[key].clinical_trial[0],
+                        initialDataReleaseDate: new Date(ssData[key].initial_data_release_date[0])
+                    },
+                    condition: {
+                        dengue: parseInt(ssData[key].Dengue[0]),
+                        dermatomyositis: parseInt(ssData[key].Dermatomyositis[0]),
+                        ebola: parseInt(ssData[key].Ebola[0]),
+                        healthy: parseInt(ssData[key].Healthy[0]),
+                        hepatitis: parseInt(ssData[key].Hepatitis[0]),
+                        hiv: parseInt(ssData[key].HIV[0]),
+                        influenza: parseInt(ssData[key].Influenza[0]),
+                        malaria: parseInt(ssData[key].Malaria[0]),
+                        meningitis: parseInt(ssData[key].Meningitis[0]),
+                        smallpox: parseInt(ssData[key].Smallpox[0]),
+                        tuberculosis: parseInt(ssData[key].Tuberculosis[0]),
+                        unknown: parseInt(ssData[key].Unknown[0]),
+                        varicellaZoster: parseInt(ssData[key].Varicella_Zoster[0]),
+                        westNile: parseInt(ssData[key].West_Nile[0]),
+                        yellowFever: parseInt(ssData[key].Yellow_Fever[0]),
+                        zika: parseInt(ssData[key].Zika[0]),
+                        cmv: parseInt(ssData[key].CMV[0])
+                    },
+                    x: parseFloat(ssData[key].x[0]),
+                    y: parseFloat(ssData[key].y[0]),
+                    study: ssData[key].study[0]
+                }
+                data.push(datum)
+            })
+            setSsTransformedData(data)
+
+            const MULTIPLIER = 1.1
+            var xRange = getRangeFromIntArray(data, "x")
+            var yRange = getRangeFromIntArray(data, "y")
+            xRange = [ xRange[0] * MULTIPLIER, xRange[1] * MULTIPLIER]
+            yRange = [ yRange[0] * MULTIPLIER, yRange[1] * MULTIPLIER]
+            const tmpDataRanges = {x: xRange, y: yRange}
+            setSsDataRange(tmpDataRanges)
+        }
+    }
+
+    React.useEffect(() => {
+        transformSdyMetaData();
+    }, [ssData])
+
 
     /*  -----------------------------------
             StudyStats Set Plot Data
         ----------------------------------- */
 
+    // --- MostCited ----
     React.useEffect(() => {
         transformedPmData.byPubId.sort((a,b) => (a[orderBy] > b[orderBy]) ? 1 : -1)
 
@@ -209,47 +280,103 @@ const ResourcesPage: React.FC = () => {
     }, [transformedPmData, pmDataRange, orderBy])
 
 
-    React.useEffect(() => {
-        // filter out x, y, and hoverText from keys
-        const labels = [] //Object.keys(ssData)
-        createSdyPlotList(labels)
-    }, [ssDataRange])
+    // --- SimilarStudies ---
 
-    React.useEffect(() => {
-        // Calculate the x, y ranges
-        const xRange = getRangeFromIntArray(ssData, "x")
-        const yRange = getRangeFromIntArray(ssData, "x")
-        setSsDataRange({x: xRange, y: yRange})
-    }, [ssData])
-
-    function createSdyPlotList(labels){
-        // instantiate list to hold all plots
-        const plotList = []
-
-        // for each label create plot and add to list
-        labels.forEach(function(label){
-            const res = createSingleSdyPlot(label)
-            plotList.push({
-                label: res
-            })
-        })
-
-        // no return, just set the SdyPlotList state element
-        setSsPlotList(plotList)
+    const labels = {
+        assays: [
+            'elisa',
+            'elispot',
+            'hai',
+            'neutralizingAntibodyTiter',
+            'geneExpression',
+            'flowCytometry',
+            'pcr',
+            'mbaa'
+        ],
+        condition: [
+            'healthy',
+            'influenza',
+            'cmv',
+            'tuberculosis',
+            'yellowFever',
+            'meningitis',
+            'malaria',
+            'hiv',
+            'dengue',
+            'ebola',
+            'hepatitis',
+            'smallpox',
+            'dermatomyositis',
+            'westNile',
+            'zika',
+            'varicellaZoster',
+            'unknown'
+        ],
+        studyDesign: [
+            // 'author',
+            'sponsor',
+            'minimumAge',
+            'maximumAge',
+            'numberOfParticipants',
+            'clinicalTrial'
+            // 'initialDataReleaseDate'
+        ]
     }
 
-    function createSingleSdyPlot(label){
-        return(
-            <ScatterPlot 
-                data={ssData}
-                name={label}
-                width={200}
-                height={200}
-                dataRange={ssDataRange}
-                linkBaseText={apiBase + "/project/Studies/"}
-            />
-        )
-    }    
+    const categoricalLabels = labels.assays
+                              .concat(labels.condition)
+                              .concat('clinicalTrial')
+
+    React.useEffect(() => {
+        
+        function getLabelType(label){
+            if(labels.assays.includes(label)){
+                return("assays")
+            }else if(labels.condition.includes(label)){
+                return("condition")
+            }else{
+                return("studyDesign")
+            }
+        }
+
+        function makePropsWithIndex(label, index, dataType){
+            // For plotting categorical values, ensure that colored dots
+            // are plotted last to be visually on top
+            ssTransformedData.sort((a,b) => 
+                (a[dataType][label] < b[dataType][label]) ? 1 : -1
+            )
+
+            // deep copy to ensure sort stays put
+            const sortedData = JSON.parse(JSON.stringify(ssTransformedData))
+
+            let plotProps: ScatterPlotProps = {
+                data: sortedData,
+                name: label,
+                width: 300,
+                height: 300,
+                dataRange: ssDataRange,
+                linkBaseText: apiBase + "/project/Studies/",
+                colorIndex: index,
+                categoricalVar: categoricalLabels.includes(label),
+                dataType: getLabelType(label)
+            }
+            
+            return(plotProps)
+        }
+
+        const plotPropsList = {}
+
+        Object.keys(labels).forEach(function(key){
+            const subList = []
+            labels[key].forEach(function(label, index){
+                subList.push(makePropsWithIndex(label, index, key))
+            })
+            plotPropsList[key] = subList
+        })
+
+        setSsPlotPropsList(plotPropsList)
+
+    }, [ssTransformedData, ssDataRange])  
 
 
     // --------- ABOUT -----------------
@@ -441,69 +568,79 @@ const ResourcesPage: React.FC = () => {
 
         const SimilarStudies: React.FC = () => {
             // Offer selection of plots
-            // Offer selection of plots
             const dropdownOptions = [
-                {value: 'Assay', label: 'Assay Data'},
-                {value: 'StudyDesign', label:  'Study Design'},
+                {value: 'assays', label: 'Assay Data Available'},
+                {value: 'studyDesign', label:  'Study Design'},
+                {value: 'condition', label: 'Condition Studied'}
             ]
+
+            function CreatePlotGrid(propsList){
+                const rowsOfPlots = []
+                const PLOTS_IN_ROW = 3
+
+                // slice returns i to end of array even if i + x is greater
+                // than the length
+                for(var i = 0; 
+                    i <= propsList.length - PLOTS_IN_ROW + 1; 
+                    i = i + PLOTS_IN_ROW){
+                        var copy = JSON.parse(JSON.stringify(propsList))
+                        var propsSet = copy.slice(i, i + PLOTS_IN_ROW)
+                        rowsOfPlots.push(CreateRowOfPlots(propsSet))
+                }
+
+                return(rowsOfPlots)
+            }
+
+            function CreateRowOfPlots(propsSet){
+                // console.log(propsSet[0])
+                const plotList = []
+                for(var i = 0; i < propsSet.length; i++){
+                    plotList.push(CreateSingleScatterPlot(propsSet[i]))
+                }
+
+                return(
+                    <tr>
+                        {plotList}
+                    </tr>
+                )
+            }
+
+            function CreateSingleScatterPlot(props){
+                // console.log(props)
+                return(
+                    <td>
+                        <ScatterPlot 
+                            data={props.data}
+                            name={props.name}
+                            width={props.width}
+                            height={props.height}
+                            dataRange={props.dataRange}
+                            linkBaseText={props.linkBaseText}
+                            colorIndex={props.colorIndex}
+                            categoricalVar={props.categoricalVar}
+                            dataType={props.dataType}
+                         />
+                    </td>
+                )
+            }
+
+            const PlotGrid: React.FC = () => {
+
+                // console.log(JSON.stringify(ssPlotPropsList[ssPlotsToShow]))
+                
+                // filter plot list
+                const plotGrid = CreatePlotGrid(ssPlotPropsList[ssPlotsToShow])
+
+                return(
+                    <div>
+                        {plotGrid}
+                    </div>
+                )
+            }
 
             function onSelectChangeOrder(eventKey){
                 setSsPlotsToShow(eventKey)
             }
-
-            const PlotGridAssay: React.FC = () => {
-                const labels = [
-                    'elisa',
-                    'elispot',
-                    'hai',
-                    'nab',
-                    'ge',
-                    'cyto',
-                    'pcr',
-                    'mbaa'
-                ]
-
-                // filter plot list
-
-                // create 3x3 grid
-
-                return(
-                    <div>
-                        Assay Plot Grid
-                    </div>
-                )
-            }
-
-            const PlotGridSdyDesign: React.FC = () => {
-                const labels = [
-                    'author',
-                    'sponsor',
-                    'minAge',
-                    'maxAge',
-                    'numSubjects',
-                    'condition'
-                ]
-
-                // filter plot list
-
-                // create 2x3 grid
-
-                return(
-                    <div>
-                        Study Design Plot Grid
-                    </div>
-                )
-            }
-        
-            // show small multiples grid (select set)
-            // assay data: elisa, elispot, flow, geneExpr, hai, nab, pcr, mbaa
-            // Study Design: author, sponsoring org, condition studied, min age, max age, number pids
-
-            // --- onMouseOver
-            // Show study id
-
-            // --- onClick
-            // make bigger and go to study page
 
             return(
                 <div id="#similar-studies">
@@ -522,15 +659,16 @@ const ResourcesPage: React.FC = () => {
                         <Bootstrap.MenuItem eventKey={dropdownOptions[1].value} onSelect={onSelectChangeOrder}>
                             {dropdownOptions[1].label}
                         </Bootstrap.MenuItem>
+                        <Bootstrap.MenuItem eventKey={dropdownOptions[2].value} onSelect={onSelectChangeOrder}>
+                            {dropdownOptions[2].label}
+                        </Bootstrap.MenuItem>
                     </Bootstrap.DropdownButton>
                     <div>
-                        { ssPlotsToShow == "Assay" ? <PlotGridAssay/> : <PlotGridSdyDesign/>}
+                        <PlotGrid/>
                     </div>
                 </div>
             )
         }
-       
-
 
         return(
             <div id="StudyStats">

@@ -1,16 +1,111 @@
 import * as d3 from 'd3';
 
 import { ScatterPlotProps } from '../similarStudyScatterPlot';
+import { color } from 'd3';
 
 export function drawScatterPlot(props: ScatterPlotProps) {
     
+    console.log(props)
+
     // props
     const data = props.data;
-    const titles = props.titles;
     const name = props.name;
+    const prettyName = makeNamePretty(name)
     const dataRange = props.dataRange;
-    // const linkBaseText = props.linkBaseText;
+    const linkBaseText = props.linkBaseText;
+    const categoricalVar = props.categoricalVar
+    const colorIndex = props.colorIndex
+    const dataType = props.dataType
 
+    
+
+    // Helper
+    function makeNamePretty(string){
+        // find uppercase letters
+        console.log(string)
+        var positions = [];
+        for(var i = 0; i < string.length; i++){
+            if(string[i].match(/[A-Z]/) != null){
+                positions.push(i);
+            }
+        }
+
+        if(positions.length > 0){
+            // insert space before index in positions
+            const separateStrings = []
+            for(var x = 0; x < positions.length; x++){
+                var start, end;
+                if(x == 0){
+                    start = 0
+                    end = positions[0]
+                }else{
+                    start = positions[x - 1]
+                    end = positions[x]
+                }
+                const word = string.slice(start,end)
+                const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1)
+                separateStrings.push(capitalizedWord)
+            }
+            const lastWord = string.slice(positions[positions.length-1])
+            separateStrings.push(lastWord)
+
+            return(separateStrings.join(' '))
+        }else{
+            const capitalizedWord = string.charAt(0).toUpperCase() + string.slice(1)
+            return(capitalizedWord)
+        }
+        
+    }
+
+    // Create custom color array with 17 colors (max needed) for cat vars
+    var customColorArray = d3.schemeCategory10.concat(d3.schemeSet2)
+    customColorArray.splice(7, 1)
+    customColorArray.splice(16, 1)
+    customColorArray[customColorArray.length + 1] = "#000000"
+
+    // Create mapping to different ordinal color schemes for study design set
+    const ordinalColorOptions = [
+        'interpolateBrBG',
+        'interpolatePiYG',
+        'interpolatePuOr',
+        'interpolateRdBu'
+    ]
+    
+    function getFillColor(label, categoricalVar, index, value){
+        if(categoricalVar == true){
+            return(getCategoricalColor(index, value))
+        }else{
+            return(getOrdinalColor(index, label, value))
+        }
+    }
+
+    function getCategoricalColor(index, value){
+        if(value == 0){
+            return('#D3D3D3') // grey
+        }else{
+            return(customColorArray[index])
+        }
+    }
+
+    function getOrdinalColor(index, label, value){
+        var interpolationScheme = ordinalColorOptions[index]
+        const range = getRangeFromIntArray(data, dataType, label)
+        const percentage = getPercentageFromValue(value, range)
+        return(d3[interpolationScheme](percentage))
+    }
+
+    function getRangeFromIntArray(data, dataType, label){
+        const values = data.map(a => parseFloat(a[dataType][label]))
+        const max = Math.max(...values)
+        const min = Math.min(...values)
+        return([min, max])
+    }
+
+    function getPercentageFromValue(value: number, range: number[]){
+        return( value - range[0] / range[1] - range[0] )
+    }
+
+    
     // select div
     const svg = d3
         .select("#scatterplot-" + name)
@@ -23,7 +118,7 @@ export function drawScatterPlot(props: ScatterPlotProps) {
                 top: 50, 
                 right: 30, 
                 bottom: 30, 
-                left: 130
+                left: 30
         },
         width  = props.width - margin.left - margin.right,
         height = props.height - margin.top  - margin.bottom;
@@ -56,22 +151,13 @@ export function drawScatterPlot(props: ScatterPlotProps) {
         .attr("text-anchor", "middle")
         .attr("x", props.width / 2)
         .attr("y", margin.top / 2)
-        .text(titles.x);
+        .text(prettyName);
 
     // y-axis
     svg.append("g")
         .attr("id", "yaxis-labels")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         .call(d3.axisLeft(yaxisScale))
-
-    // y-axis title
-    svg.append("text")
-        .attr("class", "y label")
-        .attr("text-anchor", "middle")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 10)
-        .attr("x", - (props.height / 3))
-        .text(titles.y);
 
     // add clickable-links
     // svg.selectAll("text")
@@ -100,16 +186,19 @@ export function drawScatterPlot(props: ScatterPlotProps) {
     //     .style("border-width", "2px")
     //     .style("border-radius", "5px")
     //     .style("padding", "5px")
-
     // add values
-    svg.selectAll(".dot")
-      .data(data)
-    .enter().append("circle")
-      .attr("class", "dot")
-      .attr("r", 3.5)
-      .attr("cx", function(d){ return d.x })
-      .attr("cy", function(d){ return d.y })
-      .style("fill", function(d) { return d.label }) 
+    svg.selectAll("circle")
+        .data(data)
+        .enter()
+        .append("circle")
+        .attr("class", "circle")
+        .attr("r", 3.5)
+        .attr("cx", function(d){ return xaxisScale(d.x) + margin.left })
+        .attr("cy", function(d){ return yaxisScale(d.y) + margin.top})
+        .style("fill", function(d) { 
+            const fill = getFillColor(name, categoricalVar, colorIndex, d[dataType][name])
+            return(fill)
+        }) 
 
 
 

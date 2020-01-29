@@ -105,13 +105,111 @@ function(){
 function(){
   sdyMetaData <- loadLocalFile("sdyMetaData")
 
-  # Generate UMAP results
+  # ---- Feature Engineering -----
+
+  # Local Helpers
+  extractIntegerFromString <- function(string){
+      hasInteger <- grepl("\\d", string)
+      if(hasInteger){
+          int <- as.numeric(regmatches(string, regexpr("(\\d+)", string, perl = TRUE)))
+          return(int)
+      }else{
+          return(NA)
+      }
+  }
+
+  # Ensure min and max age are all ints (no strings)
+  sdyMetaData$newMinAge <- suppressWarnings(as.integer(sdyMetaData$minimum_age))
+  if (any(is.na(sdyMetaData$newMinAge))) {
+      sdyMetaData$newMinAge[ is.na(sdyMetaData$newMinAge)] <-
+          extractIntegerFromString(sdyMetaData$minimum_age[ is.na(sdyMetaData$newMinAge)])
+  }
+
+  sdyMetaData$newMaxAge <- suppressWarnings(as.integer(sdyMetaData$maximum_age))
+  if (any(is.na(sdyMetaData$newMaxAge))) {
+      sdyMetaData$newMaxAge[ is.na(sdyMetaData$newMaxAge)] <-
+          extractIntegerFromString(sdyMetaData$maximum_age[ is.na(sdyMetaData$newMaxAge)])
+  }
+
+  sdyMetaData <- sdyMetaData[ , -(grep("(min|max)imum", colnames(sdyMetaData))) ]
+
+  # Distill condition studied
+  sdyMetaData$newCondition <- sapply(sdyMetaData$condition_studied, function(x) {
+      if( grepl("healthy|normal|naive", x, ignore.case = TRUE)){
+          return("Healthy")
+      }else if(grepl("influenza|H1N1", x, ignore.case = TRUE)){
+          return("Influenza")
+      }else if(grepl("CMV", x, ignore.case = TRUE)){
+          return("CMV")
+      }else if(grepl("TB|tuberculosis", x, ignore.case = TRUE)){
+          return("Tuberculosis")
+      }else if(grepl("Yellow Fever", x, ignore.case = TRUE)){
+          return("Yellow_Fever")
+      }else if(grepl("Mening", x, ignore.case = TRUE)){
+          return("Meningitis")
+      }else if(grepl("Malaria", x, ignore.case = TRUE)){
+          return("Malaria")
+      }else if(grepl("HIV", x, ignore.case = TRUE)){
+          return("HIV")
+      }else if(grepl("Dengue", x, ignore.case = TRUE)){
+          return("Dengue")
+      }else if(grepl("ZEBOV", x, ignore.case = TRUE)){
+          return("Ebola")
+      }else if(grepl("Hepatitis", x, ignore.case = TRUE)){
+          return("Hepatitis")
+      }else if(grepl("Smallpox|vaccinia", x, ignore.case = TRUE)){
+          return("Smallpox")
+      }else if(grepl("JDM|Dermatomyositis", x, ignore.case = TRUE)){
+          return("Dermatomyositis")
+      }else if(grepl("West Nile", x, ignore.case = TRUE)){
+          return("West_Nile")
+      }else if(grepl("Zika", x, ignore.case = TRUE)){
+          return("Zika")
+      }else if(grepl("Varicella", x, ignore.case = TRUE)){
+          return("Varicella_Zoster")
+      }else{
+          return("Unknown")
+      }
+  })
+
+  sdyMetaData <- sdyMetaData[ , -grep("condition_studied", colnames(sdyMetaData))]
+
+  # TODO: Turn condition studied into model matrix and merge
+  tmp <- model.matrix(~condition, data.frame(study = rownames(sdyMetaData),
+                                             condition = sdyMetaData$newCondition))
+  tmp <- data.frame(tmp[, -1])
+  colnames(tmp) <- gsub("condition", "", colnames(tmp))
+  cmv <- unname(unlist(rowSums(tmp)))
+  tmp$CMV <- ifelse(cmv == 0, 1, 0)
+  tmp$study <- sdyMetaData$study <- rownames(sdyMetaData)
+  sdyMetaData <- merge(sdyMetaData, tmp, by="study")
+  sdyMetaData <- sdyMetaData[, -grep("newCondition", colnames(sdyMetaData))]
+
+  # Generate UMAP results with assay * timepoint
   set.seed(8)
   umap <- uwot::umap(sdyMetaData, n_neighbors = 20, n_components = 2)
   df <- data.frame(x = umap[,1],
                    y = umap[,2],
                    stringsAsFactors = FALSE)
+  sdyMetaData$x <- df$x
+  sdyMetaData$y <- df$y
 
-  # Return UMAP input and output for plotting
-  res <- list(sdyMetaData, df)
+  # Condense assay data to single binary for each assay
+  assays <- c("elisa", "elispot", "fcs", "gene_expression", "hai", "mbaa", "neut_ab_titer", "pcr")
+  for (assay in assays) {
+      relevantCols <- grep(assay, colnames(sdyMetaData))
+      sdyMetaData[assay] <- apply(sdyMetaData, 1, function(x){
+          if(any(x[relevantCols] == 1)){
+              return(1)
+          }else{
+              return(0)
+          }
+      })
+      sdyMetaData <- sdyMetaData[, -relevantCols]
+  }
+
+  # Convert to list of lists for parsing
+  res <- lapply( split(sdyMetaData, seq_along(sdyMetaData[,1])), as.list)
+
+  return(res)
 }
