@@ -76,8 +76,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // Do these things only when the page loads --------
     React.useEffect(() => {
         // load data
-        CubeHelpers.getFilterCategories().then((categories) => {
-            setFilterCategories(CubeHelpers.createFilterCategories(categories))
+        CubeHelpers.getFilterCategories().then((categoriesResponse) => {
+            const categories = CubeHelpers.createFilterCategories(categoriesResponse)
+            setFilterCategories(categories)
         })
         CubeHelpers.getStudyDict(mdx, appliedFilters).then((sd) => {
             setStudyDict(sd)
@@ -163,10 +164,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         // set local storage
         localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(filters))
         CubeHelpers.getStudyParticipantCounts(mdx, filters)
-            .then((spc) => {
-                setStudyParticipantCounts(CubeHelpers.createStudyParticipantCounts(spc))
+            .then((spcResponse) => {
+                const spc = CubeHelpers.createStudyParticipantCounts(spcResponse)
+                setStudyParticipantCounts(spc)
                 if (studyDict) {
-                    ParticipantGroupHelpers.updateContainerFilter(spc, studyDict)
+                    ParticipantGroupHelpers.updateContainerFilter(spcResponse, studyDict)
                 }
             })
         CubeHelpers.getCubeData(mdx, filters)
@@ -185,7 +187,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             .then((counts) => {
                 setTotalAppliedCounts(counts)
                 setTotalSelectedCounts(counts)
-                setBannerInfo(bannerInfo.with({unsavedFilters: unsavedFiltersValue, counts: counts, groupName: groupName || bannerInfo.groupName}))
+                setBannerInfo(bannerInfo.with({ unsavedFilters: unsavedFiltersValue, counts: counts, groupName: groupName || bannerInfo.groupName }))
             })
 
 
@@ -264,12 +266,12 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const participantSummary = <div style={{ margin: "30px 0px" }}>{totalSelectedCounts.participant} participants from {totalSelectedCounts.study} studies</div>
     // ----- define the various tabs -----
     const tabs = {
-        intro: {
-            content: <h1>Find Groups</h1>,
-            id: "intro",
-            tag: "intro",
-            text: "Groups"
-        },
+        // intro: {
+        //     content: <h1>Find Groups</h1>,
+        //     id: "intro",
+        //     tag: "intro",
+        //     text: "Groups"
+        // },
         data: {
             content: <>
                 <div className="row">
@@ -366,7 +368,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             </>,
             id: "data",
             tag: "find-data",
-            text: "By Available Assay Data",
+            text: "Available Assay Data",
             tabClass: "pull-right"
         },
         participant: {
@@ -376,15 +378,18 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         <h2>Participant Characteristics</h2>
                         <p>Participant data available based on current filters</p>
                     </div>
-                    <div className="col-sm-3">
-                        <Barplot data={cubeData.getIn(["Subject", "Gender"]).toJS()} name={"Gender"} height={200} width={250} />
-                    </div>
-                    <div className="col-sm-3">
-                        <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name="Age" height={200} width={250} />
-                    </div>
-                    <div className="col-sm-3">
-                        <Barplot data={cubeData.getIn(["Subject", "Race"]).toJS()} name="Race" height={200} width={250} />
-                    </div>
+                    {filterCategories && <>
+                        <div className="col-sm-3">
+                            <Barplot data={cubeData.getIn(["Subject", "Gender"]).toJS()} name={"Gender"} height={200} width={250} categories={filterCategories.Gender} />
+                        </div>
+                        <div className="col-sm-3">
+                            <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name="Age" height={200} width={250} categories={filterCategories.Age} />
+                        </div>
+                        <div className="col-sm-3">
+                            <Barplot data={cubeData.getIn(["Subject", "Race"]).toJS()} name="Race" height={200} width={250} categories={filterCategories.Race} />
+                        </div>
+                    </>}
+
 
                 </div>
                 <hr />
@@ -400,72 +405,76 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         </div>
                         {participantSummary}
                     </div>
-                    <div className="col-sm-3">
-                        <FilterDropdown
-                            key={"Gender"}
-                            dimension={"Subject"}
-                            level={"Gender"}
-                            members={cubeData.getIn(["Subject", "Gender"]).map((e) => { return (e.get("member")) })}
-                            filterClick={filterClick}
-                            selected={selectedFilters.Subject.get("Gender")}>
-                            <>
-                                {selectedFilters.Subject.get("Gender") && selectedFilters.Subject.get("Gender").map((memberList) => {
-                                    return (
-                                        <div style={{ width: "10em" }}>
-                                            < Flag dim="participant" onDelete={filterClick("Subject", { level: "Gender", member: memberList.get(0) })} >
-                                                {memberList.get(0)}
-                                            </Flag>
-                                        </div>
-                                    )
-                                })}
-                            </>
-                        </FilterDropdown>
-                    </div>
-                    <div className="col-sm-3">
-                        <FilterDropdown
-                            key={"Age"}
-                            dimension={"Subject"}
-                            level={"Age"}
-                            members={cubeData.getIn(["Subject", "Age"]).map((e) => { return (e.get("member")) })}
-                            filterClick={filterClick}
-                            selected={selectedFilters.Subject.get("Age")}>
-                            <>
-                                {selectedFilters.Subject.get("Age") && selectedFilters.Subject.get("Age").map((memberList) => {
-                                    return (
-                                        <div style={{ width: "10em" }}>
-                                            < Flag dim="participant" onDelete={filterClick("Subject", { level: "Age", member: memberList.get(0) })} >
-                                                {memberList.get(0)}
-                                            </Flag>
-                                        </div>
-                                    )
-                                })}
-                            </>
 
-                        </FilterDropdown>
+                    {filterCategories &&
+                        <>
+                            <div className="col-sm-3"> <FilterDropdown
+                                key={"Gender"}
+                                dimension={"Subject"}
+                                level={"Gender"}
+                                members={filterCategories.Gender}
+                                filterClick={filterClick}
+                                selected={selectedFilters.Subject.get("Gender")}>
+                                <>
+                                    {selectedFilters.Subject.get("Gender") && selectedFilters.Subject.get("Gender").map((memberList) => {
+                                        return (
+                                            <div style={{ width: "10em" }}>
+                                                < Flag dim="participant" onDelete={filterClick("Subject", { level: "Gender", member: memberList.get(0) })} >
+                                                    {memberList.get(0)}
+                                                </Flag>
+                                            </div>
+                                        )
+                                    })}
+                                </>
+                            </FilterDropdown>
+                            </div>
+                            <div className="col-sm-3">
+                                <FilterDropdown
+                                    key={"Age"}
+                                    dimension={"Subject"}
+                                    level={"Age"}
+                                    members={filterCategories.Age}
+                                    filterClick={filterClick}
+                                    selected={selectedFilters.Subject.get("Age")}>
+                                    <>
+                                        {selectedFilters.Subject.get("Age") && selectedFilters.Subject.get("Age").map((memberList) => {
+                                            return (
+                                                <div style={{ width: "10em" }}>
+                                                    < Flag dim="participant" onDelete={filterClick("Subject", { level: "Age", member: memberList.get(0) })} >
+                                                        {memberList.get(0)}
+                                                    </Flag>
+                                                </div>
+                                            )
+                                        })}
+                                    </>
 
-                    </div>
-                    <div className="col-sm-3">
-                        <FilterDropdown
-                            key={"Race"}
-                            dimension={"Subject"}
-                            level={"Race"}
-                            members={cubeData.getIn(["Subject", "Race"]).map((e) => { return (e.get("member")) })}
-                            filterClick={filterClick}
-                            selected={selectedFilters.Subject.get("Race")}>
-                            <>
-                                {selectedFilters.Subject.get("Race") && selectedFilters.Subject.get("Race").map((memberList) => {
-                                    return (
-                                        <div style={{ width: "10em" }}>
-                                            < Flag dim="participant" onDelete={filterClick("Subject", { level: "Race", member: memberList.get(0) })} >
-                                                {memberList.get(0)}
-                                            </Flag>
-                                        </div>
-                                    )
-                                })}
-                            </>
-                        </FilterDropdown>
+                                </FilterDropdown>
 
-                    </div>
+                            </div>
+                            <div className="col-sm-3">
+                                <FilterDropdown
+                                    key={"Race"}
+                                    dimension={"Subject"}
+                                    level={"Race"}
+                                    members={filterCategories.Race}
+                                    filterClick={filterClick}
+                                    selected={selectedFilters.Subject.get("Race")}>
+                                    <>
+                                        {selectedFilters.Subject.get("Race") && selectedFilters.Subject.get("Race").map((memberList) => {
+                                            return (
+                                                <div style={{ width: "10em" }}>
+                                                    < Flag dim="participant" onDelete={filterClick("Subject", { level: "Race", member: memberList.get(0) })} >
+                                                        {memberList.get(0)}
+                                                    </Flag>
+                                                </div>
+                                            )
+                                        })}
+                                    </>
+                                </FilterDropdown>
+
+                            </div>
+                        </>}
+
                 </div>
                 <hr></hr>
                 <div className="row">
@@ -475,7 +484,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             </>,
             id: "participant",
             tag: "find-participant",
-            text: "By Participant Characteristics",
+            text: "Participant Characteristics",
             tabClass: "pull-right"
         },
         study: {
@@ -487,54 +496,65 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             Study characteristics available based on current filters
                         </p>
                     </div>
-                    <div className="col-sm-3">
-                        <Barplot data={cubeData.getIn(["Study", "Condition"]).toJS()} name="Condition" height={200} width={300} />
-                        <Barplot data={cubeData.getIn(["Study", "Category"]).toJS()} name="Category" height={200} width={300} />
+                    {filterCategories && <>
+                        <div className="col-sm-3">
+                            <Barplot data={cubeData.getIn(["Study", "Condition"]).toJS()} name="Condition" height={200} width={300} categories={filterCategories.Condition} />
+                        </div>
+                        <div className="col-sm-3">
+                            <Barplot data={cubeData.getIn(["Study", "Category"]).toJS()} name="Category" height={200} width={300} categories={filterCategories.Category} />
+                        </div>
+                        <div className="col-sm-3">
+                            <Barplot data={cubeData.getIn(["Subject", "ExposureMaterial"]).toJS()} name="ExposureProcess" height={200} width={300} categories={filterCategories.ExposureMaterial} />
+                        </div>
+                    </>}
 
-                        <Barplot data={cubeData.getIn(["Subject", "ExposureMaterial"]).toJS()} name="ExposureProcess" height={200} width={300} />
-                    </div>
                 </div>
                 <ActionButton text={"Apply"} onClick={() => applyFilters()} />
-                <FilterDropdown
-                    key={"Condition"}
-                    dimension={"Study"}
-                    level={"Condition"}
-                    members={cubeData.getIn(["Study", "Condition"]).map((e) => { return (e.get("member")) })}
-                    filterClick={filterClick}
-                    selected={selectedFilters.Study.get("Condition")} />
-                <FilterDropdown
-                    key={"Category"}
-                    dimension={"Study"}
-                    level={"Category"}
-                    members={cubeData.getIn(["Study", "Category"]).map((e) => { return (e.get("member")) })}
-                    filterClick={filterClick}
-                    selected={selectedFilters.Study.get("Category")} />
-                <FilterDropdown
-                    key={"ExposureMaterial"}
-                    dimension={"Subject"}
-                    level={"ExposureMaterial"}
-                    members={cubeData.getIn(["Subject", "ExposureMaterial"]).map((e) => { return (e.get("member")) })}
-                    filterClick={filterClick}
-                    selected={selectedFilters.Subject.get("ExposureMaterial")} />
-                <FilterDropdown
-                    key={"ExposureProcess"}
-                    dimension={"Subject"}
-                    level={"ExposureProcess"}
-                    members={cubeData.getIn(["Subject", "ExposureProcess"]).map((e) => { return (e.get("member")) })}
-                    filterClick={filterClick}
-                    selected={selectedFilters.Subject.get("ExposureProcess")} />
-                <FilterDropdown
-                    key={"Species"}
-                    dimension={"Subject"}
-                    level={"Species"}
-                    members={cubeData.getIn(["Subject", "Species"]).map((e) => { return (e.get("member")) })}
-                    filterClick={filterClick}
-                    selected={selectedFilters.Subject.get("Species")} />
+                {filterCategories &&
+                    <>
+                        <FilterDropdown
+                            key={"Condition"}
+                            dimension={"Study"}
+                            level={"Condition"}
+                            members={filterCategories.Condition}
+                            filterClick={filterClick}
+                            selected={selectedFilters.Study.get("Condition")} />
+                        <FilterDropdown
+                            key={"Category"}
+                            dimension={"Study"}
+                            level={"Category"}
+                            members={filterCategories.Category}
+                            filterClick={filterClick}
+                            selected={selectedFilters.Study.get("Category")} />
+                        <FilterDropdown
+                            key={"ExposureMaterial"}
+                            dimension={"Subject"}
+                            level={"ExposureMaterial"}
+                            members={filterCategories.ExposureMaterial}
+                            filterClick={filterClick}
+                            selected={selectedFilters.Subject.get("ExposureMaterial")} />
+                        <FilterDropdown
+                            key={"ExposureProcess"}
+                            dimension={"Subject"}
+                            level={"ExposureProcess"}
+                            members={filterCategories.ExposureProcess}
+                            filterClick={filterClick}
+                            selected={selectedFilters.Subject.get("ExposureProcess")} />
+                        <FilterDropdown
+                            key={"Species"}
+                            dimension={"Subject"}
+                            level={"Species"}
+                            members={filterCategories.Species}
+                            filterClick={filterClick}
+                            selected={selectedFilters.Subject.get("Species")} />
+                    </>
+                }
+
 
                 {participantSummary}
 
-                {studyParticipantCounts.map((sdy) => {
-                    if (sdy.participantCount > 0 && studyDict && studyDict[sdy.studyName]) {
+                {studyDict && studyParticipantCounts.map((sdy) => {
+                    if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
                         return (
                             <StudyCard key={sdy.studyName}
                                 study={studyDict[sdy.studyName]}
@@ -545,7 +565,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             </>,
             id: "study",
             tag: "find-study",
-            text: "By Study Design",
+            text: "Study Design",
             tabClass: "pull-right",
         },
     }

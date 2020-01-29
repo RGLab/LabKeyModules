@@ -1,32 +1,37 @@
 import * as React from 'react';
-import { Filter } from '../../typings/CubeData'
+import { Filter, FilterCategories, FilterCategory } from '../../typings/CubeData'
 import { Map, List, fromJS } from 'immutable'
 
 // Types 
 export interface FilterDropdownProps {
     dimension: string;
     level: string;
-    members: string[];
+    members: FilterCategory[];
     filterClick: (dim: string, filter: Filter) => () => void;
     selected: List<List<string>>;
 }
 
-export const FilterDropdown: React.FC<FilterDropdownProps> = (props) => {
+export const FilterDropdown: React.FC<FilterDropdownProps> = ({dimension, level, members, filterClick, selected, children}) => {
     // if (props.selected != undefined) debugger
+    members.sort((a,b)=>{
+        if (a.sortorder == b.sortorder) {if(a.label.toLowerCase > b.label.toLowerCase) return(1); else return(-1)}
+        return a.sortorder - b.sortorder
+    })
+    const labels = members.map(m => m.label)
     return (
         <div className={"dropdown"} style={{width: "50px"}}>
             <div className="btn-group filterselector" role="group" >
                 <button className="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
-                    <span>{props.level}</span>
+                    <span>{level}</span>
                     <span>&#9660;</span>
                 </button>
                 <div className="dropdown-menu filter-dropdown">
-                    <div id={props.level} className="form-group">
-                        {props.members.map((e) => {
+                    <div id={level} className="form-group">
+                        {labels.map((e) => {
                             let checked: boolean;
-                            if (props.selected == undefined) {
+                            if (selected == undefined) {
                                 checked = false
-                            } else if (props.selected.includes(List([e]))) {
+                            } else if (selected.includes(List([e]))) {
                                 checked = true;
                             } else {
                                 checked = false;
@@ -36,9 +41,9 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = (props) => {
                                 <div className="checkbox" key={e}>
                                     <label >
                                         <input
-                                            onClick={props.filterClick(props.dimension, { level: props.level, member: e })}
+                                            onClick={filterClick(dimension, { level: level, member: e })}
                                             type="checkbox"
-                                            name={props.level}
+                                            name={level}
                                             value={e}
                                             checked={checked}
                                             readOnly />
@@ -49,7 +54,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = (props) => {
                         })}
                     </div>
                 </div>
-                {props.children}
+                {children}
 
             </div>
         </div>

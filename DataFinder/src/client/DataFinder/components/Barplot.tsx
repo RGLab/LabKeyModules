@@ -1,20 +1,18 @@
 import * as React from 'react';
 import { drawBarplot } from './d3/Barplot.d3'
-import { CubeDatum } from '../../typings/CubeData'
+import { CubeDatum, FilterCategory } from '../../typings/CubeData'
 
 export interface BarplotProps {
     data: CubeDatum[];
     name: string;
     width: number;
     height: number;
+    categories: FilterCategory[]
 }
 
 
-const createAxisData = (data: CubeDatum[]) => {
-    const axisData = data.map(cd => cd.member)
-
-    axisData.sort()
-
+const createAxisData = (members: FilterCategory[]) => {
+    const axisData = JSON.parse(JSON.stringify(members)).reverse().map(m => m.label)
     return (axisData)
 }
 
@@ -27,7 +25,7 @@ export const Barplot: React.FC<BarplotProps> = (props) => {
             name: props.name,
             width: props.width,
             height: props.height,
-            labels: createAxisData(props.data)
+            labels: createAxisData(props.categories)
         });
         }
     });

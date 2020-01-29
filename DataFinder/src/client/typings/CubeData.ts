@@ -246,6 +246,15 @@ export class BannerInfo extends Record({
     }
 }
 
+export interface FilterCategory {
+    label: string;
+    sortorder: number
+}
+
+export interface FilterCategories {
+    [index: string]: FilterCategory[]
+}
+
 
 // export class CubeData extends CubeDataRecord implements ICubeData {
 //     subject: {

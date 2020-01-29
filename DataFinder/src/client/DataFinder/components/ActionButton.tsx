@@ -21,7 +21,7 @@ interface LoadDropdownProps {
 }
 export const LoadDropdown: React.FC<LoadDropdownProps> = ({ groups, loadParticipantGroup }) => {
     const buttonData = groups.map((group) => {
-        return({
+        return ({
             label: group.label,
             action: () => loadParticipantGroup(group),
             disabled: false
@@ -33,12 +33,12 @@ export const LoadDropdown: React.FC<LoadDropdownProps> = ({ groups, loadParticip
 }
 
 interface SaveDropdownProps {
-    saveAs: () => void; 
+    saveAs: () => void;
     save: () => void;
     disableSave: boolean
 }
 
-export const SaveDropdown: React.FC<SaveDropdownProps> = ({saveAs, save, disableSave}) => {
+export const SaveDropdown: React.FC<SaveDropdownProps> = ({ saveAs, save, disableSave }) => {
     const buttonData = [
         {
             label: "Save",
@@ -51,8 +51,8 @@ export const SaveDropdown: React.FC<SaveDropdownProps> = ({saveAs, save, disable
             disabled: false
         }
     ]
-    return(
-        <DropdownButtons title="Save" buttonData={buttonData}/>
+    return (
+        <DropdownButtons title="Save" buttonData={buttonData} />
     )
 }
 
@@ -61,7 +61,7 @@ interface ClearDropdownProps {
     reset: () => void;
 }
 
-export const ClearDropdown: React.FC<ClearDropdownProps> = ({clearAll, reset}) => {
+export const ClearDropdown: React.FC<ClearDropdownProps> = ({ clearAll, reset }) => {
     const buttonData = [
         {
             label: "Clear All",
@@ -74,7 +74,7 @@ export const ClearDropdown: React.FC<ClearDropdownProps> = ({clearAll, reset}) =
             disabled: false
         }
     ]
-    return(
+    return (
         <DropdownButtons title={"Clear"} buttonData={buttonData} />
     )
 }
@@ -82,7 +82,7 @@ export const ClearDropdown: React.FC<ClearDropdownProps> = ({clearAll, reset}) =
 
 
 
-interface DropdownButtonProps { 
+interface DropdownButtonProps {
     title: string
     buttonData: {
         label: string;
@@ -90,25 +90,25 @@ interface DropdownButtonProps {
         disabled: boolean
     }[]
 }
-const DropdownButtons: React.FC<DropdownButtonProps> = ({title, buttonData}) => {
+const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonData }) => {
     return (
-        <div className="dropdown" style={{width: "50px"}}>
-            <div className="btn-group filterselector" role="group" >
-                <button className="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
+        <div className="dropdown" style={{ width: "50px", display: "inline-block", margin: "5px" }}>
+            <div className="btn filterselector" role="group" >
+                <button className="btn btn-default dropdown-toggle" type="button" id={"button-" + title} data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                     <span>{title}</span>
                     <span>&#9660;</span>
                 </button>
-                <div className="dropdown-menu filter-dropdown">
-                    <div className="form-group">
-                        {buttonData.map((button) => {
-                            return (
-                                <button key={button.label} onClick={button.action} disabled={button.disabled}>
+                <ul className="dropdown-menu filter-dropdown" aria-labelledby={"button-" + title}>
+                    {buttonData.map((button) => {
+                        return (
+                            <li className={button.disabled ? "disabled" : ""}>
+                                <a key={button.label} onClick={button.action} href="#">
                                     {button.label}
-                                </button>
-                            )
-                        })}
-                    </div>
-                </div>
+                                </a>
+                            </li>
+                        )
+                    })}
+                </ul>
 
             </div>
         </div>

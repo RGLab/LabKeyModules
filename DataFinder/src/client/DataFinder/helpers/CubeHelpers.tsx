@@ -8,11 +8,12 @@ import { CubeMdx } from "../../typings/Cube";
 import * as LABKEY from '@labkey/api';
 import { SelectedFilters, CubeData, ICubeData, Filter, CubeDatum } from "../../typings/CubeData";
 import * as Cube from '../../typings/Cube'
-import { HeatmapDatum } from '../../typings/CubeData'
+import { HeatmapDatum, FilterCategories } from '../../typings/CubeData'
 import { createCubeFilters } from './SelectedFilters'
 import * as StudyCardTypes from '../../typings/StudyCard'
 import { StudyParticipantCount } from '../../typings/StudyCard'
 import * as Immutable from 'immutable'
+import { string } from "prop-types";
 
 // Get filter categories
 export const getFilterCategories = () => {
@@ -29,9 +30,24 @@ export const getFilterCategories = () => {
     })
 }
 
-export const createFilterCategories = (categories: SelectRowsResponse) => {
-    console.log("createFilterCategories")
-    return([])
+
+
+export const createFilterCategories = (categoriesResponse: SelectRowsResponse) => {
+    console.log("createFilterCategories()")
+    let categories: FilterCategories = {}; 
+    
+    categoriesResponse.rows.forEach((row) => {
+
+        if (categories[row.variable] === undefined) categories[row.variable] = []
+        categories[row.variable].push({label: row.category, sortorder: row.sortorder})
+    })
+    Object.keys(categories).forEach((key) => {
+        categories[key].sort((a,b)=>{
+            if (a.sortorder == b.sortorder) {if(a.label.toLowerCase > b.label.toLowerCase) return(1); else return(-1)}
+            return a.sortorder - b.sortorder
+        })
+    })
+    return(categories)
 }
 
 // Study info ---- 
@@ -39,13 +55,15 @@ export const getStudyDict = (mdx: CubeMdx, filters: SelectedFilters) => {
 
     console.log("getStudyDict")
 
+
     // define a promise to get info from query
     const studyInfo = new Promise<SelectRowsResponse>((resolve, reject) => {
         console.log("getting studyinfo")
         LABKEY.Query.selectRows({
             schemaName: 'immport',
             queryName: 'dataFinder_studyCard',
-            success: (data: SelectRowsResponse) => { resolve(data) }
+            containerFilter: "CurrentAndSubfolders",
+            success: (data: SelectRowsResponse) => { console.log(data); resolve(data) }
         })
     })
 
