@@ -69,7 +69,7 @@ export const ClearDropdown: React.FC<ClearDropdownProps> = ({clearAll, reset}) =
             disabled: false
         },
         {
-            label: "Clear Unsaved Filters",
+            label: "Clear Unsaved Changes",
             action: reset,
             disabled: false
         }

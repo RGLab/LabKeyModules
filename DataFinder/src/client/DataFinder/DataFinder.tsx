@@ -39,6 +39,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const [studyDict, setStudyDict] = React.useState(null); // this should only be loaded once
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
     const [availableGroups, setAvailableGroups] = React.useState<GroupInfo[]>([])
+    const [filterCategories, setFilterCategories] = React.useState(null)
 
     // Groups
     const [loadedGroup, setLoadedGroup] = React.useState<GroupInfo>()
@@ -75,6 +76,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // Do these things only when the page loads --------
     React.useEffect(() => {
         // load data
+        CubeHelpers.getFilterCategories().then((categories) => {
+            setFilterCategories(CubeHelpers.createFilterCategories(categories))
+        })
         CubeHelpers.getStudyDict(mdx, appliedFilters).then((sd) => {
             setStudyDict(sd)
         })
@@ -119,7 +123,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             .then((counts) => {
                 setTotalAppliedCounts(counts)
             })
-        applyFilters()
+        applyFilters(selectedFilters, bannerInfo.unsavedFilters)
 
     }, [])
 
@@ -152,7 +156,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         })
     }
 
-    const applyFilters = (filters = selectedFilters, customUnsavedFilters = false, groupName = null) => {
+    const applyFilters = (filters = selectedFilters, customUnsavedFilters = true, groupName = null) => {
         console.log("----- apply filters -----")
         // set applied filters
         setAppliedFilters(filters)
@@ -174,9 +178,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             ))
         let unsavedFiltersValue = customUnsavedFilters
         if (customUnsavedFilters == null) {
-            if (loadedGroup && !unsavedFilters) {
-                unsavedFiltersValue = true
-            }
+            unsavedFiltersValue = loadedGroup && !unsavedFilters
         }
         setUnsavedFilters(unsavedFiltersValue)
         CubeHelpers.getTotalCounts(mdx, filters)
@@ -201,16 +203,26 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // ----- participant group-related -----
     const saveButtonClick = () => {
-        let saveWindow
         CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) => {
-            saveWindow = ParticipantGroupHelpers.openSaveWindow(studySubject, pids, appliedFilters, "group")
-        })
-        saveWindow.on("aftersave", (data, goToSend) => {
-            ParticipantGroupHelpers.getAvailableGroups().then((data) => {
-                const groups = ParticipantGroupHelpers.createAvailableGroups(data)
-                setAvailableGroups(groups)
+            const saveWindow = ParticipantGroupHelpers.openSaveWindow(studySubject, pids, appliedFilters, "group")
+            saveWindow.on("aftersave", (saveData, goToSend) => {
+                setBannerInfo(bannerInfo.with({
+                    groupName: saveData.group.label,
+                    counts: totalAppliedCounts,
+                    unsavedFilters: false
+                }))
+                ParticipantGroupHelpers.getAvailableGroups().then((data) => {
+                    const groups = ParticipantGroupHelpers.createAvailableGroups(data)
+                    setAvailableGroups(groups)
+                    groups.forEach((group) => {
+                        if (group.label == saveData.group.label) {
+                            setLoadedGroup(group)
+                        }
+                    })
+                })
             })
         })
+
     }
 
     const updateParticipantGroup = (groupInfo: GroupInfo) => {
@@ -383,7 +395,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                 <div className="filters-title">Filters</div>
                             </div>
                             <div className="col-sm-6">
-                                <ActionButton text={"Apply"} onClick={applyFilters} />
+                                <ActionButton text={"Apply"} onClick={() => applyFilters()} />
                             </div>
                         </div>
                         {participantSummary}
@@ -482,7 +494,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         <Barplot data={cubeData.getIn(["Subject", "ExposureMaterial"]).toJS()} name="ExposureProcess" height={200} width={300} />
                     </div>
                 </div>
-                <ActionButton text={"Apply"} onClick={applyFilters} />
+                <ActionButton text={"Apply"} onClick={() => applyFilters()} />
                 <FilterDropdown
                     key={"Condition"}
                     dimension={"Study"}
@@ -555,7 +567,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 filters={appliedFilters}
                 groupName={loadedGroup ? loadedGroup.label : "Unsaved Participant Group"}
                 counts={totalAppliedCounts}
-                unsavedFilters={unsavedFilters} />
+                unsavedFilters={bannerInfo.unsavedFilters} />
             <div className="datafinder-wrapper">
                 <Tabs tabs={tabs} defaultActive="data" tabFunction={renderWepart} />
             </div>

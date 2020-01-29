@@ -14,6 +14,25 @@ import * as StudyCardTypes from '../../typings/StudyCard'
 import { StudyParticipantCount } from '../../typings/StudyCard'
 import * as Immutable from 'immutable'
 
+// Get filter categories
+export const getFilterCategories = () => {
+    return new Promise<SelectRowsResponse>((resolve,reject) => {
+        LABKEY.Query.selectRows({
+            schemaName: 'immport', 
+            queryName: 'dataFinder_dropdownCategories',
+            containerFilter: 'CurrentAndSubfolders',
+            success: (data: SelectRowsResponse) => {resolve(data)},
+            failure: () => {
+                reject();
+            }
+        })
+    })
+}
+
+export const createFilterCategories = (categories: SelectRowsResponse) => {
+    console.log("createFilterCategories")
+    return([])
+}
 
 // Study info ---- 
 export const getStudyDict = (mdx: CubeMdx, filters: SelectedFilters) => {
