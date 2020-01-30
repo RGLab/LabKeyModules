@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { drawHeatmap } from "./d3/HeatmapSelector.d3"
-import { HeatmapDatum, Filter, IAssayData, CubeDatum, } from '../../typings/CubeData';
+import { HeatmapDatum, Filter, IAssayData, CubeDatum, FilterCategory, } from '../../typings/CubeData';
 import { Cube } from '../../typings/Cube';
 import { Axis } from 'd3';
 import { Map, List } from 'immutable'
@@ -26,7 +26,8 @@ interface HeatmapSelectorProps {
   data: IAssayData;
   filterClick: (dim: string, filter: Filter) => () => void
   showSampleType: boolean;
-  selected: Map<string, Map<string, List<List<string>>> | List<List<string>>>
+  selected: Map<string, Map<string, List<List<string>>> | List<List<string>>>;
+  timepointCategories: FilterCategory[]
 }
 
 export interface AxisDatum<data> {
@@ -68,8 +69,8 @@ const createHeatmapData = (data: IAssayData, showSampleType: boolean) => {
       return {
         x: timepoint,
         y: assay,
-        participantCount: cd.participantCount,
-        studyCount: cd.studyCount,
+        participantCount: cd.participantCount === null ? 0 : cd.participantCount,
+        studyCount: cd.studyCount === null ? 0 : cd.studyCount,
         data: {
           level: cd.level,
           member: cd.member
@@ -77,16 +78,28 @@ const createHeatmapData = (data: IAssayData, showSampleType: boolean) => {
       }
     })
   }
+  const missingTimepoints = []
+  heatmapData.forEach((d, i) => {
+    if (d.x == "Unknown") missingTimepoints.push(i)
+  })
+  missingTimepoints.reverse().forEach((i) => {
+    heatmapData.splice(i, 1)
+  })
   return (heatmapData)
 }
 
-const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean) => {
+const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean, categories: FilterCategory[] = null) => {
   // debugger;
   let d: CubeDatum[]
   let axisData: AxisDatum<Filter>[];
   if (axis == "x") {
     d = data.Timepoint
-    axisData = d.map((cd) => { return ({ label: cd.member, data: { level: cd.level, member: cd.member } }) })
+    axisData = categories.map((c) => {
+      return({
+        label: c.label, data: {level: "Timepoint", member: c.label}
+      })
+    })
+    axisData.pop() // remove "unknown"
   } else if (axis == "y") {
     if (showSampleType) {
       d = data.SampleType.Assay
@@ -96,26 +109,26 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean)
       d = data.Assay.Assay
       axisData = d.map((cd) => { return ({ label: cd.member, data: { level: cd.level, member: cd.member } }) })
     }
+    axisData.sort((a, b) => {
+      if (a.label == b.label) return 0;
+      if (a.label > b.label) return 1;
+      if (a.label < b.label) return -1;
+    })
   }
 
-  axisData.sort((a, b) => {
-    if (a.label == b.label) return 0;
-    if (a.label > b.label) return 1;
-    if (a.label < b.label) return -1;
-  })
+
 
   return (axisData)
 }
 
 
-export const HeatmapSelector: React.FC<HeatmapSelectorProps> = (props) => {
+export const HeatmapSelector: React.FC<HeatmapSelectorProps> = ({data, filterClick, showSampleType, selected, timepointCategories}) => {
   // debugger;
 
   // Transform data into appropriate format
-  const heatmapData: HeatmapDatum<Filter>[] = createHeatmapData(props.data, props.showSampleType)
-  const xaxisData: AxisDatum<Filter>[] = createAxisData(props.data, "x", props.showSampleType)
-  const yaxisData: AxisDatum<Filter>[] = createAxisData(props.data, "y", props.showSampleType)
-
+  const heatmapData: HeatmapDatum<Filter>[] = createHeatmapData(data, showSampleType)
+  const xaxisData: AxisDatum<Filter>[] = createAxisData(data, "x", showSampleType, timepointCategories)
+  const yaxisData: AxisDatum<Filter>[] = createAxisData(data, "y", showSampleType)
   const options = {
     "breaks": [
       1,
@@ -134,47 +147,11 @@ export const HeatmapSelector: React.FC<HeatmapSelectorProps> = (props) => {
       "#41AB5D",
       "#238B45",
       "#005A32"
-    ],
-    "xaxis": [
-      "<0",
-      "0",
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "10",
-      "11",
-      "12",
-      "13",
-      "14",
-      "15-27",
-      "28",
-      "29-55",
-      "56",
-      ">56"
-    ],
-    "yaxis": [
-      "PCR",
-      "Neutralizing Antibody",
-      "MBAA",
-      "HLA Typing",
-      "HAI",
-      "Gene Expression",
-      "Flow Cytometry",
-      "ELISPOT",
-      "ELISA",
-      "CyTOF"
-    ],
-    "selected": []
+    ]
   }
 
   function handleClick(d: Filter) {
-    props.filterClick("Data", d)()
+    filterClick("Data", d)()
   }
 
   const height = yaxisData.length * 24
@@ -192,8 +169,8 @@ export const HeatmapSelector: React.FC<HeatmapSelectorProps> = (props) => {
         breaks={options.breaks}
         colors={options.colors}
         handleClick={handleClick}
-        selected={props.selected}
-        showSampleType={props.showSampleType}
+        selected={selected}
+        showSampleType={showSampleType}
       />
     </div>
   );

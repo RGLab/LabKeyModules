@@ -147,6 +147,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // These are functions which will get passed down to those components
     // which can cause updates to the page
     const BannerMemo = memo(Banner)
+    const HeatmapSelectorMemo = memo(HeatmapSelector)
+    const BarplotMemo = memo(Barplot)
 
     // ------ filter-related -------
 
@@ -172,7 +174,12 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 }
             })
         CubeHelpers.getCubeData(mdx, filters)
-            .then((cd) => setCubeData(CubeHelpers.createCubeData(cd)))
+            .then((res) => {
+                const cd = CubeHelpers.createCubeData(res)
+                console.log(cd.toJS())
+                setCubeData(cd)
+            }
+            )
         CubeHelpers.getParticipantIds(mdx, filters).then((pids) =>
             ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
                 if (participantDataWebpart) participantDataWebpart.render()
@@ -285,11 +292,14 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         <SampleTypeCheckbox
                             toggleShowSampleType={toggleSampleType}
                             showSampleType={showSampleType} />
-                        <HeatmapSelector
-                            data={cubeData.Data.toJS()}
-                            filterClick={filterClick}
-                            showSampleType={showSampleType}
-                            selected={selectedFilters.Data} />
+                        {filterCategories &&
+                            <HeatmapSelector
+                                data={cubeData.Data.toJS()}
+                                filterClick={filterClick}
+                                showSampleType={showSampleType}
+                                selected={selectedFilters.Data}
+                                timepointCategories={filterCategories.Timepoint} />}
+
                     </div>
                 </div>
                 <hr />
@@ -380,13 +390,31 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     </div>
                     {filterCategories && <>
                         <div className="col-sm-3">
-                            <Barplot data={cubeData.getIn(["Subject", "Gender"]).toJS()} name={"Gender"} height={200} width={250} categories={filterCategories.Gender} />
+                            <Barplot
+                                data={cubeData.getIn(["Subject", "Gender"]).toJS()}
+                                name={"Gender"}
+                                height={200}
+                                width={250}
+                                categories={filterCategories.Gender}
+                                countMetric={"participantCount"} />
                         </div>
                         <div className="col-sm-3">
-                            <Barplot data={cubeData.getIn(["Subject", "Age"]).toJS()} name="Age" height={200} width={250} categories={filterCategories.Age} />
+                            <Barplot
+                                data={cubeData.getIn(["Subject", "Age"]).toJS()}
+                                name="Age"
+                                height={200}
+                                width={250}
+                                categories={filterCategories.Age}
+                                countMetric={"participantCount"} />
                         </div>
                         <div className="col-sm-3">
-                            <Barplot data={cubeData.getIn(["Subject", "Race"]).toJS()} name="Race" height={200} width={250} categories={filterCategories.Race} />
+                            <Barplot
+                                data={cubeData.getIn(["Subject", "Race"]).toJS()}
+                                name="Race"
+                                height={200}
+                                width={250}
+                                categories={filterCategories.Race}
+                                countMetric={"participantCount"} />
                         </div>
                     </>}
 
@@ -498,13 +526,32 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     </div>
                     {filterCategories && <>
                         <div className="col-sm-3">
-                            <Barplot data={cubeData.getIn(["Study", "Condition"]).toJS()} name="Condition" height={200} width={300} categories={filterCategories.Condition} />
+                            <Barplot
+                                data={cubeData.getIn(["Study", "Condition"]).toJS()}
+                                name="Condition"
+                                height={200}
+                                width={300}
+                                categories={filterCategories.Condition}
+                                countMetric={"studyCount"}
+                            />
                         </div>
                         <div className="col-sm-3">
-                            <Barplot data={cubeData.getIn(["Study", "Category"]).toJS()} name="Category" height={200} width={300} categories={filterCategories.Category} />
+                            <Barplot
+                                data={cubeData.getIn(["Study", "Category"]).toJS()}
+                                name="Category"
+                                height={200}
+                                width={300}
+                                categories={filterCategories.Category}
+                                countMetric={"studyCount"} />
                         </div>
                         <div className="col-sm-3">
-                            <Barplot data={cubeData.getIn(["Subject", "ExposureMaterial"]).toJS()} name="ExposureProcess" height={200} width={300} categories={filterCategories.ExposureMaterial} />
+                            <Barplot
+                                data={cubeData.getIn(["Subject", "ExposureMaterial"]).toJS()}
+                                name="ExposureProcess"
+                                height={200}
+                                width={300}
+                                categories={filterCategories.ExposureMaterial}
+                                countMetric={"studyCount"} />
                         </div>
                     </>}
 

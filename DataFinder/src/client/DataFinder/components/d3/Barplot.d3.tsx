@@ -18,6 +18,7 @@ interface DrawBarplotProps {
     width: number;
     height: number;
     labels: string[];
+    countMetric: string;
 }
 
 
@@ -28,7 +29,8 @@ export function drawBarplot(props: DrawBarplotProps) {
     const name = props.name;
     const labels = props.labels;
     const dataRange = [0, 10];
-    data.forEach((v) => (v.participantCount > dataRange[1]) && (dataRange[1] = v.participantCount))
+    const countMetric=props.countMetric
+    data.forEach((v) => (v[countMetric] > dataRange[1]) && (dataRange[1] = v[countMetric]))
     // debugger
     // const newLabels = [];
 
@@ -119,7 +121,7 @@ export function drawBarplot(props: DrawBarplotProps) {
         .attr("class", "rect")
         .attr("x", xaxisScale(0))
         .attr("width", function (d: CubeDatum) {
-            return xaxisScale(d.participantCount);
+            return xaxisScale(d[countMetric]);
         })
         .attr("y", function (d: CubeDatum) {
             return yaxisScale(d.member);
@@ -131,7 +133,7 @@ export function drawBarplot(props: DrawBarplotProps) {
         .duration(500)
         .attr("x", xaxisScale(0))
         .attr("width", function (d: CubeDatum) {
-            return xaxisScale(d.participantCount);
+            return xaxisScale(d[countMetric]);
         })
         .attr("y", function (d: CubeDatum) {
             return yaxisScale(d.member);

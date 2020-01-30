@@ -171,8 +171,8 @@ export const createStudyParticipantCounts = (studyParticipantCountArray: StudyCa
     return (countsList)
 }
 
-const cs2cd = (cs: Cube.CellSet) => {
-    const results: { dim: string, levelArray: string[], data: CubeDatum }[] = cs.cells.map((cell) => {
+const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) => {
+    const results: { dim: string, levelArray: string[], data: CubeDatum }[] = participantCounts.cells.map((cell, cellIndex) => {
         const hierarchy = cell[0].positions[1][0].level.uniqueName.replace(/\[|\]/g, "") // remove "[" and "]"
         const dim = hierarchy.replace(/\..+/, "") // remove everything after and including the first "."
         let level = hierarchy.replace(/\w+\./, "") // remove everything before and including the first "."
@@ -186,14 +186,17 @@ const cs2cd = (cs: Cube.CellSet) => {
             levelArray = [level]
         }
         const member = cell[0].positions[1][0].uniqueName.replace(/\[\w+\.\w+\]\./, "").replace(/\[|\]/g, "")
-        const count = cell[0].value
+        const participantCount = cell[0].value
+        const studyCount = studyCounts.cells[cellIndex][0].value
+
         return ({
             dim: dim,
             levelArray: levelArray,
             data: {
                 level: level,
                 member: member,
-                participantCount: count
+                participantCount: participantCount,
+                studyCount: studyCount
             }
         })
     })
@@ -208,13 +211,12 @@ const cs2cd = (cs: Cube.CellSet) => {
 export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
     console.log("getCubeData()")
 
-    const cubeData = new Promise<Cube.CellSet>((resolve, reject) => {
+    const participantCountPromise = new Promise<Cube.CellSet>((resolve, reject) => {
         // debugger
         mdx.query({
             configId: "DataFinder:/DataFinderCube",
             schemaName: 'immport',
             success: function (cs: Cube.CellSet, mdx, config) {
-                console.log("gotCubeData!")
                 resolve(cs)
             },
             name: 'DataFinderCube',
@@ -247,12 +249,54 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters) => {
         })
 
     })
-    return (cubeData)
+    const studyCountPromise = new Promise<Cube.CellSet>((resolve, reject) => {
+        // debugger
+        mdx.query({
+            configId: "DataFinder:/DataFinderCube",
+            schemaName: 'immport',
+            success: function (cs: Cube.CellSet, mdx, config) {
+                resolve(cs)
+            },
+            name: 'DataFinderCube',
+            onRows: {
+                operator: "UNION",
+                arguments: [
+                    { level: "[Subject.Race].[Race]" },
+                    { level: "[Subject.Age].[Age]" },
+                    { level: "[Subject.Gender].[Gender]" },
+                    { level: "[Subject.ExposureMaterial].[ExposureMaterial]"},
+                    { level: "[Subject.ExposureProcess].[ExposureProcess]"},
+                    { level: "[Subject.Species].[Species]"},
+                    { level: "[Study.Condition].[Condition]" },
+                    { level: "[Study.Category].[Category]"},
+                    { level: "[Data.Assay].[Assay]" },
+                    { level: "[Data.Assay].[Timepoint]" },
+                    { level: "[Data.Assay].[SampleType]" },
+                    { level: "[Data.Timepoint].[Timepoint]" },
+                    { level: "[Data.SampleType].[SampleType]" },
+                    { level: "[Data.SampleType].[Assay]" }
+                ]
+            },
+            countFilter: [{
+                level: "[Subject].[Subject]",
+                membersQuery: { level: "[Study].[Name]", members: ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[SDY1291]", "[Study].[SDY903]", "[Study].[SDY28]", "[Study].[SDY514]", "[Study].[SDY387]", "[Study].[SDY34]", "[Study].[SDY1370]", "[Study].[SDY1373]", "[Study].[SDY789]", "[Study].[SDY1260]", "[Study].[SDY1264]", "[Study].[SDY1276]", "[Study].[SDY1328]", "[Study].[SDY296]", "[Study].[SDY301]", "[Study].[SDY63]", "[Study].[SDY74]", "[Study].[SDY312]", "[Study].[SDY314]", "[Study].[SDY315]", "[Study].[SDY478]", "[Study].[SDY113]", "[Study].[SDY305]", "[Study].[SDY472]", "[Study].[SDY395]", "[Study].[SDY406]", "[Study].[SDY460]", "[Study].[SDY773]", "[Study].[SDY421]", "[Study].[SDY461]", "[Study].[SDY675]", "[Study].[SDY400]", "[Study].[SDY404]", "[Study].[SDY614]", "[Study].[SDY112]", "[Study].[SDY888]", "[Study].[SDY1109]", "[Study].[SDY67]", "[Study].[SDY61]", "[Study].[SDY508]", "[Study].[SDY517]", "[Study].[SDY520]", "[Study].[SDY640]", "[Study].[SDY144]", "[Study].[SDY162]", "[Study].[SDY167]", "[Study].[SDY18]", "[Study].[SDY180]", "[Study].[SDY207]", "[Study].[SDY820]", "[Study].[SDY887]", "[Study].[SDY269]", "[Study].[SDY1289]", "[Study].[SDY1293]", "[Study].[SDY1324]", "[Study].[SDY984]", "[Study].[SDY522]", "[Study].[SDY753]", "[Study].[SDY56]", "[Study].[SDY278]", "[Study].[SDY1294]", "[Study].[SDY1325]", "[Study].[SDY1364]", "[Study].[SDY1368]", "[Study].[SDY80]", "[Study].[SDY270]", "[Study].[SDY515]", "[Study].[SDY422]", "[Study].[SDY506]", "[Study].[SDY523]", "[Study].[SDY756]", "[Study].[SDY299]", "[Study].[SDY300]", "[Study].[SDY364]", "[Study].[SDY368]", "[Study].[SDY369]", "[Study].[SDY372]", "[Study].[SDY376]", "[Study].[SDY645]", "[Study].[SDY416]", "[Study].[SDY597]", "[Study].[SDY667]", "[Study].[SDY87]", "[Study].[SDY89]", "[Study].[SDY690]", "[Study].[SDY212]", "[Study].[SDY215]", "[Study].[SDY519]", "[Study].[SDY224]", "[Study].[SDY232]", "[Study].[SDY241]", "[Study].[SDY1041]", "[Study].[SDY1097]"] }
+            }, ...createCubeFilters(filters)],
+            countDistinctLevel: "[Study].[Name]",
+            showEmpty: true
+
+        })
+
+    })
+    return (
+        Promise.all([participantCountPromise, studyCountPromise]).then((result) => {
+            return(result)
+        })
+    )
 }
 
-export const createCubeData = (cellSet: Cube.CellSet) => {
+export const createCubeData = (counts: [Cube.CellSet, Cube.CellSet]) => {
     console.log("createCubeData()")
-    const cubeData = cs2cd(cellSet)
+    const cubeData = cs2cd(counts)
     return new CubeData(cubeData);
 }
 

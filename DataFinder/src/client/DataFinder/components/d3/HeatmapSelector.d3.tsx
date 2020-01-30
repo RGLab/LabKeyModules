@@ -109,9 +109,9 @@ export const drawHeatmap = (props: HeatmapProps) => {
 
   // y-axis tags
   var yAxisTagPoints = function (assay: string) {
-    var x1 = xaxisScale("0") - margin.left + 5,
-      x2 = xaxisScale("0") - 5,
-      x3 = xaxisScale("0"),
+    var x1 = xaxisScale("<0") - margin.left + 5,
+      x2 = xaxisScale("<0") - 5,
+      x3 = xaxisScale("<0"),
       y1 = yaxisScale(assay) + yaxisScale.bandwidth() - 1,
       y2 = yaxisScale(assay) + yaxisScale.bandwidth() / 2,
       y3 = yaxisScale(assay) + 1;
@@ -123,7 +123,7 @@ export const drawHeatmap = (props: HeatmapProps) => {
     .enter()
     .append("text")
     .attr("x", (d) => {
-      return xaxisScale("0") - margin.left / 2;
+      return xaxisScale("<0") - margin.left / 2;
     })
     .attr("y", (d) => {
       return yaxisScale((d.label)) + yaxisScale.bandwidth() / 2;
@@ -178,7 +178,7 @@ export const drawHeatmap = (props: HeatmapProps) => {
     })
     .on("click", function (d) {
       props.handleClick(d.data);
-    });;
+    });
 
   // x-axis tags
   var xAxisTagPoints = function (tp: string) {

@@ -7,7 +7,8 @@ export interface BarplotProps {
     name: string;
     width: number;
     height: number;
-    categories: FilterCategory[]
+    categories: FilterCategory[];
+    countMetric: string;
 }
 
 
@@ -25,7 +26,8 @@ export const Barplot: React.FC<BarplotProps> = (props) => {
             name: props.name,
             width: props.width,
             height: props.height,
-            labels: createAxisData(props.categories)
+            labels: createAxisData(props.categories),
+            countMetric: props.countMetric
         });
         }
     });
