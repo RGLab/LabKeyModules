@@ -150,6 +150,18 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const HeatmapSelectorMemo = memo(HeatmapSelector)
     const BarplotMemo = memo(Barplot)
 
+    const BarplotHelper = (dim, level) => {
+        return(
+            <Barplot
+            data={cubeData.getIn([dim, level]).toJS()}
+            name={level}
+            height={200}
+            width={250}
+            categories={filterCategories[level]}
+            countMetric={dim == "Study" ? "studyCount" : "participantCount"} />
+        )
+    }
+
     // ------ filter-related -------
 
     const filterClick = (dim: string, filter: Filter) => {
@@ -390,31 +402,13 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     </div>
                     {filterCategories && <>
                         <div className="col-sm-3">
-                            <Barplot
-                                data={cubeData.getIn(["Subject", "Gender"]).toJS()}
-                                name={"Gender"}
-                                height={200}
-                                width={250}
-                                categories={filterCategories.Gender}
-                                countMetric={"participantCount"} />
+                            {BarplotHelper("Subject", "Gender")}
                         </div>
                         <div className="col-sm-3">
-                            <Barplot
-                                data={cubeData.getIn(["Subject", "Age"]).toJS()}
-                                name="Age"
-                                height={200}
-                                width={250}
-                                categories={filterCategories.Age}
-                                countMetric={"participantCount"} />
+                            {BarplotHelper("Subject", "Age")}
                         </div>
                         <div className="col-sm-3">
-                            <Barplot
-                                data={cubeData.getIn(["Subject", "Race"]).toJS()}
-                                name="Race"
-                                height={200}
-                                width={250}
-                                categories={filterCategories.Race}
-                                countMetric={"participantCount"} />
+                            {BarplotHelper("Subject", "Race")}
                         </div>
                     </>}
 
@@ -525,7 +519,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         </p>
                     </div>
                     {filterCategories && <>
-                        <div className="col-sm-3">
+                        {/* <div className="col-sm-3">
+                            {BarplotHelper("Study", "Condition")}
                             <Barplot
                                 data={cubeData.getIn(["Study", "Condition"]).toJS()}
                                 name="Condition"
@@ -534,24 +529,15 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                 categories={filterCategories.Condition}
                                 countMetric={"studyCount"}
                             />
+                        </div> */}
+                        <div className="col-sm-3">
+                            {BarplotHelper("Subject", "ExposureProcess")}
                         </div>
                         <div className="col-sm-3">
-                            <Barplot
-                                data={cubeData.getIn(["Study", "Category"]).toJS()}
-                                name="Category"
-                                height={200}
-                                width={250}
-                                categories={filterCategories.Category}
-                                countMetric={"studyCount"} />
+                            {BarplotHelper("Study", "Category")}
                         </div>
                         <div className="col-sm-3">
-                            <Barplot
-                                data={cubeData.getIn(["Subject", "ExposureMaterial"]).toJS()}
-                                name="ExposureProcess"
-                                height={200}
-                                width={250}
-                                categories={filterCategories.ExposureMaterial}
-                                countMetric={"studyCount"} />
+                            {BarplotHelper("Subject", "ExposureMaterial")}
                         </div>
                     </>}
 
@@ -636,7 +622,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 counts={totalAppliedCounts}
                 unsavedFilters={bannerInfo.unsavedFilters} />
             <div className="datafinder-wrapper">
-                <Tabs tabs={tabs} defaultActive="data" tabFunction={renderWepart} />
+                <Tabs tabs={tabs} defaultActive="study" tabFunction={renderWepart} />
             </div>
 
             {/* Tooltip */}
