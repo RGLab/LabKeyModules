@@ -530,7 +530,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                 data={cubeData.getIn(["Study", "Condition"]).toJS()}
                                 name="Condition"
                                 height={200}
-                                width={300}
+                                width={250}
                                 categories={filterCategories.Condition}
                                 countMetric={"studyCount"}
                             />
@@ -540,7 +540,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                 data={cubeData.getIn(["Study", "Category"]).toJS()}
                                 name="Category"
                                 height={200}
-                                width={300}
+                                width={250}
                                 categories={filterCategories.Category}
                                 countMetric={"studyCount"} />
                         </div>
@@ -549,7 +549,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                 data={cubeData.getIn(["Subject", "ExposureMaterial"]).toJS()}
                                 name="ExposureProcess"
                                 height={200}
-                                width={300}
+                                width={250}
                                 categories={filterCategories.ExposureMaterial}
                                 countMetric={"studyCount"} />
                         </div>

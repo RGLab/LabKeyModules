@@ -23,14 +23,19 @@ interface DrawBarplotProps {
 
 
 export function drawBarplot(props: DrawBarplotProps) {
-    // debugger;
 
     const data = props.data;
     const name = props.name;
-    const labels = props.labels;
+
     const dataRange = [0, 10];
     const countMetric=props.countMetric
     data.forEach((v) => (v[countMetric] > dataRange[1]) && (dataRange[1] = v[countMetric]))
+
+
+    const labels = props.labels.map(l => {
+        if (l.length > 18) l = l.slice(0, 14) + "..."
+        return (l)
+    })
     // debugger
     // const newLabels = [];
 
@@ -47,7 +52,7 @@ export function drawBarplot(props: DrawBarplotProps) {
 
 
     // Create margins
-    const margin = { top: 20, right: 15, bottom: 30, left: 50 },
+    const margin = { top: 20, right: 15, bottom: 30, left: 100 },
         width = props.width - margin.left - margin.right,
         height = props.height - margin.top - margin.bottom;
 
