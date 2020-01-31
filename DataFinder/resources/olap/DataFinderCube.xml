@@ -48,9 +48,9 @@
                 <Table name="dimStudy" schema="immport"/>
                 <Level name="Type" visible="true" column="type" type="String" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
-            <Hierarchy name="Condition" hasAll="true" primaryKey="study">
-                <Table name="dimStudyCondition" schema="immport"/>
-                <Level name="Condition" visible="true" table="dimStudyCondition" column="condition" type="String" levelType="Regular" hideMemberIf="Never"/>
+            <Hierarchy name="Condition" hasAll="true" primaryKey="study_accession">
+                <Table name="dataFinder_dimStudyCondition" schema="immport"/>
+                <Level name="Condition" visible="true" table="dataFinder_dimStudyCondition" column="condition_studied" type="String" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
             <Hierarchy name="Principal" hasAll="true" primaryKey="study">
                 <Table name="dimStudyPrincipals" schema="immport"/>

@@ -512,24 +512,16 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         study: {
             content: <>
                 <div className="row">
-                    <div className="col-sm-3">
+                    {/* <div className="col-sm-3">
                         <h2>Study Characteristics</h2>
                         <p>
                             Study characteristics available based on current filters
                         </p>
-                    </div>
+                    </div> */}
                     {filterCategories && <>
-                        {/* <div className="col-sm-3">
+                        <div className="col-sm-3">
                             {BarplotHelper("Study", "Condition")}
-                            <Barplot
-                                data={cubeData.getIn(["Study", "Condition"]).toJS()}
-                                name="Condition"
-                                height={200}
-                                width={250}
-                                categories={filterCategories.Condition}
-                                countMetric={"studyCount"}
-                            />
-                        </div> */}
+                        </div>
                         <div className="col-sm-3">
                             {BarplotHelper("Subject", "ExposureProcess")}
                         </div>
