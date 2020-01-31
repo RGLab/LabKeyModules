@@ -31,7 +31,7 @@ export const getAvailableGroups = () => {
 }
 export const createAvailableGroups = (data) => {
     if (data.success) {
-        var groups = [];
+        var groups: GroupInfo[] = [];
         for (var i = 0; i < data.groups.length; i++) {
             if (data.groups[i].filters !== undefined) {
                 var groupFilters = JSON.parse(data.groups[i].filters);

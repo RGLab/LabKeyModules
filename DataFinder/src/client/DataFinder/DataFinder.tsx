@@ -85,6 +85,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         })
         ParticipantGroupHelpers.getAvailableGroups().then((data) => {
             const groups = ParticipantGroupHelpers.createAvailableGroups(data)
+            groups.sort((a, b) => a.label.toLowerCase() > b.label.toLowerCase() ? 1 : -1)
             setAvailableGroups(groups)
             groups.forEach((group) => {
                 if (group.label == bannerInfo.groupName) {
@@ -641,6 +642,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 unsavedFilters={bannerInfo.unsavedFilters}
                 links={
                     <>
+                        <a className="labkey-text-link" href="/study/Studies/manageParticipantCategories.view?">Manage Groups</a>
                         <a className="labkey-text-link" href="#" onClick={() => sendParticipantGroup()}>Send</a>
                         <a className="labkey-text-link" href="/immport/Studies/exportStudyDatasets.view?">Export Study Datasets</a>
                         <a className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
