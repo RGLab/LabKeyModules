@@ -9,6 +9,7 @@ export interface BarplotProps {
     height: number;
     categories: FilterCategory[];
     countMetric: string;
+    barColor: string;
 }
 
 
@@ -27,7 +28,8 @@ export const Barplot: React.FC<BarplotProps> = (props) => {
             width: props.width,
             height: props.height,
             labels: createAxisData(props.categories),
-            countMetric: props.countMetric
+            countMetric: props.countMetric,
+            barColor: props.barColor
         });
         }
     });
@@ -35,6 +37,7 @@ export const Barplot: React.FC<BarplotProps> = (props) => {
 
     return (
         <div className={props.name} >
+            <div className="df-barplot-title"><h4>{props.name}</h4></div>
             <div id={"barplot-container-" + props.name} className="datafinder-barplot">
                 <svg></svg>
             </div>

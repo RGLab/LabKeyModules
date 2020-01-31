@@ -216,8 +216,15 @@ textarea {
 
 .datafinder-barplot {
   width: 250px;
-  height: 200px;
+  height: 202px;
   overflow-y: auto;
+  // border-top: 1px solid #dddddd;
+  // border-bottom: 1px solid #dddddd
+}
+
+.df-barplot-title {
+  text-align: center;
+  margin-bottom: 0
 }
 
 .df-banner-title {

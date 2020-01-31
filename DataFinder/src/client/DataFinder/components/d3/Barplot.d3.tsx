@@ -20,6 +20,7 @@ interface DrawBarplotProps {
     height: number;
     labels: string[];
     countMetric: string;
+    barColor: string;
 }
 
 
@@ -55,11 +56,11 @@ export function drawBarplot(props: DrawBarplotProps) {
 
     const xAxisSvg = d3.select("#xaxis-" + name).select("svg")
         .attr("width", props.width)
-        .attr("height", 30)
+        .attr("height", 40)
 
 
     // Create margins
-    const margin = { top: 20, right: 15, bottom: 0, left: 100 },
+    const margin = { top: 0, right: 15, bottom: 0, left: 100 },
         width = props.width - margin.left - margin.right,
         height = totalHeight - margin.top - margin.bottom;
 
@@ -138,7 +139,7 @@ export function drawBarplot(props: DrawBarplotProps) {
             .enter()
             .append("rect")
             .attr("class", "little-rect-cover")
-            .attr("x", d =>  d == null ? undefined : -margin.left)
+            .attr("x", d => d == null ? undefined : -margin.left)
             .attr("y", d => yaxisScale(d.member))
             .attr("width", 100)
             .attr("height", yaxisScale.bandwidth())
@@ -220,6 +221,18 @@ export function drawBarplot(props: DrawBarplotProps) {
                 "transform",
                 `translate(${margin.left}, 0)`
             )
+
+        xAxisSvg.append("g")
+            .attr(
+                "transform",
+                `translate(${margin.left}, 0)`
+            )
+            .append("text")
+            .attr("x", (width) / 2 )
+            .attr("y", 30)
+            .text(props.countMetric == "studyCount" ? "Studies" : "Participants")
+            .attr("text-anchor", "middle")
+            .attr("font-size", "0.8em")
     }
 
     xaxisGrid.transition()
@@ -257,7 +270,7 @@ export function drawBarplot(props: DrawBarplotProps) {
             return yaxisScale(d.member);
         })
         .attr("height", yaxisScale.bandwidth() - 1)
-        .style("fill", "steelblue")
+        .style("fill", props.barColor)
     boxes
         .transition()
         .duration(500)

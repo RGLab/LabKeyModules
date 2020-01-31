@@ -151,7 +151,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const HeatmapSelectorMemo = memo(HeatmapSelector)
     const BarplotMemo = memo(Barplot)
 
-    const BarplotHelper = (dim, level) => {
+    const BarplotHelper = (dim, level, presentationDim = null) => {
+        const pDim = presentationDim || dim
         return (
             <Barplot
                 data={cubeData.getIn([dim, level]).toJS()}
@@ -159,7 +160,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 height={200}
                 width={250}
                 categories={filterCategories[level]}
-                countMetric={dim == "Study" ? "studyCount" : "participantCount"} />
+                countMetric={pDim == "Study" ? "studyCount" : "participantCount"}
+                barColor={pDim == "Study"? "#af88e3": "#95cced"} />
         )
     }
 
@@ -547,16 +549,16 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     </div> */}
                     {filterCategories && <>
                         <div className="col-sm-3">
-                            {BarplotHelper("Study", "Condition")}
+                            {BarplotHelper("Study", "Condition", "Study")}
                         </div>
                         <div className="col-sm-3">
-                            {BarplotHelper("Subject", "ExposureProcess")}
+                            {BarplotHelper("Subject", "ExposureProcess", "Study")}
                         </div>
                         <div className="col-sm-3">
-                            {BarplotHelper("Study", "Category")}
+                            {BarplotHelper("Study", "Category", "Study")}
                         </div>
                         <div className="col-sm-3">
-                            {BarplotHelper("Subject", "ExposureMaterial")}
+                            {BarplotHelper("Subject", "ExposureMaterial", "Study")}
                         </div>
                     </>}
 
