@@ -111,12 +111,11 @@ FROM (SELECT variable, category,
 
     UNION ALL
 
-      SELECT 'Condition' as variable, condition as category, NULL as sortorder
+      SELECT 'Condition' as variable, condition_studied as category, NULL as sortorder
       FROM (
-         SELECT DISTINCT condition
-        from immport.dimStudyCondition
-        WHERE study IN (SELECT label
-        from study.Study )
+         SELECT DISTINCT condition_studied
+        from immport.dataFinder_dimStudyCondition
+        WHERE study_accession IN (SELECT label from study.Study )
       ) _
 
     UNION ALL

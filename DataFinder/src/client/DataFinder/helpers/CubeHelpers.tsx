@@ -43,7 +43,7 @@ export const createFilterCategories = (categoriesResponse: SelectRowsResponse) =
     })
     Object.keys(categories).forEach((key) => {
         categories[key].sort((a,b)=>{
-            if (a.sortorder == b.sortorder) {if(a.label.toLowerCase > b.label.toLowerCase) return(1); else return(-1)}
+            if (a.sortorder == b.sortorder) {if(a.label.toLowerCase() > b.label.toLowerCase()) return(1); else return(-1)}
             return a.sortorder - b.sortorder
         })
     })

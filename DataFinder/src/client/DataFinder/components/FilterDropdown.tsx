@@ -13,10 +13,6 @@ export interface FilterDropdownProps {
 
 export const FilterDropdown: React.FC<FilterDropdownProps> = ({dimension, level, members, filterClick, selected, children}) => {
     // if (props.selected != undefined) debugger
-    members.sort((a,b)=>{
-        if (a.sortorder == b.sortorder) {if(a.label.toLowerCase > b.label.toLowerCase) return(1); else return(-1)}
-        return a.sortorder - b.sortorder
-    })
     const labels = members.map(m => m.label)
     return (
         <div className={"dropdown"} style={{width: "50px"}}>
