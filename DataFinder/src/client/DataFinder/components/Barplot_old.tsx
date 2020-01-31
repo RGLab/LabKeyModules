@@ -68,9 +68,7 @@ const BarplotController: React.FC<BarplotControllerProps> = (props: BarplotContr
                 configId: "DataFinder:/DataFinderCube",
                 schemaName: 'immport',
                 success: function (cs: Cube.CellSet, mdx, config) {
-                    // console.log(cs)
                     const bpData = formatBarplotData(cs);
-                    // console.log(bpData);
                     setStudyData(bpData);
                 },
                 name: 'DataFinderCube',

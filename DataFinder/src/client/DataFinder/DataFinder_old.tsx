@@ -228,7 +228,6 @@ const DataFinderController: React.FC = () => {
                 studyDict[studyName] = studyInfo;
                 studyDict[studyName] = { ...e }
             })
-            // console.log(studyCounts)
             studyCounts.axes[1].positions.map((e, i) => {
                 const studyName = e[0].name;
                 const totalParticipantCount = studyCounts.cells[i][0].value;
@@ -246,7 +245,6 @@ const DataFinderController: React.FC = () => {
                 }
             })
 
-            //console.log(studyDict)
             function dataAssayNameToInfo(name: string, shortAssayNames: boolean = false) {
                 if (/(All)/.test(name)) { return { assay: undefined, timepoint: undefined, sampleType: undefined } }
                 const s = name.slice(13).split(/\./g).map(s => s.replace(/[\[\]]/g, ""))
@@ -283,7 +281,6 @@ const DataFinderController: React.FC = () => {
                 configId: "DataFinder:/DataFinderCube",
                 schemaName: 'immport',
                 success: function (cs: Cube.CellSet, mdx, config) {
-                    // console.log(cs);
                     const selectedStudies: StudyCardTypes.SelectedStudies = {};
                     cs.axes[1].positions.map((e, i) => {
                         const studyName = e[0].name;
@@ -291,7 +288,6 @@ const DataFinderController: React.FC = () => {
                         selectedStudies[studyName] = {}
                         selectedStudies[studyName] = { selectedParticipantCount }
                     })
-                    // console.log(selectedStudies)
                     resolve(selectedStudies);
 
                 },

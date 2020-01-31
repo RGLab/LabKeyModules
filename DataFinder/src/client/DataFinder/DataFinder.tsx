@@ -151,14 +151,14 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const BarplotMemo = memo(Barplot)
 
     const BarplotHelper = (dim, level) => {
-        return(
+        return (
             <Barplot
-            data={cubeData.getIn([dim, level]).toJS()}
-            name={level}
-            height={200}
-            width={250}
-            categories={filterCategories[level]}
-            countMetric={dim == "Study" ? "studyCount" : "participantCount"} />
+                data={cubeData.getIn([dim, level]).toJS()}
+                name={level}
+                height={200}
+                width={250}
+                categories={filterCategories[level]}
+                countMetric={dim == "Study" ? "studyCount" : "participantCount"} />
         )
     }
 
@@ -223,10 +223,12 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // ----------------
 
     // ----- participant group-related -----
-    const saveButtonClick = () => {
+    const saveButtonClick = (groupLabel = "", gotoSendAfterSave = false) => {
         CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) => {
-            const saveWindow = ParticipantGroupHelpers.openSaveWindow(studySubject, pids, appliedFilters, "group")
-            saveWindow.on("aftersave", (saveData, goToSend) => {
+            const saveWindow = ParticipantGroupHelpers.openSaveWindow(studySubject, pids, appliedFilters, groupLabel, gotoSendAfterSave)
+            saveWindow.on("aftersave", (saveData) => {
+                console.log(saveData)
+                if (gotoSendAfterSave) ParticipantGroupHelpers.goToSend(saveData.group.rowId)
                 setBannerInfo(bannerInfo.with({
                     groupName: saveData.group.label,
                     counts: totalAppliedCounts,
@@ -246,7 +248,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     }
 
-    const updateParticipantGroup = (groupInfo: GroupInfo) => {
+    const updateParticipantGroup = (groupInfo: GroupInfo, goToSendAfterSave = false) => {
         CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) => {
             ParticipantGroupHelpers.updateParticipantGroup(pids, appliedFilters, loadedGroup)
                 .then((success) => {
@@ -254,6 +256,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         const groups = ParticipantGroupHelpers.createAvailableGroups(data)
                         setAvailableGroups(groups)
                     })
+                    if (goToSendAfterSave) {
+                        ParticipantGroupHelpers.goToSend(groupInfo.id)
+                    }
                 })
         })
         setUnsavedFilters(false)
@@ -266,6 +271,27 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         setSelectedFilters(pgFilters)
         setLoadedGroup(groupInfo)
         applyFilters(pgFilters, false, groupInfo.label)
+    }
+
+    const sendParticipantGroup = () => {
+        const allowSave = loadedGroup != null
+        if (unsavedFilters || loadedGroup == null) {
+            Ext4.Msg.show({
+                title: 'Save Group Before Sending',
+                msg: 'You must save a group before you can send a copy.',
+                icon: Ext4.Msg.INFO,
+                buttons: allowSave ? Ext4.Msg.YESNOCANCEL : Ext4.Msg.OKCANCEL,
+                buttonText: allowSave ? { yes: 'Save', no: 'Save As' } : { ok: 'Save' },
+                fn: function (buttonId) {
+                    if (buttonId === 'yes')
+                        updateParticipantGroup(loadedGroup, true)
+                    else if (buttonId === 'no' || buttonId === 'ok')
+                        saveButtonClick("", true);
+                }
+            });
+        } else {
+            ParticipantGroupHelpers.goToSend(loadedGroup.id)
+        }
     }
 
 
@@ -612,7 +638,14 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 filters={appliedFilters}
                 groupName={loadedGroup ? loadedGroup.label : "Unsaved Participant Group"}
                 counts={totalAppliedCounts}
-                unsavedFilters={bannerInfo.unsavedFilters} />
+                unsavedFilters={bannerInfo.unsavedFilters}
+                links={
+                    <>
+                        <a className="labkey-text-link" href="#" onClick={() => sendParticipantGroup()}>Send</a>
+                        <a className="labkey-text-link" href="/immport/Studies/exportStudyDatasets.view?">Export Study Datasets</a>
+                        <a className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
+                    </>
+                } />
             <div className="datafinder-wrapper">
                 <Tabs tabs={tabs} defaultActive="study" tabFunction={renderWepart} />
             </div>

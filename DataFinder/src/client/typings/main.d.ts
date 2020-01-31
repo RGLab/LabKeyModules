@@ -16,7 +16,8 @@ interface LabKey {
 }
 
 interface Ext4 {
-    create: any
+    create: any;
+    Msg: any;
 }
 
 interface SelectRowsResponse {

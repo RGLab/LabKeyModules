@@ -24,9 +24,6 @@ export function drawTinyHeatmap(props: TinyHeatmapProps) {
     //     if (e.assay !== undefined && assays.indexOf(e.assay) === -1 && e.count > 0) assays.push(e.assay);
     // });
     assays.sort();
-    // console.log(props.name);
-    // console.log(props.data);
-    // console.log(assays);
 
     const svg = d3
         .select("#tinyheatmap-" + name)

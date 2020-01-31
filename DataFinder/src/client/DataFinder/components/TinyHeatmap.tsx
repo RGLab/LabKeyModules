@@ -7,7 +7,6 @@ export const TinyHeatmap: React.FC<TinyHeatmapProps> = (props) => {
 
     React.useEffect(() => {
         if (props.data.length > 0 && props.assays.length > 0) {
-            // console.log(props.data);
             drawTinyHeatmap(props);
         }
     });

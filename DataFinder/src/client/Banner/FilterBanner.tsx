@@ -18,7 +18,18 @@ export const FilterBanner = ({show}) => {
         }
         const selectedFilters = new SelectedFilters(sf)
         return(
-            <Banner filters={selectedFilters} groupName={bannerInfo.groupName} counts={bannerInfo.counts} unsavedFilters={bannerInfo.unsavedFilters}/>
+            <Banner 
+            filters={selectedFilters} 
+            groupName={bannerInfo.groupName} 
+            counts={bannerInfo.counts} 
+            unsavedFilters={bannerInfo.unsavedFilters}
+            links={
+                <>
+                    <a className="labkey-text-link" href="/immport/Studies/exportStudyDatasets.view?">Export Study Datasets</a>
+                    <a className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
+                </>
+            } 
+            />
         )
     } 
     return <div></div>

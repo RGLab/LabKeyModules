@@ -51,7 +51,6 @@ export const createAvailableGroups = (data) => {
             }
         }
     }
-    console.log(groups)
     return groups;
 }
 
@@ -108,16 +107,16 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
 }
 
 // save participant group
-export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel) => {
+export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel = "", goToSendAfterSave = false) => {
     // save the group with applied filters in localStorage
 
     console.log("saveParticipantGroup()")
     const win = Ext4.create('Study.window.ParticipantGroup', {
         subject: studySubject,
-        groupLabel: "",
+        groupLabel: groupLabel,
         participantIds: pids,
         filters: appliedFilters,
-        goToSendAfterSave: false
+        goToSendAfterSave: goToSendAfterSave
     });
     win.show()
 
@@ -185,6 +184,15 @@ export const updateContainerFilter = (studyParticipantCounts: IStudyParticipantC
         method: 'POST',
         jsonData: { containers: containers }
     });
+}
+
+export const goToSend = (groupId) => {
+    if (groupId == null) { console.log("null group: can't send") } else {
+        window.location = LABKEY.ActionURL.buildURL('study', 'sendParticipantGroup', null, {
+            rowId: groupId,
+            returnUrl: LABKEY.ActionURL.buildURL('immport', 'dataFinder')
+        });
+    }
 }
 
 // export const loadGroupFilters = (filters: SelectedFilters | {
