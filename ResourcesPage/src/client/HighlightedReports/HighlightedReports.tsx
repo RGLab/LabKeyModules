@@ -15,8 +15,10 @@ import {ScatterPlot,
         ScatterPlotDataRange} from './components/similarStudyScatterPlot'
 import {MaBarPlot,
         MaLinePlot,
-        MaPlotDatum,
-        MaPlotProps,
+        MaBarPlotDatum,
+        MaBarPlotProps,
+        MaLinePlotDatum,
+        MaLinePlotProps,
         MaPlotTitles,
         } from './components/mostAccessedPlots'
 
@@ -90,13 +92,9 @@ const ResourcesPage: React.FC = () => {
         byStudy: Array<Object>(),
         byMonth: Array<Object>()
     });
-    const [maDataRange, setMaDataRange] = React.useState({
-        byStudy: Array<number>(),
-        byMonth: Array<number>()
-    });
 
-    const [maLinePlotProps, setMaLinePlotProps] = React.useState<MaPlotProps>()
-    const [maBarPlotProps, setMaBarPlotProps] = React.useState<MaPlotProps>()
+    const [maLinePlotProps, setMaLinePlotProps] = React.useState<MaLinePlotProps>()
+    const [maBarPlotProps, setMaBarPlotProps] = React.useState<MaBarPlotProps>()
     const [maBarOrderBy, setmaBarOrderBy] = React.useState("total")
     const [maPlotToShow, setMaPlotToShow] = React.useState("study")
 
@@ -276,10 +274,6 @@ const ResourcesPage: React.FC = () => {
             byStudy: [],
             byMonth: []
         }
-        const labels = {
-            byStudy: [],
-            byMonth: []
-        }
         if(Object.keys(maData.byStudy).length !== 0){
 
             Object.keys(maData.byStudy).forEach(function(key){
@@ -306,9 +300,6 @@ const ResourcesPage: React.FC = () => {
 
             setTransformedMaData(data)
             
-            const byMonthRange = getRangeFromIntArray(data.byMonth, 'total')
-            const byStudyRange = getRangeFromIntArray(data.byStudy, 'total')
-            setMaDataRange({byMonth: byMonthRange, byStudy: byStudyRange})
         }
     }
 
@@ -463,25 +454,23 @@ const ResourcesPage: React.FC = () => {
         const barData = []
         const barLabels = []
         tmpStudyData.forEach(element => {
-            console.log(element)
-            let datum: MaPlotDatum = {
+            let datum: MaBarPlotDatum = {
                 UI: element['UI'],
                 ISR: element['ISR'],
                 total: element['total'] 
             }
             barData.push(datum)
             barLabels.push(element['study'])
-        });
+        })
 
         // logic for updating props
-        let barProps: MaPlotProps = {
+        let barProps: MaBarPlotProps = {
             data: barData,
             labels: barLabels,
             titles: barTitles,
             name: "byStudy",
             width: 700,
             height: 800,
-            dataRange: maDataRange.byStudy,
             linkBaseText: 'test study'
         }
         
@@ -494,33 +483,40 @@ const ResourcesPage: React.FC = () => {
             main: 'ImmuneSpace Usage over Time'
         }
 
+        // let UIlayer: MaLinePlotLayer = {
+        //     name: 'UI',
+        //     values: []
+        // }
+        // let ISRlayer: MaLinePlotLayer = {
+        //     name: 'ISR',
+        //     values: []
+        // }
         const lineData = []
         const lineLabels = []
         transformedMaData.byMonth.forEach(element => {
-            let datum: MaPlotDatum = {
+            let datum: MaLinePlotDatum = {
                 UI: element['UI'],
                 ISR: element['ISR'],
                 total: element['total'] 
             }
             lineData.push(datum)
             lineLabels.push(element['date'])
-        });
+        })
 
         // logic for updating props
-        let lineProps: MaPlotProps = {
+        let lineProps: MaLinePlotProps = {
             data: lineData,
-            labels: lineLabels,
             titles: lineTitles,
+            labels: lineLabels,
             name: "byMonth",
-            width: 700,
+            width: 1200,
             height: 800,
-            dataRange: maDataRange.byMonth,
             linkBaseText: 'test month'
         }
         
         setMaLinePlotProps(lineProps)
         
-    }, [transformedMaData, maDataRange, maBarOrderBy])
+    }, [transformedMaData, maBarOrderBy])
 
 
     // --------- ABOUT -----------------
@@ -753,7 +749,6 @@ const ResourcesPage: React.FC = () => {
                             name={maBarPlotProps.name}
                             width={maBarPlotProps.width}
                             height={maBarPlotProps.height}
-                            dataRange={maBarPlotProps.dataRange}
                             linkBaseText={maBarPlotProps.linkBaseText}
                         />
                     )
@@ -766,7 +761,6 @@ const ResourcesPage: React.FC = () => {
                             name={maLinePlotProps.name}
                             width={maLinePlotProps.width}
                             height={maLinePlotProps.height}
-                            dataRange={maLinePlotProps.dataRange}
                             linkBaseText={maLinePlotProps.linkBaseText}
                         />
                     )
