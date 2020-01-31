@@ -3,4 +3,4 @@ MAINTAINER Evan Henrich <ehenrich@fredhutch.org>
 
 RUN R -e "install.packages(c('data.table', 'rjson', 'uwot', 'stringr'))"
 
-CMD ["/app/ResourcePage_plumber.R"]
+CMD ["/app/ResourcesPage_plumber.R"]

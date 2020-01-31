@@ -4,7 +4,7 @@ import * as LABKEY from '@labkey/api';
 import * as Bootstrap from 'react-bootstrap';
 import 'regenerator-runtime/runtime';
 
-// @ts-ignore
+
 import {BarPlot,
         BarPlotDatum,
         BarPlotProps,
@@ -12,12 +12,17 @@ import {BarPlot,
 import {ScatterPlot,
         ScatterPlotDatum,
         ScatterPlotProps,
-        ScatterPlotDataRange} from './components/similarStudyScatterPlot';
+        ScatterPlotDataRange} from './components/similarStudyScatterPlot'
+import {MaBarPlot,
+        MaLinePlot,
+        MaPlotDatum,
+        MaPlotProps,
+        MaPlotTitles,
+        } from './components/mostAccessedPlots'
 
 // Styling imports
 import './HighlightedReports.scss';
-import 'bootstrap/dist/css/bootstrap.min.css'; // v3
-import { keys } from 'd3';
+// import 'bootstrap/dist/css/bootstrap.min.css'; // v3
 
 const ResourcesPage: React.FC = () => {
     
@@ -76,8 +81,24 @@ const ResourcesPage: React.FC = () => {
     const [ssPlotsToShow, setSsPlotsToShow] = React.useState("assays")
 
     // --- Most Accessed
-    // const [maData, setMaData] = React.useState<Object>({}); 
-    // const [maHasError, setMaErrors] = React.useState(false);
+    const [maData, setMaData] = React.useState({
+        byStudy: Array<Object>(),
+        byMonth: Array<Object>()
+    }); 
+    const [maHasError, setMaErrors] = React.useState(false);
+    const [transformedMaData, setTransformedMaData] = React.useState({
+        byStudy: Array<Object>(),
+        byMonth: Array<Object>()
+    });
+    const [maDataRange, setMaDataRange] = React.useState({
+        byStudy: Array<number>(),
+        byMonth: Array<number>()
+    });
+
+    const [maLinePlotProps, setMaLinePlotProps] = React.useState<MaPlotProps>()
+    const [maBarPlotProps, setMaBarPlotProps] = React.useState<MaPlotProps>()
+    const [maBarOrderBy, setmaBarOrderBy] = React.useState("total")
+    const [maPlotToShow, setMaPlotToShow] = React.useState("study")
 
     /*  -----------------------------------
             Get StudyStats Data via API
@@ -99,18 +120,18 @@ const ResourcesPage: React.FC = () => {
             .catch(err => setSsErrors(err));
     }
 
-    // async function fetchLogData() {
-    //     const res = await fetch(apiBase + 'log_data');
-    //     res
-    //         .json()
-    //         .then(res => setMaData(res))
-    //         .catch(err => setMaErrors(err));
-    // }
+    async function fetchLogData() {
+        const res = await fetch(apiBase + 'log_data');
+        res
+            .json()
+            .then(res => setMaData(res))
+            .catch(err => setMaErrors(err));
+    }
 
     React.useEffect(() => {
         fetchCiteData();
         fetchSdyData();
-        // fetchLogData();
+        fetchLogData();
     }, []); // empty array as second arg to useEffect means only loaded on mount, not update
 
      /*  -----------------------------------
@@ -250,6 +271,51 @@ const ResourcesPage: React.FC = () => {
         transformSdyMetaData();
     }, [ssData])
 
+    function transformLogData(){
+        const data = {
+            byStudy: [],
+            byMonth: []
+        }
+        const labels = {
+            byStudy: [],
+            byMonth: []
+        }
+        if(Object.keys(maData.byStudy).length !== 0){
+
+            Object.keys(maData.byStudy).forEach(function(key){
+                let datum = 
+                {
+                    ISR: parseInt(maData.byStudy[key].ISR[0]),
+                    UI: parseInt(maData.byStudy[key].UI[0]),
+                    total: parseInt(maData.byStudy[key].total[0]),
+                    study: "SDY" + maData.byStudy[key].studyId[0]
+                }
+                data.byStudy.push(datum)
+            })
+
+            Object.keys(maData.byMonth).forEach(function(key){
+                let datum = 
+                {
+                    ISR: parseInt(maData.byMonth[key].ISR[0]),
+                    UI: parseInt(maData.byMonth[key].UI[0]),
+                    total: parseInt(maData.byMonth[key].total[0]),
+                    date: maData.byMonth[key].Month[0]
+                }
+                data.byMonth.push(datum)
+            })
+
+            setTransformedMaData(data)
+            
+            const byMonthRange = getRangeFromIntArray(data.byMonth, 'total')
+            const byStudyRange = getRangeFromIntArray(data.byStudy, 'total')
+            setMaDataRange({byMonth: byMonthRange, byStudy: byStudyRange})
+        }
+    }
+
+    React.useEffect(() => {
+        transformLogData();
+    }, [maData])
+
 
     /*  -----------------------------------
             StudyStats Set Plot Data
@@ -377,6 +443,84 @@ const ResourcesPage: React.FC = () => {
         setSsPlotPropsList(plotPropsList)
 
     }, [ssTransformedData, ssDataRange])  
+
+    // --- MostAccessed ----
+    React.useEffect(() => {
+        
+        // Remove zero values to avoid odd looking chart since sorting is done
+        // using a quicksort that leaves secondary sort in groups
+        const tmp = JSON.parse(JSON.stringify(transformedMaData.byStudy))
+        var tmpStudyData = tmp.filter(el => el[maBarOrderBy] > 10)
+        tmpStudyData.sort((a,b) => (a[maBarOrderBy] > b[maBarOrderBy]) ? 1 : -1)
+
+        // logic for updating titles
+        const barTitles: MaPlotTitles = {
+            x: 'Number of User Interactions',
+            y: 'Study Id',
+            main: 'ImmuneSpace Usage by ImmuneSpaceR API and UI'
+        }
+
+        const barData = []
+        const barLabels = []
+        tmpStudyData.forEach(element => {
+            console.log(element)
+            let datum: MaPlotDatum = {
+                UI: element['UI'],
+                ISR: element['ISR'],
+                total: element['total'] 
+            }
+            barData.push(datum)
+            barLabels.push(element['study'])
+        });
+
+        // logic for updating props
+        let barProps: MaPlotProps = {
+            data: barData,
+            labels: barLabels,
+            titles: barTitles,
+            name: "byStudy",
+            width: 700,
+            height: 800,
+            dataRange: maDataRange.byStudy,
+            linkBaseText: 'test study'
+        }
+        
+        setMaBarPlotProps(barProps)
+
+        // logic for updating titles
+        const lineTitles: MaPlotTitles = {
+            x: 'Date',
+            y: 'Number of User Interactions',
+            main: 'ImmuneSpace Usage over Time'
+        }
+
+        const lineData = []
+        const lineLabels = []
+        transformedMaData.byMonth.forEach(element => {
+            let datum: MaPlotDatum = {
+                UI: element['UI'],
+                ISR: element['ISR'],
+                total: element['total'] 
+            }
+            lineData.push(datum)
+            lineLabels.push(element['date'])
+        });
+
+        // logic for updating props
+        let lineProps: MaPlotProps = {
+            data: lineData,
+            labels: lineLabels,
+            titles: lineTitles,
+            name: "byMonth",
+            width: 700,
+            height: 800,
+            dataRange: maDataRange.byMonth,
+            linkBaseText: 'test month'
+        }
+        
+        setMaLinePlotProps(lineProps)
+        
+    }, [transformedMaData, maDataRange, maBarOrderBy])
 
 
     // --------- ABOUT -----------------
@@ -557,13 +701,108 @@ const ResourcesPage: React.FC = () => {
         }
        
         const MostAccessed: React.FC = () => {
-             return(
-                 <div>
-                     <span>
-                         TMP
-                     </span>
-                 </div>
-             )
+             // Offer selection of plots
+            const dropdownOptions = [
+                {value: 'study', label: 'By Study'},
+                {value: 'month', label:  'By Month'},
+            ]
+
+            function onSelectChangePlot(eventKey){
+                setMaPlotToShow(eventKey)
+            }
+
+            const barDropdownOptions = [
+                {value: 'UI', label: 'UI Pageviews'},
+                {value: 'ISR', label:  'ImmuneSpaceR connections'},
+                {value: 'total', label: 'All interactions'}
+            ]
+
+            function onSelectChangeBarOrder(eventKey){
+                setmaBarOrderBy(eventKey)
+            }
+
+            const BarOrderDropdown: React.FC = () => {
+                return(
+                    <Bootstrap.DropdownButton title='Select Order' id='ma-bar-order-select-dropdown'>
+                        <Bootstrap.MenuItem 
+                            eventKey={barDropdownOptions[0].value} 
+                            onSelect={onSelectChangeBarOrder}>
+                            {barDropdownOptions[0].label}
+                        </Bootstrap.MenuItem>
+                        <Bootstrap.MenuItem 
+                            eventKey={barDropdownOptions[1].value} 
+                            onSelect={onSelectChangeBarOrder}>
+                            {barDropdownOptions[1].label}
+                        </Bootstrap.MenuItem>
+                        <Bootstrap.MenuItem 
+                            eventKey={barDropdownOptions[2].value} 
+                            onSelect={onSelectChangeBarOrder}>
+                            {barDropdownOptions[2].label}
+                        </Bootstrap.MenuItem>
+                    </Bootstrap.DropdownButton>
+                )
+            }
+
+            const MaPlot: React.FC = () => {
+                if(maPlotToShow == "study"){
+                    return(
+                        <MaBarPlot
+                            data={maBarPlotProps.data}
+                            labels={maBarPlotProps.labels}
+                            titles={maBarPlotProps.titles}
+                            name={maBarPlotProps.name}
+                            width={maBarPlotProps.width}
+                            height={maBarPlotProps.height}
+                            dataRange={maBarPlotProps.dataRange}
+                            linkBaseText={maBarPlotProps.linkBaseText}
+                        />
+                    )
+                }else{
+                    return(
+                        <MaLinePlot
+                            data={maLinePlotProps.data}
+                            labels={maLinePlotProps.labels}
+                            titles={maLinePlotProps.titles}
+                            name={maLinePlotProps.name}
+                            width={maLinePlotProps.width}
+                            height={maLinePlotProps.height}
+                            dataRange={maLinePlotProps.dataRange}
+                            linkBaseText={maLinePlotProps.linkBaseText}
+                        />
+                    )
+                }
+            }
+
+            return(
+                <div id="#most-accessed">
+                    <h2>ImmuneSpace Usage Over Time or By Study</h2>
+                    <p><b>For More Information:</b></p>
+                    <ul>
+                        <li>Select the plot using the dropdown</li>
+                    </ul>
+                    <br></br>
+                    <table>
+                        <tr>
+                            <td>
+                                <Bootstrap.DropdownButton title='Select Plot Type' id='ma-type-select-dropdown'>
+                                    <Bootstrap.MenuItem eventKey={dropdownOptions[0].value} onSelect={onSelectChangePlot}>
+                                        {dropdownOptions[0].label}
+                                    </Bootstrap.MenuItem>
+                                    <Bootstrap.MenuItem eventKey={dropdownOptions[1].value} onSelect={onSelectChangePlot}>
+                                        {dropdownOptions[1].label}
+                                    </Bootstrap.MenuItem>
+                                </Bootstrap.DropdownButton>
+                            </td>
+                            <td>
+                                { maPlotToShow == "study" ? <BarOrderDropdown/> : null}
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="maPlot">
+                        <MaPlot/>
+                    </div>
+                </div>
+            )
         }
 
         const SimilarStudies: React.FC = () => {
@@ -739,6 +978,7 @@ const ResourcesPage: React.FC = () => {
             }
         ]
 
+       
         const navBarElements = divInfo.map(function(el){
             const itemId = "navbar-link-" + el.id;
             const href = "#" + el.tag;
@@ -758,7 +998,7 @@ const ResourcesPage: React.FC = () => {
                                     setDivToShow(el.tag)
                                     setPlotToShow(subel.tag)
                                 }}>
-                                    {subel.text}
+                                {subel.text}
                             </a>
                         </li>
                     )
