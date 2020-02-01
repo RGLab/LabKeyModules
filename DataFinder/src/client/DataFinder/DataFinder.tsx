@@ -161,8 +161,31 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 width={250}
                 categories={filterCategories[level]}
                 countMetric={pDim == "Study" ? "studyCount" : "participantCount"}
-                barColor={pDim == "Study"? "#af88e3": "#95cced"} />
+                barColor={pDim == "Study" ? "#af88e3" : "#95cced"} />
         )
+    }
+
+    const FilterDropdownHelper = (dim, level, includeIndicators = false) => {
+        return (<FilterDropdown
+            key={level}
+            dimension={dim}
+            level={level}
+            members={filterCategories[level]}
+            filterClick={filterClick}
+            selected={selectedFilters.getIn([dim, level])}>
+            <>
+                {includeIndicators && selectedFilters.getIn([dim, level]) && selectedFilters.getIn([dim, level]).map((memberList) => {
+                    return (
+                        <div style={{ width: "10em" }}>
+                            < Flag dim={dim} onDelete={filterClick(dim, { level: level, member: memberList.get(0) })} >
+                                {memberList.get(0)}
+                            </Flag>
+                        </div>
+                    )
+                })}
+            </>
+
+        </FilterDropdown>)
     }
 
     // ------ filter-related -------
@@ -328,6 +351,64 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         <p>Participant Data available based on current filters</p>
                         <br />
                         <em>Click on a box in the heatmap to start building a filter</em>
+                        <div style={{ width: "20em", float: "left", margin: "25px" }}>
+
+                            <ActionButton text={"Apply"} onClick={() => applyFilters()} />
+                            {selectedFilters.Data.getIn(["Assay", "Assay"]) && selectedFilters.Data.getIn(["Assay", "Assay"]).map((memberList) => {
+                                return (
+                                    <>
+                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Assay", member: memberList.get(0) })} >
+                                            {memberList.get(0) + " at any time point"}
+                                        </Flag>
+                                        AND
+                                    </>
+                                )
+                            })}
+                            {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint"]).map((memberList) => {
+                                return (
+                                    <>
+                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: memberList.get(0) })} >
+                                            {memberList.get(0).split(".").join(" at ") + " days"}
+                                        </Flag>
+                                        AND
+                                    </>
+                                )
+                            })}
+                            {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType"]).map((memberList) => {
+                                const memberSplit = memberList.get(0).split(".")
+                                return (
+                                    <>
+                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: memberList.get(0) })} >
+                                            {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
+                                        </Flag>
+                                        AND
+                                    </>
+                                )
+                            })}
+                            {selectedFilters.Data.get("Timepoint") && selectedFilters.Data.getIn(["Timepoint"]).map((memberList) => {
+                                return (
+                                    <>
+                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Timepoint", member: memberList.get(0) })} >
+                                            {"Any assay at " + memberList.get(0) + " days"}
+                                        </Flag>
+                                        AND
+                                    </>
+                                )
+                            })}
+                            {selectedFilters.Data.getIn(["SampleType", "Assay"]) && selectedFilters.Data.getIn(["SampleType", "Assay"]).map((memberList) => {
+                                const memberSplit = memberList.get(0).split(".")
+                                return (
+                                    <>
+                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "SampleType.Assay", member: memberList.get(0) })} >
+                                            {`${memberSplit[1]} (${memberSplit[0]}) at any day`}
+                                        </Flag>
+                                        AND
+                                    </>
+                                )
+                            })}
+                            <br />
+
+                        </div>
                     </div>
                     <div className="col-sm-9">
                         <SampleTypeCheckbox
@@ -344,76 +425,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     </div>
                 </div>
                 <hr />
-                <div className="row">
-
-                    <div className="col-sm-3">
-                        <div className="row">
-                            <div className="col-sm-6">
-                                <div className="filters-title">Filters</div>
-                            </div>
-                            <div className="col-sm-6">
-                                <ActionButton text={"Apply"} onClick={() => applyFilters()} />
-                            </div>
-                        </div>
-                        {participantSummary}
-                    </div>
-                    <div className="col-sm-9" id="heatmap-container">
-                        <div style={{ width: "20em", float: "left", margin: "25px" }}>
-                            {selectedFilters.Data.getIn(["Assay", "Assay"]) && selectedFilters.Data.getIn(["Assay", "Assay"]).map((memberList) => {
-                                return (
-                                    <>
-                                        < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.Assay", member: memberList.get(0) })} >
-                                            {memberList.get(0) + " at any time point"}
-                                        </Flag>
-                                        AND
-                                    </>
-                                )
-                            })}
-                            {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint"]).map((memberList) => {
-                                return (
-                                    <>
-                                        < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: memberList.get(0) })} >
-                                            {memberList.get(0).split(".").join(" at ") + " days"}
-                                        </Flag>
-                                        AND
-                                    </>
-                                )
-                            })}
-                            {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType"]).map((memberList) => {
-                                const memberSplit = memberList.get(0).split(".")
-                                return (
-                                    <>
-                                        < Flag dim="sample" onDelete={filterClick("Data", { level: "Assay.SampleType", member: memberList.get(0) })} >
-                                            {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
-                                        </Flag>
-                                        AND
-                                    </>
-                                )
-                            })}
-                            {selectedFilters.Data.get("Timepoint") && selectedFilters.Data.getIn(["Timepoint"]).map((memberList) => {
-                                return (
-                                    <>
-                                        < Flag dim="sample" onDelete={filterClick("Data", { level: "Timepoint", member: memberList.get(0) })} >
-                                            {"Any assay at " + memberList.get(0) + " days"}
-                                        </Flag>
-                                        AND
-                                    </>
-                                )
-                            })}
-                            {selectedFilters.Data.getIn(["SampleType", "Assay"]) && selectedFilters.Data.getIn(["SampleType", "Assay"]).map((memberList) => {
-                                const memberSplit = memberList.get(0).split(".")
-                                return (
-                                    <>
-                                        < Flag dim="sample" onDelete={filterClick("Data", { level: "SampleType.Assay", member: memberList.get(0) })} >
-                                            {`${memberSplit[1]} (${memberSplit[0]}) at any day`}
-                                        </Flag>
-                                        AND
-                                    </>
-                                )
-                            })}
-                            <br />
-                        </div>
-                    </div>
+                <div>
+                    <h2>Data From Selected Participants</h2>
                 </div>
                 <div id="data-views" />
             </>,
@@ -425,109 +438,22 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         participant: {
             content: <>
                 <div className="row">
-                    <div className="col-sm-3">
-                        <h2>Participant Characteristics</h2>
-                        <p>Participant data available based on current filters</p>
-                    </div>
                     {filterCategories && <>
-                        <div className="col-sm-3">
+                        <div className="col-sm-4">
                             {BarplotHelper("Subject", "Gender")}
                         </div>
-                        <div className="col-sm-3">
+                        <div className="col-sm-4">
                             {BarplotHelper("Subject", "Age")}
                         </div>
-                        <div className="col-sm-3">
+                        <div className="col-sm-4">
                             {BarplotHelper("Subject", "Race")}
                         </div>
                     </>}
 
 
                 </div>
-                <hr />
-                <div className="row">
-                    <div className="col-sm-3">
-                        <div className="row">
-                            <div className="col-sm-6">
-                                <div className="filters-title">Filters</div>
-                            </div>
-                            <div className="col-sm-6">
-                                <ActionButton text={"Apply"} onClick={() => applyFilters()} />
-                            </div>
-                        </div>
-                        {participantSummary}
-                    </div>
-
-                    {filterCategories &&
-                        <>
-                            <div className="col-sm-3"> <FilterDropdown
-                                key={"Gender"}
-                                dimension={"Subject"}
-                                level={"Gender"}
-                                members={filterCategories.Gender}
-                                filterClick={filterClick}
-                                selected={selectedFilters.Subject.get("Gender")}>
-                                <>
-                                    {selectedFilters.Subject.get("Gender") && selectedFilters.Subject.get("Gender").map((memberList) => {
-                                        return (
-                                            <div style={{ width: "10em" }}>
-                                                < Flag dim="participant" onDelete={filterClick("Subject", { level: "Gender", member: memberList.get(0) })} >
-                                                    {memberList.get(0)}
-                                                </Flag>
-                                            </div>
-                                        )
-                                    })}
-                                </>
-                            </FilterDropdown>
-                            </div>
-                            <div className="col-sm-3">
-                                <FilterDropdown
-                                    key={"Age"}
-                                    dimension={"Subject"}
-                                    level={"Age"}
-                                    members={filterCategories.Age}
-                                    filterClick={filterClick}
-                                    selected={selectedFilters.Subject.get("Age")}>
-                                    <>
-                                        {selectedFilters.Subject.get("Age") && selectedFilters.Subject.get("Age").map((memberList) => {
-                                            return (
-                                                <div style={{ width: "10em" }}>
-                                                    < Flag dim="participant" onDelete={filterClick("Subject", { level: "Age", member: memberList.get(0) })} >
-                                                        {memberList.get(0)}
-                                                    </Flag>
-                                                </div>
-                                            )
-                                        })}
-                                    </>
-
-                                </FilterDropdown>
-
-                            </div>
-                            <div className="col-sm-3">
-                                <FilterDropdown
-                                    key={"Race"}
-                                    dimension={"Subject"}
-                                    level={"Race"}
-                                    members={filterCategories.Race}
-                                    filterClick={filterClick}
-                                    selected={selectedFilters.Subject.get("Race")}>
-                                    <>
-                                        {selectedFilters.Subject.get("Race") && selectedFilters.Subject.get("Race").map((memberList) => {
-                                            return (
-                                                <div style={{ width: "10em" }}>
-                                                    < Flag dim="participant" onDelete={filterClick("Subject", { level: "Race", member: memberList.get(0) })} >
-                                                        {memberList.get(0)}
-                                                    </Flag>
-                                                </div>
-                                            )
-                                        })}
-                                    </>
-                                </FilterDropdown>
-
-                            </div>
-                        </>}
-
-                </div>
                 <hr></hr>
+                <h2 style={{ padding: "15px" }}>Selected Participants</h2>
                 <div className="row">
                     <div id="participant-data" className="df-embedded-webpart"></div>
                 </div>
@@ -563,50 +489,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     </>}
 
                 </div>
-                <ActionButton text={"Apply"} onClick={() => applyFilters()} />
-                {filterCategories &&
-                    <>
-                        <FilterDropdown
-                            key={"Condition"}
-                            dimension={"Study"}
-                            level={"Condition"}
-                            members={filterCategories.Condition}
-                            filterClick={filterClick}
-                            selected={selectedFilters.Study.get("Condition")} />
-                        <FilterDropdown
-                            key={"Category"}
-                            dimension={"Study"}
-                            level={"Category"}
-                            members={filterCategories.Category}
-                            filterClick={filterClick}
-                            selected={selectedFilters.Study.get("Category")} />
-                        <FilterDropdown
-                            key={"ExposureMaterial"}
-                            dimension={"Subject"}
-                            level={"ExposureMaterial"}
-                            members={filterCategories.ExposureMaterial}
-                            filterClick={filterClick}
-                            selected={selectedFilters.Subject.get("ExposureMaterial")} />
-                        <FilterDropdown
-                            key={"ExposureProcess"}
-                            dimension={"Subject"}
-                            level={"ExposureProcess"}
-                            members={filterCategories.ExposureProcess}
-                            filterClick={filterClick}
-                            selected={selectedFilters.Subject.get("ExposureProcess")} />
-                        <FilterDropdown
-                            key={"Species"}
-                            dimension={"Subject"}
-                            level={"Species"}
-                            members={filterCategories.Species}
-                            filterClick={filterClick}
-                            selected={selectedFilters.Subject.get("Species")} />
-                    </>
-                }
-
-
-                {participantSummary}
-
+                <hr></hr>
+                <div>
+                    <h2>Selected Studies</h2>
+                </div>
                 {studyDict && studyParticipantCounts.map((sdy) => {
                     if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
                         return (
@@ -650,6 +536,30 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         <a className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
                     </>
                 } />
+
+            <ActionButton text={"Apply"} onClick={() => applyFilters()} />
+            <div style={{ float: "right" }}>{participantSummary}</div>
+            <div className="row">
+                {filterCategories && <>
+                    <div className="col-sm-4">
+                        {FilterDropdownHelper("Study", "Condition", false)}
+                        {FilterDropdownHelper("Study", "Category", false)}
+                        {FilterDropdownHelper("Subject", "ExposureMaterial", false)}
+                        {FilterDropdownHelper("Subject", "ExposureProcess")}
+                        {FilterDropdownHelper("Subject", "Species")}
+                    </div>
+                    <div className="col-sm-4">
+                        {FilterDropdownHelper("Subject", "Gender", true)}
+                        {FilterDropdownHelper("Subject", "Age", true)}
+                        {FilterDropdownHelper("Subject", "Race", true)}
+                    </div>
+                    <div className="col-sm-4">
+                        {FilterDropdownHelper("Data", "Timepoint")}
+                    </div>
+                </>
+                }
+
+            </div>
             <div className="datafinder-wrapper">
                 <Tabs tabs={tabs} defaultActive="study" tabFunction={renderWepart} />
             </div>

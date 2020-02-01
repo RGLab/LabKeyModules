@@ -42,13 +42,13 @@ export const FilterSummary = (props: FilterSummaryProps) => {
         <div className="row filterbar">
             <div className="col-sm-4">
                 <FilterIndicatorList
-                    filterClass={"study"}
+                    filterClass={"Study"}
                     filters={props.filters.Study}
                     title={"Study Design"} />
             </div>
             <div className="col-sm-4">
                 <FilterIndicatorList
-                    filterClass={"participant"}
+                    filterClass={"Subject"}
                     filters={props.filters.Subject}
                     title={"Participant Characteristics"} />
             </div>
@@ -145,7 +145,7 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
         filterFlags = filterText.valueSeq().map((text, i) => {
             if (text == undefined) return (undefined)
             return (
-                <Flag key={i} dim="sample" >
+                <Flag key={i} dim="Data" >
                     {text}
                 </Flag>
             )

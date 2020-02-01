@@ -32,7 +32,7 @@ export function drawTinyHeatmap(props: TinyHeatmapProps) {
         .attr("id", "tinyheatmap-" + name);
 
     // Create margins
-    const margin = { top: 5, right: 0, bottom: 25, left: 50 },
+    const margin = { top: 5, right: 0, bottom: 30, left: 50 },
         width = props.width - margin.left - margin.right,
         height = props.height - margin.top - margin.bottom;
 

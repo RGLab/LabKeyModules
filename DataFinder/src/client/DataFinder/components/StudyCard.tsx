@@ -41,14 +41,14 @@ const StudyProperty: React.FC<StudyPropertyProps> = (props) => {
 
 const StudyProperties: React.FC<StudyPropertiesProps> = (props) => {
 
-    const studyProperties = props.studyProperties.map((property) => {
+    const  studyProperties = props.studyProperties.map((property) => {
         return (
             <StudyProperty key={property.label} label={property.label} value={property.value} />
         )
     })
 
     return (
-        <div>
+        <div className="study-properties">
             {studyProperties}
         </div>
     )
@@ -81,8 +81,8 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
     const study = props.study;
     const studyProperties: StudyProperty[] = [
         {
-            label: "Condition",
-            value: study.condition_studied
+            label: "Research Focus",
+            value: study.research_focus
         },
         {
             label: "Sample Type",
@@ -134,7 +134,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
     return (
         <div className="study-card">
             <div className="study-label">
-                <div className="checkbox">
+                <div className="study-checkbox checkbox">
                     <label>
                         <input type="checkbox" name="study" value="SDY28" />
                         <span className="study-id">{study.study_accession}</span>
@@ -151,10 +151,11 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             </div>
             <StudyProgressBar totalParticipantCount={study.totalParticipantCount} selectedParticipantCount={props.participantCount} />
             <StudyProperties studyProperties={studyProperties} />
+            <hr></hr>
             <TinyHeatmap
                 name={study.study_accession} 
                 width={260} 
-                height={30 + 10 * assays.length} 
+                height={35 + 10 * assays.length} 
                 data={heatmapData} 
                 colors={heatmapColors}
                 colorBreaks={heatmapBreaks}

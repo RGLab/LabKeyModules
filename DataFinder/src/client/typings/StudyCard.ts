@@ -11,7 +11,7 @@ import { Record } from 'immutable';
 export interface IStudyInfo {
     assays?: string[];
     brief_title?: string;
-    condition_studied?: string;
+    research_focus?: string;
     heatmapData?: CubeDatum[];
     pi_names?: string[];
     program_title?: string;
@@ -26,7 +26,7 @@ export interface IStudyInfo {
 export class StudyInfo extends Record({
     assays: [],
     brief_title: "",
-    condition_studied: "",
+    research_focus: "",
     heatmapData: [],
     pi_names: [],
     program_title: "",
@@ -38,7 +38,7 @@ export class StudyInfo extends Record({
 }) {
     assays: string[];
     brief_title: string;
-    condition_studied: string;
+    research_focus: string;
     heatmapData: CubeDatum[];
     pi_names: string[];
     program_title: string;

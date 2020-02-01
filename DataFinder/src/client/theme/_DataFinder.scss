@@ -49,17 +49,17 @@
   padding-bottom: 2px;
 }
 
-.filter-indicator-text.study {
+.filter-indicator-text.Study {
   background: #54278f;
   color: white;
 }
 
-.filter-indicator-text.participant {
+.filter-indicator-text.Subject {
   background: #6baed6;
   color: white;
 }
 
-.filter-indicator-text.sample {
+.filter-indicator-text.Data {
   background: #238b45;
   color: white;
 }
@@ -106,17 +106,13 @@ button {
   float: inline-end;
 }
 
-h2 {
-  display: inline;
-}
-
 .study-card {
   border: 2px solid #bcbcbc;
   padding: 5px;
   margin: 10px;
   border-radius: 10px;
   width: 280px;
-  display: inline-block;
+  display: inline-table
 }
 
 .study-label {
@@ -126,12 +122,14 @@ h2 {
   font-variant: small-caps;
   font-size: 14px;
   line-height: 1.4;
+  height: 30px;
 }
 
-.checkbox {
+.study-checkbox {
   display: block;
   margin: 5px 0;
   position: relative;
+  float: left; 
 }
 
 .study-id {
@@ -153,9 +151,11 @@ hr {
   display: block;
   text-align: left;
   font-weight: bold;
-  font-size: 1em;
+  font-size: .9em;
   margin-bottom: 10px;
   margin-top: 10px;
+  height:4em;
+  overflow: auto;
 }
 
 .progress {
@@ -167,6 +167,11 @@ hr {
   font-size: 0.9em;
   margin: 0 15px 0 15px;
 }
+
+.study-properties {
+  height: 7em
+}
+
 textarea {
   font-family: "Courier New", Courier, monospace;
 }
@@ -177,9 +182,15 @@ textarea {
 }
 
 .tinyheatmap {
-  border: solid 1px black;
+  height: 120px;
+  position: relative;
+  border: 0
 }
 
+.tinyheatmap > svg {
+  position: absolute;
+  bottom: 0
+}
 /* -------- tooltip ----------- */
 #heatmap-label {
   float: right;
