@@ -9,7 +9,7 @@ import { StudyParticipantCount, StudyInfo } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
 import { Map, List } from 'immutable';
 import { ActionButton, LoadDropdown, SaveDropdown, ClearDropdown } from './components/ActionButton'
-import { FilterDropdown } from './components/FilterDropdown'
+import { FilterDropdown, ContentDropdown } from './components/FilterDropdown'
 import { FilterSummary, Flag, AssayFilterIndicatorList } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
@@ -166,15 +166,16 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     const FilterDropdownHelper = (dim, level, includeIndicators = false) => {
+        const levelArray = level.split(".")
         return (<FilterDropdown
             key={level}
             dimension={dim}
             level={level}
-            members={filterCategories[level]}
+            members={filterCategories[levelArray[0]]}
             filterClick={filterClick}
-            selected={selectedFilters.getIn([dim, level])}>
+            selected={selectedFilters.getIn([dim, ...levelArray])}>
             <>
-                {includeIndicators && selectedFilters.getIn([dim, level]) && selectedFilters.getIn([dim, level]).map((memberList) => {
+                {includeIndicators && selectedFilters.getIn([dim, ...levelArray]) && selectedFilters.getIn([dim, ...levelArray]).map((memberList) => {
                     return (
                         <div style={{ width: "10em" }}>
                             < Flag dim={dim} onDelete={filterClick(dim, { level: level, member: memberList.get(0) })} >
@@ -184,7 +185,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     )
                 })}
             </>
-
         </FilterDropdown>)
     }
 
@@ -334,7 +334,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     // Define re-used components
-    const participantSummary = <div style={{ margin: "30px 0px" }}>{totalSelectedCounts.participant} participants from {totalSelectedCounts.study} studies</div>
+    const participantSummary = <div style={{ margin: "30px 0px" }}>{totalSelectedCounts.participant} participants <br /> from {totalSelectedCounts.study} studies</div>
+
     // ----- define the various tabs -----
     const tabs = {
         // intro: {
@@ -346,11 +347,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         data: {
             content: <>
                 <div className="row">
-                    <div className="col-sm-3">
-                        <h2>Assay Data Available</h2>
-                        <p>Participant Data available based on current filters</p>
-                        <br />
-                        <em>Click on a box in the heatmap to start building a filter</em>
+                    {/* <div className="col-sm-3">
                         <div style={{ width: "20em", float: "left", margin: "25px" }}>
 
                             <ActionButton text={"Apply"} onClick={() => applyFilters()} />
@@ -409,8 +406,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             <br />
 
                         </div>
-                    </div>
-                    <div className="col-sm-9">
+                    </div> */}
+                    <div>
                         <SampleTypeCheckbox
                             toggleShowSampleType={toggleSampleType}
                             showSampleType={showSampleType} />
@@ -537,29 +534,52 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     </>
                 } />
 
-            <ActionButton text={"Apply"} onClick={() => applyFilters()} />
-            <div style={{ float: "right" }}>{participantSummary}</div>
-            <div className="row">
+            <div className="row" style={{position: "relative"}}>
                 {filterCategories && <>
                     <div className="col-sm-4">
-                        {FilterDropdownHelper("Study", "Condition", false)}
-                        {FilterDropdownHelper("Study", "Category", false)}
-                        {FilterDropdownHelper("Subject", "ExposureMaterial", false)}
-                        {FilterDropdownHelper("Subject", "ExposureProcess")}
-                        {FilterDropdownHelper("Subject", "Species")}
+                        {FilterDropdownHelper("Study", "Condition", true)}
+                        {FilterDropdownHelper("Study", "Category", true)}
+                        {FilterDropdownHelper("Subject", "ExposureMaterial", true)}
+                        {FilterDropdownHelper("Subject", "ExposureProcess", true)}
+                        {FilterDropdownHelper("Subject", "Species", true)}
                     </div>
                     <div className="col-sm-4">
                         {FilterDropdownHelper("Subject", "Gender", true)}
                         {FilterDropdownHelper("Subject", "Age", true)}
                         {FilterDropdownHelper("Subject", "Race", true)}
                     </div>
-                    <div className="col-sm-4">
-                        {FilterDropdownHelper("Data", "Timepoint")}
+                    <div className="col-sm-2">
+                        <ContentDropdown id={"heatmap-selector"} label={"Assay-Timepoint Selector"} content={filterCategories &&
+                            <HeatmapSelector
+                                data={cubeData.Data.toJS()}
+                                filterClick={filterClick}
+                                showSampleType={showSampleType}
+                                selected={selectedFilters.Data}
+                                timepointCategories={filterCategories.Timepoint} />}>
+                            {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint"]).map((memberList) => {
+                                return (
+                                    <>
+                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: memberList.get(0) })} >
+                                            {memberList.get(0).split(".").join(" at ") + " days"}
+                                        </Flag>
+                                    </>
+                                )
+                            })}
+                        </ContentDropdown>
+                        {FilterDropdownHelper("Data", "Timepoint", true)}
+                        {FilterDropdownHelper("Data", "SampleType.SampleType", true)}
+                        {FilterDropdownHelper("Data", "Assay.Assay", true)}
+
+                    </div>
+                    <div style={{position: "absolute", top: "0", right: "15px"}}>
+                        <ActionButton text={"Apply"} onClick={() => applyFilters()} />
+                        <div style={{position: "absolute", top: "35px", right: "0", textAlign: "right", width: "8em"}}>{totalSelectedCounts.participant} participants from {totalSelectedCounts.study} studies</div>
                     </div>
                 </>
                 }
 
             </div>
+
             <div className="datafinder-wrapper">
                 <Tabs tabs={tabs} defaultActive="study" tabFunction={renderWepart} />
             </div>

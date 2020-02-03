@@ -8,7 +8,16 @@ window.addEventListener('DOMContentLoaded', (event) => {
     ReactDOM.render(<App/>, document.getElementById('app'));
 });
 
-const menu = document.getElementsByClassName('.dropdown-menu')
+const menu = document.getElementsByClassName('.filterselector')
+
+for (var i = 0; i < menu.length; i++) {
+    menu[i].addEventListener('click', function (even) {
+        this.value.parent().toggleClass("open");
+    })
+}
+
+// ((e) => e.value.on("click", function(event) {
+// })
 
 // for (var i = 0; i < menu.length; i++) {
 //     menu[i].addEventListener('click', (e) => {

@@ -11,13 +11,21 @@ export interface FilterDropdownProps {
     selected: List<List<string>>;
 }
 
-export const FilterDropdown: React.FC<FilterDropdownProps> = ({dimension, level, members, filterClick, selected, children}) => {
+interface ContentDropdownProps {
+    id: string
+    label: string;
+    content: JSX.Element;
+}
+
+export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level, members, filterClick, selected, children }) => {
     // if (props.selected != undefined) debugger
+
+
     const labels = members.map(m => m.label)
     return (
-        <div className={"dropdown"} style={{width: "50px"}}>
+        <div className={"dropdown"} style={{ width: "50px" }}>
             <div className="btn-group filterselector" role="group" >
-                <button className="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
+                <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
                     <span>{level}</span>
                     <span>&#9660;</span>
                 </button>
@@ -54,5 +62,31 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({dimension, level,
 
             </div>
         </div>
+    )
+}
+
+export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, content, children }) => {
+    return (
+        <>
+            <div className={"dropdown"} style={{ width: "50px" }}>
+                <div id={"df-content-dropdown-" + id} className="btn-group filterselector" role="group" >
+                    <button className="btn btn-default dropdown-toggle" type="button" onClick={() => {
+                    const cl = document.getElementById("df-content-dropdown-" + id).classList
+                    if (cl.contains("open")) {
+                        cl.remove("open")
+                    } else {
+                        cl.add("open")
+                    }
+                }}>
+                        <span>{label}</span>
+                        <span>&#9660;</span>
+                    </button>
+                    <div className="dropdown-menu assay-timepoint-dropdown">
+                        {content}
+                    </div>
+                    {children}
+                </div>
+            </div>
+        </>
     )
 }

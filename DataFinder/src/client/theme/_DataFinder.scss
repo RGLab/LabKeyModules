@@ -205,6 +205,7 @@ textarea {
   border: 0px;
   pointer-events: none;
   opacity: 0;
+  z-index: 100000000000
 }
 
 .arrow-down {
@@ -217,8 +218,8 @@ textarea {
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-
   border-top: 10px solid lightsteelblue;
+  z-index: 100000000000
 }
 
 .df-embedded-webpart {
@@ -241,4 +242,11 @@ textarea {
 .df-banner-title {
   float: left;
   margin-right: 30px
+}
+
+.assay-timepoint-dropdown {
+  right: 0;
+  left: auto;
+  height: auto;
+  overflow: auto;
 }

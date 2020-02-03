@@ -4,13 +4,14 @@ FROM (SELECT variable, category,
     WHEN sortorder IS NULL THEN 
       CASE 
         WHEN category = 'Unknown' THEN 90
+        WHEN category = 'unknown' THEN 90
         WHEN category = 'Other' THEN 89
         ELSE 0
         END
     ELSE sortorder END 
   AS sortorder
   FROM (
-                                                    SELECT 'Timepoint' as variable, Timepoint as category, sortorder
+        SELECT 'Timepoint' as variable, Timepoint as category, sortorder
       FROM (
 	SELECT DISTINCT Timepoint, sortorder
         from immport.dimStudyTimepoint) _
@@ -19,15 +20,17 @@ FROM (SELECT variable, category,
 
       SELECT 'Assay' as variable, Assay as category, NULL as sortorder
       FROM (SELECT DISTINCT Assay
-        from immport.dimStudyAssay) _
+        from immport.dataFinder_dimData
+        WHERE studyid IN (SELECT label
+        from study.Study )) _
 
     UNION ALL
 
       SELECT 'SampleType' as variable, SampleType as category, NULL as sortorder
       FROM (
-        SELECT DISTINCT type as SampleType
-        from immport.biosample
-        WHERE study_accession IN (SELECT label
+        SELECT DISTINCT cell_type as SampleType
+        from immport.dataFinder_dimData
+        WHERE studyid IN (SELECT label
         from study.Study)) _
 
     UNION ALL
@@ -62,8 +65,8 @@ FROM (SELECT variable, category,
 
     UNION ALL
 
-      SELECT 'Age' as variable, age as category, 
-      CASE 
+      SELECT 'Age' as variable, age as category,
+        CASE 
         WHEN age = '0-10' THEN 0
         WHEN age = '11-20' THEN 1
         WHEN age = '21-30' THEN 2
@@ -115,7 +118,8 @@ FROM (SELECT variable, category,
       FROM (
          SELECT DISTINCT condition_studied
         from immport.dataFinder_dimStudyCondition
-        WHERE study_accession IN (SELECT label from study.Study )
+        WHERE study_accession IN (SELECT label
+        from study.Study )
       ) _
 
     UNION ALL

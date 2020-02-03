@@ -13,19 +13,14 @@ const render = () => {
         document.getElementById('app')
     )
 
-    // const menu = document.getElementsByClassName('dropdown-menu')
 
-    // for (var i = 0; i < menu.length; i++) {
-    //     menu[i].addEventListener('click', (e) => {
-    //         console.log("stopping...."); e.stopPropagation()
-    //     })
-    // }
 };
 
 declare const module: any;
 
 window.addEventListener('DOMContentLoaded', () => {
     render();
+
     if (module.hot) {
         module.hot.accept();
     }
