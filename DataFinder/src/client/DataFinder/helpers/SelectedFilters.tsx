@@ -60,19 +60,20 @@ export const createCubeFilters = (filters: SelectedFilters) => {
             if (hierarchy == "Assay" || hierarchy == "SampleType") {
                 const hierarchyFilters = selectedFiltersOrMap.map((selectedFilter: SelectedFilter, level: string) => {
                     if (selectedFilter.operator == "OR") {
-                        return({
+                        return ({
                             level: "[Subject].[Subject]", membersQuery: {
                                 level: `[Data.${hierarchy}].[${level}]`,
                                 members: selectedFilter.members.map(m => ("[Data." + hierarchy + "].[" + m.split(".").join("].[") + "]")).toJS()
                             }
                         })
                     } else {
-                        return(
+                        return (
                             selectedFilter.members.map((member) => {
-                                return({
+                                return ({
                                     level: "[Subject].[Subject]", membersQuery: {
                                         level: `[Data.${hierarchy}].[${level}]`,
-                                        members: "[Data." + hierarchy + "].[" + member.split(".").join("].[") + "]"}
+                                        members: "[Data." + hierarchy + "].[" + member.split(".").join("].[") + "]"
+                                    }
                                 })
                             }).toJS()
                         )
@@ -82,19 +83,20 @@ export const createCubeFilters = (filters: SelectedFilters) => {
             } else if (hierarchy == "Timepoint") {
                 const selectedFilter = selectedFiltersOrMap
                 if (selectedFilter.operator == "OR") {
-                    return({
+                    return ({
                         level: "[Subject].[Subject]", membersQuery: {
                             level: `[Data.Timepoint].[Timepoint]`,
                             members: selectedFilter.members.map(member => ("[Data.Timepoint].[" + member + "]")).toJS()
                         }
                     })
                 } else {
-                    return(
+                    return (
                         selectedFilter.members.map((member) => {
-                            return({
+                            return ({
                                 level: "[Subject].[Subject]", membersQuery: {
                                     level: `[Data.Timepoint].[Timepoint]`,
-                                    members: "[Data.Timepoint].[" + member + "]"}
+                                    members: "[Data.Timepoint].[" + member + "]"
+                                }
                             })
                         }).toJS()
                     )
@@ -123,15 +125,15 @@ export const toggleFilter = (dim: string, level: string, member: string, selecte
     let sf;
     const filters: SelectedFilter = selectedFilters.getIn(filterIn)
     if (filters == undefined) {
-        f = new SelectedFilter({members: [member]})
+        f = new SelectedFilter({ members: [member] })
     } else {
         if (filters.members.includes(member)) {
             f = filters.removeIn(["members", filters.members.indexOf(member)])
         } else {
-           f = filters.set("members", filters.members.push(member))
+            f = filters.set("members", filters.members.push(member))
         }
     }
-    
+
     // if (sf.getIn(filterIn).size > 1) sf = connectFilters(dim, level, sf.getIn([...filterIn, 0, 0]), sf.getIn([...filterIn, 1, 0]), sf)
 
     if (f.members.size == 0) {
@@ -140,6 +142,42 @@ export const toggleFilter = (dim: string, level: string, member: string, selecte
         sf = selectedFilters.setIn(filterIn, f)
     }
     return (sf)
+}
+
+export const toggleAndOr = (dim: string, level: string, selectedFilters: SelectedFilters) => {
+    console.log("toggleAndOr()")
+    let filterIn: string[];
+    if (/\./.test(level)) {
+        const l = level.split(".")
+        filterIn = [dim, l[0], l[1]]
+    } else {
+        filterIn = [dim, level]
+    }
+
+    if (selectedFilters.getIn(filterIn) == undefined) return (selectedFilters)
+
+    if (selectedFilters.getIn([...filterIn, "operator"]) == "AND") {
+        const sf = selectedFilters.setIn([...filterIn, "operator"], "OR")
+        return (new SelectedFilters(sf.toJS()))
+    } else {
+        const sf = selectedFilters.setIn([...filterIn, "operator"], "AND")
+        return (new SelectedFilters(sf.toJS()))
+    }
+}
+
+export const setAndOr = (dim: string, level: string, value: string, selectedFilters: SelectedFilters) => {
+    console.log("setAndOr()")
+    let filterIn: string[];
+    if (/\./.test(level)) {
+        const l = level.split(".")
+        filterIn = [dim, l[0], l[1]]
+    } else {
+        filterIn = [dim, level]
+    }
+    if (selectedFilters.getIn(filterIn) == undefined) return (selectedFilters)
+    if (selectedFilters.getIn([...filterIn, "operator"]) == value) return(selectedFilters)
+    const sf = selectedFilters.setIn([...filterIn, "operator"], value)
+    return (new SelectedFilters(sf.toJS()))
 }
 
 export const connectFilters = (dim: string, level: string, member1: string, member2: string, selectedFilters: SelectedFilters) => {

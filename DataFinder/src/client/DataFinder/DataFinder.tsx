@@ -4,18 +4,19 @@ import React, { memo } from 'react';
 import { CubeData, Filter, SelectedFilters, TotalCounts, GroupInfo, BannerInfo } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup';
-import { toggleFilter } from './helpers/SelectedFilters';
+import { toggleFilter, toggleAndOr, setAndOr } from './helpers/SelectedFilters';
 import { StudyParticipantCount, StudyInfo } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
 import { Map, List } from 'immutable';
 import { ActionButton, LoadDropdown, SaveDropdown, ClearDropdown } from './components/ActionButton'
-import { FilterDropdown, ContentDropdown } from './components/FilterDropdown'
+import { FilterDropdown, ContentDropdown, AndOrDropdown } from './components/FilterDropdown'
 import { FilterSummary, Flag, AssayFilterIndicatorList } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
 import Tabs from "./components/Tabs";
 import * as d3 from 'd3'
 import { Banner } from "./components/Banner";
+import { AssayTimepointViewerContainer } from "./components/AssayTimepointViewer";
 
 interface DataFinderControllerProps {
     mdx: any
@@ -165,7 +166,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         )
     }
 
-    const FilterDropdownHelper = (dim, level, includeIndicators = false) => {
+    const FilterDropdownHelper = (dim, level, includeIndicators = false, includeAndOr = false) => {
         const levelArray = level.split(".")
         return (<FilterDropdown
             key={level}
@@ -175,6 +176,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             filterClick={filterClick}
             selected={selectedFilters.getIn([dim, ...levelArray, "members"])}>
             <>
+                {includeAndOr && <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])} onClick={clickAndOr(dim, level)} />}
                 {includeIndicators && selectedFilters.getIn([dim, ...levelArray]) && selectedFilters.getIn([dim, ...levelArray, "members"]).map((member) => {
                     return (
                         <div style={{ width: "10em" }}>
@@ -195,6 +197,12 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             const sf = toggleFilter(dim, filter.level, filter.member, selectedFilters)
             console.log(sf.toJS())
             setSelectedFilters(sf)
+        })
+    }
+
+    const clickAndOr = (dim: string, level: string) => {
+        return ((value: string) => {
+            setSelectedFilters(setAndOr(dim, level, value, selectedFilters))
         })
     }
 
@@ -339,86 +347,37 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // ----- define the various tabs -----
     const tabs = {
-        // intro: {
-        //     content: <h1>Find Groups</h1>,
-        //     id: "intro",
-        //     tag: "intro",
-        //     text: "Groups"
-        // },
         data: {
             content: <>
                 <div className="row">
-                    {/* <div className="col-sm-3">
-                        <div style={{ width: "20em", float: "left", margin: "25px" }}>
-
-                            <ActionButton text={"Apply"} onClick={() => applyFilters()} />
-                            {selectedFilters.Data.getIn(["Assay", "Assay"]) && selectedFilters.Data.getIn(["Assay", "Assay"]).map((memberList) => {
-                                return (
-                                    <>
-                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Assay", member: memberList.get(0) })} >
-                                            {memberList.get(0) + " at any time point"}
-                                        </Flag>
-                                        AND
-                                    </>
-                                )
-                            })}
-                            {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint"]).map((memberList) => {
-                                return (
-                                    <>
-                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: memberList.get(0) })} >
-                                            {memberList.get(0).split(".").join(" at ") + " days"}
-                                        </Flag>
-                                        AND
-                                    </>
-                                )
-                            })}
-                            {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType"]).map((memberList) => {
-                                const memberSplit = memberList.get(0).split(".")
-                                return (
-                                    <>
-                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: memberList.get(0) })} >
-                                            {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
-                                        </Flag>
-                                        AND
-                                    </>
-                                )
-                            })}
-                            {selectedFilters.Data.get("Timepoint") && selectedFilters.Data.getIn(["Timepoint"]).map((memberList) => {
-                                return (
-                                    <>
-                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Timepoint", member: memberList.get(0) })} >
-                                            {"Any assay at " + memberList.get(0) + " days"}
-                                        </Flag>
-                                        AND
-                                    </>
-                                )
-                            })}
-                            {selectedFilters.Data.getIn(["SampleType", "Assay"]) && selectedFilters.Data.getIn(["SampleType", "Assay"]).map((memberList) => {
-                                const memberSplit = memberList.get(0).split(".")
-                                return (
-                                    <>
-                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "SampleType.Assay", member: memberList.get(0) })} >
-                                            {`${memberSplit[1]} (${memberSplit[0]}) at any day`}
-                                        </Flag>
-                                        AND
-                                    </>
-                                )
-                            })}
-                            <br />
-
-                        </div>
-                    </div> */}
                     <div>
 
                         {filterCategories &&
-                            <HeatmapSelector
-                                name={"heatmap1"}
-                                data={cubeData.Data.toJS()}
-                                filterClick={(dim: string, filter: Filter) => (() => {})}
-                                showSampleType={showSampleType}
-                                selected={selectedFilters.Data}
-                                timepointCategories={filterCategories.Timepoint}
-                                sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />}
+                            <>
+                            <div className="row">
+                                <div className="col-sm-8">
+                                    <h4 style={{textAlign: "center"}}>Assays Available by Study Day</h4>
+                                <AssayTimepointViewerContainer
+                                    name={"heatmap1"}
+                                    data={cubeData.Data.toJS()}
+                                    showSampleType={showSampleType}
+                                    selected={selectedFilters.Data}
+                                    timepointCategories={filterCategories.Timepoint}
+                                    sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
+                                </div>
+                                <div className="col-sm-4">
+                                <Barplot
+                                    data={cubeData.getIn(["Data", "SampleType", "SampleType"]).toJS()}
+                                    name={"SampleType"}
+                                    height={200}
+                                    width={250}
+                                    categories={filterCategories["SampleType"]}
+                                    countMetric={"participantCount"}
+                                    barColor={"#74C476"} />
+                                </div>
+                            </div>
+                            </>}
+
 
                     </div>
                 </div>
@@ -551,44 +510,45 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     </div>
                     <div className="col-sm-2">
                         <ContentDropdown id={"heatmap-selector"} label={"Assay-Timepoint Selector"} content={filterCategories &&
-                        <>
-                                                <SampleTypeCheckbox
-                            toggleShowSampleType={toggleSampleType}
-                            showSampleType={showSampleType} />
-                            <HeatmapSelector
-                                name={"heatmap2"}
-                                data={cubeData.Data.toJS()}
-                                filterClick={filterClick}
-                                showSampleType={showSampleType}
-                                selected={selectedFilters.Data}
-                                timepointCategories={filterCategories.Timepoint}
-                                sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
-                                </>}>
-                                    <>
-                            {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint", "members"]).map((member) => {
-                                return (
-                                    <>
-                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: member })} >
-                                            {member.split(".").join(" at ") + " days"}
-                                        </Flag>
-                                    </>
-                                )
-                            })}
-                            {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType", "members"]).map((member) => {
-                                const memberSplit = member.get(0).split(".")
-                                return (
-                                    <>
-                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member.get(0) })} >
-                                            {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
-                                        </Flag>
-                                    </>
-                                )
-                            })}
+                            <>
+                                <SampleTypeCheckbox
+                                    toggleShowSampleType={toggleSampleType}
+                                    showSampleType={showSampleType} />
+                                <HeatmapSelector
+                                    name={"heatmap2"}
+                                    data={cubeData.Data.toJS()}
+                                    filterClick={filterClick}
+                                    showSampleType={showSampleType}
+                                    selected={selectedFilters.Data}
+                                    timepointCategories={filterCategories.Timepoint}
+                                    sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
+                            </>}>
+                            <>
+                                <AndOrDropdown status={selectedFilters.getIn(["Data", "Assay", "Timepoint", "operator"])} onClick={clickAndOr("Data", "Assay.Timepoint")} />
+                                {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint", "members"]).map((member) => {
+                                    return (
+                                        <>
+                                            < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: member })} >
+                                                {member.split(".").join(" at ") + " days"}
+                                            </Flag>
+                                        </>
+                                    )
+                                })}
+                                {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType", "members"]).map((member) => {
+                                    const memberSplit = member.get(0).split(".")
+                                    return (
+                                        <>
+                                            < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member.get(0) })} >
+                                                {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
+                                            </Flag>
+                                        </>
+                                    )
+                                })}
                             </>
                         </ContentDropdown>
-                        {FilterDropdownHelper("Data", "Timepoint", true)}
-                        {FilterDropdownHelper("Data", "SampleType.SampleType", true)}
-                        {FilterDropdownHelper("Data", "Assay.Assay", true)}
+                        {FilterDropdownHelper("Data", "Timepoint", true, true)}
+                        {FilterDropdownHelper("Data", "SampleType.SampleType", true, true)}
+                        {FilterDropdownHelper("Data", "Assay.Assay", true, true)}
 
                     </div>
                     <div style={{ position: "absolute", top: "0", right: "15px" }}>

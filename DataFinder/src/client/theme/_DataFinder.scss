@@ -250,3 +250,22 @@ textarea {
   height: auto;
   overflow: auto;
 }
+
+.df-andor-dropdown {
+  float: right;
+  margin-left: 15px;
+  min-width: auto;
+  padding: 0
+}
+.df-andor-dropdown > ul > li > a {
+  padding: 3px;
+  
+}
+
+.df-andor-dropdown > ul {
+  min-width: auto;
+}
+
+// .df-dropdown-button {
+
+// }

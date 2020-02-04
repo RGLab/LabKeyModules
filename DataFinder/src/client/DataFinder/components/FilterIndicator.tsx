@@ -61,27 +61,36 @@ export const FilterSummary = (props: FilterSummaryProps) => {
     )
 }
 
-export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = (props) => {
+export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> = ({filters, title}) => {
     let filterFlags;
-    if (props.filters.size == 0 ||
-        (props.filters.getIn(["Assay", "Timepoint"]) == undefined &&
-            props.filters.getIn(["Assay", "Assay"]) == undefined &&
-            props.filters.getIn(["Assay", "SampleType"]) == undefined &&
-            props.filters.getIn(["SampleType", "SampleType"]) == undefined &&
-            props.filters.getIn(["SampleType", "Assay"]) == undefined &&
-            props.filters.get("Timepoint") == undefined)) {
+    if (filters.size == 0 ||
+        (filters.getIn(["Assay", "Timepoint"]) == undefined &&
+            filters.getIn(["Assay", "Assay"]) == undefined &&
+            filters.getIn(["Assay", "SampleType"]) == undefined &&
+            filters.getIn(["SampleType", "SampleType"]) == undefined &&
+            filters.getIn(["SampleType", "Assay"]) == undefined &&
+            filters.get("Timepoint") == undefined)) {
         filterFlags = <em className="filter-indicator">No filters currently applied</em>
     } else {
-        const filters = Map<string, SelectedFilter>({
-            "Assay.Assay": props.filters.getIn(["Assay", "Assay"]),
-            "Assay.Timepoint": props.filters.getIn(["Assay", "Timepoint"]),
-            "Assay.SampleType": props.filters.getIn(["Assay", "SampleType"]),
-            "SampleType.SampleType": props.filters.getIn(["SampleType", "SampleType"]),
-            "SampleType.Assay": props.filters.getIn(["SampleType", "Assay"]),
-            "Timepoint": props.filters.get("Timepoint")
+        const filterMap = Map<string, SelectedFilter>({
+            "Assay.Assay": filters.getIn(["Assay", "Assay"]),
+            "Assay.Timepoint": filters.getIn(["Assay", "Timepoint"]),
+            "Assay.SampleType": filters.getIn(["Assay", "SampleType"]),
+            "SampleType.SampleType": filters.getIn(["SampleType", "SampleType"]),
+            "SampleType.Assay": filters.getIn(["SampleType", "Assay"]),
+            "Timepoint": filters.get("Timepoint")
         })
-        const filterText = filters.map((e, i) => {
-            if (e == undefined) return (undefined);
+        const prefixes = {
+            "Assay.Assay": "Assays at any timepoint: ",
+            "Assay.Timepoint": "Assay at a certain timepoint: ",
+            "Assay.SampleType": "Assay on a certain sample type at a certain timepoint: ",
+            "SampleType.SampleType": "Any assay on these sample types: ",
+            "SampleType.Assay": "Assay on a certain sample type for any timepoint: ",
+            "Timepoint": "Any assay at these timepoints: "
+        }
+        const filterText = filterMap.map((e, i) => {
+            if (e === undefined) return (undefined);
+            // debugger
             const getText = (m: string, level: string) => {
                 if (level == "Assay.SampleType") {
                     const assay = m.split(/\./)[0]
@@ -99,28 +108,29 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
                     const sampleType = m.split(/\./)[0]
                     return (assay + " (" + sampleType + ")")
                 }
-
+                if (level == "Timepoint") {
+                    return "Day " + m
+                }
+                return(m)
             }
-            const textArray = e.members.map((m) => {
-                getText(m, i)
-            })
-            return(textArray.join(" " + e.operator + " "))
+            const textArray = e.get("members").map((m) => getText(m, i))
+            return(textArray.join(" " + e.get("operator") + " "))
         })
 
-        filterFlags = filterText.valueSeq().map((text, i) => {
+        filterFlags = filterText.map((text, i) => {
             if (text == undefined) return (undefined)
             return (
-                <Flag key={i} dim="Data" >
-                    {text}
+                <Flag dim="Data" >
+                    <b>{prefixes[i]}</b>{text}
                 </Flag>
             )
-        })
+        }).valueSeq()
     }
 
 
     return (
         <div>
-            {props.title && <h4>{props.title}</h4>}
+            {title && <h4>{title}</h4>}
             {filterFlags}
         </div>
     )

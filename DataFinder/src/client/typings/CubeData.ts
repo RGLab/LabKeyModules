@@ -1,4 +1,5 @@
 import { Record, fromJS, List, Map } from 'immutable';
+import { string } from 'prop-types';
 
 export interface GroupInfo {
     id: number;
@@ -9,7 +10,8 @@ export interface GroupInfo {
             members: string[];
             name: string;
             operator: string
-        }} | SelectedFilters;
+        }
+    } | SelectedFilters;
     new?: boolean
 }
 
@@ -25,7 +27,7 @@ export interface CubeDatum {
 export interface HeatmapDatum<data> {
     x: string;
     y: string;
-    participantCount :number;
+    participantCount: number;
     studyCount: number;
     data: data;
 }
@@ -172,7 +174,7 @@ export interface Filter {
 }
 
 export interface ISelectedFilter {
-    members?: string[]|List<string>;
+    members?: string[] | List<string>;
     operator?: string
 }
 
@@ -208,22 +210,37 @@ export class SelectedFilter extends Record({
 // }
 
 export interface ISelectedFilters {
-    Subject?: {[index: string]: SelectedFilter};
-    Study?: {[index: string]: SelectedFilter};
-    Data?: {[index: string]: SelectedFilter| {[index: string]: SelectedFilter}}
+    Subject?: { [index: string]: SelectedFilter };
+    Study?: { [index: string]: SelectedFilter };
+    Data?: { [index: string]: SelectedFilter | { [index: string]: SelectedFilter } }
 }
 
 export class SelectedFilters extends Record({
     Subject: Map<string, SelectedFilter>(),
     Study: Map<string, SelectedFilter>(),
-    Data: Map<string, Map<string, SelectedFilter>|SelectedFilter>()
+    Data: Map<string, Map<string, SelectedFilter> | SelectedFilter>()
 }) {
     Subject: Map<string, SelectedFilter>;
     Study: Map<string, SelectedFilter>;
-    Data: Map<string, SelectedFilter|Map<string, SelectedFilter>>;
+    Data: Map<string, SelectedFilter | Map<string, SelectedFilter>>;
 
     constructor(params?: ISelectedFilters) {
-        params ? super(fromJS(params)) : super()
+        if (params) {
+            const subject = params.Subject ? Map(params.Subject).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>()
+            const study = params.Study ? Map(params.Study).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>()
+            let data = Map();
+            if (params.Data) {
+                if (params.Data.Timepoint)
+                    data = data.set("Timepoint", new SelectedFilter(params.Data.Timepoint))
+                if (params.Data.Assay)
+                    data = data.set("Assay", Map(params.Data.Assay).map(f => new SelectedFilter(f)))
+                if (params.Data.SampleType) 
+                    data = data.set("SampleType", Map(params.Data.SampleType).map(f => new SelectedFilter(f)))
+            }
+            super({Subject: subject, Study: study, Data: data})
+        } else {
+            super()
+        }
     }
 
     with(values: ISelectedFilters) {
@@ -252,7 +269,7 @@ export interface IBannerInfo {
 }
 export class BannerInfo extends Record({
     groupName: "",
-    counts: {study: 0, participant: 0},
+    counts: { study: 0, participant: 0 },
     unsavedFilters: false
 }) {
     groupName: string

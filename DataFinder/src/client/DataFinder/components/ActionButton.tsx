@@ -90,9 +90,9 @@ interface DropdownButtonProps {
         disabled: boolean
     }[]
 }
-const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonData }) => {
+export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonData }) => {
     return (
-        <div className="dropdown" style={{ width: "50px", display: "inline-block", margin: "5px" }}>
+        <div className="dropdown" style={{  display: "inline-block", margin: "5px" }}>
             <div className="btn df-dropdown-button" role="group" >
                 <button className="btn btn-default dropdown-toggle" type="button" id={"button-" + title} data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                     <span>{title}</span>
