@@ -32,6 +32,17 @@ FROM (SELECT variable, category,
         from immport.dataFinder_dimData
         WHERE studyid IN (SELECT label
         from study.Study)) _
+    
+    UNION ALL
+
+      SELECT 'SampleTypeAssay' as variable, SampleTypeAssay as category, NULL as sortorder
+      FROM (
+        SELECT DISTINCT (cell_type || '.' || assay) as SampleTypeAssay
+        from immport.dataFinder_dimData
+        WHERE studyid IN (SELECT label
+        from study.Study
+        ) 
+      ) _
 
     UNION ALL
 

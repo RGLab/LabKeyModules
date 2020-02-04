@@ -54,7 +54,7 @@ export const drawHeatmap = (props: HeatmapProps) => {
   // x, y, width, top, right, left, height, bottom
 
   // Create margins
-  var margin = { top: 20, right: 0, bottom: 40, left: 175 },
+  var margin = { top: 15, right: 15, bottom: 40, left: 175 },
     width = props.width - margin.left - margin.right,
     height = props.height - margin.top - margin.bottom;
 

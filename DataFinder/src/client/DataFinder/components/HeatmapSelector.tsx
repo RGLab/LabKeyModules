@@ -23,11 +23,13 @@ export interface HeatmapProps {
 }
 
 interface HeatmapSelectorProps {
+  name: string,
   data: IAssayData;
   filterClick: (dim: string, filter: Filter) => () => void
   showSampleType: boolean;
   selected: Map<string, Map<string, List<List<string>>> | List<List<string>>>;
-  timepointCategories: FilterCategory[]
+  timepointCategories: FilterCategory[];
+  sampleTypeAssayCategories: FilterCategory[];
 }
 
 export interface AxisDatum<data> {
@@ -36,7 +38,7 @@ export interface AxisDatum<data> {
 }
 
 // helpers
-const createHeatmapData = (data: IAssayData, showSampleType: boolean) => {
+const createHeatmapData = (data: IAssayData, showSampleType: boolean, sampleTypeAssayCategories = []) => {
   // if (data.Assay.Timepoint.length > 0) debugger;
   let d: CubeDatum[];
   let heatmapData: HeatmapDatum<Filter>[];
@@ -51,8 +53,8 @@ const createHeatmapData = (data: IAssayData, showSampleType: boolean) => {
       return {
         x: timepoint,
         y: assay + " (" + sampleType + ")",
-        participantCount: cd.participantCount,
-        studyCount: cd.studyCount,
+        participantCount: cd.participantCount === null ? 0 : cd.participantCount,
+        studyCount: cd.studyCount === null ? 0 : cd.studyCount,
         data: {
           level: cd.level,
           member: cd.member
@@ -78,11 +80,12 @@ const createHeatmapData = (data: IAssayData, showSampleType: boolean) => {
       }
     })
   }
-  const missingTimepoints = []
+  const removeIndices = []
   heatmapData.forEach((d, i) => {
-    if (d.x == "Unknown") missingTimepoints.push(i)
+    // if (showSampleType) debugger
+    if (d.x == "Unknown" || (showSampleType && sampleTypeAssayCategories.indexOf(d.y) == -1)) removeIndices.push(i)
   })
-  missingTimepoints.reverse().forEach((i) => {
+  removeIndices.reverse().forEach((i) => {
     heatmapData.splice(i, 1)
   })
   return (heatmapData)
@@ -93,7 +96,6 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
   let d: CubeDatum[]
   let axisData: AxisDatum<Filter>[];
   if (axis == "x") {
-    d = data.Timepoint
     axisData = categories.map((c) => {
       return({
         label: c.label, data: {level: "Timepoint", member: c.label}
@@ -102,9 +104,12 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
     axisData.pop() // remove "unknown"
   } else if (axis == "y") {
     if (showSampleType) {
-      d = data.SampleType.Assay
       const getAxisText = member => (member.split(/\./)[1] + " (" + member.split(/\./)[0] + ")")
-      axisData = d.map(cd => ({ label: getAxisText(cd.member), data: { level: cd.level, member: cd.member } }))
+      axisData = categories.map((c) => {
+        return({
+          label: getAxisText(c.label), data: {level: "SampleType.Assay", member: c.label}
+        })
+      })
     } else {
       d = data.Assay.Assay
       axisData = d.map((cd) => { return ({ label: cd.member, data: { level: cd.level, member: cd.member } }) })
@@ -122,13 +127,14 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
 }
 
 
-export const HeatmapSelector: React.FC<HeatmapSelectorProps> = ({data, filterClick, showSampleType, selected, timepointCategories}) => {
+export const HeatmapSelector: React.FC<HeatmapSelectorProps> = ({data, filterClick, showSampleType, selected, timepointCategories, sampleTypeAssayCategories, name}) => {
   // debugger;
 
   // Transform data into appropriate format
-  const heatmapData: HeatmapDatum<Filter>[] = createHeatmapData(data, showSampleType)
+
   const xaxisData: AxisDatum<Filter>[] = createAxisData(data, "x", showSampleType, timepointCategories)
-  const yaxisData: AxisDatum<Filter>[] = createAxisData(data, "y", showSampleType)
+  const yaxisData: AxisDatum<Filter>[] = createAxisData(data, "y", showSampleType, sampleTypeAssayCategories)
+  const heatmapData: HeatmapDatum<Filter>[] = createHeatmapData(data, showSampleType, yaxisData.map(e => e.label))
   const options = {
     "breaks": [
       1,
@@ -154,14 +160,14 @@ export const HeatmapSelector: React.FC<HeatmapSelectorProps> = ({data, filterCli
     filterClick("Data", d)()
   }
 
-  const height = yaxisData.length * 24
+  const height = yaxisData.length * 17 + 55
 
 
   return (
     <div>
       <Heatmap
         data={heatmapData}
-        name={"heatmap"}
+        name={name}
         height={height}
         width={800}
         xaxis={xaxisData}

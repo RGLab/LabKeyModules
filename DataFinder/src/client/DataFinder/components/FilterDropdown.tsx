@@ -20,13 +20,13 @@ interface ContentDropdownProps {
 export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level, members, filterClick, selected, children }) => {
     // if (props.selected != undefined) debugger
 
-
+    const levelArray = level.split(".")
     const labels = members.map(m => m.label)
     return (
         <div className={"dropdown"} style={{ width: "50px" }}>
             <div className="btn-group filterselector" role="group" >
                 <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-                    <span>{level}</span>
+                    <span>{levelArray[0]}</span>
                     <span>&#9660;</span>
                 </button>
                 <div className="dropdown-menu filter-dropdown">

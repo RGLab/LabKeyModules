@@ -408,16 +408,16 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         </div>
                     </div> */}
                     <div>
-                        <SampleTypeCheckbox
-                            toggleShowSampleType={toggleSampleType}
-                            showSampleType={showSampleType} />
+
                         {filterCategories &&
                             <HeatmapSelector
+                                name={"heatmap1"}
                                 data={cubeData.Data.toJS()}
-                                filterClick={filterClick}
+                                filterClick={(dim: string, filter: Filter) => (() => {})}
                                 showSampleType={showSampleType}
                                 selected={selectedFilters.Data}
-                                timepointCategories={filterCategories.Timepoint} />}
+                                timepointCategories={filterCategories.Timepoint}
+                                sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />}
 
                     </div>
                 </div>
@@ -534,7 +534,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     </>
                 } />
 
-            <div className="row" style={{position: "relative"}}>
+            <div className="row" style={{ position: "relative" }}>
                 {filterCategories && <>
                     <div className="col-sm-4">
                         {FilterDropdownHelper("Study", "Condition", true)}
@@ -550,12 +550,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     </div>
                     <div className="col-sm-2">
                         <ContentDropdown id={"heatmap-selector"} label={"Assay-Timepoint Selector"} content={filterCategories &&
+                        <>
+                                                <SampleTypeCheckbox
+                            toggleShowSampleType={toggleSampleType}
+                            showSampleType={showSampleType} />
                             <HeatmapSelector
+                                name={"heatmap2"}
                                 data={cubeData.Data.toJS()}
                                 filterClick={filterClick}
                                 showSampleType={showSampleType}
                                 selected={selectedFilters.Data}
-                                timepointCategories={filterCategories.Timepoint} />}>
+                                timepointCategories={filterCategories.Timepoint}
+                                sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
+                                </>}>
+                                    <>
                             {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint"]).map((memberList) => {
                                 return (
                                     <>
@@ -565,15 +573,26 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                     </>
                                 )
                             })}
+                            {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType"]).map((memberList) => {
+                                const memberSplit = memberList.get(0).split(".")
+                                return (
+                                    <>
+                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: memberList.get(0) })} >
+                                            {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
+                                        </Flag>
+                                    </>
+                                )
+                            })}
+                            </>
                         </ContentDropdown>
                         {FilterDropdownHelper("Data", "Timepoint", true)}
                         {FilterDropdownHelper("Data", "SampleType.SampleType", true)}
                         {FilterDropdownHelper("Data", "Assay.Assay", true)}
 
                     </div>
-                    <div style={{position: "absolute", top: "0", right: "15px"}}>
+                    <div style={{ position: "absolute", top: "0", right: "15px" }}>
                         <ActionButton text={"Apply"} onClick={() => applyFilters()} />
-                        <div style={{position: "absolute", top: "35px", right: "0", textAlign: "right", width: "8em"}}>{totalSelectedCounts.participant} participants from {totalSelectedCounts.study} studies</div>
+                        <div style={{ position: "absolute", top: "35px", right: "0", textAlign: "right", width: "8em" }}>{totalSelectedCounts.participant} participants from {totalSelectedCounts.study} studies</div>
                     </div>
                 </>
                 }
