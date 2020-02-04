@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as LABKEY from '@labkey/api'
-import { Filter, SelectedFilters, CubeData } from "../../typings/CubeData";
+import { Filter, SelectedFilters, CubeData, SelectedFilter } from "../../typings/CubeData";
 import { Map, List } from 'immutable'
 
 export interface FilterSummaryProps {
@@ -9,18 +9,18 @@ export interface FilterSummaryProps {
 
 interface FilterIndicatorListProps {
     filterClass: string;
-    filters: Map<string, List<List<string>>>;
+    filters: Map<string, SelectedFilter>;
     title: string;
 }
 
 interface AssayFilterIndicatorListProps {
-    filters: Map<string, Map<string, List<List<string>>> | List<List<string>>>;
+    filters: Map<string, Map<string, SelectedFilter> | SelectedFilter>;
     title?: string
 }
 
 interface FilterIndicatorFlagProps {
     dim: string;
-    filter: List<List<string>>;
+    filter: SelectedFilter;
     level: string;
 }
 
@@ -72,7 +72,7 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
             props.filters.get("Timepoint") == undefined)) {
         filterFlags = <em className="filter-indicator">No filters currently applied</em>
     } else {
-        const filters = Map<string, List<List<string>>>({
+        const filters = Map<string, SelectedFilter>({
             "Assay.Assay": props.filters.getIn(["Assay", "Assay"]),
             "Assay.Timepoint": props.filters.getIn(["Assay", "Timepoint"]),
             "Assay.SampleType": props.filters.getIn(["Assay", "SampleType"]),
@@ -101,45 +101,10 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
                 }
 
             }
-            if (i == "Assay.Timepoint") {
-                const textArray = e.map((memberList) => {
-                    if (memberList.size == 1) {
-                        return (getText(memberList.get(0), "Assay.Timepoint"))
-                    } else if (memberList.size > 1) {
-                        const mText = memberList.map(m => getText(m, "Assay.Timepoint")
-                        ).join(" OR ")
-                        return ("(" + mText + ")")
-                    }
-                })
-                return (textArray.join(" AND "))
-            }
-            if (i == "Assay.SampleType") {
-                const textArray = e.map((memberList) => {
-                    if (memberList.size == 1) {
-                        return (getText(memberList.get(0), "Assay.SampleType"))
-                    } else if (memberList.size > 1) {
-                        const mText = memberList.map(m => getText(m, "Assay.SampleType")).join(" OR ")
-                        return (mText)
-                    }
-                })
-                return (textArray.join(" AND "))
-            }
-            if (i == "SampleType.Assay") {
-                const textArray = e.map((memberList) => {
-                    if (memberList.size == 1) {
-                        return (getText(memberList.get(0), "SampleType.assay"))
-                    } else if (memberList.size > 1) {
-                        const mText = memberList.map(m => getText(m, "SampleType.assay")).join(" OR ")
-                        return mText
-                    }
-                })
-                return (textArray.join(" AND "))
-            }
-            return (i.split(/\./)[0] + " is " + (e.map((memberList) => {
-                if (memberList.size == 1) return memberList.get(0)
-                if (memberList.size > 1) return "(" + memberList.join(" OR ") + ")"
-            }).join(" AND "))
-            )
+            const textArray = e.members.map((m) => {
+                getText(m, i)
+            })
+            return(textArray.join(" " + e.operator + " "))
         })
 
         filterFlags = filterText.valueSeq().map((text, i) => {
@@ -184,29 +149,25 @@ interface FlagProps {
     dim: string;
     onDelete?: () => void;
 }
-export const Flag: React.FC<FlagProps> = ({ dim, onDelete,  children }) => {
+export const Flag: React.FC<FlagProps> = ({ dim, onDelete, children }) => {
     return (
         <div className="filter-indicator">
-            <div className={"filter-indicator-text " + dim} style={{width: onDelete ? "80%" : "100%"}}>
+            <div className={"filter-indicator-text " + dim} style={{ width: onDelete ? "80%" : "100%" }}>
                 {children}
             </div>
-            {onDelete && 
-            <button className="filterdeletor" style={{ width: "20%" }} onClick={onDelete}>
-                <span className="glyphicon glyphicon-remove">X</span>
-            </button>}
+            {onDelete &&
+                <button className="filterdeletor" style={{ width: "20%" }} onClick={onDelete}>
+                    <span className="glyphicon glyphicon-remove">X</span>
+                </button>}
         </div>
     )
 }
-
-const FilterIndicatorFlag: React.FC<FilterIndicatorFlagProps> = (props) => {
-    const text = props.filter.map((memberList) => {
-        if (memberList.size == 1) return memberList.get(0)
-        if (memberList.size > 1) return "(" + memberList.join(" OR ") + ")"
-    }).join(" AND ")
+const FilterIndicatorFlag: React.FC<FilterIndicatorFlagProps> = ({ dim, filter, level }) => {
+    const text = filter.members.join(" " + filter.operator + " ")
 
     return (
-        <Flag dim={props.dim}>
-            <b>{props.level}: </b>{text}
+        <Flag dim={dim}>
+            <b>{level}: </b>{text}
         </Flag>
     )
 }

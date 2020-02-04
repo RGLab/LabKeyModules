@@ -150,15 +150,11 @@ export const drawHeatmap = (props: HeatmapProps) => {
         if (props.showSampleType) {
           // debugger
           if (selected.getIn(["SampleType", "Assay"])) {
-            selected.getIn(["SampleType", "Assay"]).forEach(memberList => {
-              if (memberList.includes(d.data.member)) s = true
-            })
+            if (selected.getIn(["SampleType", "Assay", "members"]).includes(d.data.member)) s = true 
           }
         } else {
           if (selected.getIn(["Assay", "Assay"])) {
-            selected.getIn(["Assay", "Assay"]).forEach(memberList => {
-              if (memberList.includes(d.label)) s = true
-            });
+            if (selected.getIn(["Assay", "Assay", "members"]).includes(d.label)) s = true
           }
         }
         if (s) return "black"
@@ -219,9 +215,7 @@ export const drawHeatmap = (props: HeatmapProps) => {
       .attr("stroke", function (d) {
         if (selected.getIn(["Timepoint"])) {
           let s = false
-          selected.getIn(["Timepoint"]).forEach((memberList) => {
-            if (memberList.includes(d.label)) s = true
-          });
+          if (selected.getIn(["Timepoint", "members"]).includes(d.label)) s = true 
           if (s) return "black"
         }
         return ("#e5e5e5")
@@ -270,13 +264,9 @@ export const drawHeatmap = (props: HeatmapProps) => {
     .attr("stroke", function (d: HeatmapDatum<Filter>) {
         let s = false
         if (props.showSampleType && selected.getIn(["Assay", "SampleType"])) {
-          selected.getIn(["Assay", "SampleType"]).forEach((memberList) => {
-            if (memberList.includes(d.data.member)) s = true
-          })
+          if (selected.getIn(["Assay", "SampleType", "members"]).includes(d.data.member)) s = true
         } else if (selected.getIn(["Assay", "Timepoint"])) {
-          selected.getIn(["Assay", "Timepoint"]).forEach((memberList) => {
-            if (memberList.includes(d.data.member)) s = true
-          });
+          if (selected.getIn(["Assay", "Timepoint", "members"]).includes(d.data.member)) s = true 
         }
         if (s) return "black"
       return ("#e5e5e5")

@@ -173,13 +173,13 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             level={level}
             members={filterCategories[levelArray[0]]}
             filterClick={filterClick}
-            selected={selectedFilters.getIn([dim, ...levelArray])}>
+            selected={selectedFilters.getIn([dim, ...levelArray, "members"])}>
             <>
-                {includeIndicators && selectedFilters.getIn([dim, ...levelArray]) && selectedFilters.getIn([dim, ...levelArray]).map((memberList) => {
+                {includeIndicators && selectedFilters.getIn([dim, ...levelArray]) && selectedFilters.getIn([dim, ...levelArray, "members"]).map((member) => {
                     return (
                         <div style={{ width: "10em" }}>
-                            < Flag dim={dim} onDelete={filterClick(dim, { level: level, member: memberList.get(0) })} >
-                                {memberList.get(0)}
+                            < Flag dim={dim} onDelete={filterClick(dim, { level: level, member: member })} >
+                                {member}
                             </Flag>
                         </div>
                     )
@@ -193,6 +193,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const filterClick = (dim: string, filter: Filter) => {
         return (() => {
             const sf = toggleFilter(dim, filter.level, filter.member, selectedFilters)
+            console.log(sf.toJS())
             setSelectedFilters(sf)
         })
     }
@@ -564,20 +565,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                 sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
                                 </>}>
                                     <>
-                            {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint"]).map((memberList) => {
+                            {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint", "members"]).map((member) => {
                                 return (
                                     <>
-                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: memberList.get(0) })} >
-                                            {memberList.get(0).split(".").join(" at ") + " days"}
+                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: member })} >
+                                            {member.split(".").join(" at ") + " days"}
                                         </Flag>
                                     </>
                                 )
                             })}
-                            {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType"]).map((memberList) => {
-                                const memberSplit = memberList.get(0).split(".")
+                            {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType", "members"]).map((member) => {
+                                const memberSplit = member.get(0).split(".")
                                 return (
                                     <>
-                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: memberList.get(0) })} >
+                                        < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member.get(0) })} >
                                             {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
                                         </Flag>
                                     </>
