@@ -1,5 +1,4 @@
 import React from 'react'
-import { FilterSummary } from '../DataFinder/components/FilterIndicator'
 import { ISelectedFilters, SelectedFilters } from '../typings/CubeData';
 import { Banner } from '../DataFinder/components/Banner';
 

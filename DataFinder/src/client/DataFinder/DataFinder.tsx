@@ -4,13 +4,13 @@ import React, { memo } from 'react';
 import { CubeData, Filter, SelectedFilters, TotalCounts, GroupInfo, BannerInfo } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup';
-import { toggleFilter, toggleAndOr, setAndOr } from './helpers/SelectedFilters';
-import { StudyParticipantCount, StudyInfo } from '../typings/StudyCard'
+import { toggleFilter, setAndOr } from './helpers/SelectedFilters';
+import { StudyParticipantCount } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
-import { Map, List } from 'immutable';
+import { List } from 'immutable';
 import { ActionButton, LoadDropdown, SaveDropdown, ClearDropdown } from './components/ActionButton'
 import { FilterDropdown, ContentDropdown, AndOrDropdown } from './components/FilterDropdown'
-import { FilterSummary, Flag, AssayFilterIndicatorList } from './components/FilterIndicator'
+import { Flag } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
 import Tabs from "./components/Tabs";
@@ -34,35 +34,38 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         columnName: 'ParticipantId'
     }
 
-    // state -----
-    // Data (updated by API calls)
-    const [cubeData, setCubeData] = React.useState<CubeData>(cd)
-    const [studyDict, setStudyDict] = React.useState(null); // this should only be loaded once
-    const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
-    const [availableGroups, setAvailableGroups] = React.useState<GroupInfo[]>([])
+    // State ---------------------------------------------
+    // ----- Data (updated by API calls) -----
+    // Set on page load only
     const [filterCategories, setFilterCategories] = React.useState(null)
+    const [studyDict, setStudyDict] = React.useState(null); // this should only be loaded once
+    // Updated when a group is saved: 
+    const [availableGroups, setAvailableGroups] = React.useState<GroupInfo[]>([])
+    // Updated on "apply": 
+    const [cubeData, setCubeData] = React.useState<CubeData>(cd)
+    const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
+    const [totalAppliedCounts, setTotalAppliedCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
+    // Updated every time a filter is changed: 
+    const [totalSelectedCounts, setTotalSelectedCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
 
+    // ----- State set by user ------
     // Groups
     const [loadedGroup, setLoadedGroup] = React.useState<GroupInfo>()
-    const [totalSelectedCounts, setTotalSelectedCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
-    const [totalAppliedCounts, setTotalAppliedCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
     const [unsavedFilters, setUnsavedFilters] = React.useState<boolean>(false)
-
-    // Filters (updated by user)
+    // Filters 
     const [appliedFilters, setAppliedFilters] = React.useState<SelectedFilters>(sf)
     const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(appliedFilters)
-
     // Other view settings set by user
     const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
 
+    // ----- Other -----
     // Webparts
     const [participantDataWebpart, setParticipantDataWebpart] = React.useState()
     const [dataViewsWebpart, setDataViewsWebpart] = React.useState()
-
     // Banner
     const [bannerInfo, setBannerInfoState] = React.useState<BannerInfo>(new BannerInfo(JSON.parse(localStorage.getItem("dataFinderBannerInfo"))))
     const setBannerInfo = (bi: BannerInfo) => {
-        // debugger
+        // wrapper which sets state and local storage
         setBannerInfoState(bi)
         localStorage.setItem("dataFinderBannerInfo", JSON.stringify(bi))
     }
@@ -73,8 +76,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // Effects  -------------------------------------
 
-    // Setup ----- 
-    // Do these things only when the page loads --------
+    // Setup (only run on first render) ----- 
     React.useEffect(() => {
         // load data
         CubeHelpers.getFilterCategories().then((categoriesResponse) => {
@@ -130,13 +132,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     }, [])
 
-    // Do these things when certain variables are incremented --------
-    // Apply filters
-    // React.useEffect(() => {
-
-    // }, [applyCounter])
-
-
+    // Update counts (only run when selectedFilters is incremented) --------
     React.useEffect(() => {
         console.log("----- get total counts -----")
         CubeHelpers.getTotalCounts(mdx, selectedFilters)
@@ -146,12 +142,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }, [selectedFilters])
 
     // Helper functions ---------------------------------------------
-    // These are functions which will get passed down to those components
-    // which can cause updates to the page
+
+    const renderWepart = (tabName: string) => {
+        console.log("renderWebpart(" + tabName + ")")
+        if (tabName == "participant") { participantDataWebpart.render(); return }
+        if (tabName == "data") { dataViewsWebpart.render(); return }
+        return
+    }
+
+    // ----- Memos -----
     const BannerMemo = memo(Banner)
     const HeatmapSelectorMemo = memo(HeatmapSelector)
     const BarplotMemo = memo(Barplot)
 
+    // ----- Components -----
     const BarplotHelper = (dim, level, presentationDim = null) => {
         const pDim = presentationDim || dim
         return (
@@ -190,7 +194,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         </FilterDropdown>)
     }
 
-    // ------ filter-related -------
+    // Callbacks -----------------------------------------------------
+    // ------ Filter-related -------
 
     const filterClick = (dim: string, filter: Filter) => {
         return (() => {
@@ -243,9 +248,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 setTotalSelectedCounts(counts)
                 setBannerInfo(bannerInfo.with({ unsavedFilters: unsavedFiltersValue, counts: counts, groupName: groupName || bannerInfo.groupName }))
             })
-
-
-        // setApplyCounter(applyCounter + 1)
     }
 
     const clearFilters = () => {
@@ -255,9 +257,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         setLoadedGroup(null)
         applyFilters(new SelectedFilters(), false, "Unsaved Participant Group")
     }
-    // ----------------
 
-    // ----- participant group-related -----
+    // ----- participant group-related callbacks -----
     const saveButtonClick = (groupLabel = "", gotoSendAfterSave = false) => {
         CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) => {
             const saveWindow = ParticipantGroupHelpers.openSaveWindow(studySubject, pids, appliedFilters, groupLabel, gotoSendAfterSave)
@@ -335,18 +336,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         setShowSampleType(!showSampleType)
     }
 
-    const renderWepart = (tabName: string) => {
-        console.log("renderWebpart(" + tabName + ")")
-        if (tabName == "participant") { participantDataWebpart.render(); return }
-        if (tabName == "data") { dataViewsWebpart.render(); return }
-        return
-    }
-
-    // Define re-used components
-    const participantSummary = <div style={{ margin: "30px 0px" }}>{totalSelectedCounts.participant} participants <br /> from {totalSelectedCounts.study} studies</div>
-
-    // ----- define the various tabs -----
+    // Tab Content ------------------------------------------------
+    // TODO:  Abstract some of this into additional components
     const tabs = {
+        //  ------ DATA -------
         data: {
             content: <>
                 <div className="row">
@@ -392,6 +385,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             text: "Available Assay Data",
             tabClass: "pull-right"
         },
+        // -------- PARTICIPANT -------
         participant: {
             content: <>
                 <div className="row">
@@ -421,15 +415,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             text: "Participant Characteristics",
             tabClass: "pull-right"
         },
+        // ------- STUDY -------
         study: {
             content: <>
                 <div className="row">
-                    {/* <div className="col-sm-3">
-                        <h2>Study Characteristics</h2>
-                        <p>
-                            Study characteristics available based on current filters
-                        </p>
-                    </div> */}
                     {filterCategories && <>
                         <div className="col-sm-3">
                             {BarplotHelper("Study", "Condition", "Study")}
@@ -467,13 +456,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         },
     }
 
-
+    // -------------------------------- RETURN --------------------------------
     return (
         <div>
-            {/* <pre>
-                {JSON.stringify(cubeData.toJS(), undefined, 2)}
-                {JSON.stringify(studyDict.toJS(), undefined, 2)}
-            </pre> */}
             <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
             <ClearDropdown clearAll={clearFilters} reset={() => { loadedGroup ? loadParticipantGroup(loadedGroup) : clearFilters() }} />
             <SaveDropdown
@@ -568,8 +553,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             <div id="heatmap-label" />
             <div className="arrow-down" />
 
-
-            {/* <pre>{JSON.stringify(selectedFilters.toJS(), null, 2)}</pre> */}
         </div>
     )
 

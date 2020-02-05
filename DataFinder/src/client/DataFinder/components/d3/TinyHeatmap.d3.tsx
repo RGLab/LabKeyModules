@@ -1,7 +1,6 @@
 import * as d3 from 'd3'
-import { TinyHeatmapProps } from '../../../typings/Components';
+import { TinyHeatmapProps } from '../TinyHeatmap';
 import { HeatmapDatum } from '../../../typings/CubeData'
-import { number } from 'prop-types';
 
 // ================================================================== //
 
