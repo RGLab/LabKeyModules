@@ -129,8 +129,6 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
         )
     })
 
-    const TinyHeatmapMemo = React.memo(TinyHeatmap, () => true)
-
     return (
         <div className="study-card">
             <div className="study-label">
@@ -159,10 +157,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
                 data={heatmapData} 
                 colors={heatmapColors}
                 colorBreaks={heatmapBreaks}
-                assays={assays}/>
-            
-
-            
+                assays={assays}/>           
         </div>
     )
 }

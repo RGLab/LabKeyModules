@@ -45,6 +45,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const [cubeData, setCubeData] = React.useState<CubeData>(cd)
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
     const [totalAppliedCounts, setTotalAppliedCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
+    const [filteredPids, setFilteredPids] = React.useState<string[]>(null)
     // Updated every time a filter is changed: 
     const [totalSelectedCounts, setTotalSelectedCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
 
@@ -54,7 +55,17 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const [unsavedFilters, setUnsavedFilters] = React.useState<boolean>(false)
     // Filters 
     const [appliedFilters, setAppliedFilters] = React.useState<SelectedFilters>(sf)
-    const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(appliedFilters)
+    const [selectedFilters, setSelectedFiltersState] = React.useState<SelectedFilters>(appliedFilters)
+    const setSelectedFilters = (filters: SelectedFilters) => {
+        setSelectedFiltersState(filters)
+        Promise.all([
+            CubeHelpers.getTotalCounts(mdx, filters, "[Subject].[Subject]"),
+            CubeHelpers.getTotalCounts(mdx, filters, "[Study].[Name]")
+        ]).then((res) => {
+            const counts = CubeHelpers.createTotalCounts(res)
+            setTotalSelectedCounts(counts)
+        })
+    }
     // Other view settings set by user
     const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
 
@@ -83,7 +94,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             const categories = CubeHelpers.createFilterCategories(categoriesResponse)
             setFilterCategories(categories)
         })
-        CubeHelpers.getStudyDict(mdx, appliedFilters).then((sd) => {
+        Promise.all([CubeHelpers.getStudyInfo(), CubeHelpers.getStudyCounts(mdx, new SelectedFilters())]).then((res) => {
+            const sd = CubeHelpers.createStudyDict(res)
             setStudyDict(sd)
         })
         ParticipantGroupHelpers.getAvailableGroups().then((data) => {
@@ -124,22 +136,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             frame: "none"
         })
         setDataViewsWebpart(dv_wp)
-        CubeHelpers.getTotalCounts(mdx, selectedFilters)
-            .then((counts) => {
-                setTotalAppliedCounts(counts)
-            })
         applyFilters(selectedFilters, bannerInfo.unsavedFilters)
 
     }, [])
 
-    // Update counts (only run when selectedFilters is incremented) --------
-    React.useEffect(() => {
-        console.log("----- get total counts -----")
-        CubeHelpers.getTotalCounts(mdx, selectedFilters)
-            .then((counts) => {
-                setTotalSelectedCounts(counts)
-            })
-    }, [selectedFilters])
 
     // Helper functions ---------------------------------------------
 
@@ -154,6 +154,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const BannerMemo = memo(Banner)
     const HeatmapSelectorMemo = memo(HeatmapSelector)
     const BarplotMemo = memo(Barplot)
+    const FilterDropdownMemo = memo(FilterDropdown)
+    const StudyCardMemo = memo(StudyCard)
 
     // ----- Components -----
     const BarplotHelper = (dim, level, presentationDim = null) => {
@@ -172,7 +174,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     const FilterDropdownHelper = (dim, level, includeIndicators = false, includeAndOr = false) => {
         const levelArray = level.split(".")
-        return (<FilterDropdown
+        return (<FilterDropdownMemo
             key={level}
             dimension={dim}
             level={level}
@@ -191,7 +193,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     )
                 })}
             </>
-        </FilterDropdown>)
+        </FilterDropdownMemo>)
     }
 
     // Callbacks -----------------------------------------------------
@@ -200,7 +202,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const filterClick = (dim: string, filter: Filter) => {
         return (() => {
             const sf = toggleFilter(dim, filter.level, filter.member, selectedFilters)
-            console.log(sf.toJS())
             setSelectedFilters(sf)
         })
     }
@@ -219,35 +220,38 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(filters))
         CubeHelpers.getStudyParticipantCounts(mdx, filters)
             .then((spcResponse) => {
-                const spc = CubeHelpers.createStudyParticipantCounts(spcResponse)
-                setStudyParticipantCounts(spc)
+                const { countsList, pids } = CubeHelpers.createStudyParticipantCounts(spcResponse)
+                setStudyParticipantCounts(countsList)
+                setFilteredPids(pids)
+                ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
+                    if (participantDataWebpart) participantDataWebpart.render()
+                })
                 if (studyDict) {
-                    ParticipantGroupHelpers.updateContainerFilter(spcResponse, studyDict)
+                    ParticipantGroupHelpers.updateContainerFilter(countsList, studyDict)
                 }
             })
-        CubeHelpers.getCubeData(mdx, filters)
+        Promise.all([
+            CubeHelpers.getCubeData(mdx, filters, "[Subject].[Subject]"),
+            CubeHelpers.getCubeData(mdx, filters, "[Study].[Name]")])
             .then((res) => {
                 const cd = CubeHelpers.createCubeData(res)
-                console.log(cd.toJS())
                 setCubeData(cd)
-            }
-            )
-        CubeHelpers.getParticipantIds(mdx, filters).then((pids) =>
-            ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
-                if (participantDataWebpart) participantDataWebpart.render()
-            }
-            ))
+            })
+
         let unsavedFiltersValue = customUnsavedFilters
         if (customUnsavedFilters == null) {
             unsavedFiltersValue = loadedGroup && !unsavedFilters
         }
         setUnsavedFilters(unsavedFiltersValue)
-        CubeHelpers.getTotalCounts(mdx, filters)
-            .then((counts) => {
-                setTotalAppliedCounts(counts)
-                setTotalSelectedCounts(counts)
-                setBannerInfo(bannerInfo.with({ unsavedFilters: unsavedFiltersValue, counts: counts, groupName: groupName || bannerInfo.groupName }))
-            })
+        Promise.all([
+            CubeHelpers.getTotalCounts(mdx, selectedFilters, "[Subject].[Subject]"),
+            CubeHelpers.getTotalCounts(mdx, selectedFilters, "[Study].[Name]")
+        ]).then((res) => {
+            const counts = CubeHelpers.createTotalCounts(res)
+            setTotalAppliedCounts(counts)
+            setTotalSelectedCounts(counts)
+            setBannerInfo(bannerInfo.with({ unsavedFilters: unsavedFiltersValue, counts: counts, groupName: groupName || bannerInfo.groupName }))
+        })
     }
 
     const clearFilters = () => {
@@ -260,24 +264,21 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // ----- participant group-related callbacks -----
     const saveButtonClick = (groupLabel = "", gotoSendAfterSave = false) => {
-        CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) => {
-            const saveWindow = ParticipantGroupHelpers.openSaveWindow(studySubject, pids, appliedFilters, groupLabel, gotoSendAfterSave)
-            saveWindow.on("aftersave", (saveData) => {
-                console.log(saveData)
-                if (gotoSendAfterSave) ParticipantGroupHelpers.goToSend(saveData.group.rowId)
-                setBannerInfo(bannerInfo.with({
-                    groupName: saveData.group.label,
-                    counts: totalAppliedCounts,
-                    unsavedFilters: false
-                }))
-                ParticipantGroupHelpers.getAvailableGroups().then((data) => {
-                    const groups = ParticipantGroupHelpers.createAvailableGroups(data)
-                    setAvailableGroups(groups)
-                    groups.forEach((group) => {
-                        if (group.label == saveData.group.label) {
-                            setLoadedGroup(group)
-                        }
-                    })
+        const saveWindow = ParticipantGroupHelpers.openSaveWindow(studySubject, filteredPids, appliedFilters, groupLabel, gotoSendAfterSave)
+        saveWindow.on("aftersave", (saveData) => {
+            if (gotoSendAfterSave) ParticipantGroupHelpers.goToSend(saveData.group.rowId)
+            setBannerInfo(bannerInfo.with({
+                groupName: saveData.group.label,
+                counts: totalAppliedCounts,
+                unsavedFilters: false
+            }))
+            ParticipantGroupHelpers.getAvailableGroups().then((data) => {
+                const groups = ParticipantGroupHelpers.createAvailableGroups(data)
+                setAvailableGroups(groups)
+                groups.forEach((group) => {
+                    if (group.label == saveData.group.label) {
+                        setLoadedGroup(group)
+                    }
                 })
             })
         })
@@ -285,18 +286,16 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     const updateParticipantGroup = (groupInfo: GroupInfo, goToSendAfterSave = false) => {
-        CubeHelpers.getParticipantIds(mdx, selectedFilters).then((pids) => {
-            ParticipantGroupHelpers.updateParticipantGroup(pids, appliedFilters, loadedGroup)
-                .then((success) => {
-                    ParticipantGroupHelpers.getAvailableGroups().then((data) => {
-                        const groups = ParticipantGroupHelpers.createAvailableGroups(data)
-                        setAvailableGroups(groups)
-                    })
-                    if (goToSendAfterSave) {
-                        ParticipantGroupHelpers.goToSend(groupInfo.id)
-                    }
+        ParticipantGroupHelpers.updateParticipantGroup(filteredPids, appliedFilters, loadedGroup)
+            .then((success) => {
+                ParticipantGroupHelpers.getAvailableGroups().then((data) => {
+                    const groups = ParticipantGroupHelpers.createAvailableGroups(data)
+                    setAvailableGroups(groups)
                 })
-        })
+                if (goToSendAfterSave) {
+                    ParticipantGroupHelpers.goToSend(groupInfo.id)
+                }
+            })
         setUnsavedFilters(false)
         setBannerInfo(bannerInfo.with({ unsavedFilters: false }))
     }
@@ -347,28 +346,28 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
                         {filterCategories &&
                             <>
-                            <div className="row">
-                                <div className="col-sm-8">
-                                    <h4 style={{textAlign: "center"}}>Assays Available by Study Day</h4>
-                                <AssayTimepointViewerContainer
-                                    name={"heatmap1"}
-                                    data={cubeData.Data.toJS()}
-                                    showSampleType={showSampleType}
-                                    selected={selectedFilters.Data}
-                                    timepointCategories={filterCategories.Timepoint}
-                                    sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
+                                <div className="row">
+                                    <div className="col-sm-8">
+                                        <h4 style={{ textAlign: "center" }}>Assays Available by Study Day</h4>
+                                        <AssayTimepointViewerContainer
+                                            name={"heatmap1"}
+                                            data={cubeData.Data.toJS()}
+                                            showSampleType={showSampleType}
+                                            selected={selectedFilters.Data}
+                                            timepointCategories={filterCategories.Timepoint}
+                                            sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
+                                    </div>
+                                    <div className="col-sm-4">
+                                        <Barplot
+                                            data={cubeData.getIn(["Data", "SampleType", "SampleType"]).toJS()}
+                                            name={"SampleType"}
+                                            height={200}
+                                            width={250}
+                                            categories={filterCategories["SampleType"]}
+                                            countMetric={"participantCount"}
+                                            barColor={"#74C476"} />
+                                    </div>
                                 </div>
-                                <div className="col-sm-4">
-                                <Barplot
-                                    data={cubeData.getIn(["Data", "SampleType", "SampleType"]).toJS()}
-                                    name={"SampleType"}
-                                    height={200}
-                                    width={250}
-                                    categories={filterCategories["SampleType"]}
-                                    countMetric={"participantCount"}
-                                    barColor={"#74C476"} />
-                                </div>
-                            </div>
                             </>}
 
 
@@ -442,7 +441,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 {studyDict && studyParticipantCounts.map((sdy) => {
                     if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
                         return (
-                            <StudyCard key={sdy.studyName}
+                            <StudyCardMemo key={sdy.studyName}
                                 study={studyDict[sdy.studyName]}
                                 participantCount={sdy.participantCount} />
                         )
@@ -520,10 +519,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                                     )
                                 })}
                                 {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType", "members"]).map((member) => {
-                                    const memberSplit = member.get(0).split(".")
+                                    const memberSplit = member.split(".")
                                     return (
                                         <>
-                                            < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member.get(0) })} >
+                                            < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member })} >
                                                 {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
                                             </Flag>
                                         </>

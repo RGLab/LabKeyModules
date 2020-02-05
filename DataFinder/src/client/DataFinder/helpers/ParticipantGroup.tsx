@@ -121,6 +121,7 @@ export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel = 
 
 // update participant group
 export const updateParticipantGroup = (pids: string[], appliedFilters: SelectedFilters, groupInfo: GroupInfo) => {
+    console.log("updateParticipantGroup()")
     const groupData = {
         label: groupInfo.label,
         participantIds: pids,
@@ -149,6 +150,7 @@ export const updateParticipantGroup = (pids: string[], appliedFilters: SelectedF
 }
 
 export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
+    console.log("saveParticipantGroupInSession()")
     return new Promise((resolve, reject) => {
         LABKEY.Ajax.request({
             method: "POST",
@@ -164,7 +166,8 @@ export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
 
 // update container filter
 
-export const updateContainerFilter = (studyParticipantCounts: IStudyParticipantCount[], studyDict: StudyDict) => {
+export const updateContainerFilter = (studyParticipantCounts: List<StudyParticipantCount>, studyDict: StudyDict) => {
+    console.log("updateContainerFilter()")
     const containers = []
     studyParticipantCounts.forEach((participantCount) => {
         if (participantCount.participantCount > 0 && studyDict[participantCount.studyName]) {

@@ -15,11 +15,3 @@ for (var i = 0; i < menu.length; i++) {
         this.value.parent().toggleClass("open");
     })
 }
-
-// ((e) => e.value.on("click", function(event) {
-// })
-
-// for (var i = 0; i < menu.length; i++) {
-//     menu[i].addEventListener('click', (e) => {
-//         console.log("stopping....");e.stopPropagation()})
-// }

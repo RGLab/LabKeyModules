@@ -341,7 +341,6 @@ export const drawAssayTimepointViewer = (props: AssayTimepointViewerProps) => {
             return ("#e5e5e5")
         })
         .on("mouseover", function (d, i) {
-            console.log(d)
             // get position
             var coord = this.getBoundingClientRect();
             // Tooltip coordinates

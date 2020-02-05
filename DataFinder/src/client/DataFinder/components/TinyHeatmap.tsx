@@ -20,16 +20,11 @@ export const TinyHeatmap: React.FC<TinyHeatmapProps> = (props) => {
         }
     });
 
-    if (props.assays.length > 0) {
-        return (
-            <div className={"tinyheatmap"} >
-                <svg id={"tinyheatmap-" + props.name}></svg>
-            </div>
-        );
-    } else {
-        return (
-            <div></div>
-        )
-    }
-    
+    return (
+        <div className={"tinyheatmap"} >
+            <svg id={"tinyheatmap-" + props.name}></svg>
+        </div>
+    );
+
+
 }
