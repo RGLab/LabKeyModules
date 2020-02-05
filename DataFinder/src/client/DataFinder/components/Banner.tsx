@@ -8,17 +8,19 @@ interface BannerProps {
     groupName: string;
     counts: TotalCounts,
     unsavedFilters: boolean,
-    links?: JSX.Element
+    links?: JSX.Element,
+    dropdowns?: JSX.Element
 }
-export const Banner: React.FC<BannerProps> = ({ filters, groupName, counts, unsavedFilters, links }) => {
+export const Banner: React.FC<BannerProps> = ({ filters, groupName, counts, unsavedFilters, links, dropdowns }) => {
     return (
         <>
             <div className="row">
-                <div className="col-sm-8">
+                <div className="col-sm-6">
                     <h3><div className="df-banner-title">{groupName}</div>
-                    <div >
-                        {links && links}
-                    </div></h3>
+                        <div >
+                            {links && links}
+                        </div></h3>
+
 
                     <div style={{ clear: "left" }}>
                         {unsavedFilters && <>
@@ -28,8 +30,12 @@ export const Banner: React.FC<BannerProps> = ({ filters, groupName, counts, unsa
                         </>}
                         <p>{counts.participant} participants from {counts.study} studies</p>
                     </div>
-
                 </div>
+
+                <div className="col-sm-6">
+                    {dropdowns && dropdowns}
+                </div>
+
             </div>
             <FilterSummary filters={filters} />
         </>

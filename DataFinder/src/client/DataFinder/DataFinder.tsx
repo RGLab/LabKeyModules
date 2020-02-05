@@ -152,8 +152,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // ----- Memos -----
     const BannerMemo = memo(Banner)
-    const HeatmapSelectorMemo = memo(HeatmapSelector)
-    const BarplotMemo = memo(Barplot)
     const FilterDropdownMemo = memo(FilterDropdown)
     const StudyCardMemo = memo(StudyCard)
 
@@ -458,12 +456,14 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // -------------------------------- RETURN --------------------------------
     return (
         <div>
-            <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
-            <ClearDropdown clearAll={clearFilters} reset={() => { loadedGroup ? loadParticipantGroup(loadedGroup) : clearFilters() }} />
-            <SaveDropdown
-                saveAs={() => saveButtonClick()}
-                save={() => updateParticipantGroup(loadedGroup)}
-                disableSave={!loadedGroup} />
+            {/* <div className="df-dropdown-options">
+                <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
+                <ClearDropdown clearAll={clearFilters} reset={() => { loadedGroup ? loadParticipantGroup(loadedGroup) : clearFilters() }} />
+                <SaveDropdown
+                    saveAs={() => saveButtonClick()}
+                    save={() => updateParticipantGroup(loadedGroup)}
+                    disableSave={!loadedGroup} />
+            </div> */}
             <BannerMemo
                 filters={appliedFilters}
                 groupName={loadedGroup ? loadedGroup.label : "Unsaved Participant Group"}
@@ -475,6 +475,17 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         <a className="labkey-text-link" href="#" onClick={() => sendParticipantGroup()}>Send</a>
                         <a className="labkey-text-link" href="/immport/Studies/exportStudyDatasets.view?">Export Study Datasets</a>
                         <a className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
+
+                    </>
+                }
+                dropdowns={
+                    <>
+                        <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
+                        <ClearDropdown clearAll={clearFilters} reset={() => { loadedGroup ? loadParticipantGroup(loadedGroup) : clearFilters() }} />
+                        <SaveDropdown
+                            saveAs={() => saveButtonClick()}
+                            save={() => updateParticipantGroup(loadedGroup)}
+                            disableSave={!loadedGroup} />
                     </>
                 } />
 
