@@ -44,10 +44,11 @@ export const createCubeFilters = (filters: SelectedFilters) => {
         studyFilters = []
     } else {
         studyFilters = studySelectedFilters.map((selectedFilter, level) => {
+            const realDim = ["ExposureProcess", "ExposureMaterial", "Species"].indexOf(level) > -1 ? "Subject" : "Study"
             const cubeFilters = {
                 level: "[Subject].[Subject]", membersQuery: {
-                    level: `[Study.${level}].[${level}]`,
-                    members: selectedFilter.members.map((member) => (`[Study.${level}].[${member}]`))
+                    level: `[${realDim}.${level}].[${level}]`,
+                    members: selectedFilter.members.map((member) => (`[${realDim}.${level}].[${member}]`))
                 }
             }
             return (cubeFilters)

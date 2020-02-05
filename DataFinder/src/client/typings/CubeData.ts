@@ -134,12 +134,7 @@ export interface ICubeData {
 
 export class CubeData extends Record({
     Subject: new SubjectData(),
-    Study: fromJS({
-        Name: [],
-        Program: [],
-        Condition: [],
-        Category: [],
-    }),
+    Study: new StudyData(),
     Data: fromJS({
         Assay: {
             Assay: [],
