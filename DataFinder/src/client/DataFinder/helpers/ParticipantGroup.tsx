@@ -1,7 +1,7 @@
 // Functions for manipulating the selected participant group, and interfacing with 
 // the sessionParticipantGroup api
 
-import { SelectedFilters, GroupInfo } from "../../typings/CubeData";
+import { SelectedFilters, GroupInfo, SelectedFilter } from "../../typings/CubeData";
 import { local } from "d3";
 import { List, fromJS } from "immutable";
 import { createStudyParticipantCounts } from "./CubeHelpers";
@@ -57,12 +57,11 @@ export const createAvailableGroups = (data) => {
 
 // load participant group
 export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
-
     console.log("loadParticipantGroup(" + groupInfo.label + ")")
     let sf: any
     sf = new SelectedFilters()
     let dim: string;
-    // set local storage
+    // debugger
     if (groupInfo.filters.Data) {
         sf = new SelectedFilters(fromJS(groupInfo.filters))
     } else {
@@ -70,25 +69,19 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
         const missingDimensions = []
         // convert from old filters and warn user
         Object.keys(groupInfo.filters).forEach((level) => {
-            const andMembers = groupInfo.filters[level].members.map((uniqueName) => {
-                return ([uniqueName.split("].[")[1].replace(/[\[\]]/g, "")])
-            })
-            const orMembers = [groupInfo.filters[level].members.map((uniqueName) => {
+            const members = groupInfo.filters[level].members.map((uniqueName) => {
                 return (uniqueName.split("].[")[1].replace(/[\[\]]/g, ""))
-            })]
+            })
             if (["Age", "Gender", "Race", "ExposureMaterial", "ExposureProcess", "Species"].indexOf(level) > -1) {
-                sf = sf.setIn(["Subject", level], fromJS(andMembers))
+                sf = sf.setIn(["Subject", level], new SelectedFilter({members: members}))
             } else if (["Category", "Condition"].indexOf(level) > -1) {
-                sf = sf.setIn(["Study", level], fromJS(andMembers))
+                sf = sf.setIn(["Study", level], new SelectedFilter({members: members}))
             } else if (level == "Assay") {
-                const assayMembers = groupInfo.filters[level].operator == "OR" ? orMembers : andMembers
-                sf = sf.setIn(["Data", "Assay", "Assay"], fromJS(assayMembers))
+                sf = sf.setIn(["Data", "Assay", "Assay"], new SelectedFilter({members: members, operator: groupInfo.filters[level].operator}))
             } else if (level == "Timepoint") {
-                const timepointMembers = groupInfo.filters[level].operator == "OR" ? orMembers : andMembers
-                sf = sf.setIn(["Data", "Timepoint"], fromJS(timepointMembers))
+                sf = sf.setIn(["Data", "Timepoint"], new SelectedFilter({members: members, operator: groupInfo.filters[level].operator}))
             } else if (level == "SampleType") {
-                const sampleTypeMembers = groupInfo.filters[level].operator == "OR" ? orMembers : andMembers
-                sf = sf.setIn(["Data", "SampleType", "SampleType"], fromJS(sampleTypeMembers))
+                sf = sf.setIn(["Data", "SampleType", "SampleType"], new SelectedFilter({members: members, operator: groupInfo.filters[level].operator}))
             } else {
                 missingDimensions.push(groupInfo.filters[level].name)
             }
