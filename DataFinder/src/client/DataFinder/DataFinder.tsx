@@ -438,7 +438,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             {BarplotHelper("Study", "ExposureProcess", "Study")}
                         </div>
                         <div className="col-sm-3">
-                            {BarplotHelper("Study", "Category", "Study")}
+                            {BarplotHelper("Study", "ResearchFocus", "Study")}
                         </div>
                         <div className="col-sm-3">
                             {BarplotHelper("Study", "ExposureMaterial", "Study")}
@@ -498,7 +498,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 {filterCategories && <>
                     <div className="col-sm-4">
                         {FilterDropdownHelper("Study", "Condition", true)}
-                        {FilterDropdownHelper("Study", "Category", true)}
+                        {FilterDropdownHelper("Study", "ResearchFocus", true)}
                         {FilterDropdownHelper("Study", "ExposureMaterial", true)}
                         {FilterDropdownHelper("Study", "ExposureProcess", true)}
                         {FilterDropdownHelper("Study", "Species", true)}

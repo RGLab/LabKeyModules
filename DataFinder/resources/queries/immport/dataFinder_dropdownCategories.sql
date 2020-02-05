@@ -115,7 +115,7 @@ FROM (SELECT variable, category,
 
     UNION ALL
 
-      SELECT 'Category' as variable, research_focus as category, NULL as sortorder
+      SELECT 'ResearchFocus' as variable, research_focus as category, NULL as sortorder
       FROM (
         SELECT DISTINCT research_focus
         from immport.study_categorization

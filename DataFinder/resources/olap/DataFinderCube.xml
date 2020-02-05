@@ -57,9 +57,9 @@
                 <Level name="Principal" visible="true" table="dimStudyPrincipals" type="String" column="full_name" ordinalColumn="sortorder" levelType="Regular" hideMemberIf="Never">
                 </Level>
             </Hierarchy>
-            <Hierarchy name="Category" hasAll="true" primaryKey="study_accession">
+            <Hierarchy name="ResearchFocus" hasAll="true" primaryKey="study_accession">
                 <Table name="study_categorization" schema="immport" />
-                <Level name="Category" visible="true" table="study_categorization" type="String" column="research_focus" levelType="Regular" hideMemberIf="Never">
+                <Level name="ResearchFocus" visible="true" table="study_categorization" type="String" column="research_focus" levelType="Regular" hideMemberIf="Never">
                 </Level>
             </Hierarchy>
         </Dimension>

@@ -1,5 +1,4 @@
 import { Record, fromJS, List, Map } from 'immutable';
-import { string } from 'prop-types';
 
 export interface GroupInfo {
     id: number;
@@ -14,8 +13,6 @@ export interface GroupInfo {
     } | SelectedFilters;
     new?: boolean
 }
-
-
 
 export interface CubeDatum {
     level: string;
@@ -65,7 +62,7 @@ export interface IStudyData {
     Name?: CubeDatum[];
     Program?: CubeDatum[];
     Condition?: CubeDatum[];
-    Category: CubeDatum[];
+    ResearchFocus: CubeDatum[];
     Species?: CubeDatum[];
     ExposureMaterial?: CubeDatum[];
     ExposureProcess?: CubeDatum[];
@@ -75,7 +72,7 @@ export class StudyData extends Record({
     Name: List<CubeDatum>(),
     Program: List<CubeDatum>(),
     Condition: List<CubeDatum>(),
-    Category: List<CubeDatum>(),
+    ResearchFocus: List<CubeDatum>(),
     Species: List<CubeDatum>(),
     ExposureMaterial: List<CubeDatum>(),
     ExposureProcess: List<CubeDatum>()
@@ -189,21 +186,6 @@ export class SelectedFilter extends Record({
     }
 }
 
-
-// export interface ISelectedFilter {}
-
-// export class SelectedFilter extends Record({
-//     members: List<string>(),
-//     operator: "OR"
-// }) {
-//     members: List<string>;
-//     operator: string
-
-//     constructor(params?: ISelectedFilter) {
-//         params ? super(fromJS(params)) : super()
-//     }
-// }
-
 export interface ISelectedFilters {
     Subject?: { [index: string]: SelectedFilter };
     Study?: { [index: string]: SelectedFilter };
@@ -289,35 +271,3 @@ export interface FilterCategories {
     [index: string]: FilterCategory[]
 }
 
-
-// export class CubeData extends CubeDataRecord implements ICubeData {
-//     subject: {
-//         race: CubeDatum[],
-//         age: CubeDatum[],
-//         gender: CubeDatum[]
-//     };
-//     study: {
-//         name: CubeDatum[],
-//         program: CubeDatum[],
-//         condition: CubeDatum[],
-//         species: CubeDatum[],
-//         exposureMaterial: CubeDatum[],
-//         exposureProcess: CubeDatum[]
-//     };
-//     data: {
-//         assay: {
-//             assay: CubeDatum[],
-//             timepoint: HeatmapDatum[],
-//             sampleType: HeatmapDatum[]
-//         },
-//         timepoint: CubeDatum[],
-//         sampleType: CubeDatum[]
-//     }
-//     constructor(props: ICubeData) {
-//         super(props)
-//     }
-// }
-
-// export interface CollectCubeData 
-//     (mdx: Cube)
-// }

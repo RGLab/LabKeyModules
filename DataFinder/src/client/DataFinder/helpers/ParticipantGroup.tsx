@@ -72,16 +72,18 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
             const members = groupInfo.filters[level].members.map((uniqueName) => {
                 return (uniqueName.split("].[")[1].replace(/[\[\]]/g, ""))
             })
-            if (["Age", "Gender", "Race", "ExposureMaterial", "ExposureProcess", "Species"].indexOf(level) > -1) {
-                sf = sf.setIn(["Subject", level], new SelectedFilter({members: members}))
-            } else if (["Category", "Condition"].indexOf(level) > -1) {
-                sf = sf.setIn(["Study", level], new SelectedFilter({members: members}))
+            if (["Age", "Gender", "Race"].indexOf(level) > -1) {
+                sf = sf.setIn(["Subject", level], new SelectedFilter({ members: members }))
+            } else if (["ResearchFocus", "Condition", "ExposureMaterial", "ExposureProcess", "Species"].indexOf(level) > -1) {
+                sf = sf.setIn(["Study", level], new SelectedFilter({ members: members }))
             } else if (level == "Assay") {
-                sf = sf.setIn(["Data", "Assay", "Assay"], new SelectedFilter({members: members, operator: groupInfo.filters[level].operator}))
+                sf = sf.setIn(["Data", "Assay", "Assay"], new SelectedFilter({ members: members, operator: groupInfo.filters[level].operator }))
             } else if (level == "Timepoint") {
-                sf = sf.setIn(["Data", "Timepoint"], new SelectedFilter({members: members, operator: groupInfo.filters[level].operator}))
+                sf = sf.setIn(["Data", "Timepoint"], new SelectedFilter({ members: members, operator: groupInfo.filters[level].operator }))
             } else if (level == "SampleType") {
-                sf = sf.setIn(["Data", "SampleType", "SampleType"], new SelectedFilter({members: members, operator: groupInfo.filters[level].operator}))
+                sf = sf.setIn(["Data", "SampleType", "SampleType"], new SelectedFilter({ members: members, operator: groupInfo.filters[level].operator }))
+            } else if (level == "Category") {
+                sf = sf.setIn(["Study", "ResearchFocus"], new SelectedFilter({members: members}))
             } else {
                 missingDimensions.push(groupInfo.filters[level].name)
             }
@@ -113,7 +115,7 @@ export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel = 
     });
     win.show()
 
-    
+
     return (win)
 }
 
@@ -131,21 +133,19 @@ export const updateParticipantGroup = (pids: string[], appliedFilters: SelectedF
         LABKEY.Ajax.request({
             url: (LABKEY.ActionURL.buildURL("participant-group", 'updateParticipantGroup.api')),
             method: 'POST',
-            jsonData : groupData,
-            success : function(response)
-            {
+            jsonData: groupData,
+            success: function (response) {
                 var res = JSON.parse(response.responseText);
                 if (res.success) {
                     resolve(true)
                 }
             },
-            failure : function(response, options)
-            {
+            failure: function (response, options) {
                 LABKEY.Utils.displayAjaxErrorResponse(response, options, false, "An error occurred trying to save:  ");
             }
         });
     })
-    
+
 }
 
 export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
