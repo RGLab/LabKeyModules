@@ -1,7 +1,5 @@
 import * as d3 from 'd3';
-
 import { ScatterPlotProps } from '../similarStudyScatterPlot';
-import { color } from 'd3';
 
 export function drawScatterPlot(props: ScatterPlotProps) {
     
@@ -58,17 +56,15 @@ export function drawScatterPlot(props: ScatterPlotProps) {
     }
 
     // Create custom color array with 17 colors (max needed) for cat vars
-    var customColorArray = d3.schemeCategory10.concat(d3.schemeSet2)
+    var customColorArray = d3.schemeCategory10.concat(d3.schemeCategory10)
     customColorArray.splice(7, 1)
     customColorArray.splice(16, 1)
-    customColorArray[customColorArray.length + 1] = "#000000"
 
     // Create mapping to different ordinal color schemes for study design set
     const ordinalColorOptions = [
-        'interpolateBrBG',
-        'interpolatePiYG',
-        'interpolatePuOr',
-        'interpolateRdBu'
+        'interpolateBlues',
+        'interpolateGreens',
+        'interpolateOranges'
     ]
     
     function getFillColor(label, categoricalVar, index, value){
@@ -102,7 +98,7 @@ export function drawScatterPlot(props: ScatterPlotProps) {
     }
 
     function getPercentageFromValue(value: number, range: number[]){
-        return( value - range[0] / range[1] - range[0] )
+        return( (value - range[0]) / (range[1] - range[0]) )
     }
 
     
@@ -139,11 +135,11 @@ export function drawScatterPlot(props: ScatterPlotProps) {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         .attr("id", "scatterplot" + name);
     
-    // x-axis
+    // x-axis - no ticks
     svg.append("g")
         .attr("id", "xaxis-labels")
         .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
-        .call(d3.axisTop(xaxisScale));
+        .call(d3.axisTop(xaxisScale).ticks([]))
 
     // x-axis title
     svg.append("text")
@@ -153,11 +149,11 @@ export function drawScatterPlot(props: ScatterPlotProps) {
         .attr("y", margin.top / 2)
         .text(prettyName);
 
-    // y-axis
+    // y-axis - no ticks
     svg.append("g")
         .attr("id", "yaxis-labels")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-        .call(d3.axisLeft(yaxisScale))
+        .call(d3.axisLeft(yaxisScale).ticks([]))
 
     // add clickable-links
     // svg.selectAll("text")
@@ -177,16 +173,17 @@ export function drawScatterPlot(props: ScatterPlotProps) {
     //         document.location.href = linkBaseText + (d as String).split(': ')[1]
     //     })
     
-    // var tooltip = d3.select('#' + name)
-    //     .append("div")
-    //     .attr("class", "tooltip")
-    //     .style("opacity", 0)
-    //     .style("background-color", "white")
-    //     .style("border", "solid")
-    //     .style("border-width", "2px")
-    //     .style("border-radius", "5px")
-    //     .style("padding", "5px")
-    // add values
+    var tooltip = d3.select('#' + name)
+        .append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "2px")
+        .style("border-radius", "5px")
+        .style("padding", "5px")
+    
+    //  add values
     svg.selectAll("circle")
         .data(data)
         .enter()
@@ -199,27 +196,19 @@ export function drawScatterPlot(props: ScatterPlotProps) {
             const fill = getFillColor(name, categoricalVar, colorIndex, d[dataType][name])
             return(fill)
         }) 
-
-
-
-            // .on("mouseover", function(d){
-            //     tooltip
-            //         .transition()
-            //         .duration(50)
-            //         .style("opacity", .9);		
-            //     tooltip.html(
-            //             "<b>Publication Info</b>: <br>" + 
-            //             d.hoverOverText
-            //         )	
-            //         .style("left", (d3.event.pageX) + "px")		
-            //         .style("top", (d3.event.pageY - 28) + "px");	
-            //     })		
-            // .on("mouseout", function(d){
-            //     tooltip
-            //         .transition()
-            //         .duration(100)
-            //         .style("opacity", 0)
-            // })
+        .on("mouseover", function(d){
+            tooltip
+                .transition()
+                .duration(200)
+                .style("opacity", .9);		
+            tooltip.html(
+                    "<a href=" + linkBaseText + d.study + "/begin.view?>" + 
+                    d.study + 
+                    "</a>"
+                )	
+                .style("left", (d3.event.pageX) + "px")		
+                .style("top", (d3.event.pageY - 28) + "px");	
+            })		
 
 //     // draw legend
 //   var legend = svg.selectAll(".legend")

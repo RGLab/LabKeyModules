@@ -22,7 +22,7 @@ export function drawBarPlot(props: BarPlotProps) {
     // set margins
     const margin = {
                 top: 50, 
-                right: 30, 
+                right: 100, 
                 bottom: 30, 
                 left: 130
         },
@@ -102,6 +102,8 @@ export function drawBarPlot(props: BarPlotProps) {
         .style("border-radius", "5px")
         .style("padding", "5px")
 
+    var colorScheme = d3.interpolateRdBu
+
     // add values
     svg.selectAll("rect")
         .data(data)
@@ -117,12 +119,12 @@ export function drawBarPlot(props: BarPlotProps) {
                 return xaxisScale(d.value); 
             })
             .attr("fill", function(d) { 
-                return d3.interpolateRdBu(d.datePublishedPercent).toString()
+                return colorScheme(d.datePublishedPercent).toString()
             })
             .on("mouseover", function(d){
                 tooltip
                     .transition()
-                    .duration(50)
+                    .duration(200)
                     .style("opacity", .9);		
                 tooltip.html(
                         "<b>Publication Info</b>: <br>" + 
@@ -134,7 +136,81 @@ export function drawBarPlot(props: BarPlotProps) {
             .on("mouseout", function(d){
                 tooltip
                     .transition()
-                    .duration(100)
+                    .duration(1000)
                     .style("opacity", 0)
-            })
+            })      
+
+    // const years = ['2016','2017','2018','2019','2020']
+
+    const minYear = Math.round(d3.min(data, function(d) { return d.datePublishedFloat }))
+    const maxYear = Math.round(d3.max(data, function(d) { return d.datePublishedFloat }))
+    const years = [minYear, maxYear]
+    const legend = {
+        barWidth: 20,
+        rightMargin: 50,
+        height: 150
+    }
+    
+    var legendscale = d3.scaleLinear()
+        .domain(years)
+        .range([0, legend.height])
+
+    var legendaxis = d3.axisRight(legendscale)
+        .tickSize(10)
+        .tickValues(years)
+        .tickFormat(d3.format("d"))
+
+    
+    var defs = svg.append("defs")
+
+    var legendGradient = defs
+        .append("linearGradient")
+        .attr("id", "legendGradient")
+        .attr("x1", "0%")
+        .attr("x2", "0%")
+        .attr("y1", "0%")
+        .attr("y2", "100%");
+
+    // Multiple needed to show color correctly
+    legendGradient.append('stop')
+        .attr('offset', '0%')
+        .style('stop-color', colorScheme(0).toString())
+
+    legendGradient.append('stop')
+        .attr('offset', '25%')
+        .style('stop-color',  colorScheme(0.25).toString())
+
+    legendGradient.append('stop')
+        .attr('offset', '50%')
+        .style('stop-color',  colorScheme(0.5).toString())
+
+    legendGradient.append('stop')
+        .attr('offset', '75%')
+        .style('stop-color',  colorScheme(0.75).toString())
+
+    legendGradient.append('stop')
+        .attr('offset', '100%')
+        .style('stop-color',  colorScheme(1).toString())
+
+    svg.append('rect')
+        .attr('x', props.width - (legend.rightMargin + legend.barWidth))
+        .attr('y', margin.top)
+        .attr('width', legend.barWidth)
+        .attr('height', legend.height)
+        .style('fill', "url(#legendGradient)")
+
+    svg
+        .append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate(" + (props.width - legend.rightMargin) + "," + margin.top + ")")
+        .call(legendaxis);
+    
+    // y-axis title
+    svg.append("text")
+        .attr("class", "y label")
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(-90)")
+        .attr("y", props.width - 10)
+        .attr("x", - (legend.height / 2 + margin.top))
+        .text("Date Published");
 }

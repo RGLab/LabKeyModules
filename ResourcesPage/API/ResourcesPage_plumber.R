@@ -107,8 +107,21 @@ function(){
   sdyMetaData <- loadLocalFile("sdyMetaData")
 
   # ---- Feature Engineering -----
+  studyAccessions <- rownames(sdyMetaData)
+  colsToRm <- which(colnames(sdyMetaData) %in% c("person_accession",
+                                                 "sponsoring_organization",
+                                                 "initial_data_release_date"))
+  sdyMetaData <- sdyMetaData[, -(colsToRm) ]
 
-  # Local Helpers
+  # Min and Max Ages of Study Participants
+  ensureAllIntegerValues <- function(originalValues){
+      tmp <- suppressWarnings(as.integer(originalValues))
+      if (any(is.na(tmp))) {
+          tmp[ is.na(tmp)] <- extractIntegerFromString(originalValues[ is.na(tmp)])
+      }
+      return(tmp)
+  }
+
   extractIntegerFromString <- function(string){
       hasInteger <- grepl("\\d", string)
       if(hasInteger){
@@ -119,24 +132,13 @@ function(){
       }
   }
 
-  # Ensure min and max age are all ints (no strings)
-  sdyMetaData$newMinAge <- suppressWarnings(as.integer(sdyMetaData$minimum_age))
-  if (any(is.na(sdyMetaData$newMinAge))) {
-      sdyMetaData$newMinAge[ is.na(sdyMetaData$newMinAge)] <-
-          extractIntegerFromString(sdyMetaData$minimum_age[ is.na(sdyMetaData$newMinAge)])
-  }
-
-  sdyMetaData$newMaxAge <- suppressWarnings(as.integer(sdyMetaData$maximum_age))
-  if (any(is.na(sdyMetaData$newMaxAge))) {
-      sdyMetaData$newMaxAge[ is.na(sdyMetaData$newMaxAge)] <-
-          extractIntegerFromString(sdyMetaData$maximum_age[ is.na(sdyMetaData$newMaxAge)])
-  }
-
+  sdyMetaData$newMinAge <- ensureAllIntegerValues(sdyMetaData$minimum_age)
+  sdyMetaData$newMaxAge <- ensureAllIntegerValues(sdyMetaData$maximum_age)
   sdyMetaData <- sdyMetaData[ , -(grep("(min|max)imum", colnames(sdyMetaData))) ]
 
-  # Distill condition studied
+  # Condition Studied
   sdyMetaData$newCondition <- sapply(sdyMetaData$condition_studied, function(x) {
-      if( grepl("healthy|normal|naive", x, ignore.case = TRUE)){
+     if( grepl("healthy|normal|naive", x, ignore.case = TRUE)){
           return("Healthy")
       }else if(grepl("influenza|H1N1", x, ignore.case = TRUE)){
           return("Influenza")
@@ -175,7 +177,6 @@ function(){
 
   sdyMetaData <- sdyMetaData[ , -grep("condition_studied", colnames(sdyMetaData))]
 
-  # TODO: Turn condition studied into model matrix and merge
   tmp <- model.matrix(~condition, data.frame(study = rownames(sdyMetaData),
                                              condition = sdyMetaData$newCondition))
   tmp <- data.frame(tmp[, -1])
@@ -186,44 +187,56 @@ function(){
   sdyMetaData <- merge(sdyMetaData, tmp, by="study")
   sdyMetaData <- sdyMetaData[, -grep("newCondition", colnames(sdyMetaData))]
 
-  # Factor the sponsor( 0 ... n) and clinical trial (0,1) columns
+  # Clinical trial
+  sdyMetaData$clinical_trial <- ifelse(sdyMetaData$clinical_trial == "Y", 1, 0)
 
-  # metric should be hamming for all binary categoricals and euclidean for min/max Age and numParticipants
-
-
-  # Col - metric
-  # minAge - euc
-  # maxAge - euc
-  # numparticipants - euc
-  # hasAssay - cat
-  # assay_timepoint - cat
-  # sponsor - cat
-
-
-  # Generate UMAP results with assay * timepoint
-  set.seed(8)
-  umap <- uwot::umap(sdyMetaData,
-                     n_neighbors = 20,
-                     n_components = 2)
-  df <- data.frame(x = umap[,1],
-                   y = umap[,2],
-                   stringsAsFactors = FALSE)
-  sdyMetaData$x <- df$x
-  sdyMetaData$y <- df$y
-
-  # Condense assay data to single binary for each assay
+  # Assay Data
   assays <- c("elisa", "elispot", "fcs", "gene_expression", "hai", "mbaa", "neut_ab_titer", "pcr")
   for (assay in assays) {
       relevantCols <- grep(assay, colnames(sdyMetaData))
-      sdyMetaData[assay] <- apply(sdyMetaData, 1, function(x){
+      sdyMetaData[paste0("has_", assay)] <- apply(sdyMetaData, 1, function(x){
           if(any(x[relevantCols] == 1)){
               return(1)
           }else{
               return(0)
           }
       })
-      sdyMetaData <- sdyMetaData[, -relevantCols]
+      # sdyMetaData <- sdyMetaData[, -relevantCols]
   }
+
+  # Distance type to use
+  euclideanCols <- c("newMinAge", "newMaxAge", "actual_enrollment")
+  useEuclidean <- which(colnames(sdyMetaData) %in% euclideanCols)
+  useCategorical <- which(!colnames(sdyMetaData) %in% euclideanCols)
+
+  # Calculate distances matrix using just euclidean and scale to 0 to 1
+  eucMx <- sdyMetaData[ , useEuclidean]
+  eucMx <- scale(eucMx, center=FALSE, scale=colSums(eucMx))
+  eucDistMx <- suppressWarnings(as.matrix(dist(eucMx, method = "euclidean")))
+
+  # Calculate distance for categoricals using jaccard distance
+  catMx <- sdyMetaData[ , useCategorical]
+  catDistMx <- suppressWarnings(as.matrix(dist(catMx, method = "binary")))
+
+  # combine distance metrics in proportion to info (e.g numColsEuc/TotalCols * eucDist + )
+  totalDistMx <- eucDistMx * (length(useEuclidean)/length(colnames(sdyMetaData))) +
+                 catDistMx * (length(useCategorical)/length(colnames(sdyMetaData)))
+
+  # Use UMAP to embed distance matrix in 2d space - https://github.com/jlmelville/uwot/issues/22
+  set.seed(8)
+  umap <- uwot::umap(X = totalDistMx,
+                     n_neighbors = 50,
+                     n_components = 2)
+  sdyMetaData$x <- umap[,1]
+  sdyMetaData$y <- umap[,2]
+
+  # Remove columns not needed for labeling: individual assay*timepoint
+  assaysGrep <- paste(paste0("^", assays), collapse = "|")
+  assayColsToRm <- grep(assaysGrep, colnames(sdyMetaData))
+  sdyMetaData <- sdyMetaData[, -assayColsToRm]
+
+  # Add back study for use in plotting
+  sdyMetaData$study <- studyAccessions
 
   # Convert to list of lists for parsing
   res <- lapply( split(sdyMetaData, seq_along(sdyMetaData[,1])), as.list)

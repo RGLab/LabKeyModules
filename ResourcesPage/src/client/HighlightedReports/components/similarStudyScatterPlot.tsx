@@ -14,13 +14,10 @@ export interface ScatterPlotDatum {
         mbaa: number
     },
     studyDesign: {
-        author: string, // not doing
-        sponsor: string, // cat
         maximumAge: number, // ord
         minimumAge: number, // ord
         numberOfParticipants: number, // ord
-        clinicalTrial: string, // cat
-        initialDataReleaseDate: Date // not doing
+        clinicalTrial: number
     },
     condition: {
         dengue: number,

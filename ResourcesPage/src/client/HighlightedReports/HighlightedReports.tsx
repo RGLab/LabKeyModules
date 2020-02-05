@@ -34,7 +34,8 @@ const ResourcesPage: React.FC = () => {
 
     const [divToShow, setDivToShow] = React.useState<string>("About");
     const [plotToShow, setPlotToShow] = React.useState<string>("most-cited")
-    const apiBase = LABKEY.ActionURL.getBaseURL() + '_rapi/'
+    const labkeyBaseUrl = LABKEY.ActionURL.getBaseURL()
+    const apiBase = labkeyBaseUrl + '_rapi/'
 
     /*  -----------------------------------
             StudyStats State
@@ -210,23 +211,20 @@ const ResourcesPage: React.FC = () => {
                 let datum: ScatterPlotDatum = 
                 {
                     assays: {
-                        elisa: parseInt(ssData[key].elisa[0]),
-                        elispot: parseInt(ssData[key].elispot[0]),
-                        hai: parseInt(ssData[key].hai[0]),
-                        neutralizingAntibodyTiter: parseInt(ssData[key].neut_ab_titer[0]),
-                        geneExpression: parseInt(ssData[key].gene_expression[0]),
-                        flowCytometry: parseInt(ssData[key].fcs[0]),
-                        pcr: parseInt(ssData[key].pcr),
-                        mbaa: parseInt(ssData[key].mbaa)
+                        elisa: parseInt(ssData[key].has_elisa[0]),
+                        elispot: parseInt(ssData[key].has_elispot[0]),
+                        hai: parseInt(ssData[key].has_hai[0]),
+                        neutralizingAntibodyTiter: parseInt(ssData[key].has_neut_ab_titer[0]),
+                        geneExpression: parseInt(ssData[key].has_gene_expression[0]),
+                        flowCytometry: parseInt(ssData[key].has_fcs[0]),
+                        pcr: parseInt(ssData[key].has_pcr[0]),
+                        mbaa: parseInt(ssData[key].has_mbaa[0])
                     },
                     studyDesign: {
-                        author: ssData[key].person_accession[0],
-                        sponsor: ssData[key].sponsoring_organization[0],
                         maximumAge: parseInt(ssData[key].newMaxAge[0]),
                         minimumAge: parseInt(ssData[key].newMinAge[0]),
                         numberOfParticipants: parseInt(ssData[key].actual_enrollment[0]),
-                        clinicalTrial: ssData[key].clinical_trial[0],
-                        initialDataReleaseDate: new Date(ssData[key].initial_data_release_date[0])
+                        clinicalTrial: parseInt(ssData[key].clinical_trial[0])
                     },
                     condition: {
                         dengue: parseInt(ssData[key].Dengue[0]),
@@ -328,7 +326,7 @@ const ResourcesPage: React.FC = () => {
             data: transformedPmData.byPubId,
             titles: titles,
             name: "byPubId",
-            width: 700,
+            width: 850,
             height: 700,
             dataRange: pmDataRange.byPubId,
             linkBaseText: 'https://www.ncbi.nlm.nih.gov/pubmed/'
@@ -370,17 +368,14 @@ const ResourcesPage: React.FC = () => {
             'unknown'
         ],
         studyDesign: [
-            // 'author',
-            'sponsor',
             'minimumAge',
             'maximumAge',
             'numberOfParticipants',
             'clinicalTrial'
-            // 'initialDataReleaseDate'
         ]
     }
 
-    const categoricalLabels = labels.assays
+    var categoricalLabels = labels.assays
                               .concat(labels.condition)
                               .concat('clinicalTrial')
 
@@ -398,9 +393,9 @@ const ResourcesPage: React.FC = () => {
 
         function makePropsWithIndex(label, index, dataType){
             // For plotting categorical values, ensure that colored dots
-            // are plotted last to be visually on top
+            // are plotted last to be visually on top by having them plot last
             ssTransformedData.sort((a,b) => 
-                (a[dataType][label] < b[dataType][label]) ? 1 : -1
+                (a[dataType][label] > b[dataType][label]) ? 1 : -1
             )
 
             // deep copy to ensure sort stays put
@@ -412,7 +407,7 @@ const ResourcesPage: React.FC = () => {
                 width: 300,
                 height: 300,
                 dataRange: ssDataRange,
-                linkBaseText: apiBase + "/project/Studies/",
+                linkBaseText: labkeyBaseUrl + "/project/Studies/",
                 colorIndex: index,
                 categoricalVar: categoricalLabels.includes(label),
                 dataType: getLabelType(label)
@@ -809,7 +804,7 @@ const ResourcesPage: React.FC = () => {
 
             function CreatePlotGrid(propsList){
                 const rowsOfPlots = []
-                const PLOTS_IN_ROW = 3
+                const PLOTS_IN_ROW = 4
 
                 // slice returns i to end of array even if i + x is greater
                 // than the length
