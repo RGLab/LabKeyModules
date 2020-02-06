@@ -154,24 +154,6 @@ export function drawScatterPlot(props: ScatterPlotProps) {
         .attr("id", "yaxis-labels")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         .call(d3.axisLeft(yaxisScale).ticks([]))
-
-    // add clickable-links
-    // svg.selectAll("text")
-    //     .filter(function(d){ return typeof(d) == "string"})
-    //     .style("cursor","pointer")
-    //     .on("mouseover", function(d, i){
-    //         d3.select(this)
-    //             .style("color","green")
-    //             .style("font-weight", "bold")
-    //     })
-    //     .on("mouseout", function(d, i){
-    //         d3.select(this)
-    //             .style("color","black")
-    //             .style("font-weight", "normal")
-    //     })
-    //     .on("click", function(d){ 
-    //         document.location.href = linkBaseText + (d as String).split(': ')[1]
-    //     })
     
     var tooltip = d3.select('#' + name)
         .append("div")
@@ -199,7 +181,7 @@ export function drawScatterPlot(props: ScatterPlotProps) {
         .on("mouseover", function(d){
             tooltip
                 .transition()
-                .duration(200)
+                .duration(50)
                 .style("opacity", .9);		
             tooltip.html(
                     "<a href=" + linkBaseText + d.study + "/begin.view?>" + 
@@ -209,26 +191,11 @@ export function drawScatterPlot(props: ScatterPlotProps) {
                 .style("left", (d3.event.pageX) + "px")		
                 .style("top", (d3.event.pageY - 28) + "px");	
             })		
+        .on("mouseout", function(d){
+            tooltip
+                .transition()
+                .duration(2000)
+                .style("opacity", 0)
+            }) 
 
-//     // draw legend
-//   var legend = svg.selectAll(".legend")
-//   .data(color.domain())
-// .enter().append("g")
-//   .attr("class", "legend")
-//   .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
-
-// // draw legend colored rectangles
-// legend.append("rect")
-//   .attr("x", width - 18)
-//   .attr("width", 18)
-//   .attr("height", 18)
-//   .style("fill", color);
-
-// // draw legend text
-// legend.append("text")
-//   .attr("x", width - 24)
-//   .attr("y", 9)
-//   .attr("dy", ".35em")
-//   .style("text-anchor", "end")
-//   .text(function(d) { return d;})
 }

@@ -28,6 +28,11 @@ export function drawBarPlot(props: BarPlotProps) {
         },
         width  = props.width - margin.left - margin.right,
         height = props.height - margin.top  - margin.bottom;
+    
+    const font = {
+        size: "16px",
+        family: "sans-serif"
+    }
 
     // Set scales using arguments
     const xaxisScale = d3
@@ -55,6 +60,8 @@ export function drawBarPlot(props: BarPlotProps) {
     svg.append("text")
         .attr("class", "x label")
         .attr("text-anchor", "middle")
+        .attr("font-family", font.family)
+        .attr("font-size", font.size)
         .attr("x", props.width / 2)
         .attr("y", margin.top / 2)
         .text(titles.x);
@@ -69,6 +76,8 @@ export function drawBarPlot(props: BarPlotProps) {
     svg.append("text")
         .attr("class", "y label")
         .attr("text-anchor", "middle")
+        .attr("font-family", font.family)
+        .attr("font-size", font.size)
         .attr("transform", "rotate(-90)")
         .attr("y", 10)
         .attr("x", - (props.height / 3))
@@ -124,7 +133,7 @@ export function drawBarPlot(props: BarPlotProps) {
             .on("mouseover", function(d){
                 tooltip
                     .transition()
-                    .duration(200)
+                    .duration(50)
                     .style("opacity", .9);		
                 tooltip.html(
                         "<b>Publication Info</b>: <br>" + 
@@ -136,12 +145,11 @@ export function drawBarPlot(props: BarPlotProps) {
             .on("mouseout", function(d){
                 tooltip
                     .transition()
-                    .duration(1000)
+                    .duration(3000)
                     .style("opacity", 0)
             })      
 
-    // const years = ['2016','2017','2018','2019','2020']
-
+    // Legend
     const minYear = Math.round(d3.min(data, function(d) { return d.datePublishedFloat }))
     const maxYear = Math.round(d3.max(data, function(d) { return d.datePublishedFloat }))
     const years = [minYear, maxYear]
@@ -159,7 +167,6 @@ export function drawBarPlot(props: BarPlotProps) {
         .tickSize(10)
         .tickValues(years)
         .tickFormat(d3.format("d"))
-
     
     var defs = svg.append("defs")
 
@@ -205,12 +212,14 @@ export function drawBarPlot(props: BarPlotProps) {
         .attr("transform", "translate(" + (props.width - legend.rightMargin) + "," + margin.top + ")")
         .call(legendaxis);
     
-    // y-axis title
+    // Legend Title
     svg.append("text")
-        .attr("class", "y label")
+        .attr("class", "legend")
         .attr("text-anchor", "middle")
-        .attr("transform", "rotate(-90)")
-        .attr("y", props.width - 10)
-        .attr("x", - (legend.height / 2 + margin.top))
+        .attr("font-family", font.family)
+        .attr("font-size", font.size)
+        .attr("transform", "rotate(90)")
+        .attr("y", -(props.width - (legend.rightMargin - 15)))
+        .attr("x", (legend.height / 2 + margin.top))
         .text("Date Published");
 }

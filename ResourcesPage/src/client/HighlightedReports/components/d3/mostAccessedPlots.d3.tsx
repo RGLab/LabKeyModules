@@ -25,7 +25,7 @@ export function drawMaBarPlot(props: MaBarPlotProps) {
                 top: 50, 
                 right: 30, 
                 bottom: 30, 
-                left: 130
+                left: 80
         },
         width  = props.width - margin.left - margin.right,
         height = props.height - margin.top  - margin.bottom;
@@ -74,9 +74,38 @@ export function drawMaBarPlot(props: MaBarPlotProps) {
         .attr("y", 10)
         .attr("x", - (props.height / 3))
         .text(titles.y);
+    
+    // add clickable-links
+    svg.selectAll("text")
+        .filter(function(d){ return typeof(d) == "string"})
+        .style("cursor","pointer")
+        .on("mouseover", function(d, i){
+            d3.select(this)
+                .style("color","green")
+                .style("font-weight", "bold")
+        })
+        .on("mouseout", function(d, i){
+            d3.select(this)
+                .style("color","black")
+                .style("font-weight", "normal")
+        })
+        .on("click", function(d){ 
+            document.location.href = linkBaseText + d + '/begin.view?'
+        })
+    
+    var tooltip = d3.select('#' + name)
+        .append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "2px")
+        .style("border-radius", "5px")
+        .style("padding", "5px")
 
     // color palette - ['blue', 'orange', ...]
     var colors = d3.schemeCategory10
+
 
     // stack the data
     // https://github.com/d3/d3-shape/blob/v1.3.7/README.md#stack
@@ -103,80 +132,64 @@ export function drawMaBarPlot(props: MaBarPlotProps) {
                 .attr("y", function(d, i) { return yaxisScale(labels[i]) + margin.top + 1; })
                 .attr("height", function(d) { return yaxisScale.bandwidth(); })
                 .attr("width",function(d){ return xaxisScale(d[1] - d[0])} )
+                .on("mouseover", function(d, i){
+                    tooltip
+                        .transition()
+                        .duration(50)
+                        .style("opacity", .9);		
+                    tooltip.html(
+                            "<b>" + labels[i] + "</b>: <br>" + 
+                            "<span>User Interface: " + data[i].UI + "</span><br>" +
+                            "<span>ImmuneSpaceR: " + data[i].ISR + "</span>"
+                        )	
+                        .style("left", (d3.event.pageX) + "px")		
+                        .style("top", (d3.event.pageY - 28) + "px");	
+                    })		
+                .on("mouseout", function(d){
+                    tooltip
+                        .transition()
+                        .duration(2000)
+                        .style("opacity", 0)
+                }) 
         
-   
-    // // add clickable-links
-    // svg.selectAll("text")
-    //     .filter(function(d){ return typeof(d) == "string"})
-    //     .style("cursor","pointer")
-    //     .on("mouseover", function(d, i){
-    //         d3.select(this)
-    //             .style("color","green")
-    //             .style("font-weight", "bold")
-    //     })
-    //     .on("mouseout", function(d, i){
-    //         d3.select(this)
-    //             .style("color","black")
-    //             .style("font-weight", "normal")
-    //     })
-    //     .on("click", function(d){ 
-    //         document.location.href = linkBaseText + (d as String).split(': ')[1]
-    //     })
+    var legend = svg.append('g')
+        .attr('class', 'legend')
+        .attr('transform', 'translate(' + 
+                (props.width - 130) + 
+                ', ' + 
+                (margin.top + 100) + 
+                ')');
     
-    // var tooltip = d3.select('#' + name)
-    //     .append("div")
-    //     .attr("class", "tooltip")
-    //     .style("opacity", 0)
-    //     .style("background-color", "white")
-    //     .style("border", "solid")
-    //     .style("border-width", "2px")
-    //     .style("border-radius", "5px")
-    //     .style("padding", "5px")
+    const prettyLegend = ['User Interface', 'ImmuneSpaceR']
 
-    // add values - grouped bar plot
-    // svg.selectAll("rect")
-    //     .data(data)
-    //     .enter()
-    //     .append("rect")
-    //         .attr("class", "rect")
-    //         .attr("x", margin.left)
-    //         .attr("y", function(d) { 
-    //             return yaxisScale(d.studyName) + margin.top; 
-    //         })
-    //         .attr("height", yaxisScale.bandwidth())
-    //         .attr("width", function(d) { 
-    //             return xaxisScale(d.ISR); 
-    //         })
-    //         .attr("fill", 'yellow')
-    //     .append("rect")
-    //         .attr("class", "rect")
-    //         .attr("x", function(d){ return xaxisScale(d.ISR) + margin.left})
-    //         .attr("y", function(d) { 
-    //             return yaxisScale(d.studyName) + margin.top; 
-    //         })
-    //         .attr("height", yaxisScale.bandwidth())
-    //         .attr("width", function(d) { 
-    //             return xaxisScale(d.UI); 
-    //         })
-    //         .attr("fill", 'blue')
-            // .on("mouseover", function(d){
-            //     tooltip
-            //         .transition()
-            //         .duration(50)
-            //         .style("opacity", .9);		
-            //     tooltip.html(
-            //             "<b>Publication Info</b>: <br>" + 
-            //             d.hoverOverText
-            //         )	
-            //         .style("left", (d3.event.pageX) + "px")		
-            //         .style("top", (d3.event.pageY - 28) + "px");	
-            //     })		
-            // .on("mouseout", function(d){
-            //     tooltip
-            //         .transition()
-            //         .duration(100)
-            //         .style("opacity", 0)
-            // })
+    legend.selectAll('rect')
+        .data(prettyLegend)
+        .enter()
+        .append('rect')
+        .attr('x', 0)
+        .attr('y', function(d, i){
+            return i * 18;
+        })
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('fill', function(d, i){
+            return colors[i];
+        });
+    
+    legend.selectAll('text')
+        .data(prettyLegend)
+        .enter()
+        .append('text')
+        .text(function(d){
+            return d;
+        })
+        .attr('x', 18)
+        .attr('y', function(d, i){
+            return i * 18;
+        })
+        .attr('text-anchor', 'start')
+        .attr('alignment-baseline', 'hanging');
+
 }
 
 export function drawMaLinePlot(props: MaLinePlotProps) {
@@ -199,7 +212,7 @@ export function drawMaLinePlot(props: MaLinePlotProps) {
                 top: 50, 
                 right: 30, 
                 bottom: 70, 
-                left: 130
+                left: 60
         },
         width  = props.width - margin.left - margin.right,
         height = props.height - margin.top  - margin.bottom;
@@ -225,7 +238,6 @@ export function drawMaLinePlot(props: MaLinePlotProps) {
     svg.append("g")
         .attr("id", "xaxis-labels")
         .attr("transform", "translate(" + margin.left + ", " + (height + margin.top) + ")")
-        // .attr("transform", "rotate(-45)")
         .call(d3.axisBottom(xaxisScale))
         .selectAll("text")
             .attr("y", 0)
@@ -287,4 +299,42 @@ export function drawMaLinePlot(props: MaLinePlotProps) {
             .attr("d", area)
         // .append("title")
         //     .text(({key}) => key);
+    
+    var legend = svg.append('g')
+        .attr('class', 'legend')
+        .attr('transform', 'translate(' + 
+                (margin.left + 100) + 
+                ', ' + 
+                (margin.top + 100) + 
+                ')');
+    
+    const prettyLegend = ['User Interface', 'ImmuneSpaceR']
+
+    legend.selectAll('rect')
+        .data(prettyLegend)
+        .enter()
+        .append('rect')
+        .attr('x', 0)
+        .attr('y', function(d, i){
+            return i * 18;
+        })
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('fill', function(d, i){
+            return colors[i];
+        });
+    
+    legend.selectAll('text')
+        .data(prettyLegend)
+        .enter()
+        .append('text')
+        .text(function(d){
+            return d;
+        })
+        .attr('x', 18)
+        .attr('y', function(d, i){
+            return i * 18;
+        })
+        .attr('text-anchor', 'start')
+        .attr('alignment-baseline', 'hanging');
 }

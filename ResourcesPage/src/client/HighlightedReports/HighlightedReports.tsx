@@ -466,7 +466,7 @@ const ResourcesPage: React.FC = () => {
             name: "byStudy",
             width: 700,
             height: 800,
-            linkBaseText: 'test study'
+            linkBaseText: labkeyBaseUrl + '/project/Studies/'
         }
         
         setMaBarPlotProps(barProps)
@@ -504,8 +504,8 @@ const ResourcesPage: React.FC = () => {
             titles: lineTitles,
             labels: lineLabels,
             name: "byMonth",
-            width: 1200,
-            height: 800,
+            width: 1100,
+            height: 600,
             linkBaseText: 'test month'
         }
         
@@ -765,9 +765,12 @@ const ResourcesPage: React.FC = () => {
             return(
                 <div id="#most-accessed">
                     <h2>ImmuneSpace Usage Over Time or By Study</h2>
+                    <p>The plots below allow you to view ImmuneSpace usage since the launch of the platform in 2016</p>
                     <p><b>For More Information:</b></p>
                     <ul>
-                        <li>Select the plot using the dropdown</li>
+                        <li>Hover over each bar for specific study data</li>
+                        <li>Click on the Y-axis label to go to study overview page</li>
+                        <li>Toggle between a chronological view of user interactions "By Month" or on a per study basis with "By Study"</li>
                     </ul>
                     <br></br>
                     <table>
@@ -853,10 +856,6 @@ const ResourcesPage: React.FC = () => {
             }
 
             const PlotGrid: React.FC = () => {
-
-                // console.log(JSON.stringify(ssPlotPropsList[ssPlotsToShow]))
-                
-                // filter plot list
                 const plotGrid = CreatePlotGrid(ssPlotPropsList[ssPlotsToShow])
 
                 return(
@@ -872,12 +871,12 @@ const ResourcesPage: React.FC = () => {
 
             return(
                 <div id="#similar-studies">
-                    {/* <span>{JSON.stringify(ssData)}</span> */}
                     <h2>Similar Studies based on Assay Data or Study Design</h2>
+                    <p>The plots below show the results of a UMAP dimension reduction analysis of studies based on their meta-data, including assay data available, study design characteristics, and condition studied. Binary factor distance is measured using the Jaccard method, while continuous variables use Euclidean distance.</p>
                     <p><b>For More Information:</b></p>
                     <ul>
-                        <li>Click on a point to go to the study overview page</li>
-                        <li>Update the plot sets using the dropdown menu</li>
+                        <li>Hover over a point for a link to the study overview page</li>
+                        <li>Toggle between plots with labels for Assay Data Available, Study Design, or Condition Studied using the dropdown menu</li>
                     </ul>
                     <br></br>
                     <Bootstrap.DropdownButton title='Select Plot Set' id='order-select-dropdown'>
