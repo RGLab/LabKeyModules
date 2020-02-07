@@ -989,7 +989,7 @@ const ResourcesPage: React.FC = () => {
             const href = "#" + el.tag;
     
             if(["DataStandards", "StudyStats"].indexOf(el.tag) !== -1){
-                const className = "nav-item dropdown" + (divToShow == el.tag ? " active" : "");
+                var className = "nav-item dropdown" + (divToShow == el.tag ? " active" : "");
                 const dropDownId = el.tag + "Dropdown"
 
                 const subMenuHtml = el.subMenu.map(function(subel, i){
@@ -1011,7 +1011,21 @@ const ResourcesPage: React.FC = () => {
 
                 return(
                     <li id={itemId} className={className}>
-                        <a className="dropdown-toggle" href={href} id={dropDownId} role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a  className="dropdown-toggle" 
+                            href={href} 
+                            id={dropDownId} 
+                            role="button" 
+                            data-toggle="dropdown" 
+                            aria-haspopup="true" 
+                            aria-expanded="false"
+                            onClick={function(){
+                                const parentNode = document.getElementById(itemId)
+                                if(parentNode.className == "nav-item dropdown active"){
+                                    parentNode.className = "nav-item dropdown active open"
+                                }else if(parentNode.className == "nav-item dropdown active open"){
+                                    parentNode.className = "nav-item dropdown active"
+                                }
+                            }}>
                             {el.text} <span className="caret"></span>
                         </a>
                         <ul className="dropdown-menu">
