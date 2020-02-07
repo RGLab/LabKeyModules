@@ -553,6 +553,7 @@ const ResourcesPage: React.FC = () => {
         var baseUrl = window.location.origin;
 
         // Define path to image resources
+        // Actual path in directory is ResourcesPage/resources/web/ResourcesPage/images
         var imgPath = '/ResourcesPage/images/'
 
         var data = [
@@ -734,6 +735,26 @@ const ResourcesPage: React.FC = () => {
                 )
             }
 
+            const ByStudyAddlInfo: React.FC = () => {
+                if(maPlotToShow == "study"){
+                    return(
+                        <ul>
+                            <li>Hover over each bar for specific study data</li>
+                            <li>Click on the Y-axis label to go to study overview page</li>
+                            <li>Toggle between a chronological view of user interactions "By Month" or on a per study basis with "By Study"</li>
+                        </ul>
+                        
+                    )
+                }else{
+                    return(
+                        <ul>
+                            <li>Toggle between a chronological view of user interactions "By Month" or on a per study basis with "By Study"</li>
+                        </ul>
+                        
+                    )
+                }
+            }
+
             const MaPlot: React.FC = () => {
                 if(maPlotToShow == "study"){
                     return(
@@ -767,11 +788,7 @@ const ResourcesPage: React.FC = () => {
                     <h2>ImmuneSpace Usage Over Time or By Study</h2>
                     <p>The plots below allow you to view ImmuneSpace usage since the launch of the platform in 2016</p>
                     <p><b>For More Information:</b></p>
-                    <ul>
-                        <li>Hover over each bar for specific study data</li>
-                        <li>Click on the Y-axis label to go to study overview page</li>
-                        <li>Toggle between a chronological view of user interactions "By Month" or on a per study basis with "By Study"</li>
-                    </ul>
+                    <ByStudyAddlInfo/>
                     <br></br>
                     <table>
                         <tr>
