@@ -172,26 +172,36 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     const FilterDropdownHelper = (dim, level, includeIndicators = false, includeAndOr = false) => {
         const levelArray = level.split(".")
-        return (<FilterDropdownMemo
-            key={level}
-            dimension={dim}
-            level={level}
-            members={filterCategories[levelArray[0]]}
-            filterClick={filterClick}
-            selected={selectedFilters.getIn([dim, ...levelArray, "members"])}>
-            <>
-                {includeAndOr && <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])} onClick={clickAndOr(dim, level)} />}
-                {includeIndicators && selectedFilters.getIn([dim, ...levelArray]) && selectedFilters.getIn([dim, ...levelArray, "members"]).map((member) => {
+        
+        return (
+            <span>
+            <FilterDropdownMemo
+                key={level}
+                dimension={dim}
+                level={level}
+                members={filterCategories[levelArray[0]]}
+                filterClick={filterClick}
+                selected={selectedFilters.getIn([dim, ...levelArray, "members"])}
+            >
+            
+                {includeAndOr && 
+                 <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])} 
+                                onClick={clickAndOr(dim, level)} />}
+                {includeIndicators && 
+                 selectedFilters.getIn([dim, ...levelArray]) && 
+                 selectedFilters.getIn([dim, ...levelArray, "members"]).map((member) => {
                     return (
                         <div style={{ width: "10em" }}>
-                            < Flag dim={dim} onDelete={filterClick(dim, { level: level, member: member })} >
+                            <Flag dim={dim} 
+                                  onDelete={filterClick(dim, { level: level, member: member })} >
                                 {member}
                             </Flag>
                         </div>
                     )
                 })}
-            </>
-        </FilterDropdownMemo>)
+            </FilterDropdownMemo>
+            </span>
+        )
     }
 
     // Callbacks -----------------------------------------------------
@@ -504,7 +514,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         {FilterDropdownHelper("Subject", "Race", true)}
                     </div>
                     <div className="col-sm-2">
-                        <ContentDropdown id={"heatmap-selector"} label={"Assay-Timepoint Selector"} content={filterCategories &&
+                        <ContentDropdown id={"heatmap-selector"} label={"Assay*Timepoint"} content={filterCategories &&
                             <>
                                 <SampleTypeCheckbox
                                     toggleShowSampleType={toggleSampleType}

@@ -30,8 +30,12 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level
     const labels = members.map(m => m.label)
     return (
         <div className={"dropdown"}>
-            <div className="btn-group filterselector" role="group" >
-                <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+            <div className="btn-group filterselector" role="group">
+                <button className="btn btn-default dropdown-toggle" 
+                        type="button" 
+                        data-toggle="dropdown"
+                        style={{width:'130px', display: 'inline-block'}}
+                >
                     <span>{levelArray[0]}</span>
                     <span>&#9660;</span>
                 </button>
@@ -120,7 +124,14 @@ export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick })
     return (
         <div className="dropdown" style={{ float: "left", display: "inline-block"}}>
             <div className="btn df-dropdown-button df-andor-dropdown" role="group" >
-                <button className="btn btn-default dropdown-toggle" type="button" id={"button-" + title} data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                <button className="btn btn-default dropdown-toggle" 
+                        type="button" 
+                        id={"button-" + title} 
+                        data-toggle="dropdown" 
+                        aria-haspopup="true" 
+                        aria-expanded="true"
+                        style={{display: 'inline-block'}}
+                >
                     <span>{title}</span>
                     <span>&#9660;</span>
                 </button>
