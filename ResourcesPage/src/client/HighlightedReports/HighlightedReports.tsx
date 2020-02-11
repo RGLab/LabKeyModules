@@ -633,11 +633,42 @@ const ResourcesPage: React.FC = () => {
 
     // --------- DataStandards -------------
     const DataStandards: React.FC = () => { 
+
+        const Cytometry: React.FC = () => {
+            return(
+                <div>
+                    <p>
+                        Under Construction
+                    </p>
+                </div>
+            )
+        }
+
+        const GeneExpression: React.FC = () => {
+            return(
+                <div>
+                   <img src="/ResourcesPage/images/ge_standardization.png"
+                        padding-top="80%"
+                        width="80%"/>
+                </div>
+            )
+        }
+
+        const ImmuneResponse: React.FC = () => {
+            return(
+                <div>
+                    <p>
+                        Under Construction
+                    </p>
+                </div>
+            )
+        }
+
         return(
             <div id="DataStandards">
-                <div id="#cytometry">Cytometry</div>
-                <div id="#gene-expression">Gene Expression</div>
-                <div id="#immune-response">Immune Response</div>
+                { plotToShow == "cytometry" ? <Cytometry/> : null}
+                { plotToShow == "gene-expression" ? <GeneExpression/> : null}
+                { plotToShow == "immune-response" ? <ImmuneResponse/> : null}
             </div>
         )
     }
@@ -1077,6 +1108,9 @@ const ResourcesPage: React.FC = () => {
 // --------- EXPORT ------------
 // There should be a single export: a component called "App"
 export const App: React.FC = () => {
+
+    const filterBanner = document.getElementById('filter-banner')
+    filterBanner.style.display = 'none'
 
     // Must return a React Fragment
     return <ResourcesPage/>
