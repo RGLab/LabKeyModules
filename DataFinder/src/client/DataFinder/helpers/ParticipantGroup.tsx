@@ -1,11 +1,9 @@
 // Functions for manipulating the selected participant group, and interfacing with 
 // the sessionParticipantGroup api
 
-import { SelectedFilters, GroupInfo, SelectedFilter } from "../../typings/CubeData";
-import { local } from "d3";
-import { List, fromJS } from "immutable";
-import { createStudyParticipantCounts } from "./CubeHelpers";
-import { StudyParticipantCount, StudyDict, IStudyParticipantCount } from "../../typings/StudyCard";
+import { SelectedFilters, GroupInfo, SelectedFilter, ISelectedFilters } from "../../typings/CubeData";
+import { List } from "immutable";
+import { StudyParticipantCount, StudyDict} from "../../typings/StudyCard";
 
 // TODO:
 // get list of available participant groups
@@ -61,9 +59,10 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
     let sf: any
     sf = new SelectedFilters()
     let dim: string;
-    // debugger
+    debugger
     if (groupInfo.filters.Data) {
-        sf = new SelectedFilters(fromJS(groupInfo.filters))
+        const filters: ISelectedFilters = groupInfo.filters
+        sf = new SelectedFilters(filters)
     } else {
         console.log("--------- OLD FILTERS ------")
         const missingDimensions = []

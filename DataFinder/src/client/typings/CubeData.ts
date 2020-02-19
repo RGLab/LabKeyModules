@@ -10,7 +10,7 @@ export interface GroupInfo {
             name: string;
             operator: string
         }
-    } | SelectedFilters;
+    } | ISelectedFilters;
     new?: boolean
 }
 
