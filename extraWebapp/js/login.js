@@ -29,12 +29,12 @@ function newLogin(){
             remember: document.getElementById('remember').value,
             email: document.getElementById('email').value,
             password: document.getElementById('password').value,
-            // returnUrl: LABKEY.ActionURL.getParameter("returnUrl"),
+            returnUrl: LABKEY.ActionURL.getParameter("returnUrl"),
         },
         success: LABKEY.Utils.getCallbackWrapper(function (response) {
-            // if(response && response.returnUrl){
-            //     window.location = response.returnUrl;
-            // }
+            if(response && response.returnUrl){
+                window.location = response.returnUrl;
+            }
             window.location = LABKEY.ActionURL.buildURL('project', 'begin', '/Studies')
         }, this),
         failure: LABKEY.Utils.getCallbackWrapper(function (response) {
@@ -49,7 +49,7 @@ function newLogin(){
             // if(response && response.returnUrl){
             //     window.location = response.returnUrl;
             // }
-            window.location = LABKEY.ActionURL.buildURL('project', 'begin', '/Studies')
+            // window.location = LABKEY.ActionURL.buildURL('project', 'begin', '/Studies')
         }, this)
     });
 }
