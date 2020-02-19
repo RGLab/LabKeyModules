@@ -3,7 +3,7 @@ import { ISelectedFilters, SelectedFilters } from '../typings/CubeData';
 import { Banner } from '../DataFinder/components/Banner';
 
 
-export const FilterBanner = ({show}) => {
+export const FilterBanner = ({ show }) => {
     if (show) {
         // get filters from localStorage
         const sf: ISelectedFilters = JSON.parse(localStorage.getItem("dataFinderSelectedFilters"))
@@ -11,25 +11,28 @@ export const FilterBanner = ({show}) => {
         if (bannerInfo == null) {
             bannerInfo = {
                 groupName: "",
-                counts: {participant: null, study: null},
+                counts: { participant: null, study: null },
                 unsavedFilters: false
             }
         }
         const selectedFilters = new SelectedFilters(sf)
-        return(
-            <Banner 
-            filters={selectedFilters} 
-            groupName={bannerInfo.groupName} 
-            counts={bannerInfo.counts} 
-            unsavedFilters={bannerInfo.unsavedFilters}
-            links={
-                <>
-                    <a className="labkey-text-link" href="/immport/Studies/exportStudyDatasets.view?">Export Study Datasets</a>
-                    <a className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
-                </>
-            } 
-            />
+        return (
+            <div className="df-banner-wrapper">
+                <Banner
+                    filters={selectedFilters}
+                    groupName={bannerInfo.groupName}
+                    counts={bannerInfo.counts}
+                    unsavedFilters={bannerInfo.unsavedFilters}
+                    links={
+                        <>
+                            <a className="labkey-text-link" href="/immport/Studies/exportStudyDatasets.view?">Export Study Datasets</a>
+                            <a className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
+                        </>
+                    }
+                />
+            </div>
+
         )
-    } 
+    }
     return <div></div>
 }

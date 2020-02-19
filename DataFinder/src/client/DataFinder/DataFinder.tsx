@@ -174,7 +174,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         const levelArray = level.split(".")
         
         return (
-            <span>
+            <>
             <FilterDropdownMemo
                 key={level}
                 dimension={dim}
@@ -200,7 +200,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     )
                 })}
             </FilterDropdownMemo>
-            </span>
+            </>
         )
     }
 
@@ -513,7 +513,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         {FilterDropdownHelper("Subject", "Age", true)}
                         {FilterDropdownHelper("Subject", "Race", true)}
                     </div>
-                    <div className="col-sm-2">
+                    <div className="col-sm-3">
                         <ContentDropdown id={"heatmap-selector"} label={"Assay*Timepoint"} content={filterCategories &&
                             <>
                                 <SampleTypeCheckbox
