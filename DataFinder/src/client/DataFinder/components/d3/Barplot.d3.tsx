@@ -50,14 +50,6 @@ export function drawBarplot(props: DrawBarplotProps) {
         if (l.length > 18) short = l.slice(0, 14) + "..."
         return ({ label: l, shortlabel: short })
     })
-    // debuggers
-    // const newLabels = [];
-
-    // data.map((e, i) => {
-    //     newLabels.push(e.label);
-    //     // if (e.value > dataRange[1]) dataRange[1] = e.value;
-    // });
-
     const svg = d3
         .select("#barplot-container-" + name).select("svg")
         .attr("height", totalHeight)
@@ -197,7 +189,25 @@ export function drawBarplot(props: DrawBarplotProps) {
         .attr("text-anchor", d => d.member.length < 18 ? "end" : "start")
         .attr("font-size", ".8em")
         .attr("fill", "transparent")
-        .text(d => d.member)
+    labelContainers.selectAll(".label-text").selectAll("tspan")
+        .data(d => {
+            let l = d.member
+            if (l.length > 40) {
+                let splitIndex = l.indexOf(" ")
+                while (splitIndex < 40) {
+                    const next = l.indexOf(" ", splitIndex + 1)
+                    if (next > -1 && next < 40) { splitIndex = next } else { break }
+                }
+                l = [l.slice(0, splitIndex), l.slice(splitIndex + 1)]
+                if (l[1].length > 40) l[1] = l[1].slice(0, 36) + "..."
+                return(l)
+            } else { return([l]) }
+        })
+        .enter()
+        .append("tspan")
+        .attr("x", (d, i) => d.length < 18 && i === 0 ? -5 : - margin.left)
+        .attr("dy", (d, i, data) => i>0?"10":data.length>1?"-5":"0")
+        .text(d => d)
     yaxisLongLabels.selectAll("g")
         .on("mouseover", function (d) {
             d3.select(this)

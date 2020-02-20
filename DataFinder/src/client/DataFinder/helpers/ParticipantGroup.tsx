@@ -59,7 +59,6 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
     let sf: any
     sf = new SelectedFilters()
     let dim: string;
-    debugger
     if (groupInfo.filters.Data) {
         const filters: ISelectedFilters = groupInfo.filters
         sf = new SelectedFilters(filters)
