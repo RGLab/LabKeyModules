@@ -172,34 +172,35 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     const FilterDropdownHelper = (dim, level, includeIndicators = false, includeAndOr = false) => {
         const levelArray = level.split(".")
-        
+
         return (
             <>
-            <FilterDropdownMemo
-                key={level}
-                dimension={dim}
-                level={level}
-                members={filterCategories[levelArray[0]]}
-                filterClick={filterClick}
-                selected={selectedFilters.getIn([dim, ...levelArray, "members"])}
-            >
-            
-                {includeAndOr && 
-                 <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])} 
-                                onClick={clickAndOr(dim, level)} />}
-                {includeIndicators && 
-                 selectedFilters.getIn([dim, ...levelArray]) && 
-                 selectedFilters.getIn([dim, ...levelArray, "members"]).map((member) => {
-                    return (
-                        <div style={{ width: "10em" }}>
-                            <Flag dim={dim} 
-                                  onDelete={filterClick(dim, { level: level, member: member })} >
-                                {member}
-                            </Flag>
+                <FilterDropdownMemo
+                    key={level}
+                    dimension={dim}
+                    level={level}
+                    members={filterCategories[levelArray[0]]}
+                    filterClick={filterClick}
+                    selected={selectedFilters.getIn([dim, ...levelArray, "members"])}
+                >
+
+                    {includeAndOr &&
+                        <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])}
+                            onClick={clickAndOr(dim, level)} />}
+                    {includeIndicators &&
+                        selectedFilters.getIn([dim, ...levelArray]) &&
+                        <div className="filter-indicator-list">
+                            {selectedFilters.getIn([dim, ...levelArray, "members"]).map((member) => {
+                                return (
+                                    <Flag dim={dim}
+                                        onDelete={filterClick(dim, { level: level, member: member })} >
+                                        {member}
+                                    </Flag>
+                                )
+                            })}
                         </div>
-                    )
-                })}
-            </FilterDropdownMemo>
+                    }
+                </FilterDropdownMemo>
             </>
         )
     }
@@ -530,25 +531,29 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             </>}>
                             <>
                                 <AndOrDropdown status={selectedFilters.getIn(["Data", "Assay", "Timepoint", "operator"])} onClick={clickAndOr("Data", "Assay.Timepoint")} />
-                                {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint", "members"]).map((member) => {
-                                    return (
-                                        <>
+
+                                <div className="filter-indicator-list">
+                                    {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint", "members"]).map((member) => {
+                                        return (
                                             < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: member })} >
                                                 {member.split(".").join(" at ") + " days"}
                                             </Flag>
-                                        </>
-                                    )
-                                })}
-                                {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType", "members"]).map((member) => {
-                                    const memberSplit = member.split(".")
-                                    return (
-                                        <>
+                                        )
+                                    })}
+
+                                </div>
+
+                                <div className="filter-indicator-list">
+                                    {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType", "members"]).map((member) => {
+                                        const memberSplit = member.split(".")
+                                        return (
                                             < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member })} >
                                                 {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
                                             </Flag>
-                                        </>
-                                    )
-                                })}
+                                        )
+                                    })}
+
+                                </div>
                             </>
                         </ContentDropdown>
                         {FilterDropdownHelper("Data", "Timepoint", true, true)}

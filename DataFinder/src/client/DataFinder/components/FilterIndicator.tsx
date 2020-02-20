@@ -162,11 +162,11 @@ interface FlagProps {
 export const Flag: React.FC<FlagProps> = ({ dim, onDelete, children }) => {
     return (
         <div className="filter-indicator">
-            <div className={"filter-indicator-text " + dim} style={{ width: onDelete ? "80%" : "100%" }}>
+            <div className={"filter-indicator-text " + dim} style={onDelete && {maxWidth: "10em"}}>
                 {children}
             </div>
             {onDelete &&
-                <button className="filterdeletor" style={{ width: "20%" }} onClick={onDelete}>
+                <button className="filterdeletor" onClick={onDelete}>
                     <span className="glyphicon glyphicon-remove">X</span>
                 </button>}
         </div>

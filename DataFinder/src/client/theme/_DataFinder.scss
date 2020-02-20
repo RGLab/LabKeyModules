@@ -33,23 +33,32 @@
   background-color: #fff;
 }
 
+.filterselector {
+  display: table;
+}
+
 .filter-indicator {
-  width: 100%;
+  width: auto;
   border-radius: 10px;
   margin: 2px;
   white-space: normal !important;
   word-wrap: break-word;
   text-align: left;
-  display: inline-block;
+  display: inline-table;
   margin-left: 15px;
 } 
 
+.filter-indicator-list {
+  display: table-row;
+}
+
 .filter-indicator-text {
-  width: 90%;
+  width: auto;
   float: left;
   padding-left: 5px;
   padding-top: 2px;
   padding-bottom: 2px;
+  padding-right:5px;
 }
 
 .filter-indicator-text.Study {
@@ -73,7 +82,7 @@
 }
 
 .filterdeletor {
-  width: 10%;
+  width: 20px;
   float: right;
   background: #e57282;
   color: white;
