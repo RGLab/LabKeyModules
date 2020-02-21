@@ -188,7 +188,6 @@ export function drawMaBarPlot(props: MaBarPlotProps) {
             return i * 18 + 12;
         })
         .attr('text-anchor', 'start')
-        .attr('alignment-baseline', 'middle');
 
 }
 
@@ -336,5 +335,4 @@ export function drawMaLinePlot(props: MaLinePlotProps) {
             return i * 18 + 12;
         })
         .attr('text-anchor', 'start')
-        .attr('alignment-baseline', 'hanging');
 }
