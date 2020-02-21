@@ -34,10 +34,10 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level
                 <button className="btn btn-default dropdown-toggle" 
                         type="button" 
                         data-toggle="dropdown"
-                        style={{width:'130px', display: 'inline-block'}}
+                        style={{width:'140px', display: 'inline-block'}}
                 >
                     <span>{levelArray[0]}</span>
-                    <span>&#9660;</span>
+                    <span style={{float:"right"}}><i className="fa fa-caret-down"></i></span>
                 </button>
                 <div className="dropdown-menu filter-dropdown">
                     <div id={level} className="form-group">
@@ -80,7 +80,7 @@ export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, con
         <>
             <div className={"dropdown"}>
                 <div id={"df-content-dropdown-" + id} className="btn-group filterselector" role="group" >
-                    <button className="btn btn-default dropdown-toggle" type="button" onClick={() => {
+                    <button className="btn btn-default dropdown-toggle"style={{width: "140px"}} type="button" onClick={() => {
                         const cl = document.getElementById("df-content-dropdown-" + id).classList
                         if (cl.contains("open")) {
                             cl.remove("open")
@@ -89,7 +89,7 @@ export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, con
                         }
                     }}>
                         <span>{label}</span>
-                        <span>&#9660;</span>
+                        <span style={{float:"right"}}><i className="fa fa-caret-down"></i></span>
                     </button>
                     <div className="dropdown-menu assay-timepoint-dropdown">
                         {content}
@@ -133,9 +133,9 @@ export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick })
                         style={{display: 'inline-block'}}
                 >
                     <span>{title}</span>
-                    <span>&#9660;</span>
+                    <span style={{paddingLeft: "5px"}}><i className="fa fa-caret-down"></i></span>
                 </button>
-                <ul className="dropdown-menu" aria-labelledby={"button-" + title}>
+                <ul className="dropdown-menu" aria-labelledby={"button-" + title} style={{left: "15px"}}>
                     {buttonData.map((button) => {
                         return (
                             <li className={button.disabled ? "disabled" : ""}>

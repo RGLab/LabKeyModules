@@ -96,7 +96,7 @@ export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonDa
             <div className="btn df-dropdown-button" role="group" >
                 <button className="btn btn-default dropdown-toggle" type="button" id={"button-" + title} data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                     <span>{title}</span>
-                    <span>&#9660;</span>
+                    <span style={{paddingLeft:"5px"}}><i className="fa fa-caret-down"></i></span>
                 </button>
                 <ul className="dropdown-menu filter-dropdown" aria-labelledby={"button-" + title}>
                     {buttonData.map((button) => {
