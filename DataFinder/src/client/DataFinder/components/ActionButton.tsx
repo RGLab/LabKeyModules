@@ -107,7 +107,7 @@ export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonDa
                     {buttonData.map((button) => {
                         return (
                             <li className={button.disabled ? "disabled" : ""}>
-                                <a key={button.label} onClick={button.action} href="#">
+                                <a id={button.label.replace(" ", "-") + "-link"} key={button.label} onClick={button.action} href="#">
                                     {button.label}
                                 </a>
                             </li>
