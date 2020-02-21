@@ -31,10 +31,9 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level
     return (
         <div className={"dropdown"}>
             <div className="btn-group filterselector" role="group">
-                <button className="btn btn-default dropdown-toggle" 
+                <button className="btn btn-default dropdown-toggle filter-dropdown-button" 
                         type="button" 
                         data-toggle="dropdown"
-                        style={{width:'140px', display: 'inline-block'}}
                 >
                     <span>{levelArray[0]}</span>
                     <span style={{float:"right"}}><i className="fa fa-caret-down"></i></span>
@@ -80,7 +79,7 @@ export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, con
         <>
             <div className={"dropdown"}>
                 <div id={"df-content-dropdown-" + id} className="btn-group filterselector" role="group" >
-                    <button className="btn btn-default dropdown-toggle"style={{width: "140px"}} type="button" onClick={() => {
+                    <button className="btn btn-default dropdown-toggle filter-dropdown-button" type="button" onClick={() => {
                         const cl = document.getElementById("df-content-dropdown-" + id).classList
                         if (cl.contains("open")) {
                             cl.remove("open")
