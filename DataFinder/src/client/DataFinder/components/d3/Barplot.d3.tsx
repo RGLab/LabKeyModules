@@ -54,7 +54,7 @@ export function drawBarplot(props: DrawBarplotProps) {
         .select("#barplot-container-" + name).select("svg")
         .attr("height", totalHeight)
         .attr("width", 220)
-        .attr("id", "barplot-container-" + name)
+        .attr("id", "svg-barplot-" + name)
 
     const xAxisSvg = d3.select("#xaxis-" + name).select("svg")
         .attr("width", props.width)

@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { Filter, FilterCategories, FilterCategory } from '../../typings/CubeData'
-import { Map, List, fromJS } from 'immutable'
-import { DropdownButtons } from './ActionButton';
+import { Filter, FilterCategory } from '../../typings/CubeData'
+import { List} from 'immutable'
 
 // Types 
 export interface FilterDropdownProps {
@@ -31,7 +30,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level
     return (
         <div className={"dropdown"}>
             <div className="btn-group filterselector" role="group">
-                <button className="btn btn-default dropdown-toggle" 
+                <button id={levelArray[0] + "-filter-dropdown"} className="btn btn-default dropdown-toggle" 
                         type="button" 
                         data-toggle="dropdown"
                         style={{width:'140px', display: 'inline-block'}}
@@ -80,7 +79,7 @@ export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, con
         <>
             <div className={"dropdown"}>
                 <div id={"df-content-dropdown-" + id} className="btn-group filterselector" role="group" >
-                    <button className="btn btn-default dropdown-toggle"style={{width: "140px"}} type="button" onClick={() => {
+                    <button id={"content-dropdown-button-" + id}className="btn btn-default dropdown-toggle"style={{width: "140px"}} type="button" onClick={() => {
                         const cl = document.getElementById("df-content-dropdown-" + id).classList
                         if (cl.contains("open")) {
                             cl.remove("open")

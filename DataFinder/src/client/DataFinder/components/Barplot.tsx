@@ -22,15 +22,15 @@ const createAxisData = (members: FilterCategory[]) => {
 export const Barplot: React.FC<BarplotProps> = (props) => {
     React.useEffect(() => {
         if (props.data.length > 0) {
-        drawBarplot({
-            data: props.data,
-            name: props.name,
-            width: props.width,
-            height: props.height,
-            labels: createAxisData(props.categories),
-            countMetric: props.countMetric,
-            barColor: props.barColor
-        });
+            drawBarplot({
+                data: props.data,
+                name: props.name,
+                width: props.width,
+                height: props.height,
+                labels: createAxisData(props.categories),
+                countMetric: props.countMetric,
+                barColor: props.barColor
+            });
         }
     });
 
@@ -41,7 +41,7 @@ export const Barplot: React.FC<BarplotProps> = (props) => {
             <div id={"barplot-container-" + props.name} className="datafinder-barplot">
                 <svg></svg>
             </div>
-            <div id={"xaxis-"+props.name}>
+            <div id={"xaxis-" + props.name}>
                 <svg></svg>
             </div>
         </div>

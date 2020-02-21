@@ -1,7 +1,6 @@
 import * as React from 'react'
-import * as LABKEY from '@labkey/api'
-import { Filter, SelectedFilters, CubeData, SelectedFilter } from "../../typings/CubeData";
-import { Map, List } from 'immutable'
+import { SelectedFilters, SelectedFilter } from "../../typings/CubeData";
+import { Map } from 'immutable'
 
 export interface FilterSummaryProps {
     filters: SelectedFilters
@@ -39,7 +38,7 @@ export const FilterSummary = (props: FilterSummaryProps) => {
 
 
     return (
-        <div className="row filterbar">
+        <div id="filters-banner" className="row filterbar">
             <div className="col-sm-4">
                 <FilterIndicatorList
                     filterClass={"Study"}

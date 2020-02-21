@@ -1,7 +1,6 @@
 import React from 'react'
 import { FilterSummary } from './FilterIndicator'
-import { ISelectedFilters, SelectedFilters, GroupInfo, TotalCounts } from '../../typings/CubeData';
-import { ActionButton } from './ActionButton';
+import { SelectedFilters, TotalCounts } from '../../typings/CubeData';
 
 interface BannerProps {
     filters: SelectedFilters,
@@ -22,7 +21,7 @@ export const Banner: React.FC<BannerProps> = ({ filters, groupName, counts, unsa
                         </div></h3>
 
 
-                    <div style={{ clear: "left" }}>
+                    <div id="current-participant-group-info-banner" style={{ clear: "left" }}>
                         {unsavedFilters && <>
                             <div style={{ color: "red", display: "inline-block" }}>Changes have not been saved</div>
                             <div style={{ display: "inline-block" }}>
