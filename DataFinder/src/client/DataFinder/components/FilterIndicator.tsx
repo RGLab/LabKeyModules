@@ -55,7 +55,7 @@ export const FilterSummary = (props: FilterSummaryProps) => {
             <div className="col-sm-4">
                 <AssayFilterIndicatorList
                     filters={props.filters.Data}
-                    title={"Available Data"} />
+                    title={"Assay Data"} />
             </div>
         </div>
     )
