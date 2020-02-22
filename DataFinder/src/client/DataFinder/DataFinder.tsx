@@ -1,9 +1,10 @@
 import "./DataFinder.scss";
-import React, { memo } from 'react';
+import React from 'react';
 // import {olap} from '../olap/olap'
 import { CubeData, Filter, SelectedFilters, TotalCounts, GroupInfo, BannerInfo } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup';
+import * as TabContent from './components/TabContent';
 import { toggleFilter, setAndOr } from './helpers/SelectedFilters';
 import { StudyParticipantCount } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
@@ -13,7 +14,7 @@ import { FilterDropdown, ContentDropdown, AndOrDropdown } from './components/Fil
 import { Flag } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
-import Tabs from "./components/Tabs";
+import Tabs, { TabProps, DataFinderTabs } from "./components/Tabs";
 import * as d3 from 'd3'
 import { Banner } from "./components/Banner";
 import { AssayTimepointViewerContainer } from "./components/AssayTimepointViewer";
@@ -140,6 +141,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     }, [])
 
+    // When filters are applied
+    React.useEffect(() => {
+        CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters)
+            .then((spcResponse) => {
+                const { countsList, pids } = CubeHelpers.createStudyParticipantCounts(spcResponse)
+                ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
+                    if (participantDataWebpart) participantDataWebpart.render()
+                })
+                if (studyDict) {
+                    ParticipantGroupHelpers.updateContainerFilter(countsList, studyDict)
+                }
+            })
+    }, [appliedFilters])
+
 
     // Helper functions ---------------------------------------------
 
@@ -151,16 +166,16 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     // ----- Memos -----
-    const BannerMemo = memo(Banner)
-    const FilterDropdownMemo = memo(FilterDropdown)
-    const StudyCardMemo = memo(StudyCard)
+    const BannerMemo = React.memo(Banner)
+    const FilterDropdownMemo = React.memo(FilterDropdown)
+    const DataFinderTabsMemo = React.memo(DataFinderTabs, (prevProps, nextProps) => true)
 
     // ----- Components -----
     const BarplotHelper = (dim, level, presentationDim = null) => {
         const pDim = presentationDim || dim
         return (
             <Barplot
-                data={cubeData.getIn([dim, level]).toJS()}
+                data={cubeData.getIn([dim, level])}
                 name={level}
                 height={200}
                 width={250}
@@ -232,12 +247,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 const { countsList, pids } = CubeHelpers.createStudyParticipantCounts(spcResponse)
                 setStudyParticipantCounts(countsList)
                 setFilteredPids(pids)
-                ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
-                    if (participantDataWebpart) participantDataWebpart.render()
-                })
-                if (studyDict) {
-                    ParticipantGroupHelpers.updateContainerFilter(countsList, studyDict)
-                }
             })
         Promise.all([
             CubeHelpers.getCubeData(mdx, filters, "[Subject].[Subject]"),
@@ -343,127 +352,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const toggleSampleType = () => {
         setShowSampleType(!showSampleType)
     }
-
-    // Tab Content ------------------------------------------------
-    // TODO:  Abstract some of this into additional components
-    const tabs = {
-        //  ------ DATA -------
-        data: {
-            content: <>
-                <div className="row">
-                    <div>
-
-                        {filterCategories &&
-                            <>
-                                <div className="row">
-                                    <div className="col-sm-8">
-                                        <h4 style={{ textAlign: "center" }}>Assays Available by Study Day</h4>
-                                        <AssayTimepointViewerContainer
-                                            name={"heatmap1"}
-                                            data={cubeData.Data.toJS()}
-                                            showSampleType={showSampleType}
-                                            selected={selectedFilters.Data}
-                                            timepointCategories={filterCategories.Timepoint}
-                                            sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
-                                    </div>
-                                    <div className="col-sm-4">
-                                        <Barplot
-                                            data={cubeData.getIn(["Data", "SampleType", "SampleType"]).toJS()}
-                                            name={"SampleType"}
-                                            height={200}
-                                            width={250}
-                                            categories={filterCategories["SampleType"]}
-                                            countMetric={"participantCount"}
-                                            barColor={"#74C476"} />
-                                    </div>
-                                </div>
-                            </>}
-
-
-                    </div>
-                </div>
-                <hr />
-                <div>
-                    <h2>Data From Selected Participants</h2>
-                </div>
-                <div id="data-views" />
-            </>,
-            id: "data",
-            tag: "find-data",
-            text: "Available Assay Data",
-            tabClass: "pull-right"
-        },
-        // -------- PARTICIPANT -------
-        participant: {
-            content: <>
-                <div className="row">
-                    {filterCategories && <>
-                        <div className="col-sm-4">
-                            {BarplotHelper("Subject", "Gender")}
-                        </div>
-                        <div className="col-sm-4">
-                            {BarplotHelper("Subject", "Age")}
-                        </div>
-                        <div className="col-sm-4">
-                            {BarplotHelper("Subject", "Race")}
-                        </div>
-                    </>}
-
-
-                </div>
-                <hr></hr>
-                <h2 style={{ padding: "15px" }}>Selected Participants</h2>
-                <div className="row">
-                    <div id="participant-data" className="df-embedded-webpart"></div>
-                </div>
-
-            </>,
-            id: "participant",
-            tag: "find-participant",
-            text: "Participant Characteristics",
-            tabClass: "pull-right"
-        },
-        // ------- STUDY -------
-        study: {
-            content: <>
-                <div className="row">
-                    {filterCategories && <>
-                        <div className="col-sm-3">
-                            {BarplotHelper("Study", "Condition", "Study")}
-                        </div>
-                        <div className="col-sm-3">
-                            {BarplotHelper("Study", "ExposureProcess", "Study")}
-                        </div>
-                        <div className="col-sm-3">
-                            {BarplotHelper("Study", "ResearchFocus", "Study")}
-                        </div>
-                        <div className="col-sm-3">
-                            {BarplotHelper("Study", "ExposureMaterial", "Study")}
-                        </div>
-                    </>}
-
-                </div>
-                <hr></hr>
-                <div>
-                    <h2>Selected Studies</h2>
-                </div>
-                {studyDict && studyParticipantCounts.map((sdy) => {
-                    if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
-                        return (
-                            <StudyCardMemo key={sdy.studyName}
-                                study={studyDict[sdy.studyName]}
-                                participantCount={sdy.participantCount} />
-                        )
-                    }
-                })}
-            </>,
-            id: "study",
-            tag: "find-study",
-            text: "Study Design",
-            tabClass: "pull-right",
-        },
-    }
-
     // -------------------------------- RETURN --------------------------------
     return (
         <div>
@@ -571,7 +459,13 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             </div>
 
             <div className="datafinder-wrapper">
-                <Tabs tabs={tabs} defaultActive="study" tabFunction={renderWepart} />
+                <DataFinderTabs
+                    cubeData={cubeData}
+                    showSampleType={showSampleType}
+                    filterCategories={filterCategories}
+                    studyParticipantCounts={studyParticipantCounts}
+                    studyDict={studyDict}
+                    renderWebpart={renderWepart} />
             </div>
 
             {/* Tooltip */}
