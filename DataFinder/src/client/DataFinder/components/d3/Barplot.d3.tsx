@@ -34,7 +34,7 @@ const createBarplot = (id: string, data: CubeDatum[], config: D3BarplotConfig) =
         .select("#barplot-container-" + id).select("svg")
         .attr("height", config.totalHeight)
         .attr("width", config.width)
-        .attr("id", "barplot-container-" + id)
+        .attr("id", "svg-barplot-" + id)
 
     const xAxisSvg = d3.select("#xaxis-" + id).select("svg")
         .attr("width", config.width)
