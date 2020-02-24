@@ -1,5 +1,6 @@
 import {CubeDatum, HeatmapDatum} from './CubeData'
 import { Record } from 'immutable';
+import { AxisDatum } from '../DataFinder/components/AssayTimepointViewer';
 
 // export interface Filter {
 //     level: string;
@@ -12,7 +13,7 @@ export interface IStudyInfo {
     assays?: string[];
     brief_title?: string;
     research_focus?: string;
-    heatmapData?: CubeDatum[];
+    heatmapData?: HeatmapDatum<any>[];
     pi_names?: string[];
     program_title?: string;
     restricted?: boolean;
@@ -39,7 +40,7 @@ export class StudyInfo extends Record({
     assays: string[];
     brief_title: string;
     research_focus: string;
-    heatmapData: CubeDatum[];
+    heatmapData: HeatmapDatum<any>[];
     pi_names: string[];
     program_title: string;
     restricted: boolean;

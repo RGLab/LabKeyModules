@@ -273,11 +273,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     const clearFilters = () => {
-        d3.select("#barplot-Age")
-        // debugger;
-        setSelectedFilters(new SelectedFilters());
+        const newFilters = new SelectedFilters()
+        setSelectedFilters(newFilters);
         setLoadedGroup(null)
-        applyFilters(new SelectedFilters(), false, "Unsaved Participant Group")
+        applyFilters(newFilters, false, "Unsaved Participant Group")
     }
 
     // ----- participant group-related callbacks -----

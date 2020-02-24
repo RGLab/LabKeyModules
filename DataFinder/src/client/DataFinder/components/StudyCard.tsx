@@ -106,28 +106,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
     const heatmapBreaks = [
         1,5,10,20,50,100
     ]
-    const assays = [];
-    study.heatmapData.map((e, i) => {
-        if (!e) return
-        const assay = e.member.split(/\./)[0]
-        if ( assays.indexOf(assay) === -1 && e.participantCount > 0) {
-            assays.push(assay);
-        }
-    });
-    const heatmapData = study.heatmapData.map((e, i) => {
-        if (!e) return
-        const assay = e.member.split(/\./)[0]
-        const timepoint = e.member.split(/\./)[1]
-        return (
-            {
-                x: timepoint,
-                y: assay,
-                participantCount: e.participantCount,
-                studyCount: e.studyCount,
-                data: undefined
-            }
-        )
-    })
+
 
     return (
         <div className="study-card">
@@ -153,11 +132,11 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             <TinyHeatmap
                 name={study.study_accession} 
                 width={260} 
-                height={35 + 10 * assays.length} 
-                data={heatmapData} 
+                height={35 + 10 * study.assays.length} 
+                data={study.heatmapData} 
                 colors={heatmapColors}
                 colorBreaks={heatmapBreaks}
-                assays={assays}/>           
+                assays={study.assays}/>           
         </div>
     )
 }

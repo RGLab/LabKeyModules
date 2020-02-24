@@ -187,7 +187,6 @@ export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse
 
     const studyDict: StudyCardTypes.StudyDict = {};
     studyInfoCs.rows.map((e, i) => {
-        const studyInfo = {}
         const studyName = e.study_accession;
         // studyDict[studyName] = studyInfo;
         studyDict[studyName] = { ...e }
@@ -197,18 +196,29 @@ export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse
         const totalParticipantCount = studyCountCs.cells[i][0].value;
         if (studyDict.hasOwnProperty(studyName)) {
             studyDict[studyName] = { totalParticipantCount, ...studyDict[studyName] }
+            const assays = []
             const heatmapData = studyCountCs.axes[0].positions.map((f, j) => {
                 const positionInfo = dataAssayNameToInfo(f[0].uniqueName, true)
                 const positionCount = studyCountCs.cells[i][j].value;
-                const heatmapDatum: CubeDatum = {
-                    level: "Assay.Timepoint",
-                    member: positionInfo.assay + "." + positionInfo.timepoint,
-                    participantCount: positionCount
-                };
-                return heatmapDatum
+
+                if (assays.indexOf(positionInfo.assay) == -1 && positionCount > 0) {
+                    assays.push(positionInfo.assay)
+                }
+
+                return (
+                    {
+                        x: positionInfo.timepoint,
+                        y: positionInfo.assay,
+                        participantCount: positionCount,
+                        studyCount: 1,
+                        data: undefined
+                    }
+                )
             })
+            
             heatmapData.shift()
             studyDict[studyName].heatmapData = heatmapData;
+            studyDict[studyName].assays = assays;
         }
     })
     // debugger
