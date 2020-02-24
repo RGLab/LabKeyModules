@@ -9,6 +9,17 @@ import { AxisDatum } from '../DataFinder/components/AssayTimepointViewer';
 //         members: string[];
 //     }
 // }
+
+export interface TinyHeatmapInfo {
+    data?: HeatmapDatum<any>[];
+    assays?: string[];
+    height?: number;
+    width?: number;
+    yaxisScale?: d3.ScaleBand<string>;
+    xaxisScale?: d3.ScaleBand<string>;
+    colorScale?: d3.ScaleThreshold<number, string>;
+}
+
 export interface IStudyInfo {
     assays?: string[];
     brief_title?: string;
@@ -22,6 +33,7 @@ export interface IStudyInfo {
     study_accession?: string;
     totalParticipantCount?: number;
     container_id: string;
+    heatmapInfo: TinyHeatmapInfo;
 }
 
 export class StudyInfo extends Record({
@@ -35,7 +47,8 @@ export class StudyInfo extends Record({
     sample_type: [],
     shared_study: "",
     study_accession: "",
-    totalParticipantCount: 0
+    totalParticipantCount: 0,
+    heatmapInfo: {}
 }) {
     assays: string[];
     brief_title: string;
@@ -48,6 +61,7 @@ export class StudyInfo extends Record({
     shared_study: string;
     study_accession: string;
     totalParticipantCount: number;
+    heatmapInfo: TinyHeatmapInfo
 
     constructor(params?: IStudyInfo) {
         params ? super(params) : super()

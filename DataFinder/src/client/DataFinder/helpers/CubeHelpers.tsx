@@ -13,7 +13,7 @@ import { createCubeFilters } from './SelectedFilters'
 import * as StudyCardTypes from '../../typings/StudyCard'
 import { StudyParticipantCount } from '../../typings/StudyCard'
 import * as Immutable from 'immutable'
-
+import * as d3 from 'd3'
 
 const loadedStudiesArray = ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[SDY1291]", "[Study].[SDY903]", "[Study].[SDY28]", "[Study].[SDY514]", "[Study].[SDY387]", "[Study].[SDY34]", "[Study].[SDY1370]", "[Study].[SDY1373]", "[Study].[SDY789]", "[Study].[SDY1260]", "[Study].[SDY1264]", "[Study].[SDY1276]", "[Study].[SDY1328]", "[Study].[SDY296]", "[Study].[SDY301]", "[Study].[SDY63]", "[Study].[SDY74]", "[Study].[SDY312]", "[Study].[SDY314]", "[Study].[SDY315]", "[Study].[SDY478]", "[Study].[SDY113]", "[Study].[SDY305]", "[Study].[SDY472]", "[Study].[SDY395]", "[Study].[SDY406]", "[Study].[SDY460]", "[Study].[SDY773]", "[Study].[SDY421]", "[Study].[SDY461]", "[Study].[SDY675]", "[Study].[SDY400]", "[Study].[SDY404]", "[Study].[SDY614]", "[Study].[SDY112]", "[Study].[SDY888]", "[Study].[SDY1109]", "[Study].[SDY67]", "[Study].[SDY61]", "[Study].[SDY508]", "[Study].[SDY517]", "[Study].[SDY520]", "[Study].[SDY640]", "[Study].[SDY144]", "[Study].[SDY162]", "[Study].[SDY167]", "[Study].[SDY18]", "[Study].[SDY180]", "[Study].[SDY207]", "[Study].[SDY820]", "[Study].[SDY887]", "[Study].[SDY269]", "[Study].[SDY1289]", "[Study].[SDY1293]", "[Study].[SDY1324]", "[Study].[SDY984]", "[Study].[SDY522]", "[Study].[SDY753]", "[Study].[SDY56]", "[Study].[SDY278]", "[Study].[SDY1294]", "[Study].[SDY1325]", "[Study].[SDY1364]", "[Study].[SDY1368]", "[Study].[SDY80]", "[Study].[SDY270]", "[Study].[SDY515]", "[Study].[SDY422]", "[Study].[SDY506]", "[Study].[SDY523]", "[Study].[SDY756]", "[Study].[SDY299]", "[Study].[SDY300]", "[Study].[SDY364]", "[Study].[SDY368]", "[Study].[SDY369]", "[Study].[SDY372]", "[Study].[SDY376]", "[Study].[SDY645]", "[Study].[SDY416]", "[Study].[SDY597]", "[Study].[SDY667]", "[Study].[SDY87]", "[Study].[SDY89]", "[Study].[SDY690]", "[Study].[SDY212]", "[Study].[SDY215]", "[Study].[SDY519]", "[Study].[SDY224]", "[Study].[SDY232]", "[Study].[SDY241]", "[Study].[SDY1041]", "[Study].[SDY1097]"]
 
@@ -183,7 +183,6 @@ export const createParticipantIds = (participantIdsCs: Cube.CellSet) => {
 }
 
 export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse, Cube.CellSet]) => {
-    // combine results and return them
 
     const studyDict: StudyCardTypes.StudyDict = {};
     studyInfoCs.rows.map((e, i) => {
@@ -191,7 +190,41 @@ export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse
         // studyDict[studyName] = studyInfo;
         studyDict[studyName] = { ...e }
     })
-    studyCountCs.axes[1].positions.map((e, i) => {
+
+    // Combine with info for tiny heatmap
+    // Things that are the same for all heatmaps
+    const heatmapWidth = 260
+    const heatmapColors = [
+        "#FFFFFF",
+        "#EDF8E9",
+        "#C7E9C0",
+        "#A1D99B",
+        "#74C476",
+        "#41AB5D",
+        "#238B45",
+        "#005A32"
+    ];
+    const heatmapBreaks = [
+        1, 5, 10, 20, 50, 100
+    ]
+    const timepoints = [
+        "<0", "0", "1", "2", "3", "4", "5", "6", "7",
+        "8", "9", "10", "11", "12", "13", "14", "15-27",
+        "28", "29-55", "56", ">56"];
+
+    var colorScale = d3
+        .scaleThreshold<number, string>()
+        .domain(heatmapBreaks)
+        .range(heatmapColors);
+
+    const xaxisScale = d3
+        .scaleBand()
+        .domain(timepoints)
+        .range([0, heatmapWidth - 55]);
+
+
+    // Things that are different for all heatmaps
+    studyCountCs.axes[1].positions.forEach((e, i) => {
         const studyName = e[0].name;
         const totalParticipantCount = studyCountCs.cells[i][0].value;
         if (studyDict.hasOwnProperty(studyName)) {
@@ -201,7 +234,7 @@ export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse
                 const positionInfo = dataAssayNameToInfo(f[0].uniqueName, true)
                 const positionCount = studyCountCs.cells[i][j].value;
 
-                if (assays.indexOf(positionInfo.assay) == -1 && positionCount > 0) {
+                if (assays.indexOf(positionInfo.assay) == -1 && positionCount > 0 && positionInfo.assay != undefined) {
                     assays.push(positionInfo.assay)
                 }
 
@@ -215,10 +248,22 @@ export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse
                     }
                 )
             })
-            
             heatmapData.shift()
-            studyDict[studyName].heatmapData = heatmapData;
-            studyDict[studyName].assays = assays;
+            const heatmapHeight = 35 + 10 * assays.length
+            const yaxisScale = d3
+                .scaleBand()
+                .domain(assays)
+                .range([0, heatmapHeight-35]);
+
+            studyDict[studyName].heatmapInfo = {
+                data: heatmapData,
+                assays: assays.sort(),
+                height: heatmapHeight,
+                width: heatmapWidth,
+                yaxisScale: yaxisScale,
+                xaxisScale: xaxisScale,
+                colorScale: colorScale
+            } 
         }
     })
     // debugger
@@ -266,7 +311,7 @@ export const createStudyParticipantCounts = (studyParticipantCountCs: Cube.CellS
     })
     const countsList = Immutable.List<StudyParticipantCount>(studyParticipantCounts);
 
-    return ({countsList: countsList, pids: pids})
+    return ({ countsList: countsList, pids: pids })
 }
 
 const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) => {

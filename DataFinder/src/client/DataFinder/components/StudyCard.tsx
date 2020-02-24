@@ -93,19 +93,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             value: study.assays[0]
         }
     ]
-    const heatmapColors = [
-        "#FFFFFF",
-        "#EDF8E9",
-        "#C7E9C0",
-        "#A1D99B",
-        "#74C476",
-        "#41AB5D",
-        "#238B45",
-        "#005A32"
-    ];
-    const heatmapBreaks = [
-        1,5,10,20,50,100
-    ]
+
 
 
     return (
@@ -131,12 +119,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             <hr></hr>
             <TinyHeatmap
                 name={study.study_accession} 
-                width={260} 
-                height={35 + 10 * study.assays.length} 
-                data={study.heatmapData} 
-                colors={heatmapColors}
-                colorBreaks={heatmapBreaks}
-                assays={study.assays}/>           
+                heatmapInfo={study.heatmapInfo}/>           
         </div>
     )
 }
