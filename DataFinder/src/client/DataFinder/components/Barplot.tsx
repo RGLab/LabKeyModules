@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { drawBarplot } from './d3/Barplot.d3'
+import { D3Barplot } from './d3/Barplot.d3'
 import { CubeDatum, FilterCategory } from '../../typings/CubeData'
+import { List } from 'immutable'
 
 export interface BarplotProps {
-    data: CubeDatum[];
+    data: List<CubeDatum>;
     name: string;
     width: number;
     height: number;
@@ -19,21 +20,94 @@ const createAxisData = (members: FilterCategory[]) => {
 }
 
 // render the d3 barplot element
-export const Barplot: React.FC<BarplotProps> = (props) => {
-    React.useEffect(() => {
-        if (props.data.length > 0) {
-            drawBarplot({
-                data: props.data,
-                name: props.name,
-                width: props.width,
-                height: props.height,
-                labels: createAxisData(props.categories),
-                countMetric: props.countMetric,
-                barColor: props.barColor
-            });
-        }
-    });
 
+
+
+export const Barplot: React.FC<BarplotProps> = (props) => {
+    if (props.data.size == 0) return (<></>)
+    // get labels
+    const labels = createAxisData(props.categories)
+
+    // get total height
+    const totalHeight = Math.max(195, 15 * labels.length + 20)
+
+    // clean data
+    const unusedDataIndices = [];
+    let data = props.data
+    props.data.toJS().forEach((d, i) => {
+        if (labels.indexOf(d.member) == -1) {
+            unusedDataIndices.push(i)
+        }
+    })
+    unusedDataIndices.reverse().forEach((d) => {
+        data = data.delete(d)
+    })
+    const config = {
+        width: 220,
+        totalHeight: totalHeight,
+        height: props.height,
+        labels: createAxisData(props.categories),
+        countMetric: props.countMetric,
+        barColor: props.barColor
+    }
+
+    React.useEffect(() => {
+        // get labels
+        const labels = createAxisData(props.categories)
+
+        // get total height
+        const totalHeight = Math.max(195, 15 * labels.length + 20)
+
+        // clean data
+        const unusedDataIndices = [];
+        let data = props.data
+        props.data.toJS().forEach((d, i) => {
+            if (labels.indexOf(d.member) == -1) {
+                unusedDataIndices.push(i)
+            }
+        })
+        unusedDataIndices.reverse().forEach((d) => {
+            data = data.delete(d)
+        })
+        const config = {
+            width: 220,
+            totalHeight: totalHeight,
+            height: props.height,
+            labels: createAxisData(props.categories),
+            countMetric: props.countMetric,
+            barColor: props.barColor
+        }
+        D3Barplot.create(props.name, data.toJS(), config)
+    }, [])
+
+    React.useEffect(() => {
+        // get labels
+        const labels = createAxisData(props.categories)
+
+        // get total height
+        const totalHeight = Math.max(195, 15 * labels.length + 20)
+
+        // clean data
+        const unusedDataIndices = [];
+        let data = props.data
+        props.data.toJS().forEach((d, i) => {
+            if (labels.indexOf(d.member) == -1) {
+                unusedDataIndices.push(i)
+            }
+        })
+        unusedDataIndices.reverse().forEach((d) => {
+            data = data.delete(d)
+        })
+        const config = {
+            width: 220,
+            totalHeight: totalHeight,
+            height: props.height,
+            labels: createAxisData(props.categories),
+            countMetric: props.countMetric,
+            barColor: props.barColor
+        }
+        D3Barplot.update(props.name, data.toJS(), config)
+    }, [props.data])
 
     return (
         <div className={props.name} >
@@ -46,4 +120,5 @@ export const Barplot: React.FC<BarplotProps> = (props) => {
             </div>
         </div>
     );
+
 }
