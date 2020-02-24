@@ -8,7 +8,11 @@ interface ActionButtonProps {
 
 export const ActionButton: React.FC<ActionButtonProps> = (props) => {
     return (
-        <button onClick={props.onClick} disabled={false}>
+        <button 
+            id={'action-button-' + props.text} 
+            onClick={props.onClick} 
+            disabled={false}
+        >
             {props.text}
         </button>
 
@@ -19,6 +23,7 @@ interface LoadDropdownProps {
     groups: GroupInfo[],
     loadParticipantGroup: (groupInfo: GroupInfo) => void
 }
+
 export const LoadDropdown: React.FC<LoadDropdownProps> = ({ groups, loadParticipantGroup }) => {
     const buttonData = groups.map((group) => {
         return ({
@@ -94,7 +99,7 @@ export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonDa
     return (
         <div className="dropdown" style={{  display: "inline-block", margin: "5px" }}>
             <div className="btn df-dropdown-button" role="group" >
-                <button className="btn btn-default dropdown-toggle" type="button" id={"button-" + title} data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                <button className="btn btn-default dropdown-toggle" type="button" id={title + "-participant-group-btn"} data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                     <span>{title}</span>
                     <span style={{paddingLeft:"5px"}}><i className="fa fa-caret-down"></i></span>
                 </button>
@@ -102,7 +107,7 @@ export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonDa
                     {buttonData.map((button) => {
                         return (
                             <li className={button.disabled ? "disabled" : ""}>
-                                <a key={button.label} onClick={button.action} href="#">
+                                <a id={button.label.replace(" ", "-") + "-link"} key={button.label} onClick={button.action} href="#">
                                     {button.label}
                                 </a>
                             </li>

@@ -369,23 +369,22 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 counts={totalAppliedCounts}
                 unsavedFilters={bannerInfo.unsavedFilters}
                 links={
-                    <>
-                        <a className="labkey-text-link" href="/study/Studies/manageParticipantCategories.view?">Manage Groups</a>
-                        <a className="labkey-text-link" href="#" onClick={() => sendParticipantGroup()}>Send</a>
-                        <a className="labkey-text-link" href="/immport/Studies/exportStudyDatasets.view?">Export Study Datasets</a>
-                        <a className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
-
-                    </>
+                    <div id="participant-group-links">
+                        <a id="manage-participant-group-link" className="labkey-text-link" href="/study/Studies/manageParticipantCategories.view?">Manage Groups</a>
+                        <a id="send-participant-group-link" className="labkey-text-link" href="#" onClick={() => sendParticipantGroup()}>Send</a>
+                        <a id="export-datasets-link" className="labkey-text-link" href="/immport/Studies/exportStudyDatasets.view?">Export Study Datasets</a>
+                        <a id="open-rstudio-link" className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
+                    </div>
                 }
                 dropdowns={
-                    <>
+                    <div id="participant-group-buttons">
                         <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
                         <ClearDropdown clearAll={clearFilters} reset={() => { loadedGroup ? loadParticipantGroup(loadedGroup) : clearFilters() }} />
                         <SaveDropdown
                             saveAs={() => saveButtonClick()}
                             save={() => updateParticipantGroup(loadedGroup)}
                             disableSave={!loadedGroup} />
-                    </>
+                    </div>
                 } />
 
             <div className="row" style={{ position: "relative" }}>
@@ -403,20 +402,24 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         {FilterDropdownHelper("Subject", "Race", true)}
                     </div>
                     <div className="col-sm-3">
-                        <ContentDropdown id={"heatmap-selector"} label={"Assay*Timepoint"} content={filterCategories &&
-                            <>
-                                <SampleTypeCheckbox
-                                    toggleShowSampleType={toggleSampleType}
-                                    showSampleType={showSampleType} />
-                                <HeatmapSelector
-                                    name={"heatmap2"}
-                                    data={cubeData.Data.toJS()}
-                                    filterClick={filterClick}
-                                    showSampleType={showSampleType}
-                                    selected={selectedFilters.Data}
-                                    timepointCategories={filterCategories.Timepoint}
-                                    sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
-                            </>}>
+                        <ContentDropdown 
+                            id={"heatmap-selector"} 
+                            label={"Assay*Timepoint"} 
+                            content={filterCategories &&
+                                <>
+                                    <SampleTypeCheckbox
+                                        toggleShowSampleType={toggleSampleType}
+                                        showSampleType={showSampleType} />
+                                    <HeatmapSelector
+                                        name={"heatmap2"}
+                                        data={cubeData.Data.toJS()}
+                                        filterClick={filterClick}
+                                        showSampleType={showSampleType}
+                                        selected={selectedFilters.Data}
+                                        timepointCategories={filterCategories.Timepoint}
+                                        sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
+                                </>
+                            }>
                             <>
                                 <AndOrDropdown status={selectedFilters.getIn(["Data", "Assay", "Timepoint", "operator"])} onClick={clickAndOr("Data", "Assay.Timepoint")} />
 
