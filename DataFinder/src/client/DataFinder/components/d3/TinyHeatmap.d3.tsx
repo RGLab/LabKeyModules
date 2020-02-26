@@ -90,9 +90,6 @@ export function drawTinyHeatmap(props: TinyHeatmapProps) {
         .style("text-anchor", "end")
         .attr("font-size", ".9em");
 
-
-
-
     // add data
     const boxes = heatmap.selectAll("rect").data(data);
     boxes

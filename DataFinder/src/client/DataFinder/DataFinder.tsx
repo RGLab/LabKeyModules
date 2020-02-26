@@ -402,9 +402,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         {FilterDropdownHelper("Subject", "Race", true)}
                     </div>
                     <div className="col-sm-3">
-                        <ContentDropdown 
-                            id={"heatmap-selector"} 
-                            label={"Assay*Timepoint"} 
+                        <ContentDropdown
+                            id={"heatmap-selector"}
+                            label={"Assay*Timepoint"}
                             content={filterCategories &&
                                 <>
                                     <SampleTypeCheckbox
