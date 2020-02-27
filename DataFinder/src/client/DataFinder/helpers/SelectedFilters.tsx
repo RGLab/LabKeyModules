@@ -103,10 +103,9 @@ export const createCubeFilters = (filters: SelectedFilters) => {
                     )
                 }
             }
-        }).valueSeq().toJS()
+        }).valueSeq().toJS().flat(2)
     }
-    // debugger
-    return [...subjectFilters, ...studyFilters, ...dataFilters.flat(2)]
+    return [...subjectFilters, ...studyFilters, ...dataFilters]
 }
 
 
