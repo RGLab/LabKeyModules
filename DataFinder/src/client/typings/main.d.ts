@@ -8,6 +8,7 @@ interface LabKey {
     user: any;
     vis: any;
     query: any;
+    Query: any;
     Ajax: any;
     ActionURL: any;
     Utils: any;

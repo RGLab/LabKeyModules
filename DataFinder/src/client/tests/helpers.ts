@@ -1,7 +1,7 @@
 import * as Cube from '../typings/Cube'
+import { ISelectRowsOptions } from '@labkey/api/dist/labkey/query/Rows';
 
-
-
+// Cube
 const onRowsRequests = {
     getStudyCounts: { level: "[Study].[Name]", members: "members" },
     getStudyParticipantCounts: {
@@ -49,5 +49,19 @@ export const mdx: Cube.CubeMdx = {
         if (JSON.stringify(config.onRows) == JSON.stringify(onRowsRequests.getTotalCounts_Subject)) cs = "getTotalCounts_Subject cellSet"
         
         config.success(cs, mdx, config)
+    }
+}
+
+// LABKEY
+
+export const LABKEY = {
+    Query: {
+        selectRows: (options: ISelectRowsOptions) => {
+            console.log("Fake LABKEY")
+            let response;
+            if (options.queryName == "dataFinder_dropdownCategories") response = "dataFinder_dropdownCategories"
+            if (options.queryName == "dataFinder_studyCard") response = "dataFinder_studyCard"
+            options.success(response)
+        }
     }
 }

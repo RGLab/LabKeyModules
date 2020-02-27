@@ -20,7 +20,7 @@ const loadedStudiesArray = ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[
 // ----- Promises ----- 
 // Select Rows --------
 // Get filter categories
-export const getFilterCategories = () => {
+export const getFilterCategories = (LABKEY) => {
     console.log("getFilterCategories()")
     return new Promise<SelectRowsResponse>((resolve, reject) => {
         LABKEY.Query.selectRows({
@@ -35,7 +35,7 @@ export const getFilterCategories = () => {
     })
 }
 
-export const getStudyInfo = () => {
+export const getStudyInfo = (LABKEY) => {
     console.log("getStudyInfo()")
     return new Promise<SelectRowsResponse>((resolve, reject) => {
         LABKEY.Query.selectRows({

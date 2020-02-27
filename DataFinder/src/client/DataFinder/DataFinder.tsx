@@ -91,11 +91,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // Setup (only run on first render) ----- 
     React.useEffect(() => {
         // load data
-        CubeHelpers.getFilterCategories().then((categoriesResponse) => {
+        CubeHelpers.getFilterCategories(LABKEY).then((categoriesResponse) => {
             const categories = CubeHelpers.createFilterCategories(categoriesResponse)
             setFilterCategories(categories)
         })
-        Promise.all([CubeHelpers.getStudyInfo(), CubeHelpers.getStudyCounts(mdx, new SelectedFilters())]).then((res) => {
+        Promise.all([CubeHelpers.getStudyInfo(LABKEY), CubeHelpers.getStudyCounts(mdx, new SelectedFilters())]).then((res) => {
             const sd = CubeHelpers.createStudyDict(res)
             setStudyDict(sd)
         })

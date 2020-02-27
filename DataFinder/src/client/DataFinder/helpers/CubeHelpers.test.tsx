@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as CubeHelpers from './CubeHelpers'
-import { mdx } from '../../tests/helpers'
+import { mdx, LABKEY } from '../../tests/helpers'
 import { SelectedFilters } from '../../typings/CubeData'
 
 describe('Create Data', () => {
@@ -33,6 +33,16 @@ describe('Create Data', () => {
     test("getTotalCounts - Subject", () => {
         return CubeHelpers.getTotalCounts(mdx, filters, "[Subject].[Subject]").then(cs => {
             expect(cs).toBe("getTotalCounts_Subject cellSet")
+        })
+    })
+    test("getFilterCategories", () => {
+        return CubeHelpers.getFilterCategories(LABKEY).then(res => {
+            expect(res).toBe("dataFinder_dropdownCategories")
+        })
+    })
+    test("getStudyInfo", () => {
+        return CubeHelpers.getStudyInfo(LABKEY).then(res => {
+            expect(res).toBe("dataFinder_studyCard")
         })
     })
 
