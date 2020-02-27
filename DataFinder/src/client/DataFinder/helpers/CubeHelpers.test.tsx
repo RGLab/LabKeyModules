@@ -1,9 +1,10 @@
-import * as React from 'react'
 import * as CubeHelpers from './CubeHelpers'
 import { mdx, LABKEY } from '../../tests/helpers'
 import { SelectedFilters } from '../../typings/CubeData'
+import * as tc_Study from '../../tests/data/cubeResponse_getTotalCounts_Study.json'
+import * as tc_Subject from '../../tests/data/cubeResponse_getTotalCounts_Subject.json'
 
-describe('Create Data', () => {
+describe('Get Data', () => {
     const filters = new SelectedFilters()
     test("getStudyCounts", () => {
         return CubeHelpers.getStudyCounts(mdx, filters).then(cs => {
@@ -47,3 +48,13 @@ describe('Create Data', () => {
     })
 
 });
+
+describe("Create Data", () => {
+    test("createTotalCounts", () => {
+        const totalCounts = CubeHelpers.createTotalCounts([tc_Study, tc_Subject])
+        expect(typeof(totalCounts)).toBe("object")
+        expect(Object.keys(totalCounts)).toEqual(["study", "participant"])
+        expect(typeof(totalCounts.participant)).toBe("number")
+        expect(totalCounts.participant).toEqual(95)
+    })
+})

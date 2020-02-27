@@ -57,7 +57,6 @@ export const mdx: Cube.CubeMdx = {
 export const LABKEY = {
     Query: {
         selectRows: (options: ISelectRowsOptions) => {
-            console.log("Fake LABKEY")
             let response;
             if (options.queryName == "dataFinder_dropdownCategories") response = "dataFinder_dropdownCategories"
             if (options.queryName == "dataFinder_studyCard") response = "dataFinder_studyCard"
