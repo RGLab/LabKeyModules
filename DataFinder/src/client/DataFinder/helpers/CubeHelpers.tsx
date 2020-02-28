@@ -234,7 +234,6 @@ export const createFilterCategories = (categoriesResponse: SelectRowsResponse) =
 }
 
 export const createStudyParticipantCounts = (studyParticipantCountCs: Cube.CellSet) => {
-    console.log(studyParticipantCountCs)
     const studyParticipantCountArray: StudyCardTypes.IStudyParticipantCount[] = []
     const pids: string[] = []
     studyParticipantCountCs.cells.forEach((cell) => {
@@ -293,7 +292,7 @@ const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) =
         const members: Immutable.List<string> = cubeData.getIn([result.dim, ...result.levelArray]).push(result.data)
         cubeData = cubeData.setIn([result.dim, ...result.levelArray], members)
     });
-    return Immutable.fromJS(cubeData.toJS())
+    return cubeData.toJS()
 }
 
 

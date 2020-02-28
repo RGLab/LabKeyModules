@@ -32,7 +32,7 @@ interface SelectRowsResponse {
 interface SelectRowsMetadata {
     description: string;
     fields: any[];
-    id: string;
+    id?: string;
     importMessage: string;
     importTemplates: any[];
     root: string;
