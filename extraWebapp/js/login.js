@@ -35,6 +35,7 @@ function newLogin(){
             if(response && response.returnUrl){
                 window.location = response.returnUrl;
             }
+            window.location = LABKEY.ActionURL.buildURL('project', 'begin', '/Studies')
         }, this),
         failure: LABKEY.Utils.getCallbackWrapper(function (response) {
             if(document.getElementById('errors') && response && response.exception) {
@@ -45,9 +46,10 @@ function newLogin(){
                     document.getElementById('errors').innerHTML = response.exception;
                 }
             }
-            if(response && response.returnUrl){
-                window.location = response.returnUrl;
-            }
+            // if(response && response.returnUrl){
+            //     window.location = response.returnUrl;
+            // }
+            // window.location = LABKEY.ActionURL.buildURL('project', 'begin', '/Studies')
         }, this)
     });
 }

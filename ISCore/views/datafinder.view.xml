@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<view xmlns='http://labkey.org/data/xml/view' title='Data Finder'>
+    <dependencies>
+        <dependency path="internal/jQuery"/>
+        <dependency path="Ext4"/>
+        <dependency path="clientapi/ext4"/>
+        <dependency path="query/olap.js"/>
+        <dependency path="clientapi/core/SQL.js"/>
+        <dependency path="ISCore/dataFinder.css"/>
+        <dependency path="ISCore/ParticipantGroup.js"/>
+        <dependency path="ISCore/react.js"/>
+        <dependency path="ISCore/react-dom.js"/>
+        <dependency path="ISCore/dataFinder_react.js"/>
+    </dependencies>
+</view>
+

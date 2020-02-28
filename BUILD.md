@@ -16,7 +16,11 @@ Once that's working, and only then.  Do the following:
 
 >    BuildUtils.includeModules(this.settings, rootDir, [BuildUtils.SERVER_MODULES_DIR + "/LabKeyModules"], [])
 
-* Now rebuild, and you should see the modules in {labkey}/build/deploy/modules/
+* Now rebuild, and you should see the modules in {labkey}/build/modules/
+
+> ~/labkey$ ./gradlew cleanBuild
+
+* Next deploy and they will be in {labkey}/build/deploy/modules
 
 > ~/labkey$ ./gradlew --parallel deployApp
 
