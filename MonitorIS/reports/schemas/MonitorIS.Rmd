@@ -722,22 +722,37 @@ df <- labkey.selectRows(baseUrl = labkey.url.base,
                         queryName = "study_pubmed",
                         colNameOpt = "fieldname")
 
+sdysInIS <- labkey.selectRows(baseUrl = labkey.url.base,
+                              folderPath = "/home/",
+                              schemaName = "lists",
+                              queryName = "Studies",
+                              colNameOpt = "fieldname")
+df <- df[ df$study_accession %in% sdysInIS$name, ]
+
 # For each pubmedid
 base <- "http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid="
 results <- lapply(df$pubmed_id, function(id){
-  page <- read_html(paste0(base, id))
-  nodes <- html_nodes(page, css = '.rslt')
-  res <- lapply(nodes, html_text)
-  parsed <- lapply(res, function(x){
-    spl <- strsplit(x, "\\.")[[1]]
-    title <- spl[[1]]
-    authors <- spl[[2]]
-    pubmedid <- spl[[length(spl)]]
-    pubmedid <- regmatches(pubmedid, regexpr("\\d{8}", pubmedid))
-    return(c(title, authors, pubmedid, id))
-  })
-  parsed <- data.frame(do.call(rbind, parsed))
+    if(grepl("^\\d{6,10}$", id)){
+        page <- read_html(paste0(base, id))
+        nodes <- html_nodes(page, css = '.rslt')
+        res <- lapply(nodes, html_text)
+        parsed <- lapply(res, function(x){
+            if(!grepl("Error", x)){
+                spl <- strsplit(x, "\\.")[[1]]
+                title <- spl[[1]]
+                authors <- spl[[2]]
+                pubmedid <- spl[[length(spl)]]
+                pubmedid <- regmatches(pubmedid, regexpr("\\d{8}", pubmedid))
+                return(c(title, authors, pubmedid, id))
+            }else{
+                return(c(NA, NA, NA, id))
+            }
+        })
+        parsed <- data.frame(do.call(rbind, parsed))
+        parsed <- parsed[ complete.cases(parsed), ]
+    }
 })
+
 allIds <- data.table(do.call(rbind, results))
 cnames <- c("citedby_title",
             "citedby_authors",
