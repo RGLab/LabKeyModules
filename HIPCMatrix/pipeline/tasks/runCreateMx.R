@@ -713,7 +713,7 @@ runCreateMx <- function(labkey.url.base,
                                          "SDY1293", "SDY270", "SDY1291", "SDY212",
                                          "SDY315", "SDY305", "SDY1328", "SDY1368",
                                          "SDY1370", "SDY1119", "SDY1294", "SDY1256",
-                                         "SDY1412", "SDY1267")
+                                         "SDY1412", "SDY1267", "SDY1086")
 
   #**illuminaManifestFile**: for studies with Illumina idat files that need bgx
   # manifest files.  These are found through the Illumina website and stored in
