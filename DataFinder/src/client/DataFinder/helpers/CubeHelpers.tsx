@@ -21,7 +21,6 @@ const loadedStudiesArray = ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[
 // Select Rows --------
 // Get filter categories
 export const getFilterCategories = (LABKEY) => {
-    console.log("getFilterCategories()")
     return new Promise<SelectRowsResponse>((resolve, reject) => {
         LABKEY.Query.selectRows({
             schemaName: 'immport',
@@ -36,7 +35,6 @@ export const getFilterCategories = (LABKEY) => {
 }
 
 export const getStudyInfo = (LABKEY) => {
-    console.log("getStudyInfo()")
     return new Promise<SelectRowsResponse>((resolve, reject) => {
         LABKEY.Query.selectRows({
             schemaName: 'immport',
@@ -50,7 +48,6 @@ export const getStudyInfo = (LABKEY) => {
 // Cube ---------------
 // Study info ---- 
 export const getStudyCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
-    console.log("getStudyCounts()")
     return new Promise<Cube.CellSet>((resolve, reject) => {
         mdx.query({
             configId: "DataFinder:/DataFinderCube",
@@ -76,7 +73,6 @@ export const getStudyCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
 
 // Update StudyParticipantCounts from Cube response
 export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
-    console.log("getStudyParticipantCounts()")
 
     return new Promise<Cube.CellSet>((resolve, reject) => {
         mdx.query({
@@ -104,7 +100,6 @@ export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters
 }
 
 export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string) => {
-    console.log("getCubeData(" + countLevel + ")")
 
     return new Promise<Cube.CellSet>((resolve, reject) => {
         // debugger
@@ -148,7 +143,6 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: 
 
 
 export const getTotalCounts = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string) => {
-    console.log("getTotalCounts()")
     const onRowsLevel = countLevel == "[Study].[Name]" ? "[Study].[(All)]" : "[Subject].[(All)]"
     return new Promise<Cube.CellSet>((resolve, reject) => {
         mdx.query({

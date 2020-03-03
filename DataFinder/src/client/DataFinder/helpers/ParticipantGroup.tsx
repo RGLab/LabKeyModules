@@ -8,7 +8,6 @@ import { StudyParticipantCount, StudyDict} from "../../typings/StudyCard";
 // TODO:
 // get list of available participant groups
 export const getAvailableGroups = () => {
-    console.log("getAvailableGroups()")
     return new Promise((resolve, reject) => {
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('participant-group', 'browseParticipantGroups.api'),
@@ -55,7 +54,6 @@ export const createAvailableGroups = (data) => {
 
 // load participant group
 export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
-    console.log("loadParticipantGroup(" + groupInfo.label + ")")
     let sf: any
     sf = new SelectedFilters()
     let dim: string;
@@ -103,7 +101,6 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
 export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel = "", goToSendAfterSave = false) => {
     // save the group with applied filters in localStorage
 
-    console.log("saveParticipantGroup()")
     const win = Ext4.create('Study.window.ParticipantGroup', {
         subject: studySubject,
         groupLabel: groupLabel,
@@ -119,7 +116,6 @@ export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel = 
 
 // update participant group
 export const updateParticipantGroup = (pids: string[], appliedFilters: SelectedFilters, groupInfo: GroupInfo) => {
-    console.log("updateParticipantGroup()")
     const groupData = {
         label: groupInfo.label,
         participantIds: pids,
@@ -148,7 +144,6 @@ export const updateParticipantGroup = (pids: string[], appliedFilters: SelectedF
 }
 
 export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
-    console.log("saveParticipantGroupInSession()")
     return new Promise((resolve, reject) => {
         LABKEY.Ajax.request({
             method: "POST",
@@ -165,7 +160,6 @@ export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
 // update container filter
 
 export const updateContainerFilter = (studyParticipantCounts: List<StudyParticipantCount>, studyDict: StudyDict) => {
-    console.log("updateContainerFilter()")
     const containers = []
     studyParticipantCounts.forEach((participantCount) => {
         if (participantCount.participantCount > 0 && studyDict[participantCount.studyName]) {
