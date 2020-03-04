@@ -1,0 +1,283 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ActionButton /> Apply 1`] = `
+<button
+  disabled={false}
+  id="action-button-Apply"
+  onClick={[Function]}
+>
+  Apply
+</button>
+`;
+
+exports[`<ClearDropdown/> Clear 1`] = `
+<div
+  className="dropdown"
+  style={
+    Object {
+      "display": "inline-block",
+      "margin": "5px",
+    }
+  }
+>
+  <div
+    className="btn df-dropdown-button"
+    role="group"
+  >
+    <button
+      aria-expanded="true"
+      aria-haspopup="true"
+      className="btn btn-default dropdown-toggle"
+      data-toggle="dropdown"
+      id="Clear-participant-group-btn"
+      type="button"
+    >
+      <span>
+        Clear
+      </span>
+      <span
+        style={
+          Object {
+            "paddingLeft": "5px",
+          }
+        }
+      >
+        <i
+          className="fa fa-caret-down"
+        />
+      </span>
+    </button>
+    <ul
+      aria-labelledby="button-Clear"
+      className="dropdown-menu filter-dropdown"
+    >
+      <li
+        className=""
+      >
+        <a
+          href="#"
+          id="Clear-All-link"
+          onClick={[Function]}
+        >
+          Clear All
+        </a>
+      </li>
+      <li
+        className=""
+      >
+        <a
+          href="#"
+          id="Clear-Unsaved Changes-link"
+          onClick={[Function]}
+        >
+          Clear Unsaved Changes
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`<DropdownButtons /> Save 1`] = `
+<div
+  className="dropdown"
+  style={
+    Object {
+      "display": "inline-block",
+      "margin": "5px",
+    }
+  }
+>
+  <div
+    className="btn df-dropdown-button"
+    role="group"
+  >
+    <button
+      aria-expanded="true"
+      aria-haspopup="true"
+      className="btn btn-default dropdown-toggle"
+      data-toggle="dropdown"
+      id="Save-participant-group-btn"
+      type="button"
+    >
+      <span>
+        Save
+      </span>
+      <span
+        style={
+          Object {
+            "paddingLeft": "5px",
+          }
+        }
+      >
+        <i
+          className="fa fa-caret-down"
+        />
+      </span>
+    </button>
+    <ul
+      aria-labelledby="button-Save"
+      className="dropdown-menu filter-dropdown"
+    >
+      <li
+        className=""
+      >
+        <a
+          href="#"
+          id="Save-link"
+          onClick={[Function]}
+        >
+          Save
+        </a>
+      </li>
+      <li
+        className="disabled"
+      >
+        <a
+          href="#"
+          id="Save-As-link"
+          onClick={[Function]}
+        >
+          Save As
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`<SaveDropdown /> disabled 1`] = `
+<div
+  className="dropdown"
+  style={
+    Object {
+      "display": "inline-block",
+      "margin": "5px",
+    }
+  }
+>
+  <div
+    className="btn df-dropdown-button"
+    role="group"
+  >
+    <button
+      aria-expanded="true"
+      aria-haspopup="true"
+      className="btn btn-default dropdown-toggle"
+      data-toggle="dropdown"
+      id="Save-participant-group-btn"
+      type="button"
+    >
+      <span>
+        Save
+      </span>
+      <span
+        style={
+          Object {
+            "paddingLeft": "5px",
+          }
+        }
+      >
+        <i
+          className="fa fa-caret-down"
+        />
+      </span>
+    </button>
+    <ul
+      aria-labelledby="button-Save"
+      className="dropdown-menu filter-dropdown"
+    >
+      <li
+        className="disabled"
+      >
+        <a
+          href="#"
+          id="Save-link"
+          onClick={[Function]}
+        >
+          Save
+        </a>
+      </li>
+      <li
+        className=""
+      >
+        <a
+          href="#"
+          id="Save-As-link"
+          onClick={[Function]}
+        >
+          Save As
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`<SaveDropdown /> enabled 1`] = `
+<div
+  className="dropdown"
+  style={
+    Object {
+      "display": "inline-block",
+      "margin": "5px",
+    }
+  }
+>
+  <div
+    className="btn df-dropdown-button"
+    role="group"
+  >
+    <button
+      aria-expanded="true"
+      aria-haspopup="true"
+      className="btn btn-default dropdown-toggle"
+      data-toggle="dropdown"
+      id="Save-participant-group-btn"
+      type="button"
+    >
+      <span>
+        Save
+      </span>
+      <span
+        style={
+          Object {
+            "paddingLeft": "5px",
+          }
+        }
+      >
+        <i
+          className="fa fa-caret-down"
+        />
+      </span>
+    </button>
+    <ul
+      aria-labelledby="button-Save"
+      className="dropdown-menu filter-dropdown"
+    >
+      <li
+        className=""
+      >
+        <a
+          href="#"
+          id="Save-link"
+          onClick={[Function]}
+        >
+          Save
+        </a>
+      </li>
+      <li
+        className=""
+      >
+        <a
+          href="#"
+          id="Save-As-link"
+          onClick={[Function]}
+        >
+          Save As
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+`;

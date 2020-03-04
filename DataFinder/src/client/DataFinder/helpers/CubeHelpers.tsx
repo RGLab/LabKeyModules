@@ -20,8 +20,7 @@ const loadedStudiesArray = ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[
 // ----- Promises ----- 
 // Select Rows --------
 // Get filter categories
-export const getFilterCategories = () => {
-    console.log("getFilterCategories()")
+export const getFilterCategories = (LABKEY) => {
     return new Promise<SelectRowsResponse>((resolve, reject) => {
         LABKEY.Query.selectRows({
             schemaName: 'immport',
@@ -35,8 +34,7 @@ export const getFilterCategories = () => {
     })
 }
 
-export const getStudyInfo = () => {
-    console.log("getStudyInfo()")
+export const getStudyInfo = (LABKEY) => {
     return new Promise<SelectRowsResponse>((resolve, reject) => {
         LABKEY.Query.selectRows({
             schemaName: 'immport',
@@ -50,7 +48,6 @@ export const getStudyInfo = () => {
 // Cube ---------------
 // Study info ---- 
 export const getStudyCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
-    console.log("getStudyCounts()")
     return new Promise<Cube.CellSet>((resolve, reject) => {
         mdx.query({
             configId: "DataFinder:/DataFinderCube",
@@ -76,7 +73,6 @@ export const getStudyCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
 
 // Update StudyParticipantCounts from Cube response
 export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
-    console.log("getStudyParticipantCounts()")
 
     return new Promise<Cube.CellSet>((resolve, reject) => {
         mdx.query({
@@ -104,7 +100,6 @@ export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters
 }
 
 export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string) => {
-    console.log("getCubeData(" + countLevel + ")")
 
     return new Promise<Cube.CellSet>((resolve, reject) => {
         // debugger
@@ -148,7 +143,6 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: 
 
 
 export const getTotalCounts = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string) => {
-    console.log("getTotalCounts()")
     const onRowsLevel = countLevel == "[Study].[Name]" ? "[Study].[(All)]" : "[Subject].[(All)]"
     return new Promise<Cube.CellSet>((resolve, reject) => {
         mdx.query({
@@ -289,7 +283,6 @@ export const createFilterCategories = (categoriesResponse: SelectRowsResponse) =
 }
 
 export const createStudyParticipantCounts = (studyParticipantCountCs: Cube.CellSet) => {
-    console.log(studyParticipantCountCs)
     const studyParticipantCountArray: StudyCardTypes.IStudyParticipantCount[] = []
     const pids: string[] = []
     studyParticipantCountCs.cells.forEach((cell) => {
@@ -348,7 +341,7 @@ const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) =
         const members: Immutable.List<string> = cubeData.getIn([result.dim, ...result.levelArray]).push(result.data)
         cubeData = cubeData.setIn([result.dim, ...result.levelArray], members)
     });
-    return Immutable.fromJS(cubeData.toJS())
+    return cubeData.toJS()
 }
 
 

@@ -35,7 +35,7 @@ export interface CubeCell {
 export interface CubePosition {
     level: CubeLevel;
     name: string;
-    ordinal: number;
+    ordinal?: number;
     uniqueName: string; 
 }
 export interface CubeAxis {
