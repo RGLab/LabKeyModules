@@ -1,21 +1,16 @@
 import * as React from 'react';
 import { drawTinyHeatmap } from './d3/TinyHeatmap.d3'
-import { HeatmapDatum } from '../../typings/CubeData';
+import { TinyHeatmapInfo } from '../../typings/StudyCard'
 // Barplot ---------------------------------------- //
 export interface TinyHeatmapProps {
-    data: HeatmapDatum<any>[];
     name: string;
-    width: number;
-    height: number;
-    colors: string[];
-    colorBreaks: number[];
-    assays: string[];
+    heatmapInfo: TinyHeatmapInfo
 }
 
 export const TinyHeatmap: React.FC<TinyHeatmapProps> = (props) => {
 
     React.useEffect(() => {
-        if (props.data.length > 0 && props.assays.length > 0) {
+        if (props.heatmapInfo.data.length > 0 && props.heatmapInfo.assays.length > 0) {
             drawTinyHeatmap(props);
         }
     }, []);
