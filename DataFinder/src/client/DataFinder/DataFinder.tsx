@@ -18,7 +18,7 @@ import Tabs, { TabProps, DataFinderTabs } from "./components/Tabs";
 import * as d3 from 'd3'
 import { Banner } from "./components/Banner";
 import { AssayTimepointViewerContainer } from "./components/AssayTimepointViewer";
-
+import localStorage from './helpers/localStorage'
 interface DataFinderControllerProps {
     mdx: any
 }
@@ -159,7 +159,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // Helper functions ---------------------------------------------
 
     const renderWepart = (tabName: string) => {
-        console.log("renderWebpart(" + tabName + ")")
         if (tabName == "participant") { participantDataWebpart.render(); return }
         if (tabName == "data") { dataViewsWebpart.render(); return }
         return
@@ -237,7 +236,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     const applyFilters = (filters = selectedFilters, customUnsavedFilters = true, groupName = null) => {
-        console.log("----- apply filters -----")
         // set applied filters
         setAppliedFilters(filters)
         // set local storage

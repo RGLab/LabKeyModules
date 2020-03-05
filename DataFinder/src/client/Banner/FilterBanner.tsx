@@ -1,6 +1,7 @@
 import React from 'react'
 import { ISelectedFilters, SelectedFilters } from '../typings/CubeData';
 import { Banner } from '../DataFinder/components/Banner';
+import localStorage from '../DataFinder/helpers/localStorage'
 
 
 export const FilterBanner = ({ show }) => {

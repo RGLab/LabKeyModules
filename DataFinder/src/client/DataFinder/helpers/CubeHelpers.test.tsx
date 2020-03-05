@@ -84,7 +84,8 @@ describe("Create Data", () => {
         expect(typeof(studyDict)).toBe("object")
         expect(studyDict).toHaveProperty("SDY269")
         expect(studyDict).toHaveProperty("SDY269.study_accession", "SDY269")
-        expect(studyDict).toHaveProperty(["SDY269", "heatmapData", 0, "level"])
+        expect(studyDict).toHaveProperty(["SDY269", "heatmapInfo","assays"])
+        expect(studyDict).toHaveProperty(["SDY269", "heatmapInfo", "data", 0, "participantCount"])
     })
     test("createFilterCategories", () => {
         const categories = CubeHelpers.createFilterCategories(dropdownCategories)
