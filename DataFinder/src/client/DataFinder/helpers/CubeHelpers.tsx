@@ -15,7 +15,6 @@ import { StudyParticipantCount } from '../../typings/StudyCard'
 import * as Immutable from 'immutable'
 import * as d3 from 'd3'
 
-const loadedStudiesArray = ["[Study].[SDY1092]", "[Study].[SDY1119]", "[Study].[SDY1291]", "[Study].[SDY903]", "[Study].[SDY28]", "[Study].[SDY514]", "[Study].[SDY387]", "[Study].[SDY34]", "[Study].[SDY1370]", "[Study].[SDY1373]", "[Study].[SDY789]", "[Study].[SDY1260]", "[Study].[SDY1264]", "[Study].[SDY1276]", "[Study].[SDY1328]", "[Study].[SDY296]", "[Study].[SDY301]", "[Study].[SDY63]", "[Study].[SDY74]", "[Study].[SDY312]", "[Study].[SDY314]", "[Study].[SDY315]", "[Study].[SDY478]", "[Study].[SDY113]", "[Study].[SDY305]", "[Study].[SDY472]", "[Study].[SDY395]", "[Study].[SDY406]", "[Study].[SDY460]", "[Study].[SDY773]", "[Study].[SDY421]", "[Study].[SDY461]", "[Study].[SDY675]", "[Study].[SDY400]", "[Study].[SDY404]", "[Study].[SDY614]", "[Study].[SDY112]", "[Study].[SDY888]", "[Study].[SDY1109]", "[Study].[SDY67]", "[Study].[SDY61]", "[Study].[SDY508]", "[Study].[SDY517]", "[Study].[SDY520]", "[Study].[SDY640]", "[Study].[SDY144]", "[Study].[SDY162]", "[Study].[SDY167]", "[Study].[SDY18]", "[Study].[SDY180]", "[Study].[SDY207]", "[Study].[SDY820]", "[Study].[SDY887]", "[Study].[SDY269]", "[Study].[SDY1289]", "[Study].[SDY1293]", "[Study].[SDY1324]", "[Study].[SDY984]", "[Study].[SDY522]", "[Study].[SDY753]", "[Study].[SDY56]", "[Study].[SDY278]", "[Study].[SDY1294]", "[Study].[SDY1325]", "[Study].[SDY1364]", "[Study].[SDY1368]", "[Study].[SDY80]", "[Study].[SDY270]", "[Study].[SDY515]", "[Study].[SDY422]", "[Study].[SDY506]", "[Study].[SDY523]", "[Study].[SDY756]", "[Study].[SDY299]", "[Study].[SDY300]", "[Study].[SDY364]", "[Study].[SDY368]", "[Study].[SDY369]", "[Study].[SDY372]", "[Study].[SDY376]", "[Study].[SDY645]", "[Study].[SDY416]", "[Study].[SDY597]", "[Study].[SDY667]", "[Study].[SDY87]", "[Study].[SDY89]", "[Study].[SDY690]", "[Study].[SDY212]", "[Study].[SDY215]", "[Study].[SDY519]", "[Study].[SDY224]", "[Study].[SDY232]", "[Study].[SDY241]", "[Study].[SDY1041]", "[Study].[SDY1097]"]
 
 // ----- Promises ----- 
 // Select Rows --------
@@ -72,7 +71,7 @@ export const getStudyCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
 }
 
 // Update StudyParticipantCounts from Cube response
-export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
+export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters, loadedStudiesArray: string[]) => {
 
     return new Promise<Cube.CellSet>((resolve, reject) => {
         mdx.query({
@@ -99,7 +98,7 @@ export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters
     })
 }
 
-export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string) => {
+export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string, loadedStudiesArray: string[], showEmpty = true) => {
 
     return new Promise<Cube.CellSet>((resolve, reject) => {
         // debugger
@@ -126,7 +125,8 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: 
                     { level: "[Data.Assay].[SampleType]" },
                     { level: "[Data.Timepoint].[Timepoint]" },
                     { level: "[Data.SampleType].[SampleType]" },
-                    { level: "[Data.SampleType].[Assay]" }
+                    { level: "[Data.SampleType].[Assay]" },
+                    { level: "[Study].[Name]"}
                 ]
             },
             countFilter: [{
@@ -134,7 +134,7 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: 
                 membersQuery: { level: "[Study].[Name]", members: loadedStudiesArray }
             }, ...createCubeFilters(filters)],
             countDistinctLevel: countLevel,
-            showEmpty: true
+            showEmpty: showEmpty
 
         })
 
@@ -142,7 +142,7 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: 
 }
 
 
-export const getTotalCounts = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string) => {
+export const getTotalCounts = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string, loadedStudiesArray: string[]) => {
     const onRowsLevel = countLevel == "[Study].[Name]" ? "[Study].[(All)]" : "[Subject].[(All)]"
     return new Promise<Cube.CellSet>((resolve, reject) => {
         mdx.query({
@@ -167,7 +167,20 @@ export const getTotalCounts = (mdx: CubeMdx, filters: SelectedFilters, countLeve
 
 /// -----------------------------------------------------------
 // 
-
+export const createLoadedStudies = (studyInfoRes: SelectRowsResponse) => {
+    const loadedStudiesArray = studyInfoRes.rows.map((sdy) => {
+        return("[Study].[" + sdy.study_accession + "]")
+    })
+    // loadedStudiesArray.sort((a, b) => {
+    //     const ida = parseInt(a.slice(12, a.length-1))
+    //     const idb = parseInt(b.slice(12, b.length-1))
+    //     return(ida - idb)
+    // })
+    // Remove two null studies (Project, and template)
+    loadedStudiesArray.pop()
+    loadedStudiesArray.pop()
+    return(loadedStudiesArray)
+}
 export const createTotalCounts = ([subjectResponse, studyResponse]) => {
     return ({ study: studyResponse.cells[0][0].value || 0, participant: subjectResponse.cells[0][0].value || 0 })
 }
@@ -265,7 +278,7 @@ export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse
 }
 
 
-export const createFilterCategories = (categoriesResponse: SelectRowsResponse) => {
+export const createFilterCategories_old = (categoriesResponse: SelectRowsResponse) => {
     let categories: FilterCategories = {};
 
     categoriesResponse.rows.forEach((row) => {
@@ -280,6 +293,40 @@ export const createFilterCategories = (categoriesResponse: SelectRowsResponse) =
         })
     })
     return (categories)
+}
+
+export const createFilterCategories = (categoriesCs: Cube.CellSet) => {
+    let categories: FilterCategories = {};
+    categoriesCs.axes[1].positions.forEach((position) => {
+        if ([
+                "[Data.Assay].[Timepoint]",
+                "[Data.Assay].[SampleType]"
+        ].indexOf(position[0].level.uniqueName) == -1) {
+            let level: string;
+            let label: string;
+            if (position[0].level.uniqueName === "[Data.SampleType].[Assay]") {
+                level = "SampleTypeAssay"
+                const l = position[0].uniqueName;
+                const split = l.split("].[")
+
+                label = [split[1], split[2].slice(0, split[2].length -1)].join(".")
+            } else {
+                level = position[0].level.name === "Name" ? "Study" : position[0].level.name;
+                label = position[0].name;
+            }
+            if (categories[level] === undefined) categories[level] = []
+            categories[level].push({label: label, sortorder: 0})
+        }
+    })
+    Object.keys(categories).forEach((key) => {
+        categories[key].sort((a, b) => {
+            if (a.sortorder == b.sortorder) { 
+                if (a.label.toLowerCase() > b.label.toLowerCase()) return (1); else return (-1) 
+            }
+            return a.sortorder - b.sortorder
+        })
+    })
+    return(categories)
 }
 
 export const createStudyParticipantCounts = (studyParticipantCountCs: Cube.CellSet) => {
@@ -313,7 +360,11 @@ const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) =
         const cubeDim = hierarchy.replace(/\..+/, "") // remove everything after and including the first "."
         let level = hierarchy.replace(/\w+\./, "") // remove everything before and including the first "."
         // Move some subject filters to "study design"
-        const dim = ["Species.Species", "ExposureMaterial.ExposureMaterial", "ExposureProcess.ExposureProcess"].indexOf(level) > -1 ? "Study" : cubeDim
+        const dim = [
+            "Species.Species", 
+            "ExposureMaterial.ExposureMaterial", 
+            "ExposureProcess.ExposureProcess"
+        ].indexOf(level) > -1 ? "Study" : cubeDim
         let levelArray: string[]
         if (level.match("Assay") || level.match("SampleType")) {
             levelArray = level.split(".")
