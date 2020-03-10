@@ -15,6 +15,7 @@ describe('Manipulate Selected Filters', () => {
             Subject: { Age: new SelectedFilter({ members: List(["0-10"]), operator: "OR" }) },
             Data: { Timepoint: new SelectedFilter({ members: List(["1"]), operator: "OR" }) }
         })
+        const newFilters6 = new SelectedFilters({ Study: { Study: new SelectedFilter({ members: List(["SDY269"]), operator:  "OR"})}})
 
 
         expect(sf.toggleFilter("Data", "Timepoint", "1", oldFilters)).toEqual(newFilters1)
@@ -26,6 +27,9 @@ describe('Manipulate Selected Filters', () => {
         expect(sf.toggleFilter("Subject", "Age", "0-10", oldFilters)).toEqual(newFilters4)
         expect(sf.toggleFilter("Subject", "Age", "0-10", newFilters1)).toEqual(newFilters5)
         expect(sf.toggleFilter("Subject", "Age", "0-10", newFilters5)).toEqual(newFilters1)
+
+        expect(sf.toggleFilter("Study", "Study", "SDY269", oldFilters)).toEqual(newFilters6)
+        expect(sf.toggleFilter("Study", "Study", "SDY269", newFilters6)).toEqual(oldFilters)
 
     })
 
@@ -94,9 +98,22 @@ describe('Manipulate Selected Filters', () => {
                 }
             }
         ]
+        const input4 = new SelectedFilters({
+            Study: { Study: new SelectedFilter({ members: List(["SDY269"]), operator: "OR"}) }
+        })
+        const output4 = [
+            {
+                level: "[Subject].[Subject]",
+                membersQuery: {
+                    level: "[Study].[Name]",
+                    members: ["[Study].[SDY269]"]
+                }
+            }
+        ]
         expect(JSON.stringify(sf.createCubeFilters(input1))).toEqual(JSON.stringify(output1))
         expect(JSON.stringify(sf.createCubeFilters(input2))).toEqual(JSON.stringify(output2))
         expect(JSON.stringify(sf.createCubeFilters(input3))).toEqual(JSON.stringify(output3))
+        expect(JSON.stringify(sf.createCubeFilters(input4))).toEqual(JSON.stringify(output4))
     })
 
 });

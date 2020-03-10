@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { StudyInfo } from '../../typings/StudyCard';
 import { TinyHeatmap } from '../components/TinyHeatmap';
+import { Filter } from '../../typings/CubeData';
 
 // Types
 interface StudyPropertyProps {
@@ -27,6 +28,7 @@ interface StudyCardProps {
     key: string;
     study: StudyInfo;
     participantCount: number;
+    filterClick: (dim: string, filter:Filter) => () => void;
 }
 
 // Components
@@ -95,13 +97,21 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
     ]
 
 
-
     return (
         <div className="study-card">
             <div className="study-label">
                 <div className="study-checkbox checkbox">
-                    <label>
-                        <input type="checkbox" name="study" value="SDY28" />
+                    <label >
+                        <input 
+                        onClick={
+                        props.filterClick("Study", {
+                            level: "Study", 
+                            member: study.study_accession})
+                    }
+                        type="checkbox" 
+                        name="study" 
+                        value={study.study_accession} 
+                        />
                         <span className="study-id">{study.study_accession}</span>
                     </label>
                 </div>

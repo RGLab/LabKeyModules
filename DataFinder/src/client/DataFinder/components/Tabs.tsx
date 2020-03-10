@@ -1,5 +1,5 @@
 import React from 'react';
-import { CubeData, FilterCategories } from '../../typings/CubeData';
+import { CubeData, FilterCategories, Filter } from '../../typings/CubeData';
 import { StudyParticipantCount, StudyDict } from '../../typings/StudyCard';
 import { List } from 'immutable'
 import { StudyCard } from './StudyCard'
@@ -26,6 +26,7 @@ interface DataFinderTabsProps {
     studyParticipantCounts: List<StudyParticipantCount>;
     studyDict: StudyDict;
     renderWebpart: (tabName: string) => void;
+    filterClick: (dim: string, filter: Filter) => void;
 }
 
 const Tabs: React.FC<TabProps> = ({ tabs, defaultActive, tabFunction }) => {
@@ -58,7 +59,7 @@ const Tabs: React.FC<TabProps> = ({ tabs, defaultActive, tabFunction }) => {
     )
 }
 
-export const DataFinderTabs: React.FC<DataFinderTabsProps> = ({cubeData, showSampleType, filterCategories, studyParticipantCounts, studyDict, renderWebpart}) => {
+export const DataFinderTabs: React.FC<DataFinderTabsProps> = ({cubeData, showSampleType, filterCategories, studyParticipantCounts, studyDict, renderWebpart, filterClick}) => {
     const StudyCardMemo = React.memo(StudyCard)
     const DataTabMemo = React.memo(TabContent.Data)
     const ParticipantTabMemo = React.memo(TabContent.Participant)
@@ -82,7 +83,7 @@ export const DataFinderTabs: React.FC<DataFinderTabsProps> = ({cubeData, showSam
         },
         // ------- STUDY -------
         study: {
-            content: <TabContent.Study data={cubeData.Study} filterCategories={filterCategories} studyDict={studyDict} studyParticipantCounts={studyParticipantCounts} StudyCardMemo={StudyCard} />,
+            content: <TabContent.Study data={cubeData.Study} filterCategories={filterCategories} studyDict={studyDict} studyParticipantCounts={studyParticipantCounts} StudyCardMemo={StudyCard} filterClick={filterClick}/>,
             id: "study",
             tag: "find-study",
             text: "Study Design",

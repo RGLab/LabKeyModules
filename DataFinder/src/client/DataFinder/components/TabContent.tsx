@@ -92,7 +92,7 @@ export const Participant = ({ showBarplots, data, filterCategories }) => {
 
 }
 
-export const Study = ({ data, filterCategories, studyDict, studyParticipantCounts, StudyCardMemo }) => {
+export const Study = ({ data, filterCategories, studyDict, studyParticipantCounts, StudyCardMemo, filterClick }) => {
     return (
         <>
             <div className="row">
@@ -121,7 +121,8 @@ export const Study = ({ data, filterCategories, studyDict, studyParticipantCount
                     return (
                         <StudyCardMemo key={sdy.studyName}
                             study={studyDict[sdy.studyName]}
-                            participantCount={sdy.participantCount} />
+                            participantCount={sdy.participantCount}
+                            filterClick={filterClick} />
                     )
                 }
             })}

@@ -44,12 +44,16 @@ export const createCubeFilters = (filters: SelectedFilters) => {
     } else {
         studyFilters = studySelectedFilters.map((selectedFilter, level) => {
             const realDim = ["ExposureProcess", "ExposureMaterial", "Species"].indexOf(level) > -1 ? "Subject" : "Study"
-            const cubeFilters = {
-                level: "[Subject].[Subject]", membersQuery: {
-                    level: `[${realDim}.${level}].[${level}]`,
-                    members: selectedFilter.members.map((member) => (`[${realDim}.${level}].[${member}]`))
+            let cubeFilters;
+                cubeFilters = {
+                    level: "[Subject].[Subject]", membersQuery: {
+                        // NOTE:  convert Study.Study to [Study].[Name] for selecting individual studies
+                        level: level === "Study" ? "[Study].[Name]" : `[${realDim}.${level}].[${level}]`, 
+                        members: selectedFilter.members.map((member) => (
+                            level === "Study" ? `[Study].[${member}]` : `[${realDim}.${level}].[${member}]`
+                            ))
+                    }
                 }
-            }
             return (cubeFilters)
         }).valueSeq().toJS()
     }
@@ -111,7 +115,6 @@ export const createCubeFilters = (filters: SelectedFilters) => {
 
 
 export const toggleFilter = (dim: string, level: string, member: string, selectedFilters: SelectedFilters) => {
-
     let filterIn: string[];
     if (/\./.test(level)) {
         const l = level.split(".")

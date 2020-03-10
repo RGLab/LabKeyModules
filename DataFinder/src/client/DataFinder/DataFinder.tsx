@@ -392,6 +392,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         {FilterDropdownHelper("Study", "ExposureMaterial", true)}
                         {FilterDropdownHelper("Study", "ExposureProcess", true)}
                         {FilterDropdownHelper("Study", "Species", true)}
+                        {FilterDropdownHelper("Study", "Study", true)}
                     </div>
                     <div className="col-sm-4">
                         {FilterDropdownHelper("Subject", "Gender", true)}
@@ -465,7 +466,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     filterCategories={filterCategories}
                     studyParticipantCounts={studyParticipantCounts}
                     studyDict={studyDict}
-                    renderWebpart={renderWepart} />
+                    renderWebpart={renderWepart}
+                    filterClick={filterClick} />
             </div>
 
             {/* Tooltip */}
@@ -493,6 +495,7 @@ export const App: React.FC = () => {
     }, [])
 
     if (cubeReady) {
+        console.log(dfcube)
         return <DataFinderController mdx={dfcube.mdx} />
     }
     return <div></div>

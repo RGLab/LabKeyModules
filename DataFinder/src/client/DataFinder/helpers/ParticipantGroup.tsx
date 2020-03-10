@@ -61,7 +61,6 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
         const filters: ISelectedFilters = groupInfo.filters
         sf = new SelectedFilters(filters)
     } else {
-        console.log("--------- OLD FILTERS ------")
         const missingDimensions = []
         // convert from old filters and warn user
         Object.keys(groupInfo.filters).forEach((level) => {
@@ -70,7 +69,7 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
             })
             if (["Age", "Gender", "Race"].indexOf(level) > -1) {
                 sf = sf.setIn(["Subject", level], new SelectedFilter({ members: members }))
-            } else if (["ResearchFocus", "Condition", "ExposureMaterial", "ExposureProcess", "Species"].indexOf(level) > -1) {
+            } else if (["Study", "ResearchFocus", "Condition", "ExposureMaterial", "ExposureProcess", "Species"].indexOf(level) > -1) {
                 sf = sf.setIn(["Study", level], new SelectedFilter({ members: members }))
             } else if (level == "Assay") {
                 sf = sf.setIn(["Data", "Assay", "Assay"], new SelectedFilter({ members: members, operator: groupInfo.filters[level].operator }))
