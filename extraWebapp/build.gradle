@@ -30,13 +30,13 @@ if(rootProject.reactModules.contains(moduleName)){
         dependsOn zipNpmModule
     }
 
-}else if(moduleName == 'extraWebapp'){
+}else if(moduleName == 'extraWebApp'){
     deploy.doLast {
-        mkdir "${rootProject.deployDir}/${moduleName}"
+        mkdir "${rootProject.deployDir}/extraWebapp"
         copy {
             from "."
             include "*"
-            into "${rootProject.deployDir}/${moduleName}"
+            into "${rootProject.deployDir}/extraWebapp"
         }
     }
     
