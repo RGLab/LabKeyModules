@@ -1,0 +1,53 @@
+String moduleName = "${project.name}"
+String moduleBuildDir = "${rootProject.labKeyModulesDir}/${moduleName}"
+String externalModulesDir = "${rootProject.deployDir}/externalModules/"
+
+if(rootProject.reactModules.contains(moduleName)){
+    npm_run_build {
+        // input files listed are monitored for changes
+        // and only rebuilt when needed
+        // Note: Cannot use '*' for string matching, so
+        // may need to specify different files
+        inputs.files fileTree("src")
+        inputs.files fileTree("webpack")
+        inputs.file "package.json"
+        inputs.file "package-lock.json"
+        inputs.file "module.properties"
+        inputs.file "postcss.config.js"
+        inputs.file "tsconfig.json"
+        //inputs.file "declarations.d.ts"
+        
+        outputs.dir "resources" // set in where ??
+    }
+
+    task zipNpmModule(type: Zip, dependsOn: 'npm_run_build') {
+        from "${moduleBuildDir}/resources"
+        archiveFileName = "${moduleName}.module"
+        destinationDirectory = file("${externalModulesDir}")
+    }
+
+    deploy {
+        dependsOn zipNpmModule
+    }
+
+}else if(moduleName == 'extraWebapp'){
+    deploy.doLast {
+        mkdir "${rootProject.deployDir}/${moduleName}"
+        copy {
+            from "."
+            include "*"
+            into "${rootProject.deployDir}/${moduleName}"
+        }
+    }
+    
+}else{
+    task zipModule(type: Zip)  {
+        from "."
+        archiveFileName = "${moduleName}.module"
+        destinationDirectory = file("${externalModulesDir}")
+    }
+    
+    deploy {
+        dependsOn zipModule
+    }
+}
