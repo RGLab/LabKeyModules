@@ -486,6 +486,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
 }
 
 export const App: React.FC = () => {
+    const filterBanner = document.getElementById('filter-banner')
+    filterBanner.style.display = 'none'
 
     const [cubeReady, setCubeReady] = React.useState(false)
     const [studyInfo, setStudyInfo] = React.useState(null)
@@ -495,18 +497,21 @@ export const App: React.FC = () => {
         schemaName: 'DataFinder',
         name: 'DataFinderCube'
     })
-    const studyInfoPromise = CubeHelpers.getStudyInfo(LABKEY)
+
     React.useEffect(() => {
-        dfcube.onReady((mdx) => {
+        Promise.all([
+            new Promise((resolve, reject) => dfcube.onReady((mdx) => resolve(true))),
+            CubeHelpers.getStudyInfo(LABKEY)
+        ]).then(([cubeReady, studyInfoRes]) => {
             setCubeReady(true)
-        })
-        studyInfoPromise.then((res) => {
-            setStudyInfo(res)
+            setStudyInfo(studyInfoRes)
         })
     }, [])
 
     if (cubeReady && studyInfo) {
         return <DataFinderController mdx={dfcube.mdx} studyInfo={studyInfo} />
     }
-    return <div></div>
+    return (<div>
+        <div className="loader" id="loader-1"></div>
+    </div>)
 }

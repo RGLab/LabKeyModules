@@ -177,7 +177,7 @@ export const goToSend = (groupId) => {
     if (groupId == null) { console.log("null group: can't send") } else {
         window.location = LABKEY.ActionURL.buildURL('study', 'sendParticipantGroup', null, {
             rowId: groupId,
-            returnUrl: LABKEY.ActionURL.buildURL('immport', 'dataFinder')
+            returnUrl: LABKEY.ActionURL.buildURL('project', 'begin')
         });
     }
 }
