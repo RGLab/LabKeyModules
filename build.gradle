@@ -58,11 +58,6 @@ if (deploySubProjects == 'yes'){
 ext.reactModules = ['DataFinder', 'ResourcesPage']
 subprojects {
 
-    // if(reactModules.contains(project.name)){
-    //     apply plugin: "com.github.node-gradle.node"
-    //     apply plugin: "com.moowork.node"
-    // }
-
     if (!hasGradleNodePlugin && 
         !hasMooworkNodePlugin  && 
         reactModules.contains(project.name)) {
