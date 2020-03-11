@@ -297,6 +297,18 @@ export const createFilterCategories_old = (categoriesResponse: SelectRowsRespons
 
 export const createFilterCategories = (categoriesCs: Cube.CellSet) => {
     let categories: FilterCategories = {};
+    const sortorder = (level, label) => {
+        if (label === "Unknown") return(99999)
+        if (label === "Other") return(99998)
+        if (level === "Timepoint") {
+            if (label === "<0") return(-1); 
+            if (label === ">56") return(99); 
+            return(parseInt(label))
+        } else if (level === "Study") {
+            return(parseInt(label.slice(3)))
+        }
+        return(0)
+    }
     categoriesCs.axes[1].positions.forEach((position) => {
         if ([
                 "[Data.Assay].[Timepoint]",
@@ -315,7 +327,7 @@ export const createFilterCategories = (categoriesCs: Cube.CellSet) => {
                 label = position[0].name;
             }
             if (categories[level] === undefined) categories[level] = []
-            categories[level].push({label: label, sortorder: 0})
+            categories[level].push({label: label, sortorder: sortorder(level, label)})
         }
     })
     Object.keys(categories).forEach((key) => {
