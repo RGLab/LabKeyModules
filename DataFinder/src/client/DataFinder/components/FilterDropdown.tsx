@@ -9,6 +9,7 @@ export interface FilterDropdownProps {
     members: FilterCategory[];
     filterClick: (dim: string, filter: Filter) => () => void;
     selected: List<string>;
+    label?: string;
 }
 
 interface ContentDropdownProps {
@@ -22,10 +23,11 @@ interface AndOrDropdownProps {
     onClick: (value: string) => void;
 }
 
-export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level, members, filterClick, selected, children }) => {
+export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level, members, filterClick, selected, children, label }) => {
     // if (props.selected != undefined) debugger
 
     const levelArray = level.split(".")
+    const dropdownLabel = label || levelArray[0]
     const labels = members.map(m => m.label)
     return (
         <div className={"dropdown"}>
@@ -34,7 +36,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level
                         type="button" 
                         data-toggle="dropdown"
                 >
-                    <span>{levelArray[0]}</span>
+                    <span>{dropdownLabel}</span>
                     <span style={{float:"right"}}><i className="fa fa-caret-down"></i></span>
                 </button>
                 <div className="dropdown-menu filter-dropdown">

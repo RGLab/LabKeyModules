@@ -191,6 +191,11 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
 
     const FilterDropdownHelper = (dim, level, includeIndicators = false, includeAndOr = false) => {
         const levelArray = level.split(".")
+        let label = levelArray[0];
+        if (levelArray[0] === "ExposureMaterial") label = "Exposure Material"
+        if (levelArray[0] === "ExposureProcess") label = "Exposure Process"
+        if (levelArray[0] === "ResearchFocus") label = "Research Focus"
+        if (levelArray[0] === "SampleType") label = "Sample Type"
 
         return (
             <>
@@ -201,6 +206,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                     members={filterCategories[levelArray[0]]}
                     filterClick={filterClick}
                     selected={selectedFilters.getIn([dim, ...levelArray, "members"])}
+                    label={label}
                 >
 
                     {includeAndOr &&
