@@ -29,6 +29,7 @@ interface StudyCardProps {
     study: StudyInfo;
     participantCount: number;
     filterClick: (dim: string, filter:Filter) => () => void;
+    selected: boolean;
 }
 
 // Components
@@ -111,6 +112,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
                         type="checkbox" 
                         name="study" 
                         value={study.study_accession} 
+                        checked={props.selected}
                         />
                         <span className="study-id">{study.study_accession}</span>
                     </label>

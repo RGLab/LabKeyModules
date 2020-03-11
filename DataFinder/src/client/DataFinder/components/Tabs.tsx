@@ -1,5 +1,5 @@
 import React from 'react';
-import { CubeData, FilterCategories, Filter } from '../../typings/CubeData';
+import { CubeData, FilterCategories, Filter, SelectedFilters, SelectedFilter } from '../../typings/CubeData';
 import { StudyParticipantCount, StudyDict } from '../../typings/StudyCard';
 import { List } from 'immutable'
 import { StudyCard } from './StudyCard'
@@ -27,6 +27,7 @@ interface DataFinderTabsProps {
     studyDict: StudyDict;
     renderWebpart: (tabName: string) => void;
     filterClick: (dim: string, filter: Filter) => void;
+    selectedStudies: List<string> | undefined
 }
 
 const Tabs: React.FC<TabProps> = ({ tabs, defaultActive, tabFunction }) => {
@@ -59,7 +60,7 @@ const Tabs: React.FC<TabProps> = ({ tabs, defaultActive, tabFunction }) => {
     )
 }
 
-export const DataFinderTabs: React.FC<DataFinderTabsProps> = ({cubeData, showSampleType, filterCategories, studyParticipantCounts, studyDict, renderWebpart, filterClick}) => {
+export const DataFinderTabs: React.FC<DataFinderTabsProps> = ({cubeData, showSampleType, filterCategories, studyParticipantCounts, studyDict, renderWebpart, filterClick, selectedStudies}) => {
     const StudyCardMemo = React.memo(StudyCard)
     const DataTabMemo = React.memo(TabContent.Data)
     const ParticipantTabMemo = React.memo(TabContent.Participant)
@@ -83,7 +84,14 @@ export const DataFinderTabs: React.FC<DataFinderTabsProps> = ({cubeData, showSam
         },
         // ------- STUDY -------
         study: {
-            content: <TabContent.Study data={cubeData.Study} filterCategories={filterCategories} studyDict={studyDict} studyParticipantCounts={studyParticipantCounts} StudyCardMemo={StudyCard} filterClick={filterClick}/>,
+            content: <TabContent.Study 
+                data={cubeData.Study} 
+                filterCategories={filterCategories} 
+                studyDict={studyDict} 
+                studyParticipantCounts={studyParticipantCounts} 
+                StudyCard={StudyCard} 
+                filterClick={filterClick} 
+                selectedStudies={selectedStudies}/>,
             id: "study",
             tag: "find-study",
             text: "Study Design",

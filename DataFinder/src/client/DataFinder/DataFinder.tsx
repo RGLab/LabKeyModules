@@ -472,7 +472,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                     studyParticipantCounts={studyParticipantCounts}
                     studyDict={studyDict}
                     renderWebpart={renderWepart}
-                    filterClick={filterClick} />
+                    filterClick={filterClick}
+                    selectedStudies={selectedFilters.getIn(["Study", "Study", "members"]) || List([])} />
             </div>
 
             {/* Tooltip */}

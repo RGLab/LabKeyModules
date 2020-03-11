@@ -3,6 +3,7 @@ import { AssayTimepointViewerContainer } from './AssayTimepointViewer'
 import { Barplot, } from './Barplot'
 import { createFilterCategories } from '../helpers/CubeHelpers';
 import { SelectedFilters, CubeData } from '../../typings/CubeData';
+import { List } from 'immutable';
 
 // Helpers
 const BarplotHelper = (data, dim, level, filterCategories) => {
@@ -92,7 +93,7 @@ export const Participant = ({ showBarplots, data, filterCategories }) => {
 
 }
 
-export const Study = ({ data, filterCategories, studyDict, studyParticipantCounts, StudyCardMemo, filterClick }) => {
+export const Study = ({ data, filterCategories, studyDict, studyParticipantCounts, StudyCard, filterClick, selectedStudies }) => {
     return (
         <>
             <div className="row">
@@ -119,10 +120,11 @@ export const Study = ({ data, filterCategories, studyDict, studyParticipantCount
             {studyDict && studyParticipantCounts.map((sdy) => {
                 if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
                     return (
-                        <StudyCardMemo key={sdy.studyName}
+                        <StudyCard key={sdy.studyName}
                             study={studyDict[sdy.studyName]}
                             participantCount={sdy.participantCount}
-                            filterClick={filterClick} />
+                            filterClick={filterClick}
+                            selected={selectedStudies.includes(sdy.studyName)} />
                     )
                 }
             })}
