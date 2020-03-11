@@ -1,8 +1,7 @@
 String moduleName = "${project.name}"
-String moduleBuildDir = "${rootProject.labKeyModulesDir}/${moduleName}"
-String externalModulesDir = "${rootProject.deployDir}/externalModules/"
+String moduleBuildDir = "${project.parent.labKeyModulesDir}/${moduleName}"
 
-if(rootProject.reactModules.contains(moduleName)){
+if(project.parent.reactModules.contains(moduleName)){
     npm_run_build {
         // input files listed are monitored for changes
         // and only rebuilt when needed
@@ -23,7 +22,7 @@ if(rootProject.reactModules.contains(moduleName)){
     task zipNpmModule(type: Zip, dependsOn: 'npm_run_build') {
         from "${moduleBuildDir}/resources"
         archiveFileName = "${moduleName}.module"
-        destinationDirectory = file("${externalModulesDir}")
+        destinationDirectory = file("${project.parent.externalModulesDir}")
     }
 
     deploy {
@@ -32,11 +31,11 @@ if(rootProject.reactModules.contains(moduleName)){
 
 }else if(moduleName == 'extraWebApp'){
     deploy.doLast {
-        mkdir "${rootProject.deployDir}/extraWebapp"
+        mkdir "${project.parent.deployDir}/extraWebapp"
         copy {
             from "."
             include "*"
-            into "${rootProject.deployDir}/extraWebapp"
+            into "${project.parent.deployDir}/extraWebapp"
         }
     }
     
@@ -44,7 +43,7 @@ if(rootProject.reactModules.contains(moduleName)){
     task zipModule(type: Zip)  {
         from "."
         archiveFileName = "${moduleName}.module"
-        destinationDirectory = file("${externalModulesDir}")
+        destinationDirectory = file("${project.parent.externalModulesDir}")
     }
     
     deploy {
