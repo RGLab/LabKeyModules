@@ -70,7 +70,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
             })
     }
     // Other view settings set by user
-    const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
+    const [showSampleType_dropdown, setShowSampleType_dropdown] = React.useState<boolean>(false)
+    const [showSampleType_tab, setShowSampleType_tab] = React.useState<boolean>(false)
 
     // ----- Other -----
     // Webparts
@@ -357,8 +358,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
 
 
     // ------ Other ------
-    const toggleSampleType = () => {
-        setShowSampleType(!showSampleType)
+    const toggleSampleType = (which) => {
+        if(which == "dropdown") setShowSampleType_dropdown(!showSampleType_dropdown)
+        if(which == "tab") setShowSampleType_tab(!showSampleType_tab)
     }
     // -------------------------------- RETURN --------------------------------
     return (
@@ -417,13 +419,13 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                             content={filterCategories &&
                                 <>
                                     <SampleTypeCheckbox
-                                        toggleShowSampleType={toggleSampleType}
-                                        showSampleType={showSampleType} />
+                                        toggleShowSampleType={() => toggleSampleType("dropdown")}
+                                        showSampleType={showSampleType_dropdown} />
                                     <HeatmapSelector
                                         name={"heatmap2"}
                                         data={cubeData.Data.toJS()}
                                         filterClick={filterClick}
-                                        showSampleType={showSampleType}
+                                        showSampleType={showSampleType_dropdown}
                                         selected={selectedFilters.Data}
                                         timepointCategories={filterCategories.Timepoint}
                                         sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
@@ -471,15 +473,21 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
             </div>
 
             <div className="datafinder-wrapper">
+            
                 <DataFinderTabs
                     cubeData={cubeData}
-                    showSampleType={showSampleType}
+                    showSampleType={showSampleType_tab}
                     filterCategories={filterCategories}
                     studyParticipantCounts={studyParticipantCounts}
                     studyDict={studyDict}
                     renderWebpart={renderWepart}
                     filterClick={filterClick}
-                    selectedStudies={selectedFilters.getIn(["Study", "Study", "members"]) || List([])} />
+                    selectedStudies={selectedFilters.getIn(["Study", "Study", "members"]) || List([])}
+                    sampleTypeCheckbox={
+                        <SampleTypeCheckbox
+                            toggleShowSampleType={() => toggleSampleType("tab")}
+                            showSampleType={showSampleType_tab} />
+                    } />
             </div>
 
             {/* Tooltip */}

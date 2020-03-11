@@ -19,7 +19,7 @@ const BarplotHelper = (data, dim, level, filterCategories) => {
     )
 }
 
-export const Data = ({ data, showSampleType, filterCategories }) => {
+export const Data = ({ data, showSampleType, filterCategories, sampleTypeCheckbox }) => {
     return (
         <>
             <div className="row">
@@ -30,6 +30,8 @@ export const Data = ({ data, showSampleType, filterCategories }) => {
                             <div className="row">
                                 <div className="col-sm-8">
                                     <h4 style={{ textAlign: "center" }}>Assays Available by Study Day</h4>
+
+                                    {sampleTypeCheckbox}
                                     <AssayTimepointViewerContainer
                                         name={"heatmap1"}
                                         data={data.toJS()}
