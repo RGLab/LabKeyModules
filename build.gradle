@@ -1,4 +1,3 @@
-// npm build plugins
 buildscript {
     repositories {
         mavenCentral()
@@ -11,48 +10,69 @@ buildscript {
     }
 }
 
+// Using /LabKeyModules/gradle.properties to override
+// when on servers or running from /LabKeyModules instead
+// of ~/release19.3
 plugins {
-    id "com.github.node-gradle.node" version "2.2.3" apply true
-    id "com.moowork.node" version "1.3.1" apply false
+    id "com.github.node-gradle.node" version "${gradleNodePluginVersion}" apply false
+    id "com.moowork.node" version "${mooworkNodePluginVersion}" apply false
 }
 
-// download node for consistency across modules
-node {
-    /* gradle-node-plugin configuration
-       https://github.com/srs/gradle-node-plugin/blob/master/docs/node.md
-       Task name pattern:
-       ./gradlew npm_<command> Executes an NPM command.
-    */
-    // Version of node to use.
-    version = '10.14.1'
-    // Version of npm to use.
-    npmVersion = '6.4.1'
-    // If true, it will download node using above parameters.
-    // If false, it will try to use globally installed node.
-    download = false
-}
+// Can use following to download node for consistency environments
+// gradleNodePlugin must be applied in plugins to work
+// node {
+//     /* gradle-node-plugin configuration
+//        https://github.com/srs/gradle-node-plugin/blob/master/docs/node.md
+//        Task name pattern:
+//        ./gradlew npm_<command> Executes an NPM command.
+//     */
+//     version = "${nodeVersion}"
+//     npmVersion = "${npmVersion}"
+//     // If true, it will download node using above parameters.
+//     // If false, it will try to use globally installed node.
+//     download = false
+// }
 
-// get build/deploy/ directory
-//ext.deployDir = System.getenv('DEPLOY_DIR')
-ext.labKeyModulesDir = "/Users/evanhenrich/Desktop/FHCRC/LabKeyModules"
-ext.deployDir = '/Users/evanhenrich/Desktop/FHCRC/DEPLOY_DIR'
-ext.externalModulesDir = "${deployDir}/externalModules/"
-ext.reactModules = ['DataFinder', 'ResourcesPage']
+// Allow for local and server builds using flexible basePath
+ext.labKeyModulesDir = System.getenv('GRADLE_LKMODS_DIR')
+ext.deployDir = System.getenv('GRADLE_DEPLOY_DIR')
+ext.externalModulesDir = System.getenv('GRADLE_EXTERNAL_MODULES_DIR')
 
 if (deployDir == null)
     throw new GradleException("deploy directory ${deployDir} does not exist.")
 
-// Print statement for each module
-subprojects {
-    if(reactModules.contains(project.name)){
-        apply plugin: "com.moowork.node"
-    }
-    task deploy {
-        doLast{ task ->
-            println "$task.project.name - deploying"
-        }
-    }
+if (externalModulesDir == null)
+    throw new GradleException("externalModules directory ${externalModulesDir} does not exist.")
+
+String deploySubProjects = System.getenv("GRADLE_DEPLOY_SUBPROJECTS")
+if (deploySubProjects == 'yes'){
+    println "Deploying LabKeyModules from repo"
+}else{
+    println "Deploying LabKeyModules from enlistment server/modules"
 }
 
+ext.reactModules = ['DataFinder', 'ResourcesPage']
+subprojects {
+
+    if(reactModules.contains(project.name)){
+        apply plugin: "com.github.node-gradle.node"
+        apply plugin: "com.moowork.node"
+    }
+
+    task deploy {
+        doLast{ task ->
+            println "$task.project.name - deploying to $externalModulesDir"
+        }
+    }
+
+    task deployFromLKModsRepo{
+        if(deploySubProjects == 'yes'){
+            dependsOn deploy
+        }
+    }
+
+}
+
+
 // Each module has individual build files for speed and ease of deployment
-// in */LabKeyModules - ./gradlew deploy
+// in */LabKeyModules - gradle :<ModuleName>:deploy
