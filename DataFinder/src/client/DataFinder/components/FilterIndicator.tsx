@@ -1,7 +1,6 @@
 import * as React from 'react'
-import * as LABKEY from '@labkey/api'
-import { Filter, SelectedFilters, CubeData, SelectedFilter } from "../../typings/CubeData";
-import { Map, List } from 'immutable'
+import { SelectedFilters, SelectedFilter } from "../../typings/CubeData";
+import { Map } from 'immutable'
 
 export interface FilterSummaryProps {
     filters: SelectedFilters
@@ -39,7 +38,7 @@ export const FilterSummary = (props: FilterSummaryProps) => {
 
 
     return (
-        <div className="row filterbar">
+        <div id="filters-banner" className="row filterbar">
             <div className="col-sm-4">
                 <FilterIndicatorList
                     filterClass={"Study"}
@@ -55,7 +54,7 @@ export const FilterSummary = (props: FilterSummaryProps) => {
             <div className="col-sm-4">
                 <AssayFilterIndicatorList
                     filters={props.filters.Data}
-                    title={"Available Data"} />
+                    title={"Assay Data"} />
             </div>
         </div>
     )
@@ -162,11 +161,11 @@ interface FlagProps {
 export const Flag: React.FC<FlagProps> = ({ dim, onDelete, children }) => {
     return (
         <div className="filter-indicator">
-            <div className={"filter-indicator-text " + dim} style={{ width: onDelete ? "80%" : "100%" }}>
+            <div className={"filter-indicator-text " + dim} style={onDelete && {maxWidth: "10em"}}>
                 {children}
             </div>
             {onDelete &&
-                <button className="filterdeletor" style={{ width: "20%" }} onClick={onDelete}>
+                <button className="filterdeletor" onClick={onDelete}>
                     <span className="glyphicon glyphicon-remove">X</span>
                 </button>}
         </div>

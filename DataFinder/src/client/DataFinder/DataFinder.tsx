@@ -1,9 +1,10 @@
 import "./DataFinder.scss";
-import React, { memo } from 'react';
+import React from 'react';
 // import {olap} from '../olap/olap'
 import { CubeData, Filter, SelectedFilters, TotalCounts, GroupInfo, BannerInfo } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup';
+import * as TabContent from './components/TabContent';
 import { toggleFilter, setAndOr } from './helpers/SelectedFilters';
 import { StudyParticipantCount } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
@@ -13,7 +14,7 @@ import { FilterDropdown, ContentDropdown, AndOrDropdown } from './components/Fil
 import { Flag } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
-import Tabs from "./components/Tabs";
+import Tabs, { TabProps, DataFinderTabs } from "./components/Tabs";
 import * as d3 from 'd3'
 import { Banner } from "./components/Banner";
 import { AssayTimepointViewerContainer } from "./components/AssayTimepointViewer";
@@ -140,6 +141,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     }, [])
 
+    // When filters are applied
+    React.useEffect(() => {
+        CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters)
+            .then((spcResponse) => {
+                const { countsList, pids } = CubeHelpers.createStudyParticipantCounts(spcResponse)
+                ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
+                    if (participantDataWebpart) participantDataWebpart.render()
+                })
+                if (studyDict) {
+                    ParticipantGroupHelpers.updateContainerFilter(countsList, studyDict)
+                }
+            })
+    }, [appliedFilters])
+
 
     // Helper functions ---------------------------------------------
 
@@ -151,16 +166,16 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     // ----- Memos -----
-    const BannerMemo = memo(Banner)
-    const FilterDropdownMemo = memo(FilterDropdown)
-    const StudyCardMemo = memo(StudyCard)
+    const BannerMemo = React.memo(Banner)
+    const FilterDropdownMemo = React.memo(FilterDropdown)
+    const DataFinderTabsMemo = React.memo(DataFinderTabs, (prevProps, nextProps) => true)
 
     // ----- Components -----
     const BarplotHelper = (dim, level, presentationDim = null) => {
         const pDim = presentationDim || dim
         return (
             <Barplot
-                data={cubeData.getIn([dim, level]).toJS()}
+                data={cubeData.getIn([dim, level])}
                 name={level}
                 height={200}
                 width={250}
@@ -172,35 +187,36 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     const FilterDropdownHelper = (dim, level, includeIndicators = false, includeAndOr = false) => {
         const levelArray = level.split(".")
-        
+
         return (
-            <span>
-            <FilterDropdownMemo
-                key={level}
-                dimension={dim}
-                level={level}
-                members={filterCategories[levelArray[0]]}
-                filterClick={filterClick}
-                selected={selectedFilters.getIn([dim, ...levelArray, "members"])}
-            >
-            
-                {includeAndOr && 
-                 <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])} 
-                                onClick={clickAndOr(dim, level)} />}
-                {includeIndicators && 
-                 selectedFilters.getIn([dim, ...levelArray]) && 
-                 selectedFilters.getIn([dim, ...levelArray, "members"]).map((member) => {
-                    return (
-                        <div style={{ width: "10em" }}>
-                            <Flag dim={dim} 
-                                  onDelete={filterClick(dim, { level: level, member: member })} >
-                                {member}
-                            </Flag>
+            <>
+                <FilterDropdownMemo
+                    key={level}
+                    dimension={dim}
+                    level={level}
+                    members={filterCategories[levelArray[0]]}
+                    filterClick={filterClick}
+                    selected={selectedFilters.getIn([dim, ...levelArray, "members"])}
+                >
+
+                    {includeAndOr &&
+                        <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])}
+                            onClick={clickAndOr(dim, level)} />}
+                    {includeIndicators &&
+                        selectedFilters.getIn([dim, ...levelArray]) &&
+                        <div className="filter-indicator-list">
+                            {selectedFilters.getIn([dim, ...levelArray, "members"]).map((member) => {
+                                return (
+                                    <Flag dim={dim}
+                                        onDelete={filterClick(dim, { level: level, member: member })} >
+                                        {member}
+                                    </Flag>
+                                )
+                            })}
                         </div>
-                    )
-                })}
-            </FilterDropdownMemo>
-            </span>
+                    }
+                </FilterDropdownMemo>
+            </>
         )
     }
 
@@ -231,12 +247,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 const { countsList, pids } = CubeHelpers.createStudyParticipantCounts(spcResponse)
                 setStudyParticipantCounts(countsList)
                 setFilteredPids(pids)
-                ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
-                    if (participantDataWebpart) participantDataWebpart.render()
-                })
-                if (studyDict) {
-                    ParticipantGroupHelpers.updateContainerFilter(countsList, studyDict)
-                }
             })
         Promise.all([
             CubeHelpers.getCubeData(mdx, filters, "[Subject].[Subject]"),
@@ -342,127 +352,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const toggleSampleType = () => {
         setShowSampleType(!showSampleType)
     }
-
-    // Tab Content ------------------------------------------------
-    // TODO:  Abstract some of this into additional components
-    const tabs = {
-        //  ------ DATA -------
-        data: {
-            content: <>
-                <div className="row">
-                    <div>
-
-                        {filterCategories &&
-                            <>
-                                <div className="row">
-                                    <div className="col-sm-8">
-                                        <h4 style={{ textAlign: "center" }}>Assays Available by Study Day</h4>
-                                        <AssayTimepointViewerContainer
-                                            name={"heatmap1"}
-                                            data={cubeData.Data.toJS()}
-                                            showSampleType={showSampleType}
-                                            selected={selectedFilters.Data}
-                                            timepointCategories={filterCategories.Timepoint}
-                                            sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
-                                    </div>
-                                    <div className="col-sm-4">
-                                        <Barplot
-                                            data={cubeData.getIn(["Data", "SampleType", "SampleType"]).toJS()}
-                                            name={"SampleType"}
-                                            height={200}
-                                            width={250}
-                                            categories={filterCategories["SampleType"]}
-                                            countMetric={"participantCount"}
-                                            barColor={"#74C476"} />
-                                    </div>
-                                </div>
-                            </>}
-
-
-                    </div>
-                </div>
-                <hr />
-                <div>
-                    <h2>Data From Selected Participants</h2>
-                </div>
-                <div id="data-views" />
-            </>,
-            id: "data",
-            tag: "find-data",
-            text: "Available Assay Data",
-            tabClass: "pull-right"
-        },
-        // -------- PARTICIPANT -------
-        participant: {
-            content: <>
-                <div className="row">
-                    {filterCategories && <>
-                        <div className="col-sm-4">
-                            {BarplotHelper("Subject", "Gender")}
-                        </div>
-                        <div className="col-sm-4">
-                            {BarplotHelper("Subject", "Age")}
-                        </div>
-                        <div className="col-sm-4">
-                            {BarplotHelper("Subject", "Race")}
-                        </div>
-                    </>}
-
-
-                </div>
-                <hr></hr>
-                <h2 style={{ padding: "15px" }}>Selected Participants</h2>
-                <div className="row">
-                    <div id="participant-data" className="df-embedded-webpart"></div>
-                </div>
-
-            </>,
-            id: "participant",
-            tag: "find-participant",
-            text: "Participant Characteristics",
-            tabClass: "pull-right"
-        },
-        // ------- STUDY -------
-        study: {
-            content: <>
-                <div className="row">
-                    {filterCategories && <>
-                        <div className="col-sm-3">
-                            {BarplotHelper("Study", "Condition", "Study")}
-                        </div>
-                        <div className="col-sm-3">
-                            {BarplotHelper("Study", "ExposureProcess", "Study")}
-                        </div>
-                        <div className="col-sm-3">
-                            {BarplotHelper("Study", "ResearchFocus", "Study")}
-                        </div>
-                        <div className="col-sm-3">
-                            {BarplotHelper("Study", "ExposureMaterial", "Study")}
-                        </div>
-                    </>}
-
-                </div>
-                <hr></hr>
-                <div>
-                    <h2>Selected Studies</h2>
-                </div>
-                {studyDict && studyParticipantCounts.map((sdy) => {
-                    if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
-                        return (
-                            <StudyCardMemo key={sdy.studyName}
-                                study={studyDict[sdy.studyName]}
-                                participantCount={sdy.participantCount} />
-                        )
-                    }
-                })}
-            </>,
-            id: "study",
-            tag: "find-study",
-            text: "Study Design",
-            tabClass: "pull-right",
-        },
-    }
-
     // -------------------------------- RETURN --------------------------------
     return (
         <div>
@@ -480,23 +369,22 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                 counts={totalAppliedCounts}
                 unsavedFilters={bannerInfo.unsavedFilters}
                 links={
-                    <>
-                        <a className="labkey-text-link" href="/study/Studies/manageParticipantCategories.view?">Manage Groups</a>
-                        <a className="labkey-text-link" href="#" onClick={() => sendParticipantGroup()}>Send</a>
-                        <a className="labkey-text-link" href="/immport/Studies/exportStudyDatasets.view?">Export Study Datasets</a>
-                        <a className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
-
-                    </>
+                    <div id="participant-group-links">
+                        <a id="manage-participant-group-link" className="labkey-text-link" href="/study/Studies/manageParticipantCategories.view?">Manage Groups</a>
+                        <a id="send-participant-group-link" className="labkey-text-link" href="#" onClick={() => sendParticipantGroup()}>Send</a>
+                        <a id="export-datasets-link" className="labkey-text-link" href="/immport/Studies/exportStudyDatasets.view?">Export Study Datasets</a>
+                        <a id="open-rstudio-link" className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
+                    </div>
                 }
                 dropdowns={
-                    <>
+                    <div id="participant-group-buttons">
                         <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
                         <ClearDropdown clearAll={clearFilters} reset={() => { loadedGroup ? loadParticipantGroup(loadedGroup) : clearFilters() }} />
                         <SaveDropdown
                             saveAs={() => saveButtonClick()}
                             save={() => updateParticipantGroup(loadedGroup)}
                             disableSave={!loadedGroup} />
-                    </>
+                    </div>
                 } />
 
             <div className="row" style={{ position: "relative" }}>
@@ -513,42 +401,50 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         {FilterDropdownHelper("Subject", "Age", true)}
                         {FilterDropdownHelper("Subject", "Race", true)}
                     </div>
-                    <div className="col-sm-2">
-                        <ContentDropdown id={"heatmap-selector"} label={"Assay*Timepoint"} content={filterCategories &&
-                            <>
-                                <SampleTypeCheckbox
-                                    toggleShowSampleType={toggleSampleType}
-                                    showSampleType={showSampleType} />
-                                <HeatmapSelector
-                                    name={"heatmap2"}
-                                    data={cubeData.Data.toJS()}
-                                    filterClick={filterClick}
-                                    showSampleType={showSampleType}
-                                    selected={selectedFilters.Data}
-                                    timepointCategories={filterCategories.Timepoint}
-                                    sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
-                            </>}>
+                    <div className="col-sm-3">
+                        <ContentDropdown 
+                            id={"heatmap-selector"} 
+                            label={"Assay*Timepoint"} 
+                            content={filterCategories &&
+                                <>
+                                    <SampleTypeCheckbox
+                                        toggleShowSampleType={toggleSampleType}
+                                        showSampleType={showSampleType} />
+                                    <HeatmapSelector
+                                        name={"heatmap2"}
+                                        data={cubeData.Data.toJS()}
+                                        filterClick={filterClick}
+                                        showSampleType={showSampleType}
+                                        selected={selectedFilters.Data}
+                                        timepointCategories={filterCategories.Timepoint}
+                                        sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
+                                </>
+                            }>
                             <>
                                 <AndOrDropdown status={selectedFilters.getIn(["Data", "Assay", "Timepoint", "operator"])} onClick={clickAndOr("Data", "Assay.Timepoint")} />
-                                {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint", "members"]).map((member) => {
-                                    return (
-                                        <>
+
+                                <div className="filter-indicator-list">
+                                    {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint", "members"]).map((member) => {
+                                        return (
                                             < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: member })} >
                                                 {member.split(".").join(" at ") + " days"}
                                             </Flag>
-                                        </>
-                                    )
-                                })}
-                                {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType", "members"]).map((member) => {
-                                    const memberSplit = member.split(".")
-                                    return (
-                                        <>
+                                        )
+                                    })}
+
+                                </div>
+
+                                <div className="filter-indicator-list">
+                                    {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType", "members"]).map((member) => {
+                                        const memberSplit = member.split(".")
+                                        return (
                                             < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member })} >
                                                 {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
                                             </Flag>
-                                        </>
-                                    )
-                                })}
+                                        )
+                                    })}
+
+                                </div>
                             </>
                         </ContentDropdown>
                         {FilterDropdownHelper("Data", "Timepoint", true, true)}
@@ -566,7 +462,13 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             </div>
 
             <div className="datafinder-wrapper">
-                <Tabs tabs={tabs} defaultActive="study" tabFunction={renderWepart} />
+                <DataFinderTabs
+                    cubeData={cubeData}
+                    showSampleType={showSampleType}
+                    filterCategories={filterCategories}
+                    studyParticipantCounts={studyParticipantCounts}
+                    studyDict={studyDict}
+                    renderWebpart={renderWepart} />
             </div>
 
             {/* Tooltip */}

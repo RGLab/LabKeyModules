@@ -1,10 +1,17 @@
 # Data Finder
 
-To deploy: Follow the instructions in `BUILD.md` to set up gradle build. Then: 
+More internal info [here](https://www.notion.so/rglab/Data-Finder-d4a90cd38aff407b8d624f350963080b)
 
+## Deploy Locally
+Follow the instructions in `BUILD.md` to set up gradle build. Then: 
 ```
 ~/labkey$ ./gradlew --parallel -PdeployMode=prod :server:modules:LabKeyModules:DataFinder:deployModule
 ```
+
+To display the banner, you will need to get premium modules building locally. Instructions for that [here](https://www.notion.so/rglab/Build-premium-modules-locally-82eeb8745faf4c28ba12f84fc176334a)
+
+## Deploy on servers
+TBD
 
 ## Directory And Code Structure
 ```

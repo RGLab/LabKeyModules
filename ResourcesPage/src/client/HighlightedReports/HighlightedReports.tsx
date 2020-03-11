@@ -581,14 +581,11 @@ const ResourcesPage: React.FC = () => {
                     A collection of Immune Signatures gene sets that represent cell types, states, 
                     and perturbations within the immune system developed by the Haining Lab.  
                 </p>
-                <a href="https://gxb.benaroyaresearch.org/dm3/landing.gsp" target="_blank">Interactive Gene Expression Browser (GXB)</a>
+                <a href="https://immcantation.readthedocs.io/en/stable/#" target="_blank">Immcantation</a>
                 <p>
-                    Interactive web application for browsing and visualizing large 
-                    and complex gene expression datasets developed by the Chaussabel Lab. 
-                </p>
-                <a href="http://www.immuneprofiling.org/innate/landing.gsp">Meta Comparison Analysis Tool (MetaCAT)</a>
-                <p>
-                    MetaCat was developed by Chaussabel lab.
+                    The Immcantation framework provide a start-to-finish analytical ecosystem for 
+                    high-throughput AIRR-seq datasets. Beginning from raw reads, Python and R packages 
+                    are provided for pre-processing, population structure determination, and repertoire analysis.
                 </p>
                 <a href="http://insilico.utulsa.edu/index.php/reliefseq/" target="_blank">ReliefSeq</a>
                 <p>
@@ -1133,7 +1130,7 @@ const ResourcesPage: React.FC = () => {
         })
 
         return(
-            <nav className="navbar navbar-default">
+            <nav className="navbar navbar-default" style={{backgroundColor: 'white'}} >
                 <div className="container-fluid">
                     <ul className="nav navbar-nav">
                         {navBarElements}

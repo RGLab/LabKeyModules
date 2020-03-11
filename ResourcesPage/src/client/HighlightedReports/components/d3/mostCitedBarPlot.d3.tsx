@@ -111,7 +111,7 @@ export function drawBarPlot(props: BarPlotProps) {
         .style("border-radius", "5px")
         .style("padding", "5px")
 
-    var colorScheme = d3.interpolateRdBu
+    var colorScheme = d3.interpolateGreens
 
     // add values
     svg.selectAll("rect")
