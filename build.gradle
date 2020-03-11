@@ -6,16 +6,23 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.moowork.gradle:gradle-node-plugin:1.2.0'
+        classpath "com.github.node-gradle:gradle-node-plugin:2.2.3"
+        classpath "com.moowork.gradle:gradle-node-plugin:1.3.1"
     }
 }
 
-// Using /LabKeyModules/gradle.properties to override
-// when on servers or running from /LabKeyModules instead
-// of ~/release19.3
-plugins {
-    id "com.github.node-gradle.node" version "${gradleNodePluginVersion}" apply false
-    id "com.moowork.node" version "${mooworkNodePluginVersion}" apply false
+// Check if plugin is already loaded (i.e. when run at enlistment level)
+def gradleNodePluginId = 'com.github.node-gradle.node'
+final hasGradleNodePlugin = project.getPlugins().hasPlugin(gradleNodePluginId);
+
+def mooworkNodePluginId = 'com.moowork.node'
+final hasMooworkNodePlugin = project.getPlugins().hasPlugin(mooworkNodePluginId);
+
+// If plugins are not already loaded (i.e. run at LKMods level), then
+// load from classpaths using legacy plugin application
+if (!hasGradleNodePlugin && !hasMooworkNodePlugin) {
+    apply plugin: gradleNodePluginId
+    apply plugin: mooworkNodePluginId
 }
 
 // Can use following to download node for consistency environments
