@@ -159,7 +159,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                     ParticipantGroupHelpers.updateContainerFilter(studyParticipantCounts, studyDict)
                 }
             }
-    }, [appliedFilters])
+    }, [filteredPids])
 
 
     // Helper functions ---------------------------------------------
