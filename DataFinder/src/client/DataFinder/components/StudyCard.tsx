@@ -104,7 +104,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
                 <div className="study-checkbox checkbox">
                     <label >
                         <input 
-                        onClick={
+                        onChange={
                         props.filterClick("Study", {
                             level: "Study", 
                             member: study.study_accession})
@@ -112,7 +112,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
                         type="checkbox" 
                         name="study" 
                         value={study.study_accession} 
-                        checked={props.selected}
+                        defaultChecked={props.selected}
                         />
                         <span className="study-id">{study.study_accession}</span>
                     </label>

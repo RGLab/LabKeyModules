@@ -10,7 +10,7 @@ import { StudyParticipantCount } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
 import { List } from 'immutable';
 import { ActionButton, LoadDropdown, SaveDropdown, ClearDropdown } from './components/ActionButton'
-import { FilterDropdown, ContentDropdown, AndOrDropdown } from './components/FilterDropdown'
+import { ContentDropdown, AndOrDropdown, FilterDropdownContent } from './components/FilterDropdown'
 import { Flag } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
@@ -172,7 +172,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
 
     // ----- Memos -----
     const BannerMemo = React.memo(Banner)
-    const FilterDropdownMemo = React.memo(FilterDropdown)
     const DataFinderTabsMemo = React.memo(DataFinderTabs, (prevProps, nextProps) => true)
 
     // ----- Components -----
@@ -198,17 +197,19 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
         if (levelArray[0] === "ResearchFocus") label = "Research Focus"
         if (levelArray[0] === "SampleType") label = "Sample Type"
 
-        return (
-            <>
-                <FilterDropdownMemo
-                    key={level}
+        return(
+            <ContentDropdown
+                id={levelArray[0]}
+                label={label}
+                customMenuClass="df-dropdown filter-dropdown"
+                content={
+                <FilterDropdownContent
                     dimension={dim}
                     level={level}
                     members={filterCategories[levelArray[0]]}
                     filterClick={filterClick}
                     selected={selectedFilters.getIn([dim, ...levelArray, "members"])}
-                    label={label}
-                >
+                />}>
 
                     {includeAndOr &&
                         <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])}
@@ -226,9 +227,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                             })}
                         </div>
                     }
-                </FilterDropdownMemo>
-            </>
+            </ContentDropdown>
         )
+        
     }
 
     // Callbacks -----------------------------------------------------
@@ -416,6 +417,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                         <ContentDropdown
                             id={"heatmap-selector"}
                             label={"Assay*Timepoint"}
+                            customMenuClass="assay-timepoint-dropdown"
                             content={filterCategories &&
                                 <>
                                     <SampleTypeCheckbox

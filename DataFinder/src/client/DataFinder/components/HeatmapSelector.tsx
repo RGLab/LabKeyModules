@@ -195,7 +195,7 @@ function HeatmapSelectorContainer(props: HeatmapProps) {
 export const SampleTypeCheckbox = ({ toggleShowSampleType, showSampleType }) => {
   return (
     <div>
-      <input type="checkbox" onClick={toggleShowSampleType} checked={showSampleType} />
+      <input type="checkbox" onChange={toggleShowSampleType} defaultChecked={showSampleType} />
       Show Sample Type
     </div>
   )

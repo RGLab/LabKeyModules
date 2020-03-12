@@ -105,13 +105,17 @@
   color: white;
 }
 
-.filter-dropdown {
+.df-dropdown {
   padding: 10px;
   /*left:100%;*/
   /*top:10px;*/
   height: auto;
   max-height: 15em;
   overflow: auto;
+}
+
+.filter-dropdown {
+  width: 140px
 }
 
 .filter-dropdown-button {
