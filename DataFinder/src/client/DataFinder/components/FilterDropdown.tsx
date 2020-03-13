@@ -141,9 +141,11 @@ export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, con
                         type="button" 
                         onClick={() => {
                             const cl = document.getElementById("df-content-dropdown-" + id).classList
-                            if (cl.contains("open")) {
-                                cl.remove("open")
-                            } else {
+                            const willOpen = !cl.contains("open")
+                            for (let el of document.getElementsByClassName('filterselector open')) {
+                                el.classList.remove("open")
+                            };
+                            if (willOpen) {
                                 cl.add("open")
                             }
                         }}

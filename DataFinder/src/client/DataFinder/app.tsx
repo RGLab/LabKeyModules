@@ -18,11 +18,9 @@ document.getElementsByTagName('body')[0].addEventListener('click', function (e) 
             if (el.tagName == "BODY") return false
             return el.parentNode && someParentHasClass(el.parentNode, className)
         }
-        if (!someParentHasClass(target, "df-dropdown")) {
+        if (! (someParentHasClass(target, "df-dropdown") || someParentHasClass(target, "filterselector")) ) {
             for (let el of document.getElementsByClassName('filterselector open')) {
                 el.classList.remove("open")
-                // Stop menu from re-opening if click was on dropdown button
-                e.stopPropagation()
             };
         }
     }
