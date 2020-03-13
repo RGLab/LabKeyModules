@@ -9,12 +9,12 @@ interface BannerProps {
     unsavedFilters: boolean,
     links?: JSX.Element,
     dropdowns?: JSX.Element
-    id?: string
+    filterBarId?: string
 }
-export const Banner: React.FC<BannerProps> = ({ filters, groupName, counts, unsavedFilters, links, dropdowns, id }) => {
+export const Banner: React.FC<BannerProps> = ({ filters, groupName, counts, unsavedFilters, links, dropdowns, filterBarId }) => {
     return (
         <>
-            <div id={id || "df-filter-banner"} className="row">
+            <div className="row">
                 <div className="col-sm-6">
                     <h3><div className="df-banner-title">{groupName}</div>
                         <div >
@@ -37,7 +37,9 @@ export const Banner: React.FC<BannerProps> = ({ filters, groupName, counts, unsa
                 </div>
 
             </div>
-            <FilterSummary filters={filters} />
+            <div id={filterBarId || "df-filter-summary"}>
+                <FilterSummary filters={filters} />
+            </div>
         </>
     )
 }
