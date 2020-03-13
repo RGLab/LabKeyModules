@@ -3,7 +3,7 @@ import { SelectedFilters, SelectedFilter } from "../../typings/CubeData";
 import { Map } from 'immutable'
 
 export interface FilterSummaryProps {
-    filters: SelectedFilters
+    filters: SelectedFilters;
 }
 
 interface FilterIndicatorListProps {
@@ -36,9 +36,8 @@ export const FilterSummary = (props: FilterSummaryProps) => {
 
     // if (props.filters.subject.size != 0) debugger;
 
-
     return (
-        <div id="filters-banner" className="row filterbar">
+        <div className="row filterbar">
             <div className="col-sm-4">
                 <FilterIndicatorList
                     filterClass={"Study"}

@@ -9,11 +9,12 @@ interface BannerProps {
     unsavedFilters: boolean,
     links?: JSX.Element,
     dropdowns?: JSX.Element
+    id?: string
 }
-export const Banner: React.FC<BannerProps> = ({ filters, groupName, counts, unsavedFilters, links, dropdowns }) => {
+export const Banner: React.FC<BannerProps> = ({ filters, groupName, counts, unsavedFilters, links, dropdowns, id }) => {
     return (
         <>
-            <div className="row">
+            <div id={id || "df-filter-banner"} className="row">
                 <div className="col-sm-6">
                     <h3><div className="df-banner-title">{groupName}</div>
                         <div >

@@ -375,6 +375,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                     disableSave={!loadedGroup} />
             </div> */}
             <BannerMemo
+                id={"df-active-banner"}
                 filters={appliedFilters}
                 groupName={loadedGroup ? loadedGroup.label : "Unsaved Participant Group"}
                 counts={totalAppliedCounts}
