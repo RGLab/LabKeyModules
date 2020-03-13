@@ -45,14 +45,8 @@ ext.externalModulesDir = System.getenv('GRADLE_EXTERNAL_MODULES_DIR')
 if (deployDir == null)
     throw new GradleException("deploy directory ${deployDir} does not exist.")
 
-if (externalModulesDir == null)
-    throw new GradleException("externalModules directory ${externalModulesDir} does not exist.")
-
-String deploySubProjects = System.getenv("GRADLE_DEPLOY_SUBPROJECTS")
-if (deploySubProjects == 'yes'){
-    println "Deploying LabKeyModules from repo"
-}else{
-    println "Deploying LabKeyModules from enlistment server/modules"
+if (externalModulesDir == null){
+    mkdir externalModulesDir
 }
 
 ext.reactModules = ['DataFinder', 'ResourcesPage']
@@ -70,13 +64,6 @@ subprojects {
             println "$task.project.name - deploying to $externalModulesDir"
         }
     }
-
-    task deployFromLKModsRepo{
-        if(deploySubProjects == 'yes'){
-            dependsOn deploy
-        }
-    }
-
 }
 
 
