@@ -27,7 +27,8 @@ const onRowsRequests = {
             { level: "[Data.Assay].[SampleType]" },
             { level: "[Data.Timepoint].[Timepoint]" },
             { level: "[Data.SampleType].[SampleType]" },
-            { level: "[Data.SampleType].[Assay]" }
+            { level: "[Data.SampleType].[Assay]" },
+            { level: "[Study].[Name]"}
         ]
     },
     getTotalCounts_Study: {

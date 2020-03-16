@@ -28,33 +28,36 @@ retrocycle(cubeDataCs_subject)
 
 describe('Get Data', () => {
     const filters = new SelectedFilters()
+    const loadedStudiesArray = CubeHelpers.createLoadedStudies(studyInfo)
+
     test("getStudyCounts", () => {
         return CubeHelpers.getStudyCounts(mdx, filters).then(cs => {
             expect(cs).toBe("getStudyCounts cellSet")
         })
     })
+
     test("getStudyParticipantCounts", () => {
-        return CubeHelpers.getStudyParticipantCounts(mdx, filters).then(cs => {
+        return CubeHelpers.getStudyParticipantCounts(mdx, filters, loadedStudiesArray).then(cs => {
             expect(cs).toBe("getStudyParticipantCounts cellSet")
         })
     })
     test("getCubeData - Study", () => {
-        return CubeHelpers.getCubeData(mdx, filters, "[Study].[Name]").then(cs => {
+        return CubeHelpers.getCubeData(mdx, filters, "[Study].[Name]", loadedStudiesArray).then(cs => {
             expect(cs).toBe("getCubeData_Study cellSet")
         })
     })
     test("getCubeData - Subject", () => {
-        return CubeHelpers.getCubeData(mdx, filters, "[Subject].[Subject]").then(cs => {
+        return CubeHelpers.getCubeData(mdx, filters, "[Subject].[Subject]", loadedStudiesArray).then(cs => {
             expect(cs).toBe("getCubeData_Subject cellSet")
         })
     })
     test("getTotalCounts - Study", () => {
-        return CubeHelpers.getTotalCounts(mdx, filters, "[Study].[Name]").then(cs => {
+        return CubeHelpers.getTotalCounts(mdx, filters, "[Study].[Name]", loadedStudiesArray).then(cs => {
             expect(cs).toBe("getTotalCounts_Study cellSet")
         })
     })
     test("getTotalCounts - Subject", () => {
-        return CubeHelpers.getTotalCounts(mdx, filters, "[Subject].[Subject]").then(cs => {
+        return CubeHelpers.getTotalCounts(mdx, filters, "[Subject].[Subject]", loadedStudiesArray).then(cs => {
             expect(cs).toBe("getTotalCounts_Subject cellSet")
         })
     })
@@ -88,7 +91,7 @@ describe("Create Data", () => {
         expect(studyDict).toHaveProperty(["SDY269", "heatmapInfo", "data", 0, "participantCount"])
     })
     test("createFilterCategories", () => {
-        const categories = CubeHelpers.createFilterCategories(dropdownCategories)
+        const categories = CubeHelpers.createFilterCategories(cubeDataCs_subject)
         expect(categories).toHaveProperty("Age")
         expect(categories).toHaveProperty("ExposureMaterial")
         expect(Array.isArray(categories.Age)).toBeTruthy()
@@ -105,7 +108,8 @@ describe("Create Data", () => {
         expect(studyParticipantCounts.countsList.get(0)).toBeInstanceOf(StudyParticipantCount)
     })
     test("createCubeData", () => {
-        const cd = CubeHelpers.createCubeData([cubeDataCs_study, cubeDataCs_subject])
+        const subject: any = cubeDataCs_subject
+        const cd = CubeHelpers.createCubeData([cubeDataCs_study, subject])
         expect(cd).toBeInstanceOf(CubeData)
     })
 })

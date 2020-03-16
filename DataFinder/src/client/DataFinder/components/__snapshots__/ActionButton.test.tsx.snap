@@ -49,7 +49,7 @@ exports[`<ClearDropdown/> Clear 1`] = `
     </button>
     <ul
       aria-labelledby="button-Clear"
-      className="dropdown-menu filter-dropdown"
+      className="dropdown-menu df-dropdown"
     >
       <li
         className=""
@@ -117,7 +117,7 @@ exports[`<DropdownButtons /> Save 1`] = `
     </button>
     <ul
       aria-labelledby="button-Save"
-      className="dropdown-menu filter-dropdown"
+      className="dropdown-menu df-dropdown"
     >
       <li
         className=""
@@ -185,7 +185,7 @@ exports[`<SaveDropdown /> disabled 1`] = `
     </button>
     <ul
       aria-labelledby="button-Save"
-      className="dropdown-menu filter-dropdown"
+      className="dropdown-menu df-dropdown"
     >
       <li
         className="disabled"
@@ -253,7 +253,7 @@ exports[`<SaveDropdown /> enabled 1`] = `
     </button>
     <ul
       aria-labelledby="button-Save"
-      className="dropdown-menu filter-dropdown"
+      className="dropdown-menu df-dropdown"
     >
       <li
         className=""
