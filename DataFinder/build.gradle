@@ -3,17 +3,18 @@ String moduleBuildDir = "${project.parent.labKeyModulesDir}/${moduleName}"
 String moduleXmlTemplate = "${project.parent.labKeyModulesDir}/module.template.xml"
 String buildTime = new Date().format('yyyy-MM-dd:HH-mm')
 
-if(moduleName == 'extraWebApp'){
+if(moduleName == 'extraWebapp'){
     deploy.doLast {
         mkdir "${project.parent.deployDir}/extraWebapp"
         copy {
             from "."
-            include "*"
+            exclude "build.gradle", "enlistment.properties"
             into "${project.parent.deployDir}/extraWebapp"
         }
     }
 }else{
     String dirToZip = ""
+    String enlistmentId = ""
     def moduleProps = new Properties()
     
     if(project.parent.reactModules.contains(moduleName)){
@@ -60,16 +61,23 @@ if(moduleName == 'extraWebApp'){
     }
 
     task ensureEnlistmentId {
+        // To ensure enlistmentId is ported over from old ant builds
+        // the `enlistment.id` format is still used and then
+        // transitioned to `EnlistmentId`
         dependsOn prepModule
         File enlistmentPropsFile = new File("${moduleBuildDir}/enlistment.properties")
         if(!enlistmentPropsFile.exists()){
-            String id = java.util.UUID.randomUUID()
+            enlistmentId = java.util.UUID.randomUUID()
             enlistmentPropsFile.text = """
 # $buildTime
 
-EnlistmentId=${id}
+enlistment.id=${enlistmentId}
 """
         }
+        file(enlistmentPropsFile).withInputStream{moduleProps.load(it)}
+        enlistmentId = moduleProps.getProperty('enlistment.id')
+        moduleProps.setProperty('EnlistmentId', enlistmentId)
+        
     }
 
     task createModuleProps {
@@ -78,11 +86,11 @@ EnlistmentId=${id}
             moduleProps.load(it);
         }
         def standardPropsMap = [
-             'BuildOS': project.parent.buildOS,
-             'BuildPath': "${moduleBuildDir}.module",
-             'BuildTime': buildTime,
-             'BuildType': project.parent.buildType,
-             'BuildUser': project.parent.buildUser,
+             'BuildOS' : project.parent.buildOS,
+             'BuildPath' : "${moduleBuildDir}.module",
+             'BuildTime' : buildTime,
+             'BuildType' : project.parent.buildType,
+             'BuildUser' : project.parent.buildUser,
              'SourcePath': moduleBuildDir,
              'Revision': "Not built from a Subversion source tree",
              'URL': "Not built from a Subversion source tree" 
