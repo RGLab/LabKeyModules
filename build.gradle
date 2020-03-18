@@ -11,6 +11,10 @@ buildscript {
     }
 }
 
+import org.apache.tools.ant.filters.ReplaceTokens
+import java.util.regex.*
+import java.net.InetAddress
+
 // Check if plugin is already loaded (i.e. when run at enlistment level)
 def gradleNodePluginId = 'com.github.node-gradle.node'
 final hasGradleNodePlugin = project.getPlugins().hasPlugin(gradleNodePluginId);
@@ -49,7 +53,22 @@ if (externalModulesDir == null){
     mkdir externalModulesDir
 }
 
+// Build Parameters for module.xml
+ext.buildUser = System.getProperty('user.name')
+ext.buildOS = System.getProperty('os.name')
+String hostname = java.net.InetAddress.getLocalHost().getHostName();
+
+ext.buildType = ""
+if (hostname =~ /Test/){
+    buildType = "Development"
+}else if(hostname =~ /Prod/){
+    buildType = "Production"
+}else{
+    buildType = "Local"
+}
+
 ext.reactModules = ['DataFinder', 'ResourcesPage']
+
 subprojects {
 
     if (!hasGradleNodePlugin && 
@@ -58,6 +77,8 @@ subprojects {
         apply plugin: gradleNodePluginId
         apply plugin: mooworkNodePluginId
     }
+
+    apply plugin: 'java' // for ant token replacement
 
     task deploy {
         doLast{ task ->

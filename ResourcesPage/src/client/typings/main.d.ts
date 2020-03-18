@@ -1,4 +1,1 @@
-interface Greeting {
-    text: string,
-    cssClass: string
-}
+// Reserved for setting types used across the module
