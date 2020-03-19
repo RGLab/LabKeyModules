@@ -43,3 +43,4 @@ DataFinder/resources/web
 
 # Gradle
 .gradle/
+.envrc
