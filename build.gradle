@@ -1,0 +1,92 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.github.node-gradle:gradle-node-plugin:2.2.3"
+        classpath "com.moowork.gradle:gradle-node-plugin:1.3.1"
+    }
+}
+
+import org.apache.tools.ant.filters.ReplaceTokens
+import java.util.regex.*
+import java.net.InetAddress
+
+// Check if plugin is already loaded (i.e. when run at enlistment level)
+def gradleNodePluginId = 'com.github.node-gradle.node'
+final hasGradleNodePlugin = project.getPlugins().hasPlugin(gradleNodePluginId);
+
+def mooworkNodePluginId = 'com.moowork.node'
+final hasMooworkNodePlugin = project.getPlugins().hasPlugin(mooworkNodePluginId);
+
+// If plugins are not already loaded (i.e. run at LKMods level), then
+// load from classpaths using legacy plugin application
+
+
+// Can use following to download node for consistency environments
+// gradleNodePlugin must be applied in plugins to work
+// node {
+//     /* gradle-node-plugin configuration
+//        https://github.com/srs/gradle-node-plugin/blob/master/docs/node.md
+//        Task name pattern:
+//        ./gradlew npm_<command> Executes an NPM command.
+//     */
+//     version = "${nodeVersion}"
+//     npmVersion = "${npmVersion}"
+//     // If true, it will download node using above parameters.
+//     // If false, it will try to use globally installed node.
+//     download = false
+// }
+
+// Allow for local and server builds using flexible basePath
+ext.labKeyModulesDir = System.getenv('GRADLE_LKMODS_DIR')
+ext.deployDir = System.getenv('GRADLE_DEPLOY_DIR')
+ext.externalModulesDir = System.getenv('GRADLE_EXTERNAL_MODULES_DIR')
+
+if (deployDir == null)
+    throw new GradleException("deploy directory ${deployDir} does not exist.")
+
+if (externalModulesDir == null){
+    mkdir externalModulesDir
+}
+
+// Build Parameters for module.xml
+ext.buildUser = System.getProperty('user.name')
+ext.buildOS = System.getProperty('os.name')
+String hostname = java.net.InetAddress.getLocalHost().getHostName();
+
+ext.buildType = ""
+if (hostname =~ /Test/){
+    buildType = "Development"
+}else if(hostname =~ /Prod/){
+    buildType = "Production"
+}else{
+    buildType = "Local"
+}
+
+ext.reactModules = ['DataFinder', 'ResourcesPage']
+
+subprojects {
+
+    if (!hasGradleNodePlugin && 
+        !hasMooworkNodePlugin  && 
+        reactModules.contains(project.name)) {
+        apply plugin: gradleNodePluginId
+        apply plugin: mooworkNodePluginId
+    }
+
+    apply plugin: 'java' // for ant token replacement
+
+    task deploy {
+        doLast{ task ->
+            println "$task.project.name - deploying to $externalModulesDir"
+        }
+    }
+}
+
+
+// Each module has individual build files for speed and ease of deployment
+// in */LabKeyModules - gradle :<ModuleName>:deploy
