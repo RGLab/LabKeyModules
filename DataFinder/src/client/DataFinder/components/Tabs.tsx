@@ -1,5 +1,5 @@
 import React from 'react';
-import { CubeData, FilterCategories } from '../../typings/CubeData';
+import { CubeData, FilterCategories, Filter, SelectedFilters, SelectedFilter } from '../../typings/CubeData';
 import { StudyParticipantCount, StudyDict } from '../../typings/StudyCard';
 import { List } from 'immutable'
 import { StudyCard } from './StudyCard'
@@ -26,6 +26,9 @@ interface DataFinderTabsProps {
     studyParticipantCounts: List<StudyParticipantCount>;
     studyDict: StudyDict;
     renderWebpart: (tabName: string) => void;
+    filterClick: (dim: string, filter: Filter) => void;
+    selectedStudies: List<string> | undefined;
+    sampleTypeCheckbox: JSX.Element
 }
 
 const Tabs: React.FC<TabProps> = ({ tabs, defaultActive, tabFunction }) => {
@@ -58,7 +61,17 @@ const Tabs: React.FC<TabProps> = ({ tabs, defaultActive, tabFunction }) => {
     )
 }
 
-export const DataFinderTabs: React.FC<DataFinderTabsProps> = ({cubeData, showSampleType, filterCategories, studyParticipantCounts, studyDict, renderWebpart}) => {
+export const DataFinderTabs: React.FC<DataFinderTabsProps> = (
+    {
+        cubeData, 
+        showSampleType, 
+        filterCategories, 
+        studyParticipantCounts, 
+        studyDict, renderWebpart, 
+        filterClick, 
+        selectedStudies, 
+        sampleTypeCheckbox
+    }) => {
     const StudyCardMemo = React.memo(StudyCard)
     const DataTabMemo = React.memo(TabContent.Data)
     const ParticipantTabMemo = React.memo(TabContent.Participant)
@@ -66,7 +79,11 @@ export const DataFinderTabs: React.FC<DataFinderTabsProps> = ({cubeData, showSam
     const tabs = {
         //  ------ DATA -------
         data: {
-            content: <TabContent.Data data={cubeData.Data} showSampleType={showSampleType} filterCategories={filterCategories} />,
+            content: <TabContent.Data 
+                data={cubeData.Data} 
+                showSampleType={showSampleType} 
+                filterCategories={filterCategories}
+                sampleTypeCheckbox={sampleTypeCheckbox} />,
             id: "data",
             tag: "find-data",
             text: "Available Assay Data",
@@ -82,7 +99,14 @@ export const DataFinderTabs: React.FC<DataFinderTabsProps> = ({cubeData, showSam
         },
         // ------- STUDY -------
         study: {
-            content: <TabContent.Study data={cubeData.Study} filterCategories={filterCategories} studyDict={studyDict} studyParticipantCounts={studyParticipantCounts} StudyCardMemo={StudyCard} />,
+            content: <TabContent.Study 
+                data={cubeData.Study} 
+                filterCategories={filterCategories} 
+                studyDict={studyDict} 
+                studyParticipantCounts={studyParticipantCounts} 
+                StudyCard={StudyCard} 
+                filterClick={filterClick} 
+                selectedStudies={selectedStudies}/>,
             id: "study",
             tag: "find-study",
             text: "Study Design",

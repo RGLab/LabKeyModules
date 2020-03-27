@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { StudyInfo } from '../../typings/StudyCard';
 import { TinyHeatmap } from '../components/TinyHeatmap';
+import { Filter } from '../../typings/CubeData';
 
 // Types
 interface StudyPropertyProps {
@@ -27,6 +28,8 @@ interface StudyCardProps {
     key: string;
     study: StudyInfo;
     participantCount: number;
+    filterClick: (dim: string, filter:Filter) => () => void;
+    selected: boolean;
 }
 
 // Components
@@ -93,48 +96,24 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             value: study.assays[0]
         }
     ]
-    const heatmapColors = [
-        "#FFFFFF",
-        "#EDF8E9",
-        "#C7E9C0",
-        "#A1D99B",
-        "#74C476",
-        "#41AB5D",
-        "#238B45",
-        "#005A32"
-    ];
-    const heatmapBreaks = [
-        1,5,10,20,50,100
-    ]
-    const assays = [];
-    study.heatmapData.map((e, i) => {
-        if (!e) return
-        const assay = e.member.split(/\./)[0]
-        if ( assays.indexOf(assay) === -1 && e.participantCount > 0) {
-            assays.push(assay);
-        }
-    });
-    const heatmapData = study.heatmapData.map((e, i) => {
-        if (!e) return
-        const assay = e.member.split(/\./)[0]
-        const timepoint = e.member.split(/\./)[1]
-        return (
-            {
-                x: timepoint,
-                y: assay,
-                participantCount: e.participantCount,
-                studyCount: e.studyCount,
-                data: undefined
-            }
-        )
-    })
+
 
     return (
         <div className="study-card">
             <div className="study-label">
                 <div className="study-checkbox checkbox">
-                    <label>
-                        <input type="checkbox" name="study" value="SDY28" />
+                    <label >
+                        <input 
+                        onChange={
+                        props.filterClick("Study", {
+                            level: "Study", 
+                            member: study.study_accession})
+                    }
+                        type="checkbox" 
+                        name="study" 
+                        value={study.study_accession} 
+                        defaultChecked={props.selected}
+                        />
                         <span className="study-id">{study.study_accession}</span>
                     </label>
                 </div>
@@ -152,12 +131,7 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
             <hr></hr>
             <TinyHeatmap
                 name={study.study_accession} 
-                width={260} 
-                height={35 + 10 * assays.length} 
-                data={heatmapData} 
-                colors={heatmapColors}
-                colorBreaks={heatmapBreaks}
-                assays={assays}/>           
+                heatmapInfo={study.heatmapInfo}/>           
         </div>
     )
 }

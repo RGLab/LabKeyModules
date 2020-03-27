@@ -10,7 +10,7 @@ import { StudyParticipantCount } from '../typings/StudyCard'
 import { StudyCard } from './components/StudyCard'
 import { List } from 'immutable';
 import { ActionButton, LoadDropdown, SaveDropdown, ClearDropdown } from './components/ActionButton'
-import { FilterDropdown, ContentDropdown, AndOrDropdown } from './components/FilterDropdown'
+import { ContentDropdown, AndOrDropdown, FilterDropdownContent } from './components/FilterDropdown'
 import { Flag } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
 import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
@@ -18,14 +18,15 @@ import Tabs, { TabProps, DataFinderTabs } from "./components/Tabs";
 import * as d3 from 'd3'
 import { Banner } from "./components/Banner";
 import { AssayTimepointViewerContainer } from "./components/AssayTimepointViewer";
-
+import localStorage from './helpers/localStorage'
+import { CubeMdx } from "../typings/Cube";
 interface DataFinderControllerProps {
-    mdx: any
+    mdx:  CubeMdx,
+    studyInfo: SelectRowsResponse
 }
 
-const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFinderControllerProps) => {
+const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyInfo}) => {
     // Constants -------------------------------------
-    const mdx = props.mdx;
     const cd = new CubeData({})
     const sf = new SelectedFilters(JSON.parse(localStorage.getItem("dataFinderSelectedFilters")));
     const studySubject = {
@@ -34,6 +35,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         tableName: 'Participant',
         columnName: 'ParticipantId'
     }
+    const loadedStudiesArray = CubeHelpers.createLoadedStudies(studyInfo)
 
     // State ---------------------------------------------
     // ----- Data (updated by API calls) -----
@@ -59,16 +61,17 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     const [selectedFilters, setSelectedFiltersState] = React.useState<SelectedFilters>(appliedFilters)
     const setSelectedFilters = (filters: SelectedFilters) => {
         setSelectedFiltersState(filters)
-        Promise.all([
-            CubeHelpers.getTotalCounts(mdx, filters, "[Subject].[Subject]"),
-            CubeHelpers.getTotalCounts(mdx, filters, "[Study].[Name]")
-        ]).then((res) => {
-            const counts = CubeHelpers.createTotalCounts(res)
-            setTotalSelectedCounts(counts)
-        })
+            Promise.all([
+                CubeHelpers.getTotalCounts(mdx, filters, "[Subject].[Subject]", loadedStudiesArray),
+                CubeHelpers.getTotalCounts(mdx, filters, "[Study].[Name]", loadedStudiesArray)
+            ]).then((res) => {
+                const counts = CubeHelpers.createTotalCounts(res)
+                setTotalSelectedCounts(counts)
+            })
     }
     // Other view settings set by user
-    const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
+    const [showSampleType_dropdown, setShowSampleType_dropdown] = React.useState<boolean>(false)
+    const [showSampleType_tab, setShowSampleType_tab] = React.useState<boolean>(false)
 
     // ----- Other -----
     // Webparts
@@ -91,12 +94,17 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     // Setup (only run on first render) ----- 
     React.useEffect(() => {
         // load data
-        CubeHelpers.getFilterCategories().then((categoriesResponse) => {
-            const categories = CubeHelpers.createFilterCategories(categoriesResponse)
-            setFilterCategories(categories)
+        // CubeHelpers.getFilterCategories(LABKEY).then((categoriesResponse) => {
+        //     const categories = CubeHelpers.createFilterCategories(categoriesResponse)
+        //     setFilterCategories(categories)
+        // })
+        CubeHelpers.getCubeData(mdx, new SelectedFilters(), "[Subject].[Subject]", loadedStudiesArray, false)
+            .then((res) => {
+                const categories = CubeHelpers.createFilterCategories(res)
+                setFilterCategories(categories)
         })
-        Promise.all([CubeHelpers.getStudyInfo(), CubeHelpers.getStudyCounts(mdx, new SelectedFilters())]).then((res) => {
-            const sd = CubeHelpers.createStudyDict(res)
+        CubeHelpers.getStudyCounts(mdx, new SelectedFilters()).then((res) => {
+            const sd = CubeHelpers.createStudyDict([studyInfo, res])
             setStudyDict(sd)
         })
         ParticipantGroupHelpers.getAvailableGroups().then((data) => {
@@ -143,23 +151,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // When filters are applied
     React.useEffect(() => {
-        CubeHelpers.getStudyParticipantCounts(mdx, selectedFilters)
-            .then((spcResponse) => {
-                const { countsList, pids } = CubeHelpers.createStudyParticipantCounts(spcResponse)
-                ParticipantGroupHelpers.saveParticipantIdGroupInSession(pids).then(() => {
+        if (studyDict) {
+                ParticipantGroupHelpers.saveParticipantIdGroupInSession(filteredPids).then(() => {
                     if (participantDataWebpart) participantDataWebpart.render()
                 })
                 if (studyDict) {
-                    ParticipantGroupHelpers.updateContainerFilter(countsList, studyDict)
+                    ParticipantGroupHelpers.updateContainerFilter(studyParticipantCounts, studyDict)
                 }
-            })
-    }, [appliedFilters])
+            }
+    }, [filteredPids])
 
 
     // Helper functions ---------------------------------------------
 
     const renderWepart = (tabName: string) => {
-        console.log("renderWebpart(" + tabName + ")")
         if (tabName == "participant") { participantDataWebpart.render(); return }
         if (tabName == "data") { dataViewsWebpart.render(); return }
         return
@@ -167,7 +172,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     // ----- Memos -----
     const BannerMemo = React.memo(Banner)
-    const FilterDropdownMemo = React.memo(FilterDropdown)
     const DataFinderTabsMemo = React.memo(DataFinderTabs, (prevProps, nextProps) => true)
 
     // ----- Components -----
@@ -187,17 +191,25 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
     const FilterDropdownHelper = (dim, level, includeIndicators = false, includeAndOr = false) => {
         const levelArray = level.split(".")
+        let label = levelArray[0];
+        if (levelArray[0] === "ExposureMaterial") label = "Exposure Material"
+        if (levelArray[0] === "ExposureProcess") label = "Exposure Process"
+        if (levelArray[0] === "ResearchFocus") label = "Research Focus"
+        if (levelArray[0] === "SampleType") label = "Sample Type"
 
-        return (
-            <>
-                <FilterDropdownMemo
-                    key={level}
+        return(
+            <ContentDropdown
+                id={levelArray[0]}
+                label={label}
+                customMenuClass="df-dropdown filter-dropdown"
+                content={
+                <FilterDropdownContent
                     dimension={dim}
                     level={level}
                     members={filterCategories[levelArray[0]]}
                     filterClick={filterClick}
                     selected={selectedFilters.getIn([dim, ...levelArray, "members"])}
-                >
+                />}>
 
                     {includeAndOr &&
                         <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])}
@@ -215,9 +227,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                             })}
                         </div>
                     }
-                </FilterDropdownMemo>
-            </>
+            </ContentDropdown>
         )
+        
     }
 
     // Callbacks -----------------------------------------------------
@@ -237,20 +249,19 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     const applyFilters = (filters = selectedFilters, customUnsavedFilters = true, groupName = null) => {
-        console.log("----- apply filters -----")
         // set applied filters
         setAppliedFilters(filters)
         // set local storage
         localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(filters))
-        CubeHelpers.getStudyParticipantCounts(mdx, filters)
+        CubeHelpers.getStudyParticipantCounts(mdx, filters, loadedStudiesArray)
             .then((spcResponse) => {
                 const { countsList, pids } = CubeHelpers.createStudyParticipantCounts(spcResponse)
                 setStudyParticipantCounts(countsList)
                 setFilteredPids(pids)
             })
         Promise.all([
-            CubeHelpers.getCubeData(mdx, filters, "[Subject].[Subject]"),
-            CubeHelpers.getCubeData(mdx, filters, "[Study].[Name]")])
+            CubeHelpers.getCubeData(mdx, filters, "[Subject].[Subject]", loadedStudiesArray),
+            CubeHelpers.getCubeData(mdx, filters, "[Study].[Name]", loadedStudiesArray)])
             .then((res) => {
                 const cd = CubeHelpers.createCubeData(res)
                 setCubeData(cd)
@@ -262,8 +273,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
         }
         setUnsavedFilters(unsavedFiltersValue)
         Promise.all([
-            CubeHelpers.getTotalCounts(mdx, selectedFilters, "[Subject].[Subject]"),
-            CubeHelpers.getTotalCounts(mdx, selectedFilters, "[Study].[Name]")
+            CubeHelpers.getTotalCounts(mdx, selectedFilters, "[Subject].[Subject]", loadedStudiesArray),
+            CubeHelpers.getTotalCounts(mdx, selectedFilters, "[Study].[Name]", loadedStudiesArray)
         ]).then((res) => {
             const counts = CubeHelpers.createTotalCounts(res)
             setTotalAppliedCounts(counts)
@@ -273,11 +284,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
     }
 
     const clearFilters = () => {
-        d3.select("#barplot-Age")
-        // debugger;
-        setSelectedFilters(new SelectedFilters());
+        const newFilters = new SelectedFilters()
+        setSelectedFilters(newFilters);
         setLoadedGroup(null)
-        applyFilters(new SelectedFilters(), false, "Unsaved Participant Group")
+        applyFilters(newFilters, false, "Unsaved Participant Group")
     }
 
     // ----- participant group-related callbacks -----
@@ -349,8 +359,9 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 
 
     // ------ Other ------
-    const toggleSampleType = () => {
-        setShowSampleType(!showSampleType)
+    const toggleSampleType = (which) => {
+        if(which == "dropdown") setShowSampleType_dropdown(!showSampleType_dropdown)
+        if(which == "tab") setShowSampleType_tab(!showSampleType_tab)
     }
     // -------------------------------- RETURN --------------------------------
     return (
@@ -364,6 +375,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                     disableSave={!loadedGroup} />
             </div> */}
             <BannerMemo
+                filterBarId={"df-active-filter-bar"}
                 filters={appliedFilters}
                 groupName={loadedGroup ? loadedGroup.label : "Unsaved Participant Group"}
                 counts={totalAppliedCounts}
@@ -395,6 +407,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         {FilterDropdownHelper("Study", "ExposureMaterial", true)}
                         {FilterDropdownHelper("Study", "ExposureProcess", true)}
                         {FilterDropdownHelper("Study", "Species", true)}
+                        {FilterDropdownHelper("Study", "Study", true)}
                     </div>
                     <div className="col-sm-4">
                         {FilterDropdownHelper("Subject", "Gender", true)}
@@ -402,19 +415,20 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
                         {FilterDropdownHelper("Subject", "Race", true)}
                     </div>
                     <div className="col-sm-3">
-                        <ContentDropdown 
-                            id={"heatmap-selector"} 
-                            label={"Assay*Timepoint"} 
+                        <ContentDropdown
+                            id={"heatmap-selector"}
+                            label={"Assay*Timepoint"}
+                            customMenuClass="assay-timepoint-dropdown"
                             content={filterCategories &&
                                 <>
                                     <SampleTypeCheckbox
-                                        toggleShowSampleType={toggleSampleType}
-                                        showSampleType={showSampleType} />
+                                        toggleShowSampleType={() => toggleSampleType("dropdown")}
+                                        showSampleType={showSampleType_dropdown} />
                                     <HeatmapSelector
                                         name={"heatmap2"}
                                         data={cubeData.Data.toJS()}
                                         filterClick={filterClick}
-                                        showSampleType={showSampleType}
+                                        showSampleType={showSampleType_dropdown}
                                         selected={selectedFilters.Data}
                                         timepointCategories={filterCategories.Timepoint}
                                         sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
@@ -462,13 +476,21 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
             </div>
 
             <div className="datafinder-wrapper">
+            
                 <DataFinderTabs
                     cubeData={cubeData}
-                    showSampleType={showSampleType}
+                    showSampleType={showSampleType_tab}
                     filterCategories={filterCategories}
                     studyParticipantCounts={studyParticipantCounts}
                     studyDict={studyDict}
-                    renderWebpart={renderWepart} />
+                    renderWebpart={renderWepart}
+                    filterClick={filterClick}
+                    selectedStudies={selectedFilters.getIn(["Study", "Study", "members"]) || List([])}
+                    sampleTypeCheckbox={
+                        <SampleTypeCheckbox
+                            toggleShowSampleType={() => toggleSampleType("tab")}
+                            showSampleType={showSampleType_tab} />
+                    } />
             </div>
 
             {/* Tooltip */}
@@ -481,22 +503,32 @@ const DataFinderController: React.FC<DataFinderControllerProps> = (props: DataFi
 }
 
 export const App: React.FC = () => {
+    const filterBanner = document.getElementById('filter-banner')
+    filterBanner.style.display = 'none'
 
     const [cubeReady, setCubeReady] = React.useState(false)
+    const [studyInfo, setStudyInfo] = React.useState(null)
     // debugger
     const dfcube = LABKEY.query.olap.CubeManager.getCube({
         configId: 'DataFinder:/DataFinderCube',
         schemaName: 'DataFinder',
         name: 'DataFinderCube'
     })
+
     React.useEffect(() => {
-        dfcube.onReady((mdx) => {
+        Promise.all([
+            new Promise((resolve, reject) => dfcube.onReady((mdx) => resolve(true))),
+            CubeHelpers.getStudyInfo(LABKEY)
+        ]).then(([cubeReady, studyInfoRes]) => {
             setCubeReady(true)
+            setStudyInfo(studyInfoRes)
         })
     }, [])
 
-    if (cubeReady) {
-        return <DataFinderController mdx={dfcube.mdx} />
+    if (cubeReady && studyInfo) {
+        return <DataFinderController mdx={dfcube.mdx} studyInfo={studyInfo} />
     }
-    return <div></div>
+    return (<div>
+        <div className="loader" id="loader-1"></div>
+    </div>)
 }

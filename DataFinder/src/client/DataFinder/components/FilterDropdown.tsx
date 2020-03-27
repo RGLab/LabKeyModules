@@ -9,12 +9,16 @@ export interface FilterDropdownProps {
     members: FilterCategory[];
     filterClick: (dim: string, filter: Filter) => () => void;
     selected: List<string>;
+    label?: string;
 }
+
+
 
 interface ContentDropdownProps {
     id: string
     label: string;
     content: JSX.Element;
+    customMenuClass: string;
 }
 
 interface AndOrDropdownProps {
@@ -22,19 +26,29 @@ interface AndOrDropdownProps {
     onClick: (value: string) => void;
 }
 
-export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level, members, filterClick, selected, children }) => {
+export const FilterDropdown_old: React.FC<FilterDropdownProps> = ({ dimension, level, members, filterClick, selected, children, label }) => {
     // if (props.selected != undefined) debugger
 
     const levelArray = level.split(".")
+    const dropdownLabel = label || levelArray[0]
     const labels = members.map(m => m.label)
     return (
         <div className={"dropdown"}>
-            <div className="btn-group filterselector" role="group">
-                <button id={levelArray[0] + "-filter-dropdown"} className="btn btn-default dropdown-toggle filter-dropdown-button" 
-                        type="button" 
-                        data-toggle="dropdown"
+            <div id={"df-filter-dropdown-" + levelArray[0]} className="btn-group filterselector" role="group">
+                <button 
+                    id={levelArray[0] + "-filter-dropdown"} 
+                    className="btn btn-default dropdown-toggle filter-dropdown-button" 
+                    type="button" 
+                    onClick={() => {
+                        const cl = document.getElementById("df-filter-dropdown-" + levelArray[0]).classList
+                        if (cl.contains("open")) {
+                            cl.remove("open")
+                        } else {
+                            cl.add("open")
+                        }
+                    }}
                 >
-                    <span>{levelArray[0]}</span>
+                    <span>{dropdownLabel}</span>
                     <span style={{float:"right"}}><i className="fa fa-caret-down"></i></span>
                 </button>
                 <div className="dropdown-menu filter-dropdown">
@@ -53,11 +67,11 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level
                                 <div className="checkbox" key={e}>
                                     <label >
                                         <input
-                                            onClick={filterClick(dimension, { level: level, member: e })}
                                             type="checkbox"
                                             name={level}
                                             value={e}
-                                            checked={checked}
+                                            defaultChecked={checked}
+                                            onChange={filterClick(dimension, { level: level, member: e })}
                                             readOnly />
                                         <span>{e}</span>
                                     </label>
@@ -73,23 +87,73 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({ dimension, level
     )
 }
 
-export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, content, children }) => {
+
+
+export const FilterDropdownContent: React.FC<FilterDropdownProps> = 
+({ 
+        dimension, 
+        level, 
+        members, 
+        filterClick, 
+        selected
+    }) => {
+
+    const labels = members.map(m => m.label)
+    return(
+            <div id={level} className="form-group">
+                {labels.map((e) => {
+                    let checked: boolean;
+                    if (selected == undefined) {
+                        checked = false
+                    } else if (selected.includes(e)) {
+                        checked = true;
+                    } else {
+                        checked = false;
+                    }
+
+                    return (
+                        <div className="checkbox" key={e}>
+                            <label >
+                                <input
+                                    onClick={filterClick(dimension, { level: level, member: e })}
+                                    type="checkbox"
+                                    name={level}
+                                    value={e}
+                                    checked={checked}
+                                    readOnly />
+                                <span>{e}</span>
+                            </label>
+                        </div>
+                    )
+                })}
+            </div>
+    )
+}
+
+export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, content, customMenuClass, children }) => {
     return (
         <>
             <div className={"dropdown"}>
                 <div id={"df-content-dropdown-" + id} className="btn-group filterselector" role="group" >
-                    <button id={"content-dropdown-button-" + id} className="btn btn-default dropdown-toggle filter-dropdown-button" type="button" onClick={() => {
-                        const cl = document.getElementById("df-content-dropdown-" + id).classList
-                        if (cl.contains("open")) {
-                            cl.remove("open")
-                        } else {
-                            cl.add("open")
-                        }
-                    }}>
+                    <button 
+                        id={"content-dropdown-button-" + id} 
+                        className="btn btn-default dropdown-toggle filter-dropdown-button" 
+                        type="button" 
+                        onClick={() => {
+                            const cl = document.getElementById("df-content-dropdown-" + id).classList
+                            const willOpen = !cl.contains("open")
+                            for (let el of document.getElementsByClassName('filterselector open')) {
+                                el.classList.remove("open")
+                            };
+                            if (willOpen) {
+                                cl.add("open")
+                            }
+                        }}
+                        >
                         <span>{label}</span>
                         <span style={{float:"right"}}><i className="fa fa-caret-down"></i></span>
                     </button>
-                    <div className="dropdown-menu assay-timepoint-dropdown">
+                    <div className={"dropdown-menu " + (customMenuClass || "")}>
                         {content}
                     </div>
                     {children}

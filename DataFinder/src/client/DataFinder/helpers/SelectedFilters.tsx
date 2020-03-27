@@ -30,9 +30,8 @@ export const createCubeFilters = (filters: SelectedFilters) => {
     } else {
         // if (subjectSelectedFilters.get("Age").size > 2) debugger
         subjectFilters = subjectSelectedFilters.map((selectedFilter, level) => {
-            const filterLevel = level == "Species" ? "[Study].[Name]" : "[Subject].[Subject]"
             const cubeFilters = {
-                level: filterLevel, membersQuery: {
+                level: "[Subject].[Subject]", membersQuery: {
                     level: `[Subject.${level}].[${level}]`,
                     members: selectedFilter.members.map((member) => (`[Subject.${level}].[${member}]`))
                 }
@@ -45,12 +44,16 @@ export const createCubeFilters = (filters: SelectedFilters) => {
     } else {
         studyFilters = studySelectedFilters.map((selectedFilter, level) => {
             const realDim = ["ExposureProcess", "ExposureMaterial", "Species"].indexOf(level) > -1 ? "Subject" : "Study"
-            const cubeFilters = {
-                level: "[Subject].[Subject]", membersQuery: {
-                    level: `[${realDim}.${level}].[${level}]`,
-                    members: selectedFilter.members.map((member) => (`[${realDim}.${level}].[${member}]`))
+            let cubeFilters;
+                cubeFilters = {
+                    level: "[Subject].[Subject]", membersQuery: {
+                        // NOTE:  convert Study.Study to [Study].[Name] for selecting individual studies
+                        level: level === "Study" ? "[Study].[Name]" : `[${realDim}.${level}].[${level}]`, 
+                        members: selectedFilter.members.map((member) => (
+                            level === "Study" ? `[Study].[${member}]` : `[${realDim}.${level}].[${member}]`
+                            ))
+                    }
                 }
-            }
             return (cubeFilters)
         }).valueSeq().toJS()
     }
@@ -104,16 +107,14 @@ export const createCubeFilters = (filters: SelectedFilters) => {
                 }
             }
         }).valueSeq().toJS()
+            .reduce((acc, val) => acc.concat(val), []) // Use this instead of flat() because flat() for some reason doesn't work while testing
     }
-    // debugger
-    return [...subjectFilters, ...studyFilters, ...dataFilters.flat(2)]
+    return [...subjectFilters, ...studyFilters, ...dataFilters]
 }
 
 
 
 export const toggleFilter = (dim: string, level: string, member: string, selectedFilters: SelectedFilters) => {
-    console.log("toggleFilter()")
-
     let filterIn: string[];
     if (/\./.test(level)) {
         const l = level.split(".")
@@ -146,7 +147,6 @@ export const toggleFilter = (dim: string, level: string, member: string, selecte
 }
 
 export const toggleAndOr = (dim: string, level: string, selectedFilters: SelectedFilters) => {
-    console.log("toggleAndOr()")
     let filterIn: string[];
     if (/\./.test(level)) {
         const l = level.split(".")
@@ -167,7 +167,6 @@ export const toggleAndOr = (dim: string, level: string, selectedFilters: Selecte
 }
 
 export const setAndOr = (dim: string, level: string, value: string, selectedFilters: SelectedFilters) => {
-    console.log("setAndOr()")
     let filterIn: string[];
     if (/\./.test(level)) {
         const l = level.split(".")
@@ -176,51 +175,8 @@ export const setAndOr = (dim: string, level: string, value: string, selectedFilt
         filterIn = [dim, level]
     }
     if (selectedFilters.getIn(filterIn) == undefined) return (selectedFilters)
-    if (selectedFilters.getIn([...filterIn, "operator"]) == value) return(selectedFilters)
+    if (selectedFilters.getIn([...filterIn, "operator"]) == value) return (selectedFilters)
     const sf = selectedFilters.setIn([...filterIn, "operator"], value)
     return (new SelectedFilters(sf.toJS()))
 }
 
-export const connectFilters = (dim: string, level: string, member1: string, member2: string, selectedFilters: SelectedFilters) => {
-    // Add member1 to the member2 group
-    // or remove member1 from the member2 group
-    let filterIn: string[];
-    if (/\./.test(level)) {
-        const l = level.split(".")
-        filterIn = [dim, l[0], l[1]]
-    } else {
-        filterIn = [dim, level]
-    }
-    const filters: List<List<string>> = selectedFilters.getIn(filterIn)
-    const indices = [[undefined, undefined], [undefined, undefined]]
-    filters.forEach((e, i) => {
-        if (e.includes(member1)) {
-            indices[0][0] = i
-            e.forEach((f, j) => {
-                if (f == member1) indices[0][1] = j
-            })
-        }
-        if (e.includes(member2)) {
-            indices[1][0] = i
-            e.forEach((f, j) => {
-                if (f == member2) indices[1][1] = j
-            })
-        }
-    })
-    // debugger
-    if (indices[0][0] == undefined || indices[0][1] == undefined || !indices[1][0] == undefined || !indices[1][1] == undefined) return
-    let f: List<List<string>>
-    if (indices[0][0] == indices[1][0]) {
-        // remove member1 from the member2 group
-        f = filters.removeIn(indices[1])
-        f = f.push(fromJS(member1))
-        return (f)
-    } else {
-        // add member1 to the member2 group
-        f = filters.removeIn(indices[0])
-        f = f.update(indices[1][0], (memberList) => memberList.push(member1))
-        if (f.get(indices[0][0]).size == 0) f = f.remove(indices[0][0])
-    }
-    const sf = selectedFilters.setIn(filterIn, f)
-    return sf
-}

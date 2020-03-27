@@ -8,7 +8,6 @@ import { StudyParticipantCount, StudyDict} from "../../typings/StudyCard";
 // TODO:
 // get list of available participant groups
 export const getAvailableGroups = () => {
-    console.log("getAvailableGroups()")
     return new Promise((resolve, reject) => {
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('participant-group', 'browseParticipantGroups.api'),
@@ -55,7 +54,6 @@ export const createAvailableGroups = (data) => {
 
 // load participant group
 export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
-    console.log("loadParticipantGroup(" + groupInfo.label + ")")
     let sf: any
     sf = new SelectedFilters()
     let dim: string;
@@ -63,7 +61,6 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
         const filters: ISelectedFilters = groupInfo.filters
         sf = new SelectedFilters(filters)
     } else {
-        console.log("--------- OLD FILTERS ------")
         const missingDimensions = []
         // convert from old filters and warn user
         Object.keys(groupInfo.filters).forEach((level) => {
@@ -72,7 +69,7 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
             })
             if (["Age", "Gender", "Race"].indexOf(level) > -1) {
                 sf = sf.setIn(["Subject", level], new SelectedFilter({ members: members }))
-            } else if (["ResearchFocus", "Condition", "ExposureMaterial", "ExposureProcess", "Species"].indexOf(level) > -1) {
+            } else if (["Study", "ResearchFocus", "Condition", "ExposureMaterial", "ExposureProcess", "Species"].indexOf(level) > -1) {
                 sf = sf.setIn(["Study", level], new SelectedFilter({ members: members }))
             } else if (level == "Assay") {
                 sf = sf.setIn(["Data", "Assay", "Assay"], new SelectedFilter({ members: members, operator: groupInfo.filters[level].operator }))
@@ -103,7 +100,6 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
 export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel = "", goToSendAfterSave = false) => {
     // save the group with applied filters in localStorage
 
-    console.log("saveParticipantGroup()")
     const win = Ext4.create('Study.window.ParticipantGroup', {
         subject: studySubject,
         groupLabel: groupLabel,
@@ -119,7 +115,6 @@ export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel = 
 
 // update participant group
 export const updateParticipantGroup = (pids: string[], appliedFilters: SelectedFilters, groupInfo: GroupInfo) => {
-    console.log("updateParticipantGroup()")
     const groupData = {
         label: groupInfo.label,
         participantIds: pids,
@@ -148,7 +143,6 @@ export const updateParticipantGroup = (pids: string[], appliedFilters: SelectedF
 }
 
 export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
-    console.log("saveParticipantGroupInSession()")
     return new Promise((resolve, reject) => {
         LABKEY.Ajax.request({
             method: "POST",
@@ -165,7 +159,6 @@ export const saveParticipantIdGroupInSession = (participantIds: string[]) => {
 // update container filter
 
 export const updateContainerFilter = (studyParticipantCounts: List<StudyParticipantCount>, studyDict: StudyDict) => {
-    console.log("updateContainerFilter()")
     const containers = []
     studyParticipantCounts.forEach((participantCount) => {
         if (participantCount.participantCount > 0 && studyDict[participantCount.studyName]) {
@@ -184,7 +177,7 @@ export const goToSend = (groupId) => {
     if (groupId == null) { console.log("null group: can't send") } else {
         window.location = LABKEY.ActionURL.buildURL('study', 'sendParticipantGroup', null, {
             rowId: groupId,
-            returnUrl: LABKEY.ActionURL.buildURL('immport', 'dataFinder')
+            returnUrl: LABKEY.ActionURL.buildURL('project', 'begin')
         });
     }
 }

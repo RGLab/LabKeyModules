@@ -103,10 +103,10 @@ export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonDa
                     <span>{title}</span>
                     <span style={{paddingLeft:"5px"}}><i className="fa fa-caret-down"></i></span>
                 </button>
-                <ul className="dropdown-menu filter-dropdown" aria-labelledby={"button-" + title}>
+                <ul className="dropdown-menu df-dropdown" aria-labelledby={"button-" + title}>
                     {buttonData.map((button) => {
                         return (
-                            <li className={button.disabled ? "disabled" : ""}>
+                            <li key={button.label} className={button.disabled ? "disabled" : ""}>
                                 <a id={button.label.replace(" ", "-") + "-link"} key={button.label} onClick={button.action} href="#">
                                     {button.label}
                                 </a>

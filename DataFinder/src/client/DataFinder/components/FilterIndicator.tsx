@@ -3,7 +3,7 @@ import { SelectedFilters, SelectedFilter } from "../../typings/CubeData";
 import { Map } from 'immutable'
 
 export interface FilterSummaryProps {
-    filters: SelectedFilters
+    filters: SelectedFilters;
 }
 
 interface FilterIndicatorListProps {
@@ -36,9 +36,8 @@ export const FilterSummary = (props: FilterSummaryProps) => {
 
     // if (props.filters.subject.size != 0) debugger;
 
-
     return (
-        <div id="filters-banner" className="row filterbar">
+        <div className="row filterbar">
             <div className="col-sm-4">
                 <FilterIndicatorList
                     filterClass={"Study"}
@@ -181,92 +180,3 @@ const FilterIndicatorFlag: React.FC<FilterIndicatorFlagProps> = ({ dim, filter, 
     )
 }
 
-
-
-
-
-// function getFilter(filter) {
-//     const re = /\[[^\[\]]+\]$/;
-//     return filter.match(re);
-// }
-
-
-
-// // Summary ==============================================================
-
-// function App(props) {
-//     const [participantCount, setParticipantCount] = React.useState(0);
-//     const [studyCount, setStudyCount] = React.useState(0);
-//     const [filters, setFilters] = React.useState({"study": [], "participant": [], "sample": []})
-
-//     var filterKey = "";
-//     var filterFound = false;
-//     var i = 0;
-//     var re = /filterSet/
-//     while (!filterFound && i < localStorage.length ) {
-//         filterKey = localStorage.key(i);
-//         filterFound = re.test(filterKey);
-//         i++
-//     }
-
-
-//     // LABKEY.contextPath = '';
-//     // LABKEY.container = {path: 'Studies'};
-
-//     React.useEffect(() => update(), [])
-
-//     // update 
-//     function update() {
-
-//         // Summary 
-//         LABKEY.Query.selectRows({
-//             schemaName: 'study',
-//             queryName: "StudyProperties",
-//             success: (data) => {setStudyCount(data.rowCount);}
-//         });
-//         LABKEY.Query.selectRows({
-//             schemaName: "study",
-//             queryName: "demographics",
-//             success: (data) => {setParticipantCount(data.rowCount);}
-//         })
-
-//         // Filters
-//         const filters_tmp = {"study": [], "participant": [], "sample": []}
-//         const allFilters = JSON.parse(localStorage.getItem(filterKey));
-//         const filterKeys = Object.keys(allFilters)
-//         filterKeys.forEach((key) => {
-//             if (filterMembers.study.includes(key)) {
-//                 filters_tmp.study.push(allFilters[key])
-//             } else if (filterMembers.participant.includes(key)) {
-//                 filters_tmp.participant.push(allFilters[key])
-//             } else if (filterMembers.sample.includes(key)) {
-//                 filters_tmp.sample.push(allFilters[key])
-//             }
-//         })
-//         setFilters(filters_tmp);
-//     }
-
-//     // Get summary counts
-//     LABKEY.contextPath = '';
-//     LABKEY.container = {path: 'Studies'};
-//     LABKEY.Query.selectRows({
-//         schemaName: 'study',
-//         queryName: "StudyProperties",
-//         success: (data) => {setStudyCount(data.rowCount);}
-//     });
-//     LABKEY.Query.selectRows({
-//         schemaName: "study",
-//         queryName: "demographics",
-//         success: (data) => {setParticipantCount(data.rowCount);}
-//     })
-
-//     return(
-//         <div className='container wrapper'>
-//             <h2>Current Filters</h2>
-//             <button type="button" onClick={update}>Update</button>
-//             <p><em>{participantCount} participants from {studyCount} studies</em></p>
-//             <FilterSummary filters = {filters} />
-//         </div>
-//     )
-
-// }
