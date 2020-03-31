@@ -94,6 +94,8 @@ library(illuminaio)
       nmsVals <- gsub("RAW_SIGNAL", "AVG_Signal", nmsVals)
     } else if (!any(grepl("SAMPLE", nmsVals))) {
       nmsVals <- paste0(nmsVals, ".AVG_Signal")
+    } else if (all(grepl("^SAMPLE", nmsVals))){
+      nmsVals <- paste0(nmsVals, ".AVG_Signal")
     } else {
       nmsVals <- gsub("AVG_Signal", "SAMPLE", nmsVals)
     }
@@ -285,7 +287,7 @@ library(illuminaio)
             # lookahead to ensure full id before sep and not partial (e.g "PBMC_1" and "PBMC_12")
             # perl = TRUE for lookahead
             for (i in 1:nrow(mp)) {
-              fixedId <- paste0("^", gsub(".", "\\.", mp$id[[i]], fixed = T), "(?=(\\.|_))")
+              fixedId <- paste0("^", gsub(".", "\\.", mp$id[[i]], fixed = T), "(?=(\\.|_|$))")
               colnames(em) <- gsub(fixedId, mp$gsm[[i]], colnames(em), perl = TRUE)
             }
           }
@@ -732,7 +734,7 @@ runCreateMx <- function(labkey.url.base,
 
   # **studyIdTerm**: For extracting sample id from getGEO(gsm) object
   useDescription <- study %in% c("SDY144", "SDY180", "SDY522", "SDY1373", "SDY1364",
-                                 "SDY1325")
+                                 "SDY1325", "SDY640")
   metaData$studyIdTerm <- ifelse(useDescription, "description", "title")
 
   # **smplGsubTerms**: Custom gsub terms for allowing the mapping of study-given ids
@@ -749,10 +751,10 @@ runCreateMx <- function(labkey.url.base,
   # **gseNeedsMap**: Studies that need id-to-gsm mapping from gse supp files
   # without special gsub terms
   metaData$gseNeedsMap <- study %in% c("SDY404", "SDY522", "SDY1325", "SDY1364", "SDY144",
-                                       "SDY400")
+                                       "SDY400", "SDY640")
 
   # **gsmMapIndex**: Index of samplename in vector from getGEO()
-  useSecond <- c("SDY180")
+  useSecond <- c("SDY180", "SDY640")
   metaData$gsmMapIndex <- ifelse( study %in% useSecond, 2, 1)
 
   # **gsmTblVarNm**: Custom list of raw values column name for gsm-based data
