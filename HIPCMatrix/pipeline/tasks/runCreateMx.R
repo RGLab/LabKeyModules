@@ -734,7 +734,7 @@ runCreateMx <- function(labkey.url.base,
 
   # **studyIdTerm**: For extracting sample id from getGEO(gsm) object
   useDescription <- study %in% c("SDY144", "SDY180", "SDY522", "SDY1373", "SDY1364",
-                                 "SDY1325", "SDY640")
+                                 "SDY1325", "SDY640", "SDY520")
   metaData$studyIdTerm <- ifelse(useDescription, "description", "title")
 
   # **smplGsubTerms**: Custom gsub terms for allowing the mapping of study-given ids
@@ -751,10 +751,10 @@ runCreateMx <- function(labkey.url.base,
   # **gseNeedsMap**: Studies that need id-to-gsm mapping from gse supp files
   # without special gsub terms
   metaData$gseNeedsMap <- study %in% c("SDY404", "SDY522", "SDY1325", "SDY1364", "SDY144",
-                                       "SDY400", "SDY640")
+                                       "SDY400", "SDY640", "SDY520")
 
   # **gsmMapIndex**: Index of samplename in vector from getGEO()
-  useSecond <- c("SDY180", "SDY640")
+  useSecond <- c("SDY180", "SDY640", "SDY520")
   metaData$gsmMapIndex <- ifelse( study %in% useSecond, 2, 1)
 
   # **gsmTblVarNm**: Custom list of raw values column name for gsm-based data
