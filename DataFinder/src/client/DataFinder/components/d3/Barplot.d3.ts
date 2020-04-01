@@ -16,7 +16,6 @@ the props:
 interface D3BarplotConfig {
     width: number;
     height: number;
-    totalHeight: number;
     labels: string[];
     countMetric: string;
     barColor: string;
@@ -28,27 +27,33 @@ interface D3Barplot {
     update: (id: string, data: CubeDatum[], config: D3BarplotConfig) => void;
 }
 
+
+const xaxisTitle = {height: 40}
+
 const createBarplot = (id: string, data: CubeDatum[], config: D3BarplotConfig) => {
+
+    // Create margins
+    const barplotHeight = config.height - xaxisTitle.height - 10
+    const margin = { top: 0, right: 15, bottom: 0, left: 100 },
+    width = config.width - margin.left - margin.right,
+    height = barplotHeight - margin.top - margin.bottom;
+
 
     const svg = d3
         .select("#barplot-container-" + id).select("svg")
-        .attr("height", config.totalHeight)
+        .attr("height", barplotHeight)
         .attr("width", config.width)
         .attr("id", "svg-barplot-" + id)
 
     const xAxisSvg = d3.select("#xaxis-" + id).select("svg")
         .attr("width", config.width)
-        .attr("height", 40)
+        .attr("height", xaxisTitle.height)
 
-
-    // Create margins
-    const margin = { top: 0, right: 15, bottom: 0, left: 100 },
-        width = config.width - margin.left - margin.right,
-        height = config.totalHeight - margin.top - margin.bottom;
 
     const labels = config.labels.map(l => {
         let short = l
-        if (l.length > 18) short = l.slice(0, 14) + "..."
+        const maxLength = Math.round( margin.left / 5.5 )
+        if (l.length > maxLength) short = l.slice(0,  maxLength - 3) + "..."
         return ({ label: l, shortlabel: short })
     })
     const yaxisScale = d3
@@ -123,15 +128,20 @@ const updateBarplot = (id: string, data: CubeDatum[], config: D3BarplotConfig) =
     const countMetric = config.countMetric
     data.forEach((v) => (v[countMetric] > dataRange[1]) && (dataRange[1] = v[countMetric]))
 
+    // Create margins
+    const barplotHeight = config.height - xaxisTitle.height - 10
+    const margin = { top: 0, right: 15, bottom: 0, left: 100 },
+    width = config.width - margin.left - margin.right,
+    height = barplotHeight - margin.top - margin.bottom;
+
     const labels = config.labels.map(l => {
         let short = l
-        if (l.length > 18) short = l.slice(0, 14) + "..."
+        const maxLength = Math.round(margin.left / 5.5)
+        if (l.length > maxLength) short = l.slice(0,  maxLength - 3) + "..."
         return ({ label: l, shortlabel: short })
     })
 
-    const margin = { top: 0, right: 15, bottom: 0, left: 100 },
-        width = config.width - margin.left - margin.right,
-        height = config.totalHeight - margin.top - margin.bottom;
+
 
     const yaxisScale = d3
         .scaleBand()
@@ -192,14 +202,16 @@ const updateBarplot = (id: string, data: CubeDatum[], config: D3BarplotConfig) =
     labelContainers.selectAll(".label-text").selectAll("tspan")
         .data((d: CubeDatum) => {
             let l = d.member
-            if (l.length > 40) {
+            const maxLength = Math.round( (config.
+                width - margin.right - 10) / 5.5 )
+            if (l.length > maxLength) {
                 let splitIndex = l.indexOf(" ")
-                while (splitIndex < 40) {
+                while (splitIndex < maxLength) {
                     const next = l.indexOf(" ", splitIndex + 1)
-                    if (next > -1 && next < 40) { splitIndex = next } else { break }
+                    if (next > -1 && next < maxLength) { splitIndex = next } else { break }
                 }
                 let newlabel = [l.slice(0, splitIndex), l.slice(splitIndex + 1)]
-                if (newlabel[1].length > 40) newlabel[1] = newlabel[1].slice(0, 36) + "..."
+                if (newlabel[1].length > maxLength) newlabel[1] = newlabel[1].slice(0, maxLength - 4) + "..."
                 return (newlabel)
             } else { return ([l]) }
         })

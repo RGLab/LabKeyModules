@@ -7,15 +7,26 @@ import { List } from 'immutable';
 
 // Helpers
 const BarplotHelper = (data, dim, level, filterCategories) => {
+    let barColor: string, countMetric : string
+    if (dim == "Study") {
+        barColor = "#af88e3"
+        countMetric = "studyCount"
+    } else if (dim == "Subject") {
+        barColor = "#95cced"
+        countMetric = "participantCount"
+    } else if (dim == "Data") {
+        barColor = "#74C476"
+        countMetric = "participantCount"
+    }
     return (
         <Barplot
             data={data.get(level)}
             name={level}
-            height={200}
+            height={240}
             width={250}
             categories={filterCategories[level]}
-            countMetric={dim == "Study" ? "studyCount" : "participantCount"}
-            barColor={dim == "Study" ? "#af88e3" : "#95cced"} />
+            countMetric={countMetric}
+            barColor={barColor} />
     )
 }
 
@@ -41,14 +52,7 @@ export const Data = ({ data, showSampleType, filterCategories, sampleTypeCheckbo
                                         sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
                                 </div>
                                 <div className="col-sm-4">
-                                    <Barplot
-                                        data={data.getIn(["SampleType", "SampleType"])}
-                                        name={"SampleType"}
-                                        height={200}
-                                        width={250}
-                                        categories={filterCategories["SampleType"]}
-                                        countMetric={"participantCount"}
-                                        barColor={"#74C476"} />
+                                    {BarplotHelper(data.get("SampleType"), "Data", "SampleType", filterCategories)}
                                 </div>
                             </div>
                         </>}
