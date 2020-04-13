@@ -13,7 +13,7 @@ import { createCubeFilters } from './SelectedFilters'
 import * as StudyCardTypes from '../../typings/StudyCard'
 import { StudyParticipantCount } from '../../typings/StudyCard'
 import * as Immutable from 'immutable'
-import * as d3 from 'd3'
+import { createTinyHeatmapConsts, createTinyHeatmapYaxisScale } from "../components/TinyHeatmap";
 
 
 // ----- Promises ----- 
@@ -200,35 +200,7 @@ export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse
 
     // Combine with info for tiny heatmap
     // Things that are the same for all heatmaps
-    const heatmapWidth = 260
-    const heatmapColors = [
-        "#FFFFFF",
-        "#EDF8E9",
-        "#C7E9C0",
-        "#A1D99B",
-        "#74C476",
-        "#41AB5D",
-        "#238B45",
-        "#005A32"
-    ];
-    const heatmapBreaks = [
-        1, 5, 10, 20, 50, 100
-    ]
-    const timepoints = [
-        "<0", "0", "1", "2", "3", "4", "5", "6", "7",
-        "8", "9", "10", "11", "12", "13", "14", "15-27",
-        "28", "29-55", "56", ">56"];
-
-    var colorScale = d3
-        .scaleThreshold<number, string>()
-        .domain(heatmapBreaks)
-        .range(heatmapColors);
-
-    const xaxisScale = d3
-        .scaleBand()
-        .domain(timepoints)
-        .range([0, heatmapWidth - 55]);
-
+    const tinyHeatmapConsts = createTinyHeatmapConsts();
 
     // Things that are different for all heatmaps
     studyCountCs.axes[1].positions.forEach((e, i) => {
@@ -257,19 +229,16 @@ export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse
             })
             heatmapData.shift()
             const heatmapHeight = 35 + 10 * assays.length
-            const yaxisScale = d3
-                .scaleBand()
-                .domain(assays)
-                .range([0, heatmapHeight-35]);
+            const yaxisScale = createTinyHeatmapYaxisScale(assays)
 
             studyDict[studyName].heatmapInfo = {
                 data: heatmapData,
                 assays: assays.sort(),
                 height: heatmapHeight,
-                width: heatmapWidth,
+                width: tinyHeatmapConsts.width,
                 yaxisScale: yaxisScale,
-                xaxisScale: xaxisScale,
-                colorScale: colorScale
+                xaxisScale: tinyHeatmapConsts.xaxisScale,
+                colorScale: tinyHeatmapConsts.colorScale
             } 
         }
     })
