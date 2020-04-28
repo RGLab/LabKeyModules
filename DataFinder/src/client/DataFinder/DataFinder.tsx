@@ -239,6 +239,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
         return (() => {
             const sf = toggleFilter(dim, filter.level, filter.member, selectedFilters)
             setSelectedFilters(sf)
+            applyFilters(sf, false)
         })
     }
 
@@ -467,8 +468,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
 
                     </div>
                     <div style={{ position: "absolute", top: "0", right: "15px" }}>
-                        <ActionButton text={"Apply"} onClick={() => applyFilters()} />
-                        <div style={{ position: "absolute", top: "35px", right: "0", textAlign: "right", width: "8em" }}>{totalSelectedCounts.participant} participants from {totalSelectedCounts.study} studies</div>
+                        {/* <ActionButton text={"Apply"} onClick={() => applyFilters()} />
+                        <div style={{ position: "absolute", top: "35px", right: "0", textAlign: "right", width: "8em" }}>{totalSelectedCounts.participant} participants from {totalSelectedCounts.study} studies</div> */}
                     </div>
                 </>
                 }
