@@ -247,25 +247,6 @@ We had **`r round(mean(activeUsersByTime$n, na.rm = TRUE), 2)` active users** pe
 
 <br>
 
-## 5. Individual Logins over time: What do individual user experiences look like?
-```{r logins-over-time}
-loginsByUserOverTime <- currentLogins[ , list(n = .N), by = .(Date, User) ]
-loginsByUserOverTime$Date <- as.Date(loginsByUserOverTime$Date)
-
-if (nrow(loginsByUserOverTime) > 0) {
-  p <- ggplot(loginsByUserOverTime, aes(x = Date, y = n, colour = User)) +
-    geom_line(alpha = 0.3) +
-    xlab(paste0("By ", dateBy)) +
-    ylab("Logins") +
-    ggtitle("Logins over time by Individual User") +
-    scale_x_date(limits = c(as.Date(from), as.Date(to))) +
-    theme_minimal() +
-    theme(legend.position = "none")
-  ggplotly(p)
-}
-```
-<br>
-
 ## 6. Adjusted individual logins: What is the typical user's experience in terms of logins after the creation date? 
 ```{r typical-user-experience}
 # Subset logins by those in the created table
@@ -412,51 +393,6 @@ usersOverTimeMsg <- ISR_usersOverTime$Users
 ```
 We had **`r round(mean(usersOverTimeMsg, na.rm = TRUE), 2)` ISR users** per *`r dateBy`* on average from `r from` to `r to`.
 
-<br>
-
-## 10. Typical ISR user experience over time from first connection
-```{r typical-isr-user-experience, eval=ISR_inits_present}
-# prep UI logins
-UI_logins <- copy(allLogins)
-UI_logins <- UI_logins[ UI_logins$Date > from & UI_logins$Date < to ]
-UI_logins$Email <- users$Email[ match(UI_logins$User, users$`User Id`)]
-UI_logins <- UI_logins[ !is.na(Date) & !is.na(Email), list(Date, Email)]
-UI_logins$method <- "UI"
-UI_logins <- UI_logins[ !duplicated(UI_logins) ]
-UI_logins <- UI_logins[ , Date := cut(as.POSIXct(UI_logins$Date, format="%Y-%m-%d", tz="UTC"), breaks = "day") ]
-
-# prep ISR Logins
-ISR_logins <- ISR_inits[ , list(X12, date2) ]
-ISR_logins <- ISR_logins[ !duplicated(ISR_logins) ]
-setnames(ISR_logins, colnames(ISR_logins), c("Email", "Date"))
-ISR_logins$method <- "ISR"
-ISR_logins <- ISR_logins[ , Date := cut(as.POSIXct(ISR_logins$Date, format="%Y-%m-%d", tz="UTC"), breaks = "day") ]
-
-# Combine and add post-baseline days
-allLogins <- rbind(ISR_logins, UI_logins)
-allLogins$postBaseline <- apply(allLogins, 1, function(x){ 
-  ret <- as.double(as.Date(x["Date"]) - as.Date(users$Created[ users$Email == x["Email"] ]))
-  ret <- ifelse(is.null(ret), NA, ret)
-})
-
-# Subset to postBaseline
-allLogins <- allLogins[ !is.na(allLogins$postBaseline) & allLogins$postBaseline > 0 ]
-
-# Summarize and spread by method
-dailySmry <- allLogins[ , list(n = .N), by = c("method", "postBaseline") ]
-dailySmry <- dcast(dailySmry, postBaseline ~ method, value.var = "n")
-
-# Plot lines - doing just ISR currently, but may add back UI if
-# a better visualization is determined.  At the moment, UI logins 
-# drown out ISR.
-p <- plot_ly(dailySmry, x = ~postBaseline, y = ~ISR) %>%
-  # add_lines(y = ~UI, name = 'User Interface', line = list(shape = "spline")) %>%
-  # add_lines(y = ~ISR, name = 'ImmuneSpaceR') %>%
-  layout(xaxis = list(title = "Days after account creation"),
-         yaxis = list(title = "Unique User Logins"),
-         title = "ImmuneSpaceR logins by days after account creation") 
-p
-```
 <br>
 
 ## 11. Top ISR users
@@ -663,38 +599,6 @@ setnames(allIds, colnames(allIds), cnames)
 # Add study
 allIds$study <- df$study_accession[ match(allIds$original_id, df$pubmed_id)]
 allIds$studyNum <- as.numeric(gsub("SDY","", allIds$study))
-```
-
-## 20. Most Cited Studies
-```{r most-cited-study}
-CountByStudy <- allIds[ , list(Citations = .N), by = .(study)]
-setorder(CountByStudy, -Citations)
-setnames(CountByStudy, "study", "Study")
-DT::datatable(CountByStudy)
-```
-
-## 21. Papers that cite ImmuneSpace studies most (top 100)
-```{r papers-using-immunespace}
-CountByPaper <- allIds[ , list(Count = .N, Studies = paste(unique(study), collapse = ", ")), by = .(citedby_title, citedby_id) ]
-CountByPaper$citedby_id <- paste0("<a href='", "https://www.ncbi.nlm.nih.gov/pubmed/?term=", CountByPaper$citedby_id, "'>", 
-                                  CountByPaper$citedby_id, "</a>")
-setorder(CountByPaper, -Count)
-setnames(CountByPaper, c("citedby_title", "citedby_id", "Studies"), c("Paper Title", "Pubmed Id", "Studies Cited") )
-DT::datatable(CountByPaper, escape = FALSE)
-```
-
-## 22. Authors that cite ImmuneSpace studies most (top 100)
-```{r authors-using-immunespace}
-# TODO: Check parsing of html_text results to ensure authors pulled correctly
-authorsList <- unlist(lapply(allIds$citedby_authors, function(x){
-  strsplit(gsub(", ", "," , as.character(x)), ",")[[1]]
-  }))
-author <- authorsList[ grep("^\\w+ \\w{1,2}$", authorsList)]
-tbl <- data.table(table(author))
-setorder(tbl, -N)
-tbl <- tbl[1:100, ]
-setnames(tbl, c("author","N"), c("Author","Count"))
-DT::datatable(tbl)
 ```
 
 # Debugging Messages
