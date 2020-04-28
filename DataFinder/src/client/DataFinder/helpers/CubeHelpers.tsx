@@ -5,7 +5,7 @@
 // proper immutable object. I'm open to other suggestions. -HM
 
 import { CubeMdx } from "../../typings/Cube";
-import * as LABKEY from '@labkey/api';
+import { Query } from '@labkey/api'
 import { SelectedFilters, CubeData, ICubeData, Filter, CubeDatum } from "../../typings/CubeData";
 import * as Cube from '../../typings/Cube'
 import { HeatmapDatum, FilterCategories } from '../../typings/CubeData'
@@ -33,13 +33,16 @@ export const getFilterCategories = (LABKEY) => {
     })
 }
 
-export const getStudyInfo = (LABKEY) => {
+export const getStudyInfo = () => {
     return new Promise<SelectRowsResponse>((resolve, reject) => {
-        LABKEY.Query.selectRows({
+        Query.selectRows({
             schemaName: 'immport',
             queryName: 'dataFinder_studyCard',
-            containerFilter: "CurrentAndSubfolders",
-            success: (data: SelectRowsResponse) => { resolve(data) }
+            containerFilter: Query.ContainerFilter.currentAndSubfolders,
+            failure: (error) => {
+                reject(error.exception) },
+            success: (data) => {
+                resolve(data) }
         })
     })
 }

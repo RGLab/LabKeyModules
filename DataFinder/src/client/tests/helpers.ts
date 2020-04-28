@@ -1,5 +1,4 @@
 import * as Cube from '../typings/Cube'
-import { ISelectRowsOptions } from '@labkey/api/dist/labkey/query/Rows';
 
 // Cube
 const onRowsRequests = {
@@ -57,7 +56,7 @@ export const mdx: Cube.CubeMdx = {
 
 export const LABKEY = {
     Query: {
-        selectRows: (options: ISelectRowsOptions) => {
+        selectRows: (options) => {
             let response;
             if (options.queryName == "dataFinder_dropdownCategories") response = "dataFinder_dropdownCategories"
             if (options.queryName == "dataFinder_studyCard") response = "dataFinder_studyCard"

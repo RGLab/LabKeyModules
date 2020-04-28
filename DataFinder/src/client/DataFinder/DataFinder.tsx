@@ -518,7 +518,7 @@ export const App: React.FC = () => {
     React.useEffect(() => {
         Promise.all([
             new Promise((resolve, reject) => dfcube.onReady((mdx) => resolve(true))),
-            CubeHelpers.getStudyInfo(LABKEY)
+            CubeHelpers.getStudyInfo()
         ]).then(([cubeReady, studyInfoRes]) => {
             setCubeReady(true)
             setStudyInfo(studyInfoRes)
