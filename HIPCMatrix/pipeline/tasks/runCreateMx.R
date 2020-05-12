@@ -37,7 +37,7 @@ library(illuminaio)
 .dlSuppFls <- function(accList, baseDir, study){
   tmp <- sapply(accList, getGEOSuppFiles, makeDirectory = FALSE, baseDir = baseDir)
   fls <- list.files(baseDir)
-  targetFlTerms <- "non-normalized|corrected|raw|cel|pbmc|counts"
+  targetFlTerms <- "non-normalized|corrected|raw|cel|pbmc|count"
   rawFls <- fls[ grep(targetFlTerms, fls, ignore.case = TRUE) ]
 
   # Unzip any files if necessary - set `overwrite = TRUE` in case of processing fail
@@ -165,6 +165,12 @@ library(illuminaio)
       setnames(x, accs, esNms)
       return(x)
     })
+  } else if (study == "SDY787") {
+    # Fist number is unique id
+    mxList <- lapply(mxList, function(x) {
+      # Remove first "_" and everything following
+      setnames(x, colnames(x), gsub("_.*$", "", colnames(x)))
+    })
   }
   return(mxList)
 }
@@ -257,8 +263,8 @@ library(illuminaio)
         inputFiles <- .mxListToFlatFile(mxList, baseDir, study)
       }
 
-      # Cases 6 and 7: raw data in gse supp files - Illumina / RNAseq
     } else {
+      # Cases 6 and 7: raw data in gse supp files - Illumina / RNAseq
       accList <- unique(unlist(lapply(gef$geo_accession, function(x){
         gsm <- getGEO(x)
         gse <- gsm@header$series_id
@@ -745,7 +751,8 @@ runCreateMx <- function(labkey.url.base,
     SDY63   = list(old = "^101", new = "10"),
     SDY888  = list(old = "( |)_((N|n)egative|(S|s)econdary)", new = "_RNASeq"),
     SDY1373 = list(old = "Sample name: ", new = ""),
-    SDY180  = list(old = "([0-9])([A-Z])", new = "\\1_\\2")
+    SDY180  = list(old = "([0-9])([A-Z])", new = "\\1_\\2"),
+    SDY787  = list(old = "\\D", new = "") # Replace all non-digits
   )
 
   # **gseNeedsMap**: Studies that need id-to-gsm mapping from gse supp files
