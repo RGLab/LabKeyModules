@@ -73,52 +73,24 @@ dateBy <- ifelse(labkey.url.params$by %in% c("day", "week", "month", "year"),
 # common axis labels
 breaks <- seq(from, to, by = dateBy)
 
-# Create lists of admins and others to exclude from counts
-admins <- labkey.selectRows(baseUrl = labkey.url.base,
+usersToExclude <- labkey.selectRows(baseUrl = labkey.url.base,
                             folderPath = "/home",
                             schemaName = "core",
                             queryName = "SiteUsers",
                             viewName = "",
                             colFilter = makeFilter(c("Groups/Group$SName",
                                                      "CONTAINS_ONE_OF",
-                                                     "Developers;Administrators")),
-                            containerFilter = NULL)
-
-extra_emails <- paste("rglab.org",
-                      "immunespace.org",
-                      "labkey.com",
-                      "gilguday@comcast.net",
-                      "lwolfe@fredhutch.org",
-                      "matthew@bellew.net",
-                      "gfinak@scharp.org",
-                      "reader@bellew.net",
-                      "patrick.dunn@nih.gov",
-                      "cnathe@labkey.org",
-                      "hrodgers@fredhutch.org",
-                      "wjiang2@fhcrc.org",
-                      "hmiller@fredhutch.org",
-                      sep = ";")
-
-extras <- labkey.selectRows(baseUrl = labkey.url.base,
-                            folderPath = "/home",
-                            schemaName = "core",
-                            queryName = "SiteUsers",
-                            viewName = "",
-                            colFilter = makeFilter(c("Email",
-                                                     "CONTAINS_ONE_OF",
-                                                     extra_emails)),
+                                                     "Developers;Administrators;LabKey;excludeFromLogs")),
                             containerFilter = NULL)
 
 # Admin emails no longer in the DB
 oldAdminEmails <- c("rsautera@fhcrc.org",
-                    "renan.sauteraud@gmail.com",
-                    "ldashevs@fhcrc.org",
                     "ldashevs@scharp.org")
 
 # Vectors of people to exclude from counts
-exclusionNames <- paste0(unique(c(admins$`Display Name`, extras$`Display Name`)), collapse = ";")
-exclusionEmails <- unique(c(admins$Email, extras$Email, oldAdminEmails))
-exclusionIds <- unique(c(admins$`User Id`, extras$`User Id`))
+exclusionNames <- paste0(usersToExclude$`Display Name`, collapse = ";")
+exclusionEmails <- c(usersToExclude$Email, oldAdminEmails)
+exclusionIds <- usersToExclude$`User Id`
 ```
 
 # User Interface
@@ -549,56 +521,110 @@ We had **`r round(mean(log_rstudio$Sessions, na.rm = TRUE), 2)` RStudio sessions
 
 ***
 
-# Publications & Citations
+## 20. Publications & Citations
+These are a list of publications that cite publications listed in ImmuneSpace Studies.  The "original" columns refer to the publication listed in
+ImmuneSpace and the "citedby" refers to the publications which cite ImmuneSpace-related studies.
 ```{r organizing-pub-data}
-# get list of studies and their pubmedids
-df <- labkey.selectRows(baseUrl = labkey.url.base,
-                        folderPath = "/Studies/",
-                        schemaName = "immport",
-                        queryName = "study_pubmed",
-                        colNameOpt = "fieldname")
+allIds <- getCurrentRDS("pubmedInfo")
+datatable(allIds)
+```
 
-sdysInIS <- labkey.selectRows(baseUrl = labkey.url.base,
-                              folderPath = "/home/",
-                              schemaName = "lists",
-                              queryName = "Studies",
-                              colNameOpt = "fieldname")
-df <- df[ df$study_accession %in% sdysInIS$name, ]
+## 21. Google Analytics Data
+```{r google-analytics}
+gaData <- getCurrentRDS("googleAnalyticsArtifact")
 
-# For each pubmedid
-base <- "http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid="
-results <- lapply(df$pubmed_id, function(id){
-    if(grepl("^\\d{6,10}$", id)){
-        page <- read_html(paste0(base, id))
-        nodes <- html_nodes(page, css = '.rslt')
-        res <- lapply(nodes, html_text)
-        parsed <- lapply(res, function(x){
-            if(!grepl("Error", x)){
-                spl <- strsplit(x, "\\.")[[1]]
-                title <- spl[[1]]
-                authors <- spl[[2]]
-                pubmedid <- spl[[length(spl)]]
-                pubmedid <- regmatches(pubmedid, regexpr("\\d{8}", pubmedid))
-                return(c(title, authors, pubmedid, id))
-            }else{
-                return(c(NA, NA, NA, id))
-            }
-        })
-        parsed <- data.frame(do.call(rbind, parsed))
-        parsed <- parsed[ complete.cases(parsed), ]
-    }
+# Manually curated 'best guesses'
+gaData$condensedSource <- sapply(gaData$fullReferrer, function(x){
+  if(grepl("bioconductor",x)){
+    return("Bioconductor")
+  }else if(grepl("cran", x)){
+    return("Cran")
+  }else if(grepl("immport", x)){
+    return("ImmPort")
+  }else if(grepl("sciencemag|nature\\.com", x)){
+    return("Journals")
+  }else if(grepl("immuneprofiling", x)){
+    return("HIPC")
+  }else if(grepl("immunedata", x)){
+    return("ImmuneData")
+  }else if(grepl("mail|exchange\\.fhcrc", x)){
+    return("Email Link")
+  }else if(grepl("rglab|fhcrc|rdrr\\.io|RGLab/(ImmuneSignatures|ImmuneSpaceR)", x)){
+    return("RGLab Domain")
+  }else if(grepl("google|baidu|bing|duckduckgo|yandex", x)){
+    return("Search Engine")
+  }else if(grepl("t\\.co", x)){
+    return("Twitter")
+  }else if(grepl("facebook", x)){
+    return("Facebook")
+  }else if(grepl("ncbi\\.nlm", x)){
+    return("NCBI")
+  }else if(grepl("niaid\\.nih", x)){
+    return("NIAID")
+  }else{
+    return("Other")
+  }
 })
 
-allIds <- data.table(do.call(rbind, results))
-cnames <- c("citedby_title",
-            "citedby_authors",
-            "citedby_id",
-            "original_id")
-setnames(allIds, colnames(allIds), cnames)
+# summarize usageSessions by condensedSource by day
+gaData$shortDate <- format(as.Date(gaData$date), "%Y-%b")
+sourceSummary <- gaData[, list(users = sum(usageSessions)), by = c("condensedSource", "shortDate") ]
 
-# Add study
-allIds$study <- df$study_accession[ match(allIds$original_id, df$pubmed_id)]
-allIds$studyNum <- as.numeric(gsub("SDY","", allIds$study))
+# melt data so each day has values for every condensedSource
+sourceSummaryWide <- dcast(sourceSummary, shortDate ~ condensedSource, value.var = "users")
+sourceSummaryWide[ is.na(sourceSummaryWide)] <- 0
+
+# Stacked area chart shows unique user sessions from each condensed source per month
+someColors <- brewer.pal(12, "Paired")
+addlColors <- brewer.pal(3, "Greys")[1:2]
+colors <- rev(c(someColors, addlColors))
+
+p <- plot_ly(sourceSummaryWide, x = ~shortDate, y = ~Bioconductor,
+               name = 'Bioconductor',
+               type = 'scatter',
+               mode = 'none',
+               stackgroup = 'one',
+               fillcolor = colors[[1]])
+p <- p %>% add_trace(y = ~Cran, name = 'CRAN', fillcolor = colors[[2]])
+p <- p %>% add_trace(y = ~`Email Link`, name = 'Email Link', fillcolor = colors[[3]])
+p <- p %>% add_trace(y = ~Facebook, name = 'Facebook', fillcolor = colors[[4]])
+p <- p %>% add_trace(y = ~HIPC, name = 'HIPC', fillcolor = colors[[5]])
+p <- p %>% add_trace(y = ~ImmPort, name = 'ImmPort', fillcolor = colors[[6]])
+p <- p %>% add_trace(y = ~ImmuneData, name = 'ImmuneData', fillcolor = colors[[7]])
+p <- p %>% add_trace(y = ~Journals, name = 'Journals', fillcolor = colors[[8]])
+p <- p %>% add_trace(y = ~NCBI, name = 'NCBI Database', fillcolor = colors[[9]])
+p <- p %>% add_trace(y = ~NIAID, name = 'NIAID', fillcolor = colors[[10]])
+p <- p %>% add_trace(y = ~`RGLab Domain`, name = 'RGLab Domain', fillcolor = colors[[11]])
+p <- p %>% add_trace(y = ~`Search Engine`, name = 'Search Engine', fillcolor = colors[[12]])
+p <- p %>% add_trace(y = ~Twitter, name = 'Twitter', fillcolor = colors[[13]])
+p <- p %>% add_trace(y = ~Other, name = 'Other', fillcolor = colors[[14]])
+p <- p %>% layout(title = 'Number of users referred to ImmuneSpace from different sites or links',
+                      xaxis = list(title = "",
+                                   showgrid = FALSE),
+                      yaxis = list(title = "Unique users per Month",
+                                   showgrid = FALSE))
+
+p
+
+# Monthly bounce rate plot
+bouncesSummary <- gaData[, list(bounces = sum(bounces),
+                                totalSessions = sum(usageSessions)),
+                            by = "shortDate"]
+bouncesSummary[, bounceRate := round((bounces / totalSessions) * 100, 2) ]
+b <- plot_ly(bouncesSummary, x = ~shortDate, y = ~bounceRate,
+               name = 'Bounce Rate',
+               type = 'scatter',
+               mode = 'none',
+               stackgroup = '1',
+               fillcolor = colors[[5]])
+b <- b %>% layout(title = 'Percent of unique user sessions not moving beyond first page each month',
+                      xaxis = list(title = "",
+                                   showgrid = FALSE),
+                      yaxis = list(title = "Bounce Rate",
+                                   showgrid = FALSE,
+                                   range = c(0, 100)))
+
+b
 ```
 
 # Debugging Messages
