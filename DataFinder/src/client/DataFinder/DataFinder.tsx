@@ -401,8 +401,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                             save={() => updateParticipantGroup(loadedGroup)}
                             disableSave={!loadedGroup} />
                     </div>
-                }
-                availableGroups={availableGroups} />
+                }/>
 
             <div className="row" style={{ position: "relative" }}>
                 {filterCategories && <>

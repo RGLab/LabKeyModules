@@ -166,8 +166,8 @@ export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, con
 export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick }) => {
     if (status == undefined) status = "OR"
     const statusText = {
-        AND: "AND (all of)",
-        OR: "OR (any of)"
+        AND: "All of",
+        OR: "Any of"
     }
 
     const buttonData = [
