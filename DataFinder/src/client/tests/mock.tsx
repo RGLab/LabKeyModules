@@ -35,6 +35,27 @@ export function initMocks() {
         return res.status(200).headers(JSON_HEADERS).body(JSON.stringify(responseBody));
     });
 
+    // Browse Participants
+    mock.get(/.*\/participant-group\/?.*\/browseParticipantGroups.*/, (req, res) => {
+        const reqBody = req.body().toLowerCase();
+        let responseBody;
+
+        /* TODO: reqBody should have JSON data that can be parsed to determine what mock response you want to return.
+            here are some LK usages, https://github.com/LabKey/labkey-ui-components/blob/master/packages/components/src/stories/mock.tsx */
+
+        return res.status(200).headers(JSON_HEADERS).body(JSON.stringify(responseBody));
+    });
+
+    // Save Participants
+    mock.get(/.*\/participant-group\/?.*\/saveParticipantGroup.*/, (req, res) => {
+        const reqBody = req.body().toLowerCase();
+        let responseBody;
+
+        // TODO: reqBody should have JSON data that can be parsed to determine what mock response you want to return
+
+        return res.status(200).headers(JSON_HEADERS).body(JSON.stringify(responseBody));
+    });
+
     mock.use(proxy);
 }
 
