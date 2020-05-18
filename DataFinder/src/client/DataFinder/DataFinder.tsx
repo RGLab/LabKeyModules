@@ -13,7 +13,7 @@ import { ActionButton, LoadDropdown, SaveDropdown, ClearDropdown } from './compo
 import { ContentDropdown, AndOrDropdown, FilterDropdownContent } from './components/FilterDropdown'
 import { Flag } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
-import { HeatmapSelector, SampleTypeCheckbox } from './components/HeatmapSelector';
+import { HeatmapSelector, SampleTypeCheckbox, HeatmapSelectorDropdown } from './components/HeatmapSelector';
 import Tabs, { TabProps, DataFinderTabs } from "./components/Tabs";
 import * as d3 from 'd3'
 import { Banner } from "./components/Banner";
@@ -75,8 +75,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
 
     // ----- Other -----
     // Webparts
-    const [participantDataWebpart, setParticipantDataWebpart] = React.useState()
-    const [dataViewsWebpart, setDataViewsWebpart] = React.useState()
+    const [participantDataWebpart, setParticipantDataWebpart] = React.useState(null)
+    const [dataViewsWebpart, setDataViewsWebpart] = React.useState(null)
     // Banner
     const [bannerInfo, setBannerInfoState] = React.useState<BannerInfo>(new BannerInfo(JSON.parse(localStorage.getItem("dataFinderBannerInfo"))))
     const setBannerInfo = (bi: BannerInfo) => {
@@ -153,7 +153,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
     React.useEffect(() => {
         if (studyDict) {
                 ParticipantGroupHelpers.saveParticipantIdGroupInSession(filteredPids).then(() => {
-                    if (participantDataWebpart) participantDataWebpart.render()
+                    participantDataWebpart?.render()
                 })
                 if (studyDict) {
                     ParticipantGroupHelpers.updateContainerFilter(studyParticipantCounts, studyDict)
@@ -165,8 +165,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
     // Helper functions ---------------------------------------------
 
     const renderWepart = (tabName: string) => {
-        if (tabName == "participant") { participantDataWebpart.render(); return }
-        if (tabName == "data") { dataViewsWebpart.render(); return }
+        if (tabName == "participant") { participantDataWebpart?.render(); return }
+        if (tabName == "data") { dataViewsWebpart?.render(); return }
         return
     }
 
@@ -198,22 +198,24 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
         if (levelArray[0] === "SampleType") label = "Sample Type"
 
         return(
-            <ContentDropdown
-                id={levelArray[0]}
-                label={label}
-                customMenuClass="df-dropdown filter-dropdown"
-                content={
-                <FilterDropdownContent
-                    dimension={dim}
-                    level={level}
-                    members={filterCategories[levelArray[0]]}
-                    filterClick={filterClick}
-                    selected={selectedFilters.getIn([dim, ...levelArray, "members"])}
-                />}>
-
-                    {includeAndOr &&
-                        <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])}
-                            onClick={clickAndOr(dim, level)} />}
+            <>
+                {includeAndOr &&
+                    <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])}
+                        onClick={clickAndOr(dim, level)} />
+                }
+                
+                <ContentDropdown
+                    id={levelArray[0]}
+                    label={label}
+                    customMenuClass="df-dropdown filter-dropdown"
+                    content={
+                        <FilterDropdownContent
+                            dimension={dim}
+                            level={level}
+                            members={filterCategories[levelArray[0]]}
+                            filterClick={filterClick}
+                            selected={selectedFilters.getIn([dim, ...levelArray, "members"])}
+                        />}>
                     {includeIndicators &&
                         selectedFilters.getIn([dim, ...levelArray]) &&
                         <div className="filter-indicator-list">
@@ -227,7 +229,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                             })}
                         </div>
                     }
-            </ContentDropdown>
+                </ContentDropdown>
+            </>
         )
         
     }
@@ -398,7 +401,8 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                             save={() => updateParticipantGroup(loadedGroup)}
                             disableSave={!loadedGroup} />
                     </div>
-                } />
+                }
+                availableGroups={availableGroups} />
 
             <div className="row" style={{ position: "relative" }}>
                 {filterCategories && <>
@@ -416,56 +420,19 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                         {FilterDropdownHelper("Subject", "Race", true)}
                     </div>
                     <div className="col-sm-3">
-                        <ContentDropdown
-                            id={"heatmap-selector"}
-                            label={"Assay*Timepoint"}
-                            customMenuClass="assay-timepoint-dropdown"
-                            content={filterCategories &&
-                                <>
-                                    <SampleTypeCheckbox
-                                        toggleShowSampleType={() => toggleSampleType("dropdown")}
-                                        showSampleType={showSampleType_dropdown} />
-                                    <HeatmapSelector
-                                        name={"heatmap2"}
-                                        data={cubeData.Data.toJS()}
-                                        filterClick={filterClick}
-                                        showSampleType={showSampleType_dropdown}
-                                        selected={selectedFilters.Data}
-                                        timepointCategories={filterCategories.Timepoint}
-                                        sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
-                                </>
-                            }>
-                            <>
-                                <AndOrDropdown status={selectedFilters.getIn(["Data", "Assay", "Timepoint", "operator"])} onClick={clickAndOr("Data", "Assay.Timepoint")} />
-
-                                <div className="filter-indicator-list">
-                                    {selectedFilters.Data.getIn(["Assay", "Timepoint"]) && selectedFilters.Data.getIn(["Assay", "Timepoint", "members"]).map((member) => {
-                                        return (
-                                            < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: member })} >
-                                                {member.split(".").join(" at ") + " days"}
-                                            </Flag>
-                                        )
-                                    })}
-
-                                </div>
-
-                                <div className="filter-indicator-list">
-                                    {selectedFilters.Data.getIn(["Assay", "SampleType"]) && selectedFilters.Data.getIn(["Assay", "SampleType", "members"]).map((member) => {
-                                        const memberSplit = member.split(".")
-                                        return (
-                                            < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member })} >
-                                                {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
-                                            </Flag>
-                                        )
-                                    })}
-
-                                </div>
-                            </>
-                        </ContentDropdown>
-                        {FilterDropdownHelper("Data", "Timepoint", true, true)}
+                        <AndOrDropdown status={selectedFilters.getIn(["Data", "Assay", "Assay", "operator"])}
+                        onClick={clickAndOr("Data", "Assay.Assay")} />
+                        {FilterDropdownHelper("Data", "Assay.Assay", true, false)}
                         {FilterDropdownHelper("Data", "SampleType.SampleType", true, true)}
-                        {FilterDropdownHelper("Data", "Assay.Assay", true, true)}
-
+                        {filterCategories.SampleTypeAssay && cubeData.Data && 
+                        <HeatmapSelectorDropdown 
+                        data={cubeData.Data} 
+                            filterClick={filterClick} 
+                            selectedDataFilters={selectedFilters.Data}
+                            timepointCategories={filterCategories.Timepoint}
+                            sampleTypeAssayCategories={filterCategories.SampleTypeAssay}
+                            clickAndOr={clickAndOr}/>
+                        }
                     </div>
                     <div style={{ position: "absolute", top: "0", right: "15px" }}>
                         {/* <ActionButton text={"Apply"} onClick={() => applyFilters()} />

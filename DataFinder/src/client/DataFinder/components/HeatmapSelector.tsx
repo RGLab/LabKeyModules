@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { drawHeatmapSelector } from "./d3/HeatmapSelector.d3"
-import { HeatmapDatum, Filter, IAssayData, CubeDatum, FilterCategory, SelectedFilter, } from '../../typings/CubeData';
+import { HeatmapDatum, Filter, IAssayData, CubeDatum, FilterCategory, SelectedFilter, AssayData, FilterCategories, } from '../../typings/CubeData';
 import { Cube } from '../../typings/Cube';
 import { Axis } from 'd3';
 import { Map, List } from 'immutable'
+import { ContentDropdown, AndOrDropdown } from './FilterDropdown';
+import { Flag } from './FilterIndicator';
 
 // React stuff ==================================== //
 
@@ -35,6 +37,15 @@ interface HeatmapSelectorProps {
 export interface AxisDatum<data> {
   label: string,
   data: data
+}
+
+interface HeatmapSelectorDropdownProps {
+  data: AssayData;
+  filterClick: (dim: string, filter: Filter) => () => void;
+  selectedDataFilters: Map<string, Map<string, SelectedFilter> | SelectedFilter>;
+  timepointCategories: FilterCategory[];
+  sampleTypeAssayCategories: FilterCategory[];
+  clickAndOr: (dim: string, level: string) => (value: string) => void;
 }
 
 // helpers
@@ -199,4 +210,65 @@ export const SampleTypeCheckbox = ({ toggleShowSampleType, showSampleType }) => 
       Show Sample Type
     </div>
   )
+}
+
+
+
+export const HeatmapSelectorDropdown: React.FC<HeatmapSelectorDropdownProps> = ({ 
+  data, filterClick, selectedDataFilters, timepointCategories, sampleTypeAssayCategories, clickAndOr 
+}) => {
+  const [showSampleType, setShowSampleType] = React.useState(false)
+
+  return (
+    <>
+    <AndOrDropdown status={selectedDataFilters.getIn(["Assay", "Timepoint", "operator"])} onClick={clickAndOr("Data", "Assay.Timepoint")} />
+
+    <ContentDropdown
+      id={"heatmap-selector"}
+      label={"Timepoint Selector"}
+      customMenuClass="assay-timepoint-dropdown"
+      content={
+        <>
+          <SampleTypeCheckbox
+            toggleShowSampleType={() => setShowSampleType(!showSampleType)}
+            showSampleType={showSampleType} />
+          <HeatmapSelector
+            name={"heatmap2"}
+            data={data.toJS()}
+            filterClick={filterClick}
+            showSampleType={showSampleType}
+            selected={selectedDataFilters}
+            timepointCategories={timepointCategories}
+            sampleTypeAssayCategories={timepointCategories} />
+        </>
+      }>
+      <>
+        
+        <div className="filter-indicator-list">
+          {selectedDataFilters.getIn(["Assay", "Timepoint", "members"])?.map((member) => {
+            return (
+              < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: member })} >
+                {member.split(".").join(" at ") + " days"}
+              </Flag>
+            )
+          })}
+
+        </div>
+
+        <div className="filter-indicator-list">
+          {selectedDataFilters.getIn(["Assay", "SampleType", "members"])?.map((member) => {
+            const memberSplit = member.split(".")
+            return (
+              < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member })} >
+                {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
+              </Flag>
+            )
+          })}
+
+        </div>
+      </>
+    </ContentDropdown>
+    </>
+  )
+
 }
