@@ -101,27 +101,12 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
     return (
         <div className="study-card">
             <div className="study-label">
-                <div className="study-checkbox checkbox">
-                    <label >
-                        <input 
-                        onChange={
-                        props.filterClick("Study", {
-                            level: "Study", 
-                            member: study.study_accession})
-                    }
-                        type="checkbox" 
-                        name="study" 
-                        value={study.study_accession} 
-                        defaultChecked={props.selected}
-                        />
-                        <span className="study-id">{study.study_accession}</span>
-                    </label>
-                </div>
+            <span className="study-id">{study.study_accession}</span>
                 <span className="study-pi">{study.pi_names}</span>
             </div>
             <hr />
             <a href={"./" + study.study_accession + "/begin.view?"} className="labkey-text-link labkey-study-card-goto">
-                Go to study
+                learn more
             </a>
             <div className="study-title">
                 {study.brief_title}
