@@ -92,10 +92,12 @@ interface DropdownButtonProps {
     buttonData: {
         label: string;
         action: () => void;
-        disabled: boolean
+        disabled: boolean;
+        href?: string;
     }[]
 }
 export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonData }) => {
+
     return (
         <div className="dropdown" style={{  display: "inline-block", margin: "5px" }}>
             <div className="btn df-dropdown-button" role="group" >
@@ -107,7 +109,7 @@ export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonDa
                     {buttonData.map((button) => {
                         return (
                             <li key={button.label} className={button.disabled ? "disabled" : ""}>
-                                <a id={button.label.replace(" ", "-") + "-link"} key={button.label} onClick={button.action} href="#">
+                                <a id={button.label.replace(" ", "-") + "-link"} key={button.label} onClick={button.action} href={button.href ?? "#"}>
                                     {button.label}
                                 </a>
                             </li>

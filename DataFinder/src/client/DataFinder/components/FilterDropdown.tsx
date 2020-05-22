@@ -17,8 +17,9 @@ export interface FilterDropdownProps {
 interface ContentDropdownProps {
     id: string
     label: string;
-    content: JSX.Element;
-    customMenuClass: string;
+    content?: JSX.Element;
+    customMenuClass?: string;
+    disabled?: boolean
 }
 
 interface AndOrDropdownProps {
@@ -130,11 +131,12 @@ export const FilterDropdownContent: React.FC<FilterDropdownProps> =
     )
 }
 
-export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, content, customMenuClass, children }) => {
+
+export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, content, customMenuClass, disabled, children }) => {
     return (
         <>
             <div className={"dropdown"}>
-                <div id={"df-content-dropdown-" + id} className="btn-group filterselector" role="group" >
+                <div id={"df-content-dropdown-" + id} className={"btn-group filterselector" + disabled && " disabled"} role="group" >
                     <button 
                         id={"content-dropdown-button-" + id} 
                         className="btn btn-default dropdown-toggle filter-dropdown-button" 

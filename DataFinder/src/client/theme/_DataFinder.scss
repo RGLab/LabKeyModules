@@ -119,7 +119,7 @@
 }
 
 .filter-dropdown-button {
-  margin: 2px;
+  margin-bottom: 5px;
   width: 140px;
   display: inline-block;
 }
@@ -293,6 +293,10 @@ textarea {
 
 .df-andor-dropdown > ul {
   min-width: auto;
+}
+
+.df-highlighted-button {
+  margin: 5px;
 }
 
 // https://bootsnipp.com/snippets/V73xN

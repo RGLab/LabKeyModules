@@ -2,50 +2,116 @@
 // the sessionParticipantGroup api
 
 import { SelectedFilters, GroupInfo, SelectedFilter, ISelectedFilters } from "../../typings/CubeData";
+import ParticipantGroupAPI, { ParticipantGroup } from '../../typings/ParticipantGroup'
 import { List } from "immutable";
 import { StudyParticipantCount, StudyDict } from "../../typings/StudyCard";
+import { GroupSummary } from "../components/Banner";
 
+const participantGroupAPI: ParticipantGroupAPI = LABKEY.Study.ParticipantGroup
 
 // TODO:
 // get list of available participant groups
 export const getAvailableGroups = () => {
-    return new Promise((resolve, reject) => {
-        LABKEY.Ajax.request({
-            url: LABKEY.ActionURL.buildURL('participant-group', 'browseParticipantGroups.api'),
-            method: 'POST',
-            jsonData: {
-                'distinctCatgories': false,
-                'type': 'participantGroup',
-                'includeUnassigned': false,
-                'includeParticipantIds': false
-            },
-            success: LABKEY.Utils.getCallbackWrapper((data) => {
+    return new Promise<ParticipantGroup[]>((resolve, reject) => {
+        participantGroupAPI.browseParticipantGroups({
+            success: (res) => {
+                const data: ParticipantGroup[] =  JSON.parse(res.responseText).groups
                 resolve(data)
-
-            })
+            },
+            failure: (res, options) => {
+                console.log("An error occured trying to get available participant groups ", res.responseText)
+                reject()
+            }
         })
-
     })
 }
 
 export const getSessionParticipantGroup = () => {
-    return new Promise((resolve, reject) => {
-        LABKEY.Ajax.request({
-            url: LABKEY.ActionURL.buildURL('participant-group', 'getSessionParticipantGroup.api'),
-            method: 'GET',
-            success: LABKEY.Utils.getCallbackWrapper((data) => {
+    return new Promise<ParticipantGroup>((resolve, reject) => {
+        participantGroupAPI.getSessionParticipantGroup({
+            success: (res) => {
+                const data: ParticipantGroup = JSON.parse(res.responseText).data
                 resolve(data)
-            })
+            },
+            failure: (res, options) => {
+                console.log("An error occured trying to get the session participant group, ", res.responseText)
+                reject()
+            }
         })
     })
 }
 
-export const createAvailableGroups = (data) => {
-    if (data.success) {
+// update participant group
+export const updateParticipantGroup = (groupId: number, groupInfo: ParticipantGroup) => {
+    return new Promise<boolean>((resolve, reject) => {
+        participantGroupAPI.saveParticipantGroup({
+            groupId: groupId,
+            label: groupInfo.label,
+            filters: groupInfo.filters,
+            participantIds: groupInfo.participantIds,
+            success: (res) => {
+                const resText = JSON.parse(res.responseText);
+                if (resText.success) resolve(true)
+                reject()
+            },
+            failure: (res, options) => {
+                LABKEY.Utils.displayAjaxErrorResponse(res, options, false, "An error occurred trying to save:  ");
+                reject()
+            }
+        })
+    })
+}
+
+export const setSessionParticipantIds = (participantIds: string[], filters: SelectedFilters, groupSummary: GroupSummary ) => {
+    return new Promise<void>((resolve, reject) => {
+        participantGroupAPI.setSessionParticipantGroup({
+            participantIds: participantIds,
+            filters: JSON.stringify(filters.toJS()),
+            description: JSON.stringify(groupSummary),
+            success: () => resolve(),
+            failure: (res, options) => {
+                console.log("An error occured trying to set session participant group: ", res.responseText);
+                reject()
+            }
+        })
+    })
+}
+
+export const setSessionParticipantGroup = (groupId: number) => {
+    return new Promise<boolean>((resolve, reject) => {
+        participantGroupAPI.setSessionParticipantGroup({
+            groupId: groupId,
+            success: (res) => {
+                const resText = JSON.parse(res.responseText);
+                if (resText.success) resolve(true)
+                reject()
+            },
+            failure: (res, options) => {
+                LABKEY.Utils.displayAjaxErrorResponse(res, options, false, "An error occurred trying to set participant group:  ");
+                reject()
+            }
+        })
+    })
+}
+
+export const clearSessionParticipantGroup = () => {
+    return new Promise<void>((resolve, reject) => {
+        participantGroupAPI.clearSessionParticipantGroup({
+            success: () => resolve(),
+            failure: () => reject()
+        })
+    })
+}
+
+
+
+// ------------------------------------------------- //
+
+export const createAvailableGroups = (data: ParticipantGroup[]) => {
         var groups: GroupInfo[] = [];
-        for (var i = 0; i < data.groups.length; i++) {
-            if (data.groups[i].filters !== undefined) {
-                var groupFilters = JSON.parse(data.groups[i].filters);
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].filters !== undefined) {
+                var groupFilters = JSON.parse(data[i].filters);
 
                 // remove duplicates from the filters members array
                 // Object.keys(groupFilters).forEach((key) => {
@@ -54,14 +120,13 @@ export const createAvailableGroups = (data) => {
                 // }
 
                 groups.push({
-                    "id": data.groups[i].id,
-                    "label": data.groups[i].label,
+                    "id": data[i].id,
+                    "label": data[i].label,
                     "selected": false,
                     "filters": groupFilters
                 });
             }
         }
-    }
     return groups;
 }
 
@@ -69,12 +134,14 @@ export const createAvailableGroups = (data) => {
 // load participant group
 export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
     let sf: any
+    let isSaved = true
     sf = new SelectedFilters()
     let dim: string;
     if (groupInfo.filters.Data) {
         const filters: ISelectedFilters = groupInfo.filters
         sf = new SelectedFilters(filters)
     } else {
+        isSaved = false
         const missingDimensions = []
         // convert from old filters and warn user
         Object.keys(groupInfo.filters).forEach((level) => {
@@ -107,87 +174,9 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
         }
         alert(msg)
     }
-    return (sf);
+    return ({sf, isSaved});
 }
 
-// save participant group
-export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel = "", goToSendAfterSave = false) => {
-    // save the group with applied filters in localStorage
-
-    const win = Ext4.create('Study.window.ParticipantGroup', {
-        subject: studySubject,
-        groupLabel: groupLabel,
-        participantIds: pids,
-        filters: appliedFilters,
-        goToSendAfterSave: goToSendAfterSave
-    });
-    win.show()
-
-
-    return (win)
-}
-
-// update participant group
-export const updateParticipantGroup = (pids: string[], appliedFilters: SelectedFilters, groupInfo: GroupInfo) => {
-    const groupData = {
-        label: groupInfo.label,
-        participantIds: pids,
-        categoryLabel: "",
-        categoryType: "",
-        filters: JSON.stringify(appliedFilters),
-        rowId: groupInfo.id
-    }
-    return new Promise((resolve, reject) => {
-        LABKEY.Ajax.request({
-            url: (LABKEY.ActionURL.buildURL("participant-group", 'updateParticipantGroup.api')),
-            method: 'POST',
-            jsonData: groupData,
-            success: function (response) {
-                var res = JSON.parse(response.responseText);
-                if (res.success) {
-                    resolve(true)
-                }
-            },
-            failure: function (response, options) {
-                LABKEY.Utils.displayAjaxErrorResponse(response, options, false, "An error occurred trying to save:  ");
-            }
-        });
-    })
-
-}
-
-export const saveParticipantIdGroupInSession = (participantIds: string[], filters?: SelectedFilters, label?: string) => {
-    return new Promise((resolve, reject) => {
-        LABKEY.Ajax.request({
-            method: "POST",
-            url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
-            jsonData: {
-                participantIds: participantIds,
-                label: label ?? "",
-                filters: filters ? JSON.stringify(filters.toJS) : null
-
-            },
-            success: () => { resolve() }
-        });
-    })
-
-}
-export const setSessionParticipantGroup = (participantIds: string[], filters: SelectedFilters, label?: string) => {
-    return new Promise((resolve, reject) => {
-        LABKEY.Ajax.request({
-            method: "POST",
-            url: LABKEY.ActionURL.buildURL("participant-group", "sessionParticipantGroup.api"),
-            jsonData: {
-                participantIds: participantIds,
-                label: label ?? "",
-                filters: JSON.stringify(filters.toJS)
-
-            },
-            success: () => { resolve() }
-        });
-    })
-
-}
 
 // update container filter
 
@@ -207,6 +196,7 @@ export const updateContainerFilter = (studyParticipantCounts: List<StudyParticip
 }
 
 export const goToSend = (groupId) => {
+    console.log("Going to send!")
     if (groupId == null) { console.log("null group: can't send") } else {
         window.location = LABKEY.ActionURL.buildURL('study', 'sendParticipantGroup', null, {
             rowId: groupId,
@@ -214,6 +204,25 @@ export const goToSend = (groupId) => {
         });
     }
 }
+
+
+// save participant group
+export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel = "", goToSendAfterSave = false) => {
+    // save the group with applied filters in localStorage
+
+    const win = Ext4.create('Study.window.ParticipantGroup', {
+        subject: studySubject,
+        groupLabel: groupLabel,
+        participantIds: pids,
+        filters: appliedFilters,
+        goToSendAfterSave: goToSendAfterSave
+    });
+    win.show()
+
+
+    return (win)
+}
+
 
 // export const loadGroupFilters = (filters: SelectedFilters | {
 //     [index: string]: {
