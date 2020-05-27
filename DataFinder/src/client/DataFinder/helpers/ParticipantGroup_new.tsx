@@ -12,8 +12,10 @@ const participantGroupAPI: ParticipantGroupAPI = LABKEY.Study.ParticipantGroup
 // TODO:
 // get list of available participant groups
 export const getAvailableGroups = () => {
+    console.log("getAvailableGroups")
     return new Promise<ParticipantGroup[]>((resolve, reject) => {
         participantGroupAPI.browseParticipantGroups({
+            distinctCategories: false,
             success: (res) => {
                 const data: ParticipantGroup[] =  JSON.parse(res.responseText).groups
                 resolve(data)
@@ -43,22 +45,30 @@ export const getSessionParticipantGroup = () => {
 
 // update participant group
 export const updateParticipantGroup = (groupId: number, groupInfo: ParticipantGroup) => {
-    return new Promise<boolean>((resolve, reject) => {
-        participantGroupAPI.saveParticipantGroup({
-            groupId: groupId,
-            label: groupInfo.label,
-            filters: groupInfo.filters,
-            participantIds: groupInfo.participantIds,
-            success: (res) => {
-                const resText = JSON.parse(res.responseText);
-                if (resText.success) resolve(true)
-                reject()
+    const groupData = {
+        label: groupInfo.label,
+        participantIds: groupInfo.participantIds,
+        categoryLabel: "",
+        categoryType: "",
+        filters: groupInfo.filters,
+        rowId: groupId
+    }
+    return new Promise((resolve, reject) => {
+        LABKEY.Ajax.request({
+            url: (LABKEY.ActionURL.buildURL("participant-group", 'updateParticipantGroup.api')),
+            method: 'POST',
+            jsonData: groupData,
+            success: function (response) {
+                var res = JSON.parse(response.responseText);
+                if (res.success) {
+                    resolve(true)
+                }
             },
-            failure: (res, options) => {
-                LABKEY.Utils.displayAjaxErrorResponse(res, options, false, "An error occurred trying to save:  ");
+            failure: function (response, options) {
+                LABKEY.Utils.displayAjaxErrorResponse(response, options, false, "An error occurred trying to save:  ");
                 reject()
             }
-        })
+        });
     })
 }
 
@@ -132,20 +142,19 @@ export const createAvailableGroups = (data: ParticipantGroup[]) => {
 
 
 // load participant group
-export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
+export const getParticipantGroupFilters = (filters: any) => {
     let sf: any
     let isSaved = true
     sf = new SelectedFilters()
     let dim: string;
-    if (groupInfo.filters.Data) {
-        const filters: ISelectedFilters = groupInfo.filters
+    if (filters.Data) {
         sf = new SelectedFilters(filters)
     } else {
         isSaved = false
         const missingDimensions = []
         // convert from old filters and warn user
-        Object.keys(groupInfo.filters).forEach((level) => {
-            const members = groupInfo.filters[level].members.map((uniqueName) => {
+        Object.keys(filters).forEach((level) => {
+            const members = filters[level].members.map((uniqueName) => {
                 return (uniqueName.split("].[")[1].replace(/[\[\]]/g, ""))
             })
             if (["Age", "Gender", "Race"].indexOf(level) > -1) {
@@ -153,15 +162,15 @@ export const getParticipantGroupFilters = (groupInfo: GroupInfo) => {
             } else if (["Study", "ResearchFocus", "Condition", "ExposureMaterial", "ExposureProcess", "Species"].indexOf(level) > -1) {
                 sf = sf.setIn(["Study", level], new SelectedFilter({ members: members }))
             } else if (level == "Assay") {
-                sf = sf.setIn(["Data", "Assay", "Assay"], new SelectedFilter({ members: members, operator: groupInfo.filters[level].operator }))
+                sf = sf.setIn(["Data", "Assay", "Assay"], new SelectedFilter({ members: members, operator: filters[level].operator }))
             } else if (level == "Timepoint") {
-                sf = sf.setIn(["Data", "Timepoint"], new SelectedFilter({ members: members, operator: groupInfo.filters[level].operator }))
+                sf = sf.setIn(["Data", "Timepoint"], new SelectedFilter({ members: members, operator: filters[level].operator }))
             } else if (level == "SampleType") {
-                sf = sf.setIn(["Data", "SampleType", "SampleType"], new SelectedFilter({ members: members, operator: groupInfo.filters[level].operator }))
+                sf = sf.setIn(["Data", "SampleType", "SampleType"], new SelectedFilter({ members: members, operator: filters[level].operator }))
             } else if (level == "Category") {
                 sf = sf.setIn(["Study", "ResearchFocus"], new SelectedFilter({ members: members }))
             } else {
-                missingDimensions.push(groupInfo.filters[level].name)
+                missingDimensions.push(filters[level].name)
             }
         })
         // debugger

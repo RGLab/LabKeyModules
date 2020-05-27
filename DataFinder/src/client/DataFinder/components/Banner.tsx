@@ -44,7 +44,7 @@ interface HighlightedButtonProps {
     href?: string;
 }
 
-export const Banner: React.FC<BannerProps> = ({
+export const Banner = React.memo<BannerProps> (({
     filters,
     groupSummary,
     counts,
@@ -66,9 +66,9 @@ export const Banner: React.FC<BannerProps> = ({
             </div>
         </>
     );
-};
+});
 
-const BannerTitleBar: React.FC<BannerTitleBarProps> = ({
+const BannerTitleBar = React.memo<BannerTitleBarProps>(({
     groupSummary,
     counts,
     manageGroupsDropdown
@@ -93,17 +93,25 @@ const BannerTitleBar: React.FC<BannerTitleBarProps> = ({
             </BannerTitleElement>
         </div>
     );
-};
-const BannerTitleElement: React.FC = ({children}) => {
+});
+const BannerTitleElement = React.memo(({children}) => {
     return(
         <div style={{float: "left", padding: "10px"}}>
             {children}
         </div>
     )
-}
+})
 
-export const ManageGroupsDropdown: React.FC<ManageGroupDropdownProps> = ({ groupSummary, setGroupSummary, loadParticipantGroup }) => {
+export const ManageGroupsDropdown = React.memo<ManageGroupDropdownProps>(({ groupSummary, setGroupSummary, loadParticipantGroup }) => {
     const [availableGroups, setAvailableGroups] = React.useState<GroupInfo[]>([])
+    
+    React.useEffect(() => {
+        ParticipantGroupHelpers.getAvailableGroups().then((data) => {
+            const groups = ParticipantGroupHelpers.createAvailableGroups(data)
+            groups.sort((a, b) => a.label.toLowerCase() > b.label.toLowerCase() ? 1 : -1)
+            setAvailableGroups(groups)
+        })
+    }, [])
 
     const saveAsCallback = (goToSendAfterSave) => {
         const aftersave = (saveData) => {
@@ -164,15 +172,7 @@ export const ManageGroupsDropdown: React.FC<ManageGroupDropdownProps> = ({ group
         }
     }
 
-    React.useEffect(() => {
-        ParticipantGroupHelpers.getAvailableGroups().then((data) => {
-            const groups = ParticipantGroupHelpers.createAvailableGroups(data)
-            groups.sort((a, b) => a.label.toLowerCase() > b.label.toLowerCase() ? 1 : -1)
-            setAvailableGroups(groups)
-        })
-    }, [])
-
-    const content = useMemo(() =>
+    const content = useCallback(() =>
         <>
             <SaveDropdown
                 saveAs={() => saveAsCallback(false)}
@@ -182,16 +182,18 @@ export const ManageGroupsDropdown: React.FC<ManageGroupDropdownProps> = ({ group
             <a id="manage-participant-group-link" className="labkey-text-link" href="/study/Studies/manageParticipantCategories.view?">My Groups Dashboard</a>
             <a id="send-participant-group-link" className="labkey-text-link" href="#" onClick={() => sendParticipantGroup()}>Send</a>
         </>, [availableGroups])
+    
+    const ContentDropdownMemo = React.memo(ContentDropdown)
 
 
     return (
         <>
-            <ContentDropdown id={"manageGroupsDropdown"} label={"Manage Groups"} content={content} customMenuClass={""} />
+            <ContentDropdownMemo id={"manageGroupsDropdown"} label={"Manage Groups"} content={content()} customMenuClass={""} />
         </>
     )
-}
+})
 
-const ExploreGroupDropdown: React.FC = ({ }) => {
+const ExploreGroupDropdown = React.memo(({ }) => {
     const search = window.location.search
     const params = new URLSearchParams(search)
     const title = params.get("pageId")
@@ -214,11 +216,11 @@ const ExploreGroupDropdown: React.FC = ({ }) => {
         </div>
         </>
     )
-}
+})
 
 
 
-const ParticipantGroupSummary: React.FC<ParticipantGroupSummaryProps> = ({
+const ParticipantGroupSummary = React.memo<ParticipantGroupSummaryProps>(({
     groupSummary,
     counts
 }) => {
@@ -242,15 +244,15 @@ const ParticipantGroupSummary: React.FC<ParticipantGroupSummaryProps> = ({
             </div>
         </>
     );
-};
+});
 
-const HighlightedButton: React.FC<HighlightedButtonProps> = ({label, action, href}) => {
+const HighlightedButton = React.memo<HighlightedButtonProps>(({label, action, href}) => {
   return <a href={href ?? ""} >
       <button className="btn btn-warning df-highlighted-button" onClick={action ?? (() => {})}>
       {label}
       </button>
   </a>;
-};
+});
 
 
 

@@ -21,34 +21,50 @@ import { AssayTimepointViewerContainer } from "./components/AssayTimepointViewer
 import localStorage from './helpers/localStorage'
 import { CubeMdx } from "../typings/Cube";
 import { ParticipantGroup } from "../typings/ParticipantGroup";
+import whyDidYouRender from "@welldone-software/why-did-you-render";
 
 interface DataFinderControllerProps {
     mdx:  CubeMdx,
     studyInfo: SelectRowsResponse
 }
 
-const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyInfo}) => {
+whyDidYouRender(React, {
+    onlyLogs: true,
+    titleColor: "green",
+    diffNameColor: "darkturquoise"
+});
+
+const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyInfo}) => {
     // Constants -------------------------------------
     const cd = new CubeData({})
     const loadedStudiesArray = CubeHelpers.createLoadedStudies(studyInfo)
 
     // State ---------------------------------------------
     // ----- Data (updated by API calls) -----
-    const [groupSummary, setGroupSummary] = React.useState<GroupSummary>({label: "", id: 0, isSaved: true})
+    const [groupSummary, setGroupSummaryState] = React.useState<GroupSummary>({label: "", id: 0, isSaved: true})
+    const setGroupSummary = (gs) => {console.log("setting groupSummary"); setGroupSummaryState(gs)}
     // Set on page load only
     const [filterCategories, setFilterCategories] = React.useState(null)
     const [studyDict, setStudyDict] = React.useState(null); // this should only be loaded once
     // Updated on "apply": 
     const [cubeData, setCubeData] = React.useState<CubeData>(cd)
     const [studyParticipantCounts, setStudyParticipantCounts] = React.useState<List<StudyParticipantCount>>(List())
-    const [totalAppliedCounts, setTotalAppliedCounts] = React.useState<TotalCounts>({ study: 0, participant: 0 })
+    const [totalAppliedCounts, setTotalAppliedCountsState] = React.useState<TotalCounts>({ study: 0, participant: 0 })
+    const setTotalAppliedCounts = (newCounts: TotalCounts) => {
+        setTotalAppliedCountsState((prevCounts: TotalCounts) => {
+            if (newCounts.participant == prevCounts.participant && newCounts.study == prevCounts.study) return(prevCounts)
+            console.log("Setting total counts")
+            return(newCounts)
+        })
+    }
     // Updated every time a filter is changed: 
     // ----- State set by user ------
     // Groups
     const [loadedGroup, setLoadedGroup] = React.useState<GroupInfo>()
     const [unsavedFilters, setUnsavedFilters] = React.useState<boolean>(false)
     // Filters 
-    const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(new SelectedFilters())
+    const [selectedFilters, setSelectedFiltersState] = React.useState<SelectedFilters>(new SelectedFilters())
+    const setSelectedFilters = (sf) => {console.log("setSelectedFilters"); setSelectedFiltersState(sf)}
     // Other view settings set by user
     const [showSampleType_dropdown, setShowSampleType_dropdown] = React.useState<boolean>(false)
     const [showSampleType_tab, setShowSampleType_tab] = React.useState<boolean>(false)
@@ -83,6 +99,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
         })
         CubeHelpers.getStudyCounts(mdx, new SelectedFilters()).then((res) => {
             const sd = CubeHelpers.createStudyDict([studyInfo, res])
+            console.log(" ------- setStudyDict ------- ")
             setStudyDict(sd)
         })
         
@@ -119,14 +136,15 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
 
     // Helper functions ---------------------------------------------
 
-    const renderWepart = (tabName: string) => {
+    const renderWepart = React.useCallback((tabName: string) => {
         if (tabName == "participant") { participantDataWebpart?.render(); return }
         if (tabName == "data") { dataViewsWebpart?.render(); return }
         return
-    }
+    }, [participantDataWebpart, dataViewsWebpart])
 
     // ----- Memos -----
     const BannerMemo = React.memo(Banner)
+    const ManageDropdownMemo = React.memo(ManageGroupsDropdown)
     const DataFinderTabsMemo = React.memo(DataFinderTabs, (prevProps, nextProps) => true)
 
     // ----- Components -----
@@ -191,9 +209,10 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
     }
 
     // Callbacks -----------------------------------------------------
-    const loadParticipantGroup = (groupInfo: GroupInfo) => {
-        const filterInfo = ParticipantGroupHelpers.getParticipantGroupFilters(groupInfo)
+    const loadParticipantGroup = React.useCallback((groupInfo: GroupInfo) => {
+        const filterInfo = ParticipantGroupHelpers.getParticipantGroupFilters(groupInfo.filters)
         applyFilters(filterInfo.sf)
+        setSelectedFilters(filterInfo.sf)
         const gs = {
             label: groupInfo.label,
             id: groupInfo.id,
@@ -206,23 +225,28 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
         }        
         setGroupSummary(gs)
 
-    }
+    }, [])
 
     // ------ Filter-related -------
 
-    const filterClick = (dim: string, filter: Filter) => {
+    const filterClick = React.useCallback((dim: string, filter: Filter) => {
         return (() => {
             const sf = toggleFilter(dim, filter.level, filter.member, selectedFilters)
             setSelectedFilters(sf)
             applyFilters(sf)
             updateSessionGroup(sf)
-            setGroupSummary((prevGroupSummary) => ({
-                label: prevGroupSummary.label,
-                id: prevGroupSummary.id,
-                isSaved: false
-            }))
+            setGroupSummary((prevGroupSummary) => {
+                if (!prevGroupSummary.isSaved) return(prevGroupSummary)
+                return(
+                    {
+                        label: prevGroupSummary.label,
+                        id: prevGroupSummary.id,
+                        isSaved: false
+                    }
+                )
+            })
         })
-    }
+    }, [selectedFilters])
 
     const clickAndOr = (dim: string, level: string) => {
         return ((value: string) => {
@@ -251,7 +275,6 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
     }
 
     const applyFilters = (filters = selectedFilters) => {
-        setSelectedFilters(filters)
         // set local storage
         localStorage.setItem("dataFinderSelectedFilters", JSON.stringify(filters))
         
@@ -289,9 +312,19 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
         if(which == "dropdown") setShowSampleType_dropdown(!showSampleType_dropdown)
         if(which == "tab") setShowSampleType_tab(!showSampleType_tab)
     }
+    const getSampleTypeCheckbox = React.useCallback(() => {
+        return <SampleTypeCheckbox
+        toggleShowSampleType={() => toggleSampleType("tab")}
+        showSampleType={showSampleType_tab} />
+    }, [showSampleType_tab])
+
+    const ManageGroupsDropdownMenu = React.useCallback(() => {
+        return <ManageDropdownMemo groupSummary={groupSummary} setGroupSummary={setGroupSummary} loadParticipantGroup={loadParticipantGroup} />
+    }, [groupSummary])
     // -------------------------------- RETURN --------------------------------
+    console.log("render")
     return (
-        <div>
+        <>
             {/* <div className="df-dropdown-options">
                 <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
                 <ClearDropdown clearAll={clearFilters} reset={() => { loadedGroup ? loadParticipantGroup(loadedGroup) : clearFilters() }} />
@@ -305,7 +338,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                 counts={totalAppliedCounts}
                 groupSummary={groupSummary}
                 manageGroupsDropdown={
-                    <ManageGroupsDropdown groupSummary={groupSummary} setGroupSummary={setGroupSummary} loadParticipantGroup={loadParticipantGroup} />
+                        ManageGroupsDropdownMenu()
                 }
                  />
 
@@ -360,9 +393,7 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
                     filterClick={filterClick}
                     selectedStudies={selectedFilters.getIn(["Study", "Study", "members"]) || List([])}
                     sampleTypeCheckbox={
-                        <SampleTypeCheckbox
-                            toggleShowSampleType={() => toggleSampleType("tab")}
-                            showSampleType={showSampleType_tab} />
+                        getSampleTypeCheckbox()
                     } />
             </div>
 
@@ -370,12 +401,14 @@ const DataFinderController: React.FC<DataFinderControllerProps> = ({mdx, studyIn
             <div id="heatmap-label" />
             <div className="arrow-down" />
 
-        </div>
+        </>
     )
 
-}
+})
 
-export const App: React.FC = () => {
+DataFinderController.whyDidYouRender = true;
+
+export const App = React.memo(() => {
     const filterBanner = document.getElementById('filter-banner')
     filterBanner.style.display = 'none'
 
@@ -404,4 +437,4 @@ export const App: React.FC = () => {
     return (<div>
         <div className="loader" id="loader-1"></div>
     </div>)
-}
+})
