@@ -25,6 +25,8 @@ whyDidYouRender(React, {
     diffNameColor: "darkturquoise"
 });
 
+const BannerMemo = React.memo(Banner)
+
 const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyInfo}) => {
     // Constants -------------------------------------
     const cd = new CubeData({})
@@ -33,18 +35,23 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     // State ---------------------------------------------
     // ----- Data (updated by API calls) -----
     const [groupSummary, setGroupSummaryState] = React.useState<GroupSummary>({label: "", id: 0, isSaved: true})
-    const setGroupSummary = (gs) => {console.log("setting groupSummary"); setGroupSummaryState(gs)}
+    const setGroupSummary = (gs) => {console.log("setting groupSummary state"); console.log(gs); setGroupSummaryState(gs)}
     // Set on page load only
-    const [filterCategories, setFilterCategories] = React.useState(null)
-    const [studyDict, setStudyDict] = React.useState(null); // this should only be loaded once
+    const [filterCategories, setFilterCategoriesState] = React.useState(null)
+    const setFilterCategories = (fc) => {console.log("setting filter categories state"); setFilterCategoriesState(fc)}
+    const [studyDict, setStudyDictState] = React.useState(null); // this should only be loaded once
+    const setStudyDict = (sd) => {console.log("setting studyDict state"); setStudyDictState(sd)}
     // Updated on "apply": 
-    const [cubeData, setCubeData] = React.useState<CubeData>(cd)
+    const [cubeData, setCubeDataState] = React.useState<CubeData>(cd)
+    const setCubeData = (cd) => {console.log("setting cubeData state"); setCubeDataState(cd)}
+    
+    const [availableGroups, setAvailableGroups] = React.useState<GroupInfo[]>([])
     // Updated every time a filter is changed: 
     // ----- State set by user ------
     // Groups
     // Filters 
     const [selectedFilters, setSelectedFiltersState] = React.useState<SelectedFilters>(new SelectedFilters())
-    const setSelectedFilters = (sf) => {console.log("setSelectedFilters"); setSelectedFiltersState(sf)}
+    const setSelectedFilters = (sf) => {console.log("setting SelectedFilters state"); setSelectedFiltersState(sf)}
 
     // Effects  -------------------------------------
 
@@ -78,6 +85,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             console.log(" ------- setStudyDict ------- ")
             setStudyDict(sd)
         })
+        updateAvailableGroups()
         
     }, [])
 
@@ -189,7 +197,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             })
             setGroupSummary(gs)
         })
-    }, [selectedFilters])
+    }, [selectedFilters, groupSummary])
 
     const clickAndOr = (dim: string, level: string) => {
         return ((value: string) => {
@@ -232,6 +240,11 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
         )
     }
 
+    const updateAvailableGroups = () => ParticipantGroupHelpers.getAvailableGroups().then((data) => {
+        const groups = ParticipantGroupHelpers.createAvailableGroups(data)
+        setAvailableGroups(groups)
+    })
+
     const clearFilters = () => {
         const newFilters = new SelectedFilters()
         setSelectedFilters(newFilters);
@@ -247,12 +260,18 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     // ------ Other ------
     
     const ManageGroupsDropdownMenu = React.useCallback(() => {
-        return <ManageDropdownMemo groupSummary={groupSummary} setGroupSummary={setGroupSummary} loadParticipantGroup={loadParticipantGroup} />
-    }, [groupSummary])
+        return <ManageDropdownMemo 
+            groupSummary={groupSummary} 
+            setGroupSummary={setGroupSummary} 
+            loadParticipantGroup={loadParticipantGroup}
+            availableGroups={availableGroups}
+            updateAvailableGroups={updateAvailableGroups} />
+    }, [groupSummary, availableGroups])
     // -------------------------------- RETURN --------------------------------
-    console.log("render")
+
     return (
         <>
+        {console.log("render")}
             {/* <div className="df-dropdown-options">
                 <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
                 <ClearDropdown clearAll={clearFilters} reset={() => { loadedGroup ? loadParticipantGroup(loadedGroup) : clearFilters() }} />
@@ -330,6 +349,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
 })
 
 DataFinderController.whyDidYouRender = true;
+BannerMemo.whyDidYouRender = true;
 
 export const App = React.memo(() => {
     const filterBanner = document.getElementById('filter-banner')
@@ -337,7 +357,6 @@ export const App = React.memo(() => {
 
     const [cubeReady, setCubeReady] = React.useState(false)
     const [studyInfo, setStudyInfo] = React.useState(null)
-    // debugger
     const dfcube = LABKEY.query.olap.CubeManager.getCube({
         configId: 'DataFinder:/DataFinderCube',
         schemaName: 'DataFinder',

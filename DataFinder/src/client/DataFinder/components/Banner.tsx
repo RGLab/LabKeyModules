@@ -36,6 +36,8 @@ interface ManageGroupDropdownProps {
     groupSummary: GroupSummary;
     setGroupSummary: (groupSummary: React.SetStateAction<GroupSummary>) => void;
     loadParticipantGroup: (groupInfo: GroupInfo) => void;
+    availableGroups: GroupInfo[];
+    updateAvailableGroups: () => void;
 }
 
 interface HighlightedButtonProps {
@@ -48,8 +50,6 @@ export const Banner = React.memo<BannerProps> (({
     filters,
     groupSummary,
     counts,
-    links,
-    dropdowns,
     filterBarId,
     manageGroupsDropdown
 }) => {
@@ -102,27 +102,23 @@ const BannerTitleElement = React.memo(({children}) => {
     )
 })
 
-export const ManageGroupsDropdown = React.memo<ManageGroupDropdownProps>(({ groupSummary, setGroupSummary, loadParticipantGroup }) => {
-    const [availableGroups, setAvailableGroups] = React.useState<GroupInfo[]>([])
-    
-    React.useEffect(() => {
-        ParticipantGroupHelpers.getAvailableGroups().then((data) => {
-            const groups = ParticipantGroupHelpers.createAvailableGroups(data)
-            groups.sort((a, b) => a.label.toLowerCase() > b.label.toLowerCase() ? 1 : -1)
-            setAvailableGroups(groups)
-        })
-    }, [])
+export const ManageGroupsDropdown = React.memo<ManageGroupDropdownProps>(({ 
+    groupSummary, 
+    setGroupSummary, 
+    loadParticipantGroup,
+    availableGroups,
+    updateAvailableGroups }) => {
+
 
     const saveAsCallback = (goToSendAfterSave) => {
         const aftersave = (saveData) => {
-            ParticipantGroupHelpers.getAvailableGroups().then((data) => {
-                const groups = ParticipantGroupHelpers.createAvailableGroups(data)
-                setAvailableGroups(groups)
+            updateAvailableGroups()
+            
                 setGroupSummary({
                     label: saveData.group.label,
                     id: saveData.group.rowId,
                     isSaved: true
-                })
+                
             })
         }
         openSaveWindow("", goToSendAfterSave, aftersave)
