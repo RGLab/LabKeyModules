@@ -6,7 +6,7 @@
 
 import { CubeMdx } from "../../typings/Cube";
 import * as LABKEY from '@labkey/api';
-import { SelectedFilters, CubeData, ICubeData, Filter, CubeDatum } from "../../typings/CubeData";
+import { SelectedFilters, PlotData, IPlotData, Filter, PlotDatum } from "../../typings/CubeData";
 import * as Cube from '../../typings/Cube'
 import { HeatmapDatum, FilterCategories } from '../../typings/CubeData'
 import { createCubeFilters } from './SelectedFilters'
@@ -98,7 +98,7 @@ export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters
     })
 }
 
-export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string, loadedStudiesArray: string[], showEmpty = true) => {
+export const getPlotData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string, loadedStudiesArray: string[], showEmpty = true) => {
 
     return new Promise<Cube.CellSet>((resolve, reject) => {
         // debugger
@@ -336,7 +336,7 @@ export const createStudyParticipantCounts = (studyParticipantCountCs: Cube.CellS
 }
 
 const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) => {
-    const results: { dim: string, levelArray: string[], data: CubeDatum }[] = participantCounts.cells.map((cell, cellIndex) => {
+    const results: { dim: string, levelArray: string[], data: PlotDatum }[] = participantCounts.cells.map((cell, cellIndex) => {
         const hierarchy = cell[0].positions[1][0].level.uniqueName.replace(/\[|\]/g, "") // remove "[" and "]"
         const cubeDim = hierarchy.replace(/\..+/, "") // remove everything after and including the first "."
         let level = hierarchy.replace(/\w+\./, "") // remove everything before and including the first "."
@@ -368,19 +368,19 @@ const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) =
             }
         })
     })
-    let cubeData: any = new CubeData()
+    let plotData: any = new PlotData()
     results.forEach((result) => {
-        const members: Immutable.List<string> = cubeData.getIn([result.dim, ...result.levelArray]).push(result.data)
-        cubeData = cubeData.setIn([result.dim, ...result.levelArray], members)
+        const members: Immutable.List<string> = plotData.getIn([result.dim, ...result.levelArray]).push(result.data)
+        plotData = plotData.setIn([result.dim, ...result.levelArray], members)
     });
-    return cubeData.toJS()
+    return plotData.toJS()
 }
 
 
 
-export const createCubeData = (counts: [Cube.CellSet, Cube.CellSet]) => {
-    const cubeData = cs2cd(counts)
-    return new CubeData(cubeData);
+export const createPlotData = (counts: [Cube.CellSet, Cube.CellSet]) => {
+    const plotData = cs2cd(counts)
+    return new PlotData(plotData);
 }
 
 

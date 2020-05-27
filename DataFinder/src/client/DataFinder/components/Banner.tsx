@@ -270,7 +270,7 @@ export const openSaveWindow = (groupLabel = "", goToSendAfterSave = false, after
             subject: studySubject,
             groupLabel: groupLabel,
             participantIds: data.participantIds,
-            filters: data.filters,
+            filters: JSON.parse(data.filters),
             goToSendAfterSave: goToSendAfterSave
         });
         window.show()

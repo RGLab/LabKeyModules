@@ -1,6 +1,6 @@
 import * as d3 from 'd3'
 import { D3Barplot } from './Barplot.d3'
-import { CubeDatum } from '../../../typings/CubeData';
+import { PlotDatum } from '../../../typings/CubeData';
 
 describe("D3Barplot", () => {
 
@@ -13,7 +13,7 @@ describe("D3Barplot", () => {
         countMetric: "studyCount",
         barColor: "#af88e3"
     }
-    const data: CubeDatum[] = [
+    const data: PlotDatum[] = [
         {
             level: "Age",
             member: "a",
@@ -35,7 +35,7 @@ describe("D3Barplot", () => {
             studyCount: 42
         }
     ]
-    const newData: CubeDatum[] = [
+    const newData: PlotDatum[] = [
         {
             level: "Age",
             member: "a",

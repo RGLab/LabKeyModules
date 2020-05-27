@@ -1,5 +1,5 @@
 import React from 'react';
-import { CubeData, FilterCategories, Filter, SelectedFilters, SelectedFilter } from '../../typings/CubeData';
+import { PlotData, FilterCategories, Filter, SelectedFilters, SelectedFilter} from '../../typings/CubeData';
 import { StudyParticipantCount, StudyDict } from '../../typings/StudyCard';
 import { List } from 'immutable'
 import { StudyCard } from './StudyCard'
@@ -20,7 +20,7 @@ export interface TabProps {
 }
 
 interface DataFinderTabsProps {
-    cubeData: CubeData;
+    plotData: PlotData;
     filterCategories: FilterCategories;
     studyParticipantCounts: List<StudyParticipantCount>;
     studyDict: StudyDict;
@@ -59,7 +59,7 @@ const Tabs: React.FC<TabProps> = ({ tabs, defaultActive, tabFunction }) => {
 
 export const DataFinderTabs: React.FC<DataFinderTabsProps> = (
     {
-        cubeData, 
+        plotData, 
         filterCategories, 
         studyParticipantCounts, 
         studyDict, 
@@ -73,7 +73,7 @@ export const DataFinderTabs: React.FC<DataFinderTabsProps> = (
         //  ------ DATA -------
         data: {
             content: <TabContent.Data 
-                data={cubeData.Data} 
+                data={plotData.Data} 
                 filterCategories={filterCategories}/>,
             id: "data",
             tag: "find-data",
@@ -82,7 +82,7 @@ export const DataFinderTabs: React.FC<DataFinderTabsProps> = (
         },
         // -------- PARTICIPANT -------
         participant: {
-            content: <TabContent.Participant showBarplots={filterCategories != null} data={cubeData.Subject} filterCategories={filterCategories} />,
+            content: <TabContent.Participant showBarplots={filterCategories != null} data={plotData.Subject} filterCategories={filterCategories} />,
             id: "participant",
             tag: "find-participant",
             text: "Participant Characteristics",
@@ -91,7 +91,7 @@ export const DataFinderTabs: React.FC<DataFinderTabsProps> = (
         // ------- STUDY -------
         study: {
             content: <TabContent.Study 
-                data={cubeData.Study} 
+                data={plotData.Study} 
                 filterCategories={filterCategories} 
                 studyDict={studyDict} 
                 studyParticipantCounts={studyParticipantCounts} 

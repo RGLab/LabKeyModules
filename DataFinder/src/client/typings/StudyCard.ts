@@ -1,4 +1,4 @@
-import {CubeDatum, HeatmapDatum} from './CubeData'
+import {PlotDatum, HeatmapDatum} from './CubeData'
 import { Record } from 'immutable';
 import { AxisDatum } from '../DataFinder/components/AssayTimepointViewer';
 

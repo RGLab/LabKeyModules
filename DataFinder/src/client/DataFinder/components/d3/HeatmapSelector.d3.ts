@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { HeatmapDatum, IAssayData, CubeDatum, Filter } from '../../../typings/CubeData';
+import { HeatmapDatum, IAssayData, PlotDatum, Filter } from '../../../typings/CubeData';
 import { HeatmapProps } from '../HeatmapSelector';
 import { AxisDatum } from '../HeatmapSelector';
 import { Axis, select } from 'd3';

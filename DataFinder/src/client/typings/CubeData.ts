@@ -1,4 +1,6 @@
 import { Record, fromJS, List, Map } from 'immutable';
+import { StudyParticipantCount } from './StudyCard';
+import { createTotalCounts } from '../DataFinder/helpers/CubeHelpers';
 
 export interface GroupInfo {
     id: number;
@@ -14,7 +16,7 @@ export interface GroupInfo {
     new?: boolean
 }
 
-export interface CubeDatum {
+export interface PlotDatum {
     level: string;
     member: string;
     participantCount?: number;
@@ -30,28 +32,28 @@ export interface HeatmapDatum<data> {
 }
 
 export interface ISubjectData {
-    Race?: CubeDatum[];
-    Age?: CubeDatum[];
-    Gender?: CubeDatum[];
-    Species?: CubeDatum[];
-    ExposureMaterial?: CubeDatum[];
-    ExposureProcess?: CubeDatum[];
+    Race?: PlotDatum[];
+    Age?: PlotDatum[];
+    Gender?: PlotDatum[];
+    Species?: PlotDatum[];
+    ExposureMaterial?: PlotDatum[];
+    ExposureProcess?: PlotDatum[];
 }
 
 export class SubjectData extends Record({
-    Race: List<CubeDatum>(),
-    Age: List<CubeDatum>(),
-    Gender: List<CubeDatum>(),
-    Species: List<CubeDatum>(),
-    ExposureMaterial: List<CubeDatum>(),
-    ExposureProcess: List<CubeDatum>()
+    Race: List<PlotDatum>(),
+    Age: List<PlotDatum>(),
+    Gender: List<PlotDatum>(),
+    Species: List<PlotDatum>(),
+    ExposureMaterial: List<PlotDatum>(),
+    ExposureProcess: List<PlotDatum>()
 }) {
-    Race: List<CubeDatum>;
-    Age: List<CubeDatum>;
-    Gender: List<CubeDatum>;
-    Species: List<CubeDatum>;
-    ExposureMaterial: List<CubeDatum>;
-    ExposureProcess: List<CubeDatum>;
+    Race: List<PlotDatum>;
+    Age: List<PlotDatum>;
+    Gender: List<PlotDatum>;
+    Species: List<PlotDatum>;
+    ExposureMaterial: List<PlotDatum>;
+    ExposureProcess: List<PlotDatum>;
 
     constructor(params?: ISubjectData) {
         params ? super(fromJS(params)) : super()
@@ -59,30 +61,30 @@ export class SubjectData extends Record({
 }
 
 export interface IStudyData {
-    Name?: CubeDatum[];
-    Program?: CubeDatum[];
-    Condition?: CubeDatum[];
-    ResearchFocus: CubeDatum[];
-    Species?: CubeDatum[];
-    ExposureMaterial?: CubeDatum[];
-    ExposureProcess?: CubeDatum[];
+    Name?: PlotDatum[];
+    Program?: PlotDatum[];
+    Condition?: PlotDatum[];
+    ResearchFocus: PlotDatum[];
+    Species?: PlotDatum[];
+    ExposureMaterial?: PlotDatum[];
+    ExposureProcess?: PlotDatum[];
 }
 
 export class StudyData extends Record({
-    Name: List<CubeDatum>(),
-    Program: List<CubeDatum>(),
-    Condition: List<CubeDatum>(),
-    ResearchFocus: List<CubeDatum>(),
-    Species: List<CubeDatum>(),
-    ExposureMaterial: List<CubeDatum>(),
-    ExposureProcess: List<CubeDatum>()
+    Name: List<PlotDatum>(),
+    Program: List<PlotDatum>(),
+    Condition: List<PlotDatum>(),
+    ResearchFocus: List<PlotDatum>(),
+    Species: List<PlotDatum>(),
+    ExposureMaterial: List<PlotDatum>(),
+    ExposureProcess: List<PlotDatum>()
 }) {
-    Name: List<CubeDatum>;
-    Program: List<CubeDatum>;
-    Condition: List<CubeDatum>;
-    Species: List<CubeDatum>;
-    ExposureMaterial: List<CubeDatum>;
-    ExposureProcess: List<CubeDatum>;
+    Name: List<PlotDatum>;
+    Program: List<PlotDatum>;
+    Condition: List<PlotDatum>;
+    Species: List<PlotDatum>;
+    ExposureMaterial: List<PlotDatum>;
+    ExposureProcess: List<PlotDatum>;
 
     constructor(params?: IStudyData) {
         params ? super(fromJS(params)) : super()
@@ -91,74 +93,90 @@ export class StudyData extends Record({
 
 export interface IAssayData {
     Assay?: {
-        Assay?: CubeDatum[];
-        Timepoint?: CubeDatum[];
-        SampleType?: CubeDatum[];
+        Assay?: PlotDatum[];
+        Timepoint?: PlotDatum[];
+        SampleType?: PlotDatum[];
     },
-    Timepoint?: CubeDatum[];
+    Timepoint?: PlotDatum[];
     SampleType?: {
-        SampleType?: CubeDatum[];
-        Assay?: CubeDatum[];
+        SampleType?: PlotDatum[];
+        Assay?: PlotDatum[];
     };
 }
 
 export class AssayData extends Record({
     Assay: Map({
-        Assay: List<CubeDatum>(),
-        Timepoint: List<CubeDatum>(),
-        SampleType: List<CubeDatum>(),
+        Assay: List<PlotDatum>(),
+        Timepoint: List<PlotDatum>(),
+        SampleType: List<PlotDatum>(),
     }),
-    Timepoint: List<CubeDatum>(),
+    Timepoint: List<PlotDatum>(),
     SampleType: Map({
-        SampleType: List<CubeDatum>(),
-        Assay: List<CubeDatum>()
+        SampleType: List<PlotDatum>(),
+        Assay: List<PlotDatum>()
     })
 }) {
-    Assay: Map<string, List<CubeDatum>>;
-    Timepoint: List<CubeDatum>;
-    SampleType: List<CubeDatum>;
+    Assay: Map<string, List<PlotDatum>>;
+    Timepoint: List<PlotDatum>;
+    SampleType: List<PlotDatum>;
 
     constructor(params?: ISubjectData) {
         params ? super(fromJS(params)) : super()
     }
 }
 
-export interface ICubeData {
+export interface IPlotData {
     Subject?: SubjectData,
     Study?: StudyData,
     Data?: AssayData
 }
 
-export class CubeData extends Record({
+export class PlotData extends Record({
     Subject: new SubjectData(),
     Study: new StudyData(),
-    Data: fromJS({
-        Assay: {
-            Assay: [],
-            Timepoint: [],
-            SampleType: []
-        },
-        Timepoint: [],
-        SampleType: {
-            SampleType: [],
-            Assay: []
-        }
-    })
+    Data: new AssayData()
 }) {
     Subject: SubjectData;
     Study: StudyData;
     Data: AssayData;
 
 
-    constructor(params?: ICubeData) {
+    constructor(params?: IPlotData) {
         params ? super(fromJS(params)) : super()
     }
 
-    with(values: ICubeData) {
+    with(values: IPlotData) {
         return this.merge(fromJS(values)) as this;
     }
 
 }
+
+export class TotalCounts extends Record ({
+    study: 0,
+    participant: 0
+}) {
+    study: number
+    participant: number
+
+    constructor(params?: {study?: number, participant?: number}) {
+        params ? super(params) : super()
+    }
+}
+
+
+export class CubeData extends Record({
+    plotData: new PlotData(),
+    studyParticipantCounts: List(),
+    totalCounts: new TotalCounts()
+}) {
+    plotData: PlotData;
+    studyParticipantCounts: List<StudyParticipantCount>;
+    totalCounts: TotalCounts
+
+}
+
+// -------------------------------------------------
+// Filters
 
 export interface Filter {
     level: string,
@@ -234,10 +252,7 @@ export interface FilterQuery {
 }
 
 
-export interface TotalCounts {
-    study: number,
-    participant: number
-}
+
 
 export interface IBannerInfo {
     groupName?: string,

@@ -2,11 +2,11 @@ import React from 'react'
 import * as renderer from 'react-test-renderer'
 import {Barplot} from './Barplot'
 import {shallow} from 'enzyme'
-import { CubeDatum, FilterCategory } from '../../typings/CubeData'
+import { PlotDatum, FilterCategory } from '../../typings/CubeData'
 import { List } from 'immutable'
 import { D3Barplot } from './d3/Barplot.d3'
 
-const testData: List<CubeDatum> = List([
+const testData: List<PlotDatum> = List([
     {
         level: "Age",
         member: "0-10",

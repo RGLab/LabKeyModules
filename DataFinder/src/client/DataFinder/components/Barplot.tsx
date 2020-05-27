@@ -1,10 +1,10 @@
 import React, { CSSProperties } from 'react';
 import { D3Barplot } from './d3/Barplot.d3'
-import { CubeDatum, FilterCategory } from '../../typings/CubeData'
+import { PlotDatum, FilterCategory } from '../../typings/CubeData'
 import { List } from 'immutable'
 
 export interface BarplotProps {
-    data: List<CubeDatum>;
+    data: List<PlotDatum>;
     name: string;
     width: number;
     height: number;

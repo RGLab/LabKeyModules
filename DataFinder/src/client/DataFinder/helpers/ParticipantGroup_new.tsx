@@ -217,21 +217,15 @@ export const goToSend = (groupId) => {
 }
 
 
-// save participant group
-export const openSaveWindow = (studySubject, pids, appliedFilters, groupLabel = "", goToSendAfterSave = false) => {
-    // save the group with applied filters in localStorage
-
-    const win = Ext4.create('Study.window.ParticipantGroup', {
-        subject: studySubject,
-        groupLabel: groupLabel,
-        participantIds: pids,
-        filters: appliedFilters,
-        goToSendAfterSave: goToSendAfterSave
-    });
-    win.show()
-
-
-    return (win)
+export const updateSessionGroupById = (countsList: List<StudyParticipantCount>, groupId: number, studyDict) => {
+    setSessionParticipantGroup(groupId)
+    updateContainerFilter(countsList, studyDict)
+}
+export const updateSessionGroup = (pids: string[], countsList: List<StudyParticipantCount>, filters: SelectedFilters, summary: GroupSummary, studyDict) => {
+    setSessionParticipantIds(pids, filters, summary)
+    if (studyDict) {
+        updateContainerFilter(countsList, studyDict)
+    }
 }
 
 

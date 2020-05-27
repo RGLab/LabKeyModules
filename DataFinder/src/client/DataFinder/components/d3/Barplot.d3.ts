@@ -1,5 +1,5 @@
 import * as d3 from 'd3'
-import { CubeDatum } from '../../../typings/CubeData';
+import { PlotDatum } from '../../../typings/CubeData';
 
 // ================================================================== //
 /* 
@@ -23,14 +23,14 @@ interface D3BarplotConfig {
 
 
 interface D3Barplot {
-    create: (id: string, data: CubeDatum[], config: D3BarplotConfig) => void;
-    update: (id: string, data: CubeDatum[], config: D3BarplotConfig) => void;
+    create: (id: string, data: PlotDatum[], config: D3BarplotConfig) => void;
+    update: (id: string, data: PlotDatum[], config: D3BarplotConfig) => void;
 }
 
 
 const xaxisTitle = {height: 40}
 
-const createBarplot = (id: string, data: CubeDatum[], config: D3BarplotConfig) => {
+const createBarplot = (id: string, data: PlotDatum[], config: D3BarplotConfig) => {
 
     // Create margins
     const barplotHeight = config.height - xaxisTitle.height - 10
@@ -119,7 +119,7 @@ const createBarplot = (id: string, data: CubeDatum[], config: D3BarplotConfig) =
 
 }
 
-const updateBarplot = (id: string, data: CubeDatum[], config: D3BarplotConfig) => {
+const updateBarplot = (id: string, data: PlotDatum[], config: D3BarplotConfig) => {
     const svg = d3.select("#barplot-container-" + id).select("svg")
 
     const xAxisSvg = d3.select("#xaxis-" + id).select("svg")
@@ -200,7 +200,7 @@ const updateBarplot = (id: string, data: CubeDatum[], config: D3BarplotConfig) =
         .attr("font-size", ".8em")
         .attr("fill", "transparent")
     labelContainers.selectAll(".label-text").selectAll("tspan")
-        .data((d: CubeDatum) => {
+        .data((d: PlotDatum) => {
             let l = d.member
             const maxLength = Math.round( (config.
                 width - margin.right - 10) / 5.5 )
@@ -302,10 +302,10 @@ const updateBarplot = (id: string, data: CubeDatum[], config: D3BarplotConfig) =
         .append("rect")
         .attr("class", "rect")
         .attr("x", xaxisScale(0))
-        .attr("width", function (d: CubeDatum) {
+        .attr("width", function (d: PlotDatum) {
             return xaxisScale(d[countMetric]);
         })
-        .attr("y", function (d: CubeDatum) {
+        .attr("y", function (d: PlotDatum) {
             return yaxisScale(d.member);
         })
         .attr("height", yaxisScale.bandwidth() - 1)
@@ -314,10 +314,10 @@ const updateBarplot = (id: string, data: CubeDatum[], config: D3BarplotConfig) =
         .transition()
         .duration(500)
         .attr("x", xaxisScale(0))
-        .attr("width", function (d: CubeDatum) {
+        .attr("width", function (d: PlotDatum) {
             return xaxisScale(d[countMetric]);
         })
-        .attr("y", function (d: CubeDatum) {
+        .attr("y", function (d: PlotDatum) {
             return yaxisScale(d.member);
         })
         .attr("height", yaxisScale.bandwidth() - 1)

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { drawHeatmapSelector } from "./d3/HeatmapSelector.d3"
-import { HeatmapDatum, Filter, IAssayData, CubeDatum, FilterCategory, SelectedFilter, AssayData, FilterCategories, } from '../../typings/CubeData';
+import { HeatmapDatum, Filter, IAssayData, PlotDatum, FilterCategory, SelectedFilter, AssayData, FilterCategories, } from '../../typings/CubeData';
 import { Cube } from '../../typings/Cube';
 import { Axis } from 'd3';
 import { Map, List } from 'immutable'
@@ -51,7 +51,7 @@ interface HeatmapSelectorDropdownProps {
 // helpers
 const createHeatmapData = (data: IAssayData, showSampleType: boolean, sampleTypeAssayCategories = []) => {
   // if (data.Assay.Timepoint.length > 0) debugger;
-  let d: CubeDatum[];
+  let d: PlotDatum[];
   let heatmapData: HeatmapDatum<Filter>[];
   if (showSampleType) {
     // debugger
@@ -104,7 +104,7 @@ const createHeatmapData = (data: IAssayData, showSampleType: boolean, sampleType
 
 const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean, categories: FilterCategory[] = null) => {
   // debugger;
-  let d: CubeDatum[]
+  let d: PlotDatum[]
   let axisData: AxisDatum<Filter>[];
   if (axis == "x") {
     axisData = categories.map((c) => {
