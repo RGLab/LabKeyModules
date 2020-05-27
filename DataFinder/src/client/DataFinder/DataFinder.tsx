@@ -13,7 +13,7 @@ import { ActionButton, LoadDropdown, SaveDropdown, ClearDropdown } from './compo
 import { ContentDropdown, AndOrDropdown, FilterDropdownContent } from './components/FilterDropdown'
 import { Flag } from './components/FilterIndicator'
 import { Barplot } from './components/Barplot'
-import { HeatmapSelector, SampleTypeCheckbox, HeatmapSelectorDropdown } from './components/HeatmapSelector';
+import { HeatmapSelector, HeatmapSelectorDropdown } from './components/HeatmapSelector';
 import Tabs, { TabProps, DataFinderTabs } from "./components/Tabs";
 import * as d3 from 'd3'
 import { Banner, GroupSummary, ManageGroupsDropdown } from "./components/Banner";
@@ -60,20 +60,9 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     // Updated every time a filter is changed: 
     // ----- State set by user ------
     // Groups
-    const [loadedGroup, setLoadedGroup] = React.useState<GroupInfo>()
-    const [unsavedFilters, setUnsavedFilters] = React.useState<boolean>(false)
     // Filters 
     const [selectedFilters, setSelectedFiltersState] = React.useState<SelectedFilters>(new SelectedFilters())
     const setSelectedFilters = (sf) => {console.log("setSelectedFilters"); setSelectedFiltersState(sf)}
-    // Other view settings set by user
-    const [showSampleType_dropdown, setShowSampleType_dropdown] = React.useState<boolean>(false)
-    const [showSampleType_tab, setShowSampleType_tab] = React.useState<boolean>(false)
-
-    // ----- Other -----
-    // Webparts
-    const [participantDataWebpart, setParticipantDataWebpart] = React.useState(null)
-    const [dataViewsWebpart, setDataViewsWebpart] = React.useState(null)
-
 
     // Effects  -------------------------------------
 
@@ -81,15 +70,20 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     React.useEffect(() => {
 
         ParticipantGroupHelpers.getSessionParticipantGroup().then((data) => {
-            const sf = new SelectedFilters(JSON.parse(data.filters));
-            const description = JSON.parse(data.description)
-            setGroupSummary(description || {
-                id: data.rowId,
-                label: data.label,
-                isSaved: true
-            })
-            setSelectedFilters(sf)
-            applyFilters(sf)
+            if (data.filters) {
+                const sf = new SelectedFilters(JSON.parse(data.filters));
+                const newGroupSummary = JSON.parse(data.description) || {
+                    id: data.rowId,
+                    label: data.label,
+                    isSaved: true
+                }
+                setSelectedFilters(sf)
+                setGroupSummary(newGroupSummary)
+                applyFilters(sf)
+            } else {
+                applyFilters(selectedFilters)
+            }
+            
         })
 
         CubeHelpers.getCubeData(mdx, new SelectedFilters(), "[Subject].[Subject]", loadedStudiesArray, false)
@@ -103,44 +97,10 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             setStudyDict(sd)
         })
         
-
-        const pd_wp = new LABKEY.QueryWebPart({
-            renderTo: "participant-data",
-            autoScroll: true,
-            schemaName: 'study',
-            queryName: "demographics",
-            frame: 'none',
-            border: false,
-            showRecordSelectors: false,
-            showUpdateColumn: false,
-            buttonBar: {
-                position: 'top',
-                includeStandardButtons: true
-            },
-            success: function (wpDataRegion) {
-                // issue 26329: don't use header locking for a QWP in an Ext dialog window
-                wpDataRegion.disableHeaderLock();
-            },
-            scope: this
-        })
-        setParticipantDataWebpart(pd_wp)
-
-        const dv_wp = new LABKEY.WebPart({
-            partName: "Data Views",
-            renderTo: "data-views",
-            frame: "none"
-        })
-        setDataViewsWebpart(dv_wp)
     }, [])
 
 
     // Helper functions ---------------------------------------------
-
-    const renderWepart = React.useCallback((tabName: string) => {
-        if (tabName == "participant") { participantDataWebpart?.render(); return }
-        if (tabName == "data") { dataViewsWebpart?.render(); return }
-        return
-    }, [participantDataWebpart, dataViewsWebpart])
 
     // ----- Memos -----
     const BannerMemo = React.memo(Banner)
@@ -263,9 +223,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                     ParticipantGroupHelpers.setSessionParticipantGroup(groupId)
                     ParticipantGroupHelpers.updateContainerFilter(countsList, studyDict)
                 } else {
-                    ParticipantGroupHelpers.setSessionParticipantIds(pids, filters, summary).then(() => {
-                        participantDataWebpart?.render()
-                    })
+                    ParticipantGroupHelpers.setSessionParticipantIds(pids, filters, summary)
                     if (studyDict) {
                         ParticipantGroupHelpers.updateContainerFilter(countsList, studyDict)
                     }
@@ -297,7 +255,6 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     const clearFilters = () => {
         const newFilters = new SelectedFilters()
         setSelectedFilters(newFilters);
-        setLoadedGroup(null)
         applyFilters(newFilters)
         ParticipantGroupHelpers.clearSessionParticipantGroup()
         setGroupSummary({
@@ -308,16 +265,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     }
 
     // ------ Other ------
-    const toggleSampleType = (which) => {
-        if(which == "dropdown") setShowSampleType_dropdown(!showSampleType_dropdown)
-        if(which == "tab") setShowSampleType_tab(!showSampleType_tab)
-    }
-    const getSampleTypeCheckbox = React.useCallback(() => {
-        return <SampleTypeCheckbox
-        toggleShowSampleType={() => toggleSampleType("tab")}
-        showSampleType={showSampleType_tab} />
-    }, [showSampleType_tab])
-
+    
     const ManageGroupsDropdownMenu = React.useCallback(() => {
         return <ManageDropdownMemo groupSummary={groupSummary} setGroupSummary={setGroupSummary} loadParticipantGroup={loadParticipantGroup} />
     }, [groupSummary])
@@ -385,16 +333,11 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             
                 <DataFinderTabs
                     cubeData={cubeData}
-                    showSampleType={showSampleType_tab}
                     filterCategories={filterCategories}
                     studyParticipantCounts={studyParticipantCounts}
                     studyDict={studyDict}
-                    renderWebpart={renderWepart}
                     filterClick={filterClick}
-                    selectedStudies={selectedFilters.getIn(["Study", "Study", "members"]) || List([])}
-                    sampleTypeCheckbox={
-                        getSampleTypeCheckbox()
-                    } />
+                     />
             </div>
 
             {/* Tooltip */}

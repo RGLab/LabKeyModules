@@ -32,7 +32,9 @@ export const getSessionParticipantGroup = () => {
     return new Promise<ParticipantGroup>((resolve, reject) => {
         participantGroupAPI.getSessionParticipantGroup({
             success: (res) => {
-                const data: ParticipantGroup = JSON.parse(res.responseText).data
+                const response = JSON.parse(res.responseText)
+                if (response.data === undefined) resolve(response)
+                const data: ParticipantGroup = response.data
                 resolve(data)
             },
             failure: (res, options) => {

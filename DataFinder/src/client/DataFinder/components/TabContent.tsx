@@ -4,6 +4,7 @@ import { Barplot, } from './Barplot'
 import { createFilterCategories } from '../helpers/CubeHelpers';
 import { SelectedFilters, CubeData } from '../../typings/CubeData';
 import { List } from 'immutable';
+import { SampleTypeCheckbox } from './HeatmapSelector';
 
 // Helpers
 const BarplotHelper = (data, dim, level, filterCategories) => {
@@ -30,7 +31,8 @@ const BarplotHelper = (data, dim, level, filterCategories) => {
     )
 }
 
-export const Data = ({ data, showSampleType, filterCategories, sampleTypeCheckbox }) => {
+export const Data = ({ data, filterCategories }) => {
+    const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
     return (
         <>
             <div className="row">
@@ -42,7 +44,7 @@ export const Data = ({ data, showSampleType, filterCategories, sampleTypeCheckbo
                                 <div className="col-sm-8">
                                     <h4 style={{ textAlign: "center" }}>Assays Available by Study Day</h4>
 
-                                    {sampleTypeCheckbox}
+                                    <SampleTypeCheckbox toggleShowSampleType={() => setShowSampleType(!showSampleType)} showSampleType={showSampleType} />
                                     <AssayTimepointViewerContainer
                                         name={"heatmap1"}
                                         data={data.toJS()}
@@ -99,7 +101,7 @@ export const Participant = ({ showBarplots, data, filterCategories }) => {
 
 }
 
-export const Study = ({ data, filterCategories, studyDict, studyParticipantCounts, StudyCard, filterClick, selectedStudies }) => {
+export const Study = ({ data, filterCategories, studyDict, studyParticipantCounts, StudyCard, filterClick }) => {
     return (
         <>
             <div className="row">
@@ -129,8 +131,7 @@ export const Study = ({ data, filterCategories, studyDict, studyParticipantCount
                         <StudyCard key={sdy.studyName}
                             study={studyDict[sdy.studyName]}
                             participantCount={sdy.participantCount}
-                            filterClick={filterClick}
-                            selected={selectedStudies.includes(sdy.studyName)} />
+                            filterClick={filterClick} />
                     )
                 }
             })}

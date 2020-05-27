@@ -21,14 +21,10 @@ export interface TabProps {
 
 interface DataFinderTabsProps {
     cubeData: CubeData;
-    showSampleType: boolean;
     filterCategories: FilterCategories;
     studyParticipantCounts: List<StudyParticipantCount>;
     studyDict: StudyDict;
-    renderWebpart: (tabName: string) => void;
     filterClick: (dim: string, filter: Filter) => void;
-    selectedStudies: List<string> | undefined;
-    sampleTypeCheckbox: JSX.Element
 }
 
 const Tabs: React.FC<TabProps> = ({ tabs, defaultActive, tabFunction }) => {
@@ -64,13 +60,10 @@ const Tabs: React.FC<TabProps> = ({ tabs, defaultActive, tabFunction }) => {
 export const DataFinderTabs: React.FC<DataFinderTabsProps> = (
     {
         cubeData, 
-        showSampleType, 
         filterCategories, 
         studyParticipantCounts, 
-        studyDict, renderWebpart, 
-        filterClick, 
-        selectedStudies, 
-        sampleTypeCheckbox
+        studyDict, 
+        filterClick
     }) => {
     const StudyCardMemo = React.memo(StudyCard)
     const DataTabMemo = React.memo(TabContent.Data)
@@ -81,9 +74,7 @@ export const DataFinderTabs: React.FC<DataFinderTabsProps> = (
         data: {
             content: <TabContent.Data 
                 data={cubeData.Data} 
-                showSampleType={showSampleType} 
-                filterCategories={filterCategories}
-                sampleTypeCheckbox={sampleTypeCheckbox} />,
+                filterCategories={filterCategories}/>,
             id: "data",
             tag: "find-data",
             text: "Available Assay Data",
@@ -105,8 +96,7 @@ export const DataFinderTabs: React.FC<DataFinderTabsProps> = (
                 studyDict={studyDict} 
                 studyParticipantCounts={studyParticipantCounts} 
                 StudyCard={StudyCard} 
-                filterClick={filterClick} 
-                selectedStudies={selectedStudies}/>,
+                filterClick={filterClick} />,
             id: "study",
             tag: "find-study",
             text: "Study Design",
@@ -114,7 +104,7 @@ export const DataFinderTabs: React.FC<DataFinderTabsProps> = (
         },
     }
     return(
-        <Tabs tabs={tabs} defaultActive={"study"} tabFunction={renderWebpart} />
+        <Tabs tabs={tabs} defaultActive={"study"} />
     )
 }
 
