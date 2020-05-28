@@ -28,6 +28,22 @@ export const getAvailableGroups = () => {
     })
 }
 
+export const getGroupInfoById = (groupId: number) => {
+    return new Promise<ParticipantGroup>((resolve, reject) => {
+        participantGroupAPI.getParticipantGroup({
+            groupId: groupId,
+            success: (res) => {
+                const data: ParticipantGroup = JSON.parse(res.responseText).groups[0]
+                resolve(data)
+            },
+            failure: (res, options) => {
+                console.log("An error occured trying to load participant group ", res.responseText)
+                reject()
+            }
+        })
+    })
+}
+
 export const getSessionParticipantGroup = () => {
     return new Promise<ParticipantGroup>((resolve, reject) => {
         participantGroupAPI.getSessionParticipantGroup({

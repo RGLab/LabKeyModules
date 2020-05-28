@@ -58,7 +58,9 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     // Setup (only run on first render) ----- 
     React.useEffect(() => {
 
-        ParticipantGroupHelpers.getSessionParticipantGroup().then((data) => {
+        const groupId = LABKEY.ActionURL.getParameter("groupId")
+        if (groupId === undefined) {
+            ParticipantGroupHelpers.getSessionParticipantGroup().then((data) => {
             if (data.filters) {
                 const sf = new SelectedFilters(JSON.parse(data.filters));
                 const newGroupSummary = JSON.parse(data.description) || {
@@ -74,6 +76,40 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             }
             
         })
+        } else {
+            ParticipantGroupHelpers.getGroupInfoById(groupId).then((data) => {
+                if (data) {
+                    const groupInfo = {
+                        id: data.id,
+                        label: data.label,
+                        selected: true,
+                        filters: JSON.parse(data.filters)
+                    }
+                    loadParticipantGroup(groupInfo)
+                } else {
+                    alert("Participant Group with id=" + groupId + " not found.")
+                    ParticipantGroupHelpers.getSessionParticipantGroup().then((data) => {
+                        if (data.filters) {
+                            const sf = new SelectedFilters(JSON.parse(data.filters));
+                            const newGroupSummary = JSON.parse(data.description) || {
+                                id: data.rowId,
+                                label: data.label,
+                                isSaved: true
+                            }
+                            setSelectedFilters(sf)
+                            setGroupSummary(newGroupSummary)
+                            applyFilters(sf)
+                        } else {
+                            applyFilters(selectedFilters)
+                        }
+                    })
+                }
+                
+            })
+
+        }
+
+        
 
         CubeHelpers.getPlotData(mdx, new SelectedFilters(), "[Subject].[Subject]", loadedStudiesArray, false)
             .then((res) => {
