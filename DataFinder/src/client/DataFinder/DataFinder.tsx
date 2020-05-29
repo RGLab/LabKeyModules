@@ -85,7 +85,17 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                         selected: true,
                         filters: JSON.parse(data.filters)
                     }
-                    loadParticipantGroup(groupInfo)
+                    const filterInfo = ParticipantGroupHelpers.getParticipantGroupFilters(groupInfo.filters)
+                    const gs = {
+                        label: groupInfo.label,
+                        id: groupInfo.id,
+                        isSaved: false
+                    }
+                    setSelectedFilters(filterInfo.sf)
+                    applyFilters(filterInfo.sf).then(({ pids, countsList }) => {
+                            ParticipantGroupHelpers.updateSessionGroup(pids, countsList, filterInfo.sf, gs, studyDict)
+                    })
+                    setGroupSummary(gs)
                 } else {
                     alert("Participant Group with id=" + groupId + " not found.")
                     ParticipantGroupHelpers.getSessionParticipantGroup().then((data) => {
