@@ -58,7 +58,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     // Setup (only run on first render) ----- 
     React.useEffect(() => {
 
-        const groupId = parseInt(LABKEY.ActionURL.getParameter("groupId"))
+        let groupId = LABKEY.ActionURL.getParameter("groupId")
         const loadSessionGroup = () => {
             ParticipantGroupHelpers.getSessionParticipantGroup().then((data) => {
                 if (data.filters) {
@@ -81,6 +81,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             updateAvailableGroups()
             loadSessionGroup()
         } else {
+            groupId = parseInt(groupId)
             updateAvailableGroups().then((groups) => {
                 let groupInfo: GroupInfo = null;
                 groups.forEach(group => {
