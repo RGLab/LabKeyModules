@@ -58,65 +58,79 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     // Setup (only run on first render) ----- 
     React.useEffect(() => {
 
-        const groupId = LABKEY.ActionURL.getParameter("groupId")
-        if (groupId === undefined) {
+        const groupId = parseInt(LABKEY.ActionURL.getParameter("groupId"))
+        const loadSessionGroup = () => {
             ParticipantGroupHelpers.getSessionParticipantGroup().then((data) => {
-            if (data.filters) {
-                const sf = new SelectedFilters(JSON.parse(data.filters));
-                const newGroupSummary = JSON.parse(data.description) || {
-                    id: data.rowId,
-                    label: data.label,
-                    isSaved: true
-                }
-                setSelectedFilters(sf)
-                setGroupSummary(newGroupSummary)
-                applyFilters(sf)
-            } else {
-                applyFilters(selectedFilters)
-            }
-            
-        })
-        } else {
-            ParticipantGroupHelpers.getGroupInfoById(groupId).then((data) => {
-                if (data) {
-                    const sf = JSON.parse(data.filters)
-                    const groupInfo = {
-                        id: data.id,
+                if (data.filters) {
+                    const sf = new SelectedFilters(JSON.parse(data.filters));
+                    const newGroupSummary = JSON.parse(data.description) || {
+                        id: data.rowId,
                         label: data.label,
-                        selected: true,
-                        filters: JSON.parse(data.filters)
+                        isSaved: true
                     }
-                    const filterInfo = ParticipantGroupHelpers.getParticipantGroupFilters(sf)
-                    const gs = {
-                        label: "",
-                        id: 0,
-                        isSaved: false
-                    }
-                    setSelectedFilters(filterInfo.sf)
-                    setGroupSummary(gs)
-                    applyFilters(filterInfo.sf).then(({ pids, countsList }) => {
-                            ParticipantGroupHelpers.updateSessionGroup(pids, countsList, filterInfo.sf, gs, studyDict)
-                    })
+                    setSelectedFilters(sf)
+                    setGroupSummary(newGroupSummary)
+                    applyFilters(sf)
                 } else {
-                    alert("Participant Group with id=" + groupId + " not found.")
-                    ParticipantGroupHelpers.getSessionParticipantGroup().then((data) => {
-                        if (data.filters) {
-                            const sf = new SelectedFilters(JSON.parse(data.filters));
-                            const newGroupSummary = JSON.parse(data.description) || {
-                                id: data.rowId,
-                                label: data.label,
-                                isSaved: true
-                            }
-                            setSelectedFilters(sf)
-                            setGroupSummary(newGroupSummary)
-                            applyFilters(sf)
+                    applyFilters(selectedFilters)
+                }
+            })
+        }
+
+        if (groupId === undefined) {
+            updateAvailableGroups()
+            loadSessionGroup()
+        } else {
+            updateAvailableGroups().then((groups) => {
+                let groupInfo: GroupInfo = null;
+                groups.forEach(group => {
+                    if (group.id === groupId) groupInfo = group
+                })
+
+                if (groupInfo) {
+                    loadParticipantGroup(groupInfo)
+                } else {
+                    ParticipantGroupHelpers.getGroupInfoById(groupId).then((data) => {
+                        if (data) {
+                            Ext4.Msg.show({
+                                title: 'Load Participant Group',
+                                msg: 'You are loading filters from a participant group ' + 
+                                    ' owned by a different user. Note that the selection' + 
+                                    ' may be different from the original participnat group' +
+                                    ' if you have different permissions. You may save these' +
+                                    ' filters as a new participant group to return to later.',
+                                icon: Ext4.Msg.INFO,
+                                buttons: Ext4.Msg.OKCANCEL,
+                                buttonText:  { ok: 'Continue', cancel: 'Cancel' },
+                                fn: function (buttonId) {
+                                    if (buttonId === 'ok') {
+                                        const sf = JSON.parse(data.filters)
+                                        const filterInfo = ParticipantGroupHelpers.getParticipantGroupFilters(sf)
+                                        const gs = {
+                                            label: "",
+                                            id: 0,
+                                            isSaved: false
+                                        }
+                                        setSelectedFilters(filterInfo.sf)
+                                        setGroupSummary(gs)
+                                        applyFilters(filterInfo.sf).then(({ pids, countsList }) => {
+                                                ParticipantGroupHelpers.updateSessionGroup(pids, countsList, filterInfo.sf, gs, studyDict)
+                                        })
+                                    } else {
+                                        loadSessionGroup()
+                                    }
+                                }
+                            })
+                            
                         } else {
-                            applyFilters(selectedFilters)
+                            alert("Participant Group with id=" + groupId + " not found.")
+                            loadSessionGroup()
                         }
+                        
                     })
                 }
-                
             })
+            
 
         }
 
@@ -132,7 +146,6 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             console.log(" ------- setStudyDict ------- ")
             setStudyDict(sd)
         })
-        updateAvailableGroups()
         
     }, [])
 
@@ -290,6 +303,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     const updateAvailableGroups = () => ParticipantGroupHelpers.getAvailableGroups().then((data) => {
         const groups = ParticipantGroupHelpers.createAvailableGroups(data)
         setAvailableGroups(groups)
+        return groups;
     })
 
     const clearFilters = () => {

@@ -89,11 +89,11 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
         },
         {
             label: "Sample Type",
-            value: study.sample_type[0]
+            value: study.sample_type
         },
         {
             label: "Assays",
-            value: study.assays[0]
+            value: study.assays
         }
     ]
 

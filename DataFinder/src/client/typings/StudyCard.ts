@@ -21,14 +21,14 @@ export interface TinyHeatmapInfo {
 }
 
 export interface IStudyInfo {
-    assays?: string[];
+    assays?: string;
     brief_title?: string;
     research_focus?: string;
     heatmapData?: HeatmapDatum<any>[];
-    pi_names?: string[];
+    pi_names?: string;
     program_title?: string;
     restricted?: boolean;
-    sample_type?: string[];
+    sample_type?: string;
     shared_study?: string;
     study_accession?: string;
     totalParticipantCount?: number;
@@ -37,27 +37,27 @@ export interface IStudyInfo {
 }
 
 export class StudyInfo extends Record({
-    assays: [],
+    assays: "",
     brief_title: "",
     research_focus: "",
     heatmapData: [],
-    pi_names: [],
+    pi_names: "",
     program_title: "",
     restricted: false,
-    sample_type: [],
+    sample_type: "",
     shared_study: "",
     study_accession: "",
     totalParticipantCount: 0,
     heatmapInfo: {}
 }) {
-    assays: string[];
+    assays: string;
     brief_title: string;
     research_focus: string;
     heatmapData: HeatmapDatum<any>[];
-    pi_names: string[];
+    pi_names: string;
     program_title: string;
     restricted: boolean;
-    sample_type: string[];
+    sample_type: string;
     shared_study: string;
     study_accession: string;
     totalParticipantCount: number;
