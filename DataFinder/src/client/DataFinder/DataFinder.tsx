@@ -34,7 +34,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
 
     // State ---------------------------------------------
     // ----- Data (updated by API calls) -----
-    const [groupSummary, setGroupSummaryState] = React.useState<GroupSummary>({label: "", id: 0, isSaved: true})
+    const [groupSummary, setGroupSummaryState] = React.useState<GroupSummary>(new GroupSummary())
     const setGroupSummary = (gs) => {console.log("setting groupSummary state"); console.log(gs); setGroupSummaryState(gs)}
     // Set on page load only
     const [filterCategories, setFilterCategoriesState] = React.useState(null)
@@ -69,7 +69,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                         isSaved: true
                     }
                     setSelectedFilters(sf)
-                    setGroupSummary(newGroupSummary)
+                    setGroupSummary(prevGroupSummary => prevGroupSummary.merge(newGroupSummary))
                     applyFilters(sf)
                 } else {
                     applyFilters(selectedFilters)
@@ -107,11 +107,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                                     if (buttonId === 'ok') {
                                         const sf = JSON.parse(data.filters)
                                         const filterInfo = ParticipantGroupHelpers.getParticipantGroupFilters(sf)
-                                        const gs = {
-                                            label: "",
-                                            id: 0,
-                                            isSaved: false
-                                        }
+                                        const gs = new GroupSummary({isSaved: false})
                                         setSelectedFilters(filterInfo.sf)
                                         setGroupSummary(gs)
                                         applyFilters(filterInfo.sf).then(({ pids, countsList }) => {
@@ -239,7 +235,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 ParticipantGroupHelpers.updateSessionGroup(pids, countsList, filterInfo.sf, gs, studyDict)
             }        
         })
-        setGroupSummary(gs)
+        setGroupSummary((prevGroupSummary: GroupSummary) => prevGroupSummary.with(gs))
     }, [])
 
     // ------ Filter-related -------
@@ -247,11 +243,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     const filterClick = React.useCallback((dim: string, filter: Filter) => {
         return (() => {
             const sf = toggleFilter(dim, filter.level, filter.member, selectedFilters)
-            const gs = groupSummary.isSaved ? {
-                label: groupSummary.label,
-                id: groupSummary.id,
-                isSaved: false
-            } : groupSummary
+            const gs = groupSummary.recordSet("isSaved", false)
             setSelectedFilters(sf)
             applyFilters(sf).then(({pids, countsList}) => {
                 ParticipantGroupHelpers.updateSessionGroup(pids, countsList, sf, gs, studyDict)
@@ -264,11 +256,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
         return ((value: string) => {
             const sf = setAndOr(dim, level, value, selectedFilters)
 
-            const gs = groupSummary.isSaved ? {
-                label: groupSummary.label,
-                id: groupSummary.id,
-                isSaved: false
-            } : groupSummary
+            const gs = groupSummary.recordSet("isSaved", false)
             setSelectedFilters(sf)
             applyFilters(sf).then(({pids, countsList}) => {
                 ParticipantGroupHelpers.updateSessionGroup(pids, countsList, sf, gs, studyDict)
@@ -311,11 +299,11 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
         const newFilters = new SelectedFilters()
         setSelectedFilters(newFilters);
         applyFilters(newFilters)
-        setGroupSummary({
+        setGroupSummary(groupSummary.with({
             id: 0,
             label: "",
             isSaved: true
-        })
+        }))
         ParticipantGroupHelpers.clearSessionParticipantGroup()
     }
 

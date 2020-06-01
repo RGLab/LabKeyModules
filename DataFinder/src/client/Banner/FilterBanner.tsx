@@ -17,11 +17,11 @@ export const FilterBanner = ({ show }) => {
                 unsavedFilters: false
             }
         }
-        const groupSummary: GroupSummary = {
+        const groupSummary = new GroupSummary({
             label: bannerInfo.groupName,
             id: 0,
             isSaved: bannerInfo.unsavedFilters
-        }
+        })
         const selectedFilters = new SelectedFilters(sf)
         const manageGroupsDropdown = <ContentDropdown id="manage-groups" label="Manage Groups" disabled={true}></ContentDropdown>
         return (

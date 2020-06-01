@@ -5,7 +5,7 @@ import { SelectedFilters, GroupInfo, SelectedFilter, ISelectedFilters } from "..
 import ParticipantGroupAPI, { ParticipantGroup } from '../../typings/ParticipantGroup'
 import { List } from "immutable";
 import { StudyParticipantCount, StudyDict } from "../../typings/StudyCard";
-import { GroupSummary } from "../components/Banner";
+import { IGroupSummary } from "../components/Banner";
 
 const participantGroupAPI: ParticipantGroupAPI = LABKEY.Study.ParticipantGroup
 
@@ -90,7 +90,7 @@ export const updateParticipantGroup = (groupId: number, groupInfo: ParticipantGr
     })
 }
 
-export const setSessionParticipantIds = (participantIds: string[], filters: SelectedFilters, groupSummary: GroupSummary ) => {
+export const setSessionParticipantIds = (participantIds: string[], filters: SelectedFilters, groupSummary: IGroupSummary ) => {
     return new Promise<void>((resolve, reject) => {
         participantGroupAPI.setSessionParticipantGroup({
             participantIds: participantIds,
@@ -237,7 +237,7 @@ export const updateSessionGroupById = (countsList: List<StudyParticipantCount>, 
     setSessionParticipantGroup(groupId)
     updateContainerFilter(countsList, studyDict)
 }
-export const updateSessionGroup = (pids: string[], countsList: List<StudyParticipantCount>, filters: SelectedFilters, summary: GroupSummary, studyDict) => {
+export const updateSessionGroup = (pids: string[], countsList: List<StudyParticipantCount>, filters: SelectedFilters, summary: IGroupSummary, studyDict) => {
     setSessionParticipantIds(pids, filters, summary)
     if (studyDict) {
         updateContainerFilter(countsList, studyDict)

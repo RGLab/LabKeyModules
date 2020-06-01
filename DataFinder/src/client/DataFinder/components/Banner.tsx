@@ -4,6 +4,7 @@ import { SelectedFilters, TotalCounts, GroupInfo } from "../../typings/CubeData"
 import { ContentDropdown } from "./FilterDropdown";
 import { SaveDropdown, LoadDropdown, DropdownButtons } from "./ActionButton";
 import * as ParticipantGroupHelpers from "../helpers/ParticipantGroup_new"
+import { Record } from "immutable";
 
 interface BannerProps {
     groupSummary: GroupSummary;
@@ -15,10 +16,30 @@ interface BannerProps {
     filterBarId?: string;
 }
 
-export interface GroupSummary {
+export interface IGroupSummary {
+    label?: string;
+    id?: number;
+    isSaved?: boolean;
+}
+
+export class GroupSummary extends Record({
+    label: "",
+    id: 0,
+    isSaved: true
+}) {
     label: string;
     id: number;
     isSaved: boolean;
+
+    constructor(params?: IGroupSummary) {
+        params ? super(params) : super()
+    }
+    with(values: IGroupSummary) {
+        return this.merge(values) as this;
+    }
+    recordSet(key: string, value: any) {
+        return this.set(key, value) as this
+    }
 }
 
 interface BannerTitleBarProps {
@@ -113,13 +134,12 @@ export const ManageGroupsDropdown = React.memo<ManageGroupDropdownProps>(({
     const saveAsCallback = (goToSendAfterSave) => {
         const aftersave = (saveData) => {
             updateAvailableGroups()
-            
-                setGroupSummary({
-                    label: saveData.group.label,
-                    id: saveData.group.rowId,
-                    isSaved: true
-                
-            })
+
+            setGroupSummary((prevGroupSummary) => prevGroupSummary.with({
+                label: saveData.group.label,
+                id: saveData.group.rowId,
+                isSaved: true
+            }))
         }
         openSaveWindow("", goToSendAfterSave, aftersave)
     }
@@ -157,11 +177,10 @@ export const ManageGroupsDropdown = React.memo<ManageGroupDropdownProps>(({
                     data.label = description.label
                 }                
                 ParticipantGroupHelpers.updateParticipantGroup(groupSummary.id, data)
-                setGroupSummary((prevGroupSummary) => ({
+                setGroupSummary((prevGroupSummary) => (prevGroupSummary.with({
                     label: data.label,
-                    id: prevGroupSummary.id,
                     isSaved: true
-                }))
+                })))
             })
         } else {
             console.log("No group loaded!")
