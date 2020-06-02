@@ -125,8 +125,8 @@ export const setSessionParticipantGroup = (groupId: number) => {
 export const clearSessionParticipantGroup = () => {
     return new Promise<void>((resolve, reject) => {
         participantGroupAPI.clearSessionParticipantGroup({
-            success: () => resolve(),
-            failure: () => reject()
+            success: () => {resolve(); return(null);},
+            failure: () => {reject(); return(null);}
         })
     })
 }

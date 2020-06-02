@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, Children } from "react";
 import { FilterSummary } from "./FilterIndicator";
 import { SelectedFilters, TotalCounts, GroupInfo } from "../../typings/CubeData";
 import { ContentDropdown } from "./FilterDropdown";
-import { SaveDropdown, LoadDropdown, DropdownButtons } from "./ActionButton";
+import { SaveDropdown, LoadDropdown, DropdownButtons, HighlightedLink } from "./ActionButton";
 import * as ParticipantGroupHelpers from "../helpers/ParticipantGroup_new"
 import { Record } from "immutable";
 
@@ -61,11 +61,6 @@ interface ManageGroupDropdownProps {
     updateAvailableGroups: () => void;
 }
 
-interface HighlightedButtonProps {
-    label: string;
-    action?: () => void;
-    href?: string;
-}
 
 export const Banner = React.memo<BannerProps> (({
     filters,
@@ -109,8 +104,8 @@ const BannerTitleBar = React.memo<BannerTitleBarProps>(({
                 <ExploreGroupDropdown />
             </BannerTitleElement>
             <BannerTitleElement>
-                <HighlightedButton label="Download Data" href="/immport/Studies/exportStudyDatasets.view?"/>
-                <HighlightedButton label="Open in RStudio" href="/rstudio/start.view?"/>
+                <HighlightedLink label="Download Data" href="/immport/Studies/exportStudyDatasets.view?"/>
+                <HighlightedLink label="Open in RStudio" href="/rstudio/start.view?"/>
             </BannerTitleElement>
         </div>
     );
@@ -261,13 +256,7 @@ const ParticipantGroupSummary = React.memo<ParticipantGroupSummaryProps>(({
     );
 });
 
-const HighlightedButton = React.memo<HighlightedButtonProps>(({label, action, href}) => {
-  return <a href={href ?? ""} >
-      <button className="btn btn-warning df-highlighted-button" onClick={action ?? (() => {})}>
-      {label}
-      </button>
-  </a>;
-});
+
 
 
 

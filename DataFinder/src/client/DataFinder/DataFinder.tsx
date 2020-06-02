@@ -13,6 +13,7 @@ import  { DataFinderTabs } from "./components/Tabs";
 import { Banner, GroupSummary, ManageGroupsDropdown } from "./components/Banner";
 import { CubeMdx } from "../typings/Cube";
 import whyDidYouRender from "@welldone-software/why-did-you-render";
+import { HighlightedButton } from "./components/ActionButton";
 
 interface DataFinderControllerProps {
     mdx:  CubeMdx,
@@ -295,17 +296,29 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
         return groups;
     })
 
-    const clearFilters = () => {
+    const clearFilters = React.useCallback(() => {
         const newFilters = new SelectedFilters()
         setSelectedFilters(newFilters);
         applyFilters(newFilters)
-        setGroupSummary(groupSummary.with({
-            id: 0,
-            label: "",
-            isSaved: true
-        }))
+        setGroupSummary(new GroupSummary())
         ParticipantGroupHelpers.clearSessionParticipantGroup()
-    }
+    }, [])
+
+    const clearUnsavedFilters = React.useCallback(() => {
+        if (groupSummary.id > 0) {
+            let groupInfo = null;
+            availableGroups.forEach((group) => {
+                if (group.id === groupSummary.id) {groupInfo = group}
+            }) 
+            if (groupInfo) {
+                loadParticipantGroup(groupInfo)
+            } else {
+                clearFilters()
+            }
+        } else {
+            clearFilters()
+        }
+    }, [groupSummary, availableGroups])
 
     // ------ Other ------
     
@@ -340,6 +353,8 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                  />
 
             <div className="row" style={{ position: "relative" }}>
+                <HighlightedButton label="Clear All" action={clearFilters}/>
+                <HighlightedButton label="Clear Unsaved Changes" action = {clearUnsavedFilters}/>
                 {filterCategories && <>
                     <div className="col-sm-4">
                         {FilterDropdownHelper("Study", "Condition", true)}

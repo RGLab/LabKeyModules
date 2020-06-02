@@ -6,6 +6,13 @@ interface ActionButtonProps {
     text: string;
 }
 
+
+interface HighlightedButtonProps {
+    label: string;
+    action?: () => void;
+    href?: string;
+}
+
 export const ActionButton: React.FC<ActionButtonProps> = (props) => {
     return (
         <button 
@@ -17,6 +24,20 @@ export const ActionButton: React.FC<ActionButtonProps> = (props) => {
         </button>
 
     )
+}
+
+export const HighlightedLink = React.memo<HighlightedButtonProps>(({label, href}) => {
+    return <a href={href ?? "#"} >
+        <button className="btn btn-warning df-highlighted-button">
+        {label}
+        </button>
+    </a>;
+  });
+
+export const HighlightedButton: React.FC<HighlightedButtonProps> = ({label, action}) => {
+    return <button className="btn btn-warning df-highlighted-button" onClick={action ?? (() => {})}>
+        {label}
+        </button>
 }
 
 interface LoadDropdownProps {
