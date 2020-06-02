@@ -62,7 +62,7 @@ interface ManageGroupDropdownProps {
 }
 
 
-export const Banner = React.memo<BannerProps> (({
+const BannerFC: React.FC<BannerProps> = ({
     filters,
     groupSummary,
     counts,
@@ -82,9 +82,11 @@ export const Banner = React.memo<BannerProps> (({
             </div>
         </>
     );
-});
+};
 
-const BannerTitleBar = React.memo<BannerTitleBarProps>(({
+export const Banner = React.memo(BannerFC)
+
+const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
     groupSummary,
     counts,
     manageGroupsDropdown
@@ -110,6 +112,9 @@ const BannerTitleBar = React.memo<BannerTitleBarProps>(({
         </div>
     );
 });
+
+const BannerTitleBar = React.memo(BannerTitleBarFC)
+
 const BannerTitleElement = React.memo(({children}) => {
     return(
         <div style={{float: "left", padding: "10px"}}>
@@ -237,7 +242,7 @@ const ParticipantGroupSummary = React.memo<ParticipantGroupSummaryProps>(({
     return (
         <>
             <h3>
-                <div className="df-banner-title">{groupSummary.label}</div>
+                <div className="df-banner-title">{groupSummary.label || "Unsaved Participant Group"}</div>
             </h3>
             <div id="current-participant-group-info-banner" style={{ clear: "left" }}>
                 {!groupSummary.isSaved && (

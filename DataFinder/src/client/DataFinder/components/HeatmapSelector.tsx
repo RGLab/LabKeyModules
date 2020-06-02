@@ -214,7 +214,7 @@ export const SampleTypeCheckbox = ({ toggleShowSampleType, showSampleType }) => 
 
 
 
-export const HeatmapSelectorDropdown: React.FC<HeatmapSelectorDropdownProps> = ({ 
+const HeatmapSelectorDropdownFC: React.FC<HeatmapSelectorDropdownProps> = ({ 
   data, filterClick, selectedDataFilters, timepointCategories, sampleTypeAssayCategories, clickAndOr 
 }) => {
   const [showSampleType, setShowSampleType] = React.useState(false)
@@ -272,3 +272,5 @@ export const HeatmapSelectorDropdown: React.FC<HeatmapSelectorDropdownProps> = (
   )
 
 }
+
+export const HeatmapSelectorDropdown = React.memo(HeatmapSelectorDropdownFC)
