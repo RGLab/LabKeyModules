@@ -1,5 +1,8 @@
 import * as React from 'react';
 
+// Styling imports
+import './AboutPage.scss';
+
 const AboutPage: React.FC = () => {
 
     const [divToShow, setDivToShow] = React.useState<string>("About");
