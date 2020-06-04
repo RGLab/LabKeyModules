@@ -38,6 +38,10 @@ if(moduleName == 'extraWebapp'){
             outputs.dir "resources" // set in where ??
         }
 
+        task prepModule {
+            dependsOn npm_run_build
+        }
+
     }else{
         dirToZip = "${moduleBuildDir}"
         task prepModule {
