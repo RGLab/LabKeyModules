@@ -1,42 +1,46 @@
 import React from 'react'
-import { ISelectedFilters, SelectedFilters } from '../typings/CubeData';
+import { ISelectedFilters, SelectedFilters, TotalCounts } from '../typings/CubeData';
 import { Banner, GroupSummary } from '../DataFinder/components/Banner';
 import localStorage from '../DataFinder/helpers/localStorage'
 import { ContentDropdown } from '../DataFinder/components/FilterDropdown';
+import { getSessionParticipantGroup } from '../DataFinder/helpers/ParticipantGroup_new'
 
 
 export const FilterBanner = ({ show }) => {
     if (show) {
-        // get state from sessionParticipantGroup API
-        const sf: ISelectedFilters = JSON.parse(localStorage.getItem("dataFinderSelectedFilters"))
-        let bannerInfo = JSON.parse(localStorage.getItem("dataFinderBannerInfo"))
-        if (bannerInfo == null) {
-            bannerInfo = {
-                groupName: "",
-                counts: { participant: null, study: null },
-                unsavedFilters: false
-            }
-        }
-        const groupSummary = new GroupSummary({
-            label: bannerInfo.groupName,
-            id: 0,
-            isSaved: bannerInfo.unsavedFilters
-        })
-        const selectedFilters = new SelectedFilters(sf)
+        const [selectedFilters, setSelectedFilters] = React.useState(new SelectedFilters())
+        const [groupSummary, setGroupSummary] = React.useState(new GroupSummary())
+        const [counts, setCounts] = React.useState(new TotalCounts)
+
+        React.useEffect(() => {
+            getSessionParticipantGroup().then((data) => {
+                if (data.filters) {
+                    const sf = new SelectedFilters(JSON.parse(data.filters));
+                    let newGroupSummary = {};
+                    let newCounts = {}
+                    const description = JSON.parse(data.description)
+                    if (description) {
+                        newGroupSummary = description.summary ?? description
+                        newCounts = description.counts
+                    } else newGroupSummary = {
+                        id: data.rowId,
+                        label: data.label,
+                        isSaved: true
+                    }
+                    setSelectedFilters(sf)
+                    setGroupSummary(prevGroupSummary => prevGroupSummary.with(newGroupSummary))
+                    setCounts((prevCounts: any) => prevCounts.merge(newCounts))
+                }
+            })
+        }, [])
         const manageGroupsDropdown = <ContentDropdown id="manage-groups" label="Manage Groups" disabled={true}></ContentDropdown>
         return (
             <div className="df-banner-wrapper">
                 <Banner
                     filters={selectedFilters}
-                    counts={bannerInfo.counts}
+                    counts={counts}
                     groupSummary={groupSummary}
                     manageGroupsDropdown={manageGroupsDropdown}
-                    links={
-                        <>
-                            <a className="labkey-text-link" href="/immport/Studies/exportStudyDatasets.view?">Export Study Datasets</a>
-                            <a className="labkey-text-link" href="/rstudio/start.view?">RStudio</a>
-                        </>
-                    }
                 />
             </div>
 

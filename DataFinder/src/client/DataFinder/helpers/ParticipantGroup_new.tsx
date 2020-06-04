@@ -1,11 +1,11 @@
 // Functions for manipulating the selected participant group, and interfacing with 
 // the sessionParticipantGroup api
 
-import { SelectedFilters, GroupInfo, SelectedFilter, ISelectedFilters } from "../../typings/CubeData";
+import { SelectedFilters, GroupInfo, SelectedFilter, ISelectedFilters, TotalCounts } from "../../typings/CubeData";
 import ParticipantGroupAPI, { ParticipantGroup } from '../../typings/ParticipantGroup'
 import { List } from "immutable";
 import { StudyParticipantCount, StudyDict } from "../../typings/StudyCard";
-import { IGroupSummary } from "../components/Banner";
+import { GroupSummary } from "../components/Banner";
 
 const participantGroupAPI: ParticipantGroupAPI = LABKEY.Study.ParticipantGroup
 
@@ -90,12 +90,13 @@ export const updateParticipantGroup = (groupId: number, groupInfo: ParticipantGr
     })
 }
 
-export const setSessionParticipantIds = (participantIds: string[], filters: SelectedFilters, groupSummary: IGroupSummary ) => {
+export const setSessionParticipantIds = (participantIds: string[], filters: SelectedFilters, groupSummary: GroupSummary, counts: TotalCounts ) => {
     return new Promise<void>((resolve, reject) => {
+        const description = {summary: groupSummary.toJS(), counts: counts.toJS()}
         participantGroupAPI.setSessionParticipantGroup({
             participantIds: participantIds,
             filters: JSON.stringify(filters.toJS()),
-            description: JSON.stringify(groupSummary),
+            description: JSON.stringify(description),
             success: () => resolve(),
             failure: (res, options) => {
                 console.log("An error occured trying to set session participant group: ", res.responseText);
@@ -237,12 +238,19 @@ export const updateSessionGroupById = (countsList: List<StudyParticipantCount>, 
     setSessionParticipantGroup(groupId)
     updateContainerFilter(countsList, studyDict)
 }
-export const updateSessionGroup = (pids: string[], countsList: List<StudyParticipantCount>, filters: SelectedFilters, summary: IGroupSummary, studyDict) => {
-    setSessionParticipantIds(pids, filters, summary)
-    if (studyDict) {
-        updateContainerFilter(countsList, studyDict)
-    }
-}
+export const updateSessionGroup = (
+  pids: string[],
+  countsList: List<StudyParticipantCount>,
+  filters: SelectedFilters,
+  summary: GroupSummary,
+  totalCounts: TotalCounts,
+  studyDict
+) => {
+  setSessionParticipantIds(pids, filters, summary, totalCounts);
+  if (studyDict) {
+    updateContainerFilter(countsList, studyDict);
+  }
+};
 
 
 // export const loadGroupFilters = (filters: SelectedFilters | {

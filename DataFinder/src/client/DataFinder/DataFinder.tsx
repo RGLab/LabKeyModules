@@ -1,7 +1,7 @@
 import "./DataFinder.scss";
 import React from 'react';
 // import {olap} from '../olap/olap'
-import { CubeData, Filter, SelectedFilters, GroupInfo } from '../typings/CubeData';
+import { CubeData, Filter, SelectedFilters, GroupInfo, TotalCounts } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup_new';
 import { toggleFilter, setAndOr } from './helpers/SelectedFilters';
@@ -63,7 +63,11 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             ParticipantGroupHelpers.getSessionParticipantGroup().then((data) => {
                 if (data.filters) {
                     const sf = new SelectedFilters(JSON.parse(data.filters));
-                    const newGroupSummary = JSON.parse(data.description) || {
+                    let newGroupSummary; 
+                    const description = JSON.parse(data.description)
+                    if (description) {
+                        newGroupSummary = description.summary
+                    } else newGroupSummary = {
                         id: data.rowId,
                         label: data.label,
                         isSaved: true
@@ -110,8 +114,10 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                                         const gs = new GroupSummary({isSaved: false})
                                         setSelectedFilters(filterInfo.sf)
                                         setGroupSummary(gs)
-                                        applyFilters(filterInfo.sf).then(({ pids, countsList }) => {
-                                                ParticipantGroupHelpers.updateSessionGroup(pids, countsList, filterInfo.sf, gs, studyDict)
+                                        applyFilters(filterInfo.sf).then(({ pids, countsList, totalCounts }) => {
+                                                ParticipantGroupHelpers.updateSessionGroup(
+                                                    pids, countsList, filterInfo.sf, gs, totalCounts, studyDict
+                                                    )
                                         })
                                     } else {
                                         loadSessionGroup()
@@ -222,20 +228,20 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     // Callbacks -----------------------------------------------------
     const loadParticipantGroup = React.useCallback((groupInfo: GroupInfo) => {
         const filterInfo = ParticipantGroupHelpers.getParticipantGroupFilters(groupInfo.filters)
-        const gs = {
+        const gs = groupSummary.with({
             label: groupInfo.label,
             id: groupInfo.id,
             isSaved: filterInfo.isSaved
-        }
+        })
         setSelectedFilters(filterInfo.sf)
-        applyFilters(filterInfo.sf).then(({pids, countsList}) => {
+        applyFilters(filterInfo.sf).then(({pids, countsList, totalCounts}) => {
             if (filterInfo.isSaved) {
                 ParticipantGroupHelpers.updateSessionGroupById(countsList, groupInfo.id, studyDict)
             } else {
-                ParticipantGroupHelpers.updateSessionGroup(pids, countsList, filterInfo.sf, gs, studyDict)
+                ParticipantGroupHelpers.updateSessionGroup(pids, countsList, filterInfo.sf, gs, totalCounts, studyDict)
             }        
         })
-        setGroupSummary((prevGroupSummary: GroupSummary) => prevGroupSummary.with(gs))
+        setGroupSummary(gs)
     }, [])
 
     // ------ Filter-related -------
@@ -245,8 +251,8 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             const sf = toggleFilter(dim, filter.level, filter.member, selectedFilters)
             const gs = groupSummary.recordSet("isSaved", false)
             setSelectedFilters(sf)
-            applyFilters(sf).then(({pids, countsList}) => {
-                ParticipantGroupHelpers.updateSessionGroup(pids, countsList, sf, gs, studyDict)
+            applyFilters(sf).then(({pids, countsList, totalCounts}) => {
+                ParticipantGroupHelpers.updateSessionGroup(pids, countsList, sf, gs, totalCounts, studyDict)
             })
             setGroupSummary(gs)
         })
@@ -258,8 +264,8 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
 
             const gs = groupSummary.recordSet("isSaved", false)
             setSelectedFilters(sf)
-            applyFilters(sf).then(({pids, countsList}) => {
-                ParticipantGroupHelpers.updateSessionGroup(pids, countsList, sf, gs, studyDict)
+            applyFilters(sf).then(({pids, countsList, totalCounts}) => {
+                ParticipantGroupHelpers.updateSessionGroup(pids, countsList, sf, gs, totalCounts, studyDict)
             })
             setGroupSummary(gs)
         })
@@ -278,13 +284,13 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 .then(([pd1, pd2, tc1, tc2, spc]) => {
                     const pd = CubeHelpers.createPlotData([pd1, pd2])
                     const {countsList, pids} = CubeHelpers.createStudyParticipantCounts(spc)
-                    const counts = CubeHelpers.createTotalCounts([tc1, tc2])
+                    const counts = new TotalCounts(CubeHelpers.createTotalCounts([tc1, tc2]))
                     setCubeData(new CubeData({
                         plotData: pd,
                         studyParticipantCounts: countsList,
                         totalCounts: counts
                     }))
-                    return({pids, countsList})
+                    return({pids, countsList, totalCounts: counts})
                 })
         )
     }
@@ -354,16 +360,15 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             <div className="row">
                 <HighlightedButton label="Clear All" action={clearFilters}/>
                 <HighlightedButton label="Clear Unsaved Changes" action={clearUnsavedFilters}/>
-            </div>
-            <div className="row">
-                {filterCategories && 
-                <DataFinderFilters
+                <ContentDropdown id="all-df-filters" label="Add Filter" content={
+                    filterCategories &&
+                    <DataFinderFilters
                     selectedFilters={selectedFilters}
                     filterCategories={filterCategories}
                     filterClick={filterClick}
                     clickAndOr={clickAndOr}
-                    assayPlotData={plotData.get("Data")}/>
-                }
+                    assayPlotData={plotData.get("Data")}/>}>
+                </ContentDropdown>
 
             </div>
 
@@ -405,7 +410,7 @@ export const App = React.memo(() => {
     React.useEffect(() => {
         Promise.all([
             new Promise((resolve, reject) => dfcube.onReady((mdx) => resolve(true))),
-            CubeHelpers.getStudyInfo(LABKEY)
+            CubeHelpers.getStudyInfo()
         ]).then(([cubeReady, studyInfoRes]) => {
             setCubeReady(true)
             setStudyInfo(studyInfoRes)

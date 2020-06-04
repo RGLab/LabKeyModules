@@ -6,5 +6,7 @@ import { FilterBanner } from './FilterBanner'
 
 
 window.addEventListener('DOMContentLoaded', (event) => {
-    ReactDOM.render(<FilterBanner show={true}/>, document.getElementById('filter-banner'));
+    const page = LABKEY.ActionURL.getParameter("pageId")
+    const show = page === undefined || page != "Find"
+    ReactDOM.render(<FilterBanner show={show}/>, document.getElementById('filter-banner'));
 });

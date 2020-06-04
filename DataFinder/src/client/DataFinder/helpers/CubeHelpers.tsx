@@ -5,7 +5,7 @@
 // proper immutable object. I'm open to other suggestions. -HM
 
 import { CubeMdx } from "../../typings/Cube";
-import * as LABKEY from '@labkey/api';
+import { Query} from '@labkey/api';
 import { SelectedFilters, PlotData, IPlotData, Filter, PlotDatum } from "../../typings/CubeData";
 import * as Cube from '../../typings/Cube'
 import { HeatmapDatum, FilterCategories } from '../../typings/CubeData'
@@ -19,12 +19,12 @@ import { createTinyHeatmapConsts, createTinyHeatmapYaxisScale } from "../compone
 // ----- Promises ----- 
 // Select Rows --------
 // Get filter categories
-export const getFilterCategories = (LABKEY) => {
+export const getFilterCategories = () => {
     return new Promise<SelectRowsResponse>((resolve, reject) => {
-        LABKEY.Query.selectRows({
+        Query.selectRows({
             schemaName: 'immport',
             queryName: 'dataFinder_dropdownCategories',
-            containerFilter: 'CurrentAndSubfolders',
+            containerFilter: Query.ContainerFilter.currentAndSubfolders,
             success: (data: SelectRowsResponse) => { resolve(data) },
             failure: () => {
                 reject();
@@ -33,12 +33,12 @@ export const getFilterCategories = (LABKEY) => {
     })
 }
 
-export const getStudyInfo = (LABKEY) => {
+export const getStudyInfo = () => {
     return new Promise<SelectRowsResponse>((resolve, reject) => {
-        LABKEY.Query.selectRows({
+        Query.selectRows({
             schemaName: 'immport',
             queryName: 'dataFinder_studyCard',
-            containerFilter: "CurrentAndSubfolders",
+            containerFilter: Query.ContainerFilter.currentAndSubfolders,
             success: (data: SelectRowsResponse) => { resolve(data) }
         })
     })

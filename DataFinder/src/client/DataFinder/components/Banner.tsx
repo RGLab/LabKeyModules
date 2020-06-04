@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, Children } from "react";
 import { FilterSummary } from "./FilterIndicator";
 import { SelectedFilters, TotalCounts, GroupInfo } from "../../typings/CubeData";
 import { ContentDropdown } from "./FilterDropdown";
-import { SaveDropdown, LoadDropdown, DropdownButtons, HighlightedLink } from "./ActionButton";
+import {  DropdownButtons, InnerDropdownButtons, HighlightedLink } from "./ActionButton";
 import * as ParticipantGroupHelpers from "../helpers/ParticipantGroup_new"
 import { Record } from "immutable";
 
@@ -123,7 +123,7 @@ const BannerTitleElement = React.memo(({children}) => {
     )
 })
 
-export const ManageGroupsDropdown = React.memo<ManageGroupDropdownProps>(({ 
+export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({ 
     groupSummary, 
     setGroupSummary, 
     loadParticipantGroup,
@@ -187,26 +187,44 @@ export const ManageGroupsDropdown = React.memo<ManageGroupDropdownProps>(({
         }
     }
 
-    const content = useCallback(() =>
-        <>
-            <SaveDropdown
-                saveAs={() => saveAsCallback(false)}
-                save={saveParticipantGroup}
-                disableSave={false} />
-            <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
-            <a id="manage-participant-group-link" className="labkey-text-link" href="/study/Studies/manageParticipantCategories.view?">My Groups Dashboard</a>
-            <a id="send-participant-group-link" className="labkey-text-link" href="#" onClick={() => sendParticipantGroup()}>Send</a>
-        </>, [availableGroups])
-    
-    const ContentDropdownMemo = React.memo(ContentDropdown)
-
+    const buttonData = [
+        {
+            label: "Save",
+            action: saveParticipantGroup,
+        },
+        {
+            label: "Save As",
+            action: () => saveAsCallback(false)
+        },
+        {
+            label: "My Groups Dashboard",
+            icon: <i className="fa fa-link"></i>,
+            href: "/study/Studies/manageParticipantCategories.view?",
+        },
+        {
+            label: "Send",
+            icon: <i className="fa fa-link"></i>,
+            action: () => sendParticipantGroup(),
+        },
+        {
+            label: "Load",
+            buttonData: availableGroups.map((group) => {
+                return ({
+                    label: group.label,
+                    action: () => loadParticipantGroup(group),
+                })
+            })
+        },
+    ]
 
     return (
         <>
-            <ContentDropdownMemo id={"manageGroupsDropdown"} label={"Manage Groups"} content={content()} customMenuClass={""} />
+            <DropdownButtons title="Options" buttonData={buttonData}></DropdownButtons>
         </>
     )
 })
+
+export const ManageGroupsDropdown = React.memo(ManageGroupsDropdownFC)
 
 const ExploreGroupDropdown = React.memo(({ }) => {
     const search = window.location.search

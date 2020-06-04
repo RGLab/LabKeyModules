@@ -40,48 +40,6 @@ export const HighlightedButton: React.FC<HighlightedButtonProps> = ({label, acti
         </button>
 }
 
-interface LoadDropdownProps {
-    groups: GroupInfo[],
-    loadParticipantGroup: (groupInfo: GroupInfo) => void
-}
-
-export const LoadDropdown: React.FC<LoadDropdownProps> = ({ groups, loadParticipantGroup }) => {
-    const buttonData = groups.map((group) => {
-        return ({
-            label: group.label,
-            action: () => loadParticipantGroup(group),
-            disabled: false
-        })
-    })
-    return (
-        <DropdownButtons buttonData={buttonData} title={"Load"} />
-    )
-}
-
-interface SaveDropdownProps {
-    saveAs: () => void;
-    save: () => void;
-    disableSave: boolean
-}
-
-export const SaveDropdown: React.FC<SaveDropdownProps> = ({ saveAs, save, disableSave }) => {
-    const buttonData = [
-        {
-            label: "Save",
-            action: save,
-            disabled: disableSave
-        },
-        {
-            label: "Save As",
-            action: saveAs,
-            disabled: false
-        }
-    ]
-    return (
-        <DropdownButtons title="Save" buttonData={buttonData} />
-    )
-}
-
 interface ClearDropdownProps {
     clearAll: () => void;
     reset: () => void;
@@ -107,38 +65,100 @@ export const ClearDropdown: React.FC<ClearDropdownProps> = ({ clearAll, reset })
 
 
 
-
+interface ButtonData {
+        label: string;
+        icon?: JSX.Element;
+        action?: () => void;
+        disabled?: boolean;
+        href?: string;
+        buttonData?: ButtonData[]
+}
 interface DropdownButtonProps {
     title: string
-    buttonData: {
-        label: string;
-        action: () => void;
-        disabled: boolean;
-        href?: string;
-    }[]
+    buttonData: ButtonData[]
 }
+
+interface DropdownContentProps {
+    title: string
+    buttonData: ButtonData[]
+    open: boolean
+}
+
 export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonData }) => {
+    const [open, setOpen] = React.useState(false);
 
     return (
-        <div className="dropdown" style={{  display: "inline-block", margin: "5px" }}>
-            <div className="btn df-dropdown-button" role="group" >
-                <button className="btn btn-default dropdown-toggle" type="button" id={title + "-participant-group-btn"} data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        <div className="dropdown">
+            <div className={"btn" + (open ? " open" : "")} role="group" >
+                <button className="btn btn-default dropdown-toggle" type="button" onClick={() => {console.log("opening?"); setOpen(!open)}}>
                     <span>{title}</span>
                     <span style={{paddingLeft:"5px"}}><i className="fa fa-caret-down"></i></span>
                 </button>
-                <ul className="dropdown-menu df-dropdown" aria-labelledby={"button-" + title}>
-                    {buttonData.map((button) => {
-                        return (
-                            <li key={button.label} className={button.disabled ? "disabled" : ""}>
-                                <a id={button.label.replace(" ", "-") + "-link"} key={button.label} onClick={button.action} href={button.href ?? "#"}>
-                                    {button.label}
-                                </a>
-                            </li>
-                        )
-                    })}
-                </ul>
-
+                <DropdownContent buttonData={buttonData} title={title} open={open}/>
             </div>
         </div>
     )
+}
+
+export const InnerDropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonData }) => {
+    const [open, setOpen] = React.useState(false);
+    return (
+        <div className="dropdown df-sub-dropdown">
+            <div className={open ? " open" : ""} role="group" >
+                <button type="button" onClick={() => {console.log("opening?"); setOpen(!open)}}>
+                    <span>{title}</span>
+                    <span style={{paddingLeft:"5px"}}><i className={"fa fa-caret-"+(open ? "down" : "right")}></i></span>
+                </button>
+                <InnerDropdownContent buttonData={buttonData} title={title} open={open}/>
+            </div>
+        </div>
+    )
+}
+
+const DropdownContent: React.FC<DropdownContentProps> = ({buttonData, title, open}) => {
+    return <ul className="dropdown-menu df-dropdown" aria-labelledby={"button-" + title} style={open ? {display: "block"} : {}}>
+    {buttonData.map((button) => {
+        return (
+            <li key={button.label} className={"df-dropdown-button " + (button.disabled ? "disabled" : "")}>
+                {(() => {
+                    if (button.buttonData) {
+                        return (<InnerDropdownButtons title={button.label} buttonData={button.buttonData}/>);
+                    } else {
+                        return <a style={{ padding: "0px 5px" }} key={button.label} href={button.href ?? "#"}>
+                            <button onClick={button.action ?? (() => { })} >
+                                {button.label}{button.icon}
+                            </button>
+                        </a>
+                    }
+                })()
+                }
+
+            </li>
+        )
+    })}
+</ul>
+}
+
+const InnerDropdownContent: React.FC<DropdownContentProps> = ({buttonData, title, open}) => {
+    return <ul className="dropdown-menu df-dropdown" aria-labelledby={"button-" + title} style={open ? {display: "contents"} : {}}>
+    {buttonData.map((button) => {
+        return (
+            <li key={button.label} className={"df-dropdown-button " + (button.disabled ? "disabled" : "")}>
+                {(() => {
+                    if (button.buttonData) {
+                        return (<InnerDropdownButtons title={button.label} buttonData={button.buttonData}/>);
+                    } else {
+                        return <a style={{ padding: "0px 5px", marginLeft: "20px" }} key={button.label} href={button.href ?? "#"}>
+                            <button onClick={button.action ?? (() => { })} >
+                                {button.label}{button.icon}
+                            </button>
+                        </a>
+                    }
+                })()
+                }
+
+            </li>
+        )
+    })}
+</ul>
 }
