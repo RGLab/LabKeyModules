@@ -23,8 +23,7 @@ import {MaBarPlot,
         } from './components/mostAccessedPlots'
 
 // Styling imports
-import './HighlightedReports.scss';
-// import 'bootstrap/dist/css/bootstrap.min.css'; // v3
+import './ResourcesPage.scss';
 
 const ResourcesPage: React.FC = () => {
     
