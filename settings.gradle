@@ -1,5 +1,6 @@
 rootProject.name = 'LabKeyModules'
-include 'ActiveModules', 
+include 'AboutPage',
+    'ActiveModules', 
     'DataExplorer', 
     'DataFinder',
     'DifferentialExpressionAnalysis',

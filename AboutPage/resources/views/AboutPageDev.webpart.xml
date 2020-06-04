@@ -1,0 +1,4 @@
+<webpart xmlns="http://labkey.org/data/xml/webpart" 
+  title="About Page Dev">
+    <view name="AboutPageDev"/>
+</webpart>
