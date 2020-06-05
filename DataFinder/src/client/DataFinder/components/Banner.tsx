@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo, Children } from "react";
 import { FilterSummary } from "./FilterIndicator";
 import { SelectedFilters, TotalCounts, GroupInfo } from "../../typings/CubeData";
-import { ContentDropdown } from "./FilterDropdown";
-import {  DropdownButtons, InnerDropdownButtons, HighlightedLink } from "./ActionButton";
+import { DropdownButtons, InnerDropdownButtons, HighlightedLink } from "./ActionButton";
 import * as ParticipantGroupHelpers from "../helpers/ParticipantGroup_new"
 import { Record } from "immutable";
 

@@ -2,7 +2,7 @@ import React from 'react'
 import { ISelectedFilters, SelectedFilters, TotalCounts } from '../typings/CubeData';
 import { Banner, GroupSummary } from '../DataFinder/components/Banner';
 import localStorage from '../DataFinder/helpers/localStorage'
-import { ContentDropdown } from '../DataFinder/components/FilterDropdown';
+import { DropdownButtons } from '../DataFinder/components/ActionButton';
 import { getSessionParticipantGroup } from '../DataFinder/helpers/ParticipantGroup_new'
 
 
@@ -33,7 +33,7 @@ export const FilterBanner = ({ show }) => {
                 }
             })
         }, [])
-        const manageGroupsDropdown = <ContentDropdown id="manage-groups" label="Manage Groups" disabled={true}></ContentDropdown>
+        const manageGroupsDropdown = <DropdownButtons title={"Options"} buttonData={[]} disabled={true} />
         return (
             <div className="df-banner-wrapper">
                 <Banner

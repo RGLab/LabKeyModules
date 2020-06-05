@@ -5,14 +5,12 @@ import { CubeData, Filter, SelectedFilters, GroupInfo, TotalCounts } from '../ty
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup_new';
 import { toggleFilter, setAndOr } from './helpers/SelectedFilters';
-import { ContentDropdown, AndOrDropdown, FilterDropdownContent, StudyFilters, SubjectFilters, AssayFilters, DataFinderFilters } from './components/FilterDropdown'
-import { Flag } from './components/FilterIndicator'
-import { Barplot } from './components/Barplot'
+import { DataFinderFilters } from './components/FilterDropdown'
 import  { DataFinderTabs } from "./components/Tabs";
 import { Banner, GroupSummary, ManageGroupsDropdown } from "./components/Banner";
 import { CubeMdx } from "../typings/Cube";
 import whyDidYouRender from "@welldone-software/why-did-you-render";
-import { HighlightedButton } from "./components/ActionButton";
+import { HighlightedButton, OuterDropdownButton } from "./components/ActionButton";
 
 interface DataFinderControllerProps {
     mdx:  CubeMdx,
@@ -165,65 +163,6 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     const DataFinderTabsMemo = React.memo(DataFinderTabs, (prevProps, nextProps) => true)
 
     // ----- Components -----
-    const BarplotHelper = (dim, level, presentationDim = null) => {
-        const pDim = presentationDim || dim
-        return (
-            <Barplot
-                data={plotData.getIn([dim, level])}
-                name={level}
-                height={200}
-                width={250}
-                categories={filterCategories[level]}
-                countMetric={pDim == "Study" ? "studyCount" : "participantCount"}
-                barColor={pDim == "Study" ? "#af88e3" : "#95cced"} />
-        )
-    }
-
-    const FilterDropdownHelper = (dim, level, includeIndicators = false, includeAndOr = false) => {
-        const levelArray = level.split(".")
-        let label = levelArray[0];
-        if (levelArray[0] === "ExposureMaterial") label = "Exposure Material"
-        if (levelArray[0] === "ExposureProcess") label = "Exposure Process"
-        if (levelArray[0] === "ResearchFocus") label = "Research Focus"
-        if (levelArray[0] === "SampleType") label = "Sample Type"
-
-        return(
-            <>
-                {includeAndOr &&
-                    <AndOrDropdown status={selectedFilters.getIn([dim, ...levelArray, "operator"])}
-                        onClick={clickAndOr(dim, level)} />
-                }
-                
-                <ContentDropdown
-                    id={levelArray[0]}
-                    label={label}
-                    customMenuClass="df-dropdown filter-dropdown"
-                    content={
-                        <FilterDropdownContent
-                            dimension={dim}
-                            level={level}
-                            members={filterCategories[levelArray[0]]}
-                            filterClick={filterClick}
-                            selected={selectedFilters.getIn([dim, ...levelArray, "members"])}
-                        />}>
-                    {includeIndicators &&
-                        selectedFilters.getIn([dim, ...levelArray]) &&
-                        <div className="filter-indicator-list">
-                            {selectedFilters.getIn([dim, ...levelArray, "members"]).map((member) => {
-                                return (
-                                    <Flag dim={dim}
-                                        onDelete={filterClick(dim, { level: level, member: member })} >
-                                        {member}
-                                    </Flag>
-                                )
-                            })}
-                        </div>
-                    }
-                </ContentDropdown>
-            </>
-        )
-        
-    }
 
     // Callbacks -----------------------------------------------------
     const loadParticipantGroup = React.useCallback((groupInfo: GroupInfo) => {
@@ -258,9 +197,8 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
         })
     }, [selectedFilters, groupSummary])
 
-    const clickAndOr = React.useCallback((dim: string, level: string) => {
-        return ((value: string) => {
-            const sf = setAndOr(dim, level, value, selectedFilters)
+    const toggleAndOr = React.useCallback((dim: string, level: string, which: string) => {
+            const sf = setAndOr(dim, level, which, selectedFilters)
 
             const gs = groupSummary.recordSet("isSaved", false)
             setSelectedFilters(sf)
@@ -268,7 +206,6 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 ParticipantGroupHelpers.updateSessionGroup(pids, countsList, sf, gs, totalCounts, studyDict)
             })
             setGroupSummary(gs)
-        })
     }, [selectedFilters, groupSummary])
 
     
@@ -295,11 +232,11 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
         )
     }
 
-    const updateAvailableGroups = () => ParticipantGroupHelpers.getAvailableGroups().then((data) => {
+    const updateAvailableGroups = React.useCallback(() => ParticipantGroupHelpers.getAvailableGroups().then((data) => {
         const groups = ParticipantGroupHelpers.createAvailableGroups(data)
         setAvailableGroups(groups)
         return groups;
-    })
+    }), [])
 
     const clearFilters = React.useCallback(() => {
         const newFilters = new SelectedFilters()
@@ -360,15 +297,17 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             <div className="row">
                 <HighlightedButton label="Clear All" action={clearFilters}/>
                 <HighlightedButton label="Clear Unsaved Changes" action={clearUnsavedFilters}/>
-                <ContentDropdown id="all-df-filters" label="Add Filter" content={
-                    filterCategories &&
-                    <DataFinderFilters
-                    selectedFilters={selectedFilters}
-                    filterCategories={filterCategories}
-                    filterClick={filterClick}
-                    clickAndOr={clickAndOr}
-                    assayPlotData={plotData.get("Data")}/>}>
-                </ContentDropdown>
+                <OuterDropdownButton title="Add Filter"> 
+                    <div className="dropdown-menu">
+                        {filterCategories &&
+                            <DataFinderFilters
+                                selectedFilters={selectedFilters}
+                                filterCategories={filterCategories}
+                                filterClick={filterClick}
+                                toggleAndOr={toggleAndOr}
+                                assayPlotData={plotData.get("Data")}/>}
+                    </div>
+                </OuterDropdownButton>
 
             </div>
 

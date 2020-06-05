@@ -76,27 +76,80 @@ interface ButtonData {
 interface DropdownButtonProps {
     title: string
     buttonData: ButtonData[]
+    disabled?: boolean
 }
 
 interface DropdownContentProps {
-    title: string
     buttonData: ButtonData[]
-    open: boolean
+    open?: boolean
 }
 
-export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonData }) => {
-    const [open, setOpen] = React.useState(false);
+interface OuterDropdownButtonProps {
+    disabled?: boolean;
+    title: string;
+}
 
+export const FilterDropdownButton: React.FC<OuterDropdownButtonProps> = ({title, disabled, children}) => {
+    const openRef = React.useRef<HTMLDivElement>(null)
+    const open = () => {
+        const cl = openRef.current.classList
+        const willOpen = !cl.contains("open")
+        for (let el of document.querySelectorAll(".df-filter-dropdown>.open")) {
+            console.log("close!")
+            el.classList.remove("open")
+        };
+        if (willOpen) {
+            console.log("open!")
+            cl.add("open")
+        }
+    }
     return (
-        <div className="dropdown">
-            <div className={"btn" + (open ? " open" : "")} role="group" >
-                <button className="btn btn-default dropdown-toggle" type="button" onClick={() => {console.log("opening?"); setOpen(!open)}}>
+        <div className="dropdown df-filter-dropdown">
+            <div className={"btn"} ref={openRef} role="group" >
+                <button className="btn btn-default dropdown-toggle" type="button" disabled={disabled} onClick={open}>
                     <span>{title}</span>
                     <span style={{paddingLeft:"5px"}}><i className="fa fa-caret-down"></i></span>
                 </button>
-                <DropdownContent buttonData={buttonData} title={title} open={open}/>
+                {children}
             </div>
         </div>
+    )
+}
+
+export const OuterDropdownButton: React.FC<OuterDropdownButtonProps> = ({children, disabled, title}) => {
+    const openRef = React.useRef<HTMLDivElement>(null)
+    const open = () => {
+        const cl = openRef.current.classList
+        const willOpen = !cl.contains("open")
+        for (let el of document.querySelectorAll(".df-outer-dropdown>.open")) {
+            console.log("close!")
+            el.classList.remove("open")
+        };
+        if (willOpen) {
+            console.log("open!")
+            cl.add("open")
+        }
+    }
+
+    return (
+        <div className="dropdown df-outer-dropdown">
+            <div className={"btn"} ref={openRef} role="group" >
+                <button className="btn btn-default dropdown-toggle" type="button" disabled={disabled} onClick={open}>
+                    <span>{title}</span>
+                    <span style={{paddingLeft:"5px"}}><i className="fa fa-caret-down"></i></span>
+                </button>
+                {children}
+            </div>
+        </div>
+    )
+}
+
+export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonData, disabled }) => {
+
+    return (
+        <OuterDropdownButton title={title} disabled={disabled}>
+            <DropdownContent buttonData={buttonData} />
+        </OuterDropdownButton>
     )
 }
 
@@ -105,21 +158,21 @@ export const InnerDropdownButtons: React.FC<DropdownButtonProps> = ({ title, but
     return (
         <div className="dropdown df-sub-dropdown">
             <div className={open ? " open" : ""} role="group" >
-                <button type="button" onClick={() => {console.log("opening?"); setOpen(!open)}}>
+                <button type="button" onClick={() => { setOpen(!open)}}>
                     <span>{title}</span>
                     <span style={{paddingLeft:"5px"}}><i className={"fa fa-caret-"+(open ? "down" : "right")}></i></span>
                 </button>
-                <InnerDropdownContent buttonData={buttonData} title={title} open={open}/>
+                <InnerDropdownContent buttonData={buttonData} open={open} />
             </div>
         </div>
     )
 }
 
-const DropdownContent: React.FC<DropdownContentProps> = ({buttonData, title, open}) => {
-    return <ul className="dropdown-menu df-dropdown" aria-labelledby={"button-" + title} style={open ? {display: "block"} : {}}>
+const DropdownContent: React.FC<DropdownContentProps> = ({buttonData}) => {
+    return <ul className="dropdown-menu df-dropdown">
     {buttonData.map((button) => {
         return (
-            <li key={button.label} className={"df-dropdown-button " + (button.disabled ? "disabled" : "")}>
+            <li key={button.label} className={"df-dropdown-option " + (button.disabled ? "disabled" : "")}>
                 {(() => {
                     if (button.buttonData) {
                         return (<InnerDropdownButtons title={button.label} buttonData={button.buttonData}/>);
@@ -139,11 +192,11 @@ const DropdownContent: React.FC<DropdownContentProps> = ({buttonData, title, ope
 </ul>
 }
 
-const InnerDropdownContent: React.FC<DropdownContentProps> = ({buttonData, title, open}) => {
-    return <ul className="dropdown-menu df-dropdown" aria-labelledby={"button-" + title} style={open ? {display: "contents"} : {}}>
+const InnerDropdownContent: React.FC<DropdownContentProps> = ({buttonData, open}) => {
+    return <ul className="dropdown-menu df-dropdown" style={open ? {display: "contents"} : {}}>
     {buttonData.map((button) => {
         return (
-            <li key={button.label} className={"df-dropdown-button " + (button.disabled ? "disabled" : "")}>
+            <li key={button.label} className={"df-dropdown-option " + (button.disabled ? "disabled" : "")}>
                 {(() => {
                     if (button.buttonData) {
                         return (<InnerDropdownButtons title={button.label} buttonData={button.buttonData}/>);

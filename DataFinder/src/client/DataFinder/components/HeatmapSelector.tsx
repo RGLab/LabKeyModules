@@ -1,11 +1,10 @@
 import * as React from 'react';
 import { drawHeatmapSelector } from "./d3/HeatmapSelector.d3"
-import { HeatmapDatum, Filter, IAssayData, PlotDatum, FilterCategory, SelectedFilter, AssayData, FilterCategories, } from '../../typings/CubeData';
-import { Cube } from '../../typings/Cube';
-import { Axis } from 'd3';
-import { Map, List } from 'immutable'
-import { ContentDropdown, AndOrDropdown } from './FilterDropdown';
+import { HeatmapDatum, Filter, IAssayData, PlotDatum, FilterCategory, SelectedFilter, AssayData } from '../../typings/CubeData';
+import { Map} from 'immutable'
+import { AndOrDropdown } from './FilterDropdown';
 import { Flag } from './FilterIndicator';
+import { FilterDropdownButton } from './ActionButton';
 
 // React stuff ==================================== //
 
@@ -45,7 +44,7 @@ interface HeatmapSelectorDropdownProps {
   selectedDataFilters: Map<string, Map<string, SelectedFilter> | SelectedFilter>;
   timepointCategories: FilterCategory[];
   sampleTypeAssayCategories: FilterCategory[];
-  clickAndOr: (dim: string, level: string) => (value: string) => void;
+  toggleAndOr: (dim: string, level: string, which: string) => void;
 }
 
 // helpers
@@ -215,20 +214,17 @@ export const SampleTypeCheckbox = ({ toggleShowSampleType, showSampleType }) => 
 
 
 const HeatmapSelectorDropdownFC: React.FC<HeatmapSelectorDropdownProps> = ({ 
-  data, filterClick, selectedDataFilters, timepointCategories, sampleTypeAssayCategories, clickAndOr 
+  data, filterClick, selectedDataFilters, timepointCategories, toggleAndOr
 }) => {
   const [showSampleType, setShowSampleType] = React.useState(false)
 
   return (
     <>
-    <AndOrDropdown status={selectedDataFilters.getIn(["Assay", "Timepoint", "operator"])} onClick={clickAndOr("Data", "Assay.Timepoint")} />
+    <AndOrDropdown status={selectedDataFilters.getIn(["Assay", "Timepoint", "operator"])} onClick={(value: string) => toggleAndOr("Data", "Assay.Timepoint", value)} />
 
-    <ContentDropdown
-      id={"heatmap-selector"}
-      label={"Timepoint Selector"}
-      customMenuClass="assay-timepoint-dropdown"
-      content={
-        <>
+    <FilterDropdownButton
+      title="Timepoint Selector">
+        <div className="dropdown-menu">
           <SampleTypeCheckbox
             toggleShowSampleType={() => setShowSampleType(!showSampleType)}
             showSampleType={showSampleType} />
@@ -240,10 +236,7 @@ const HeatmapSelectorDropdownFC: React.FC<HeatmapSelectorDropdownProps> = ({
             selected={selectedDataFilters}
             timepointCategories={timepointCategories}
             sampleTypeAssayCategories={timepointCategories} />
-        </>
-      }>
-      <>
-        
+        </div>        
         <div className="filter-indicator-list">
           {selectedDataFilters.getIn(["Assay", "Timepoint", "members"])?.map((member) => {
             return (
@@ -252,7 +245,6 @@ const HeatmapSelectorDropdownFC: React.FC<HeatmapSelectorDropdownProps> = ({
               </Flag>
             )
           })}
-
         </div>
 
         <div className="filter-indicator-list">
@@ -266,8 +258,7 @@ const HeatmapSelectorDropdownFC: React.FC<HeatmapSelectorDropdownProps> = ({
           })}
 
         </div>
-      </>
-    </ContentDropdown>
+    </FilterDropdownButton>
     </>
   )
 

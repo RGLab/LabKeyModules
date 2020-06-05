@@ -36,8 +36,8 @@ document.getElementsByTagName('body')[0].addEventListener('click', function (e) 
             if (el.tagName == "BODY") return false
             return el.parentNode && someParentHasClass(el.parentNode, className)
         }
-        if (! (someParentHasClass(target, "df-dropdown") || someParentHasClass(target, "filterselector")) ) {
-            for (let el of document.getElementsByClassName('filterselector open')) {
+        if (! someParentHasClass(target, "df-outer-dropdown") ) {
+            for (let el of document.querySelectorAll('.df-outer-dropdown>.open')) {
                 el.classList.remove("open")
             };
         }

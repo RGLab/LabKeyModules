@@ -105,7 +105,7 @@
 }
 
 .df-dropdown {
-  padding: 0;
+  padding: 10px;
   /*left:100%;*/
   /*top:10px;*/
   height: auto;
@@ -113,15 +113,6 @@
   overflow: auto;
 }
 
-.filter-dropdown {
-  width: 140px;
-}
-
-.filter-dropdown-button {
-  margin-bottom: 5px;
-  width: 140px;
-  display: inline-block;
-}
 
 button {
   float: inline-end;
@@ -345,61 +336,93 @@ textarea {
   }
 }
 
-.df-dropdown-button {
+
+
+.df-dropdown-option {
   height: auto;
+
+  & > a {
+    padding: 0;
+
+    & > button {
+      background: none;
+      border: none;
+      float: inherit;
+      background: none;
+      padding: 3px 28px;
+
+      & > i {
+        padding-left: 10px;
+      }
+    }
+  }
 }
 
-.df-dropdown-button > a {
-  padding: 0;
+// Top level dropdown 
+.df-outer-dropdown {
+  height: auto;
+  & > div {
+    & > dropdown-menu {
+      display: none;
+    }
+  }
+  & > div.open {
+    & > dropdown-menu {
+      display: block;
+    }
+  }
 }
 
-.df-dropdown-button > a > button {
-  background: none;
-  border: none;
-  float: inherit;
-  background: none;
-  padding: 3px 28px;
+
+// inner dropdowns (like filter dropdowns)
+.df-inner-dropdown {
+  max-height: 15em;
+  & > div.open {
+    & > dropdown-menu {
+      display: block;
+    }
+  }
 }
 
-.df-dropdown-button > a > button > i {
-  padding-left: 10px;
-}
-
-.open > dropdown-menu {
-  display: contents;
-}
-
+// Nested dropdown (like in manageGroups)
 .df-sub-dropdown {
   width: 100%;
   font-size: inherit;
   font-style: inherit;
   font-weight: inherit;
   background: none;
-  // padding: 0;
+
+  & > div {
+    width: 100%;
+    padding: 0;
+    color: #494949;
+
+    &.open {
+      & > .dropdown-menu {
+        display: contents;
+      }
+    }
+
+    & > button { 
+      width: 100%;
+      text-align: left;
+      background: none;
+      padding: 3px 33px;
+      border: none;
+      font-weight: normal;
+
+      &:focus {
+        outline: none;
+      }
+
+      &:hover {
+        color: #f7f7f7;
+        text-decoration: none;
+        background-color: #597530;  
+      }
+
+    }
+  }
 }
 
-.df-sub-dropdown > div > button:focus {
-  outline: none;
-}
-
-.df-sub-dropdown > div {
-  width: 100%;
-  padding: 0;
-  color: #494949;
-}
-
-.df-sub-dropdown > div > button {
-  width: 100%;
-  text-align: left;
-  background: none;
-  padding: 3px 33px;
-  border: none;
-  font-weight: normal;
-}
-
-.df-sub-dropdown > div > button:hover {
-  color: #f7f7f7;
-  text-decoration: none;
-  background-color: #597530;  
-}
 

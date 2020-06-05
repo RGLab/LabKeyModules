@@ -3,6 +3,7 @@ import { Filter, FilterCategory, SelectedFilter, FilterCategories, AssayData, Se
 import { List} from 'immutable'
 import { Flag } from './FilterIndicator'
 import { HeatmapSelectorDropdown } from './HeatmapSelector';
+import { FilterDropdownButton, OuterDropdownButton } from './ActionButton'
 
 // Types 
 export interface FilterDropdownProps {
@@ -55,7 +56,7 @@ interface AssayFiltersProps {
     assaySelectedFilters: any;
     filterCategories: FilterCategories;
     filterClick: (dim: string, filter: Filter) => () => void;
-    clickAndOr: (dim: string, level: string) => (value: string) => void;
+    toggleAndOr: (dim: string, level: string, which: string) => void;
     assayPlotData: AssayData;
 }
 
@@ -63,7 +64,7 @@ interface DataFinderFilterProps {
     selectedFilters: SelectedFilters;
     filterCategories: FilterCategories;
     filterClick: (dim: string, filter: Filter) => () => void;
-    clickAndOr: (dim: string, level: string) => (value: string) => void;
+    toggleAndOr: (dim: string, level: string, which: string) => void;
     assayPlotData: AssayData;
 }
 
@@ -78,6 +79,7 @@ export const FilterDropdownContent: React.FC<FilterDropdownProps> =
 
     const labels = members.map(m => m.label)
     return(
+        <div className="dropdown-menu">
             <div id={level} className="form-group">
                 {labels.map((e) => {
                     let checked: boolean;
@@ -105,45 +107,15 @@ export const FilterDropdownContent: React.FC<FilterDropdownProps> =
                     )
                 })}
             </div>
+        </div>
+
     )
 }
 
 
-export const ContentDropdown: React.FC<ContentDropdownProps> = ({ id, label, content, customMenuClass, disabled, children }) => {
-    return (
-        <>
-            <div className={"dropdown"}>
-                <div id={"df-content-dropdown-" + id} className={"btn-group filterselector" + disabled && " disabled"} role="group" >
-                    <button 
-                        id={"content-dropdown-button-" + id} 
-                        className="btn btn-default dropdown-toggle filter-dropdown-button" 
-                        type="button" 
-                        onClick={() => {
-                            const cl = document.getElementById("df-content-dropdown-" + id).classList
-                            const willOpen = !cl.contains("open")
-                            for (let el of document.getElementsByClassName('filterselector open')) {
-                                el.classList.remove("open")
-                            };
-                            if (willOpen) {
-                                cl.add("open")
-                            }
-                        }}
-                        >
-                        <span>{label}</span>
-                        <span style={{float:"right"}}><i className="fa fa-caret-down"></i></span>
-                    </button>
-                    <div className={"dropdown-menu " + (customMenuClass || "")}>
-                        {content}
-                    </div>
-                    {children}
-                </div>
-            </div>
-        </>
-    )
-}
 
 export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick }) => {
-    if (status == undefined) status = "OR"
+    if (status === undefined) status = "OR"
     const statusText = {
         AND: "All of",
         OR: "Any of"
@@ -163,20 +135,8 @@ export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick })
     ]
     const title = statusText[status]
     return (
-        <div className="dropdown" style={{ float: "left", display: "inline-block"}}>
-            <div className="btn df-dropdown-button df-andor-dropdown" role="group" >
-                <button className="btn btn-default dropdown-toggle" 
-                        type="button" 
-                        id={"button-" + title} 
-                        data-toggle="dropdown" 
-                        aria-haspopup="true" 
-                        aria-expanded="true"
-                        style={{display: 'inline-block'}}
-                >
-                    <span>{title}</span>
-                    <span style={{paddingLeft: "5px"}}><i className="fa fa-caret-down"></i></span>
-                </button>
-                <ul className="dropdown-menu" aria-labelledby={"button-" + title} style={{left: "15px"}}>
+        <FilterDropdownButton title={title}>
+            <ul className="dropdown-menu" style={{left: "15px"}}>
                     {buttonData.map((button) => {
                         return (
                             <li className={button.disabled ? "disabled" : ""}>
@@ -186,10 +146,8 @@ export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick })
                             </li>
                         )
                     })}
-                </ul>
-
-            </div>
-        </div>
+            </ul>
+        </FilterDropdownButton>
     )
 }
 
@@ -218,18 +176,14 @@ const FilterSelectorFC: React.FC<FilterSelectorProps> = ({
                     onClick={andOrClick} />
             }
             
-            <ContentDropdown
-                id={level}
-                label={label}
-                customMenuClass="df-dropdown filter-dropdown"
-                content={
-                    <FilterDropdownContent
-                        dimension={dim}
-                        level={level}
-                        members={levelFilterCategories}
-                        filterClick={filterClick}
-                        selected={levelSelectedFilters?.get("members")}
-                    />}>
+            <FilterDropdownButton title={label}>
+                <FilterDropdownContent
+                    dimension={dim}
+                    level={level}
+                    members={levelFilterCategories}
+                    filterClick={filterClick}
+                    selected={levelSelectedFilters?.get("members")}
+                />
                 {includeIndicators &&
                     levelSelectedFilters &&
                     <div className="filter-indicator-list">
@@ -243,7 +197,7 @@ const FilterSelectorFC: React.FC<FilterSelectorProps> = ({
                         })}
                     </div>
                 }
-            </ContentDropdown>
+            </FilterDropdownButton>
         </>
     )
     
@@ -325,7 +279,7 @@ export const SubjectFilters: React.FC<SubjectFiltersProps> = ({subjectSelectedFi
     </>
 }
 
-export const AssayFilters: React.FC<AssayFiltersProps> = ({assaySelectedFilters, filterCategories, filterClick, clickAndOr, assayPlotData}) => {
+export const AssayFilters: React.FC<AssayFiltersProps> = ({assaySelectedFilters, filterCategories, filterClick, toggleAndOr, assayPlotData}) => {
     return <>
     <FilterSelector
         dim="Data"
@@ -335,7 +289,7 @@ export const AssayFilters: React.FC<AssayFiltersProps> = ({assaySelectedFilters,
         levelFilterCategories={filterCategories.Assay}
         filterClick={filterClick}
         includeAndOr={true}
-        andOrClick={clickAndOr("Data", "Assay.Assay")}/>
+        andOrClick={(value) => toggleAndOr("Data", "Assay.Assay", value)}/>
 
     <FilterSelector
         dim="Data"
@@ -345,7 +299,7 @@ export const AssayFilters: React.FC<AssayFiltersProps> = ({assaySelectedFilters,
         levelFilterCategories={filterCategories.SampleType}
         filterClick={filterClick}
         includeAndOr={true}
-        andOrClick={clickAndOr("Data", "SampleType.SampleType")}/>
+        andOrClick={(value) => toggleAndOr("Data", "SampleType.SampleType", value)}/>
     {filterCategories.SampleTypeAssay && assayPlotData && 
         <HeatmapSelectorDropdown
             data={assayPlotData} 
@@ -353,7 +307,7 @@ export const AssayFilters: React.FC<AssayFiltersProps> = ({assaySelectedFilters,
             selectedDataFilters={assaySelectedFilters}
             timepointCategories={filterCategories.Timepoint}
             sampleTypeAssayCategories={filterCategories.SampleTypeAssay}
-            clickAndOr={clickAndOr}/>
+            toggleAndOr={toggleAndOr}/>
     }
     </>
 }
@@ -370,7 +324,7 @@ const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
     selectedFilters,
     filterCategories,
     filterClick,
-    clickAndOr,
+    toggleAndOr,
     assayPlotData
 }) => {
     return <>
@@ -391,7 +345,7 @@ const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
                 assaySelectedFilters={selectedFilters.get("Data")}
                 filterCategories={filterCategories}
                 filterClick={filterClick}
-                clickAndOr={clickAndOr}
+                toggleAndOr={toggleAndOr}
                 assayPlotData={assayPlotData}/>
         </FilterSet>
     </>
