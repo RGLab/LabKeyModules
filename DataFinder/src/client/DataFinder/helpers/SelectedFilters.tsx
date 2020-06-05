@@ -83,7 +83,8 @@ export const createCubeFilters = (filters: SelectedFilters) => {
                         )
                     }
                 })
-                return (hierarchyFilters.valueSeq())
+                return (hierarchyFilters.valueSeq()).toJS()
+                .reduce((acc, val) => acc.concat(val), [])
             } else if (hierarchy == "Timepoint") {
                 const selectedFilter = selectedFiltersOrMap
                 if (selectedFilter.operator == "OR") {

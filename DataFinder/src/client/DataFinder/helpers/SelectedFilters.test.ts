@@ -110,10 +110,43 @@ describe('Manipulate Selected Filters', () => {
                 }
             }
         ]
+        const input5 = new SelectedFilters({
+            Data: {
+                Assay: {
+                    Assay: new SelectedFilter({ members: List(["ELISA"]), operator: "OR" }),
+                    Timepoint: new SelectedFilter({ members: [ "HAI.0", "Gene Expression.0" ], operator: "AND"})
+                },
+            }
+        })
+        const output5 = [
+            {
+                level: "[Subject].[Subject]",
+                membersQuery: {
+                    level: "[Data.Assay].[Assay]",
+                    members: ["[Data.Assay].[ELISA]"]
+                }
+            },
+            {
+                level: "[Subject].[Subject]",
+                membersQuery: {
+                    level: "[Data.Assay].[Timepoint]",
+                    members: "[Data.Assay].[HAI].[0]"
+                }
+            },
+            {
+                level: "[Subject].[Subject]",
+                membersQuery: {
+                    level: "[Data.Assay].[Timepoint]",
+                    members: "[Data.Assay].[Gene Expression].[0]"
+                }
+            }
+        ]
+
         expect(JSON.stringify(sf.createCubeFilters(input1))).toEqual(JSON.stringify(output1))
         expect(JSON.stringify(sf.createCubeFilters(input2))).toEqual(JSON.stringify(output2))
         expect(JSON.stringify(sf.createCubeFilters(input3))).toEqual(JSON.stringify(output3))
         expect(JSON.stringify(sf.createCubeFilters(input4))).toEqual(JSON.stringify(output4))
+        expect(JSON.stringify(sf.createCubeFilters(input5))).toEqual(JSON.stringify(output5))
     })
 
 });
