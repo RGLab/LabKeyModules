@@ -3,7 +3,7 @@ import { drawHeatmapSelector } from "./d3/HeatmapSelector.d3"
 import { HeatmapDatum, Filter, IAssayData, PlotDatum, FilterCategory, SelectedFilter, AssayData } from '../../typings/CubeData';
 import { Map} from 'immutable'
 import { AndOrDropdown } from './FilterDropdown';
-import { Flag } from './FilterIndicator';
+import { Flag, FilterDeletor } from './FilterIndicator';
 import { FilterDropdownButton } from './ActionButton';
 
 // React stuff ==================================== //
@@ -240,9 +240,9 @@ const HeatmapSelectorDropdownFC: React.FC<HeatmapSelectorDropdownProps> = ({
         <div className="filter-indicator-list">
           {selectedDataFilters.getIn(["Assay", "Timepoint", "members"])?.map((member) => {
             return (
-              < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: member })} >
+              < FilterDeletor dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: member })} >
                 {member.split(".").join(" at ") + " days"}
-              </Flag>
+              </ FilterDeletor>
             )
           })}
         </div>
@@ -251,9 +251,9 @@ const HeatmapSelectorDropdownFC: React.FC<HeatmapSelectorDropdownProps> = ({
           {selectedDataFilters.getIn(["Assay", "SampleType", "members"])?.map((member) => {
             const memberSplit = member.split(".")
             return (
-              < Flag dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member })} >
+              < FilterDeletor dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member })} >
                 {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
-              </Flag>
+              </ FilterDeletor>
             )
           })}
 

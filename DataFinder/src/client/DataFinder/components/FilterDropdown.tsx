@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Filter, FilterCategory, SelectedFilter, FilterCategories, AssayData, SelectedFilters } from '../../typings/CubeData'
 import { List} from 'immutable'
-import { Flag } from './FilterIndicator'
+import { Flag, FilterDeletor } from './FilterIndicator'
 import { HeatmapSelectorDropdown } from './HeatmapSelector';
 import { FilterDropdownButton, OuterDropdownButton } from './ActionButton'
 
@@ -79,7 +79,7 @@ export const FilterDropdownContent: React.FC<FilterDropdownProps> =
 
     const labels = members.map(m => m.label)
     return(
-        <div className="dropdown-menu">
+        <div className="dropdown-menu filter-menu">
             <div id={level} className="form-group">
                 {labels.map((e) => {
                     let checked: boolean;
@@ -136,11 +136,11 @@ export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick })
     const title = statusText[status]
     return (
         <FilterDropdownButton title={title}>
-            <ul className="dropdown-menu" style={{left: "15px"}}>
+            <ul className="dropdown-menu">
                     {buttonData.map((button) => {
                         return (
                             <li className={button.disabled ? "disabled" : ""}>
-                                <a key={button.label} onClick={button.action} href="#">
+                                <a key={button.label} onClick={button.action}>
                                     {button.label}
                                 </a>
                             </li>
@@ -189,10 +189,10 @@ const FilterSelectorFC: React.FC<FilterSelectorProps> = ({
                     <div className="filter-indicator-list">
                         {levelSelectedFilters?.get("members").map((member) => {
                             return (
-                                <Flag dim={dim}
+                                <FilterDeletor dim={dim}
                                     onDelete={filterClick(dim, { level: level, member: member })} >
                                     {member}
-                                </Flag>
+                                </FilterDeletor>
                             )
                         })}
                     </div>
@@ -314,7 +314,7 @@ export const AssayFilters: React.FC<AssayFiltersProps> = ({assaySelectedFilters,
 
 const FilterSet : React.FC = (({children}) => {
     return(
-        <div style={{float: "left", padding: "10px"}}>
+        <div className={"filter-dropdown-set"}>
             {children}
         </div>
     )

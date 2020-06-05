@@ -155,18 +155,16 @@ const FilterIndicatorList: React.FC<FilterIndicatorListProps> = ({ filterClass, 
 }
 interface FlagProps {
     dim: string;
-    onDelete?: () => void;
 }
-export const Flag: React.FC<FlagProps> = ({ dim, onDelete, children }) => {
+
+interface FilterDeletorProps {
+    dim: string;
+    onDelete: () => void;
+}
+export const Flag: React.FC<FlagProps> = ({ dim, children }) => {
     return (
-        <div className="filter-indicator">
-            <div className={"filter-indicator-text " + dim} style={onDelete && {maxWidth: "10em"}}>
+        <div className={"filter-indicator " + dim}>
                 {children}
-            </div>
-            {onDelete &&
-                <button className="filterdeletor" onClick={onDelete}>
-                    <span className="glyphicon glyphicon-remove">X</span>
-                </button>}
         </div>
     )
 }
@@ -180,3 +178,11 @@ const FilterIndicatorFlag: React.FC<FilterIndicatorFlagProps> = ({ dim, filter, 
     )
 }
 
+export const FilterDeletor: React.FC<FilterDeletorProps> = ({dim, onDelete, children}) => {
+    return <div className={"filter-deletor " + dim} onClick={onDelete}>
+        <span>
+            {children}
+        </span>
+        <i className="fa fa-times"></i>
+    </div>
+}

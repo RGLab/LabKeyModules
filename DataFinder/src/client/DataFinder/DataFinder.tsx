@@ -298,7 +298,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 <HighlightedButton label="Clear All" action={clearFilters}/>
                 <HighlightedButton label="Clear Unsaved Changes" action={clearUnsavedFilters}/>
                 <OuterDropdownButton title="Add Filter"> 
-                    <div className="dropdown-menu">
+                    <div className="dropdown-menu" style={{cursor: "auto"}}>
                         {filterCategories &&
                             <DataFinderFilters
                                 selectedFilters={selectedFilters}

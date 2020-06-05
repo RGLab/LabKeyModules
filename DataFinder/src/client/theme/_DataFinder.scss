@@ -32,47 +32,68 @@
   background-color: #fff;
 }
 
-.filterselector {
-  display: table;
+
+
+.filter-indicator-list {
+  display: table-row;
 }
 
 .filter-indicator {
   width: auto;
-  border-radius: 10px;
+  float: left;
+  border-radius: 1em;
+  padding: 2px 10px;
   margin: 2px;
   white-space: normal !important;
   word-wrap: break-word;
   text-align: left;
   display: inline-table;
   margin-left: 15px;
+
+  &.Study {
+    background: #54278f;
+    color: white;
+  }
+
+  &.Subject {
+    background: #6baed6;
+    color: white;
+  }
+
+  &.Data {
+    background: #238b45;
+    color: white;
+  }
+
 }
 
-.filter-indicator-list {
-  display: table-row;
-}
+.filter-deletor {
+  @extend .filter-indicator;
+  width: max-content;
+  max-width: 150px;
+  border: 2px solid #f7f7f7;
+  position: relative;
+  text-transform: none;
+  margin-left: 0;
 
-.filter-indicator-text {
-  width: auto;
-  float: left;
-  padding-left: 5px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  padding-right: 5px;
-}
+  & > span {
+    font-weight: lighter;
+    // white-space: normal;
+    color: white;
+    text-align: left;
+    // word-wrap: break-word;
+    padding-right: 15px;
+  }
 
-.filter-indicator-text.Study {
-  background: #54278f;
-  color: white;
-}
+  &:hover {
+    border: 2px solid transparent //#e57282
+  }
 
-.filter-indicator-text.Subject {
-  background: #6baed6;
-  color: white;
-}
-
-.filter-indicator-text.Data {
-  background: #238b45;
-  color: white;
+  & > i {
+    position: absolute;
+    top: 0.5em;
+    right: 0.5em;
+  }
 }
 
 .filters-title {
@@ -80,31 +101,7 @@
   font-weight: 500;
 }
 
-.filterdeletor {
-  width: 20px;
-  float: right;
-  background: #e57282;
-  color: white;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  border: 0;
-  padding-left: 5px;
-  padding-right: 5px;
-  float: right;
-  margin: 0;
-  height: 100%;
-  border-radius: 10px;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-.filterdeletor:hover {
-  font-weight: bold;
-  text-decoration: none;
-  color: white;
-}
-
-.df-dropdown {
+.filter-menu {
   padding: 10px;
   /*left:100%;*/
   /*top:10px;*/
@@ -361,25 +358,60 @@ textarea {
 // Top level dropdown 
 .df-outer-dropdown {
   height: auto;
+  width: min-content;
+
   & > div {
-    & > dropdown-menu {
+
+    & > .dropdown-menu {
       display: none;
+      width: max-content;
     }
   }
+
   & > div.open {
-    & > dropdown-menu {
+
+    & > .dropdown-menu {
       display: block;
+      width: max-content;
     }
   }
 }
 
 
-// inner dropdowns (like filter dropdowns)
-.df-inner-dropdown {
+// Filter dropdowns
+.df-filter-dropdown {
   max-height: 15em;
+  width: 5em;
+  display: table;
+
+  & .dropdown-menu {
+    width: 5em;
+  }
+
+  & button {
+    float: inline-start;
+  }
+
   & > div.open {
-    & > dropdown-menu {
+
+    & > .dropdown-menu {
       display: block;
+      padding: 0;
+      /*left:100%;*/
+      /*top:10px;*/
+      height: auto;
+      max-height: 15em;
+      overflow-y: auto;
+      overflow-x: hidden;
+      white-space: normal;
+
+      & .checkbox {
+        padding-left: 5px;
+      }
+
+      & label:hover {
+        font-weight: bold;
+      }
     }
   }
 }
@@ -425,4 +457,9 @@ textarea {
   }
 }
 
+.filter-dropdown-set {
+  float: left;
+  padding: 10px;
+  width: 15em;
+}
 
