@@ -1,6 +1,0 @@
-<view xmlns="http://labkey.org/data/xml/view" frame="portal" title="About Page">
-    <dependencies>
-        <dependency path="AboutPage/gen/AboutPage.css" />
-        <dependency path="AboutPage/gen/AboutPage.js"/>
-    </dependencies>
-</view>
