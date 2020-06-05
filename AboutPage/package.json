@@ -24,7 +24,7 @@
       }
     },
     "clean": {
-      "command": "rimraf resources/web/ResourcesPage/gen && rimraf resources/views/*.*"
+      "command": "rimraf resources/web/AboutPage/gen && rimraf resources/views/*.*"
     }
   },
   "dependencies": {
@@ -95,6 +95,5 @@
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     }
-  },
-  "typings": "./src/client/typings/main.d.ts"
+  }
 }
