@@ -67,7 +67,7 @@ if (hostname =~ /Test/){
     buildType = "Local"
 }
 
-ext.reactModules = ['DataFinder', 'ResourcesPage']
+ext.reactModules = ['DataFinder', 'ResourcesPage', 'AboutPage']
 
 subprojects {
 
