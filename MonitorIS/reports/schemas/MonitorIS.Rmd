@@ -567,7 +567,7 @@ gaData$condensedSource <- sapply(gaData$fullReferrer, function(x){
 })
 
 # summarize usageSessions by condensedSource by day
-gaData$shortDate <- format(as.Date(gaData$date), "%Y-%b")
+gaData$shortDate <- format(as.Date(gaData$date), "%Y-%m")
 sourceSummary <- gaData[, list(users = sum(usageSessions)), by = c("condensedSource", "shortDate") ]
 
 # melt data so each day has values for every condensedSource
