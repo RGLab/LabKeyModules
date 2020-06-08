@@ -5,7 +5,7 @@ import { CubeData, Filter, SelectedFilters, GroupInfo, TotalCounts } from '../ty
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup_new';
 import { toggleFilter, setAndOr } from './helpers/SelectedFilters';
-import { DataFinderFilters } from './components/FilterDropdown'
+import { DataFinderFilters, RowOfButtons } from './components/FilterDropdown'
 import  { DataFinderTabs } from "./components/Tabs";
 import { Banner, GroupSummary, ManageGroupsDropdown } from "./components/Banner";
 import { CubeMdx } from "../typings/Cube";
@@ -292,11 +292,10 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                         ManageGroupsDropdownMenu()
                 }
                  />
+                
             
 
-            <div className="row">
-                <HighlightedButton label="Clear All" action={clearFilters}/>
-                <HighlightedButton label="Clear Unsaved Changes" action={clearUnsavedFilters}/>
+            <RowOfButtons>
                 <OuterDropdownButton title="Add Filter"> 
                     <div className="dropdown-menu" style={{cursor: "auto"}}>
                         {filterCategories &&
@@ -308,8 +307,12 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                                 assayPlotData={plotData.get("Data")}/>}
                     </div>
                 </OuterDropdownButton>
-
-            </div>
+                <div>
+                    <HighlightedButton label="Clear Unsaved Changes" action={clearUnsavedFilters}/>
+                    <HighlightedButton label="Clear All" action={clearFilters}/>
+                </div>
+                
+            </RowOfButtons>
 
             <div className="datafinder-wrapper">
             

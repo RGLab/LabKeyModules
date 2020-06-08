@@ -26,19 +26,23 @@ export const ActionButton: React.FC<ActionButtonProps> = (props) => {
     )
 }
 
-export const HighlightedLink = React.memo<HighlightedButtonProps>(({label, href}) => {
+const HighlightedLinkFC: React.FC<HighlightedButtonProps> = (({label, href}) => {
     return <a href={href ?? "#"} >
-        <button className="btn btn-warning df-highlighted-button">
+        <button className="btn df-highlighted-button">
         {label}
         </button>
     </a>;
   });
 
-export const HighlightedButton: React.FC<HighlightedButtonProps> = ({label, action}) => {
-    return <button className="btn btn-warning df-highlighted-button" onClick={action ?? (() => {})}>
+export const HighlightedLink = React.memo(HighlightedLinkFC)
+
+const HighlightedButtonFC: React.FC<HighlightedButtonProps> = ({label, action}) => {
+    return <button className="btn df-highlighted-button" onClick={action ?? (() => {})}>
         {label}
         </button>
 }
+
+export const HighlightedButton = React.memo(HighlightedButtonFC)
 
 interface ClearDropdownProps {
     clearAll: () => void;
@@ -107,8 +111,8 @@ export const FilterDropdownButton: React.FC<OuterDropdownButtonProps> = ({title,
         <div className="dropdown df-filter-dropdown">
             <div className={"btn"} ref={openRef} role="group" >
                 <button className="btn btn-default dropdown-toggle" type="button" disabled={disabled} onClick={open}>
-                    <span>{title}</span>
-                    <span style={{paddingLeft:"5px"}}><i className="fa fa-caret-down"></i></span>
+                    <span style={{float: "left"}}>{title}</span>
+                    <span style={{float: "right"}}><i className="fa fa-caret-down"></i></span>
                 </button>
                 {children}
             </div>

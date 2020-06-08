@@ -24,14 +24,22 @@
 }
 
 .filterbar {
-  border: 1px solid #aaaaaa;
-  margin-left: 0;
-  margin-right: 0;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  background-color: #fff;
+  // border: 1px solid #aaaaaa;
+  // margin-left: 0;
+  // margin-right: 0;
+  // margin-top: 10px;
+  // margin-bottom: 10px;
+  // background-color: #fff;
+  margin: 0
 }
 
+.df-banner-separator {
+  border-top: 1px solid #aaaaaa
+}
+
+.df-group-summary-counts {
+  margin-bottom: 5px;
+}
 
 
 .filter-indicator-list {
@@ -108,11 +116,6 @@
   height: auto;
   // max-height: 15em;
   overflow: auto;
-}
-
-
-button {
-  float: inline-end;
 }
 
 .btn-group {
@@ -260,6 +263,17 @@ textarea {
   margin-right: 30px;
 }
 
+.df-banner-titlebar {
+  border: 1px solid #aaaaaa;
+  background-color: white;
+  margin: 0;
+}
+
+.df-row-of-buttons {
+  display: inline-block;
+  width: 100%
+}
+
 .assay-timepoint-dropdown {
   right: 0;
   left: auto;
@@ -283,6 +297,16 @@ textarea {
 
 .df-highlighted-button {
   margin: 5px;
+  background-color: #de7e3a;
+  border-radius: 8px;
+  color: white;
+  padding-top: 0;
+  height: 20px;
+  
+  &:hover {
+    border: 1px solid #cf6319;
+    color: white;
+  }
 }
 
 // https://bootsnipp.com/snippets/V73xN
@@ -390,6 +414,7 @@ textarea {
 
   & button {
     float: inline-start;
+    width: 125px;
   }
 
   & > div.open {
@@ -463,3 +488,9 @@ textarea {
   width: 15em;
 }
 
+.df-assay-data-selector {
+  width: 300px;
+  float: left;
+  margin: 10px;
+  border-left: 1px solid #bbbbbb
+}

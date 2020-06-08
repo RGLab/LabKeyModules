@@ -4,6 +4,7 @@ import { SelectedFilters, TotalCounts, GroupInfo } from "../../typings/CubeData"
 import { DropdownButtons, InnerDropdownButtons, HighlightedLink } from "./ActionButton";
 import * as ParticipantGroupHelpers from "../helpers/ParticipantGroup_new"
 import { Record } from "immutable";
+import { RowOfButtons } from "./FilterDropdown";
 
 interface BannerProps {
     groupSummary: GroupSummary;
@@ -79,6 +80,7 @@ const BannerFC: React.FC<BannerProps> = ({
             <div id={filterBarId || "df-filter-summary"}>
                 <FilterSummary filters={filters} />
             </div>
+            <hr className={"df-banner-separator"}></hr>
         </>
     );
 };
@@ -91,23 +93,19 @@ const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
     manageGroupsDropdown
 }) => {
     return (
-        <div className="row df-banner-titlebar">
-            <BannerTitleElement>
+        <div className="df-banner-titlebar">
+            <RowOfButtons>
                 <ParticipantGroupSummary
                     groupSummary={groupSummary}
                     counts={counts}
                 />
-            </BannerTitleElement>
-            <BannerTitleElement>
-                {manageGroupsDropdown}
-            </BannerTitleElement>
-            <BannerTitleElement>
                 <ExploreGroupDropdown />
-            </BannerTitleElement>
-            <BannerTitleElement>
+                {manageGroupsDropdown}
+                <>
                 <HighlightedLink label="Download Data" href="/immport/Studies/exportStudyDatasets.view?"/>
                 <HighlightedLink label="Open in RStudio" href="/rstudio/start.view?"/>
-            </BannerTitleElement>
+                </>
+            </RowOfButtons>
         </div>
     );
 });
@@ -116,7 +114,7 @@ const BannerTitleBar = React.memo(BannerTitleBarFC)
 
 const BannerTitleElement = React.memo(({children}) => {
     return(
-        <div style={{float: "left", padding: "10px"}}>
+        <div style={{float: "left", padding: "3px 10px"}}>
             {children}
         </div>
     )
@@ -263,16 +261,13 @@ const ParticipantGroupSummary = React.memo<ParticipantGroupSummaryProps>(({
             </h3>
             <div id="current-participant-group-info-banner" style={{ clear: "left" }}>
                 {!groupSummary.isSaved && (
-                    <>
                         <div style={{ color: "red", display: "inline-block" }}>
                             Changes have not been saved
-            </div>
-                        <div style={{ display: "inline-block" }}></div>
-                    </>
+                            </div>
                 )}
-                <p>
+                <p className={"df-group-summary-counts"}>
                     {counts.participant} participants from {counts.study} studies
-        </p>
+                </p>
             </div>
         </>
     );

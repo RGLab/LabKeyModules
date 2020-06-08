@@ -207,13 +207,13 @@ export const FilterSelector = React.memo(FilterSelectorFC)
 export const StudyFilters: React.FC<StudyFiltersProps> = ({studySelectedFilters, filterCategories, filterClick}) => {
     
     return <>
-        <FilterSelector 
+        {/* <FilterSelector 
             dim="Study" 
             level="ExposureMaterial" 
             label="Exposure Material" 
             levelSelectedFilters={studySelectedFilters.get("ExposureMaterial")}
             levelFilterCategories={filterCategories.ExposureMaterial}
-            filterClick={filterClick}/>
+            filterClick={filterClick}/> */}
         <FilterSelector 
             dim="Study" 
             level="Condition" 
@@ -228,20 +228,20 @@ export const StudyFilters: React.FC<StudyFiltersProps> = ({studySelectedFilters,
             levelSelectedFilters={studySelectedFilters.get("ResearchFocus")}
             levelFilterCategories={filterCategories.ResearchFocus}
             filterClick={filterClick}/>
-        <FilterSelector 
+        {/* <FilterSelector 
             dim="Study" 
             level="ExposureProcess" 
             label="Exposure Process" 
             levelSelectedFilters={studySelectedFilters.get("ExposureProcess")}
             levelFilterCategories={filterCategories.ExposureProcess}
-            filterClick={filterClick}/>
-        <FilterSelector 
+            filterClick={filterClick}/> */}
+        {/* <FilterSelector 
             dim="Study" 
             level="Species" 
             label="Species" 
             levelSelectedFilters={studySelectedFilters.get("Species")}
             levelFilterCategories={filterCategories.Species}
-            filterClick={filterClick}/>
+            filterClick={filterClick}/> */}
         <FilterSelector 
             dim="Study" 
             level="Study" 
@@ -281,7 +281,7 @@ export const SubjectFilters: React.FC<SubjectFiltersProps> = ({subjectSelectedFi
 
 export const AssayFilters: React.FC<AssayFiltersProps> = ({assaySelectedFilters, filterCategories, filterClick, toggleAndOr, assayPlotData}) => {
     return <>
-    <FilterSelector
+    {/* <FilterSelector
         dim="Data"
         level="Assay.Assay"
         label="Assay"
@@ -308,7 +308,8 @@ export const AssayFilters: React.FC<AssayFiltersProps> = ({assaySelectedFilters,
             timepointCategories={filterCategories.Timepoint}
             sampleTypeAssayCategories={filterCategories.SampleTypeAssay}
             toggleAndOr={toggleAndOr}/>
-    }
+    } */}
+    <div className={"df-assay-data-selector"}></div>
     </>
 }
 
@@ -327,7 +328,7 @@ const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
     toggleAndOr,
     assayPlotData
 }) => {
-    return <>
+    return <div style={{display: "flex"}}>
         <FilterSet>
             <StudyFilters 
                 studySelectedFilters={selectedFilters.get("Study")}
@@ -340,14 +341,24 @@ const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
                 filterClick={filterClick}
                 filterCategories={filterCategories}/>
         </FilterSet>
-        <FilterSet>
             <AssayFilters
                 assaySelectedFilters={selectedFilters.get("Data")}
                 filterCategories={filterCategories}
                 filterClick={filterClick}
                 toggleAndOr={toggleAndOr}
                 assayPlotData={assayPlotData}/>
-        </FilterSet>
-    </>
+    </div>
 }
 export const DataFinderFilters = React.memo(DataFinderFiltersFC)
+
+export const RowOfButtons: React.FC = ({children}) => {
+    return <div className={"df-row-of-buttons"}>
+    {React.Children.map(children || null, (child, i) => {
+        return (
+            <div style={{float: "left", padding: "3px 10px"}}>
+                {child}
+            </div>
+            )
+        })}
+    </div>
+}
