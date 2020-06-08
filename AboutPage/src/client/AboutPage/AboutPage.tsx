@@ -6,6 +6,8 @@ import './AboutPage.scss';
 const AboutPage: React.FC = () => {
 
     const [divToShow, setDivToShow] = React.useState<string>("About");
+    const [subMenuToShow, setSubMenuToShow] = React.useState<string>("gene-expression")
+
     // --------- ABOUT -----------------
     const About: React.FC = () => { 
         return(
@@ -57,35 +59,44 @@ const AboutPage: React.FC = () => {
         )
     }
 
-    // --------- TOOLS -----------------
-    const Tools: React.FC = () => { 
+    // --------- DataStandards -------------
+    const DataStandards: React.FC = () => { 
+
+        const Cytometry: React.FC = () => {
+            return(
+                <div>
+                    <p>
+                        Under Construction
+                    </p>
+                </div>
+            )
+        }
+
+        const GeneExpression: React.FC = () => {
+            return(
+                <div>
+                   <img src="/AboutPage/images/ge_standardization.png"
+                        padding-top="80%"
+                        width="65%"/>
+                </div>
+            )
+        }
+
+        const ImmuneResponse: React.FC = () => {
+            return(
+                <div>
+                    <p>
+                        Under Construction
+                    </p>
+                </div>
+            )
+        }
+
         return(
-            <div id="Tools">
-                <h3>Online Bioinformatics Tools Created by HIPC Members:</h3>
-                <a href="http://icahn.mssm.edu/immuneregulation" target="_blank">ImmuneRegulation</a>
-                <p>
-                    Web platform that allows you to interactively explore the 
-                    regulation of genes of interest by querying the regulation 
-                    in the eQTL, Transcription Factor, and GQAS datasets. 
-                </p>
-                <a href="http://software.broadinstitute.org/gsea/msigdb/collection_details.jsp#C7" target="_blank">ImmuneSigDB</a> 
-                <p>
-                    A collection of Immune Signatures gene sets that represent cell types, states, 
-                    and perturbations within the immune system developed by the Haining Lab.  
-                </p>
-                <a href="https://immcantation.readthedocs.io/en/stable/#" target="_blank">Immcantation</a>
-                <p>
-                    The Immcantation framework provide a start-to-finish analytical ecosystem for 
-                    high-throughput AIRR-seq datasets. Beginning from raw reads, Python and R packages 
-                    are provided for pre-processing, population structure determination, and repertoire analysis.
-                </p>
-                <a href="http://insilico.utulsa.edu/index.php/reliefseq/" target="_blank">ReliefSeq</a>
-                <p>
-                    Machine learning feature selection method for GWAS, RNA-Seq 
-                    and other high-dimensional data sets able to identify 
-                    genetic variables that influence continuous or dichotomous 
-                    outcomes through interactions with other genetic variables. 
-                </p>
+            <div id="DataStandards">
+                { subMenuToShow == "cytometry" ? <Cytometry/> : null}
+                { subMenuToShow == "gene-expression" ? <GeneExpression/> : null}
+                { subMenuToShow == "immune-response" ? <ImmuneResponse/> : null}
             </div>
         )
     }
@@ -101,9 +112,23 @@ const AboutPage: React.FC = () => {
                 text: "About"
             },
             {
-                id: "tools",
-                tag: "Tools",
-                text: "HIPC Tools",
+                id: "data-standards",
+                tag: "DataStandards",
+                text: "Data Standards",
+                subMenu: [
+                    {
+                        tag: "cytometry",
+                        text: "Cytometry"
+                    },
+                    {
+                        tag: "gene-expression",
+                        text: "Gene Expression"
+                    },
+                    {
+                        tag: "immune-response",
+                        text: "Immune Response"
+                    }
+                ]
             }
         ]
 
@@ -111,15 +136,63 @@ const AboutPage: React.FC = () => {
         const navBarElements = divInfo.map(function(el){
             const itemId = "navbar-link-" + el.id;
             const href = "#" + el.tag;
+    
+            if(["DataStandards"].indexOf(el.tag) !== -1){
+                var className = "nav-item dropdown" + (divToShow == el.tag ? " active" : "");
+                const dropDownId = el.tag + "Dropdown"
 
-            const className = divToShow == el.tag ? " active" : "";
-            return(
-                <li id = {itemId} className = {className}>
-                    <a href = {href} onClick={() => setDivToShow(el.tag)}>
-                        {el.text}
-                    </a>
-                </li>
-            )
+                const subMenuHtml = el.subMenu.map(function(subel, i){
+                    const tag = "#" + subel.tag
+                    return(
+                        <li>
+                            <a  key={i} 
+                                id={subel.tag} 
+                                href={tag} 
+                                onClick={function(){
+                                    setDivToShow(el.tag)
+                                    setSubMenuToShow(subel.tag)
+                                }}>
+                                {subel.text}
+                            </a>
+                        </li>
+                    )
+                })
+
+                return(
+                    <li id={itemId} className={className}>
+                        <a  className="dropdown-toggle" 
+                            href={href} 
+                            id={dropDownId} 
+                            role="button" 
+                            data-toggle="dropdown" 
+                            aria-haspopup="true" 
+                            aria-expanded="false"
+                            onClick={function(){
+                                const parentNode = document.getElementById(itemId)
+                                if(parentNode.className == "nav-item dropdown active"){
+                                    parentNode.className = "nav-item dropdown active open"
+                                }else if(parentNode.className == "nav-item dropdown active open"){
+                                    parentNode.className = "nav-item dropdown active"
+                                }
+                            }}>
+                            {el.text} <span className="caret"></span>
+                        </a>
+                        <ul className="dropdown-menu">
+                            {subMenuHtml}
+                        </ul>
+                        
+                    </li>
+                )
+            }else{
+                const className = divToShow == el.tag ? " active" : "";
+                return(
+                    <li id = {itemId} className = {className}>
+                        <a href = {href} onClick={() => setDivToShow(el.tag)}>
+                            {el.text}
+                        </a>
+                    </li>
+                )
+            }
         })
 
         return(
@@ -138,7 +211,7 @@ const AboutPage: React.FC = () => {
         <div>
             <Navbar/>
             { divToShow == "About" ? <About/> : null}
-            { divToShow == "Tools" ? <Tools/> : null}
+            { divToShow == "DataStandards" ? <DataStandards/> : null}
         </div>
     )
 }
