@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<webpart title='MainMenu' xmlns='http://labkey.org/data/xml/webpart'>
+    <view name='MainMenu'/>
+    <locations>
+        <location name="menu"/>
+    </locations>
+</webpart>
+

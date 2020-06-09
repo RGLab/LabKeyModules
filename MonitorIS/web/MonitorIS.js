@@ -15,16 +15,16 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
             flagCohortSelect    = undefined
             ;
         // Help strings
-        var plotType_help = 'The type of plot: barplots and line are available.'
+        //var plotType_help = 'The type of plot: barplots and line are available.'
 
         // Stores
-        var strPlotType = new Ext.data.ArrayStore({
+        /*var strPlotType = new Ext.data.ArrayStore({
             data: [
                 [ 'Barplot', 'bar' ],
                 [ 'Lineplot', 'line' ]
             ],
             fields: [ 'display', 'value' ]
-        });
+        });*/
         var strByTime = new Ext.data.ArrayStore({
             data: [
                 [ 'Day', 'day' ],
@@ -36,7 +36,7 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
         });
 
         // Dropdown
-        var cbPlotType = new Ext.ux.form.ExtendedComboBox({
+        /*var cbPlotType = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
             displayField: 'display',
             fieldLabel: 'Plot type',
@@ -46,7 +46,7 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
             value: 'bar',
             valueField: 'value',
             width: fieldWidth
-        });
+        });*/
         var startDate = new Ext.form.DateField({
             fieldLabel: 'From',
             width: fieldWidth
@@ -76,7 +76,7 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
             disabled: false,
             handler: function(){
                 cnfReport.inputParams = {
-                    plotType: cbPlotType.getValue(),
+                    plotType: 'bar',
                     from: startDate.getValue(),
                     to: endDate.getValue(),
                     by: byTime.getValue()
@@ -215,7 +215,7 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
                     items: [
                         startDate,
                         endDate,
-                        LABKEY.ext.ISCore.factoryTooltipWrapper(cbPlotType, 'Plot type', plotType_help),
+                        //LABKEY.ext.ISCore.factoryTooltipWrapper(cbPlotType, 'Plot type', plotType_help),
                         byTime
                     ],
                     title: 'Parameters'
@@ -323,11 +323,11 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
                 {
                     items: [
                        new Ext.form.Label(),
-                        new Ext.form.FieldSet({
+                        /*new Ext.form.FieldSet({
                             html: '<b></b> ' + plotType_help + '<br><br>',
                             style: 'margin-bottom: 2px; margin-top: 5px;',
                             title: 'Parameters'
-                        }),
+                        }),*/
                         new Ext.form.FieldSet({
                             html: 'After a run, the <b>View</b> tab will open where the output shows plots of the number of new users and number of logins for the selected period.',
                             style: 'margin-bottom: 2px; margin-top: 5px;',
@@ -409,7 +409,6 @@ LABKEY.ext.MonitorIS = Ext.extend( Ext.Panel, {
 
             Ext.each(
                 [
-                    cbPlotType,
                     startDate,
                     endDate,
                     byTime,

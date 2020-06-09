@@ -37,7 +37,7 @@ library(illuminaio)
 .dlSuppFls <- function(accList, baseDir, study){
   tmp <- sapply(accList, getGEOSuppFiles, makeDirectory = FALSE, baseDir = baseDir)
   fls <- list.files(baseDir)
-  targetFlTerms <- "non-normalized|corrected|raw|cel|pbmc|counts"
+  targetFlTerms <- "non-normalized|corrected|raw|cel|pbmc|count"
   rawFls <- fls[ grep(targetFlTerms, fls, ignore.case = TRUE) ]
 
   # Unzip any files if necessary - set `overwrite = TRUE` in case of processing fail
@@ -93,6 +93,8 @@ library(illuminaio)
     if ( any(grepl("RAW", nmsVals))) {
       nmsVals <- gsub("RAW_SIGNAL", "AVG_Signal", nmsVals)
     } else if (!any(grepl("SAMPLE", nmsVals))) {
+      nmsVals <- paste0(nmsVals, ".AVG_Signal")
+    } else if (all(grepl("^SAMPLE", nmsVals))){
       nmsVals <- paste0(nmsVals, ".AVG_Signal")
     } else {
       nmsVals <- gsub("AVG_Signal", "SAMPLE", nmsVals)
@@ -162,6 +164,12 @@ library(illuminaio)
       esNms <- mp$experimentAccession[ match(accs, mp$AuthorGivenId) ]
       setnames(x, accs, esNms)
       return(x)
+    })
+  } else if (study == "SDY787") {
+    # Fist number is unique id
+    mxList <- lapply(mxList, function(x) {
+      # Remove first "_" and everything following
+      setnames(x, colnames(x), gsub("_.*$", "", colnames(x)))
     })
   }
   return(mxList)
@@ -255,8 +263,8 @@ library(illuminaio)
         inputFiles <- .mxListToFlatFile(mxList, baseDir, study)
       }
 
-      # Cases 6 and 7: raw data in gse supp files - Illumina / RNAseq
     } else {
+      # Cases 6 and 7: raw data in gse supp files - Illumina / RNAseq
       accList <- unique(unlist(lapply(gef$geo_accession, function(x){
         gsm <- getGEO(x)
         gse <- gsm@header$series_id
@@ -285,7 +293,7 @@ library(illuminaio)
             # lookahead to ensure full id before sep and not partial (e.g "PBMC_1" and "PBMC_12")
             # perl = TRUE for lookahead
             for (i in 1:nrow(mp)) {
-              fixedId <- paste0("^", gsub(".", "\\.", mp$id[[i]], fixed = T), "(?=(\\.|_))")
+              fixedId <- paste0("^", gsub(".", "\\.", mp$id[[i]], fixed = T), "(?=(\\.|_|$))")
               colnames(em) <- gsub(fixedId, mp$gsm[[i]], colnames(em), perl = TRUE)
             }
           }
@@ -732,7 +740,7 @@ runCreateMx <- function(labkey.url.base,
 
   # **studyIdTerm**: For extracting sample id from getGEO(gsm) object
   useDescription <- study %in% c("SDY144", "SDY180", "SDY522", "SDY1373", "SDY1364",
-                                 "SDY1325")
+                                 "SDY1325", "SDY640", "SDY520")
   metaData$studyIdTerm <- ifelse(useDescription, "description", "title")
 
   # **smplGsubTerms**: Custom gsub terms for allowing the mapping of study-given ids
@@ -743,16 +751,17 @@ runCreateMx <- function(labkey.url.base,
     SDY63   = list(old = "^101", new = "10"),
     SDY888  = list(old = "( |)_((N|n)egative|(S|s)econdary)", new = "_RNASeq"),
     SDY1373 = list(old = "Sample name: ", new = ""),
-    SDY180  = list(old = "([0-9])([A-Z])", new = "\\1_\\2")
+    SDY180  = list(old = "([0-9])([A-Z])", new = "\\1_\\2"),
+    SDY787  = list(old = "\\D", new = "") # Replace all non-digits
   )
 
   # **gseNeedsMap**: Studies that need id-to-gsm mapping from gse supp files
   # without special gsub terms
   metaData$gseNeedsMap <- study %in% c("SDY404", "SDY522", "SDY1325", "SDY1364", "SDY144",
-                                       "SDY400")
+                                       "SDY400", "SDY640", "SDY520")
 
   # **gsmMapIndex**: Index of samplename in vector from getGEO()
-  useSecond <- c("SDY180")
+  useSecond <- c("SDY180", "SDY640", "SDY520")
   metaData$gsmMapIndex <- ifelse( study %in% useSecond, 2, 1)
 
   # **gsmTblVarNm**: Custom list of raw values column name for gsm-based data
