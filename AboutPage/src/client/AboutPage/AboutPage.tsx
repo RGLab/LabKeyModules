@@ -105,6 +105,7 @@ const AboutPage: React.FC = () => {
                             <p><a href="http://ceur-ws.org/Vol-2285/ICBO_2018_paper_41.pdf">Vita R, Overton JA, Cheung KH, Kleinstein SH, Peter B. Proceedings of the 9th International Conference on Biological Ontology (ICBO 2018), Corvallis, Oregon, USA</a>.</p>
                             <p><a href="https://www.jimmunol.org/content/202/1_Supplement/130.26">Vita RJ, Overton JA, Cheung KH, Dunn P, Burel J, Bukhari SAC, Diehl AD, Kleinstein SH, Sette A, Peters B. (2019) Formal representation of immunology related data with ontologies. J Immunol May 1, 2019, 202 (1 Supplement) 130.26</a>.</p>
                         </li>
+                        <br></br>
                     </ul>
                                                                                                                           
                     <p><strong>Questions?</strong></p>
