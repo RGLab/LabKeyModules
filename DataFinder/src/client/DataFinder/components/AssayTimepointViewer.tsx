@@ -17,15 +17,12 @@ export interface AssayTimepointViewerProps {
   yaxis: AxisDatum<Filter>[]
   breaks: number[];
   colors: string[];
-  selected: Map<string, Map<string, SelectedFilter> | SelectedFilter>
   showSampleType: boolean
 }
 
 interface AssayTimepointViewerContainerProps {
   name: string,
   data: IAssayData;
-  showSampleType: boolean;
-  selected: Map<string, Map<string, SelectedFilter> | SelectedFilter>;
   timepointCategories: FilterCategory[];
   sampleTypeAssayCategories: FilterCategory[];
 }
@@ -151,8 +148,8 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
 }
 
 
-export const AssayTimepointViewerContainer: React.FC<AssayTimepointViewerContainerProps> = ({data, showSampleType, selected, timepointCategories, sampleTypeAssayCategories, name}) => {
-  // debugger;
+export const AssayTimepointViewerContainer: React.FC<AssayTimepointViewerContainerProps> = ({data, timepointCategories, sampleTypeAssayCategories, name}) => {
+  const [showSampleType, setShowSampleType] = React.useState(false)
 
   // Transform data into appropriate format
 
@@ -191,7 +188,6 @@ export const AssayTimepointViewerContainer: React.FC<AssayTimepointViewerContain
         yaxis={yaxisData}
         breaks={options.breaks}
         colors={options.colors}
-        selected={selected}
         showSampleType={showSampleType}
       />
     </div>

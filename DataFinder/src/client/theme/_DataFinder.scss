@@ -15,8 +15,18 @@
   border-top: transparent;
 }
 
+.df-tab-title {
+  width: 50%;
+  text-align: center;
+}
+
 .nav-tabs > li > a {
   margin-right: 0;
+  position: relative;
+  display: block;
+  padding: 2px 0px 0px 0px;
+  font-size: 1.2em;
+  border-bottom: 1px solid #d0d0d0
 }
 
 .custom-action-button {

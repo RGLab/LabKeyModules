@@ -6,11 +6,12 @@ import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup_new';
 import { toggleFilter, setAndOr } from './helpers/SelectedFilters';
 import { DataFinderFilters, RowOfButtons } from './components/FilterDropdown'
-import  { DataFinderTabs } from "./components/Tabs";
+import  { Tabs } from "./components/Tabs";
 import { Banner, GroupSummary, ManageGroupsDropdown } from "./components/Banner";
 import { CubeMdx } from "../typings/Cube";
 import whyDidYouRender from "@welldone-software/why-did-you-render";
 import { HighlightedButton, OuterDropdownButton } from "./components/ActionButton";
+import { SelectedParticipants, SelectedStudies } from "./components/TabContent";
 
 interface DataFinderControllerProps {
     mdx:  CubeMdx,
@@ -158,9 +159,10 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     // Helper functions ---------------------------------------------
 
     // ----- Memos -----
-    const BannerMemo = React.memo(Banner)
     const ManageDropdownMemo = React.memo(ManageGroupsDropdown)
-    const DataFinderTabsMemo = React.memo(DataFinderTabs, (prevProps, nextProps) => true)
+    const SelectedParticipantsMemo = React.memo(SelectedParticipants)
+    const SelectedStudiesMemo = React.memo(SelectedStudies)
+    // const DataFinderTabsMemo = React.memo(DataFinderTabs, (prevProps, nextProps) => true)
 
     // ----- Components -----
 
@@ -315,14 +317,17 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             </RowOfButtons>
 
             <div className="datafinder-wrapper">
-            
-                <DataFinderTabs
+            <Tabs>
+                <SelectedParticipants filterCategories={filterCategories} plotData={plotData} key="Selected Participants"/>
+                <SelectedStudiesMemo studyDict={studyDict} studyParticipantCounts={studyParticipantCounts} key="Selected Studies"/>
+            </Tabs>
+                {/* <DataFinderTabs
                     plotData={plotData}
                     filterCategories={filterCategories}
                     studyParticipantCounts={studyParticipantCounts}
                     studyDict={studyDict}
                     filterClick={filterClick}
-                     />
+                     /> */}
             </div>
 
             {/* Tooltip */}

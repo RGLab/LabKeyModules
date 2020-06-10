@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StudyInfo } from '../../typings/StudyCard';
+import { IStudyInfo } from '../../typings/StudyCard';
 import { TinyHeatmap } from '../components/TinyHeatmap';
 import { Filter } from '../../typings/CubeData';
 
@@ -26,10 +26,8 @@ interface StudyProperty {
 
 interface StudyCardProps {
     key: string;
-    study: StudyInfo;
+    study: IStudyInfo;
     participantCount: number;
-    filterClick: (dim: string, filter:Filter) => () => void;
-    selected: boolean;
 }
 
 // Components

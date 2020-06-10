@@ -39,7 +39,6 @@ export const drawAssayTimepointViewer = (props: AssayTimepointViewerProps) => {
     // if (props.showSampleType) debugger
     const data = props.data;
     const name = props.name;
-    const selected = props.selected;
 
     // if (data.length > 0) debugger
 
@@ -146,20 +145,6 @@ export const drawAssayTimepointViewer = (props: AssayTimepointViewerProps) => {
         })
         .attr("fill", "transparent")
         .attr("stroke", function (d) {
-            if (selected.getIn(["Assay", "Assay"]) != undefined || selected.getIn(["SampleType", "Assay"]) != undefined) {
-                let s = false
-                if (props.showSampleType) {
-                    // debugger
-                    if (selected.getIn(["SampleType", "Assay"])) {
-                        if (selected.getIn(["SampleType", "Assay", "members"]).includes(d.data.member)) s = true
-                    }
-                } else {
-                    if (selected.getIn(["Assay", "Assay"])) {
-                        if (selected.getIn(["Assay", "Assay", "members"]).includes(d.label)) s = true
-                    }
-                }
-                if (s) return "black"
-            }
             return ("#e5e5e5")
         })
         .on("mouseover", function (d) {
@@ -250,11 +235,6 @@ export const drawAssayTimepointViewer = (props: AssayTimepointViewerProps) => {
             })
             .attr("fill", "transparent")
             .attr("stroke", function (d) {
-                if (selected.getIn(["Timepoint"])) {
-                    let s = false
-                    if (selected.getIn(["Timepoint", "members"]).includes(d.label)) s = true
-                    if (s) return "black"
-                }
                 return ("#e5e5e5")
             })
             .on("mouseover", function (d) {
@@ -331,13 +311,6 @@ export const drawAssayTimepointViewer = (props: AssayTimepointViewerProps) => {
         })
         .attr("stroke-width", "1px")
         .attr("stroke", function (d: HeatmapDatum<Filter>) {
-            let s = false
-            if (props.showSampleType && selected.getIn(["Assay", "SampleType"])) {
-                if (selected.getIn(["Assay", "SampleType", "members"]).includes(d.data.member)) s = true
-            } else if (selected.getIn(["Assay", "Timepoint"])) {
-                if (selected.getIn(["Assay", "Timepoint", "members"]).includes(d.data.member)) s = true
-            }
-            if (s) return "black"
             return ("#e5e5e5")
         })
         .on("mouseover", function (d, i) {
