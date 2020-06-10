@@ -65,7 +65,7 @@ export const Tabs: React.FC = ({ children }) => {
                     return (
                         <div className={"tab-pane " + (i == activeTab ? " active" : "")}
                             id={"df-tab-" + i}>
-                            <child.type {...child.props} key={i} />;
+                            <child.type {...child.props} key={i} />
                         </div>
                     )
                 })}

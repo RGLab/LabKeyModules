@@ -191,7 +191,7 @@ export const AssayTimepointViewerContainer: React.FC<AssayTimepointViewerContain
         showSampleType={showSampleType}
       />
     </div>
-  );
+  )
 }
 
 function AssayTimepointViewer(props: AssayTimepointViewerProps) {
@@ -201,5 +201,5 @@ function AssayTimepointViewer(props: AssayTimepointViewerProps) {
 
   return <>
     <div className={props.name} />
-  </>;
+  </>
 }

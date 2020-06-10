@@ -329,8 +329,8 @@ textarea {
   margin: 0 auto;
   margin-top: 100px;
 }
-#loader-1:before,
-#loader-1:after {
+.loader:before,
+.loader:after {
   content: "";
   position: absolute;
   top: -10px;
@@ -342,12 +342,12 @@ textarea {
   border-top-color: #3498db;
 }
 
-#loader-1:before {
+.loader:before {
   z-index: 100;
   animation: spin 1s infinite;
 }
 
-#loader-1:after {
+.loader:after {
   border: 10px solid #ccc;
 }
 

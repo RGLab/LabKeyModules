@@ -9,20 +9,15 @@ import { DataFinderFilters, RowOfButtons } from './components/FilterDropdown'
 import  { Tabs } from "./components/Tabs";
 import { Banner, GroupSummary, ManageGroupsDropdown } from "./components/Banner";
 import { CubeMdx } from "../typings/Cube";
-import whyDidYouRender from "@welldone-software/why-did-you-render";
 import { HighlightedButton, OuterDropdownButton } from "./components/ActionButton";
 import { SelectedParticipants, SelectedStudies } from "./components/TabContent";
+import { Loader } from "./components/Loader";
 
 interface DataFinderControllerProps {
     mdx:  CubeMdx,
     studyInfo: SelectRowsResponse
 }
 
-whyDidYouRender(React, {
-    onlyLogs: true,
-    titleColor: "green",
-    diffNameColor: "darkturquoise"
-});
 
 const BannerMemo = React.memo(Banner)
 
@@ -319,7 +314,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             <div className="datafinder-wrapper">
             <Tabs>
                 <SelectedParticipants filterCategories={filterCategories} plotData={plotData} key="Selected Participants"/>
-                <SelectedStudiesMemo studyDict={studyDict} studyParticipantCounts={studyParticipantCounts} key="Selected Studies"/>
+                <SelectedStudies studyDict={studyDict} studyParticipantCounts={studyParticipantCounts} key="Selected Studies"/>
             </Tabs>
                 {/* <DataFinderTabs
                     plotData={plotData}
@@ -338,9 +333,6 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     )
 
 })
-
-DataFinderController.whyDidYouRender = true;
-BannerMemo.whyDidYouRender = true;
 
 export const App = React.memo(() => {
     const filterBanner = document.getElementById('filter-banner')
@@ -367,7 +359,5 @@ export const App = React.memo(() => {
     if (cubeReady && studyInfo) {
         return <DataFinderController mdx={dfcube.mdx} studyInfo={studyInfo} />
     }
-    return (<div>
-        <div className="loader" id="loader-1"></div>
-    </div>)
+    return (<Loader/>)
 })

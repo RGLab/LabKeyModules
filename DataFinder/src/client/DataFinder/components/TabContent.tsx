@@ -7,6 +7,7 @@ import { StudyCard } from './StudyCard'
 import { StudyDict, StudyParticipantCount } from '../../typings/StudyCard';
 import { RowOfButtons } from './FilterDropdown';
 import { List } from 'immutable'
+import { Loader } from './Loader';
 
 // Helpers
 const BarplotHelper = (data, dim, level, filterCategories) => {
@@ -42,7 +43,7 @@ interface SelectedStudiesProps {
 }
 
 interface SelectedParticipantsProps {
-    filterCategories: FilterCategories,
+    filterCategories: FilterCategories;
     plotData: PlotData
 }
 
@@ -70,7 +71,7 @@ export const SelectedStudies: React.FC<SelectedStudiesProps> = ({studyDict, stud
 // SelectedParticipants
 
 export const SelectedParticipants: React.FC<SelectedParticipantsProps> = ({filterCategories, plotData}) => {
-    if (filterCategories == undefined || plotData == undefined) return <></>
+    if (filterCategories == undefined || plotData == undefined) return <Loader />
     return <RowOfButtons>
         <BarplotMemo
             data={plotData.getIn(["Study", "Condition"])}
