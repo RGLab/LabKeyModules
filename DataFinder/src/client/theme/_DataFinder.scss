@@ -499,8 +499,16 @@ textarea {
 }
 
 .df-assay-data-selector {
-  width: 300px;
   float: left;
   margin: 10px;
   border-left: 1px solid #bbbbbb
+}
+
+.assay-data-dropdown{   
+  & button {
+    width: max-content;
+  }
+  & i {
+    padding-left: 8px;
+  }
 }

@@ -4,6 +4,7 @@ import { List} from 'immutable'
 import { Flag, FilterDeletor } from './FilterIndicator'
 import { HeatmapSelectorDropdown } from './HeatmapSelector';
 import { FilterDropdownButton, OuterDropdownButton } from './ActionButton'
+import { DataFilterSelector } from './DataFilterSelector';
 
 // Types 
 export interface FilterDropdownProps {
@@ -279,40 +280,6 @@ export const SubjectFilters: React.FC<SubjectFiltersProps> = ({subjectSelectedFi
     </>
 }
 
-export const AssayFilters: React.FC<AssayFiltersProps> = ({assaySelectedFilters, filterCategories, filterClick, toggleAndOr, assayPlotData}) => {
-    return <>
-    {/* <FilterSelector
-        dim="Data"
-        level="Assay.Assay"
-        label="Assay"
-        levelSelectedFilters={assaySelectedFilters.getIn(["Assay", "Assay"])}
-        levelFilterCategories={filterCategories.Assay}
-        filterClick={filterClick}
-        includeAndOr={true}
-        andOrClick={(value) => toggleAndOr("Data", "Assay.Assay", value)}/>
-
-    <FilterSelector
-        dim="Data"
-        level="SampleType.SampleType"
-        label="Sample Type"
-        levelSelectedFilters={assaySelectedFilters.getIn(["SampleType", "SampleType"])}
-        levelFilterCategories={filterCategories.SampleType}
-        filterClick={filterClick}
-        includeAndOr={true}
-        andOrClick={(value) => toggleAndOr("Data", "SampleType.SampleType", value)}/>
-    {filterCategories.SampleTypeAssay && assayPlotData && 
-        <HeatmapSelectorDropdown
-            data={assayPlotData} 
-            filterClick={filterClick} 
-            selectedDataFilters={assaySelectedFilters}
-            timepointCategories={filterCategories.Timepoint}
-            sampleTypeAssayCategories={filterCategories.SampleTypeAssay}
-            toggleAndOr={toggleAndOr}/>
-    } */}
-    <div className={"df-assay-data-selector"}></div>
-    </>
-}
-
 const FilterSet : React.FC = (({children}) => {
     return(
         <div className={"filter-dropdown-set"}>
@@ -327,6 +294,7 @@ const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
     filterClick,
     toggleAndOr,
     assayPlotData
+
 }) => {
     return <div style={{display: "flex"}}>
         <FilterSet>
@@ -341,12 +309,11 @@ const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
                 filterClick={filterClick}
                 filterCategories={filterCategories}/>
         </FilterSet>
-            <AssayFilters
-                assaySelectedFilters={selectedFilters.get("Data")}
-                filterCategories={filterCategories}
+            <DataFilterSelector
+                selectedFilters={selectedFilters}
+                assayData={assayPlotData}
                 filterClick={filterClick}
-                toggleAndOr={toggleAndOr}
-                assayPlotData={assayPlotData}/>
+                toggleAndOr={toggleAndOr}/>
     </div>
 }
 export const DataFinderFilters = React.memo(DataFinderFiltersFC)

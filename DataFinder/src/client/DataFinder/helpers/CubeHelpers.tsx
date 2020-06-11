@@ -124,6 +124,7 @@ export const getPlotData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: 
                     { level: "[Data.Assay].[Timepoint]" },
                     { level: "[Data.Assay].[SampleType]" },
                     { level: "[Data.Timepoint].[Timepoint]" },
+                    { level: "[Data.Timepoint].[SampleType]"},
                     { level: "[Data.SampleType].[SampleType]" },
                     { level: "[Data.SampleType].[Assay]" },
                     { level: "[Study].[Name]"}
@@ -242,7 +243,6 @@ export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse
             } 
         }
     })
-    // debugger
     return (studyDict)
 }
 
@@ -336,6 +336,7 @@ export const createStudyParticipantCounts = (studyParticipantCountCs: Cube.CellS
 }
 
 const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) => {
+
     const results: { dim: string, levelArray: string[], data: PlotDatum }[] = participantCounts.cells.map((cell, cellIndex) => {
         const hierarchy = cell[0].positions[1][0].level.uniqueName.replace(/\[|\]/g, "") // remove "[" and "]"
         const cubeDim = hierarchy.replace(/\..+/, "") // remove everything after and including the first "."
