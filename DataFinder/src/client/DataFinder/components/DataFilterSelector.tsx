@@ -1,5 +1,5 @@
 import React from 'react'
-import { SelectedFilters, Filter, AssayData } from '../../typings/CubeData'
+import { SelectedFilters, Filter, AssayData, FilterCategories } from '../../typings/CubeData'
 import { CubeMdx } from '../../typings/Cube'
 import { RowOfButtons } from './FilterDropdown'
 import { DropdownButtons, FilterDropdownButton } from './ActionButton'
@@ -9,6 +9,7 @@ interface DataFilterDropdownsProps {
     selectedFilters: SelectedFilters;
     filterClick: (dim: string, filter: Filter) => () =>  void;
     assayData: AssayData;
+    filterCategories: FilterCategories;
 }
 
 interface DataFilterSelectorProps {
@@ -16,6 +17,7 @@ interface DataFilterSelectorProps {
     filterClick: (dim: string, filter: Filter) => () =>  void;
     assayData: AssayData;
     toggleAndOr: (dim: string, level: string, which: string) => void;
+    filterCategories: FilterCategories;
 }
 interface DataFilterDropdownContentProps {
     title: string;
@@ -24,19 +26,19 @@ interface DataFilterDropdownContentProps {
     allText: string;
 }
 
-const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({selectedFilters, assayData, filterClick}) => {
+const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({selectedFilters, assayData, filterClick, filterCategories}) => {
     const [currentFilter, setCurrentFilter] = React.useState<Map<string, string>>(Map<string, string>())
     const [dropdownOptions, setDropdownOptions] = React.useState<Map<string, string[]>>(Map<string, string[]>())
     
     React.useEffect(() => {
-        const newDropdownOptions = updateDropdownOptions(currentFilter, assayData)
+        const newDropdownOptions = updateDropdownOptions(currentFilter, assayData, filterCategories)
         setDropdownOptions((prevDropdownOptions) => prevDropdownOptions.merge(newDropdownOptions))
     }, [assayData])
     
     const selectFilter = (hierarchy: string) => {
         return (option: string) => {
             const newFilter = currentFilter.set(hierarchy, option)
-            const newDropdownOptions = updateDropdownOptions(newFilter, assayData)
+            const newDropdownOptions = updateDropdownOptions(newFilter, assayData, filterCategories)
             setDropdownOptions((prevDropdownOptions) => prevDropdownOptions.merge(newDropdownOptions))
             setCurrentFilter(newFilter)
         }
@@ -45,7 +47,7 @@ const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({selectedFilter
     const addFilter = () => {
         filterClick("Data", createFilter(currentFilter))();
         setCurrentFilter(Map<string, string>())
-        setDropdownOptions(Map(updateDropdownOptions(Map(), assayData)))
+        setDropdownOptions(Map(updateDropdownOptions(Map(), assayData, filterCategories)))
     }
     
     return <RowOfButtons>
@@ -102,128 +104,136 @@ const DataFilterDropdown : React.FC<DataFilterDropdownContentProps> = ({title, d
 
 
 
-export const DataFilterSelector: React.FC<DataFilterSelectorProps> = ({selectedFilters, assayData, filterClick}) => {
+export const DataFilterSelector: React.FC<DataFilterSelectorProps> = ({selectedFilters, assayData, filterClick, filterCategories}) => {
     return (
         <div className="df-assay-data-selector">
-            <DataFilterDropdowns selectedFilters={selectedFilters} assayData={assayData} filterClick={filterClick}/>
+            <DataFilterDropdowns 
+                selectedFilters={selectedFilters} 
+                assayData={assayData} 
+                filterClick={filterClick} 
+                filterCategories={filterCategories}/>
         </div>
     )
 }
 
 
 // helpers
-const updateDropdownOptions = (currentFilter, assayData) => {
+const updateDropdownOptions = (currentFilter, assayData, filterCategories: FilterCategories) => {
     const currentAssay = currentFilter.get("Assay")
     const currentTimepoint = currentFilter.get("Timepoint")
     const currentSampleType = currentFilter.get("SampleType")
 
-    let assay, timepoint, sampleType;
+    let assayArray, timepointArray, sampleTypeArray
     if (!currentAssay && !currentTimepoint && !currentSampleType) {
-        const assayArray = assayData.getIn(["Assay", "Assay"])
+        assayArray = assayData.getIn(["Assay", "Assay"])
             .map(m => m.get("participantCount") ? m.get("member") : null).toJS()
-        assay = [...new Set(assayArray)].filter(x => x) // get unique values and remove null
-        const timpeointArray = assayData.getIn(["Timepoint", "Timepoint"])
+            .filter(x => x)
+        // assay = [...new Set(assayArray)].filter(x => x) // get unique values and remove null
+        timepointArray = assayData.getIn(["Timepoint", "Timepoint"])
             .map(m => m.get("participantCount") ? m.get("member") : null).toJS()
-        timepoint = [...new Set(timpeointArray)].filter(x => x)
-        const sampleTypeArray = assayData.getIn(["SampleType", "SampleType"])
+        // timepoint = [...new Set(timpeointArray)].filter(x => x)
+        sampleTypeArray = assayData.getIn(["SampleType", "SampleType"])
             .map(m => m.get("participantCount") ? m.get("member") : null).toJS()
-        sampleType = [...new Set(sampleTypeArray)].filter(x => x)
+        // sampleType = [...new Set(sampleTypeArray)].filter(x => x)
     }
     if (currentAssay && !currentTimepoint && !currentSampleType) {
-        const assayArray = assayData.getIn(["Assay", "Assay"])
+        assayArray = assayData.getIn(["Assay", "Assay"])
             .map(m => m.get("participantCount") ? m.get("member") : null).toJS()
-        assay = [...new Set(assayArray)].filter(x => x) // get unique values and remove null
-        const timepointArray = assayData.getIn(["Assay","Timepoint"]).toJS()
+        // assay = [...new Set(assayArray)].filter(x => x) // get unique values and remove null
+        timepointArray = assayData.getIn(["Assay","Timepoint"]).toJS()
             .filter(f => f.member.match(currentAssay) && f.participantCount )
             .map(f => f.member.replace(/^.+\./, ""))
-        timepoint = [...new Set(timepointArray)]
-        const sampleTypeArray = assayData.getIn(["SampleType", "Assay"]).toJS()
+        // timepoint = [...new Set(timepointArray)]
+        sampleTypeArray = assayData.getIn(["SampleType", "Assay"]).toJS()
             .filter(f => f.member.match(currentAssay) && f.participantCount )
             .map(f => f.member.replace(/\..+/, ""))
-        sampleType = [...new Set(sampleTypeArray)]
+        // sampleType = [...new Set(sampleTypeArray)]
     }
     if (!currentAssay && currentTimepoint && !currentSampleType) {
-        const assayArray = assayData.getIn(["Assay", "Timepoint"]).toJS()
+        assayArray = assayData.getIn(["Assay", "Timepoint"]).toJS()
             .filter(f => f.member.match(currentTimepoint) && f.participantCount)
             .map(f => f.member.replace(/\..+/, ""))
-        assay = [...new Set(assayArray)]
-        const timpeointArray = assayData.getIn(["Timepoint", "Timepoint"])
+        // assay = [...new Set(assayArray)]
+        timepointArray = assayData.getIn(["Timepoint", "Timepoint"])
             .map(m => m.get("participantCount") ? m.get("member") : null).toJS()
-        timepoint = [...new Set(timpeointArray)].filter(x => x)
-        const sampleTypeArray = assayData.getIn(["Timepoint", "SampleType"]).toJS()
+        // timepoint = [...new Set(timpeointArray)].filter(x => x)
+        sampleTypeArray = assayData.getIn(["Timepoint", "SampleType"]).toJS()
             .filter(f => f.member.match(currentTimepoint) && f.participantCount)
             .map(f => f.member.replace(/.+\./, ""))
-        sampleType = [...new Set(sampleTypeArray)]
+        // sampleType = [...new Set(sampleTypeArray)]
     }
     if (!currentAssay && !currentTimepoint && currentSampleType) {
-        const assayArray = assayData.getIn(["SampleType", "Assay"]).toJS()
+        assayArray = assayData.getIn(["SampleType", "Assay"]).toJS()
             .filter(f => f.member.match(currentSampleType) && f.participantCount)
             .map(f => f.member.replace(/.+\./, ""))
-        assay = [...new Set(assayArray)]
-        const timepointArray = assayData.getIn(["Timepoint", "SampleType"]).toJS()
+        // assay = [...new Set(assayArray)]
+        timepointArray = assayData.getIn(["Timepoint", "SampleType"]).toJS()
             .filter(f => f.member.match(currentSampleType) && f.participantCount)
             .map(f => f.member.replace(/\..+/, ""))
-        timepoint = [...new Set(timepointArray)]
-        const sampleTypeArray = assayData.getIn(["SampleType", "SampleType"])
+        // timepoint = [...new Set(timepointArray)]
+        sampleTypeArray = assayData.getIn(["SampleType", "SampleType"])
             .map(m => m.get("participantCount") ? m.get("member") : null).toJS()
-        sampleType = [...new Set(sampleTypeArray)].filter(x => x)
+        // sampleType = [...new Set(sampleTypeArray)].filter(x => x)
     }
     if (currentAssay && currentTimepoint && !currentSampleType) {
-        const assayArray = assayData.getIn(["Assay", "Timepoint"]).toJS()
+        assayArray = assayData.getIn(["Assay", "Timepoint"]).toJS()
             .filter(f => f.member.match(currentTimepoint) && f.participantCount)
             .map(f => f.member.replace(/\..+/, ""))
-        assay = [...new Set(assayArray)]
-        const timepointArray = assayData.getIn(["Assay","Timepoint"]).toJS()
+        // assay = [...new Set(assayArray)]
+        timepointArray = assayData.getIn(["Assay","Timepoint"]).toJS()
             .filter(f => f.member.match(currentAssay) && f.participantCount )
             .map(f => f.member.replace(/^.+\./, ""))
-        timepoint = [...new Set(timepointArray)]
-        const sampleTypeArray = assayData.getIn(["Assay", "SampleType"]).toJS()
+        // timepoint = [...new Set(timepointArray)]
+        sampleTypeArray = assayData.getIn(["Assay", "SampleType"]).toJS()
             .filter(f => f.member.match(currentAssay + "\." + currentTimepoint))
             .map(f => f.member.replace(/.+\..+\./, ""))
-        sampleType = [...new Set(sampleTypeArray)]
+        // sampleType = [...new Set(sampleTypeArray)]
     }
     if (currentAssay && !currentTimepoint && currentSampleType) {
-        const assayArray = assayData.getIn(["SampleType", "Assay"]).toJS()
+        assayArray = assayData.getIn(["SampleType", "Assay"]).toJS()
             .filter(f => f.member.match(currentSampleType) && f.participantCount)
             .map(f => f.member.replace(/.+\./, ""))
-        assay = [...new Set(assayArray)]
-        const timepointArray = assayData.getIn(["Assay", "SampleType"]).toJS()
+        // assay = [...new Set(assayArray)]
+        timepointArray = assayData.getIn(["Assay", "SampleType"]).toJS()
             .filter(f => f.member.match(currentAssay + "\..+\." + currentSampleType))
             .map(f => f.member.replace(/^[^\.]+\./, "").replace(/\..+/, ""))
-        timepoint = [...new Set(timepointArray)]
-        const sampleTypeArray = assayData.getIn(["SampleType", "Assay"]).toJS()
+        // timepoint = [...new Set(timepointArray)]
+        sampleTypeArray = assayData.getIn(["SampleType", "Assay"]).toJS()
             .filter(f => f.member.match(currentAssay) && f.participantCount )
             .map(f => f.member.replace(/\..+/, ""))
-        sampleType = [...new Set(sampleTypeArray)]
+        // sampleType = [...new Set(sampleTypeArray)]
     }
     if (!currentAssay && currentTimepoint && currentSampleType) {
-        const assayArray = assayData.getIn(["Assay", "SampleType"]).toJS()
+        assayArray = assayData.getIn(["Assay", "SampleType"]).toJS()
             .filter(f => f.member.match(currentTimepoint + "\." + currentSampleType) && f.participantCount)
             .map(f => f.member.replace(/\..+/, ""))
-        assay = [...new Set(assayArray)]
-        const timepointArray = assayData.getIn(["Timepoint", "SampleType"]).toJS()
+        // assay = [...new Set(assayArray)]
+        timepointArray = assayData.getIn(["Timepoint", "SampleType"]).toJS()
             .filter(f => f.member.match(currentSampleType) && f.participantCount)
             .map(f => f.member.replace(/\..+/, ""))
-        timepoint = [...new Set(timepointArray)]
-        const sampleTypeArray = assayData.getIn(["Timepoint", "SampleType"]).toJS()
+        // timepoint = [...new Set(timepointArray)]
+        sampleTypeArray = assayData.getIn(["Timepoint", "SampleType"]).toJS()
             .filter(f => f.member.match(currentTimepoint) && f.participantCount)
             .map(f => f.member.replace(/.+\./, ""))
-        sampleType = [...new Set(sampleTypeArray)]
+        // sampleType = [...new Set(sampleTypeArray)]
     }
     if (currentAssay && currentTimepoint && currentSampleType) {
-        const assayArray = assayData.getIn(["Assay", "SampleType"]).toJS()
+        assayArray = assayData.getIn(["Assay", "SampleType"]).toJS()
             .filter(f => f.member.match(currentTimepoint + "\." + currentSampleType) && f.participantCount)
             .map(f => f.member.replace(/\..+/, ""))
-        assay = [...new Set(assayArray)]
-        const timepointArray = assayData.getIn(["Assay", "SampleType"]).toJS()
+        // assay = [...new Set(assayArray)]
+        timepointArray = assayData.getIn(["Assay", "SampleType"]).toJS()
             .filter(f => f.member.match(currentAssay + "\..+\." + currentSampleType))
             .map(f => f.member.replace(/^[^\.]+\./, "").replace(/\..+/, ""))
-        timepoint = [...new Set(timepointArray)]
-        const sampleTypeArray = assayData.getIn(["Assay", "SampleType"]).toJS()
+        // timepoint = [...new Set(timepointArray)]
+        sampleTypeArray = assayData.getIn(["Assay", "SampleType"]).toJS()
             .filter(f => f.member.match(currentAssay + "\." + currentTimepoint))
             .map(f => f.member.replace(/.+\..+\./, ""))
-        sampleType = [...new Set(sampleTypeArray)]
+        // sampleType = [...new Set(sampleTypeArray)]
     }
+    const assay = filterCategories.Assay.filter(fc => assayArray.indexOf(fc.label) > -1).map(fc => fc.label)
+    const timepoint = filterCategories.Timepoint.filter(fc => timepointArray.indexOf(fc.label) > -1).map(fc => fc.label)
+    const sampleType = filterCategories.SampleType.filter(fc => sampleTypeArray.indexOf(fc.label) > -1).map(fc => fc.label)
     return {Assay: assay, Timepoint: timepoint, SampleType: sampleType}
 }
 

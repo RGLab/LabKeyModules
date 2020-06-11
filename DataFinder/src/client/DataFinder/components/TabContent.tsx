@@ -9,30 +9,6 @@ import { RowOfButtons } from './FilterDropdown';
 import { List } from 'immutable'
 import { Loader } from './Loader';
 
-// Helpers
-const BarplotHelper = (data, dim, level, filterCategories) => {
-    let barColor: string, countMetric : string
-    if (dim == "Study") {
-        barColor = "#af88e3"
-        countMetric = "studyCount"
-    } else if (dim == "Subject") {
-        barColor = "#95cced"
-        countMetric = "participantCount"
-    } else if (dim == "Data") {
-        barColor = "#74C476"
-        countMetric = "participantCount"
-    }
-    return (
-        <Barplot
-            data={data.get(level)}
-            name={level}
-            height={240}
-            width={250}
-            categories={filterCategories[level]}
-            countMetric={countMetric}
-            barColor={barColor} />
-    )
-}
 
 const BarplotMemo = React.memo(Barplot)
 const AssayTimepointMemo = React.memo(AssayTimepointViewerContainer)
@@ -102,7 +78,7 @@ export const SelectedParticipants: React.FC<SelectedParticipantsProps> = ({filte
             name={"Race"}
             height={240}
             width={250}
-            categories={filterCategories.Age}
+            categories={filterCategories.Race}
             countMetric={"participantCount"}
             barColor={"#95cced"}/>
         <BarplotMemo 

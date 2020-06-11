@@ -22,7 +22,6 @@ const createAxisData = (members: FilterCategory[]) => {
 const setup = (props: BarplotProps) => {
     // get labels
     const labels = createAxisData(props.categories)
-
     // get total height
     const totalHeight = Math.max(props.height, 15 * labels.length + 40)
 

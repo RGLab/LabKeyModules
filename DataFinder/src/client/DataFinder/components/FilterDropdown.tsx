@@ -313,7 +313,8 @@ const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
                 selectedFilters={selectedFilters}
                 assayData={assayPlotData}
                 filterClick={filterClick}
-                toggleAndOr={toggleAndOr}/>
+                toggleAndOr={toggleAndOr}
+                filterCategories={filterCategories}/>
     </div>
 }
 export const DataFinderFilters = React.memo(DataFinderFiltersFC)

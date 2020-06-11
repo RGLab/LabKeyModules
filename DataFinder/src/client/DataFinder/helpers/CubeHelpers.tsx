@@ -281,7 +281,10 @@ export const createFilterCategories = (categoriesCs: Cube.CellSet) => {
     categoriesCs.axes[1].positions.forEach((position) => {
         if ([
                 "[Data.Assay].[Timepoint]",
-                "[Data.Assay].[SampleType]"
+                "[Data.Assay].[SampleType]",
+                "[Data.SampleType].[Assay]",
+                "[Data.Timepoint].[SampleType]"
+
         ].indexOf(position[0].level.uniqueName) == -1) {
             let level: string;
             let label: string;
