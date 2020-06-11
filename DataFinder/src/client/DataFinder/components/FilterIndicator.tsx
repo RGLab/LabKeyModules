@@ -13,7 +13,7 @@ interface FilterIndicatorListProps {
 }
 
 interface AssayFilterIndicatorListProps {
-    filters: Map<string, Map<string, SelectedFilter> | SelectedFilter>;
+    filters: Map<string, Map<string, SelectedFilter>>;
     title?: string
 }
 
@@ -67,7 +67,8 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
             filters.getIn(["Assay", "SampleType"]) == undefined &&
             filters.getIn(["SampleType", "SampleType"]) == undefined &&
             filters.getIn(["SampleType", "Assay"]) == undefined &&
-            filters.get("Timepoint") == undefined)) {
+            filters.getIn(["Timepoint", "Timepoint"]) == undefined &&
+            filters.getIn(["Timepoint", "SampleType"]) == undefined)) {
         filterFlags = <em className="filter-indicator">No filters currently applied</em>
     } else {
         const filterMap = Map<string, SelectedFilter>({
@@ -76,7 +77,8 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
             "Assay.SampleType": filters.getIn(["Assay", "SampleType"]),
             "SampleType.SampleType": filters.getIn(["SampleType", "SampleType"]),
             "SampleType.Assay": filters.getIn(["SampleType", "Assay"]),
-            "Timepoint": filters.get("Timepoint")
+            "Timepoint.Timepoint": filters.getIn(["Timepoint", "Timepoint"]),
+            "Timepoint.SampleType": filters.getIn(["Timepoint", "SampleType"])
         })
         const prefixes = {
             "Assay.Assay": "Assays at any timepoint: ",
@@ -84,7 +86,8 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
             "Assay.SampleType": "Assay on a certain sample type at a certain timepoint: ",
             "SampleType.SampleType": "Any assay on these sample types: ",
             "SampleType.Assay": "Assay on a certain sample type for any timepoint: ",
-            "Timepoint": "Any assay at these timepoints: "
+            "Timepoint.Timepoint": "Any assay at these timepoints: ",
+            "Timepoint.SampleType": "Why would you choose this? "
         }
         const filterText = filterMap.map((e, i) => {
             if (e === undefined) return (undefined);
@@ -106,8 +109,13 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
                     const sampleType = m.split(/\./)[0]
                     return (assay + " (" + sampleType + ")")
                 }
-                if (level == "Timepoint") {
+                if (level == "Timepoint.Timepoint") {
                     return "Day " + m
+                }
+                if (level == "Timepoint.SampleType") {
+                    const timepoint = m.split(/\./)[1]
+                    const sampleType = m.split(/\./)[0]
+                    return "Day " + timepoint + " for " + sampleType
                 }
                 return(m)
             }

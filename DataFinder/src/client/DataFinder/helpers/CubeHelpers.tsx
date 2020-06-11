@@ -347,7 +347,7 @@ const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) =
             "ExposureProcess.ExposureProcess"
         ].indexOf(level) > -1 ? "Study" : cubeDim
         let levelArray: string[]
-        if (level.match("Assay") || level.match("SampleType")) {
+        if (dim == "Data") {
             levelArray = level.split(".")
         } else {
             level = level.split(".")[0]

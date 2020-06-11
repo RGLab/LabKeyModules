@@ -60,9 +60,8 @@ export const createCubeFilters = (filters: SelectedFilters) => {
     if (dataSelectedFilters.size == 0) {
         dataFilters = []
     } else {
-        dataFilters = dataSelectedFilters.map((selectedFiltersOrMap: any, hierarchy) => {
-            if (hierarchy == "Assay" || hierarchy == "SampleType") {
-                const hierarchyFilters = selectedFiltersOrMap.map((selectedFilter: SelectedFilter, level: string) => {
+        dataFilters = dataSelectedFilters.map((selectedFiltersMap, hierarchy) => {
+                const hierarchyFilters = selectedFiltersMap.map((selectedFilter: SelectedFilter, level: string) => {
                     if (selectedFilter.operator == "OR") {
                         return ({
                             level: "[Subject].[Subject]", membersQuery: {
@@ -85,28 +84,7 @@ export const createCubeFilters = (filters: SelectedFilters) => {
                 })
                 return (hierarchyFilters.valueSeq()).toJS()
                 .reduce((acc, val) => acc.concat(val), [])
-            } else if (hierarchy == "Timepoint") {
-                const selectedFilter = selectedFiltersOrMap
-                if (selectedFilter.operator == "OR") {
-                    return ({
-                        level: "[Subject].[Subject]", membersQuery: {
-                            level: `[Data.Timepoint].[Timepoint]`,
-                            members: selectedFilter.members.map(member => ("[Data.Timepoint].[" + member + "]")).toJS()
-                        }
-                    })
-                } else {
-                    return (
-                        selectedFilter.members.map((member) => {
-                            return ({
-                                level: "[Subject].[Subject]", membersQuery: {
-                                    level: `[Data.Timepoint].[Timepoint]`,
-                                    members: "[Data.Timepoint].[" + member + "]"
-                                }
-                            })
-                        }).toJS()
-                    )
-                }
-            }
+            
         }).valueSeq().toJS()
             .reduce((acc, val) => acc.concat(val), []) // Use this instead of flat() because flat() for some reason doesn't work while testing
     }

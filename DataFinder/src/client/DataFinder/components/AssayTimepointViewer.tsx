@@ -95,7 +95,7 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
   if (axis == "x") {
     axisData = categories.map((c) => {
         let participantCount, studyCount
-        data.Timepoint.forEach(cd => {
+        data.Timepoint.Timepoint.forEach(cd => {
             if (cd.member == c.label) {
                 participantCount = cd.participantCount
                 studyCount = cd.studyCount

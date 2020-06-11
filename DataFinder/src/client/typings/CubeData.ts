@@ -1,6 +1,5 @@
 import { Record, fromJS, List, Map } from 'immutable';
 import { StudyParticipantCount } from './StudyCard';
-import { createTotalCounts } from '../DataFinder/helpers/CubeHelpers';
 
 export interface GroupInfo {
     id: number;
@@ -97,7 +96,10 @@ export interface IAssayData {
         Timepoint?: PlotDatum[];
         SampleType?: PlotDatum[];
     },
-    Timepoint?: PlotDatum[];
+    Timepoint?: {
+        Timepoint?: PlotDatum[];
+        SampleType?: PlotDatum[];
+    };
     SampleType?: {
         SampleType?: PlotDatum[];
         Assay?: PlotDatum[];
@@ -110,15 +112,18 @@ export class AssayData extends Record({
         Timepoint: List<PlotDatum>(),
         SampleType: List<PlotDatum>(),
     }),
-    Timepoint: List<PlotDatum>(),
+    Timepoint: Map({
+        Timepoint: List<PlotDatum>(),
+        SampleType: List<PlotDatum>()
+    }),
     SampleType: Map({
         SampleType: List<PlotDatum>(),
         Assay: List<PlotDatum>()
     })
 }) {
     Assay: Map<string, List<PlotDatum>>;
-    Timepoint: List<PlotDatum>;
-    SampleType: List<PlotDatum>;
+    Timepoint:  Map<string, List<PlotDatum>>;
+    SampleType:  Map<string, List<PlotDatum>>;
 
     constructor(params?: ISubjectData) {
         params ? super(fromJS(params)) : super()
@@ -207,31 +212,33 @@ export class SelectedFilter extends Record({
 export interface ISelectedFilters {
     Subject?: { [index: string]: SelectedFilter };
     Study?: { [index: string]: SelectedFilter };
-    Data?: { [index: string]: SelectedFilter | { [index: string]: SelectedFilter } }
+    Data?: { [index: string]: { [index: string]: SelectedFilter } }
 }
 
 export class SelectedFilters extends Record({
     Subject: Map<string, SelectedFilter>(),
     Study: Map<string, SelectedFilter>(),
-    Data: Map<string, Map<string, SelectedFilter> | SelectedFilter>()
+    Data: Map<string, Map<string, SelectedFilter>>({
+        Timepoint: Map<string, SelectedFilter>(),
+        Assay: Map<string, SelectedFilter>(),
+        SampleType: Map<string, SelectedFilter>()
+    }
+        
+    )
 }) {
     Subject: Map<string, SelectedFilter>;
     Study: Map<string, SelectedFilter>;
-    Data: Map<string, SelectedFilter | Map<string, SelectedFilter>>;
+    Data: Map<string, Map<string, SelectedFilter>>;
 
     constructor(params?: ISelectedFilters) {
         if (params) {
-            const subject = params.Subject ? Map(params.Subject).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>()
+            const subject = params.Subject ?  Map(params.Subject).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>()
             const study = params.Study ? Map(params.Study).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>()
-            let data = Map();
-            if (params.Data) {
-                if (params.Data.Timepoint)
-                    data = data.set("Timepoint", new SelectedFilter(params.Data.Timepoint))
-                if (params.Data.Assay)
-                    data = data.set("Assay", Map(params.Data.Assay).map(f => new SelectedFilter(f)))
-                if (params.Data.SampleType) 
-                    data = data.set("SampleType", Map(params.Data.SampleType).map(f => new SelectedFilter(f)))
-            }
+            const data = Map({
+                Timepoint: (params.Data && params.Data.Timepoint) ? Map(params.Data.Timepoint).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>(),
+                Assay: (params.Data && params.Data.Assay) ? Map(params.Data.Assay).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>(),
+                SampleType: (params.Data && params.Data.SampleType) ? Map(params.Data.SampleType).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>()
+            })
             super({Subject: subject, Study: study, Data: data})
         } else {
             super()
