@@ -2,7 +2,6 @@ import React from 'react';
 import { AssayTimepointViewerContainer } from './AssayTimepointViewer'
 import { Barplot, } from './Barplot'
 import { SelectedFilters, FilterCategories, PlotData } from '../../typings/CubeData';
-import { SampleTypeCheckbox } from './HeatmapSelector';
 import { StudyCard } from './StudyCard'
 import { StudyDict, StudyParticipantCount } from '../../typings/StudyCard';
 import { RowOfButtons } from './FilterDropdown';

@@ -1,9 +1,5 @@
 import * as d3 from 'd3'
-import { HeatmapDatum, IAssayData, PlotDatum, Filter } from '../../../typings/CubeData';
-import { HeatmapProps } from '../HeatmapSelector';
-import { AxisDatum } from '../HeatmapSelector';
-import { Axis, select } from 'd3';
-import { List } from 'immutable';
+import { HeatmapDatum, Filter } from '../../../typings/CubeData';
 import { AssayTimepointViewerProps } from '../AssayTimepointViewer';
 // ================================================================== //
 /* 

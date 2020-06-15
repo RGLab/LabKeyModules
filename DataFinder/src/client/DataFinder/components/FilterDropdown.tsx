@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Filter, FilterCategory, SelectedFilter, FilterCategories, AssayData, SelectedFilters } from '../../typings/CubeData'
 import { List} from 'immutable'
 import { Flag, FilterDeletor } from './FilterIndicator'
-import { HeatmapSelectorDropdown } from './HeatmapSelector';
 import { FilterDropdownButton, OuterDropdownButton } from './ActionButton'
 import { DataFilterSelector } from './DataFilterSelector';
 
@@ -34,11 +33,6 @@ interface ContentDropdownProps {
     content?: JSX.Element;
     customMenuClass?: string;
     disabled?: boolean
-}
-
-interface AndOrDropdownProps {
-    status?: string;
-    onClick: (value: string) => void;
 }
 
 interface StudyFiltersProps {
@@ -115,43 +109,6 @@ export const FilterDropdownContent: React.FC<FilterDropdownProps> =
 
 
 
-export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick }) => {
-    if (status === undefined) status = "OR"
-    const statusText = {
-        AND: "All of",
-        OR: "Any of"
-    }
-
-    const buttonData = [
-        {
-            label: statusText.AND,
-            action: () => onClick("AND"),
-            disabled: false
-        },
-        {
-            label: statusText.OR,
-            action: () => onClick("OR"),
-            disabled: false
-        }
-    ]
-    const title = statusText[status]
-    return (
-        <FilterDropdownButton title={title}>
-            <ul className="dropdown-menu">
-                    {buttonData.map((button) => {
-                        return (
-                            <li className={button.disabled ? "disabled" : ""}>
-                                <a key={button.label} onClick={button.action}>
-                                    {button.label}
-                                </a>
-                            </li>
-                        )
-                    })}
-            </ul>
-        </FilterDropdownButton>
-    )
-}
-
 
 
 const FilterSelectorFC: React.FC<FilterSelectorProps> = ({
@@ -163,19 +120,13 @@ const FilterSelectorFC: React.FC<FilterSelectorProps> = ({
     levelFilterCategories,
 
     includeIndicators, 
-    includeAndOr, 
     andOrClick,
 }) => {
     if (includeIndicators === undefined) includeIndicators = true;
-    if (includeAndOr === undefined) includeAndOr = false;
     
 
     return(
         <>
-            {includeAndOr &&
-                <AndOrDropdown status={levelSelectedFilters?.get("operator") ?? "OR"}
-                    onClick={andOrClick} />
-            }
             
             <FilterDropdownButton title={label}>
                 <FilterDropdownContent

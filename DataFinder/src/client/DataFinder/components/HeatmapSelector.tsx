@@ -2,8 +2,7 @@ import * as React from 'react';
 import { drawHeatmapSelector } from "./d3/HeatmapSelector.d3"
 import { HeatmapDatum, Filter, IAssayData, PlotDatum, FilterCategory, SelectedFilter, AssayData } from '../../typings/CubeData';
 import { Map} from 'immutable'
-import { AndOrDropdown } from './FilterDropdown';
-import { Flag, FilterDeletor } from './FilterIndicator';
+import { FilterDeletor } from './FilterIndicator';
 import { FilterDropdownButton } from './ActionButton';
 
 // React stuff ==================================== //
@@ -220,8 +219,7 @@ const HeatmapSelectorDropdownFC: React.FC<HeatmapSelectorDropdownProps> = ({
 
   return (
     <>
-    <AndOrDropdown status={selectedDataFilters.getIn(["Assay", "Timepoint", "operator"])} onClick={(value: string) => toggleAndOr("Data", "Assay.Timepoint", value)} />
-
+    
     <FilterDropdownButton
       title="Timepoint Selector">
         <div className="dropdown-menu">
