@@ -359,7 +359,7 @@ const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) =
         }
         const member = cell[0].positions[1][0].uniqueName.replace(/\[\w+\.\w+\]\./, "").replace(/\[|\]/g, "")
         const participantCount = cell[0].value
-        const studyCount = studyCounts.cells[cellIndex][0].value
+        const studyCount = studyCounts?.cells[cellIndex][0].value
 
         return ({
             dim: dim,

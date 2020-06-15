@@ -4,6 +4,7 @@ import { List} from 'immutable'
 import { Flag, FilterDeletor } from './FilterIndicator'
 import { FilterDropdownButton, OuterDropdownButton } from './ActionButton'
 import { DataFilterSelector } from './DataFilterSelector';
+import { CubeMdx } from '../../typings/Cube';
 
 // Types 
 export interface FilterDropdownProps {
@@ -61,6 +62,8 @@ interface DataFinderFilterProps {
     filterClick: (dim: string, filter: Filter) => () => void;
     toggleAndOr: (dim: string, level: string, which: string) => void;
     assayPlotData: AssayData;
+    mdx: CubeMdx;
+    loadedStudiesArray: string[];
 }
 
 export const FilterDropdownContent: React.FC<FilterDropdownProps> = 
@@ -244,7 +247,8 @@ const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
     filterCategories,
     filterClick,
     toggleAndOr,
-    assayPlotData
+    loadedStudiesArray,
+    mdx
 
 }) => {
     return <div style={{display: "flex"}}>
@@ -261,8 +265,9 @@ const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
                 filterCategories={filterCategories}/>
         </FilterSet>
             <DataFilterSelector
+                mdx={mdx}
+                loadedStudiesArray={loadedStudiesArray}
                 selectedFilters={selectedFilters}
-                assayData={assayPlotData}
                 filterClick={filterClick}
                 toggleAndOr={toggleAndOr}
                 filterCategories={filterCategories}/>

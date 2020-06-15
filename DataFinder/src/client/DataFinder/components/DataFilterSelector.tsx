@@ -5,17 +5,22 @@ import { RowOfButtons } from './FilterDropdown'
 import { FilterDropdownButton } from './ActionButton'
 import { Map, List } from 'immutable'
 import { FilterDeletor } from './FilterIndicator'
+import { getPlotData, createPlotData } from '../helpers/CubeHelpers'
 
 interface DataFilterDropdownsProps {
+    mdx: CubeMdx;
+    loadedStudiesArray: string[];
     selectedFilters: SelectedFilters;
     filterClick: (dim: string, filter: Filter) => () =>  void;
-    assayData: AssayData;
     filterCategories: FilterCategories;
+    selectedStudyFilters: Map<string, SelectedFilter>;
+    selectedSubjectFilters: Map<string, SelectedFilter>;
 }
 interface DataFilterSelectorProps {
+    mdx: CubeMdx;
+    loadedStudiesArray: string[];
     selectedFilters: SelectedFilters;
     filterClick: (dim: string, filter: Filter) => () =>  void;
-    assayData: AssayData;
     toggleAndOr: (dim: string, level: string, which: string) => void;
     filterCategories: FilterCategories;
 }
@@ -47,14 +52,17 @@ interface DataFilterIndicatorProps {
     filterClick: (dim: string, filter: Filter) => () =>  void;
 }
 
-export const DataFilterSelector: React.FC<DataFilterSelectorProps> = ({selectedFilters, assayData, filterClick, filterCategories, toggleAndOr}) => {
+export const DataFilterSelector: React.FC<DataFilterSelectorProps> = ({mdx, loadedStudiesArray, selectedFilters, filterClick, filterCategories, toggleAndOr}) => {
     return (
         <div className="df-assay-data-selector">
             <DataFilterDropdowns 
+                mdx={mdx}
+                loadedStudiesArray={loadedStudiesArray}
                 selectedFilters={selectedFilters} 
-                assayData={assayData} 
                 filterClick={filterClick} 
-                filterCategories={filterCategories}/>
+                filterCategories={filterCategories}
+                selectedStudyFilters={selectedFilters.get("Study")}
+                selectedSubjectFilters={selectedFilters.get("Subject")}/>
             <DataFilterIndicators
                 selectedDataFilters={selectedFilters.get("Data")}
                 toggleAndOr={toggleAndOr}
@@ -180,38 +188,25 @@ const DataFilterIndicators: React.FC<DataFilterIndicatorsProps> = ({selectedData
             filterClick={filterClick}
             key={filterInfo.level}/>
         )}
-    {/* <div className="filter-indicator-list">
-          {selectedDataFilters.getIn(["Assay", "Timepoint", "members"])?.map((member) => {
-            return (
-              < FilterDeletor dim="Data" onDelete={filterClick("Data", { level: "Assay.Timepoint", member: member })} >
-                {member.split(".").join(" at ") + " days"}
-              </ FilterDeletor>
-            )
-          })}
-        </div>
-
-        <div className="filter-indicator-list">
-          {selectedDataFilters.getIn(["Assay", "SampleType", "members"])?.map((member) => {
-            const memberSplit = member.split(".")
-            return (
-              < FilterDeletor dim="Data" onDelete={filterClick("Data", { level: "Assay.SampleType", member: member })} >
-                {`${memberSplit[0]} (${memberSplit[2]}) at ${memberSplit[1]} days`}
-              </ FilterDeletor>
-            )
-          })}
-
-        </div> */}
     </>
 }
 
-const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({selectedFilters, assayData, filterClick, filterCategories}) => {
+const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({mdx, loadedStudiesArray, selectedStudyFilters, selectedSubjectFilters, filterClick, filterCategories}) => {
     const [currentFilter, setCurrentFilter] = React.useState<Map<string, string>>(Map<string, string>())
     const [dropdownOptions, setDropdownOptions] = React.useState<Map<string, string[]>>(Map<string, string[]>())
+    const [assayData, setAssayData] = React.useState<AssayData>(new AssayData())
     
     React.useEffect(() => {
-        const newDropdownOptions = updateDropdownOptions(currentFilter, assayData, filterCategories)
-        setDropdownOptions((prevDropdownOptions) => prevDropdownOptions.merge(newDropdownOptions))
-    }, [assayData])
+        const selectedFilters = new SelectedFilters({Study: selectedStudyFilters.toJS(), Subject: selectedSubjectFilters.toJS()})
+        getPlotData(mdx, selectedFilters, "[Subject].[Subject]", loadedStudiesArray, false).then((pd) => {
+            const plotData = createPlotData([pd, null])
+            const newAssayData = plotData.Data
+            const newDropdownOptions = updateDropdownOptions(currentFilter, newAssayData, filterCategories)
+            setAssayData(newAssayData)
+            setDropdownOptions((prevDropdownOptions) => prevDropdownOptions.merge(newDropdownOptions))
+        })
+        
+    }, [selectedStudyFilters, selectedSubjectFilters])
     
     const selectFilter = (hierarchy: string) => {
         return (option: string) => {

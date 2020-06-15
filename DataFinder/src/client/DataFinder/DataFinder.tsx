@@ -297,6 +297,8 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                     <div className="dropdown-menu" style={{cursor: "auto"}}>
                         {filterCategories &&
                             <DataFinderFilters
+                                mdx={mdx}
+                                loadedStudiesArray={loadedStudiesArray}
                                 selectedFilters={selectedFilters}
                                 filterCategories={filterCategories}
                                 filterClick={filterClick}
