@@ -120,6 +120,30 @@ export const FilterDropdownButton: React.FC<OuterDropdownButtonProps> = ({title,
     )
 }
 
+export const DropdownButtonsV2: React.FC<DropdownButtonProps> = ({ title, buttonData, disabled }) => {
+    return (
+        <div className="dropdown df-outer-dropdown">
+        <div className={"btn"} role="group" >
+            <button className="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button" disabled={disabled}>
+                <span>{title}</span>
+                <span style={{paddingLeft:"5px"}}><i className="fa fa-caret-down"></i></span>
+            </button>
+            <ul className="dropdown-menu df-dropdown">
+            {buttonData?.map((button) => {
+                return (
+                    <li key={button.label} className={"df-dropdown-option"}>
+                        <a style={{ padding: "0px 5px" }} onClick={button.action}>
+                            {button.label}
+                        </a>
+                    </li>
+                )
+            })}
+            </ul>
+        </div>
+    </div>
+    )
+}
+
 export const OuterDropdownButton: React.FC<OuterDropdownButtonProps> = ({children, disabled, title}) => {
     const openRef = React.useRef<HTMLDivElement>(null)
     const open = () => {

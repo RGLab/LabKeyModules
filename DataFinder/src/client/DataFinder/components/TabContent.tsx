@@ -5,8 +5,9 @@ import { SelectedFilters, FilterCategories, PlotData } from '../../typings/CubeD
 import { StudyCard } from './StudyCard'
 import { StudyDict, StudyParticipantCount } from '../../typings/StudyCard';
 import { RowOfButtons } from './FilterDropdown';
-import { List } from 'immutable'
+import { List, Iterable } from 'immutable'
 import { Loader } from './Loader';
+import { DropdownButtons, DropdownButtonsV2 } from './ActionButton';
 
 
 const BarplotMemo = React.memo(Barplot)
@@ -24,10 +25,78 @@ interface SelectedParticipantsProps {
 
 // SelectedStudies
 export const SelectedStudies: React.FC<SelectedStudiesProps> = ({studyDict, studyParticipantCounts}) => {
-    if (studyDict) {
+    if (!studyDict || studyParticipantCounts.size === 0) return <Loader/>
+    
+    const [sortBy, setSortBy] = React.useState<string>("study_accession")
+    const [sortedCounts, setSortedCounts] = React.useState<Iterable<number, StudyParticipantCount>>(studyParticipantCounts)
+    const sortMap = {
+        study_accession: "Study ID",
+        pi_names: "First Author",
+        total_participants: "Total Participants (descending)",
+        selected_participants: "Selected Participants (descending)",
+        title: "Title",
+        assay_count: "Number of available assays (descending)"
+    }
+
+    React.useEffect(() => {
+        setSortedCounts(studyParticipantCounts.sort(sortFn[sortBy]))
+    }, [studyParticipantCounts])
+
+
+
+    const sortFn: {[index: string]: (a: StudyParticipantCount, b: StudyParticipantCount) => number} = {
+        study_accession: (spc1: StudyParticipantCount, spc2: StudyParticipantCount)  => {
+            const studyId1 = parseInt(spc1.studyName.replace("SDY", ""))
+            const studyId2 = parseInt(spc2.studyName.replace("SDY", ""))
+            return studyId1 - studyId2
+        }, 
+        pi_names: (spc1: StudyParticipantCount, spc2: StudyParticipantCount)  => {
+            const firstAuthor1 = studyDict[spc1.studyName].pi_names.replace(/,.+/, "")
+            const firstAuthor2 = studyDict[spc2.studyName].pi_names.replace(/,.+/, "")
+            const lastName1 = firstAuthor1.replace(/^.+\s/, "").toLowerCase()
+            const lastName2 = firstAuthor2.replace(/^.+\s/, "").toLowerCase()
+            if (lastName1 > lastName2) return 1
+            return -1   
+        },
+        total_participants: (spc1: StudyParticipantCount, spc2: StudyParticipantCount)  => {
+            return studyDict[spc2.studyName].totalParticipantCount - studyDict[spc1.studyName].totalParticipantCount
+        },
+        selected_participants: (spc1: StudyParticipantCount, spc2: StudyParticipantCount)  => {
+            const count1 = spc1.participantCount
+            const count2 = spc2.participantCount 
+            return count2 - count1
+        },
+        title: (spc1: StudyParticipantCount, spc2: StudyParticipantCount)  => {
+            if (studyDict[spc1.studyName].brief_title > studyDict[spc2.studyName].brief_title) return 1
+            return -1
+        },
+        assay_count: (spc1: StudyParticipantCount, spc2: StudyParticipantCount)  => {
+            const assay_count1 = studyDict[spc1.studyName].assays?.split(",").length ?? 0
+            const assay_count2 = studyDict[spc2.studyName].assays?.split(",").length ?? 0
+            return assay_count2 - assay_count1
+        },
+    }
+
+
+    const buttonData = Object.keys(sortFn).map(key => {
+        return {
+            label: sortMap[key],
+            action: () => {
+                setSortedCounts((prevSortedCounts) => prevSortedCounts.sort(sortFn[key]))
+                setSortBy(key)
+            }
+        }
+    })
+
         return <>
+        <div>
+            <span style={{display: "inline-block"}}>Sort By:</span>
+            <div style={{display: "inline-block"}}>
+                <DropdownButtonsV2 title={sortMap[sortBy]} buttonData={buttonData} />
+            </div>    
+        </div>
             {
-                studyParticipantCounts?.map((sdy) => {
+                sortedCounts.map((sdy) => {
                     if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
                         return (
                             <StudyCard key={sdy.studyName}
@@ -38,10 +107,9 @@ export const SelectedStudies: React.FC<SelectedStudiesProps> = ({studyDict, stud
                 })
             }
         </>
-    } else {
-        return <></>
-    }
 }
+
+
 
 // SelectedParticipants
 
@@ -104,111 +172,3 @@ export const SelectedParticipants: React.FC<SelectedParticipantsProps> = ({filte
         
     </RowOfButtons>
 }
-
-// export const Data = ({ data, filterCategories }) => {
-//     const [showSampleType, setShowSampleType] = React.useState<boolean>(false)
-//     return (
-//         <>
-//             <div className="row">
-//                 <div>
-
-//                     {filterCategories &&
-//                         <>
-//                             <div className="row">
-//                                 <div className="col-sm-8">
-//                                     <h4 style={{ textAlign: "center" }}>Assays Available by Study Day</h4>
-
-//                                     <SampleTypeCheckbox toggleShowSampleType={() => setShowSampleType(!showSampleType)} showSampleType={showSampleType} />
-//                                     <AssayTimepointViewerContainer
-//                                         name={"heatmap1"}
-//                                         data={data.toJS()}
-//                                         showSampleType={showSampleType}
-//                                         selected={new SelectedFilters().Data}
-//                                         timepointCategories={filterCategories.Timepoint}
-//                                         sampleTypeAssayCategories={filterCategories.SampleTypeAssay} />
-//                                 </div>
-//                                 <div className="col-sm-4">
-//                                     {BarplotHelper(data.get("SampleType"), "Data", "SampleType", filterCategories)}
-//                                 </div>
-//                             </div>
-//                         </>}
-
-
-//                 </div>
-//             </div>
-//             <hr />
-//             <div>
-//                 <h2>Data From Selected Participants</h2>
-//             </div>
-//             <div id="data-views" />
-//         </>
-//     )
-
-// }
-
-// export const Participant = ({ showBarplots, data, filterCategories }) => {
-//     return (
-//         <>
-//             <div className="row">
-//                 {showBarplots && <>
-//                     <div className="col-sm-4">
-//                         {BarplotHelper(data, "Subject", "Gender", filterCategories)}
-//                     </div>
-//                     <div className="col-sm-4">
-//                         {BarplotHelper(data, "Subject", "Age", filterCategories)}
-//                     </div>
-//                     <div className="col-sm-4">
-//                         {BarplotHelper(data, "Subject", "Race", filterCategories)}
-//                     </div>
-//                 </>}
-
-
-//             </div>
-//             <hr></hr>
-//             <h2 style={{ padding: "15px" }}>Selected Participants</h2>
-//             <div className="row">
-//                 <div id="participant-data" className="df-embedded-webpart"></div>
-//             </div>
-
-//         </>
-//     )
-
-// }
-
-// export const Study = ({ data, filterCategories, studyDict, studyParticipantCounts, StudyCard, filterClick }) => {
-//     return (
-//         <>
-//             <div className="row">
-//                 {filterCategories && <>
-//                     <div className="col-sm-3">
-//                         {BarplotHelper(data, "Study", "Condition", filterCategories)}
-//                     </div>
-//                     <div className="col-sm-3">
-//                         {BarplotHelper(data, "Study", "ExposureProcess", filterCategories)}
-//                     </div>
-//                     <div className="col-sm-3">
-//                         {BarplotHelper(data, "Study", "ResearchFocus", filterCategories)}
-//                     </div>
-//                     <div className="col-sm-3">
-//                         {BarplotHelper(data, "Study", "ExposureMaterial", filterCategories)}
-//                     </div>
-//                 </>}
-
-//             </div>
-//             <hr></hr>
-//             <div>
-//                 <h2>Selected Studies</h2>
-//             </div>
-//             {studyDict && studyParticipantCounts.map((sdy) => {
-//                 if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
-//                     return (
-//                         <StudyCard key={sdy.studyName}
-//                             study={studyDict[sdy.studyName]}
-//                             participantCount={sdy.participantCount}
-//                             filterClick={filterClick} />
-//                     )
-//                 }
-//             })}
-//         </>
-//     )
-// }
