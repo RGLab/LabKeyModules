@@ -3,19 +3,18 @@ import { AssayTimepointViewerContainer } from './AssayTimepointViewer'
 import { Barplot, } from './Barplot'
 import { SelectedFilters, FilterCategories, PlotData } from '../../typings/CubeData';
 import { StudyCard } from './StudyCard'
-import { IStudyInfo, StudyInfo } from '../../typings/StudyCard';
+import { StudyDict, StudyParticipantCount } from '../../typings/StudyCard';
 import { RowOfButtons } from './FilterDropdown';
-import { List, Map } from 'immutable'
+import { List } from 'immutable'
 import { Loader } from './Loader';
-import { DropdownButtons } from './ActionButton';
 
 
 const BarplotMemo = React.memo(Barplot)
 const AssayTimepointMemo = React.memo(AssayTimepointViewerContainer)
 
 interface SelectedStudiesProps {
-    studyInfoArray: IStudyInfo[];
-    studyParticipantCounts: {[index: string]: number}
+    studyDict: StudyDict;
+    studyParticipantCounts: List<StudyParticipantCount>
 }
 
 interface SelectedParticipantsProps {
@@ -24,83 +23,24 @@ interface SelectedParticipantsProps {
 }
 
 // SelectedStudies
-export const SelectedStudies: React.FC<SelectedStudiesProps> = ({studyInfoArray, studyParticipantCounts}) => {
-    if (!studyInfoArray) return <Loader/>
-
-    const [sortBy, setSortBy] = React.useState("study_accession")
-    const [studyInfo, setStudyInfo] = React.useState(studyInfoArray)
-
-    const sortMap = {
-        study_accession: "Study ID",
-        pi_names: "First Author",
-        total_participants: "Total Participants (descending)",
-        selected_participants: "Selected Participants (descending)",
-        title: "Title",
-        assay_count: "Number of available assays (descending)"
-    }
-
-    const sortFn: {[index: string]: (a: IStudyInfo, b: IStudyInfo) => number} = {
-        study_accession: (studyInfo1: IStudyInfo, studyInfo2: IStudyInfo)  => {
-            const studyId1 = parseInt(studyInfo1.study_accession.replace("SDY", ""))
-            const studyId2 = parseInt(studyInfo2.study_accession.replace("SDY", ""))
-            return studyId1 - studyId2
-        }, 
-        pi_names: (studyInfo1: IStudyInfo, studyInfo2: IStudyInfo)  => {
-            const firstAuthor1 = studyInfo1.pi_names.replace(/,.+/, "")
-            const firstAuthor2 = studyInfo2.pi_names.replace(/,.+/, "")
-            const lastName1 = firstAuthor1.replace(/^.+\s/, "").toLowerCase()
-            const lastName2 = firstAuthor2.replace(/^.+\s/, "").toLowerCase()
-            if (lastName1 > lastName2) return 1
-            return -1   
-        },
-        total_participants: (studyInfo1: IStudyInfo, studyInfo2: IStudyInfo)  => {
-            return studyInfo2.totalParticipantCount - studyInfo1.totalParticipantCount
-        },
-        selected_participants: (studyInfo1: IStudyInfo, studyInfo2: IStudyInfo)  => {
-            const count1 = studyParticipantCounts[studyInfo1.study_accession] ?? 0
-            const count2 = studyParticipantCounts[studyInfo2.study_accession] ?? 0
-            return count2 - count1 
-        },
-        title: (studyInfo1: IStudyInfo, studyInfo2: IStudyInfo)  => {
-            if (studyInfo1.brief_title > studyInfo2.brief_title) return 1
-            return -1
-        },
-        assay_count: (studyInfo1: IStudyInfo, studyInfo2: IStudyInfo)  => {
-            const assay_count1 = studyInfo1.assays?.split(",").length ?? 0
-            const assay_count2 = studyInfo2.assays?.split(",").length ?? 0
-            return assay_count2 - assay_count1
-        },
-    }
-
-    const buttonData = Object.keys(sortFn).map(key => {
-        return {
-            label: sortMap[key],
-            action: () => {
-                setStudyInfo(studyInfoArray.slice().sort(sortFn[key]))
-                setSortBy(key)
-            }
-        }
-    })
-
-    return <>
-        <div>
-            <span style={{display: "inline-block"}}>Sort By:</span>
-            <div style={{display: "inline-block"}}>
-                <DropdownButtons title={sortMap[sortBy]} buttonData={buttonData} />
-            </div>    
-        </div>
-        {
-                studyInfo?.map((studyInfo) => {
-                    if (studyParticipantCounts[studyInfo.study_accession] > 0) {
+export const SelectedStudies: React.FC<SelectedStudiesProps> = ({studyDict, studyParticipantCounts}) => {
+    if (studyDict) {
+        return <>
+            {
+                studyParticipantCounts?.map((sdy) => {
+                    if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
                         return (
-                            <StudyCard key={studyInfo.study_accession}
-                                study={studyInfo}
-                                participantCount={studyParticipantCounts[studyInfo.study_accession]}/>
+                            <StudyCard key={sdy.studyName}
+                                study={studyDict[sdy.studyName]}
+                                participantCount={sdy.participantCount}/>
                         )
                     }
                 })
             }
         </>
+    } else {
+        return <></>
+    }
 }
 
 // SelectedParticipants
@@ -235,7 +175,7 @@ export const SelectedParticipants: React.FC<SelectedParticipantsProps> = ({filte
 
 // }
 
-// export const Study = ({ data, filterCategories, studyInfoArray, studyParticipantCounts, StudyCard, filterClick }) => {
+// export const Study = ({ data, filterCategories, studyDict, studyParticipantCounts, StudyCard, filterClick }) => {
 //     return (
 //         <>
 //             <div className="row">
@@ -259,11 +199,11 @@ export const SelectedParticipants: React.FC<SelectedParticipantsProps> = ({filte
 //             <div>
 //                 <h2>Selected Studies</h2>
 //             </div>
-//             {studyInfoArray && studyParticipantCounts.map((sdy) => {
-//                 if (sdy.participantCount > 0 && studyInfoArray[sdy.studyName]) {
+//             {studyDict && studyParticipantCounts.map((sdy) => {
+//                 if (sdy.participantCount > 0 && studyDict[sdy.studyName]) {
 //                     return (
 //                         <StudyCard key={sdy.studyName}
-//                             study={studyInfoArray[sdy.studyName]}
+//                             study={studyDict[sdy.studyName]}
 //                             participantCount={sdy.participantCount}
 //                             filterClick={filterClick} />
 //                     )

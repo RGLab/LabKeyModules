@@ -82,13 +82,13 @@ describe("Create Data", () => {
         expect(typeof(totalCounts.participant)).toBe("number")
         expect(totalCounts.participant).toEqual(95)
     })
-    test("createStudyInfoArray", () => {
-        const studyInfoArray = CubeHelpers.createStudyInfoArray([studyInfo, studyCountCs])
-        expect(typeof(studyInfoArray)).toBe("object")
-        expect(studyInfoArray).toHaveProperty("SDY269")
-        expect(studyInfoArray).toHaveProperty("SDY269.study_accession", "SDY269")
-        expect(studyInfoArray).toHaveProperty(["SDY269", "heatmapInfo","assays"])
-        expect(studyInfoArray).toHaveProperty(["SDY269", "heatmapInfo", "data", 0, "participantCount"])
+    test("createStudyDict", () => {
+        const studyDict = CubeHelpers.createStudyDict([studyInfo, studyCountCs])
+        expect(typeof(studyDict)).toBe("object")
+        expect(studyDict).toHaveProperty("SDY269")
+        expect(studyDict).toHaveProperty("SDY269.study_accession", "SDY269")
+        expect(studyDict).toHaveProperty(["SDY269", "heatmapInfo","assays"])
+        expect(studyDict).toHaveProperty(["SDY269", "heatmapInfo", "data", 0, "participantCount"])
     })
     test("createFilterCategories", () => {
         const categories = CubeHelpers.createFilterCategories(cubeDataCs_subject)

@@ -71,7 +71,7 @@ export const getStudyCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
 }
 
 // Update StudyParticipantCounts from Cube response
-export const getSelectedParticipants = (mdx: CubeMdx, filters: SelectedFilters, loadedStudiesArray: string[]) => {
+export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters, loadedStudiesArray: string[]) => {
 
     return new Promise<Cube.CellSet>((resolve, reject) => {
         mdx.query({
@@ -190,13 +190,13 @@ export const createParticipantIds = (participantIdsCs: Cube.CellSet) => {
     return (participantIdsCs.axes[1].positions.map(position => position[0].name))
 }
 
-export const createStudyInfoArray = ([studyInfoCs, studyCountCs]: [SelectRowsResponse, Cube.CellSet]) => {
+export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse, Cube.CellSet]) => {
 
-    const studyInfoDict: {[index: string]: StudyCardTypes.IStudyInfo} = {};
+    const studyDict: StudyCardTypes.StudyDict = {};
     studyInfoCs.rows.map((e, i) => {
         const studyName = e.study_accession;
-        // studyInfoArray[studyName] = studyInfo;
-        studyName && (studyInfoDict[studyName] = { ...e })
+        // studyDict[studyName] = studyInfo;
+        studyDict[studyName] = { ...e }
     })
 
     // Combine with info for tiny heatmap
@@ -207,8 +207,8 @@ export const createStudyInfoArray = ([studyInfoCs, studyCountCs]: [SelectRowsRes
     studyCountCs.axes[1].positions.forEach((e, i) => {
         const studyName = e[0].name;
         const totalParticipantCount = studyCountCs.cells[i][0].value;
-        if (studyInfoDict.hasOwnProperty(studyName)) {
-            studyInfoDict[studyName] = { totalParticipantCount, ...studyInfoDict[studyName] }
+        if (studyDict.hasOwnProperty(studyName)) {
+            studyDict[studyName] = { totalParticipantCount, ...studyDict[studyName] }
             const assays = []
             const heatmapData = studyCountCs.axes[0].positions.map((f, j) => {
                 const positionInfo = dataAssayNameToInfo(f[0].uniqueName, true)
@@ -232,7 +232,7 @@ export const createStudyInfoArray = ([studyInfoCs, studyCountCs]: [SelectRowsRes
             const heatmapHeight = 35 + 10 * assays.length
             const yaxisScale = createTinyHeatmapYaxisScale(assays)
 
-            studyInfoDict[studyName].heatmapInfo = {
+            studyDict[studyName].heatmapInfo = {
                 data: heatmapData,
                 assays: assays.sort(),
                 height: heatmapHeight,
@@ -243,14 +243,7 @@ export const createStudyInfoArray = ([studyInfoCs, studyCountCs]: [SelectRowsRes
             } 
         }
     })
-    const studyInfoArray = Object.keys(studyInfoDict).map(key => studyInfoDict[key])
-    studyInfoArray.sort((studyInfo1,studyInfo2)  => {
-        const studyId1 = parseInt(studyInfo1.study_accession.replace("SDY", ""))
-        const studyId2 = parseInt(studyInfo2.study_accession.replace("SDY", ""))
-        return studyId1 - studyId2
-    })
-
-    return (studyInfoArray)
+    return (studyDict)
 }
 
 
@@ -320,21 +313,29 @@ export const createFilterCategories = (categoriesCs: Cube.CellSet) => {
     return(categories)
 }
 
-export const createSelectedParticipants = (selectedParticipantsCs: Cube.CellSet) => {
-    const studyParticipantCounts = {}
+export const createStudyParticipantCounts = (studyParticipantCountCs: Cube.CellSet) => {
+    const studyParticipantCountArray: StudyCardTypes.IStudyParticipantCount[] = []
     const pids: string[] = []
-    selectedParticipantsCs.cells.forEach((cell) => {
+    studyParticipantCountCs.cells.forEach((cell) => {
         if (cell[0].positions[1][0].level.uniqueName == "[Study].[Name]") {
             const studyName = cell[0].positions[1][0].name
             const participantCount = cell[0].value
-            studyParticipantCounts[studyName] = participantCount
+            studyParticipantCountArray.push({
+                studyName: studyName,
+                participantCount: participantCount
+            })
         } else {
             const pid = cell[0].positions[1][0].name
             pids.push(pid)
         }
     })
-    
-    return ({ studyParticipantCounts: studyParticipantCounts, pids: pids })
+
+    const studyParticipantCounts = studyParticipantCountArray.map((spc: StudyCardTypes.IStudyParticipantCount) => {
+        return (new StudyCardTypes.StudyParticipantCount(spc))
+    })
+    const countsList = Immutable.List<StudyParticipantCount>(studyParticipantCounts);
+
+    return ({ countsList: countsList, pids: pids })
 }
 
 const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) => {

@@ -4,7 +4,7 @@
 import { SelectedFilters, GroupInfo, SelectedFilter, ISelectedFilters, TotalCounts } from "../../typings/CubeData";
 import ParticipantGroupAPI, { ParticipantGroup } from '../../typings/ParticipantGroup'
 import { List } from "immutable";
-import { StudyParticipantCount, IStudyInfo } from "../../typings/StudyCard";
+import { StudyParticipantCount, StudyDict } from "../../typings/StudyCard";
 import { GroupSummary } from "../components/Banner";
 
 const participantGroupAPI: ParticipantGroupAPI = LABKEY.Study.ParticipantGroup
@@ -208,11 +208,11 @@ export const getParticipantGroupFilters = (filters: any) => {
 
 // update container filter
 
-export const updateContainerFilter = (studyParticipantCounts: {[index: string]: number}, studyInfoArray: IStudyInfo[]) => {
+export const updateContainerFilter = (studyParticipantCounts: List<StudyParticipantCount>, studyDict: StudyDict) => {
     const containers = []
-    studyInfoArray.forEach((studyInfo) => {
-        if (studyParticipantCounts[studyInfo.study_accession] > 0) {
-            containers.push(studyInfo.container_id)
+    studyParticipantCounts.forEach((participantCount) => {
+        if (participantCount.participantCount > 0 && studyDict[participantCount.studyName]) {
+            containers.push(studyDict[participantCount.studyName].container_id)
         }
     })
 
@@ -234,21 +234,21 @@ export const goToSend = (groupId) => {
 }
 
 
-export const updateSessionGroupById = (studyParticipantCounts: {[index: string]: number}, groupId: number, studyInfoArray) => {
+export const updateSessionGroupById = (countsList: List<StudyParticipantCount>, groupId: number, studyDict) => {
     setSessionParticipantGroup(groupId)
-    updateContainerFilter(studyParticipantCounts, studyInfoArray)
+    updateContainerFilter(countsList, studyDict)
 }
 export const updateSessionGroup = (
   pids: string[],
-  studyParticipantCounts: {[index: string]: number},
+  countsList: List<StudyParticipantCount>,
   filters: SelectedFilters,
   summary: GroupSummary,
   totalCounts: TotalCounts,
-  studyInfoArray
+  studyDict
 ) => {
   setSessionParticipantIds(pids, filters, summary, totalCounts);
-  if (studyInfoArray) {
-    updateContainerFilter(studyParticipantCounts, studyInfoArray);
+  if (studyDict) {
+    updateContainerFilter(countsList, studyDict);
   }
 };
 

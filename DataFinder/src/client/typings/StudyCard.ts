@@ -72,6 +72,11 @@ export class StudyInfo extends Record({
     }
 }
 
+
+export interface StudyDict {
+    [index: string]: IStudyInfo;
+}
+
 export interface SelectedStudies {
     [index: string]: {
         selectedParticipantCount?: number;
