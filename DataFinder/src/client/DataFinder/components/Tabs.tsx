@@ -1,6 +1,6 @@
 import React, { ReactChild, ReactElement } from 'react';
 import { PlotData, FilterCategories, Filter, SelectedFilters, SelectedFilter} from '../../typings/CubeData';
-import { StudyParticipantCount, StudyDict } from '../../typings/StudyCard';
+import { StudyParticipantCount} from '../../typings/StudyCard';
 import { List } from 'immutable'
 import { StudyCard } from './StudyCard'
 import { SelectedParticipants, SelectedStudies } from './TabContent'
@@ -18,14 +18,6 @@ export interface TabProps {
     },
     defaultActive: string,
     tabFunction?: (tabName: string) => void;
-}
-
-interface DataFinderTabsProps {
-    plotData: PlotData;
-    filterCategories: FilterCategories;
-    studyParticipantCounts: List<StudyParticipantCount>;
-    studyDict: StudyDict;
-    filterClick: (dim: string, filter: Filter) => void;
 }
 
 export const Tabs: React.FC = ({ children }) => {
@@ -85,7 +77,7 @@ export const Tabs: React.FC = ({ children }) => {
 //         plotData, 
 //         filterCategories, 
 //         studyParticipantCounts, 
-//         studyDict
+//         studyInfoArray
 //     }) => {
 //     const StudyCardMemo = React.memo(StudyCard)
 //     const DataTabMemo = React.memo(TabContent.Data)
@@ -115,7 +107,7 @@ export const Tabs: React.FC = ({ children }) => {
 //             content: <TabContent.Study 
 //                 data={plotData.Study} 
 //                 filterCategories={filterCategories} 
-//                 studyDict={studyDict} 
+//                 studyInfoArray={studyInfoArray} 
 //                 studyParticipantCounts={studyParticipantCounts} 
 //                 StudyCard={StudyCard} 
 //                 filterClick={filterClick} />,
@@ -128,7 +120,7 @@ export const Tabs: React.FC = ({ children }) => {
 //     return(
 //         <Tabs>
 //             <TabContent.SelectedParticipants filterCategories={filterCategories} plotData={plotData}/>
-//             <TabContent.SelectedStudies studyDict={studyDict} studyParticipantCounts={studyParticipantCounts}/>
+//             <TabContent.SelectedStudies studyInfoArray={studyInfoArray} studyParticipantCounts={studyParticipantCounts}/>
 //         </Tabs>
         
 //     )

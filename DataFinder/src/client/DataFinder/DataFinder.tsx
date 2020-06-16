@@ -33,8 +33,8 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
     // Set on page load only
     const [filterCategories, setFilterCategoriesState] = React.useState(null)
     const setFilterCategories = (fc) => {console.log("setting filter categories state"); setFilterCategoriesState(fc)}
-    const [studyDict, setStudyDictState] = React.useState(null); // this should only be loaded once
-    const setStudyDict = (sd) => {console.log("setting studyDict state"); setStudyDictState(sd)}
+    const [studyInfoArray, setStudyInfoArrayState] = React.useState(null); // this should only be loaded once
+    const setStudyInfoArray = (sd) => {console.log("setting studyInfoArra state"); setStudyInfoArrayState(sd)}
     // Updated on "apply": 
     const [cubeData, setCubeDataState] = React.useState<CubeData>(cd)
     const setCubeData = (cd) => {console.log("setting cubeData state"); setCubeDataState(cd)}
@@ -108,9 +108,9 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                                         const gs = new GroupSummary({isSaved: false})
                                         setSelectedFilters(filterInfo.sf)
                                         setGroupSummary(gs)
-                                        applyFilters(filterInfo.sf).then(({ pids, countsList, totalCounts }) => {
+                                        applyFilters(filterInfo.sf).then(({ pids, studyParticipantCounts, totalCounts }) => {
                                                 ParticipantGroupHelpers.updateSessionGroup(
-                                                    pids, countsList, filterInfo.sf, gs, totalCounts, studyDict
+                                                    pids, studyParticipantCounts, filterInfo.sf, gs, totalCounts, studyInfoArray
                                                     )
                                         })
                                     } else {
@@ -139,9 +139,9 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 setFilterCategories(categories)
         })
         CubeHelpers.getStudyCounts(mdx, new SelectedFilters()).then((res) => {
-            const sd = CubeHelpers.createStudyDict([studyInfo, res])
-            console.log(" ------- setStudyDict ------- ")
-            setStudyDict(sd)
+            const sd = CubeHelpers.createStudyInfoArray([studyInfo, res])
+            console.log(" ------- setStudyInfoArray ------- ")
+            setStudyInfoArray(sd)
         })
         
     }, [])
@@ -170,11 +170,11 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             isSaved: filterInfo.isSaved
         })
         setSelectedFilters(filterInfo.sf)
-        applyFilters(filterInfo.sf).then(({pids, countsList, totalCounts}) => {
+        applyFilters(filterInfo.sf).then(({pids, studyParticipantCounts, totalCounts}) => {
             if (filterInfo.isSaved) {
-                ParticipantGroupHelpers.updateSessionGroupById(countsList, groupInfo.id, studyDict)
+                ParticipantGroupHelpers.updateSessionGroupById(studyParticipantCounts, groupInfo.id, studyInfoArray)
             } else {
-                ParticipantGroupHelpers.updateSessionGroup(pids, countsList, filterInfo.sf, gs, totalCounts, studyDict)
+                ParticipantGroupHelpers.updateSessionGroup(pids, studyParticipantCounts, filterInfo.sf, gs, totalCounts, studyInfoArray)
             }        
         })
         setGroupSummary(gs)
@@ -187,8 +187,8 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             const sf = toggleFilter(dim, filter.level, filter.member, selectedFilters)
             const gs = groupSummary.recordSet("isSaved", false)
             setSelectedFilters(sf)
-            applyFilters(sf).then(({pids, countsList, totalCounts}) => {
-                ParticipantGroupHelpers.updateSessionGroup(pids, countsList, sf, gs, totalCounts, studyDict)
+            applyFilters(sf).then(({pids, studyParticipantCounts, totalCounts}) => {
+                ParticipantGroupHelpers.updateSessionGroup(pids, studyParticipantCounts, sf, gs, totalCounts, studyInfoArray)
             })
             setGroupSummary(gs)
         })
@@ -199,8 +199,8 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
 
             const gs = groupSummary.recordSet("isSaved", false)
             setSelectedFilters(sf)
-            applyFilters(sf).then(({pids, countsList, totalCounts}) => {
-                ParticipantGroupHelpers.updateSessionGroup(pids, countsList, sf, gs, totalCounts, studyDict)
+            applyFilters(sf).then(({pids, studyParticipantCounts, totalCounts}) => {
+                ParticipantGroupHelpers.updateSessionGroup(pids, studyParticipantCounts, sf, gs, totalCounts, studyInfoArray)
             })
             setGroupSummary(gs)
     }, [selectedFilters, groupSummary])
@@ -214,17 +214,17 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 CubeHelpers.getPlotData(mdx, filters, "[Study].[Name]", loadedStudiesArray), 
                 CubeHelpers.getTotalCounts(mdx, filters, "[Subject].[Subject]", loadedStudiesArray),
                 CubeHelpers.getTotalCounts(mdx, filters, "[Study].[Name]", loadedStudiesArray), 
-                CubeHelpers.getStudyParticipantCounts(mdx, filters, loadedStudiesArray)])
+                CubeHelpers.getSelectedParticipants(mdx, filters, loadedStudiesArray)])
                 .then(([pd1, pd2, tc1, tc2, spc]) => {
                     const pd = CubeHelpers.createPlotData([pd1, pd2])
-                    const {countsList, pids} = CubeHelpers.createStudyParticipantCounts(spc)
+                    const {studyParticipantCounts, pids} = CubeHelpers.createSelectedParticipants(spc)
                     const counts = new TotalCounts(CubeHelpers.createTotalCounts([tc1, tc2]))
                     setCubeData(new CubeData({
                         plotData: pd,
-                        studyParticipantCounts: countsList,
+                        studyParticipantCounts: studyParticipantCounts,
                         totalCounts: counts
                     }))
-                    return({pids, countsList, totalCounts: counts})
+                    return({pids, studyParticipantCounts, totalCounts: counts})
                 })
         )
     }
@@ -293,7 +293,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             
 
             <RowOfButtons>
-                <OuterDropdownButton title="Add Filter"> 
+                <OuterDropdownButton title="Filters"> 
                     <div className="dropdown-menu" style={{cursor: "auto"}}>
                         {filterCategories &&
                             <DataFinderFilters
@@ -316,13 +316,13 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             <div className="datafinder-wrapper">
             <Tabs>
                 <SelectedParticipants filterCategories={filterCategories} plotData={plotData} key="Selected Participants"/>
-                <SelectedStudies studyDict={studyDict} studyParticipantCounts={studyParticipantCounts} key="Selected Studies"/>
+                <SelectedStudies studyInfoArray={studyInfoArray} studyParticipantCounts={studyParticipantCounts} key="Selected Studies"/>
             </Tabs>
                 {/* <DataFinderTabs
                     plotData={plotData}
                     filterCategories={filterCategories}
                     studyParticipantCounts={studyParticipantCounts}
-                    studyDict={studyDict}
+                    studyInfoArra={studyInfoArra}
                     filterClick={filterClick}
                      /> */}
             </div>

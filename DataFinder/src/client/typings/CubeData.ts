@@ -171,11 +171,11 @@ export class TotalCounts extends Record ({
 
 export class CubeData extends Record({
     plotData: new PlotData(),
-    studyParticipantCounts: List(),
+    studyParticipantCounts: {},
     totalCounts: new TotalCounts()
 }) {
     plotData: PlotData;
-    studyParticipantCounts: List<StudyParticipantCount>;
+    studyParticipantCounts: {[index: string]: number};
     totalCounts: TotalCounts
 
 }
