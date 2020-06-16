@@ -1,7 +1,6 @@
 import React from 'react'
 import { SelectedFilters, Filter, AssayData, FilterCategories, SelectedFilter } from '../../typings/CubeData'
 import { CubeMdx } from '../../typings/Cube'
-import { RowOfButtons } from './FilterDropdown'
 import { FilterDropdownButton } from './ActionButton'
 import { Map, List } from 'immutable'
 import { FilterDeletor } from './FilterIndicator'
@@ -24,15 +23,22 @@ interface DataFilterSelectorProps {
     toggleAndOr: (dim: string, level: string, which: string) => void;
     filterCategories: FilterCategories;
 }
-interface DataFilterDropdownContentProps {
+interface DataFilterDropdownProps {
+    selected: boolean;
     title: string;
     dropdownOptions: string[];
     select: (option: string) => void;
     allText: string;
 }
 
+interface DataFilterDropdownButtonProps {
+    title: string;
+    labelClass?: string;
+    selected?: boolean;
+}
+
 interface AndOrDropdownProps {
-    status?: string;
+    status: string;
     onClick: (value: string) => void;
 }
 
@@ -71,11 +77,11 @@ export const DataFilterSelector: React.FC<DataFilterSelectorProps> = ({mdx, load
     )
 }
 
-export const DataFilterIndicatorWrapper: React.FC = ({children}) => {
-    return <div className={"df-filter-indicator"}>
+const DataFilterRow: React.FC = ({children}) => {
+    return <div className={"df-data-filter-row"}>
     {React.Children.map(children || null, (child, i) => {
         return (
-            <div style={{float: "left", padding: "3px 10px"}}>
+            <div className="df-data-filter-row-element">
                 {child}
             </div>
             )
@@ -83,55 +89,75 @@ export const DataFilterIndicatorWrapper: React.FC = ({children}) => {
     </div>
 }
 
+interface DataFilterDeletorsProps {
+    size: string;
+}
+
+const DataFilterDeletors: React.FC<DataFilterDeletorsProps> = ({size, children}) => {
+    return <div className={"df-data-indicator " + size}>
+        {children}
+    </div>
+}
+
+
 const DataFilterIndicator: React.FC<DataFilterIndicatorProps> = ({filterInfo, toggleAndOr, filterClick}) => {
 
     if (filterInfo.level == "Assay.Assay") {
-        return <DataFilterIndicatorWrapper>
-        <AndOrDropdown onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
+        return <DataFilterRow>
+        <AndOrDropdown status={filterInfo.operator} onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
+        <DataFilterDeletors size={"short"}>
         {filterInfo.members.map(member => {
         return <FilterDeletor dim="Data" onDelete={filterClick("Data", {level: filterInfo.level, member: member})}>
             {member}
         </FilterDeletor>
         })}
+        </DataFilterDeletors>
         at Any Timepoint for Any Sample Type
-        </DataFilterIndicatorWrapper>
+        </DataFilterRow>
     } else if (filterInfo.level == "Timepoint.Timepoint") {
-        return <DataFilterIndicatorWrapper>
-        <AndOrDropdown onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
+        return <DataFilterRow>
+        <AndOrDropdown status={filterInfo.operator} onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
         Any Assay at 
+        <DataFilterDeletors size={"short"}>
         {filterInfo.members.map(member => {
             return <FilterDeletor dim="Data" onDelete={filterClick("Data", {level: filterInfo.level, member: member})}>
                 {"Day " + member}
             </FilterDeletor>
         }        
         )}
+        </DataFilterDeletors>
         for Any Sample Type
-         </DataFilterIndicatorWrapper>
+         </DataFilterRow>
     } else if (filterInfo.level == "SampleType.SampleType") {
-        return <DataFilterIndicatorWrapper>
-        <AndOrDropdown onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
+        return <DataFilterRow>
+        <AndOrDropdown status={filterInfo.operator} onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
         Any Assay at Any Timepoint for 
+        <DataFilterDeletors size={"short"}>
         {filterInfo.members.map(member => {
             return <FilterDeletor dim="Data" onDelete={filterClick("Data", {level: filterInfo.level, member: member})}>
                 {member}
             </FilterDeletor>
         }        
         )}
-         </DataFilterIndicatorWrapper>
+        </DataFilterDeletors>
+         </DataFilterRow>
     } else if (filterInfo.level == "Assay.Timepoint") {
-        return <DataFilterIndicatorWrapper>
-        <AndOrDropdown onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
+        return <DataFilterRow>
+        <AndOrDropdown status={filterInfo.operator} onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
+        <DataFilterDeletors size={"long"}>
         {filterInfo.members.map(member => {
             return <FilterDeletor dim="Data" onDelete={filterClick("Data", {level: filterInfo.level, member: member})}>
                 {member.replace("\.", " at Day ")}
             </FilterDeletor>
         }        
         )}
+        </DataFilterDeletors>
         for Any Sample Type
-         </DataFilterIndicatorWrapper>
+         </DataFilterRow>
     } else if (filterInfo.level == "SampleType.Assay") {
-        return <DataFilterIndicatorWrapper>
-        <AndOrDropdown onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
+        return <DataFilterRow>
+        <AndOrDropdown status={filterInfo.operator} onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
+        <DataFilterDeletors size={"long"}>
         {filterInfo.members.map(member => {
             const memberSplit = member.split("\.")
             return <FilterDeletor dim="Data" onDelete={filterClick("Data", {level: filterInfo.level, member: member})}>
@@ -139,22 +165,26 @@ const DataFilterIndicator: React.FC<DataFilterIndicatorProps> = ({filterInfo, to
             </FilterDeletor>
         }        
         )}
+        </DataFilterDeletors>
         at Any Timepoint
-        </DataFilterIndicatorWrapper>
+        </DataFilterRow>
     } else if (filterInfo.level == "Timepoint.SampleType") {
-        return <DataFilterIndicatorWrapper>
-        <AndOrDropdown onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
+        return <DataFilterRow>
+        <AndOrDropdown status={filterInfo.operator} onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
         Any Assay at 
+        <DataFilterDeletors size={"long"}>
         {filterInfo.members.map(member => {
             return <FilterDeletor dim="Data" onDelete={filterClick("Data", {level: filterInfo.level, member: member})}>
                 {" Day " + member.replace("\.", " for ")}
             </FilterDeletor>
         }        
         )}
-        </DataFilterIndicatorWrapper>
+        </DataFilterDeletors>
+        </DataFilterRow>
     } else if (filterInfo.level == "Assay.SampleType") {
-        return <DataFilterIndicatorWrapper>
-        <AndOrDropdown onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
+        return <DataFilterRow>
+        <AndOrDropdown status={filterInfo.operator} onClick={value => toggleAndOr("Data", filterInfo.level, value)}></AndOrDropdown>
+        <DataFilterDeletors size={"longest"}>
         {filterInfo.members.map(member => {
             const memberSplit = member.split("\.")
             return <FilterDeletor dim="Data" onDelete={filterClick("Data", {level: filterInfo.level, member: member})}>
@@ -162,7 +192,8 @@ const DataFilterIndicator: React.FC<DataFilterIndicatorProps> = ({filterInfo, to
             </FilterDeletor>
         }        
         )}
-        </DataFilterIndicatorWrapper>
+        </DataFilterDeletors>
+        </DataFilterRow>
     }
     
 }
@@ -170,7 +201,6 @@ const DataFilterIndicator: React.FC<DataFilterIndicatorProps> = ({filterInfo, to
 const DataFilterIndicators: React.FC<DataFilterIndicatorsProps> = ({selectedDataFilters, toggleAndOr, filterClick}) => {
     const flatFilters = [];
     selectedDataFilters.forEach((o, k1) => o.forEach((filter, k2) => {
-        const all = {k1, filter, k2}
         if (filter.get("members")) {
             flatFilters.push({
                 level: k1 + "." + k2, 
@@ -223,61 +253,74 @@ const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({mdx, loadedStu
         setDropdownOptions(Map(updateDropdownOptions(Map(), assayData, filterCategories)))
     }
     
-    return <RowOfButtons>
+    return <DataFilterRow>
         <DataFilterDropdown
+            selected={!!currentFilter.get("Assay")}
             title={currentFilter.get("Assay") ?? "Any Assay"}
             dropdownOptions={dropdownOptions.get("Assay")} 
             select={selectFilter("Assay")}
             allText="Any Assay"/>
         <span>at Day</span>
         <DataFilterDropdown 
+            selected={!!currentFilter.get("Timepoint")}
             title={currentFilter.get("Timepoint") ?? "Any Timepoint"}
             dropdownOptions={dropdownOptions.get("Timepoint")} 
             select={selectFilter("Timepoint")}
             allText="Any Timepoint" />
         <span>for</span>
         <DataFilterDropdown
+            selected={!!currentFilter.get("SampleType")}
             title={currentFilter.get("SampleType") ?? "Any Sample Type"}
             dropdownOptions={dropdownOptions.get("SampleType")} 
             select={selectFilter("SampleType")}
             allText="Any Sample Type"/>
         <button 
             onClick={() => {addFilter()}}
-            disabled={!currentFilter.get("Assay") && !currentFilter.get("Timepoint") && !currentFilter.get("SampleType")}>+</button>
-    </RowOfButtons>
+            disabled={!currentFilter.get("Assay") && !currentFilter.get("Timepoint") && !currentFilter.get("SampleType")}>
+                <i className="fa fa-plus"></i>
+            </button>
+    </DataFilterRow>
 }
 
-const DataFilterDropdown : React.FC<DataFilterDropdownContentProps> = ({title, dropdownOptions, select, allText}) => {
-    return <div className="dropdown df-filter-dropdown assay-data-dropdown">
+const DataFilterDropdownButton : React.FC<DataFilterDropdownButtonProps> = ({title, labelClass, children, selected}) => {
+    return <div className={"dropdown df-filter-dropdown assay-data-dropdown " + (selected ? "selected": "")}>
         <div className={"btn"} role="group" >
             <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" >
-                <span style={{ float: "left" }}>{title}</span>
+                <span className={labelClass} style={{ float: "left"}}>{title}</span>
                 <span style={{ float: "right" }}><i className="fa fa-caret-down"></i></span>
             </button>
-            <ul className="dropdown-menu df-dropdown">
-                <li key={"all"} className={"df-dropdown-option"}>
-                    <a style={{ padding: "0px 5px" }} onClick={() => select(undefined)}>
-                        {allText}
-                    </a>
-                </li>
-                {dropdownOptions?.map((option) => {
-                    return (
-                        <li key={option} className={"df-dropdown-option"}>
-
-                            <a style={{ padding: "0px 5px" }} onClick={() => select(option)}>
-                                {option}
-                            </a>
-                        </li>
-                    )
-                })}
-            </ul>
+            {children}
         </div>
     </div>
+}
+
+const DataFilterDropdown : React.FC<DataFilterDropdownProps> = ({title, dropdownOptions, select, allText, selected}) => {
+
+    return <DataFilterDropdownButton title={title} labelClass="assay-data-dropdown-label" selected={selected}>
+        <ul className="dropdown-menu df-dropdown">
+            <li key={"all"} className={"df-dropdown-option"}>
+                <a style={{ padding: "0px 5px" }} onClick={() => select(undefined)}>
+                    {allText}
+                </a>
+            </li>
+            {dropdownOptions?.map((option) => {
+                return (
+                    <li key={option} className={"df-dropdown-option"}>
+
+                        <a style={{ padding: "0px 5px" }} onClick={() => select(option)}>
+                            {option}
+                        </a>
+                    </li>
+                )
+            })}
+        </ul>
+    </DataFilterDropdownButton>
 }
 
 
 
 export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick }) => {
+    
     if (status === undefined) status = "OR"
     const statusText = {
         AND: "All of",
@@ -297,9 +340,10 @@ export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick })
         }
     ]
     const title = statusText[status]
+    
     return (
-        <FilterDropdownButton title={title}>
-            <ul className="dropdown-menu">
+       <DataFilterDropdownButton title={title}>
+           <ul className="dropdown-menu">
                     {buttonData.map((button) => {
                         return (
                             <li className={button.disabled ? "disabled" : ""}>
@@ -310,7 +354,8 @@ export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick })
                         )
                     })}
             </ul>
-        </FilterDropdownButton>
+       </DataFilterDropdownButton>
+                
     )
 }
 
