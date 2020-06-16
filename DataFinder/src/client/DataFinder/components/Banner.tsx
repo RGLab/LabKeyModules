@@ -179,15 +179,14 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
                     isSaved: true
                 })))
             })
-        } else {
-            console.log("No group loaded!")
-        }
+        } 
     }
 
     const buttonData = [
         {
             label: "Save",
             action: saveParticipantGroup,
+            disabled: !(groupSummary.id > 0)
         },
         {
             label: "Save As",
