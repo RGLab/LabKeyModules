@@ -78,7 +78,7 @@ const StudyProgressBar: React.FC<StudyProgressBarProps> = (props) => {
     )
 }
 
-export const StudyCard: React.FC<StudyCardProps> = (props) => {
+export const StudyCardFC: React.FC<StudyCardProps> = (props) => {
     const study = props.study;
     const studyProperties: StudyProperty[] = [
         {
@@ -118,3 +118,5 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
         </div>
     )
 }
+
+export const StudyCard = React.memo(StudyCardFC)

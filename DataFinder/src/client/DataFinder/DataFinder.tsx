@@ -5,11 +5,12 @@ import { CubeData, Filter, SelectedFilters, GroupInfo, TotalCounts } from '../ty
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup_new';
 import { toggleFilter, setAndOr } from './helpers/SelectedFilters';
-import { DataFinderFilters, RowOfButtons } from './components/FilterDropdown'
+import { DataFinderFilters } from './components/FilterDropdown'
 import  { Tabs } from "./components/Tabs";
 import { Banner, GroupSummary, ManageGroupsDropdown } from "./components/Banner";
 import { CubeMdx } from "../typings/Cube";
-import { HighlightedButton, OuterDropdownButton } from "./components/ActionButton";
+import { HighlightedButton, RowOfButtons } from "./components/reusable/Buttons";
+import { OuterDropdownButton } from './components/reusable/Dropdowns'
 import { SelectedParticipants, SelectedStudies } from "./components/TabContent";
 import { Loader } from "./components/Loader";
 
@@ -22,6 +23,7 @@ interface DataFinderControllerProps {
 const BannerMemo = React.memo(Banner)
 
 const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyInfo}) => {
+    if (!mdx || !studyInfo) return <Loader />
     // Constants -------------------------------------
     const cd = new CubeData({})
     const loadedStudiesArray = CubeHelpers.createLoadedStudies(studyInfo)
@@ -358,8 +360,5 @@ export const App = React.memo(() => {
         })
     }, [])
 
-    if (cubeReady && studyInfo) {
         return <DataFinderController mdx={dfcube.mdx} studyInfo={studyInfo} />
-    }
-    return (<Loader/>)
 })

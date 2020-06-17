@@ -3,7 +3,7 @@ import { drawHeatmapSelector } from "./d3/HeatmapSelector.d3"
 import { HeatmapDatum, Filter, IAssayData, PlotDatum, FilterCategory, SelectedFilter, AssayData } from '../../typings/CubeData';
 import { Map} from 'immutable'
 import { FilterDeletor } from './FilterIndicator';
-import { FilterDropdownButton } from './ActionButton';
+import { FilterDropdownButton } from './reusable/Buttons';
 
 // React stuff ==================================== //
 

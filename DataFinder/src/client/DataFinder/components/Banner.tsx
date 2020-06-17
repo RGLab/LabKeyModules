@@ -1,10 +1,11 @@
 import React, { useCallback, useMemo, Children } from "react";
 import { FilterSummary } from "./FilterIndicator";
 import { SelectedFilters, TotalCounts, GroupInfo } from "../../typings/CubeData";
-import { DropdownButtons, InnerDropdownButtons, HighlightedLink } from "./ActionButton";
+import { HighlightedButton } from "./reusable/Buttons";
+import { DropdownButtons, InnerDropdownButtons, } from "./reusable/Dropdowns"
 import * as ParticipantGroupHelpers from "../helpers/ParticipantGroup_new"
 import { Record } from "immutable";
-import { RowOfButtons } from "./FilterDropdown";
+import { RowOfButtons } from "./reusable/Buttons";
 
 interface BannerProps {
     groupSummary: GroupSummary;
@@ -102,8 +103,8 @@ const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
                 <ExploreGroupDropdown />
                 {manageGroupsDropdown}
                 <>
-                <HighlightedLink label="Download Data" href="/immport/Studies/exportStudyDatasets.view?"/>
-                <HighlightedLink label="Open in RStudio" href="/rstudio/start.view?"/>
+                <HighlightedButton label="Download Data" href="/immport/Studies/exportStudyDatasets.view?"/>
+                <HighlightedButton label="Open in RStudio" href="/rstudio/start.view?"/>
                 </>
             </RowOfButtons>
         </div>

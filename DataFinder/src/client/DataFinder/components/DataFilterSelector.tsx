@@ -1,12 +1,12 @@
 import React from 'react'
 import { SelectedFilters, Filter, AssayData, FilterCategories, SelectedFilter } from '../../typings/CubeData'
 import { CubeMdx } from '../../typings/Cube'
-import { FilterDropdownButton } from './ActionButton'
+import { OuterDropdownButton } from './reusable/Dropdowns'
 import { Map, List } from 'immutable'
 import { FilterDeletor } from './FilterIndicator'
 import { getPlotData, createPlotData } from '../helpers/CubeHelpers'
 
-interface DataFilterDropdownsProps {
+export interface DataFilterDropdownsProps {
     mdx: CubeMdx;
     loadedStudiesArray: string[];
     selectedFilters: SelectedFilters;

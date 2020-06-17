@@ -4,10 +4,10 @@ import { Barplot, } from './Barplot'
 import { SelectedFilters, FilterCategories, PlotData } from '../../typings/CubeData';
 import { StudyCard } from './StudyCard'
 import { StudyDict, StudyParticipantCount } from '../../typings/StudyCard';
-import { RowOfButtons } from './FilterDropdown';
+import { RowOfButtons } from './reusable/Buttons';
 import { List, Iterable } from 'immutable'
 import { Loader } from './Loader';
-import { DropdownButtons, DropdownButtonsV2 } from './ActionButton';
+import { SimpleDropdown } from './reusable/Dropdowns';
 
 
 const BarplotMemo = React.memo(Barplot)
@@ -92,7 +92,7 @@ export const SelectedStudies: React.FC<SelectedStudiesProps> = ({studyDict, stud
         <div>
             <span style={{display: "inline-block"}}>Sort By:</span>
             <div style={{display: "inline-block"}}>
-                <DropdownButtonsV2 title={sortMap[sortBy]} buttonData={buttonData} />
+                <SimpleDropdown title={sortMap[sortBy]} buttonData={buttonData} />
             </div>    
         </div>
             {

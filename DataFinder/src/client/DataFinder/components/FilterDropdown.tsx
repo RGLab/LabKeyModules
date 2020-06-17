@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Filter, FilterCategory, SelectedFilter, FilterCategories, AssayData, SelectedFilters } from '../../typings/CubeData'
 import { List} from 'immutable'
 import { Flag, FilterDeletor } from './FilterIndicator'
-import { FilterDropdownButton, OuterDropdownButton } from './ActionButton'
+import { OuterDropdownButtonProps } from './reusable/Dropdowns'
 import { DataFilterSelector } from './DataFilterSelector';
 import { CubeMdx } from '../../typings/Cube';
 
@@ -26,14 +26,6 @@ interface FilterSelectorProps {
     includeIndicators?: boolean;
     includeAndOr?: boolean;
     andOrClick?: (value: string) => void;
-}
-
-interface ContentDropdownProps {
-    id: string
-    label: string;
-    content?: JSX.Element;
-    customMenuClass?: string;
-    disabled?: boolean
 }
 
 interface StudyFiltersProps {
@@ -64,6 +56,35 @@ interface DataFinderFilterProps {
     assayPlotData: AssayData;
     mdx: CubeMdx;
     loadedStudiesArray: string[];
+}
+
+
+
+export const FilterDropdownButton: React.FC<OuterDropdownButtonProps> = ({title, disabled, children}) => {
+    const openRef = React.useRef<HTMLDivElement>(null)
+    const open = () => {
+        const cl = openRef.current.classList
+        const willOpen = !cl.contains("open")
+        for (let el of document.querySelectorAll(".df-filter-dropdown>.open")) {
+            console.log("close!")
+            el.classList.remove("open")
+        };
+        if (willOpen) {
+            console.log("open!")
+            cl.add("open")
+        }
+    }
+    return (
+        <div className="dropdown df-filter-dropdown">
+            <div className={"btn"} ref={openRef} role="group" >
+                <button className="btn btn-default dropdown-toggle" type="button" disabled={disabled} onClick={open}>
+                    <span style={{float: "left"}}>{title}</span>
+                    <span style={{float: "right"}}><i className="fa fa-caret-down"></i></span>
+                </button>
+                {children}
+            </div>
+        </div>
+    )
 }
 
 export const FilterDropdownContent: React.FC<FilterDropdownProps> = 
@@ -110,10 +131,6 @@ export const FilterDropdownContent: React.FC<FilterDropdownProps> =
     )
 }
 
-
-
-
-
 const FilterSelectorFC: React.FC<FilterSelectorProps> = ({
     dim, 
     level, 
@@ -123,7 +140,6 @@ const FilterSelectorFC: React.FC<FilterSelectorProps> = ({
     levelFilterCategories,
 
     includeIndicators, 
-    andOrClick,
 }) => {
     if (includeIndicators === undefined) includeIndicators = true;
     
@@ -162,13 +178,6 @@ export const FilterSelector = React.memo(FilterSelectorFC)
 export const StudyFilters: React.FC<StudyFiltersProps> = ({studySelectedFilters, filterCategories, filterClick}) => {
     
     return <>
-        {/* <FilterSelector 
-            dim="Study" 
-            level="ExposureMaterial" 
-            label="Exposure Material" 
-            levelSelectedFilters={studySelectedFilters.get("ExposureMaterial")}
-            levelFilterCategories={filterCategories.ExposureMaterial}
-            filterClick={filterClick}/> */}
         <FilterSelector 
             dim="Study" 
             level="Condition" 
@@ -183,20 +192,6 @@ export const StudyFilters: React.FC<StudyFiltersProps> = ({studySelectedFilters,
             levelSelectedFilters={studySelectedFilters.get("ResearchFocus")}
             levelFilterCategories={filterCategories.ResearchFocus}
             filterClick={filterClick}/>
-        {/* <FilterSelector 
-            dim="Study" 
-            level="ExposureProcess" 
-            label="Exposure Process" 
-            levelSelectedFilters={studySelectedFilters.get("ExposureProcess")}
-            levelFilterCategories={filterCategories.ExposureProcess}
-            filterClick={filterClick}/> */}
-        {/* <FilterSelector 
-            dim="Study" 
-            level="Species" 
-            label="Species" 
-            levelSelectedFilters={studySelectedFilters.get("Species")}
-            levelFilterCategories={filterCategories.Species}
-            filterClick={filterClick}/> */}
         <FilterSelector 
             dim="Study" 
             level="Study" 
@@ -274,15 +269,3 @@ const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
     </div>
 }
 export const DataFinderFilters = React.memo(DataFinderFiltersFC)
-
-export const RowOfButtons: React.FC = ({children}) => {
-    return <div className={"df-row-of-buttons"}>
-    {React.Children.map(children || null, (child, i) => {
-        return (
-            <div style={{float: "left", padding: "3px 10px"}}>
-                {child}
-            </div>
-            )
-        })}
-    </div>
-}
