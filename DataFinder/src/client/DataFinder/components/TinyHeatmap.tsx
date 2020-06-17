@@ -2,6 +2,8 @@ import React from 'react';
 import * as d3 from "d3";
 import { TinyHeatmapInfo } from '../../typings/StudyCard'
 import { D3TinyHeatmap } from './d3/TinyHeatmap.d3';
+import "./TinyHeatmap.scss"
+
 // Barplot ---------------------------------------- //
 export interface TinyHeatmapProps {
     name: string;

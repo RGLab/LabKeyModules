@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { IStudyInfo } from '../../typings/StudyCard';
 import { TinyHeatmap } from '../components/TinyHeatmap';
-import { Filter } from '../../typings/CubeData';
+import "./StudyCard.scss"
 
 // Types
 interface StudyPropertyProps {

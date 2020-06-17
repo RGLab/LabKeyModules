@@ -2,7 +2,6 @@ import React from 'react'
 import * as renderer from 'react-test-renderer'
 import * as dropdowns from './Dropdowns'
 import { mount } from "enzyme";
-import toJson from "enzyme-to-json";
 
 describe("<InnerDropdownButtons />", () => {
     const buttonData = [

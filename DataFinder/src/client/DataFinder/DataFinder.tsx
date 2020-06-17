@@ -5,7 +5,7 @@ import { CubeData, Filter, SelectedFilters, GroupInfo, TotalCounts } from '../ty
 import * as CubeHelpers from './helpers/CubeHelpers';
 import * as ParticipantGroupHelpers from './helpers/ParticipantGroup_new';
 import { toggleFilter, setAndOr } from './helpers/SelectedFilters';
-import { DataFinderFilters } from './components/FilterDropdown'
+import { DataFinderFilters } from './components/FilterSelector'
 import  { Tabs } from "./components/Tabs";
 import { Banner, GroupSummary, ManageGroupsDropdown } from "./components/Banner";
 import { CubeMdx } from "../typings/Cube";

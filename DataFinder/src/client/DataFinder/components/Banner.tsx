@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, Children } from "react";
-import { FilterSummary } from "./FilterIndicator";
+import { FilterSummary } from "./FilterSummary";
 import { SelectedFilters, TotalCounts, GroupInfo } from "../../typings/CubeData";
 import { HighlightedButton } from "./reusable/Buttons";
 import { DropdownButtons, InnerDropdownButtons, } from "./reusable/Dropdowns"
 import * as ParticipantGroupHelpers from "../helpers/ParticipantGroup_new"
 import { Record } from "immutable";
 import { RowOfButtons } from "./reusable/Buttons";
+import "./Banner.scss"
 
 interface BannerProps {
     groupSummary: GroupSummary;

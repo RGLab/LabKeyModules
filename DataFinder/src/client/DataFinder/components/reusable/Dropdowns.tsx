@@ -21,7 +21,7 @@ buttonData: ButtonData[]
 open?: boolean
 }
 
-export interface OuterDropdownButtonProps {
+interface OuterDropdownButtonProps {
 disabled?: boolean;
 title: string;
 }

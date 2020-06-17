@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { SelectedFilters, SelectedFilter } from "../../typings/CubeData";
 import { Map } from 'immutable'
+import './FilterSummary.scss'
 
 export interface FilterSummaryProps {
     filters: SelectedFilters;
@@ -21,13 +22,6 @@ interface FilterIndicatorFlagProps {
     dim: string;
     filter: SelectedFilter;
     level: string;
-}
-
-
-const filterMembers = {
-    "study": ["Study", "Species", "Condition", "ExposureMaterial", "ExposureProcess", "ResearchFocus"],
-    "participant": ["Gender", "Race", "Age"],
-    "sample": ["Assay", "SampleType", "Timepoint"]
 }
 
 

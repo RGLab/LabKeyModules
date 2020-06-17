@@ -1,7 +1,6 @@
 import React from 'react'
-import { ISelectedFilters, SelectedFilters, TotalCounts } from '../typings/CubeData';
+import { SelectedFilters, TotalCounts } from '../typings/CubeData';
 import { Banner, GroupSummary } from '../DataFinder/components/Banner';
-import localStorage from '../DataFinder/helpers/localStorage'
 import { DropdownButtons } from '../DataFinder/components/reusable/Dropdowns';
 import { getSessionParticipantGroup } from '../DataFinder/helpers/ParticipantGroup_new'
 

@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { drawAssayTimepointViewer } from "./d3/AssayTimepointViewer.d3"
-import { HeatmapDatum, Filter, IAssayData, PlotDatum, FilterCategory, SelectedFilter, } from '../../typings/CubeData';
-import { Cube } from '../../typings/Cube';
-import { Axis } from 'd3';
-import { Map, List } from 'immutable'
+import { HeatmapDatum, Filter, IAssayData, PlotDatum, FilterCategory, } from '../../typings/CubeData';
+
+import "./AssayTimepointViewer.scss"
 
 // React stuff ==================================== //
 

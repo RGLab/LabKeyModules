@@ -1,11 +1,12 @@
 import React from 'react'
 import { SelectedFilters, Filter, AssayData, FilterCategories, SelectedFilter } from '../../typings/CubeData'
 import { CubeMdx } from '../../typings/Cube'
-import { OuterDropdownButton } from './reusable/Dropdowns'
 import { Map, List } from 'immutable'
-import { FilterDeletor } from './FilterIndicator'
+import { FilterDeletor } from './FilterSummary'
 import { getPlotData, createPlotData } from '../helpers/CubeHelpers'
+import "./DataFilters.scss"
 
+// Types
 export interface DataFilterDropdownsProps {
     mdx: CubeMdx;
     loadedStudiesArray: string[];
@@ -58,7 +59,13 @@ interface DataFilterIndicatorProps {
     filterClick: (dim: string, filter: Filter) => () =>  void;
 }
 
-export const DataFilterSelector: React.FC<DataFilterSelectorProps> = ({mdx, loadedStudiesArray, selectedFilters, filterClick, filterCategories, toggleAndOr}) => {
+interface DataFilterDeletorsProps {
+    size: string;
+}
+
+
+// Component
+export const DataFilters: React.FC<DataFilterSelectorProps> = ({mdx, loadedStudiesArray, selectedFilters, filterClick, filterCategories, toggleAndOr}) => {
     return (
         <div className="df-assay-data-selector">
             <DataFilterDropdowns 
@@ -77,6 +84,9 @@ export const DataFilterSelector: React.FC<DataFilterSelectorProps> = ({mdx, load
     )
 }
 
+// Sub-components -------- 
+
+// For styling
 const DataFilterRow: React.FC = ({children}) => {
     return <div className={"df-data-filter-row"}>
     {React.Children.map(children || null, (child, i) => {
@@ -89,16 +99,36 @@ const DataFilterRow: React.FC = ({children}) => {
     </div>
 }
 
-interface DataFilterDeletorsProps {
-    size: string;
-}
-
+// A group of filter deletors
 const DataFilterDeletors: React.FC<DataFilterDeletorsProps> = ({size, children}) => {
     return <div className={"df-data-indicator " + size}>
         {children}
     </div>
 }
 
+// Indicators (what shows up once you've added the filter) ----
+const DataFilterIndicators: React.FC<DataFilterIndicatorsProps> = ({selectedDataFilters, toggleAndOr, filterClick}) => {
+    const flatFilters = [];
+    selectedDataFilters.forEach((o, k1) => o.forEach((filter, k2) => {
+        if (filter.get("members")) {
+            flatFilters.push({
+                level: k1 + "." + k2, 
+                members: filter.get("members"), 
+                operator: filter.get("operator")
+            })
+        }
+    }))
+
+    return <> 
+    {flatFilters.map(filterInfo => 
+        <DataFilterIndicator 
+            filterInfo={filterInfo} 
+            toggleAndOr={toggleAndOr}
+            filterClick={filterClick}
+            key={filterInfo.level}/>
+        )}
+    </>
+}
 
 const DataFilterIndicator: React.FC<DataFilterIndicatorProps> = ({filterInfo, toggleAndOr, filterClick}) => {
 
@@ -198,29 +228,8 @@ const DataFilterIndicator: React.FC<DataFilterIndicatorProps> = ({filterInfo, to
     
 }
 
-const DataFilterIndicators: React.FC<DataFilterIndicatorsProps> = ({selectedDataFilters, toggleAndOr, filterClick}) => {
-    const flatFilters = [];
-    selectedDataFilters.forEach((o, k1) => o.forEach((filter, k2) => {
-        if (filter.get("members")) {
-            flatFilters.push({
-                level: k1 + "." + k2, 
-                members: filter.get("members"), 
-                operator: filter.get("operator")
-            })
-        }
-    }))
 
-    return <> 
-    {flatFilters.map(filterInfo => 
-        <DataFilterIndicator 
-            filterInfo={filterInfo} 
-            toggleAndOr={toggleAndOr}
-            filterClick={filterClick}
-            key={filterInfo.level}/>
-        )}
-    </>
-}
-
+// ----- Dropdowns -----
 const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({mdx, loadedStudiesArray, selectedStudyFilters, selectedSubjectFilters, filterClick, filterCategories}) => {
     const [currentFilter, setCurrentFilter] = React.useState<Map<string, string>>(Map<string, string>())
     const [dropdownOptions, setDropdownOptions] = React.useState<Map<string, string[]>>(Map<string, string[]>())
@@ -317,8 +326,6 @@ const DataFilterDropdown : React.FC<DataFilterDropdownProps> = ({title, dropdown
     </DataFilterDropdownButton>
 }
 
-
-
 export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick }) => {
     
     if (status === undefined) status = "OR"
@@ -362,14 +369,7 @@ export const AndOrDropdown: React.FC<AndOrDropdownProps> = ({ status, onClick })
 
 
 
-
-
-
-
-
-
-
-// helpers
+// helpers -----------------
 
 const updateDropdownOptions = (currentFilter, assayData, filterCategories: FilterCategories) => {
     const currentAssay = currentFilter.get("Assay")

@@ -1,0 +1,21 @@
+
+.df-highlighted-button {
+    margin: 5px;
+    background-color: #de7e3a;
+    border-radius: 8px;
+    color: white;
+    padding-top: 0;
+    height: 20px;
+    
+    &:hover {
+      border: 1px solid #cf6319;
+      color: white;
+    }
+  }
+
+
+.df-row-of-buttons {
+    display: inline-block;
+    width: 100%
+  }
+  

@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { Filter, FilterCategory, SelectedFilter, FilterCategories, AssayData, SelectedFilters } from '../../typings/CubeData'
 import { List} from 'immutable'
-import { Flag, FilterDeletor } from './FilterIndicator'
-import { OuterDropdownButtonProps } from './reusable/Dropdowns'
-import { DataFilterSelector } from './DataFilterSelector';
+import { FilterDeletor } from './FilterSummary'
+import { DataFilters } from './DataFilters';
 import { CubeMdx } from '../../typings/Cube';
+import "./FilterSelector.scss"
 
 // Types 
 export interface FilterDropdownProps {
@@ -40,14 +40,6 @@ interface SubjectFiltersProps {
     filterClick: (dim: string, filter: Filter) => () => void;
 }
 
-interface AssayFiltersProps {
-    assaySelectedFilters: any;
-    filterCategories: FilterCategories;
-    filterClick: (dim: string, filter: Filter) => () => void;
-    toggleAndOr: (dim: string, level: string, which: string) => void;
-    assayPlotData: AssayData;
-}
-
 interface DataFinderFilterProps {
     selectedFilters: SelectedFilters;
     filterCategories: FilterCategories;
@@ -58,9 +50,14 @@ interface DataFinderFilterProps {
     loadedStudiesArray: string[];
 }
 
+interface FilterDropdownButtonProps {
+    disabled?: boolean;
+    title: string;
+}
 
 
-export const FilterDropdownButton: React.FC<OuterDropdownButtonProps> = ({title, disabled, children}) => {
+// Wrapper for filter dropdowns with custom open/closing function
+export const FilterDropdownButton: React.FC<FilterDropdownButtonProps> = ({title, disabled, children}) => {
     const openRef = React.useRef<HTMLDivElement>(null)
     const open = () => {
         const cl = openRef.current.classList
@@ -87,6 +84,7 @@ export const FilterDropdownButton: React.FC<OuterDropdownButtonProps> = ({title,
     )
 }
 
+// The check boxes in the filter dropdowns
 export const FilterDropdownContent: React.FC<FilterDropdownProps> = 
 ({ 
         dimension, 
@@ -175,6 +173,18 @@ const FilterSelectorFC: React.FC<FilterSelectorProps> = ({
 }
 export const FilterSelector = React.memo(FilterSelectorFC)
 
+// Group of filters. For consistent styling
+const FilterSet : React.FC = (({children}) => {
+    return(
+        <div className={"filter-dropdown-set"}>
+            {children}
+        </div>
+    )
+})
+
+
+// ---------------------------- //
+// Putting them together //
 export const StudyFilters: React.FC<StudyFiltersProps> = ({studySelectedFilters, filterCategories, filterClick}) => {
     
     return <>
@@ -229,13 +239,6 @@ export const SubjectFilters: React.FC<SubjectFiltersProps> = ({subjectSelectedFi
     </>
 }
 
-const FilterSet : React.FC = (({children}) => {
-    return(
-        <div className={"filter-dropdown-set"}>
-            {children}
-        </div>
-    )
-})
 
 const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
     selectedFilters,
@@ -259,7 +262,7 @@ const DataFinderFiltersFC: React.FC<DataFinderFilterProps> = ({
                 filterClick={filterClick}
                 filterCategories={filterCategories}/>
         </FilterSet>
-            <DataFilterSelector
+            <DataFilters
                 mdx={mdx}
                 loadedStudiesArray={loadedStudiesArray}
                 selectedFilters={selectedFilters}
