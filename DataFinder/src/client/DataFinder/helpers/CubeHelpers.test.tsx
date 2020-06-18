@@ -13,6 +13,7 @@ import studyParticipantCountsCs from '../../tests/data/cubeResponse_getStudyPart
 import cubeDataCs_study from '../../tests/data/cubeResponse_getCubeData_Study.json'
 import cubeDataCs_subject from '../../tests/data/cubeResponse_getCubeData_Subject.json'
 import dropdownCategories from '../../tests/data/selectRowsResponse_dataFinder_dropdownCategories.json'
+import {initMocks, resetMocks} from "../../tests/mock";
 
 // this uses cycle.js https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
 // To read in self-referential objects
@@ -23,12 +24,21 @@ retrocycle(studyParticipantCountsCs)
 retrocycle(cubeDataCs_study)
 retrocycle(cubeDataCs_subject)
 
-
-
-
 describe('Get Data', () => {
     const filters = new SelectedFilters()
     const loadedStudiesArray = CubeHelpers.createLoadedStudies(studyInfo)
+
+    test("getStudyInfo mock", () => {
+        initMocks();
+        return (
+            CubeHelpers.getStudyInfo().then(result => {
+                expect(JSON.stringify(result)).toBe(JSON.stringify(studyInfo));
+            }).catch((error) => {
+                fail(error)
+            })
+        )
+        resetMocks();
+    });
 
     test("getStudyCounts", () => {
         return CubeHelpers.getStudyCounts(mdx, filters).then(cs => {
@@ -66,11 +76,11 @@ describe('Get Data', () => {
             expect(res).toBe("dataFinder_dropdownCategories")
         })
     })
-    test("getStudyInfo", () => {
-        return CubeHelpers.getStudyInfo(LABKEY).then(res => {
-            expect(res).toBe("dataFinder_studyCard")
-        })
-    })
+    // test("getStudyInfo", () => {
+    //     return CubeHelpers.getStudyInfo().then(res => {
+    //         expect(res).toBe("dataFinder_studyCard")
+    //     })
+    // })
 
 });
 

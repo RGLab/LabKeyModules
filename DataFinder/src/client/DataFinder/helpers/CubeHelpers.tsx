@@ -39,7 +39,10 @@ export const getStudyInfo = () => {
             schemaName: 'immport',
             queryName: 'dataFinder_studyCard',
             containerFilter: Query.ContainerFilter.currentAndSubfolders,
-            success: (data: SelectRowsResponse) => { resolve(data) }
+            failure: (error) => {
+                reject(error.exception) },
+            success: (data) => {
+                resolve(data) }
         })
     })
 }
