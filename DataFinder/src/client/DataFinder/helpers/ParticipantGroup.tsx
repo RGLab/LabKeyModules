@@ -1,7 +1,7 @@
 // Functions for manipulating the selected participant group, and interfacing with 
 // the sessionParticipantGroup api
 
-import { SelectedFilters, GroupInfo, SelectedFilter, ISelectedFilters, TotalCounts } from "../../typings/CubeData";
+import { SelectedFilters, GroupInfo, SelectedFilter, TotalCounts } from "../../typings/CubeData";
 import ParticipantGroupAPI, { ParticipantGroup } from '../../typings/ParticipantGroup'
 import { List } from "immutable";
 import { StudyParticipantCount, StudyDict } from "../../typings/StudyCard";

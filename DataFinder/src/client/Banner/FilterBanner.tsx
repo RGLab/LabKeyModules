@@ -2,7 +2,7 @@ import React from 'react'
 import { SelectedFilters, TotalCounts } from '../typings/CubeData';
 import { Banner, GroupSummary } from '../DataFinder/components/Banner';
 import { DropdownButtons } from '../DataFinder/components/reusable/Dropdowns';
-import { getSessionParticipantGroup } from '../DataFinder/helpers/ParticipantGroup_new'
+import { getSessionParticipantGroup } from '../DataFinder/helpers/ParticipantGroup'
 
 
 export const FilterBanner = ({ show }) => {

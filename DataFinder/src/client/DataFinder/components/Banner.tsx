@@ -3,7 +3,7 @@ import { FilterSummary } from "./FilterSummary";
 import { SelectedFilters, TotalCounts, GroupInfo } from "../../typings/CubeData";
 import { HighlightedButton } from "./reusable/Buttons";
 import { DropdownButtons, InnerDropdownButtons, } from "./reusable/Dropdowns"
-import * as ParticipantGroupHelpers from "../helpers/ParticipantGroup_new"
+import * as ParticipantGroupHelpers from "../helpers/ParticipantGroup"
 import { Record } from "immutable";
 import { RowOfButtons } from "./reusable/Buttons";
 import "./Banner.scss"

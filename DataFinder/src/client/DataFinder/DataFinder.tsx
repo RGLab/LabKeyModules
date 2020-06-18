@@ -1,9 +1,8 @@
 import "./DataFinder.scss";
 import React from 'react';
-// import {olap} from '../olap/olap'
 import { CubeData, Filter, SelectedFilters, GroupInfo, TotalCounts } from '../typings/CubeData';
 import * as CubeHelpers from './helpers/CubeHelpers';
-import * as ParticipantGroupHelpers from './helpers/ParticipantGroup_new';
+import * as ParticipantGroupHelpers from './helpers/ParticipantGroup';
 import { toggleFilter, setAndOr } from './helpers/SelectedFilters';
 import { DataFinderFilters } from './components/FilterSelector'
 import  { Tabs } from "./components/Tabs";
@@ -19,8 +18,6 @@ interface DataFinderControllerProps {
     studyInfo: SelectRowsResponse
 }
 
-
-const BannerMemo = React.memo(Banner)
 
 const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyInfo}) => {
     if (!mdx || !studyInfo) return <Loader />
@@ -283,7 +280,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
 
     return (
         <>
-            <BannerMemo
+            <Banner
                 filters={selectedFilters}
                 counts={totalCounts}
                 groupSummary={groupSummary}
