@@ -72,7 +72,11 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                     setGroupSummary(prevGroupSummary => prevGroupSummary.merge(newGroupSummary))
                     applyFilters(sf)
                 } else {
-                    applyFilters(selectedFilters)
+                    applyFilters(selectedFilters).then(({ pids, countsList, totalCounts }) => {
+                        ParticipantGroupHelpers.updateSessionGroup(
+                            pids, countsList, selectedFilters, groupSummary, totalCounts, studyDict
+                            )
+                })
                 }
             })
         }
@@ -97,7 +101,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                                 title: 'Load Participant Group',
                                 msg: 'You are loading filters from a participant group ' + 
                                     ' owned by a different user. Note that the selection' + 
-                                    ' may be different from the original participnat group' +
+                                    ' may be different from the original participant group' +
                                     ' if you have different permissions. You may save these' +
                                     ' filters as a new participant group to return to later.',
                                 icon: Ext4.Msg.INFO,
@@ -239,10 +243,14 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
 
     const clearFilters = React.useCallback(() => {
         const newFilters = new SelectedFilters()
+        const newGroupSummary = new GroupSummary()
         setSelectedFilters(newFilters);
-        applyFilters(newFilters)
-        setGroupSummary(new GroupSummary())
-        ParticipantGroupHelpers.clearSessionParticipantGroup()
+        setGroupSummary(newGroupSummary)
+        applyFilters(newFilters).then(({ pids, countsList, totalCounts }) => {
+            ParticipantGroupHelpers.updateSessionGroup(
+                pids, countsList, newFilters, newGroupSummary, totalCounts, studyDict
+                )
+        })
     }, [])
 
     const clearUnsavedFilters = React.useCallback(() => {
@@ -275,14 +283,6 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
 
     return (
         <>
-            {/* <div className="df-dropdown-options">
-                <LoadDropdown groups={availableGroups} loadParticipantGroup={loadParticipantGroup} />
-                <ClearDropdown clearAll={clearFilters} reset={() => { loadedGroup ? loadParticipantGroup(loadedGroup) : clearFilters() }} />
-                <SaveDropdown
-                    saveAs={() => saveButtonClick()}
-                    save={() => updateParticipantGroup(loadedGroup)}
-                    disableSave={!loadedGroup} />
-            </div> */}
             <BannerMemo
                 filters={selectedFilters}
                 counts={totalCounts}
@@ -292,10 +292,9 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 }
                  />
                 
-            
 
             <RowOfButtons>
-                <OuterDropdownButton title="Add Filter"> 
+                <OuterDropdownButton title="Filters"> 
                     <div className="dropdown-menu" style={{cursor: "auto"}}>
                         {filterCategories &&
                             <DataFinderFilters

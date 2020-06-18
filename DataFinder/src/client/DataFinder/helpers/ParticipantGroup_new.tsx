@@ -183,7 +183,7 @@ export const getParticipantGroupFilters = (filters: any) => {
             } else if (level == "Assay") {
                 sf = sf.setIn(["Data", "Assay", "Assay"], new SelectedFilter({ members: members, operator: filters[level].operator }))
             } else if (level == "Timepoint") {
-                sf = sf.setIn(["Data", "Timepoint"], new SelectedFilter({ members: members, operator: filters[level].operator }))
+                sf = sf.setIn(["Data", "Timepoint", "Timepoint"], new SelectedFilter({ members: members, operator: filters[level].operator }))
             } else if (level == "SampleType") {
                 sf = sf.setIn(["Data", "SampleType", "SampleType"], new SelectedFilter({ members: members, operator: filters[level].operator }))
             } else if (level == "Category") {
