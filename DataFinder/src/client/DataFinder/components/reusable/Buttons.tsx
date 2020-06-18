@@ -1,4 +1,5 @@
 import * as React from 'react';
+import "./Buttons.scss"
 
 interface HighlightedButtonProps {
     label: string;

@@ -1,5 +1,5 @@
 import React from 'react'
-
+import "./Dropdowns.scss"
 
 interface ButtonData {
     label: string;
