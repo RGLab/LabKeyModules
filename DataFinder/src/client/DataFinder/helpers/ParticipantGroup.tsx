@@ -170,6 +170,9 @@ export const getParticipantGroupFilters = (filters: any) => {
         // Handle old version of new filters
         if (filters.Data.Timepoint?.members) {
             filters.Data.Timepoint = {Timepoint: filters.Data.Timepoint}
+            isSaved = false
+            alert("Some filters for this participant group are from an old version of the Data Finder.\n" +
+                "Use 'save' to update this filter.")
         }
 
         sf = new SelectedFilters(filters)

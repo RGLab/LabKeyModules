@@ -63,6 +63,7 @@ interface ManageGroupDropdownProps {
     updateAvailableGroups: () => void;
 }
 
+// Exports
 
 const BannerFC: React.FC<BannerProps> = ({
     filters,
@@ -88,39 +89,6 @@ const BannerFC: React.FC<BannerProps> = ({
 };
 
 export const Banner = React.memo(BannerFC)
-
-const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
-    groupSummary,
-    counts,
-    manageGroupsDropdown
-}) => {
-    return (
-        <div className="df-banner-titlebar">
-            <RowOfButtons>
-                <ParticipantGroupSummary
-                    groupSummary={groupSummary}
-                    counts={counts}
-                />
-                <ExploreGroupDropdown />
-                {manageGroupsDropdown}
-                <>
-                <HighlightedButton label="Download Data" href="/immport/Studies/exportStudyDatasets.view?"/>
-                <HighlightedButton label="Open in RStudio" href="/rstudio/start.view?"/>
-                </>
-            </RowOfButtons>
-        </div>
-    );
-});
-
-const BannerTitleBar = React.memo(BannerTitleBarFC)
-
-const BannerTitleElement = React.memo(({children}) => {
-    return(
-        <div style={{float: "left", padding: "3px 10px"}}>
-            {children}
-        </div>
-    )
-})
 
 export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({ 
     groupSummary, 
@@ -224,6 +192,43 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
 
 export const ManageGroupsDropdown = React.memo(ManageGroupsDropdownFC)
 
+
+// ------- sub-components --------
+
+const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
+    groupSummary,
+    counts,
+    manageGroupsDropdown
+}) => {
+    return (
+        <div className="df-banner-titlebar">
+            <RowOfButtons>
+                <ParticipantGroupSummary
+                    groupSummary={groupSummary}
+                    counts={counts}
+                />
+                <ExploreGroupDropdown />
+                {manageGroupsDropdown}
+                <>
+                <HighlightedButton label="Download Data" href="/immport/Studies/exportStudyDatasets.view?"/>
+                <HighlightedButton label="Open in RStudio" href="/rstudio/start.view?"/>
+                </>
+            </RowOfButtons>
+        </div>
+    );
+});
+
+const BannerTitleBar = React.memo(BannerTitleBarFC)
+
+const BannerTitleElement = React.memo(({children}) => {
+    return(
+        <div style={{float: "left", padding: "3px 10px"}}>
+            {children}
+        </div>
+    )
+})
+
+
 const ExploreGroupDropdown = React.memo(({ }) => {
     const search = window.location.search
     const params = new URLSearchParams(search)
@@ -248,8 +253,6 @@ const ExploreGroupDropdown = React.memo(({ }) => {
         </>
     )
 })
-
-
 
 const ParticipantGroupSummary = React.memo<ParticipantGroupSummaryProps>(({
     groupSummary,
@@ -276,7 +279,7 @@ const ParticipantGroupSummary = React.memo<ParticipantGroupSummaryProps>(({
 
 
 
-
+// ------- Helpers -------
 
 // save participant group
 export const openSaveWindow = (groupLabel = "", goToSendAfterSave = false, aftersave = (data) => { }) => {
