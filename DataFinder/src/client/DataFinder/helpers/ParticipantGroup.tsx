@@ -167,8 +167,14 @@ export const getParticipantGroupFilters = (filters: any) => {
     sf = new SelectedFilters()
     let dim: string;
     if (filters.Data) {
+        // Handle old version of new filters
+        if (filters.Data.Timepoint?.members) {
+            filters.Data.Timepoint = {Timepoint: filters.Data.Timepoint}
+        }
+
         sf = new SelectedFilters(filters)
     } else {
+        // Handle filters from old data finder
         isSaved = false
         const missingDimensions = []
         // convert from old filters and warn user
