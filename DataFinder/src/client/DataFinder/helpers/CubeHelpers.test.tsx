@@ -1,5 +1,4 @@
 import * as CubeHelpers from './CubeHelpers'
-import { mdx, LABKEY } from '../../tests/helpers'
 import { SelectedFilters, StudyData, CubeData } from '../../typings/CubeData'
 import { List } from 'immutable';
 import { StudyParticipantCount } from '../../typings/StudyCard';
@@ -39,49 +38,6 @@ describe('Get Data', () => {
         )
         resetMocks();
     });
-
-    test("getStudyCounts", () => {
-        return CubeHelpers.getStudyCounts(mdx, filters).then(cs => {
-            expect(cs).toBe("getStudyCounts cellSet")
-        })
-    })
-
-    test("getStudyParticipantCounts", () => {
-        return CubeHelpers.getStudyParticipantCounts(mdx, filters, loadedStudiesArray).then(cs => {
-            expect(cs).toBe("getStudyParticipantCounts cellSet")
-        })
-    })
-    test("getCubeData - Study", () => {
-        return CubeHelpers.getCubeData(mdx, filters, "[Study].[Name]", loadedStudiesArray).then(cs => {
-            expect(cs).toBe("getCubeData_Study cellSet")
-        })
-    })
-    test("getCubeData - Subject", () => {
-        return CubeHelpers.getCubeData(mdx, filters, "[Subject].[Subject]", loadedStudiesArray).then(cs => {
-            expect(cs).toBe("getCubeData_Subject cellSet")
-        })
-    })
-    test("getTotalCounts - Study", () => {
-        return CubeHelpers.getTotalCounts(mdx, filters, "[Study].[Name]", loadedStudiesArray).then(cs => {
-            expect(cs).toBe("getTotalCounts_Study cellSet")
-        })
-    })
-    test("getTotalCounts - Subject", () => {
-        return CubeHelpers.getTotalCounts(mdx, filters, "[Subject].[Subject]", loadedStudiesArray).then(cs => {
-            expect(cs).toBe("getTotalCounts_Subject cellSet")
-        })
-    })
-    test("getFilterCategories", () => {
-        return CubeHelpers.getFilterCategories(LABKEY).then(res => {
-            expect(res).toBe("dataFinder_dropdownCategories")
-        })
-    })
-    // test("getStudyInfo", () => {
-    //     return CubeHelpers.getStudyInfo().then(res => {
-    //         expect(res).toBe("dataFinder_studyCard")
-    //     })
-    // })
-
 });
 
 describe("Create Data", () => {

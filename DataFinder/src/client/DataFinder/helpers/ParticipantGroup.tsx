@@ -79,7 +79,7 @@ export const updateParticipantGroup = (groupId: number, groupInfo: ParticipantGr
             success: function (response) {
                 var res = JSON.parse(response.responseText);
                 if (res.success) {
-                    resolve(true)
+                    resolve(res)
                 }
             },
             failure: function (response, options) {
@@ -172,7 +172,7 @@ export const getParticipantGroupFilters = (filters: any) => {
             filters.Data.Timepoint = {Timepoint: filters.Data.Timepoint}
             isSaved = false
             alert("Some filters for this participant group are from an old version of the Data Finder.\n" +
-                "Use 'save' to update this filter.")
+                  "Use 'save' to update this filter.")
         }
 
         sf = new SelectedFilters(filters)
@@ -245,7 +245,7 @@ export const goToSend = (groupId) => {
 
 export const updateSessionGroupById = (countsList: List<StudyParticipantCount>, groupId: number, studyDict) => {
     setSessionParticipantGroup(groupId)
-    updateContainerFilter(countsList, studyDict)
+    if (studyDict) updateContainerFilter(countsList, studyDict)
 }
 export const updateSessionGroup = (
   pids: string[],
@@ -261,6 +261,43 @@ export const updateSessionGroup = (
   }
 };
 
+
+export const sendParticipantGroup = (groupSummary, saveAsCallback) => {
+    if (groupSummary.isSaved && groupSummary.id > 0) {
+        goToSend(groupSummary.id)
+    } else {
+        const allowSave = groupSummary.id > 0;
+        if (!groupSummary.isSaved || !allowSave) {
+            Ext4.Msg.show({
+                title: 'Save Group Before Sending',
+                msg: 'You must save a group before you can send a copy.',
+                icon: Ext4.Msg.INFO,
+                buttons: allowSave ? Ext4.Msg.YESNOCANCEL : Ext4.Msg.OKCANCEL,
+                buttonText: allowSave ? { yes: 'Save', no: 'Save As' } : { ok: 'Save As' },
+                fn: function (buttonId) {
+                    if (buttonId === 'yes')
+                        getSessionParticipantGroup().then((data) => {
+                            updateParticipantGroup(groupSummary.id, data)
+                        })
+                    else if (buttonId === 'no' || buttonId === 'ok')
+                        saveAsCallback(true)
+                }
+            })
+        }
+    }
+}
+
+export const saveParticipantGroup = (groupSummary) => {
+    if (groupSummary.id > 0) {
+        getSessionParticipantGroup().then((data) => {
+                const description = JSON.parse(data.description)
+                data.label = description.summary.label           
+            updateParticipantGroup(groupSummary.id, data).then(() => {
+                setSessionParticipantGroup(groupSummary.id)
+            })
+        })
+    } 
+}
 
 // export const loadGroupFilters = (filters: SelectedFilters | {
 //     [index: string]: {

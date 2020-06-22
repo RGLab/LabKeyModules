@@ -7,6 +7,7 @@ import * as ParticipantGroupHelpers from "../helpers/ParticipantGroup"
 import { Record } from "immutable";
 import { RowOfButtons } from "./reusable/Buttons";
 import "./Banner.scss"
+import { ParticipantGroup } from "../../typings/ParticipantGroup";
 
 interface BannerProps {
     groupSummary: GroupSummary;
@@ -111,51 +112,12 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
         openSaveWindow("", goToSendAfterSave, aftersave)
     }
 
-    const sendParticipantGroup = () => {
-        if (groupSummary.isSaved && groupSummary.id > 0) {
-            ParticipantGroupHelpers.goToSend(groupSummary.id)
-        } else {
-            const allowSave = groupSummary.id > 0;
-            if (!groupSummary.isSaved || !allowSave) {
-                Ext4.Msg.show({
-                    title: 'Save Group Before Sending',
-                    msg: 'You must save a group before you can send a copy.',
-                    icon: Ext4.Msg.INFO,
-                    buttons: allowSave ? Ext4.Msg.YESNOCANCEL : Ext4.Msg.OKCANCEL,
-                    buttonText: allowSave ? { yes: 'Save', no: 'Save As' } : { ok: 'Save As' },
-                    fn: function (buttonId) {
-                        if (buttonId === 'yes')
-                            ParticipantGroupHelpers.getSessionParticipantGroup().then((data) => {
-                                ParticipantGroupHelpers.updateParticipantGroup(groupSummary.id, data)
-                            })
-                        else if (buttonId === 'no' || buttonId === 'ok')
-                            saveAsCallback(true)
-                    }
-                })
-            }
-        }
-    }
-
-    const saveParticipantGroup = () => {
-        if (groupSummary.id > 0) {
-            ParticipantGroupHelpers.getSessionParticipantGroup().then((data) => {
-                if (data.description) {
-                    const description = JSON.parse(data.description)
-                    data.label = description.label
-                }                
-                ParticipantGroupHelpers.updateParticipantGroup(groupSummary.id, data)
-                setGroupSummary((prevGroupSummary) => (prevGroupSummary.with({
-                    label: data.label,
-                    isSaved: true
-                })))
-            })
-        } 
-    }
+ 
 
     const buttonData = [
         {
             label: "Save",
-            action: saveParticipantGroup,
+            action: () => {ParticipantGroupHelpers.saveParticipantGroup(groupSummary); setGroupSummary((prevGroupSummary) => prevGroupSummary.with({isSaved: true})) },
             disabled: !(groupSummary.id > 0)
         },
         {
@@ -170,7 +132,7 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
         {
             label: "Send",
             icon: <i className="fa fa-link"></i>,
-            action: () => sendParticipantGroup(),
+            action: () => () => ParticipantGroupHelpers.sendParticipantGroup(groupSummary, saveAsCallback),
         },
         {
             label: "Load",

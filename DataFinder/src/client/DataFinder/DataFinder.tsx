@@ -11,7 +11,7 @@ import { CubeMdx } from "../typings/Cube";
 import { HighlightedButton, RowOfButtons } from "./components/reusable/Buttons";
 import { OuterDropdownButton } from './components/reusable/Dropdowns'
 import { SelectedParticipants, SelectedStudies } from "./components/TabContent";
-import { Loader } from "./components/Loader";
+import { Loader } from "./components/reusable/Loader";
 
 interface DataFinderControllerProps {
     mdx:  CubeMdx,

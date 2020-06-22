@@ -6,7 +6,7 @@ import { StudyCard } from './StudyCard'
 import { StudyDict, StudyParticipantCount } from '../../typings/StudyCard';
 import { RowOfButtons } from './reusable/Buttons';
 import { List, Iterable } from 'immutable'
-import { Loader } from './Loader';
+import { Loader } from './reusable/Loader';
 import { SimpleDropdown } from './reusable/Dropdowns';
 
 

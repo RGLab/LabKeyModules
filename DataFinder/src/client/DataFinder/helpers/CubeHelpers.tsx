@@ -19,19 +19,6 @@ import { createTinyHeatmapConsts, createTinyHeatmapYaxisScale } from "../compone
 // ----- Promises ----- 
 // Select Rows --------
 // Get filter categories
-export const getFilterCategories = () => {
-    return new Promise<SelectRowsResponse>((resolve, reject) => {
-        Query.selectRows({
-            schemaName: 'immport',
-            queryName: 'dataFinder_dropdownCategories',
-            containerFilter: Query.ContainerFilter.currentAndSubfolders,
-            success: (data: SelectRowsResponse) => { resolve(data) },
-            failure: () => {
-                reject();
-            }
-        })
-    })
-}
 
 export const getStudyInfo = () => {
     return new Promise<SelectRowsResponse>((resolve, reject) => {
