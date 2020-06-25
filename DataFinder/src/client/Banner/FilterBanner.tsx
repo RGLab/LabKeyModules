@@ -20,7 +20,7 @@ export const FilterBanner = ({ show }) => {
                     const description = JSON.parse(data.description)
                     if (description) {
                         newGroupSummary = description.summary ?? description
-                        newCounts = description.summary.counts
+                        newCounts = description.counts
                     } else newGroupSummary = {
                         id: data.rowId,
                         label: data.label,

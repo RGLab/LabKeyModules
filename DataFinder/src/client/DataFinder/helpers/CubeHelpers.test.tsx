@@ -11,7 +11,6 @@ import studyCountCs from '../../tests/data/cubeResponse_getStudyCounts.json'
 import studyParticipantCountsCs from '../../tests/data/cubeResponse_getStudyParticipantCounts.json'
 import cubeDataCs_study from '../../tests/data/cubeResponse_getCubeData_Study.json'
 import cubeDataCs_subject from '../../tests/data/cubeResponse_getCubeData_Subject.json'
-import dropdownCategories from '../../tests/data/selectRowsResponse_dataFinder_dropdownCategories.json'
 import {initMocks, resetMocks} from "../../tests/mock";
 
 // this uses cycle.js https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
@@ -65,17 +64,17 @@ describe("Create Data", () => {
     })
     test("createStudyParticipantCounts", () => {
         const studyParticipantCounts = CubeHelpers.createStudyParticipantCounts(studyParticipantCountsCs)
-        expect(studyParticipantCounts).toHaveProperty("countsList")
+        expect(studyParticipantCounts).toHaveProperty("studyParticipantCounts")
         expect(studyParticipantCounts).toHaveProperty("pids")
         expect(Array.isArray(studyParticipantCounts.pids)).toBeTruthy()
         expect(typeof(studyParticipantCounts.pids[0])).toBe("string")
         expect(studyParticipantCounts.pids[0]).toContain("SUB")
-        expect(studyParticipantCounts.countsList).toBeInstanceOf(List)
-        expect(studyParticipantCounts.countsList.get(0)).toBeInstanceOf(StudyParticipantCount)
+        expect(studyParticipantCounts.studyParticipantCounts).toBeInstanceOf(List)
+        expect(studyParticipantCounts.studyParticipantCounts.get(0)).toBeInstanceOf(StudyParticipantCount)
     })
-    test("createCubeData", () => {
-        const subject: any = cubeDataCs_subject
-        const cd = CubeHelpers.createCubeData([cubeDataCs_study, subject])
-        expect(cd).toBeInstanceOf(CubeData)
-    })
+    // test("createCubeData", () => {
+    //     const subject: any = cubeDataCs_subject
+    //     const cd = CubeHelpers.createCubeData([cubeDataCs_study, subject])
+    //     expect(cd).toBeInstanceOf(CubeData)
+    // })
 })

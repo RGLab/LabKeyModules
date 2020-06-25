@@ -303,7 +303,7 @@ export const createFilterCategories = (categoriesCs: Cube.CellSet) => {
     return(categories)
 }
 
-export const createStudyParticipantCounts = (studyParticipantCountCs: Cube.CellSet) => {
+export const createSelectedParticipants = (studyParticipantCountCs: Cube.CellSet) => {
     const studyParticipantCountArray: StudyCardTypes.IStudyParticipantCount[] = []
     const pids: string[] = []
     studyParticipantCountCs.cells.forEach((cell) => {
@@ -320,12 +320,12 @@ export const createStudyParticipantCounts = (studyParticipantCountCs: Cube.CellS
         }
     })
 
-    const studyParticipantCounts = studyParticipantCountArray.map((spc: StudyCardTypes.IStudyParticipantCount) => {
+    const studyParticipantCountsArray = studyParticipantCountArray.map((spc: StudyCardTypes.IStudyParticipantCount) => {
         return (new StudyCardTypes.StudyParticipantCount(spc))
     })
-    const countsList = Immutable.List<StudyParticipantCount>(studyParticipantCounts);
+    const studyParticipantCounts = Immutable.List<StudyParticipantCount>(studyParticipantCountsArray);
 
-    return ({ countsList: countsList, pids: pids })
+    return ({ studyParticipantCounts: studyParticipantCounts, pids: pids })
 }
 
 const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) => {

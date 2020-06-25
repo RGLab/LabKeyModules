@@ -243,13 +243,13 @@ export const goToSend = (groupId) => {
 }
 
 
-export const updateSessionGroupById = (countsList: List<StudyParticipantCount>, groupId: number, studyDict) => {
+export const updateSessionGroupById = (studyParticipantCounts: List<StudyParticipantCount>, groupId: number, studyDict) => {
     setSessionParticipantGroup(groupId)
-    if (studyDict) updateContainerFilter(countsList, studyDict)
+    if (studyDict) updateContainerFilter(studyParticipantCounts, studyDict)
 }
 export const updateSessionGroup = (
   pids: string[],
-  countsList: List<StudyParticipantCount>,
+  studyParticipantCounts: List<StudyParticipantCount>,
   filters: SelectedFilters,
   summary: GroupSummary,
   totalCounts: TotalCounts,
@@ -257,7 +257,7 @@ export const updateSessionGroup = (
 ) => {
   setSessionParticipantIds(pids, filters, summary, totalCounts);
   if (studyDict) {
-    updateContainerFilter(countsList, studyDict);
+    updateContainerFilter(studyParticipantCounts, studyDict);
   }
 };
 

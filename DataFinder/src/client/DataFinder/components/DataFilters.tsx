@@ -247,8 +247,10 @@ const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({mdx, loadedStu
         
     }, [selectedStudyFilters, selectedSubjectFilters])
     
-    const selectFilter = (hierarchy: string) => {
+    const selectFilter = (hierarchy: string, stripText?: string | RegExp) => {
+        stripText = stripText ?? ""
         return (option: string) => {
+            option = option.replace(stripText, "")
             const newFilter = currentFilter.set(hierarchy, option)
             const newDropdownOptions = updateDropdownOptions(newFilter, assayData, filterCategories)
             setDropdownOptions((prevDropdownOptions) => prevDropdownOptions.merge(newDropdownOptions))
@@ -269,12 +271,12 @@ const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({mdx, loadedStu
             dropdownOptions={dropdownOptions.get("Assay")} 
             select={selectFilter("Assay")}
             allText="Any Assay"/>
-        <span>at Day</span>
+        <span>at</span>
         <DataFilterDropdown 
             selected={!!currentFilter.get("Timepoint")}
-            title={currentFilter.get("Timepoint") ?? "Any Timepoint"}
+            title={currentFilter.get("Timepoint") ? ("Day " + currentFilter.get("Timepoint")) : "Any Timepoint"}
             dropdownOptions={dropdownOptions.get("Timepoint")} 
-            select={selectFilter("Timepoint")}
+            select={selectFilter("Timepoint", "Day ")}
             allText="Any Timepoint" />
         <span>for</span>
         <DataFilterDropdown
@@ -485,7 +487,7 @@ const updateDropdownOptions = (currentFilter, assayData, filterCategories: Filte
         // sampleType = [...new Set(sampleTypeArray)]
     }
     const assay = filterCategories.Assay.filter(fc => assayArray.indexOf(fc.label) > -1).map(fc => fc.label)
-    const timepoint = filterCategories.Timepoint.filter(fc => timepointArray.indexOf(fc.label) > -1).map(fc => fc.label)
+    const timepoint = filterCategories.Timepoint.filter(fc => timepointArray.indexOf(fc.label) > -1).map(fc => "Day " + fc.label)
     const sampleType = filterCategories.SampleType.filter(fc => sampleTypeArray.indexOf(fc.label) > -1).map(fc => fc.label)
     return {Assay: assay, Timepoint: timepoint, SampleType: sampleType}
 }
