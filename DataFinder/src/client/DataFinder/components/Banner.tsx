@@ -135,7 +135,7 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
         {
             label: "Send",
             icon: <i className="fa fa-link"></i>,
-            action: () => () => ParticipantGroupHelpers.sendParticipantGroup(groupSummary, saveAsCallback),
+            action: () => ParticipantGroupHelpers.sendParticipantGroup(groupSummary, saveAsCallback),
         },
         {
             label: "Load",
