@@ -270,8 +270,6 @@ export const openSaveWindow = (groupLabel = "", goToSendAfterSave = false, after
         });
         window.show()
         window.on("aftersave", (saveData) => {
-            console.log("saveData")
-            console.log(saveData)
             if (goToSendAfterSave) ParticipantGroupHelpers.goToSend(saveData.group.rowId)
             aftersave(saveData)
         })

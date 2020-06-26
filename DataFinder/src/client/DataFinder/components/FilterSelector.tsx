@@ -63,11 +63,9 @@ export const FilterDropdownButton: React.FC<FilterDropdownButtonProps> = ({title
         const cl = openRef.current.classList
         const willOpen = !cl.contains("open")
         for (let el of document.querySelectorAll(".df-filter-dropdown>.open")) {
-            console.log("close!")
             el.classList.remove("open")
         };
         if (willOpen) {
-            console.log("open!")
             cl.add("open")
         }
     }
@@ -159,7 +157,8 @@ const FilterSelectorFC: React.FC<FilterSelectorProps> = ({
                         {levelSelectedFilters?.get("members").map((member) => {
                             return (
                                 <FilterDeletor dim={dim}
-                                    onDelete={filterClick(dim, { level: level, member: member })} >
+                                    onDelete={filterClick(dim, { level: level, member: member })} 
+                                    key={member}>
                                     {member}
                                 </FilterDeletor>
                             )

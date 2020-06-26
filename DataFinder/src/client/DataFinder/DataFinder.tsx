@@ -27,25 +27,20 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
 
     // State ---------------------------------------------
     // ----- Data (updated by API calls) -----
-    const [groupSummary, setGroupSummaryState] = React.useState<GroupSummary>(new GroupSummary())
-    const setGroupSummary = (gs) => {console.log("setting groupSummary state"); console.log(gs); setGroupSummaryState(gs)}
+    const [groupSummary, setGroupSummary] = React.useState<GroupSummary>(new GroupSummary())
     // Set on page load only
-    const [filterCategories, setFilterCategoriesState] = React.useState(null)
-    const setFilterCategories = (fc) => {console.log("setting filter categories state"); setFilterCategoriesState(fc)}
-    const [studyDict, setStudyDictState] = React.useState(null); // this should only be loaded once
-    const setStudyDict = (sd) => {console.log("setting studyDict state"); setStudyDictState(sd)}
+    const [filterCategories, setFilterCategories] = React.useState(null)
+    const [studyDict, setStudyDict] = React.useState(null); // this should only be loaded once
     // Updated on "apply": 
-    const [cubeData, setCubeDataState] = React.useState<CubeData>(cd)
-    const setCubeData = (cd) => {console.log("setting cubeData state"); setCubeDataState(cd)}
+    const [cubeData, setCubeData] = React.useState<CubeData>(cd)
     
     const [availableGroups, setAvailableGroups] = React.useState<GroupInfo[]>([])
     // Updated every time a filter is changed: 
     // ----- State set by user ------
     // Groups
     // Filters 
-    const [selectedFilters, setSelectedFiltersState] = React.useState<SelectedFilters>(new SelectedFilters())
-    const setSelectedFilters = (sf) => {console.log("setting SelectedFilters state"); setSelectedFiltersState(sf)}
-
+    const [selectedFilters, setSelectedFilters] = React.useState<SelectedFilters>(new SelectedFilters())
+    
     // Effects  -------------------------------------
 
     // Setup (only run on first render) ----- 
@@ -66,7 +61,10 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                         isSaved: true
                     }
                     setSelectedFilters(sf)
-                    setGroupSummary(prevGroupSummary => prevGroupSummary.merge(newGroupSummary))
+                    setGroupSummary(prevGroupSummary => {
+                        const gs: any = prevGroupSummary.merge(newGroupSummary)
+                        return gs
+                    })
                     applyFilters(sf)
                 } else {
                     applyFilters(selectedFilters).then(({ pids, studyParticipantCounts, totalCounts }) => {
@@ -143,7 +141,6 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
         })
         CubeHelpers.getStudyCounts(mdx, new SelectedFilters()).then((res) => {
             const sd = CubeHelpers.createStudyDict([studyInfo, res])
-            console.log(" ------- setStudyDict ------- ")
             setStudyDict(sd)
         })
         

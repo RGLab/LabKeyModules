@@ -12,7 +12,6 @@ const participantGroupAPI: ParticipantGroupAPI = LABKEY.Study.ParticipantGroup
 // TODO:
 // get list of available participant groups
 export const getAvailableGroups = () => {
-    console.log("getAvailableGroups")
     return new Promise<ParticipantGroup[]>((resolve, reject) => {
         participantGroupAPI.browseParticipantGroups({
             distinctCategories: false,
@@ -227,7 +226,6 @@ export const updateContainerFilter = (studyParticipantCounts: List<StudyParticip
 }
 
 export const goToSend = (groupId) => {
-    console.log("Going to send!")
     if (groupId == null) { console.log("null group: can't send") } else {
         window.location = LABKEY.ActionURL.buildURL('study', 'sendParticipantGroup', null, {
             rowId: groupId,

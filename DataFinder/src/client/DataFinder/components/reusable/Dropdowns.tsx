@@ -70,11 +70,9 @@ export const OuterDropdownButton: React.FC<OuterDropdownButtonProps> = ({childre
         const cl = openRef.current.classList
         const willOpen = !cl.contains("open")
         for (let el of document.querySelectorAll(".df-outer-dropdown>.open")) {
-            console.log("close!")
             el.classList.remove("open")
         };
         if (willOpen) {
-            console.log("open!")
             cl.add("open")
         }
     }
