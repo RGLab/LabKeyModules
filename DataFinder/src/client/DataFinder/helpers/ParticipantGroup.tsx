@@ -66,6 +66,7 @@ export const updateParticipantGroup = (groupId: number, groupInfo: ParticipantGr
     const groupData = {
         label: groupInfo.label,
         participantIds: groupInfo.participantIds,
+        description: groupInfo.description,
         categoryLabel: "",
         categoryType: "",
         filters: groupInfo.filters,
@@ -106,22 +107,22 @@ export const setSessionParticipantIds = (participantIds: string[], filters: Sele
     })
 }
 
-export const setSessionParticipantGroup = (groupId: number) => {
-    return new Promise<boolean>((resolve, reject) => {
-        participantGroupAPI.setSessionParticipantGroup({
-            groupId: groupId,
-            success: (res) => {
-                const resText = JSON.parse(res.responseText);
-                if (resText.success) resolve(true)
-                reject()
-            },
-            failure: (res, options) => {
-                LABKEY.Utils.displayAjaxErrorResponse(res, options, false, "An error occurred trying to set participant group:  ");
-                reject()
-            }
-        })
-    })
-}
+// export const setSessionParticipantGroup = (groupId: number) => {
+//     return new Promise<boolean>((resolve, reject) => {
+//         participantGroupAPI.setSessionParticipantGroup({
+//             groupId: groupId,
+//             success: (res) => {
+//                 const resText = JSON.parse(res.responseText);
+//                 if (resText.success) resolve(true)
+//                 reject()
+//             },
+//             failure: (res, options) => {
+//                 LABKEY.Utils.displayAjaxErrorResponse(res, options, false, "An error occurred trying to set participant group:  ");
+//                 reject()
+//             }
+//         })
+//     })
+// }
 
 export const clearSessionParticipantGroup = () => {
     return new Promise<void>((resolve, reject) => {
@@ -141,13 +142,6 @@ export const createAvailableGroups = (data: ParticipantGroup[]) => {
         for (var i = 0; i < data.length; i++) {
             if (data[i].filters !== undefined) {
                 var groupFilters = JSON.parse(data[i].filters);
-
-                // remove duplicates from the filters members array
-                // Object.keys(groupFilters).forEach((key) => {
-                // if (groupFilters[key].isArray) {
-                //     groupFilters[key].members = Ext4.Array.unique(value.members);
-                // }
-
                 groups.push({
                     "id": data[i].id,
                     "label": data[i].label,
@@ -242,21 +236,16 @@ export const goToSend = (groupId) => {
     }
 }
 
-
-export const updateSessionGroupById = (studyParticipantCounts: List<StudyParticipantCount>, groupId: number, studyDict) => {
-    setSessionParticipantGroup(groupId)
-    if (studyDict) updateContainerFilter(studyParticipantCounts, studyDict)
-}
 export const updateSessionGroup = (
   pids: string[],
-  studyParticipantCounts: List<StudyParticipantCount>,
   filters: SelectedFilters,
   summary: GroupSummary,
   totalCounts: TotalCounts,
-  studyDict
+  studyDict?: StudyDict,
+  studyParticipantCounts?: List<StudyParticipantCount>,
 ) => {
   setSessionParticipantIds(pids, filters, summary, totalCounts);
-  if (studyDict) {
+  if (studyDict && studyParticipantCounts) {
     updateContainerFilter(studyParticipantCounts, studyDict);
   }
 };
@@ -291,19 +280,17 @@ export const saveParticipantGroup = (groupSummary) => {
     if (groupSummary.id > 0) {
         getSessionParticipantGroup().then((data) => {
                 const description = JSON.parse(data.description)
+                description.summary.isSaved = true
                 data.label = description.summary.label           
             updateParticipantGroup(groupSummary.id, data).then(() => {
-                setSessionParticipantGroup(groupSummary.id)
+                // Update "isSaved" in session group
+                setSessionParticipantIds(
+                    data.participantIds, 
+                    new SelectedFilters(JSON.parse(data.filters)),
+                    new GroupSummary(description.summary),
+                    new TotalCounts(description.counts)
+                )
             })
         })
     } 
 }
-
-// export const loadGroupFilters = (filters: SelectedFilters | {
-//     [index: string]: {
-//         members: string[];
-//         name: string;
-//         operator: string
-//     }}) => {
-//         if filters
-//     }

@@ -61,7 +61,7 @@ interface ManageGroupDropdownProps {
     setGroupSummary: (groupSummary: React.SetStateAction<GroupSummary>) => void;
     loadParticipantGroup: (groupInfo: GroupInfo) => void;
     availableGroups: GroupInfo[];
-    updateAvailableGroups: () => void;
+    updateAvailableGroups: () => Promise<GroupInfo[]>
 }
 
 // Exports
@@ -101,13 +101,14 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
 
     const saveAsCallback = (goToSendAfterSave) => {
         const aftersave = (saveData) => {
-            updateAvailableGroups()
-
-            setGroupSummary((prevGroupSummary) => prevGroupSummary.with({
-                label: saveData.group.label,
+            const groupInfo = {
                 id: saveData.group.rowId,
-                isSaved: true
-            }))
+                label: saveData.group.label,
+                filters: JSON.parse(saveData.group.filters),
+                selected: true
+            }
+            updateAvailableGroups()
+            loadParticipantGroup(groupInfo)
         }
         openSaveWindow("", goToSendAfterSave, aftersave)
     }
@@ -117,7 +118,9 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
     const buttonData = [
         {
             label: "Save",
-            action: () => {ParticipantGroupHelpers.saveParticipantGroup(groupSummary); setGroupSummary((prevGroupSummary) => prevGroupSummary.with({isSaved: true})) },
+            action: () => {
+                ParticipantGroupHelpers.saveParticipantGroup(groupSummary); 
+                setGroupSummary((prevGroupSummary) => prevGroupSummary.with({isSaved: true})) },
             disabled: !(groupSummary.id > 0)
         },
         {
@@ -253,11 +256,16 @@ export const openSaveWindow = (groupLabel = "", goToSendAfterSave = false, after
         columnName: 'ParticipantId'
     }
     ParticipantGroupHelpers.getSessionParticipantGroup().then((data: any) => {
+        const description = JSON.parse(data.description)
+        if (description) {
+            description.summary = {label: groupLabel, isSaved: true}
+        }
         const window = Ext4.create('Study.window.ParticipantGroup', {
             subject: studySubject,
             groupLabel: groupLabel,
             participantIds: data.participantIds,
             filters: JSON.parse(data.filters),
+            description: description,
             goToSendAfterSave: goToSendAfterSave
         });
         window.show()
@@ -265,9 +273,6 @@ export const openSaveWindow = (groupLabel = "", goToSendAfterSave = false, after
             console.log("saveData")
             console.log(saveData)
             if (goToSendAfterSave) ParticipantGroupHelpers.goToSend(saveData.group.rowId)
-            ParticipantGroupHelpers.setSessionParticipantGroup(
-                saveData.group.rowId
-            )
             aftersave(saveData)
         })
     })

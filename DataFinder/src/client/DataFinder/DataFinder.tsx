@@ -71,7 +71,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 } else {
                     applyFilters(selectedFilters).then(({ pids, studyParticipantCounts, totalCounts }) => {
                         ParticipantGroupHelpers.updateSessionGroup(
-                            pids, studyParticipantCounts, selectedFilters, groupSummary, totalCounts, studyDict
+                            pids, selectedFilters, groupSummary, totalCounts, studyDict, studyParticipantCounts
                             )
                 })
                 }
@@ -113,7 +113,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                                         setGroupSummary(gs)
                                         applyFilters(filterInfo.sf).then(({ pids, studyParticipantCounts, totalCounts }) => {
                                                 ParticipantGroupHelpers.updateSessionGroup(
-                                                    pids, studyParticipantCounts, filterInfo.sf, gs, totalCounts, studyDict
+                                                    pids, filterInfo.sf, gs, totalCounts, studyDict, studyParticipantCounts
                                                     )
                                         })
                                     } else {
@@ -171,14 +171,10 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             label: groupInfo.label,
             id: groupInfo.id,
             isSaved: filterInfo.isSaved
-        })
+        }) 
         setSelectedFilters(filterInfo.sf)
         applyFilters(filterInfo.sf).then(({pids, studyParticipantCounts, totalCounts}) => {
-            if (filterInfo.isSaved) {
-                ParticipantGroupHelpers.updateSessionGroupById(studyParticipantCounts, groupInfo.id, studyDict)
-            } else {
-                ParticipantGroupHelpers.updateSessionGroup(pids, studyParticipantCounts, filterInfo.sf, gs, totalCounts, studyDict)
-            }        
+                ParticipantGroupHelpers.updateSessionGroup(pids, filterInfo.sf, gs, totalCounts, studyDict, studyParticipantCounts)    
         })
         setGroupSummary(gs)
     }, [])
@@ -191,7 +187,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             const gs = groupSummary.recordSet("isSaved", false)
             setSelectedFilters(sf)
             applyFilters(sf).then(({pids, studyParticipantCounts, totalCounts}) => {
-                ParticipantGroupHelpers.updateSessionGroup(pids, studyParticipantCounts, sf, gs, totalCounts, studyDict)
+                ParticipantGroupHelpers.updateSessionGroup(pids, sf, gs, totalCounts, studyDict, studyParticipantCounts)
             })
             setGroupSummary(gs)
         })
@@ -203,7 +199,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             const gs = groupSummary.recordSet("isSaved", false)
             setSelectedFilters(sf)
             applyFilters(sf).then(({pids, studyParticipantCounts, totalCounts}) => {
-                ParticipantGroupHelpers.updateSessionGroup(pids, studyParticipantCounts, sf, gs, totalCounts, studyDict)
+                ParticipantGroupHelpers.updateSessionGroup(pids, sf, gs, totalCounts, studyDict, studyParticipantCounts)
             })
             setGroupSummary(gs)
     }, [selectedFilters, groupSummary])
@@ -245,7 +241,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
         setGroupSummary(newGroupSummary)
         applyFilters(newFilters).then(({ pids, studyParticipantCounts, totalCounts }) => {
             ParticipantGroupHelpers.updateSessionGroup(
-                pids, studyParticipantCounts, newFilters, newGroupSummary, totalCounts, studyDict
+                pids, newFilters, newGroupSummary, totalCounts, studyDict, studyParticipantCounts,
                 )
         })
     }, [])
