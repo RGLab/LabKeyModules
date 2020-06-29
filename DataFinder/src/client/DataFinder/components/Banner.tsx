@@ -219,7 +219,7 @@ const ExploreGroupDropdown = React.memo(({ }) => {
         Explore Data: 
         </span>
         <div style={{display: "inline-block"}}>
-        <DropdownButtons title={title || "Find"} buttonData={buttonData} />
+        <DropdownButtons title={title || "Find"} buttonData={buttonData} id="df-explore-data" />
         </div>
         </>
     )
