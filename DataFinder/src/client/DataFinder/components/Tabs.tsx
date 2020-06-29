@@ -2,9 +2,6 @@ import React, { ReactChild, ReactElement } from 'react';
 import { PlotData, FilterCategories, Filter, SelectedFilters, SelectedFilter} from '../../typings/CubeData';
 import { StudyParticipantCount, StudyDict } from '../../typings/StudyCard';
 import { List } from 'immutable'
-import { StudyCard } from './StudyCard'
-import { SelectedParticipants, SelectedStudies } from './TabContent'
-import { setAndOr } from '../helpers/SelectedFilters';
 
 export interface TabProps {
     tabs: {
@@ -30,6 +27,7 @@ interface DataFinderTabsProps {
 
 export const Tabs: React.FC = ({ children }) => {
     const [activeTab, setActiveTab] = React.useState<number>(0)
+    const mungeText = (text) => text.toLowerCase().replace(/\s/, "-")
     return (
         <>
             <div className="tabbable">
@@ -39,9 +37,7 @@ export const Tabs: React.FC = ({ children }) => {
                         return (
                             <li className={(activeTab == i ? "active": "") + " df-tab-title"}
                                 onClick={() => {setActiveTab(i)}}>
-                                    <a href={"#tab-" + i}
-                                        data-toggle="tab"
-                                        data-value={i}>
+                                    <a data-toggle="tab" data-value={child.key}>
                                             {child.key}
                                     </a>
                             </li>
@@ -64,8 +60,8 @@ export const Tabs: React.FC = ({ children }) => {
                 {React.Children.map(children || null, (child: ReactElement, i) => {
                     return (
                         <div className={"tab-pane " + (i == activeTab ? " active" : "")}
-                            id={"df-tab-" + i}>
-                            <child.type {...child.props} key={i} />
+                            id={"df-tab-" + mungeText(child.key)}>
+                            <child.type {...child.props} key={child.key} />
                         </div>
                     )
                 })}
@@ -79,60 +75,6 @@ export const Tabs: React.FC = ({ children }) => {
         </>
     )
 }
-
-// export const DataFinderTabs: React.FC<DataFinderTabsProps> = (
-//     {
-//         plotData, 
-//         filterCategories, 
-//         studyParticipantCounts, 
-//         studyDict
-//     }) => {
-//     const StudyCardMemo = React.memo(StudyCard)
-//     const DataTabMemo = React.memo(TabContent.Data)
-//     const ParticipantTabMemo = React.memo(TabContent.Participant)
-//     const StudyTabMemo = React.memo(TabContent.Study)
-//     const tabs = {
-//         //  ------ DATA -------
-//         data: {
-//             content: <TabContent.Data 
-//                 data={plotData.Data} 
-//                 filterCategories={filterCategories}/>,
-//             id: "data",
-//             tag: "find-data",
-//             text: "Available Assay Data",
-//             tabClass: "pull-right"
-//         },
-//         // -------- PARTICIPANT -------
-//         participant: {
-//             content: <TabContent.Participant showBarplots={filterCategories != null} data={plotData.Subject} filterCategories={filterCategories} />,
-//             id: "participant",
-//             tag: "find-participant",
-//             text: "Participant Characteristics",
-//             tabClass: "pull-right"
-//         },
-//         // ------- STUDY -------
-//         study: {
-//             content: <TabContent.Study 
-//                 data={plotData.Study} 
-//                 filterCategories={filterCategories} 
-//                 studyDict={studyDict} 
-//                 studyParticipantCounts={studyParticipantCounts} 
-//                 StudyCard={StudyCard} 
-//                 filterClick={filterClick} />,
-//             id: "study",
-//             tag: "find-study",
-//             text: "Study Design",
-//             tabClass: "pull-right",
-//         },
-//     }
-//     return(
-//         <Tabs>
-//             <TabContent.SelectedParticipants filterCategories={filterCategories} plotData={plotData}/>
-//             <TabContent.SelectedStudies studyDict={studyDict} studyParticipantCounts={studyParticipantCounts}/>
-//         </Tabs>
-        
-//     )
-// }
 
 
 

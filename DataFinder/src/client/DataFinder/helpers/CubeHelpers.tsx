@@ -328,7 +328,7 @@ export const createSelectedParticipants = (studyParticipantCountCs: Cube.CellSet
     return ({ studyParticipantCounts: studyParticipantCounts, pids: pids })
 }
 
-const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) => {
+const cs2cd = (participantCounts: Cube.CellSet, studyCounts: Cube.CellSet) => {
 
     const results: { dim: string, levelArray: string[], data: PlotDatum }[] = participantCounts.cells.map((cell, cellIndex) => {
         const hierarchy = cell[0].positions[1][0].level.uniqueName.replace(/\[|\]/g, "") // remove "[" and "]"
@@ -372,8 +372,8 @@ const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) =
 
 
 
-export const createPlotData = (counts: [Cube.CellSet, Cube.CellSet]) => {
-    const plotData = cs2cd(counts)
+export const createPlotData = (participantCounts: Cube.CellSet, studyCounts: Cube.CellSet) => {
+    const plotData = cs2cd(participantCounts, studyCounts)
     return new PlotData(plotData);
 }
 

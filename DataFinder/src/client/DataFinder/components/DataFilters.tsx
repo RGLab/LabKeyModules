@@ -238,7 +238,7 @@ const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({mdx, loadedStu
     React.useEffect(() => {
         const selectedFilters = new SelectedFilters({Study: selectedStudyFilters.toJS(), Subject: selectedSubjectFilters.toJS()})
         getPlotData(mdx, selectedFilters, "[Subject].[Subject]", loadedStudiesArray, false).then((pd) => {
-            const plotData = createPlotData([pd, null])
+            const plotData = createPlotData(pd, null)
             const newAssayData = plotData.Data
             const newDropdownOptions = updateDropdownOptions(currentFilter, newAssayData, filterCategories)
             setAssayData(newAssayData)
@@ -250,7 +250,7 @@ const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({mdx, loadedStu
     const selectFilter = (hierarchy: string, stripText?: string | RegExp) => {
         stripText = stripText ?? ""
         return (option: string) => {
-            option = option.replace(stripText, "")
+            option = option?.replace(stripText, "")
             const newFilter = currentFilter.set(hierarchy, option)
             const newDropdownOptions = updateDropdownOptions(newFilter, assayData, filterCategories)
             setDropdownOptions((prevDropdownOptions) => prevDropdownOptions.merge(newDropdownOptions))

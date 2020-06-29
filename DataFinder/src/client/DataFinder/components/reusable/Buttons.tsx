@@ -8,6 +8,10 @@ interface HighlightedButtonProps {
     id?: string;
 }
 
+interface RowOfButtonProps {
+    id?: string;
+}
+
 
 // Button or link with highlighted style
 const HighlightedButtonFC: React.FC<HighlightedButtonProps> = (({label, href, action, id}) => {
@@ -20,8 +24,8 @@ export const HighlightedButton = React.memo(HighlightedButtonFC)
 
 
 // Floats all children in a nice little row
-export const RowOfButtons: React.FC = ({children}) => {
-    return <div className={"df-row-of-buttons"}>
+export const RowOfButtons: React.FC<RowOfButtonProps> = ({children, id}) => {
+    return <div className={"df-row-of-buttons"} id={id}>
     {React.Children.map(children || null, (child, i) => {
         return (
             <div style={{float: "left", padding: "3px 10px"}}>

@@ -14,6 +14,7 @@ interface DropdownButtonProps {
 title: string
 buttonData: ButtonData[]
 disabled?: boolean
+id?: string
 }
 
 interface DropdownContentProps {
@@ -29,9 +30,9 @@ title: string;
 
 
 // This essentially just creates a bootstrap button dropdown
-export const SimpleDropdown: React.FC<DropdownButtonProps> = ({ title, buttonData, disabled }) => {
+export const SimpleDropdown: React.FC<DropdownButtonProps> = ({ title, buttonData, disabled, id }) => {
     return (
-        <div className="dropdown df-outer-dropdown">
+        <div className="dropdown df-outer-dropdown" id={id}>
         <div className={"btn"} role="group" >
             <button className="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button" disabled={disabled}>
                 <span>{title}</span>

@@ -3,6 +3,7 @@ import { SelectedFilters, TotalCounts } from '../typings/CubeData';
 import { Banner, GroupSummary } from '../DataFinder/components/Banner';
 import { DropdownButtons } from '../DataFinder/components/reusable/Dropdowns';
 import { getSessionParticipantGroup } from '../DataFinder/helpers/ParticipantGroup'
+import './Banner.scss'
 
 
 export const FilterBanner = ({ show }) => {
@@ -34,7 +35,7 @@ export const FilterBanner = ({ show }) => {
         }, [])
         const manageGroupsDropdown = <DropdownButtons title={"Options"} buttonData={[]} disabled={true} />
         return (
-            <div className="df-banner-wrapper">
+            <div id="data-finder-banner">
                 <Banner
                     filters={selectedFilters}
                     counts={counts}
@@ -45,5 +46,5 @@ export const FilterBanner = ({ show }) => {
 
         )
     }
-    return <div></div>
+    return <div id="data-finder-banner"></div>
 }

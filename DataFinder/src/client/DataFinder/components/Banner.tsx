@@ -17,6 +17,7 @@ interface BannerProps {
     links?: JSX.Element;
     dropdowns?: JSX.Element;
     filterBarId?: string;
+    id?: string
 }
 
 export interface IGroupSummary {
@@ -71,10 +72,11 @@ const BannerFC: React.FC<BannerProps> = ({
     groupSummary,
     counts,
     filterBarId,
-    manageGroupsDropdown
+    manageGroupsDropdown,
+    id
 }) => {
     return (
-        <>
+        <div id={id}>
             <BannerTitleBar
                 groupSummary={groupSummary}
                 counts={counts}
@@ -85,7 +87,7 @@ const BannerFC: React.FC<BannerProps> = ({
                 <FilterSummary filters={filters} />
             </div>
             <hr className={"df-banner-separator"}></hr>
-        </>
+        </div>
     );
 };
 

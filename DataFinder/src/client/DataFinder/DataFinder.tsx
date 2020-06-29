@@ -20,7 +20,7 @@ interface DataFinderControllerProps {
 
 
 const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyInfo}) => {
-    if (!mdx || !studyInfo) return <Loader />
+    if (!mdx || !studyInfo) return <Loader id="loader-1" />
     // Constants -------------------------------------
     const cd = new CubeData({})
     const loadedStudiesArray = CubeHelpers.createLoadedStudies(studyInfo)
@@ -212,7 +212,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 CubeHelpers.getTotalCounts(mdx, filters, "[Study].[Name]", loadedStudiesArray), 
                 CubeHelpers.getStudyParticipantCounts(mdx, filters, loadedStudiesArray)])
                 .then(([pd_subject, pd_study, tc_subject, tc_study, spc]) => {
-                    const pd = CubeHelpers.createPlotData([pd_study, pd_subject])
+                    const pd = CubeHelpers.createPlotData(pd_subject, pd_study)
                     const {studyParticipantCounts, pids} = CubeHelpers.createSelectedParticipants(spc)
                     const counts = new TotalCounts(CubeHelpers.createTotalCounts([tc_study, tc_subject]))
                     setCubeData(new CubeData({
@@ -280,10 +280,11 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 manageGroupsDropdown={
                         ManageGroupsDropdownMenu()
                 }
+                id={"data-finder-app-banner"}
                  />
                 
 
-            <RowOfButtons>
+            <RowOfButtons id="data-finder-filters">
                 <OuterDropdownButton title="Filters"> 
                     <div className="dropdown-menu" style={{cursor: "auto"}}>
                         {filterCategories &&
@@ -304,7 +305,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 
             </RowOfButtons>
 
-            <div className="datafinder-wrapper">
+            <div id="data-finder-viz">
             <Tabs>
                 <SelectedParticipants filterCategories={filterCategories} plotData={plotData} key="Selected Participants"/>
                 <SelectedStudies studyDict={studyDict} studyParticipantCounts={studyParticipantCounts} key="Selected Studies"/>
@@ -327,7 +328,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
 
 })
 
-export const App = React.memo(() => {
+export const DataFinder = React.memo(() => {
     const filterBanner = document.getElementById('filter-banner')
     filterBanner.style.display = 'none'
 
