@@ -94,13 +94,15 @@ export const StudyCardFC: React.FC<StudyCardProps> = (props) => {
             value: study.assays
         }
     ]
+    const authors = study.pi_names.split(",")
+    const author = authors.length > 1 ? (authors[0] + " et. al.") : authors[0]
 
 
     return (
         <div className="study-card">
             <div className="study-label">
             <span className="study-id">{study.study_accession}</span>
-                <span className="study-pi">{study.pi_names}</span>
+                <span className="study-pi">{author}</span>
             </div>
             <hr />
             <a href={"./" + study.study_accession + "/begin.view?"} className="labkey-text-link labkey-study-card-goto">

@@ -214,7 +214,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 .then(([pd_subject, pd_study, tc_subject, tc_study, spc]) => {
                     const pd = CubeHelpers.createPlotData(pd_subject, pd_study)
                     const {studyParticipantCounts, pids} = CubeHelpers.createSelectedParticipants(spc)
-                    const counts = new TotalCounts(CubeHelpers.createTotalCounts([tc_study, tc_subject]))
+                    const counts = new TotalCounts(CubeHelpers.createTotalCounts([tc_subject, tc_study]))
                     setCubeData(new CubeData({
                         plotData: pd,
                         studyParticipantCounts: studyParticipantCounts,
