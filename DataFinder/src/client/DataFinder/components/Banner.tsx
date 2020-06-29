@@ -174,12 +174,16 @@ const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
                     groupSummary={groupSummary}
                     counts={counts}
                 />
-                <ExploreGroupDropdown />
-                {manageGroupsDropdown}
-                <>
+                <div className="df-banner-button">
+                    <ExploreGroupDropdown />
+                </div>
+                <div className="df-banner-button">
+                    {manageGroupsDropdown}
+                </div>
+                <div className="df-banner-button">
                 <HighlightedButton label="Download Data" href="/immport/Studies/exportStudyDatasets.view?"/>
                 <HighlightedButton label="Open in RStudio" href="/rstudio/start.view?"/>
-                </>
+                </div>
             </RowOfButtons>
         </div>
     );

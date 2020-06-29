@@ -3,6 +3,10 @@
   height: auto;
   width: min-content;
 
+  & >div>button i {
+    padding-left: 5px;
+  }
+
   & > div {
     & > .dropdown-menu {
       display: none;

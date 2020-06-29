@@ -25,6 +25,7 @@ open?: boolean
 interface OuterDropdownButtonProps {
 disabled?: boolean;
 title: string;
+id?: string;
 }
 
 
@@ -56,16 +57,16 @@ export const SimpleDropdown: React.FC<DropdownButtonProps> = ({ title, buttonDat
 
 
 // Dropdown with nesting option
-export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonData, disabled }) => {
+export const DropdownButtons: React.FC<DropdownButtonProps> = ({ title, buttonData, disabled, id }) => {
 
     return (
-        <OuterDropdownButton title={title} disabled={disabled}>
+        <OuterDropdownButton title={title} disabled={disabled} id={id}>
             <DropdownContent buttonData={buttonData} />
         </OuterDropdownButton>
     )
 }
 
-export const OuterDropdownButton: React.FC<OuterDropdownButtonProps> = ({children, disabled, title}) => {
+export const OuterDropdownButton: React.FC<OuterDropdownButtonProps> = ({children, disabled, title, id}) => {
     const openRef = React.useRef<HTMLDivElement>(null)
     const open = () => {
         const cl = openRef.current.classList
@@ -79,11 +80,11 @@ export const OuterDropdownButton: React.FC<OuterDropdownButtonProps> = ({childre
     }
 
     return (
-        <div className="dropdown df-outer-dropdown">
+        <div className="dropdown df-outer-dropdown" id={id}>
             <div className={"btn"} ref={openRef} role="group" >
                 <button className="btn btn-default dropdown-toggle" type="button" disabled={disabled} onClick={open}>
                     <span>{title}</span>
-                    <span style={{paddingLeft:"5px"}}><i className="fa fa-caret-down"></i></span>
+                    <span><i className="fa fa-caret-down"></i></span>
                 </button>
                 {children}
             </div>

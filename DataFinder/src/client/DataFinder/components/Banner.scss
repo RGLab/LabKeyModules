@@ -18,4 +18,20 @@
   .df-group-summary-counts {
     margin-bottom: 5px;
   }
-    
+
+#df-explore-data {
+
+  & button.dropdown-toggle {
+    width: 7em;
+    text-align: left;
+  }
+
+  & i {
+    float: right;
+    padding-top: 2px
+  }
+}
+
+.df-banner-button {
+  padding-top: 10px
+}
