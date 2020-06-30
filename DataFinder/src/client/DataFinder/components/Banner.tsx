@@ -152,7 +152,7 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
 
     return (
         <>
-            <DropdownButtons title="Options" buttonData={buttonData}></DropdownButtons>
+            <DropdownButtons title="Manage" buttonData={buttonData}></DropdownButtons>
         </>
     )
 })
@@ -205,13 +205,17 @@ const ExploreGroupDropdown = React.memo(({ }) => {
     const params = new URLSearchParams(search)
     const title = params.get("pageId")
 
-    const buttonData = ["Find", "Visualize", "QC", "Analyze"].map(
-      (pageId) => ({
-        label: pageId,
+    const buttonData = ["Select Participants", "Visualize", "QC", "Analyze"].map(
+      (label) => {
+          let link = label
+          if (label== "Select Participants" ) link = "Find"
+          return({
+        label: label,
         action: () => {},
         disabled: false,
-        href: "/project/Studies/begin.view?pageId="+pageId,
+        href: "/project/Studies/begin.view?pageId="+link,
       })
+    }
     );
     return (
         <>
@@ -219,7 +223,7 @@ const ExploreGroupDropdown = React.memo(({ }) => {
         Explore Data: 
         </span>
         <div style={{display: "inline-block"}}>
-        <DropdownButtons title={title || "Find"} buttonData={buttonData} id="df-explore-data" />
+        <DropdownButtons title={title || "Select Participants"} buttonData={buttonData} id="df-explore-data" />
         </div>
         </>
     )
