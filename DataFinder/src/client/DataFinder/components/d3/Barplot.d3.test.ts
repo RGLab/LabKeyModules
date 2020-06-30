@@ -103,7 +103,7 @@ describe("D3Barplot", () => {
     })
 
     test("OldData", () => {
-        const barplot = document.getElementById('barplotAge')
+        const barplot = document.getElementById('bars-Age')
         const bars = barplot.getElementsByTagName("rect")
         expect(bars.length).toEqual(4)
         expect(parseFloat(bars[0].getAttribute("width"))).toBeCloseTo(oldXaxisScale(10))
@@ -111,14 +111,14 @@ describe("D3Barplot", () => {
 
     test("NewData", () => {
         D3Barplot.update("Age", newData, config);
-        const barplot = document.getElementById('barplotAge')
+        const barplot = document.getElementById('bars-Age')
         const bars = barplot.getElementsByTagName("rect")
         expect(bars.length).toEqual(4)
         expect(parseFloat(bars[0].getAttribute("width"))).toBeCloseTo(oldXaxisScale(10))
 
         // wait for transition
         setTimeout(() => {
-            const barplot = document.getElementById('barplotAge')
+            const barplot = document.getElementById('bars-Age')
             const bars = barplot.getElementsByTagName("rect")
             expect(bars.length).toEqual(4)
             expect(parseFloat(bars[0].getAttribute("width"))).toBeCloseTo(newXaxisScale(88))
