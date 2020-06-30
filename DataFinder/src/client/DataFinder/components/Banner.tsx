@@ -203,7 +203,8 @@ const BannerTitleElement = React.memo(({children}) => {
 const ExploreGroupDropdown = React.memo(({ }) => {
     const search = window.location.search
     const params = new URLSearchParams(search)
-    const title = params.get("pageId")
+    let title = params.get("pageId")
+    if (title == "Find") title = "Select Participants"
 
     const buttonData = ["Select Participants", "Visualize", "QC", "Analyze"].map(
       (label) => {
