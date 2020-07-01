@@ -97,7 +97,7 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
                 if (level == "Assay.Timepoint") {
                     const assay = m.split(/\./)[0]
                     const timepoint = m.split(/\./)[1]
-                    return (assay + " at Day " + timepoint + " days")
+                    return (assay + " at Day " + timepoint)
                 }
                 if (level == "SampleType.Assay") {
                     const assay = m.split(/\./)[1]

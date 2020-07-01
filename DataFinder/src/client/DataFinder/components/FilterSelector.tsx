@@ -70,7 +70,7 @@ export const FilterDropdownButton: React.FC<FilterDropdownButtonProps> = ({title
         }
     }
     return (
-        <div className="dropdown df-filter-dropdown">
+        <div className="dropdown df-filter-dropdown" id={"df-filter-dropdown-"+title}>
             <div className={"btn"} ref={openRef} role="group" >
                 <button className="btn btn-default dropdown-toggle" type="button" disabled={disabled} onClick={open}>
                     <span style={{float: "left"}}>{title}</span>

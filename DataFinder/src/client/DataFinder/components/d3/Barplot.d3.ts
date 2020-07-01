@@ -110,6 +110,7 @@ const createBarplot = (id: string, data: PlotDatum[], config: D3BarplotConfig) =
         .append("text")
         .attr("x", (width) / 2)
         .attr("y", 30)
+        .attr("class", "x-axis-title")
         .text(config.countMetric == "studyCount" ? "Studies" : "Participants")
         .attr("text-anchor", "middle")
         .attr("font-size", "0.8em")
