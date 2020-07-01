@@ -65,50 +65,51 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
             filters.getIn(["Timepoint", "SampleType"]) == undefined)) {
         filterFlags = <em className="filter-indicator">No filters currently applied</em>
     } else {
+        // These should be in the same order as the filter indicators in the banner
         const filterMap = Map<string, SelectedFilter>({
             "Assay.Assay": filters.getIn(["Assay", "Assay"]),
             "Assay.Timepoint": filters.getIn(["Assay", "Timepoint"]),
             "Assay.SampleType": filters.getIn(["Assay", "SampleType"]),
+            "Timepoint.Timepoint": filters.getIn(["Timepoint", "Timepoint"]),
+            "Timepoint.SampleType": filters.getIn(["Timepoint", "SampleType"]),
             "SampleType.SampleType": filters.getIn(["SampleType", "SampleType"]),
             "SampleType.Assay": filters.getIn(["SampleType", "Assay"]),
-            "Timepoint.Timepoint": filters.getIn(["Timepoint", "Timepoint"]),
-            "Timepoint.SampleType": filters.getIn(["Timepoint", "SampleType"])
         })
         const prefixes = {
-            "Assay.Assay": "Assays at any timepoint: ",
-            "Assay.Timepoint": "Assay at a certain timepoint: ",
-            "Assay.SampleType": "Assay on a certain sample type at a certain timepoint: ",
-            "SampleType.SampleType": "Any assay on these sample types: ",
-            "SampleType.Assay": "Assay on a certain sample type for any timepoint: ",
-            "Timepoint.Timepoint": "Any assay at these timepoints: ",
-            "Timepoint.SampleType": "Why would you choose this? "
+            "Assay.Assay": "Assays: ",
+            "Assay.Timepoint": "Assays at Timepoint: ",
+            "Assay.SampleType": "Assays at Timepoint for Sample Type: ",
+            "Timepoint.Timepoint": "Timepoints: ",
+            "Timepoint.SampleType": "Timepoints for Sample Type: ",
+            "SampleType.SampleType": "Sample Types: ",
+            "SampleType.Assay": "Assays for Sample Type: ",
         }
         const filterText = filterMap.map((e, i) => {
             if (e === undefined) return (undefined);
-            // debugger
+
             const getText = (m: string, level: string) => {
                 if (level == "Assay.SampleType") {
                     const assay = m.split(/\./)[0]
                     const timepoint = m.split(/\./)[1]
                     const sampleType = m.split(/\./)[2]
-                    return (assay + " (" + sampleType + ") at " + timepoint + " days")
+                    return (assay + " at Day " + timepoint + " for " + sampleType)
                 }
                 if (level == "Assay.Timepoint") {
                     const assay = m.split(/\./)[0]
                     const timepoint = m.split(/\./)[1]
-                    return (assay + " at " + timepoint + " days")
+                    return (assay + " at Day " + timepoint + " days")
                 }
                 if (level == "SampleType.Assay") {
                     const assay = m.split(/\./)[1]
                     const sampleType = m.split(/\./)[0]
-                    return (assay + " (" + sampleType + ")")
+                    return (assay + " for " + sampleType)
                 }
                 if (level == "Timepoint.Timepoint") {
                     return "Day " + m
                 }
                 if (level == "Timepoint.SampleType") {
-                    const timepoint = m.split(/\./)[1]
-                    const sampleType = m.split(/\./)[0]
+                    const timepoint = m.split(/\./)[0]
+                    const sampleType = m.split(/\./)[1]
                     return "Day " + timepoint + " for " + sampleType
                 }
                 return(m)

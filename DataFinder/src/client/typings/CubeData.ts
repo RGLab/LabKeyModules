@@ -219,8 +219,8 @@ export class SelectedFilters extends Record({
     Subject: Map<string, SelectedFilter>(),
     Study: Map<string, SelectedFilter>(),
     Data: Map<string, Map<string, SelectedFilter>>({
-        Timepoint: Map<string, SelectedFilter>(),
         Assay: Map<string, SelectedFilter>(),
+        Timepoint: Map<string, SelectedFilter>(),
         SampleType: Map<string, SelectedFilter>()
     }
         
@@ -235,8 +235,8 @@ export class SelectedFilters extends Record({
             const subject = params.Subject ?  Map(params.Subject).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>()
             const study = params.Study ? Map(params.Study).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>()
             const data = Map({
-                Timepoint: (params.Data && params.Data.Timepoint) ? Map(params.Data.Timepoint).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>(),
                 Assay: (params.Data && params.Data.Assay) ? Map(params.Data.Assay).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>(),
+                Timepoint: (params.Data && params.Data.Timepoint) ? Map(params.Data.Timepoint).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>(),
                 SampleType: (params.Data && params.Data.SampleType) ? Map(params.Data.SampleType).map(f => new SelectedFilter(f)) : Map<string, SelectedFilter>()
             })
             super({Subject: subject, Study: study, Data: data})

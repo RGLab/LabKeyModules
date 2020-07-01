@@ -30,12 +30,14 @@ interface DataFilterDropdownProps {
     dropdownOptions: string[];
     select: (option: string) => void;
     allText: string;
+    id?: string;
 }
 
 interface DataFilterDropdownButtonProps {
     title: string;
     labelClass?: string;
     selected?: boolean;
+    id?: string
 }
 
 interface AndOrDropdownProps {
@@ -266,6 +268,7 @@ const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({mdx, loadedStu
     
     return <DataFilterRow>
         <DataFilterDropdown
+            id="df-assay-dropdown"
             selected={!!currentFilter.get("Assay")}
             title={currentFilter.get("Assay") ?? "Any Assay"}
             dropdownOptions={dropdownOptions.get("Assay")} 
@@ -273,6 +276,7 @@ const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({mdx, loadedStu
             allText="Any Assay"/>
         <span>at</span>
         <DataFilterDropdown 
+            id="df-timepoint-dropdown"
             selected={!!currentFilter.get("Timepoint")}
             title={currentFilter.get("Timepoint") ? ("Day " + currentFilter.get("Timepoint")) : "Any Timepoint"}
             dropdownOptions={dropdownOptions.get("Timepoint")} 
@@ -280,6 +284,7 @@ const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({mdx, loadedStu
             allText="Any Timepoint" />
         <span>for</span>
         <DataFilterDropdown
+            id="df-sampletype-dropdown"
             selected={!!currentFilter.get("SampleType")}
             title={currentFilter.get("SampleType") ?? "Any Sample Type"}
             dropdownOptions={dropdownOptions.get("SampleType")} 
@@ -293,8 +298,8 @@ const DataFilterDropdowns: React.FC<DataFilterDropdownsProps> = ({mdx, loadedStu
     </DataFilterRow>
 }
 
-const DataFilterDropdownButton : React.FC<DataFilterDropdownButtonProps> = ({title, labelClass, children, selected}) => {
-    return <div className={"dropdown df-filter-dropdown assay-data-dropdown " + (selected ? "selected": "")}>
+const DataFilterDropdownButton : React.FC<DataFilterDropdownButtonProps> = ({title, labelClass, children, selected, id}) => {
+    return <div id={id} className={"dropdown df-filter-dropdown assay-data-dropdown " + (selected ? "selected": "")}>
         <div className={"btn"} role="group" >
             <button className="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" >
                 <span className={labelClass} style={{ float: "left"}}>{title}</span>
@@ -305,9 +310,9 @@ const DataFilterDropdownButton : React.FC<DataFilterDropdownButtonProps> = ({tit
     </div>
 }
 
-const DataFilterDropdown : React.FC<DataFilterDropdownProps> = ({title, dropdownOptions, select, allText, selected}) => {
+const DataFilterDropdown : React.FC<DataFilterDropdownProps> = ({title, dropdownOptions, select, allText, selected, id}) => {
 
-    return <DataFilterDropdownButton title={title} labelClass="assay-data-dropdown-label" selected={selected}>
+    return <DataFilterDropdownButton title={title} labelClass="assay-data-dropdown-label" selected={selected} id={id}>
         <ul className="dropdown-menu df-dropdown">
             <li key={"all"} className={"df-dropdown-option"}>
                 <a style={{ padding: "0px 5px" }} onClick={() => select(undefined)}>
