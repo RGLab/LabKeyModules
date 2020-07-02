@@ -16,13 +16,7 @@ exports[`<DropdownButtons /> Render 1`] = `
       <span>
         Save
       </span>
-      <span
-        style={
-          Object {
-            "paddingLeft": "5px",
-          }
-        }
-      >
+      <span>
         <i
           className="fa fa-caret-down"
         />
@@ -307,13 +301,7 @@ exports[`<OuterDropdownButtons /> Render 1`] = `
       <span>
         Test
       </span>
-      <span
-        style={
-          Object {
-            "paddingLeft": "5px",
-          }
-        }
-      >
+      <span>
         <i
           className="fa fa-caret-down"
         />
@@ -324,100 +312,4 @@ exports[`<OuterDropdownButtons /> Render 1`] = `
     />
   </div>
 </div>
-`;
-
-exports[`<SaveDropdown /> enabled to disabled 1`] = `
-<Component
-  disableSave={true}
-  save={[MockFunction]}
-  saveAs={[MockFunction]}
->
-  <Component
-    buttonData={
-      Array [
-        Object {
-          "action": [MockFunction],
-          "disabled": true,
-          "label": "Save",
-        },
-        Object {
-          "action": [MockFunction],
-          "disabled": false,
-          "label": "Save As",
-        },
-      ]
-    }
-    title="Save"
-  >
-    <div
-      className="dropdown"
-      style={
-        Object {
-          "display": "inline-block",
-          "margin": "5px",
-        }
-      }
-    >
-      <div
-        className="btn df-dropdown-button"
-        role="group"
-      >
-        <button
-          aria-expanded="true"
-          aria-haspopup="true"
-          className="btn btn-default dropdown-toggle"
-          data-toggle="dropdown"
-          id="Save-participant-group-btn"
-          type="button"
-        >
-          <span>
-            Save
-          </span>
-          <span
-            style={
-              Object {
-                "paddingLeft": "5px",
-              }
-            }
-          >
-            <i
-              className="fa fa-caret-down"
-            />
-          </span>
-        </button>
-        <ul
-          aria-labelledby="button-Save"
-          className="dropdown-menu df-dropdown"
-        >
-          <li
-            className="disabled"
-            key="Save"
-          >
-            <a
-              href="#"
-              id="Save-link"
-              key="Save"
-              onClick={[MockFunction]}
-            >
-              Save
-            </a>
-          </li>
-          <li
-            className=""
-            key="Save As"
-          >
-            <a
-              href="#"
-              id="Save-As-link"
-              key="Save As"
-              onClick={[MockFunction]}
-            >
-              Save As
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </Component>
-</Component>
 `;
