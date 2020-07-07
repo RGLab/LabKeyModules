@@ -33,7 +33,7 @@ export const FilterBanner = ({ show }) => {
                 }
             })
         }, [])
-        const manageGroupsDropdown = <DropdownButtons title={"Options"} buttonData={[]} disabled={true} />
+        const manageGroupsDropdown = <DropdownButtons title={"Manage"} buttonData={[]} disabled={true} />
         return (
             <div id="data-finder-banner">
                 <Banner
