@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { drawAssayTimepointViewer } from "./d3/AssayTimepointViewer.d3"
-import { HeatmapDatum, Filter, IAssayData, CubeDatum, FilterCategory, SelectedFilter, } from '../../typings/CubeData';
-import { Cube } from '../../typings/Cube';
-import { Axis } from 'd3';
-import { Map, List } from 'immutable'
+import { HeatmapDatum, Filter, IAssayData, PlotDatum, FilterCategory, } from '../../typings/CubeData';
+
+import "./AssayTimepointViewer.scss"
 
 // React stuff ==================================== //
 
@@ -17,15 +16,12 @@ export interface AssayTimepointViewerProps {
   yaxis: AxisDatum<Filter>[]
   breaks: number[];
   colors: string[];
-  selected: Map<string, Map<string, SelectedFilter> | SelectedFilter>
   showSampleType: boolean
 }
 
 interface AssayTimepointViewerContainerProps {
   name: string,
   data: IAssayData;
-  showSampleType: boolean;
-  selected: Map<string, Map<string, SelectedFilter> | SelectedFilter>;
   timepointCategories: FilterCategory[];
   sampleTypeAssayCategories: FilterCategory[];
 }
@@ -40,7 +36,7 @@ export interface AxisDatum<data> {
 // helpers
 const createHeatmapData = (data: IAssayData, showSampleType: boolean, sampleTypeAssayCategories = []) => {
   // if (data.Assay.Timepoint.length > 0) debugger;
-  let d: CubeDatum[];
+  let d: PlotDatum[];
   let heatmapData: HeatmapDatum<Filter>[];
   if (showSampleType) {
     // debugger
@@ -93,12 +89,12 @@ const createHeatmapData = (data: IAssayData, showSampleType: boolean, sampleType
 
 const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean, categories: FilterCategory[] = null) => {
   // debugger;
-  let d: CubeDatum[]
+  let d: PlotDatum[]
   let axisData: AxisDatum<Filter>[];
   if (axis == "x") {
     axisData = categories.map((c) => {
         let participantCount, studyCount
-        data.Timepoint.forEach(cd => {
+        data.Timepoint.Timepoint.forEach(cd => {
             if (cd.member == c.label) {
                 participantCount = cd.participantCount
                 studyCount = cd.studyCount
@@ -151,8 +147,8 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
 }
 
 
-export const AssayTimepointViewerContainer: React.FC<AssayTimepointViewerContainerProps> = ({data, showSampleType, selected, timepointCategories, sampleTypeAssayCategories, name}) => {
-  // debugger;
+export const AssayTimepointViewerContainer: React.FC<AssayTimepointViewerContainerProps> = ({data, timepointCategories, sampleTypeAssayCategories, name}) => {
+  const [showSampleType, setShowSampleType] = React.useState(false)
 
   // Transform data into appropriate format
 
@@ -191,11 +187,10 @@ export const AssayTimepointViewerContainer: React.FC<AssayTimepointViewerContain
         yaxis={yaxisData}
         breaks={options.breaks}
         colors={options.colors}
-        selected={selected}
         showSampleType={showSampleType}
       />
     </div>
-  );
+  )
 }
 
 function AssayTimepointViewer(props: AssayTimepointViewerProps) {
@@ -205,5 +200,5 @@ function AssayTimepointViewer(props: AssayTimepointViewerProps) {
 
   return <>
     <div className={props.name} />
-  </>;
+  </>
 }

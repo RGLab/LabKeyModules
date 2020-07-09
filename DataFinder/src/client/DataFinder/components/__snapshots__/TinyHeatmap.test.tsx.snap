@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<TinyHeatmap /> Renders 1`] = `
+<div
+  className="tinyheatmap"
+>
+  <svg
+    id="tinyheatmap-test"
+  />
+</div>
+`;

@@ -1,0 +1,315 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<DropdownButtons /> Render 1`] = `
+<div
+  className="dropdown df-outer-dropdown"
+>
+  <div
+    className="btn"
+    role="group"
+  >
+    <button
+      className="btn btn-default dropdown-toggle"
+      onClick={[Function]}
+      type="button"
+    >
+      <span>
+        Save
+      </span>
+      <span>
+        <i
+          className="fa fa-caret-down"
+        />
+      </span>
+    </button>
+    <ul
+      className="dropdown-menu df-dropdown"
+    >
+      <li
+        className="df-dropdown-option "
+      >
+        <a
+          style={
+            Object {
+              "padding": "0px 5px",
+            }
+          }
+        >
+          <button
+            onClick={[MockFunction]}
+          >
+            Single Button
+          </button>
+        </a>
+      </li>
+      <li
+        className="df-dropdown-option "
+      >
+        <div
+          className="dropdown df-sub-dropdown"
+        >
+          <div
+            className=""
+            role="group"
+          >
+            <button
+              onClick={[Function]}
+              type="button"
+            >
+              <span>
+                Nest
+              </span>
+              <span
+                style={
+                  Object {
+                    "paddingLeft": "5px",
+                  }
+                }
+              >
+                <i
+                  className="fa fa-caret-right"
+                />
+              </span>
+            </button>
+            <ul
+              className="dropdown-menu df-dropdown"
+              style={Object {}}
+            >
+              <li
+                className="df-dropdown-option "
+              >
+                <a
+                  href="#"
+                  style={
+                    Object {
+                      "marginLeft": "20px",
+                      "padding": "0px 5px",
+                    }
+                  }
+                >
+                  <button
+                    onClick={[Function]}
+                  >
+                    egg1
+                  </button>
+                </a>
+              </li>
+              <li
+                className="df-dropdown-option "
+              >
+                <div
+                  className="dropdown df-sub-dropdown"
+                >
+                  <div
+                    className=""
+                    role="group"
+                  >
+                    <button
+                      onClick={[Function]}
+                      type="button"
+                    >
+                      <span>
+                        another nest
+                      </span>
+                      <span
+                        style={
+                          Object {
+                            "paddingLeft": "5px",
+                          }
+                        }
+                      >
+                        <i
+                          className="fa fa-caret-right"
+                        />
+                      </span>
+                    </button>
+                    <ul
+                      className="dropdown-menu df-dropdown"
+                      style={Object {}}
+                    >
+                      <li
+                        className="df-dropdown-option "
+                      >
+                        <a
+                          style={
+                            Object {
+                              "marginLeft": "20px",
+                              "padding": "0px 5px",
+                            }
+                          }
+                        >
+                          <button
+                            onClick={[MockFunction]}
+                          >
+                            super nested egg
+                          </button>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </li>
+              <li
+                className="df-dropdown-option "
+              >
+                <a
+                  style={
+                    Object {
+                      "marginLeft": "20px",
+                      "padding": "0px 5px",
+                    }
+                  }
+                >
+                  <button
+                    onClick={[Function]}
+                  >
+                    egg2
+                  </button>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`<InnerDropdownButtons /> Render 1`] = `
+<div
+  className="dropdown df-sub-dropdown"
+>
+  <div
+    className=""
+    role="group"
+  >
+    <button
+      onClick={[Function]}
+      type="button"
+    >
+      <span>
+        test
+      </span>
+      <span
+        style={
+          Object {
+            "paddingLeft": "5px",
+          }
+        }
+      >
+        <i
+          className="fa fa-caret-right"
+        />
+      </span>
+    </button>
+    <ul
+      className="dropdown-menu df-dropdown"
+      style={Object {}}
+    >
+      <li
+        className="df-dropdown-option "
+      >
+        <a
+          style={
+            Object {
+              "marginLeft": "20px",
+              "padding": "0px 5px",
+            }
+          }
+        >
+          <button
+            onClick={[Function]}
+          >
+            option1
+          </button>
+        </a>
+      </li>
+      <li
+        className="df-dropdown-option "
+      >
+        <div
+          className="dropdown df-sub-dropdown"
+        >
+          <div
+            className=""
+            role="group"
+          >
+            <button
+              onClick={[Function]}
+              type="button"
+            >
+              <span>
+                option2
+              </span>
+              <span
+                style={
+                  Object {
+                    "paddingLeft": "5px",
+                  }
+                }
+              >
+                <i
+                  className="fa fa-caret-right"
+                />
+              </span>
+            </button>
+            <ul
+              className="dropdown-menu df-dropdown"
+              style={Object {}}
+            >
+              <li
+                className="df-dropdown-option "
+              >
+                <a
+                  style={
+                    Object {
+                      "marginLeft": "20px",
+                      "padding": "0px 5px",
+                    }
+                  }
+                >
+                  <button
+                    onClick={[Function]}
+                  >
+                    option3
+                  </button>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`<OuterDropdownButtons /> Render 1`] = `
+<div
+  className="dropdown df-outer-dropdown"
+>
+  <div
+    className="btn"
+    role="group"
+  >
+    <button
+      className="btn btn-default dropdown-toggle"
+      onClick={[Function]}
+      type="button"
+    >
+      <span>
+        Test
+      </span>
+      <span>
+        <i
+          className="fa fa-caret-down"
+        />
+      </span>
+    </button>
+    <div
+      id="test-div"
+    />
+  </div>
+</div>
+`;

@@ -5,41 +5,31 @@
 // proper immutable object. I'm open to other suggestions. -HM
 
 import { CubeMdx } from "../../typings/Cube";
-import * as LABKEY from '@labkey/api';
-import { SelectedFilters, CubeData, ICubeData, Filter, CubeDatum } from "../../typings/CubeData";
+import { Query} from '@labkey/api';
+import { SelectedFilters, PlotData, IPlotData, Filter, PlotDatum } from "../../typings/CubeData";
 import * as Cube from '../../typings/Cube'
 import { HeatmapDatum, FilterCategories } from '../../typings/CubeData'
 import { createCubeFilters } from './SelectedFilters'
 import * as StudyCardTypes from '../../typings/StudyCard'
 import { StudyParticipantCount } from '../../typings/StudyCard'
 import * as Immutable from 'immutable'
-import * as d3 from 'd3'
+import { createTinyHeatmapConsts, createTinyHeatmapYaxisScale } from "../components/TinyHeatmap";
 
 
 // ----- Promises ----- 
 // Select Rows --------
 // Get filter categories
-export const getFilterCategories = (LABKEY) => {
-    return new Promise<SelectRowsResponse>((resolve, reject) => {
-        LABKEY.Query.selectRows({
-            schemaName: 'immport',
-            queryName: 'dataFinder_dropdownCategories',
-            containerFilter: 'CurrentAndSubfolders',
-            success: (data: SelectRowsResponse) => { resolve(data) },
-            failure: () => {
-                reject();
-            }
-        })
-    })
-}
 
-export const getStudyInfo = (LABKEY) => {
+export const getStudyInfo = () => {
     return new Promise<SelectRowsResponse>((resolve, reject) => {
-        LABKEY.Query.selectRows({
+        Query.selectRows({
             schemaName: 'immport',
             queryName: 'dataFinder_studyCard',
-            containerFilter: "CurrentAndSubfolders",
-            success: (data: SelectRowsResponse) => { resolve(data) }
+            containerFilter: Query.ContainerFilter.currentAndSubfolders,
+            failure: (error) => {
+                reject(error.exception) },
+            success: (data) => {
+                resolve(data) }
         })
     })
 }
@@ -98,7 +88,7 @@ export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters
     })
 }
 
-export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string, loadedStudiesArray: string[], showEmpty = true) => {
+export const getPlotData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string, loadedStudiesArray: string[], showEmpty = true) => {
 
     return new Promise<Cube.CellSet>((resolve, reject) => {
         // debugger
@@ -124,6 +114,7 @@ export const getCubeData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: 
                     { level: "[Data.Assay].[Timepoint]" },
                     { level: "[Data.Assay].[SampleType]" },
                     { level: "[Data.Timepoint].[Timepoint]" },
+                    { level: "[Data.Timepoint].[SampleType]"},
                     { level: "[Data.SampleType].[SampleType]" },
                     { level: "[Data.SampleType].[Assay]" },
                     { level: "[Study].[Name]"}
@@ -200,35 +191,7 @@ export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse
 
     // Combine with info for tiny heatmap
     // Things that are the same for all heatmaps
-    const heatmapWidth = 260
-    const heatmapColors = [
-        "#FFFFFF",
-        "#EDF8E9",
-        "#C7E9C0",
-        "#A1D99B",
-        "#74C476",
-        "#41AB5D",
-        "#238B45",
-        "#005A32"
-    ];
-    const heatmapBreaks = [
-        1, 5, 10, 20, 50, 100
-    ]
-    const timepoints = [
-        "<0", "0", "1", "2", "3", "4", "5", "6", "7",
-        "8", "9", "10", "11", "12", "13", "14", "15-27",
-        "28", "29-55", "56", ">56"];
-
-    var colorScale = d3
-        .scaleThreshold<number, string>()
-        .domain(heatmapBreaks)
-        .range(heatmapColors);
-
-    const xaxisScale = d3
-        .scaleBand()
-        .domain(timepoints)
-        .range([0, heatmapWidth - 55]);
-
+    const tinyHeatmapConsts = createTinyHeatmapConsts();
 
     // Things that are different for all heatmaps
     studyCountCs.axes[1].positions.forEach((e, i) => {
@@ -257,23 +220,19 @@ export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse
             })
             heatmapData.shift()
             const heatmapHeight = 35 + 10 * assays.length
-            const yaxisScale = d3
-                .scaleBand()
-                .domain(assays)
-                .range([0, heatmapHeight-35]);
+            const yaxisScale = createTinyHeatmapYaxisScale(assays)
 
             studyDict[studyName].heatmapInfo = {
                 data: heatmapData,
                 assays: assays.sort(),
                 height: heatmapHeight,
-                width: heatmapWidth,
+                width: tinyHeatmapConsts.width,
                 yaxisScale: yaxisScale,
-                xaxisScale: xaxisScale,
-                colorScale: colorScale
+                xaxisScale: tinyHeatmapConsts.xaxisScale,
+                colorScale: tinyHeatmapConsts.colorScale
             } 
         }
     })
-    // debugger
     return (studyDict)
 }
 
@@ -312,7 +271,10 @@ export const createFilterCategories = (categoriesCs: Cube.CellSet) => {
     categoriesCs.axes[1].positions.forEach((position) => {
         if ([
                 "[Data.Assay].[Timepoint]",
-                "[Data.Assay].[SampleType]"
+                "[Data.Assay].[SampleType]",
+                "[Data.SampleType].[Assay]",
+                "[Data.Timepoint].[SampleType]"
+
         ].indexOf(position[0].level.uniqueName) == -1) {
             let level: string;
             let label: string;
@@ -341,7 +303,7 @@ export const createFilterCategories = (categoriesCs: Cube.CellSet) => {
     return(categories)
 }
 
-export const createStudyParticipantCounts = (studyParticipantCountCs: Cube.CellSet) => {
+export const createSelectedParticipants = (studyParticipantCountCs: Cube.CellSet) => {
     const studyParticipantCountArray: StudyCardTypes.IStudyParticipantCount[] = []
     const pids: string[] = []
     studyParticipantCountCs.cells.forEach((cell) => {
@@ -358,16 +320,17 @@ export const createStudyParticipantCounts = (studyParticipantCountCs: Cube.CellS
         }
     })
 
-    const studyParticipantCounts = studyParticipantCountArray.map((spc: StudyCardTypes.IStudyParticipantCount) => {
+    const studyParticipantCountsArray = studyParticipantCountArray.map((spc: StudyCardTypes.IStudyParticipantCount) => {
         return (new StudyCardTypes.StudyParticipantCount(spc))
     })
-    const countsList = Immutable.List<StudyParticipantCount>(studyParticipantCounts);
+    const studyParticipantCounts = Immutable.List<StudyParticipantCount>(studyParticipantCountsArray);
 
-    return ({ countsList: countsList, pids: pids })
+    return ({ studyParticipantCounts: studyParticipantCounts, pids: pids })
 }
 
-const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) => {
-    const results: { dim: string, levelArray: string[], data: CubeDatum }[] = participantCounts.cells.map((cell, cellIndex) => {
+const cs2cd = (participantCounts: Cube.CellSet, studyCounts: Cube.CellSet) => {
+
+    const results: { dim: string, levelArray: string[], data: PlotDatum }[] = participantCounts.cells.map((cell, cellIndex) => {
         const hierarchy = cell[0].positions[1][0].level.uniqueName.replace(/\[|\]/g, "") // remove "[" and "]"
         const cubeDim = hierarchy.replace(/\..+/, "") // remove everything after and including the first "."
         let level = hierarchy.replace(/\w+\./, "") // remove everything before and including the first "."
@@ -378,7 +341,7 @@ const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) =
             "ExposureProcess.ExposureProcess"
         ].indexOf(level) > -1 ? "Study" : cubeDim
         let levelArray: string[]
-        if (level.match("Assay") || level.match("SampleType")) {
+        if (dim == "Data") {
             levelArray = level.split(".")
         } else {
             level = level.split(".")[0]
@@ -386,7 +349,7 @@ const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) =
         }
         const member = cell[0].positions[1][0].uniqueName.replace(/\[\w+\.\w+\]\./, "").replace(/\[|\]/g, "")
         const participantCount = cell[0].value
-        const studyCount = studyCounts.cells[cellIndex][0].value
+        const studyCount = studyCounts?.cells[cellIndex][0].value
 
         return ({
             dim: dim,
@@ -399,19 +362,19 @@ const cs2cd = ([participantCounts, studyCounts]: [Cube.CellSet, Cube.CellSet]) =
             }
         })
     })
-    let cubeData: any = new CubeData()
+    let plotData: any = new PlotData()
     results.forEach((result) => {
-        const members: Immutable.List<string> = cubeData.getIn([result.dim, ...result.levelArray]).push(result.data)
-        cubeData = cubeData.setIn([result.dim, ...result.levelArray], members)
+        const members: Immutable.List<string> = plotData.getIn([result.dim, ...result.levelArray]).push(result.data)
+        plotData = plotData.setIn([result.dim, ...result.levelArray], members)
     });
-    return cubeData.toJS()
+    return plotData.toJS()
 }
 
 
 
-export const createCubeData = (counts: [Cube.CellSet, Cube.CellSet]) => {
-    const cubeData = cs2cd(counts)
-    return new CubeData(cubeData);
+export const createPlotData = (participantCounts: Cube.CellSet, studyCounts: Cube.CellSet) => {
+    const plotData = cs2cd(participantCounts, studyCounts)
+    return new PlotData(plotData);
 }
 
 

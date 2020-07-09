@@ -553,14 +553,14 @@ const ResourcesPage: React.FC = () => {
             },
             {
                 study: 'ImmuneSignatures 1',
-                link: 'project/HIPC/IS1/begin.view?pageId=Report',
+                link: '/project/HIPC/IS1/begin.view?pageId=Report',
                 img: 'IS1_report_thumbnail.png',
                 title: 'Influenza Vaccine Meta-Analysis to define genetic predictors of vaccine response',
                 text: 'Reproduction of figures from HIPC-CHI Signatures Project Team, "Multicohort analysis reveals baseline transcriptional predictors of influenza vaccination responses." Science Immunology 25 Aug 2017: Vol. 2, Issue 14.'
             },
             {
                 study: 'Lyoplate',
-                link: 'project/HIPC/Lyoplate/begin.view?pageId=Analyses',
+                link: '/project/HIPC/Lyoplate/begin.view?pageId=Analyses',
                 img: 'Lyoplate_report_thumbnail.png',
                 title: 'Standardizing Flow Cytometry Immunophenotyping from Reagents to Analyses:  Results of the Human ImmunoPhenotyping Consortium',
                 text: 'Standardization of flow cytometry assays requires careful attention to reagents, sample handling, instrument setup, and data analysis, and is essential for successful cross-study and cross-center performance and analysis of large data sets. Analyses from HIP-C attempt to determine whether automated methods were a suitable approach to streamline and further standardize analysis'

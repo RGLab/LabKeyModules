@@ -5,9 +5,11 @@ import { AppContainer } from 'react-hot-loader'
 
 
 const render = () => {
+    const page = LABKEY.ActionURL.getParameter("pageId")
+    const show = page === undefined || page != "Find"
     ReactDOM.render(
         <AppContainer>
-            <FilterBanner show={true}/>
+            <FilterBanner show={show}/>
         </AppContainer>,
         document.getElementById('filter-banner')
     )

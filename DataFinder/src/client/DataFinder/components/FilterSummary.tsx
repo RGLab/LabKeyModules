@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { SelectedFilters, SelectedFilter } from "../../typings/CubeData";
 import { Map } from 'immutable'
+import './FilterSummary.scss'
 
 export interface FilterSummaryProps {
     filters: SelectedFilters;
@@ -13,7 +14,7 @@ interface FilterIndicatorListProps {
 }
 
 interface AssayFilterIndicatorListProps {
-    filters: Map<string, Map<string, SelectedFilter> | SelectedFilter>;
+    filters: Map<string, Map<string, SelectedFilter>>;
     title?: string
 }
 
@@ -21,13 +22,6 @@ interface FilterIndicatorFlagProps {
     dim: string;
     filter: SelectedFilter;
     level: string;
-}
-
-
-const filterMembers = {
-    "study": ["Study", "Species", "Condition", "ExposureMaterial", "ExposureProcess", "ResearchFocus"],
-    "participant": ["Gender", "Race", "Age"],
-    "sample": ["Assay", "SampleType", "Timepoint"]
 }
 
 
@@ -67,47 +61,56 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
             filters.getIn(["Assay", "SampleType"]) == undefined &&
             filters.getIn(["SampleType", "SampleType"]) == undefined &&
             filters.getIn(["SampleType", "Assay"]) == undefined &&
-            filters.get("Timepoint") == undefined)) {
+            filters.getIn(["Timepoint", "Timepoint"]) == undefined &&
+            filters.getIn(["Timepoint", "SampleType"]) == undefined)) {
         filterFlags = <em className="filter-indicator">No filters currently applied</em>
     } else {
+        // These should be in the same order as the filter indicators in the banner
         const filterMap = Map<string, SelectedFilter>({
             "Assay.Assay": filters.getIn(["Assay", "Assay"]),
             "Assay.Timepoint": filters.getIn(["Assay", "Timepoint"]),
             "Assay.SampleType": filters.getIn(["Assay", "SampleType"]),
+            "Timepoint.Timepoint": filters.getIn(["Timepoint", "Timepoint"]),
+            "Timepoint.SampleType": filters.getIn(["Timepoint", "SampleType"]),
             "SampleType.SampleType": filters.getIn(["SampleType", "SampleType"]),
             "SampleType.Assay": filters.getIn(["SampleType", "Assay"]),
-            "Timepoint": filters.get("Timepoint")
         })
         const prefixes = {
-            "Assay.Assay": "Assays at any timepoint: ",
-            "Assay.Timepoint": "Assay at a certain timepoint: ",
-            "Assay.SampleType": "Assay on a certain sample type at a certain timepoint: ",
-            "SampleType.SampleType": "Any assay on these sample types: ",
-            "SampleType.Assay": "Assay on a certain sample type for any timepoint: ",
-            "Timepoint": "Any assay at these timepoints: "
+            "Assay.Assay": "Assays: ",
+            "Assay.Timepoint": "Assays at Timepoint: ",
+            "Assay.SampleType": "Assays at Timepoint for Sample Type: ",
+            "Timepoint.Timepoint": "Timepoints: ",
+            "Timepoint.SampleType": "Timepoints for Sample Type: ",
+            "SampleType.SampleType": "Sample Types: ",
+            "SampleType.Assay": "Assays for Sample Type: ",
         }
         const filterText = filterMap.map((e, i) => {
             if (e === undefined) return (undefined);
-            // debugger
+
             const getText = (m: string, level: string) => {
                 if (level == "Assay.SampleType") {
                     const assay = m.split(/\./)[0]
                     const timepoint = m.split(/\./)[1]
                     const sampleType = m.split(/\./)[2]
-                    return (assay + " (" + sampleType + ") at " + timepoint + " days")
+                    return (assay + " at Day " + timepoint + " for " + sampleType)
                 }
                 if (level == "Assay.Timepoint") {
                     const assay = m.split(/\./)[0]
                     const timepoint = m.split(/\./)[1]
-                    return (assay + " at " + timepoint + " days")
+                    return (assay + " at Day " + timepoint)
                 }
                 if (level == "SampleType.Assay") {
                     const assay = m.split(/\./)[1]
                     const sampleType = m.split(/\./)[0]
-                    return (assay + " (" + sampleType + ")")
+                    return (assay + " for " + sampleType)
                 }
-                if (level == "Timepoint") {
+                if (level == "Timepoint.Timepoint") {
                     return "Day " + m
+                }
+                if (level == "Timepoint.SampleType") {
+                    const timepoint = m.split(/\./)[0]
+                    const sampleType = m.split(/\./)[1]
+                    return "Day " + timepoint + " for " + sampleType
                 }
                 return(m)
             }
@@ -155,18 +158,16 @@ const FilterIndicatorList: React.FC<FilterIndicatorListProps> = ({ filterClass, 
 }
 interface FlagProps {
     dim: string;
-    onDelete?: () => void;
 }
-export const Flag: React.FC<FlagProps> = ({ dim, onDelete, children }) => {
+
+interface FilterDeletorProps {
+    dim: string;
+    onDelete: () => void;
+}
+export const Flag: React.FC<FlagProps> = ({ dim, children }) => {
     return (
-        <div className="filter-indicator">
-            <div className={"filter-indicator-text " + dim} style={onDelete && {maxWidth: "10em"}}>
+        <div className={"filter-indicator " + dim}>
                 {children}
-            </div>
-            {onDelete &&
-                <button className="filterdeletor" onClick={onDelete}>
-                    <span className="glyphicon glyphicon-remove">X</span>
-                </button>}
         </div>
     )
 }
@@ -180,3 +181,11 @@ const FilterIndicatorFlag: React.FC<FilterIndicatorFlagProps> = ({ dim, filter, 
     )
 }
 
+export const FilterDeletor: React.FC<FilterDeletorProps> = ({dim, onDelete, children}) => {
+    return <div className={"filter-deletor " + dim} onClick={onDelete}>
+        <span>
+            {children}
+        </span>
+        <i className="fa fa-times"></i>
+    </div>
+}
