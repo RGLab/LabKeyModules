@@ -174,7 +174,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 ParticipantGroupHelpers.updateSessionGroup(pids, filterInfo.sf, gs, totalCounts, studyDict, studyParticipantCounts)    
         })
         setGroupSummary(gs)
-    }, [])
+    }, [studyDict])
 
     // ------ Filter-related -------
 
@@ -188,7 +188,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
             })
             setGroupSummary(gs)
         })
-    }, [selectedFilters, groupSummary])
+    }, [selectedFilters, groupSummary, studyDict])
 
     const toggleAndOr = React.useCallback((dim: string, level: string, which: string) => {
             const sf = setAndOr(dim, level, which, selectedFilters)
@@ -199,7 +199,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 ParticipantGroupHelpers.updateSessionGroup(pids, sf, gs, totalCounts, studyDict, studyParticipantCounts)
             })
             setGroupSummary(gs)
-    }, [selectedFilters, groupSummary])
+    }, [selectedFilters, groupSummary, studyDict])
 
     
 
@@ -241,7 +241,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                 pids, newFilters, newGroupSummary, totalCounts, studyDict, studyParticipantCounts,
                 )
         })
-    }, [])
+    }, [studyDict])
 
     const clearUnsavedFilters = React.useCallback(() => {
         if (groupSummary.id > 0) {
