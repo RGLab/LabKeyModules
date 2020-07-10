@@ -206,7 +206,7 @@ const ExploreGroupDropdown = React.memo(({ }) => {
     let title = params.get("pageId")
     if (title == "Find") title = "Select Participants"
 
-    const buttonData = ["Select Participants", "Visualize", "QC", "Analyze"].map(
+    const buttonData = ["Select Participants", "Visualize", "Analyze"].map(
       (label) => {
           let link = label
           if (label== "Select Participants" ) link = "Find"

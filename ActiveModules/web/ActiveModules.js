@@ -53,7 +53,8 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                                     [
                                         'GeneExpressionExplorer',
                                         'GeneSetEnrichmentAnalysis',
-                                        'ImmuneResponsePredictor'
+                                        'ImmuneResponsePredictor',
+                                        'DimensionReduction'
                                     ].join(';'),
                                     LABKEY.Filter.Types.IN
                                 )
