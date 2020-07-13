@@ -192,7 +192,7 @@ library(illuminaio)
 
 # Generate flat files that are ready for processing from GEO "raw" data.
 # Warning! Raw data is highly variable for gse supplementary files
-.prepGeoFls <- function(study, gef, metaData){
+.prepGeoFls <- function(study, gef, metaData, inputFiles){
   baseDir <- .getBaseDir(study, gef)
 
   # Case 1: raw data is in object returned by getGEO(gsm)
@@ -265,11 +265,14 @@ library(illuminaio)
 
     } else {
       # Cases 6 and 7: raw data in gse supp files - Illumina / RNAseq
-      accList <- unique(unlist(lapply(gef$geo_accession, function(x){
-        gsm <- getGEO(x)
-        gse <- gsm@header$series_id
-      })))
-      inputFiles <- .dlSuppFls(accList, baseDir, study)
+      # temp handling for specialCase
+      if(!metaData$useCustomRawFile){
+        accList <- unique(unlist(lapply(gef$geo_accession, function(x){
+          gsm <- getGEO(x)
+          gse <- gsm@header$series_id
+        })))
+        inputFiles <- .dlSuppFls(accList, baseDir, study)
+      }
       mxList <- lapply(inputFiles, fread)
       mxList <- .fixHeaders(mxList, study)
 
@@ -490,7 +493,7 @@ makeRawMatrix <- function(metaData, gef, study, inputFiles){
   # At end of this step, there should be a single "cohort_type_raw_expression.txt"
   # file for non-affymetrix studies
   if (metaData$isGeo == TRUE) {
-    inputFiles <- .prepGeoFls(study, gef, metaData)
+    inputFiles <- .prepGeoFls(study, gef, metaData, inputFiles)
   } else {
     inputFiles <- .prepImmportFls(study, gef, metaData, inputFiles)
   }
@@ -758,7 +761,7 @@ runCreateMx <- function(labkey.url.base,
   # **gseNeedsMap**: Studies that need id-to-gsm mapping from gse supp files
   # without special gsub terms
   metaData$gseNeedsMap <- study %in% c("SDY404", "SDY522", "SDY1325", "SDY1364", "SDY144",
-                                       "SDY400", "SDY640", "SDY520")
+                                       "SDY400", "SDY640", "SDY520", "SDY1529")
 
   # **gsmMapIndex**: Index of samplename in vector from getGEO()
   useSecond <- c("SDY180", "SDY640", "SDY520")
@@ -784,7 +787,8 @@ runCreateMx <- function(labkey.url.base,
 
   # **useCustomRawFile**: For some studies a custom file has been provided by ImmPort
   # temporarily while they update a study. These should be checked periodically.
-  metaData$useCustomRawFile <- study %in% c("SDY224", "SDY1324")
+  specialCase <- study == "SDY1529" & (0 %in% unique(gef$study_time_collected))
+  metaData$useCustomRawFile <- study %in% c("SDY224", "SDY1324") | specialCase
 
   # ----------------------------- PROCESSING -------------------------------------
 
@@ -796,9 +800,14 @@ runCreateMx <- function(labkey.url.base,
     inputFiles <- paste0(pipeline.root, "/rawdata/gene_expression/", inputFiles)
     inputFiles <- unique(inputFiles[ file.exists(inputFiles) ])
   } else if (metaData$useCustomRawFile == TRUE) {
-    rawDir <- paste0("/share/files/Studies/", study, "/@files/rawdata/gene_expression/raw_counts/")
-    inputFiles <- paste0(rawDir, list.files(rawDir))
-    inputFiles <- inputFiles[ grep("Header", inputFiles, invert = TRUE) ]
+    suffix <- ifelse(specialCase, "author_data/", "raw_counts/")
+    sdyGEDir <- paste0("/share/files/Studies/", study, "/@files/rawdata/gene_expression/")
+    rawDir <- paste0(sdyGEDir, suffix)
+
+    inputFiles <- list.files(rawDir, full.names = TRUE)
+
+    uniqueSubString <- ifelse(specialCase, "GA", "Header")
+    inputFiles <- inputFiles[ grep("uniqueSubString", inputFiles, invert = TRUE) ]
   } else {
     inputFiles <- NA
     gef <- gef[ !is.na(gef$geo_accession), ]
