@@ -21,6 +21,7 @@ library(wordcloud)
 library(tm) # for stopwords
 library(stringr)
 library(rvest)
+library(RColorBrewer)
 ```
 
 ```{r helpers}
@@ -407,7 +408,7 @@ freq <- freq[ , list(count = .N), by = word]
 stopWords <- tm::stopwords()
 freq <- freq[ !word %in% stopWords ]
 
-pal <- RColorBrewer::brewer.pal(9,"YlGnBu")
+pal <- brewer.pal(9,"YlGnBu")
 pal <- pal[-(1:4)]
 
 if (nrow(freq) > 0) {
@@ -521,16 +522,8 @@ We had **`r round(mean(log_rstudio$Sessions, na.rm = TRUE), 2)` RStudio sessions
 
 ***
 
-## 20. Publications & Citations
-These are a list of publications that cite publications listed in ImmuneSpace Studies.  The "original" columns refer to the publication listed in
-ImmuneSpace and the "citedby" refers to the publications which cite ImmuneSpace-related studies.
-```{r organizing-pub-data}
-allIds <- getCurrentRDS("pubmedInfo")
-datatable(allIds)
-```
-
-## 21. Google Analytics Data
-```{r google-analytics}
+## 20. Google Analytics Plots
+```{r googleAnalytics}
 gaData <- getCurrentRDS("googleAnalyticsArtifact")
 
 # Manually curated 'best guesses'
@@ -567,7 +560,7 @@ gaData$condensedSource <- sapply(gaData$fullReferrer, function(x){
 })
 
 # summarize usageSessions by condensedSource by day
-gaData$shortDate <- format(as.Date(gaData$date), "%Y-%m")
+gaData$shortDate <- format(as.Date(gaData$date), "%Y-%b")
 sourceSummary <- gaData[, list(users = sum(usageSessions)), by = c("condensedSource", "shortDate") ]
 
 # melt data so each day has values for every condensedSource
