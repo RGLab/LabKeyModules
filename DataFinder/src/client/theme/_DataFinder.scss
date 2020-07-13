@@ -1,4 +1,4 @@
-// TODO:  Organize this 
+// TODO:  Organize this
 // TODO:  Move banner-related css into separate file so only that is loaded with the banner on non-datafinder pages
 
 .wrapper {
@@ -8,338 +8,31 @@
   border: 2px solid #aaaaaa;
 }
 
-
-.datafinder-wrapper > .tab-content {
+#data-finder-viz > .tab-content {
   background-color: #fff;
   padding: 15px;
   border: 1px solid #dddddd;
   border-top: transparent;
 }
 
+.df-tab-title {
+  width: 50%;
+  text-align: center;
+}
+
 .nav-tabs > li > a {
-  margin-right: 0
-}
-
-.custom-action-button {
-  margin-bottom: 5px;
-}
-
-.filterbar {
-  border: 1px solid #aaaaaa;
-  margin-left: 0;
   margin-right: 0;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  background-color: #fff;
-}
-
-.filterselector {
-  display: table;
-}
-
-.filter-indicator {
-  width: auto;
-  border-radius: 10px;
-  margin: 2px;
-  white-space: normal !important;
-  word-wrap: break-word;
-  text-align: left;
-  display: inline-table;
-  margin-left: 15px;
-} 
-
-.filter-indicator-list {
-  display: table-row;
-}
-
-.filter-indicator-text {
-  width: auto;
-  float: left;
-  padding-left: 5px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  padding-right:5px;
-}
-
-.filter-indicator-text.Study {
-  background: #54278f;
-  color: white;
-}
-
-.filter-indicator-text.Subject {
-  background: #6baed6;
-  color: white;
-}
-
-.filter-indicator-text.Data {
-  background: #238b45;
-  color: white;
-}
-
-.filters-title {
-  font-size: 30px;
-  font-weight: 500;
-}
-
-.filterdeletor {
-  width: 20px;
-  float: right;
-  background: #e57282;
-  color: white;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  border: 0;
-  padding-left: 5px;
-  padding-right: 5px;
-  float: right;
-  margin: 0;
-  height: 100%;
-  border-radius: 10px;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-.filterdeletor:hover {
-  font-weight: bold;
-  text-decoration: none;
-  color: white;
-}
-
-.df-dropdown {
-  padding: 10px;
-  /*left:100%;*/
-  /*top:10px;*/
-  height: auto;
-  max-height: 15em;
-  overflow: auto;
-}
-
-.filter-dropdown {
-  width: 140px
-}
-
-.filter-dropdown-button {
-  margin: 2px;
-  width: 140px;
-  display: inline-block;
-}
-
-button {
-  float: inline-end;
+  position: relative;
+  display: block;
+  padding: 2px 0px 0px 0px;
+  font-size: 1.2em;
+  border-bottom: 1px solid #d0d0d0
 }
 
 .btn-group {
-  vertical-align: baseline
+  vertical-align: baseline;
 }
 
-.study-card {
-  border: 2px solid #bcbcbc;
-  padding: 5px;
-  margin: 10px;
-  border-radius: 10px;
-  width: 280px;
-  display: inline-table
-}
 
-.study-label {
-  display: block;
-  margin-top: 0;
-  margin-bottom: 5px;
-  font-variant: small-caps;
-  font-size: 14px;
-  line-height: 1.4;
-  height: 30px;
-}
 
-.study-checkbox {
-  display: block;
-  margin: 5px 0;
-  position: relative;
-  float: left; 
-}
 
-.study-id {
-  font-variant: small-caps;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.study-pi {
-  float: right;
-}
-
-hr {
-  margin-top: 5px;
-  margin-bottom: 2px;
-}
-
-.study-title {
-  display: block;
-  text-align: left;
-  font-weight: bold;
-  font-size: .9em;
-  margin-bottom: 10px;
-  margin-top: 10px;
-  height:4em;
-  overflow: auto;
-}
-
-.progress {
-  margin-bottom: 0px;
-  height: 10px;
-}
-
-.card-text {
-  font-size: 0.9em;
-  margin: 0 15px 0 15px;
-}
-
-.study-properties {
-  height: 7em
-}
-
-textarea {
-  font-family: "Courier New", Courier, monospace;
-}
-
-#df-study-panel {
-  height: 500px;
-  overflow-y: scroll;
-}
-
-.tinyheatmap {
-  height: 120px;
-  position: relative;
-  border: 0
-}
-
-.tinyheatmap > svg {
-  position: absolute;
-  bottom: 0
-}
-/* -------- tooltip ----------- */
-#heatmap-label {
-  float: right;
-  position: absolute;
-  text-align: left;
-  width: auto;
-  height: 50px;
-  padding: 2px;
-  padding-bottom: 0;
-  font: 12px sans-serif;
-  background: lightsteelblue;
-  border: 0px;
-  pointer-events: none;
-  opacity: 0;
-  z-index: 100000000000
-}
-
-.arrow-down {
-  float: right;
-  position: absolute;
-  background: transparent;
-  opacity: 0;
-  padding-bottom: 0;
-  width: 0;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 10px solid lightsteelblue;
-  z-index: 100000000000
-}
-
-.df-embedded-webpart {
-  margin: 15px;
-}
-
-.datafinder-barplot {
-  width: 250px;
-  height: 202px;
-  overflow-y: auto;
-  // border-top: 1px solid #dddddd;
-  // border-bottom: 1px solid #dddddd
-}
-
-.df-barplot-title {
-  text-align: center;
-  margin-bottom: 0
-}
-
-.df-banner-wrapper {
-  margin-left: 15px;
-  margin-right: 15px;
-}
-
-.df-banner-title {
-  float: left;
-  margin-right: 30px
-}
-
-.assay-timepoint-dropdown {
-  right: 0;
-  left: auto;
-  height: auto;
-  overflow: auto;
-}
-
-.df-andor-dropdown {
-  float: right;
-  margin-left: 15px;
-  min-width: auto;
-  padding: 0
-}
-.df-andor-dropdown > ul > li > a {
-  padding: 3px;
-  
-}
-
-.df-andor-dropdown > ul {
-  min-width: auto;
-}
-
-// https://bootsnipp.com/snippets/V73xN
-
-.loader{
-  width: 100px;
-  height: 100px;
-  border-radius: 100%;
-  position: relative;
-  margin: 0 auto;
-  margin-top: 100px;
-}
-#loader-1:before, #loader-1:after{
-  content: "";
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  width: 100%;
-  height: 100%;
-  border-radius: 100%;
-  border: 10px solid transparent;
-  border-top-color: #3498db;
-}
-
-#loader-1:before{
-  z-index: 100;
-  animation: spin 1s infinite;
-}
-
-#loader-1:after{
-  border: 10px solid #ccc;
-}
-
-@keyframes spin{
-  0%{
-    -webkit-transform: rotate(0deg);
-    -ms-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-
-  100%{
-    -webkit-transform: rotate(360deg);
-    -ms-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}

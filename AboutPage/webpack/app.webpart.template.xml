@@ -1,0 +1,4 @@
+<webpart xmlns="http://labkey.org/data/xml/webpart" 
+  title="<%= htmlWebpackPlugin.options.title %>">
+    <view name="<%= htmlWebpackPlugin.options.name %>"/>
+</webpart>

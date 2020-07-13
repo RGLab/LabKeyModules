@@ -1,0 +1,37 @@
+  
+  .df-banner-title {
+    float: left;
+    margin-right: 30px;
+  }
+  
+  .df-banner-titlebar {
+    border: 1px solid #aaaaaa;
+    background-color: white;
+    margin: 0;
+  }
+
+
+.df-banner-separator {
+    border-top: 1px solid #aaaaaa
+  }
+
+  .df-group-summary-counts {
+    margin-bottom: 5px;
+  }
+
+#df-explore-data {
+
+  & button.dropdown-toggle {
+    width: 12em;
+    text-align: left;
+  }
+
+  & i {
+    float: right;
+    padding-top: 2px
+  }
+}
+
+.df-banner-button {
+  padding-top: 8px
+}

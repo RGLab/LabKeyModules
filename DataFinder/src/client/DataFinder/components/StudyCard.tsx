@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { StudyInfo } from '../../typings/StudyCard';
+import { IStudyInfo } from '../../typings/StudyCard';
 import { TinyHeatmap } from '../components/TinyHeatmap';
-import { Filter } from '../../typings/CubeData';
+import "./StudyCard.scss"
 
 // Types
 interface StudyPropertyProps {
@@ -26,10 +26,8 @@ interface StudyProperty {
 
 interface StudyCardProps {
     key: string;
-    study: StudyInfo;
+    study: IStudyInfo;
     participantCount: number;
-    filterClick: (dim: string, filter:Filter) => () => void;
-    selected: boolean;
 }
 
 // Components
@@ -80,7 +78,7 @@ const StudyProgressBar: React.FC<StudyProgressBarProps> = (props) => {
     )
 }
 
-export const StudyCard: React.FC<StudyCardProps> = (props) => {
+export const StudyCardFC: React.FC<StudyCardProps> = (props) => {
     const study = props.study;
     const studyProperties: StudyProperty[] = [
         {
@@ -89,39 +87,26 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
         },
         {
             label: "Sample Type",
-            value: study.sample_type[0]
+            value: study.sample_type
         },
         {
             label: "Assays",
-            value: study.assays[0]
+            value: study.assays
         }
     ]
+    const authors = study.pi_names.split(",")
+    const author = authors.length > 1 ? (authors[0] + " et. al.") : authors[0]
 
 
     return (
         <div className="study-card">
             <div className="study-label">
-                <div className="study-checkbox checkbox">
-                    <label >
-                        <input 
-                        onChange={
-                        props.filterClick("Study", {
-                            level: "Study", 
-                            member: study.study_accession})
-                    }
-                        type="checkbox" 
-                        name="study" 
-                        value={study.study_accession} 
-                        defaultChecked={props.selected}
-                        />
-                        <span className="study-id">{study.study_accession}</span>
-                    </label>
-                </div>
-                <span className="study-pi">{study.pi_names}</span>
+            <span className="study-id">{study.study_accession}</span>
+                <span className="study-pi">{author}</span>
             </div>
             <hr />
             <a href={"./" + study.study_accession + "/begin.view?"} className="labkey-text-link labkey-study-card-goto">
-                Go to study
+                learn more
             </a>
             <div className="study-title">
                 {study.brief_title}
@@ -135,3 +120,5 @@ export const StudyCard: React.FC<StudyCardProps> = (props) => {
         </div>
     )
 }
+
+export const StudyCard = React.memo(StudyCardFC)

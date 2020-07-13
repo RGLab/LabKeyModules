@@ -8,7 +8,7 @@ import { HeatmapDatum } from '../../../typings/CubeData'
 
 
 
-export const drawTinyHeatmap = (props: TinyHeatmapProps) => {
+const drawTinyHeatmap = (props: TinyHeatmapProps) => {
     const heatmapInfo = props.heatmapInfo;
     const name = props.name;
     
@@ -80,3 +80,4 @@ export const drawTinyHeatmap = (props: TinyHeatmapProps) => {
         .attr("stroke", "transparent");
 }
 
+export const D3TinyHeatmap = {drawTinyHeatmap}

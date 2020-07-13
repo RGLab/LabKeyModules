@@ -1,11 +1,11 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
-import { App } from './DataFinder'
+import { DataFinder } from './DataFinder'
 
 
 window.addEventListener('DOMContentLoaded', (event) => {
-    ReactDOM.render(<App/>, document.getElementById('app'));
+    ReactDOM.render(<DataFinder/>, document.getElementById('data-finder'));
 });
 
 // Close any dropdown menu when clicking outside of it
@@ -18,8 +18,13 @@ document.getElementsByTagName('body')[0].addEventListener('click', function (e) 
             if (el.tagName == "BODY") return false
             return el.parentNode && someParentHasClass(el.parentNode, className)
         }
-        if (! (someParentHasClass(target, "df-dropdown") || someParentHasClass(target, "filterselector")) ) {
-            for (let el of document.getElementsByClassName('filterselector open')) {
+        if (! someParentHasClass(target, "df-outer-dropdown") ) {
+            for (let el of document.querySelectorAll('.df-outer-dropdown>.open')) {
+                el.classList.remove("open")
+            };
+        }
+        if (! someParentHasClass(target, "df-filter-dropdown") || someParentHasClass(target, "assay-data-dropdown") ) {
+            for (let el of document.querySelectorAll('.df-filter-dropdown>.open')) {
                 el.classList.remove("open")
             };
         }

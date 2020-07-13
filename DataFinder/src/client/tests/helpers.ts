@@ -1,5 +1,4 @@
 import * as Cube from '../typings/Cube'
-import { ISelectRowsOptions } from '@labkey/api/dist/labkey/query/Rows';
 
 // Cube
 const onRowsRequests = {
@@ -53,18 +52,14 @@ export const mdx: Cube.CubeMdx = {
     }
 }
 
-// LABKEY
+export const LABKEY = {}
 
-export const LABKEY = {
-    Query: {
-        selectRows: (options: ISelectRowsOptions) => {
-            let response;
-            if (options.queryName == "dataFinder_dropdownCategories") response = "dataFinder_dropdownCategories"
-            if (options.queryName == "dataFinder_studyCard") response = "dataFinder_studyCard"
-            options.success(response)
-        }
-    }
-}
+/* TODO: This will add the ParticipantGroupAPI javascript helpers to the LABKEY global object for your tests. Specifically it
+    will be added at LABKEY.Study.ParticipantGroup.  This will make the javascript helpers that wrap the API calls available
+    to your test code.  You will still need to use the mock server to mock the API HTTP requests/responses. This will be
+    hard coded to your project layout, so that would have to be consistent with whoever is running these tests */
+require("../../../../../../modules/platform/api/webapp/clientapi/core/Ajax");
+require("../../../../../../modules/immport/resources/web/immport/ParticipantGroupAPI");
 
 // const saveJson = () => {
 //     const string = JSON.stringify(cycle.decycle(cs))

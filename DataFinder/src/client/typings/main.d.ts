@@ -1,3 +1,4 @@
+// import ParticipantGroupAPI  from './ParticipantGroup'
 
 interface LabKey {
     defaultHeaders: any;
@@ -14,6 +15,7 @@ interface LabKey {
     Utils: any;
     WebPart: any;
     QueryWebPart: any;
+    Study: any;
 }
 
 interface Ext4 {
@@ -39,6 +41,7 @@ interface SelectRowsMetadata {
     title: string;
     totalProperty: string;
 }
+
 
 
 // Filter-related types

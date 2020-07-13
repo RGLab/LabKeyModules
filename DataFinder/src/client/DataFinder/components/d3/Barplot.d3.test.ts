@@ -1,6 +1,6 @@
 import * as d3 from 'd3'
 import { D3Barplot } from './Barplot.d3'
-import { CubeDatum } from '../../../typings/CubeData';
+import { PlotDatum } from '../../../typings/CubeData';
 
 describe("D3Barplot", () => {
 
@@ -13,7 +13,7 @@ describe("D3Barplot", () => {
         countMetric: "studyCount",
         barColor: "#af88e3"
     }
-    const data: CubeDatum[] = [
+    const data: PlotDatum[] = [
         {
             level: "Age",
             member: "a",
@@ -35,7 +35,7 @@ describe("D3Barplot", () => {
             studyCount: 42
         }
     ]
-    const newData: CubeDatum[] = [
+    const newData: PlotDatum[] = [
         {
             level: "Age",
             member: "a",
@@ -103,7 +103,7 @@ describe("D3Barplot", () => {
     })
 
     test("OldData", () => {
-        const barplot = document.getElementById('barplotAge')
+        const barplot = document.getElementById('bars-Age')
         const bars = barplot.getElementsByTagName("rect")
         expect(bars.length).toEqual(4)
         expect(parseFloat(bars[0].getAttribute("width"))).toBeCloseTo(oldXaxisScale(10))
@@ -111,14 +111,14 @@ describe("D3Barplot", () => {
 
     test("NewData", () => {
         D3Barplot.update("Age", newData, config);
-        const barplot = document.getElementById('barplotAge')
+        const barplot = document.getElementById('bars-Age')
         const bars = barplot.getElementsByTagName("rect")
         expect(bars.length).toEqual(4)
         expect(parseFloat(bars[0].getAttribute("width"))).toBeCloseTo(oldXaxisScale(10))
 
         // wait for transition
         setTimeout(() => {
-            const barplot = document.getElementById('barplotAge')
+            const barplot = document.getElementById('bars-Age')
             const bars = barplot.getElementsByTagName("rect")
             expect(bars.length).toEqual(4)
             expect(parseFloat(bars[0].getAttribute("width"))).toBeCloseTo(newXaxisScale(88))

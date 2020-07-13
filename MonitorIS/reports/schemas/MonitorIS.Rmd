@@ -74,52 +74,24 @@ dateBy <- ifelse(labkey.url.params$by %in% c("day", "week", "month", "year"),
 # common axis labels
 breaks <- seq(from, to, by = dateBy)
 
-# Create lists of admins and others to exclude from counts
-admins <- labkey.selectRows(baseUrl = labkey.url.base,
+usersToExclude <- labkey.selectRows(baseUrl = labkey.url.base,
                             folderPath = "/home",
                             schemaName = "core",
                             queryName = "SiteUsers",
                             viewName = "",
                             colFilter = makeFilter(c("Groups/Group$SName",
                                                      "CONTAINS_ONE_OF",
-                                                     "Developers;Administrators")),
-                            containerFilter = NULL)
-
-extra_emails <- paste("rglab.org",
-                      "immunespace.org",
-                      "labkey.com",
-                      "gilguday@comcast.net",
-                      "lwolfe@fredhutch.org",
-                      "matthew@bellew.net",
-                      "gfinak@scharp.org",
-                      "reader@bellew.net",
-                      "patrick.dunn@nih.gov",
-                      "cnathe@labkey.org",
-                      "hrodgers@fredhutch.org",
-                      "wjiang2@fhcrc.org",
-                      "hmiller@fredhutch.org",
-                      sep = ";")
-
-extras <- labkey.selectRows(baseUrl = labkey.url.base,
-                            folderPath = "/home",
-                            schemaName = "core",
-                            queryName = "SiteUsers",
-                            viewName = "",
-                            colFilter = makeFilter(c("Email",
-                                                     "CONTAINS_ONE_OF",
-                                                     extra_emails)),
+                                                     "Developers;Administrators;LabKey;excludeFromLogs")),
                             containerFilter = NULL)
 
 # Admin emails no longer in the DB
 oldAdminEmails <- c("rsautera@fhcrc.org",
-                    "renan.sauteraud@gmail.com",
-                    "ldashevs@fhcrc.org",
                     "ldashevs@scharp.org")
 
 # Vectors of people to exclude from counts
-exclusionNames <- paste0(unique(c(admins$`Display Name`, extras$`Display Name`)), collapse = ";")
-exclusionEmails <- unique(c(admins$Email, extras$Email, oldAdminEmails))
-exclusionIds <- unique(c(admins$`User Id`, extras$`User Id`))
+exclusionNames <- paste0(usersToExclude$`Display Name`, collapse = ";")
+exclusionEmails <- c(usersToExclude$Email, oldAdminEmails)
+exclusionIds <- usersToExclude$`User Id`
 ```
 
 # User Interface

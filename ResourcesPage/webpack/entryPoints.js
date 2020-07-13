@@ -7,9 +7,9 @@ module.exports = {
     apps: [
         // For each webpart, include an object matching
         {
-            name: 'HighlightedReports',
+            name: 'ResourcesPage',
             frame: 'portal',
-            title: 'Highlighted Reports',
-            path: './src/client/HighlightedReports'
+            title: 'Resources Page',
+            path: './src/client/ResourcesPage'
         }]
 };

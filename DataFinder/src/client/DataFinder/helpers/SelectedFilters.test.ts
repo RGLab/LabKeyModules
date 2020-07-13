@@ -7,20 +7,20 @@ describe('Manipulate Selected Filters', () => {
 
     test("ToggleFilters", () => {
         const oldFilters = new SelectedFilters()
-        const newFilters1 = new SelectedFilters({ Data: { Timepoint: new SelectedFilter({ members: List(["1"]), operator: "OR" }) } })
-        const newFilters2 = new SelectedFilters({ Data: { Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "OR" }) } })
+        const newFilters1 = new SelectedFilters({ Data: { Timepoint: {Timepoint: new SelectedFilter({ members: List(["1"]), operator: "OR" }) } } })
+        const newFilters2 = new SelectedFilters({ Data: { Timepoint: {Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "OR" }) } } })
         const newFilters3 = new SelectedFilters({ Data: { Assay: { Timepoint: new SelectedFilter({ members: List(["HAI.0"]), operator: "OR" }) } } })
         const newFilters4 = new SelectedFilters({ Subject: { Age: new SelectedFilter({ members: List(["0-10"]), operator: "OR" }) } })
         const newFilters5 = new SelectedFilters({
             Subject: { Age: new SelectedFilter({ members: List(["0-10"]), operator: "OR" }) },
-            Data: { Timepoint: new SelectedFilter({ members: List(["1"]), operator: "OR" }) }
+            Data: { Timepoint: {Timepoint:  new SelectedFilter({ members: List(["1"]), operator: "OR" }) } }
         })
         const newFilters6 = new SelectedFilters({ Study: { Study: new SelectedFilter({ members: List(["SDY269"]), operator:  "OR"})}})
 
-
-        expect(sf.toggleFilter("Data", "Timepoint", "1", oldFilters)).toEqual(newFilters1)
-        expect(sf.toggleFilter("Data", "Timepoint", "2", newFilters1)).toEqual(newFilters2)
-        expect(sf.toggleFilter("Data", "Timepoint", "1", newFilters1)).toEqual(oldFilters)
+        debugger;
+        expect(sf.toggleFilter("Data", "Timepoint.Timepoint", "1", oldFilters)).toEqual(newFilters1)
+        expect(sf.toggleFilter("Data", "Timepoint.Timepoint", "2", newFilters1)).toEqual(newFilters2)
+        expect(sf.toggleFilter("Data", "Timepoint.Timepoint", "1", newFilters1)).toEqual(oldFilters)
 
         expect(sf.toggleFilter("Data", "Assay.Timepoint", "HAI.0", oldFilters)).toEqual(newFilters3)
 
@@ -34,24 +34,24 @@ describe('Manipulate Selected Filters', () => {
     })
 
     test("ToggleAndOr", () => {
-        const filtersAnd = new SelectedFilters({ Data: { Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "AND" }) } })
-        const filtersOr = new SelectedFilters({ Data: { Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "OR" }) } })
-        expect(sf.toggleAndOr("Data", "Timepoint", filtersAnd)).toEqual(filtersOr)
-        expect(sf.toggleAndOr("Data", "Timepoint", filtersOr)).toEqual(filtersAnd)
+        const filtersAnd = new SelectedFilters({ Data: { Timepoint: { Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "AND" }) } } })
+        const filtersOr = new SelectedFilters({ Data: { Timepoint: { Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "OR" }) } } })
+        expect(sf.toggleAndOr("Data", "Timepoint.Timepoint", filtersAnd)).toEqual(filtersOr)
+        expect(sf.toggleAndOr("Data", "Timepoint.Timepoint", filtersOr)).toEqual(filtersAnd)
 
     })
 
     test("SetAndOr", () => {
-        const filtersAnd = new SelectedFilters({ Data: { Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "AND" }) } })
-        const filtersOr = new SelectedFilters({ Data: { Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "OR" }) } })
-        expect(sf.setAndOr("Data", "Timepoint", "AND", filtersAnd)).toEqual(filtersAnd)
-        expect(sf.setAndOr("Data", "Timepoint", "OR", filtersAnd)).toEqual(filtersOr)
-        expect(sf.setAndOr("Data", "Timepoint", "AND", filtersOr)).toEqual(filtersAnd)
+        const filtersAnd = new SelectedFilters({ Data: { Timepoint: { Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "AND" }) } } })
+        const filtersOr = new SelectedFilters({ Data: { Timepoint: { Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "OR" }) } } })
+        expect(sf.setAndOr("Data", "Timepoint.Timepoint", "AND", filtersAnd)).toEqual(filtersAnd)
+        expect(sf.setAndOr("Data", "Timepoint.Timepoint", "OR", filtersAnd)).toEqual(filtersOr)
+        expect(sf.setAndOr("Data", "Timepoint.Timepoint", "AND", filtersOr)).toEqual(filtersAnd)
 
     })
 
     test("CreateCubeFilters", () => {
-        const input1 = new SelectedFilters({ Data: { Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "AND" }) } })
+        const input1 = new SelectedFilters({ Data: { Timepoint: {Timepoint: new SelectedFilter({ members: List(["1", "2"]), operator: "AND" }) } } })
         const output1 = [
             {
                 level: "[Subject].[Subject]",
@@ -110,10 +110,43 @@ describe('Manipulate Selected Filters', () => {
                 }
             }
         ]
+        const input5 = new SelectedFilters({
+            Data: {
+                Assay: {
+                    Assay: new SelectedFilter({ members: List(["ELISA"]), operator: "OR" }),
+                    Timepoint: new SelectedFilter({ members: [ "HAI.0", "Gene Expression.0" ], operator: "AND"})
+                },
+            }
+        })
+        const output5 = [
+            {
+                level: "[Subject].[Subject]",
+                membersQuery: {
+                    level: "[Data.Assay].[Assay]",
+                    members: ["[Data.Assay].[ELISA]"]
+                }
+            },
+            {
+                level: "[Subject].[Subject]",
+                membersQuery: {
+                    level: "[Data.Assay].[Timepoint]",
+                    members: "[Data.Assay].[HAI].[0]"
+                }
+            },
+            {
+                level: "[Subject].[Subject]",
+                membersQuery: {
+                    level: "[Data.Assay].[Timepoint]",
+                    members: "[Data.Assay].[Gene Expression].[0]"
+                }
+            }
+        ]
+
         expect(JSON.stringify(sf.createCubeFilters(input1))).toEqual(JSON.stringify(output1))
         expect(JSON.stringify(sf.createCubeFilters(input2))).toEqual(JSON.stringify(output2))
         expect(JSON.stringify(sf.createCubeFilters(input3))).toEqual(JSON.stringify(output3))
         expect(JSON.stringify(sf.createCubeFilters(input4))).toEqual(JSON.stringify(output4))
+        expect(JSON.stringify(sf.createCubeFilters(input5))).toEqual(JSON.stringify(output5))
     })
 
 });

@@ -1,0 +1,30 @@
+/* -------- tooltip ----------- */
+#heatmap-label {
+    float: right;
+    position: absolute;
+    text-align: left;
+    width: auto;
+    height: 50px;
+    padding: 2px;
+    padding-bottom: 0;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 100000000000;
+  }
+  
+  .arrow-down {
+    float: right;
+    position: absolute;
+    background: transparent;
+    opacity: 0;
+    padding-bottom: 0;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid lightsteelblue;
+    z-index: 100000000000;
+  }

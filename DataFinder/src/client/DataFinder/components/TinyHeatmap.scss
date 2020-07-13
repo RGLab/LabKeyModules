@@ -1,0 +1,11 @@
+
+.tinyheatmap {
+    height: 120px;
+    position: relative;
+    border: 0;
+  }
+  
+  .tinyheatmap > svg {
+    position: absolute;
+    bottom: 0;
+  }

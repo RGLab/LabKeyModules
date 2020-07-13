@@ -76,6 +76,7 @@
             <Hierarchy name="Timepoint" visible="true" primaryKey="subjectid">
                 <Table name="dataFinder_dimData" schema="immport" />
                 <Level name="Timepoint" visible="true" type="String" column="timepoint" levelType="Regular" hideMemberIf="Never"/>
+                <Level name="SampleType" visible="true" type="String" column="cell_type" levelType="Regular" hideMemberIf="Never"/>
             </Hierarchy>
             <Hierarchy name="SampleType" visible="true" primaryKey="subjectid">
                 <Table name="dataFinder_dimData" schema="immport" />
