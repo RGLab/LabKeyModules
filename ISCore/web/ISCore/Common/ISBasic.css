@@ -2,7 +2,9 @@
 /* ******************** Main General Styling ****************** */
 /* ************************************************************ */
 .labkey-page-header {
-    background: #519eda url(/images/vman_app.png) top left no-repeat !important;
+    background-image: url(/images/vman_app.png);
+    background-position: top left;
+    background-repeat: no-repeat !important;
 }
 
 .navbar-header a img {
