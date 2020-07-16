@@ -121,7 +121,9 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
         {
             label: "Save",
             action: () => {
-                ParticipantGroupHelpers.saveParticipantGroup(groupSummary); 
+                ParticipantGroupHelpers.saveParticipantGroup(groupSummary).then(() => {
+                    updateAvailableGroups()
+                })
                 setGroupSummary((prevGroupSummary) => prevGroupSummary.with({isSaved: true})) },
             disabled: !(groupSummary.id > 0)
         },
