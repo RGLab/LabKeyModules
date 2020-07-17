@@ -1,4 +1,6 @@
 import * as React from 'react';
+import 'jquery';
+import 'regenerator-runtime/runtime';
 
 // Styling imports
 import './AboutPage.scss';
@@ -7,6 +9,38 @@ const AboutPage: React.FC = () => {
 
     const [divToShow, setDivToShow] = React.useState<string>("About");
     const [subMenuToShow, setSubMenuToShow] = React.useState<string>("gene-expression")
+
+    const [dataUpdatesResults, setDataUpdatesResults] = React.useState<string>("Loading Data Updates")
+
+    async function fetchData(){
+        let mappedData;
+
+
+
+        LABKEY.Query.selectRows({
+            schemaName: "lists",
+            queryName: "Data Updates",
+            columns: ['version', 'date', 'affected_studies', 'description'],
+            success: function(data){
+                mappedData = 
+                    data.rows.map(function(arr, index){
+                        return(
+                            <tr key={index} data-item={arr}>
+                                <td data-title="Version" style={{textAlign: "center", border: "1px solid black"}}>{arr.version}</td>
+                                <td data-title="Date" style={{textAlign: "center", border: "1px solid black"}}>{arr.date.slice(0,10)}</td>
+                                <td data-title="Affected Studies" style={{border: "1px solid black"}}>{arr.affected_studies}</td>
+                                <td data-title="Description" style={{border: "1px solid black"}}>{arr.description}</td>
+                            </tr>
+                        )
+                    })
+                setDataUpdatesResults(mappedData)
+            }
+        })
+    }
+
+    React.useEffect(() => {
+        fetchData()
+    }, [])
 
     // --------- ABOUT -----------------
     const About: React.FC = () => { 
@@ -105,7 +139,6 @@ const AboutPage: React.FC = () => {
                             <p><a href="http://ceur-ws.org/Vol-2285/ICBO_2018_paper_41.pdf">Vita R, Overton JA, Cheung KH, Kleinstein SH, Peter B. Proceedings of the 9th International Conference on Biological Ontology (ICBO 2018), Corvallis, Oregon, USA</a>.</p>
                             <p><a href="https://www.jimmunol.org/content/202/1_Supplement/130.26">Vita RJ, Overton JA, Cheung KH, Dunn P, Burel J, Bukhari SAC, Diehl AD, Kleinstein SH, Sette A, Peters B. (2019) Formal representation of immunology related data with ontologies. J Immunol May 1, 2019, 202 (1 Supplement) 130.26</a>.</p>
                         </li>
-                        <br></br>
                     </ul>
                                                                                                                           
                     <p><strong>Questions?</strong></p>
@@ -158,6 +191,196 @@ const AboutPage: React.FC = () => {
         )
     }
 
+    const DataUpdates: React.FC = () => { 
+
+        return(
+            <div id="DataUpdates" style={{padding: "15px"}}>
+                <table style={{width: "100%", border: "1px solid black"}}>
+                    <thead>
+                        <tr>
+                            <th style={{width: "15%", border: "1px solid black", textAlign: "center"}}>Version</th>
+                            <th style={{width: "15%", border: "1px solid black", textAlign: "center"}}>Date</th>
+                            <th style={{width: "30%", border: "1px solid black", textAlign: "center"}}>Affected Studies</th>
+                            <th style={{width: "40%", border: "1px solid black", textAlign: "center"}}>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {dataUpdatesResults}
+                    </tbody>
+                </table>
+                <p>
+                    This is explanatory text
+                </p>
+            </div>
+        )  
+    }
+
+    const SoftwareUpdates: React.FC = () => { 
+
+        return(
+            <div id="SoftwareUpdates">
+                <p>26 Dec 2019</p>
+                <ul>
+                    <li>Upgraded to <a href="https://www.labkey.org/wiki/Documentation/Archive/19.2/page.view?name=releasenotes192">LabKey 19.2</a></li>
+                    <li>Upgrade to ImmuneSpaceR version 1.13.2</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>21 May 2019</p>
+                <ul>
+                    <li>Upgraded R to 3.6.0</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>20 May 2019</p>
+                <ul>
+                    <li>Upgraded to latest <a href="https://www.labkey.org/Documentation/wiki-page.view?name=whatsnew191">19.1 version</a> of LabKey.</li>
+                    <li>Upgraded Java to openJDK-12</li>
+                    <li>Upgraded Tomcat to Tomcat 9.0.17</li>
+                    <li>Upgraded Commons Daemon to 1.1.0</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>4 March 2019</p>
+                <ul>
+                    <li>Upgraded R to 3.5.2</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>27 February 2019</p>
+                <ul>
+                    <li>Upgraded to latest <a href="https://www.labkey.org/Documentation/wiki-page.view?name=whatsnew183">18.3 version</a> of LabKey.</li>
+                    <li>Upgraded the Dimension Reduction module to support quick PCA or tSNE analysis of a single study or multiple studies' assay data</li>
+                    <li>Upgraded to <a href="https://github.com/RGLab/ImmuneSpaceR">ImmuneSpaceR</a> version 1.11.2</li>
+                    <li>
+                        <ul>
+                            <li>Includes a handy "interactive_netrc()" function to help new users set up their netrc permissions file correctly</li>
+                            <li>Added Immune Exposure information to the expressionSet output of con$getGEMatrix() to help users understand vaccine types and methods used</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>15 August 2018</p>
+                <ul>
+                    <li>Upgraded to latest <a href="https://www.labkey.org/Documentation/wiki-page.view?name=whatsnew182">18.2 version</a> of LabKey.</li>
+                    <li>Upgraded to <a href="https://github.com/RGLab/ImmuneSpaceR">ImmuneSpaceR</a> version 1.7.4</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>4 May 2018</p>
+                <ul>
+                    <li>Upgraded to latest <a href="https://www.labkey.org/Documentation/wiki-page.view?name=whatsnew181">18.1 version</a> of LabKey (e.g. sharing of reports as well as editing them via the integrated RStudio Server is now available).</li>
+                    <li>Upgraded to <a href="https://github.com/RGLab/ImmuneSpaceR">ImmuneSpaceR</a> version 1.7.3:</li>
+                    <li>
+                        <ul>
+                            <li>it now utilizes the new R6 class system</li>
+                            <li>new cleaner documentation is available <a href="http://rglab.org/ImmuneSpaceR/index.html">here</a></li>
+                            <li>raw gene expression matrices can now also be pulled via&nbsp;<a href="http://rglab.org/ImmuneSpaceR/reference/ImmuneSpaceConnection.html#methods">getGEMatrix()</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>6 February 2018</p>
+                <ul>
+                    <li>Upgraded to latest 17.3 version of LabKey.</li>
+                    <li>Upgraded R to 3.4.3</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>27 November 2017</p>
+                <ul>
+                    <li>Upgraded to latest 17.2 version of LabKey.</li>
+                    <li>Upgraded custom modules, including error handling in HIPCMatrix for CreateMatrix functionality.</li>
+                    <li>Upgraded to ImmuneSpaceR version 1.7.0 that utilizes a dynamic Gene Expression query.</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>24 August 2017</p>
+                <ul>
+                    <li>Upgrade to LabKey 17.2.</li>
+                    <li>Added functionality to automatically update and standardize the gene symbols used on the portal.</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>16 June 2017</p>
+                <ul>
+                    <li>Upgrade to R 3.4.0.</li>
+                    <li>Enabled interactive visualizations for all reports and modules.</li>
+                    <li>Added to the Data Finder an ability to filter individual studies.</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>24 March 2017</p>
+                <ul>
+                    <li>Upgrade to LabKey 17.1.</li>
+                    <li>Added the ability to launch an integrated <a title="RStudio Server" href="https://www.rstudio.com/products/rstudio-server/">RStudio Server</a> instance.</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>13 December 2016</p>
+                <ul>
+                    <li>Upgrade to R 3.3.1.</li>
+                    <li>Upgrade to LabKey 16.3.</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>21 July 2016</p>
+                <ul>
+                    <li>Upgrade to LabKey 16.2.</li>
+                    <li>Enabled markdown v2 for all reports and modules.</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>3 May 2016</p>
+                <ul>
+                    <li>A new export interface as been added to the <a href="https://www.immunespace.org/project/Studies/begin.view?">Data Finder</a> to download selected files and tables as. Click the <strong>Export study datasets</strong> button to access it.</li>
+                    <li>Upgrade to R 3.2.4.</li>
+                    <li>Upgrade to LabKey 16.1.</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>22 October 2015</p>
+                <ul>
+                    <li>A new <a href="https://www.immunespace.org/project/Studies/begin.view?">Data Finder</a> replaces the study finder.</li>
+                    <li>Upgrade to LabKey 15.3.</li>
+                    <li>The <a href="https://www.immunespace.org/DataExplorer/Studies/begin.view">Data Explorer</a> can now be used to plot data across studies.</li>
+                </ul>
+                <p>&nbsp;</p>
+                <p>22 July 2015</p>
+                <ul>
+                    <li>Upgrade to LabKey 15.2.</li>
+                    <li>New tours have been added to all the modules. Click the "QUICK HELP" button in any module to start the demo.</li>
+                    <li>Improved study finder UI.</li>
+                </ul>
+            </div>
+        )
+    }
+
+    const Support: React.FC = () => { 
+
+        return(
+            <div id="Support">
+                <p>Slack: The best way to connect with the ImmuneSpace team is via the ImmuneSpace <a href="https://immunespace.herokuapp.com/">slack workspace</a></p>
+                <p>You can also email us at <b>immunespace@gmail.com</b></p>
+            </div>
+        )
+    }
+
+    const RSessionInfo: React.FC = () => { 
+
+        var cnfReport = {
+            failure: function(){
+                document.getElementById('RSessionInfo').innerHTML = 'Unknown error.';
+            },
+            reportId: 'module:RSessionInfo/RSessionInfo.Rmd',
+            success: function(result){
+                var errors = result.errors;
+                var outputParams = result.outputParams;
+                if ( errors && errors.length > 0 ){
+                    document.getElementById('RSessionInfo').innerHTML = 'Errors in R Report'
+                } else if ( outputParams && outputParams.length > 0 ){
+                    var p = outputParams[0];
+                    console.log(p)
+                    jQuery('#RSessionInfo').html(p.value); 
+                    window['HTMLWidgets'].staticRender() // HTMLWidgets interface not defined, so provide as string to avoid TS error
+                } else{
+                    document.getElementById('RSessionInfo').innerHTML = 'Strange situation: there are no reported errors, but also no output to show'
+                }
+            }
+        };
+        LABKEY.Report.execute(cnfReport);
+
+        return(
+            <div id="RSessionInfo">Loading R Session Info ... </div>
+        )
+    }
     // --------- NAVBAR -----------------
     // Use bootstrap in Navbar
     const Navbar: React.FC = () => { 
@@ -191,7 +414,27 @@ const AboutPage: React.FC = () => {
                         text: "Immune Response"
                     }
                 ]
-            }
+            },
+            {
+                id: "data-updates",
+                tag: "DataUpdates",
+                text: "Data Updates"
+            },
+            {
+                id: "software-updates",
+                tag: "SoftwareUpdates",
+                text: "Software Updates"
+            },
+            {
+                id: "support",
+                tag: "Support",
+                text: "Support"
+            },
+            {
+                id: "r-session-info",
+                tag: "RSessionInfo",
+                text: "R Session Info"
+            },
         ]
 
        
@@ -275,6 +518,10 @@ const AboutPage: React.FC = () => {
             { divToShow == "About" ? <About/> : null}
             { divToShow == "DataStandards" ? <DataStandards/> : null}
             { divToShow == "DataProcessing" ? <DataProcessing/> : null}
+            { divToShow == "DataUpdates" ? <DataUpdates/> : null}
+            { divToShow == "SoftwareUpdates" ? <SoftwareUpdates/> : null}
+            { divToShow == "Support" ? <Support/> : null}
+            { divToShow == "RSessionInfo" ? <RSessionInfo/> : null}
         </div>
     )
 }
