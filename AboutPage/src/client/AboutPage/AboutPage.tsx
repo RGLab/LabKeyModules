@@ -1,5 +1,5 @@
 import * as React from 'react';
-import 'jquery';
+// import 'jquery';
 import 'regenerator-runtime/runtime';
 
 // Styling imports
@@ -36,10 +36,31 @@ const AboutPage: React.FC = () => {
         })
     }
 
+    const [rSessionResults, setRSessionResults] = React.useState<string>("Loading R Session Info ...")
+
+    var cnfReport = {
+        failure: function(){
+            setRSessionResults("Unknown Error within R Session Info Report")
+        },
+        reportId: 'module:RSessionInfo/RSessionInfo.Rmd',
+        success: function(result){
+            var errors = result.errors;
+            var outputParams = result.outputParams;
+            if ( errors && errors.length > 0 ){
+                setRSessionResults("Error in retrieving R Session Info")
+            } else if ( outputParams && outputParams.length > 0 ){
+                var p = outputParams[0];
+                setRSessionResults(p.value)
+            } else{
+                setRSessionResults('Strange situation: there are no reported errors, but also no output to show')
+            }
+        }
+    };
+    
     React.useEffect(() => {
         fetchData()
+        LABKEY.Report.execute(cnfReport);
     }, [])
-
 
     // --------- ABOUT -----------------
     const About: React.FC = () => { 
@@ -201,9 +222,6 @@ const AboutPage: React.FC = () => {
         const softwareUpdatesLink = baseUrl + "project/Studies/begin.view?pageId=About#SoftwareUpdates"
         function handleSoftwareUpdateClick(){
             setDivToShow("SoftwareUpdates")
-            if(typeof(window['HTMLWidgets']) !== 'undefined'){
-                window['HTMLWidgets'].staticRender()
-            }
         }
 
         return(
@@ -362,31 +380,26 @@ const AboutPage: React.FC = () => {
     }
 
     const RSessionInfo: React.FC = () => { 
+        const divRef = React.useRef(null)
 
-        var cnfReport = {
-            failure: function(){
-                document.getElementById('RSessionInfo').innerHTML = 'Unknown error.';
-            },
-            reportId: 'module:RSessionInfo/RSessionInfo.Rmd',
-            success: function(result){
-                var errors = result.errors;
-                var outputParams = result.outputParams;
-                if ( errors && errors.length > 0 ){
-                    document.getElementById('RSessionInfo').innerHTML = 'Errors in R Report'
-                } else if ( outputParams && outputParams.length > 0 ){
-                    var p = outputParams[0];
-                    console.log(p)
-                    jQuery('#RSessionInfo').html(p.value); 
-                    window['HTMLWidgets'].staticRender() // HTMLWidgets interface not defined, so provide as string to avoid TS error
-                } else{
-                    document.getElementById('RSessionInfo').innerHTML = 'Strange situation: there are no reported errors, but also no output to show'
-                }
-            }
-        };
-        LABKEY.Report.execute(cnfReport);
+        // To minimize calls to the LABKEY.report() to init, must ensure that <scripts> associated with the report
+        // are loaded when html is inserted.  `dangerouslySetHtml` doesn't do this, so must append html as new node.
+        // When appending the child node, there is no way to determine when the script has loaded as the append does not
+        // have a callback fn.  So using setTimeout to ensure htmlwidgets.js is actually ready (comes from streamfile)
+        React.useEffect(() => {
+            const slotHtml = document.createRange().createContextualFragment(rSessionResults) // Create a 'tiny' document and parse the html string
+            divRef.current.innerHTML = '' // Clear the container
+            divRef.current.appendChild(slotHtml) // Append the new content
+            var el = document.querySelector('.labkey-knitr')
+            if(el){
+                setTimeout( function(){
+                    window['HTMLWidgets'].staticRender()  
+                }, 1000)
+            } 
+        }, [rSessionResults])
 
-        return(
-            <div id="RSessionInfo">Loading R Session Info ... </div>
+        return (
+            <div ref={divRef}>Loading R Session Info</div>
         )
     }
 
@@ -496,10 +509,6 @@ const AboutPage: React.FC = () => {
                 const className = divToShow == el.tag ? " active" : "";
                 function handleNavBarClick(){
                     setDivToShow(el.tag)
-                    if(["RSessionInfo"].indexOf(el.tag) !== -1){
-                        //jQuery('#RSessionInfo').html(rSessionInfoValue); 
-                        // window['HTMLWidgets'].staticRender()
-                    }
                 }
 
                 return(
@@ -523,17 +532,25 @@ const AboutPage: React.FC = () => {
         )
     }
 
+    const ComponentToShow: React.FC = () => {
+        return(
+            <div>
+                { divToShow == "About" ? <About/> : null }
+                { divToShow == "DataStandards" ? <DataStandards/> : null }
+                { divToShow == "DataProcessing" ? <DataProcessing/> : null } 
+                { divToShow == "DataReleases" ? <DataReleases/> : null }
+                { divToShow == "SoftwareUpdates" ? <SoftwareUpdates/> : null }
+                { divToShow == "RSessionInfo" ? <RSessionInfo/> : null }
+            </div>
+        )
+    }
+
     // return
     return(
         <div>
             <Navbar/>
             <div style={{padding: "15px"}}>
-                { divToShow == "About" ? <About/> : null}
-                { divToShow == "DataStandards" ? <DataStandards/> : null}
-                { divToShow == "DataProcessing" ? <DataProcessing/> : null}
-                { divToShow == "DataReleases" ? <DataReleases/> : null}
-                { divToShow == "SoftwareUpdates" ? <SoftwareUpdates/> : null}
-                { divToShow == "RSessionInfo" ? <RSessionInfo/> : null}
+                <ComponentToShow/>
             </div>
         </div>
     )
