@@ -154,7 +154,7 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
 
     return (
         <>
-            <DropdownButtons title="Manage" buttonData={buttonData}></DropdownButtons>
+            <DropdownButtons title="Manage Groups" buttonData={buttonData}></DropdownButtons>
         </>
     )
 })
@@ -177,14 +177,16 @@ const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
                     counts={counts}
                 />
                 <div className="df-banner-button">
-                    <ExploreGroupDropdown />
-                </div>
-                <div className="df-banner-button">
                     {manageGroupsDropdown}
                 </div>
                 <div className="df-banner-button">
-                <HighlightedButton label="Download Data" href="/immport/Studies/exportStudyDatasets.view?"/>
-                <HighlightedButton label="Open in RStudio" href="/rstudio/start.view?"/>
+                    <span style={{ display: "inline-block", paddingRight: "10px" }}>
+                        Explore Data:
+                    </span>
+                    <HighlightedButton label="Visualize" href="/project/Studies/begin.view?pageId=visualize" />
+                    <HighlightedButton label="Analyze" href="/project/Studies/begin.view?pageId=analyze" />
+                    <HighlightedButton label="Download" href="/immport/Studies/exportStudyDatasets.view?" />
+                    <HighlightedButton label="Open in RStudio" href="/rstudio/start.view?" />
                 </div>
             </RowOfButtons>
         </div>
