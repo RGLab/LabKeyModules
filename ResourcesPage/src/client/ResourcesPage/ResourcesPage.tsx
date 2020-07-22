@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as LABKEY from '@labkey/api';
 import * as Bootstrap from 'react-bootstrap';
 import 'regenerator-runtime/runtime';
+import Iframe from 'react-iframe';
 
 
 import {BarPlot,
@@ -175,13 +176,6 @@ const ResourcesPage: React.FC = () => {
                     datePublishedPercent: null
                 }
                 tmpPlotData.byPubId.push(datum)
-                // tmp.byStudy.push(
-                //     {
-                //         value: pmData[key].Citations,
-                //         label: pmData[key].study + ": " + pmData[key].original_id,
-                //         hoverOver: "http://www.ncbi.nlm.nih.gov/pubmed?linkname=pubmed_pubmed_citedin&from_uid=" + pmData[key].original_id
-                //     }
-                // )
             })
             
             let tmpRangeData = {byPubId: Array<number>()}
@@ -477,14 +471,6 @@ const ResourcesPage: React.FC = () => {
             main: 'ImmuneSpace Usage over Time'
         }
 
-        // let UIlayer: MaLinePlotLayer = {
-        //     name: 'UI',
-        //     values: []
-        // }
-        // let ISRlayer: MaLinePlotLayer = {
-        //     name: 'ISR',
-        //     values: []
-        // }
         const lineData = []
         const lineLabels = []
         transformedMaData.byMonth.forEach(element => {
@@ -913,6 +899,19 @@ const ResourcesPage: React.FC = () => {
         )
     }
 
+    const ImmuneSpaceR: React.FC = () => {
+
+        return (
+            <div id="ImmuneSpaceR" style={{alignItems: "center", display: "flex", justifyContent: "center"}}>
+                <Iframe
+                    url="https://rglab.github.io/ImmuneSpaceR/"
+                    width="90%"
+                    height="450px"
+                />
+            </div>
+        )
+    }
+
     // --------- NAVBAR -----------------
     // Use bootstrap in Navbar
     const Navbar: React.FC = () => { 
@@ -946,6 +945,11 @@ const ResourcesPage: React.FC = () => {
                 id: "tools",
                 tag: "Tools",
                 text: "HIPC Tools",
+            },
+            {
+                id: "immunespacer",
+                tag: "ImmuneSpaceR",
+                text: "ImmuneSpaceR"
             }
             
         ]
@@ -1028,9 +1032,10 @@ const ResourcesPage: React.FC = () => {
     return(
         <div>
             <Navbar/>
-            { divToShow == "Tools" ? <Tools/> : null}
-            { divToShow == "Reports" ? <Reports/> : null}
-            { divToShow == "StudyStats" ? <StudyStats/> : null}
+            { divToShow == "Tools" ? <Tools/> : null }
+            { divToShow == "Reports" ? <Reports/> : null }
+            { divToShow == "StudyStats" ? <StudyStats/> : null }
+            { divToShow == "ImmuneSpaceR" ? <ImmuneSpaceR/> : null }
         </div>
     )
 }
