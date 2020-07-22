@@ -1028,14 +1028,24 @@ const ResourcesPage: React.FC = () => {
         )
     }
 
+    const ComponentToShow: React.FC = () => {
+        return(
+            <div>
+                { divToShow == "Tools" ? <Tools/> : null }
+                { divToShow == "Reports" ? <Reports/> : null }
+                { divToShow == "StudyStats" ? <StudyStats/> : null }
+                { divToShow == "ImmuneSpaceR" ? <ImmuneSpaceR/> : null }
+            </div>
+        )
+    }
+
     // return
     return(
         <div>
             <Navbar/>
-            { divToShow == "Tools" ? <Tools/> : null }
-            { divToShow == "Reports" ? <Reports/> : null }
-            { divToShow == "StudyStats" ? <StudyStats/> : null }
-            { divToShow == "ImmuneSpaceR" ? <ImmuneSpaceR/> : null }
+            <div style={{padding: "15px"}}>
+                <ComponentToShow/>
+            </div>
         </div>
     )
 }
