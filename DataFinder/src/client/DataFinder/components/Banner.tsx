@@ -169,6 +169,10 @@ const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
     counts,
     manageGroupsDropdown
 }) => {
+    const displayEditButton = !(
+        LABKEY.ActionURL.getParameter("pageId") === "Find" || 
+        (LABKEY.ActionURL.getParameter("pageId") === undefined && LABKEY.ActionURL.getAction() === "begin")
+        )
     return (
         <div className="df-banner-titlebar">
             <RowOfButtons>
@@ -179,14 +183,21 @@ const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
                 <div className="df-banner-button">
                     {manageGroupsDropdown}
                 </div>
+                {displayEditButton &&
+                    <div className="df-banner-button">
+                        <HighlightedButton href="/project/Studies/begin.view?pageId=Find"><i className='fa fa-arrow-left'></i> Edit selection</HighlightedButton>
+                        {/* <i className="fa fa-arrow-left"></i> Edit selection */}
+                    </div>
+                }
+                
                 <div className="df-banner-button">
                     <span style={{ display: "inline-block", paddingRight: "10px" }}>
                         Explore Data:
                     </span>
-                    <HighlightedButton label="Visualize" href="/project/Studies/begin.view?pageId=visualize" />
-                    <HighlightedButton label="Analyze" href="/project/Studies/begin.view?pageId=analyze" />
-                    <HighlightedButton label="Download" href="/immport/Studies/exportStudyDatasets.view?" />
-                    <HighlightedButton label="Open in RStudio" href="/rstudio/start.view?" />
+                    <HighlightedButton href="/project/Studies/begin.view?pageId=visualize">Visualize</HighlightedButton>
+                    <HighlightedButton href="/project/Studies/begin.view?pageId=analyze">Analyze</HighlightedButton>
+                    <HighlightedButton href="/immport/Studies/exportStudyDatasets.view?">Download</HighlightedButton>
+                    <HighlightedButton href="/rstudio/start.view?">Open in RStudio</HighlightedButton>
                 </div>
             </RowOfButtons>
         </div>
