@@ -17,7 +17,8 @@ interface BannerProps {
     links?: JSX.Element;
     dropdowns?: JSX.Element;
     filterBarId?: string;
-    id?: string
+    id?: string;
+    hideEditButton?: boolean
 }
 
 export interface IGroupSummary {
@@ -50,6 +51,7 @@ interface BannerTitleBarProps {
     groupSummary: GroupSummary;
     counts: TotalCounts;
     manageGroupsDropdown: JSX.Element;
+    hideEditButton?: boolean;
 }
 
 interface ParticipantGroupSummaryProps {
@@ -73,7 +75,8 @@ const BannerFC: React.FC<BannerProps> = ({
     counts,
     filterBarId,
     manageGroupsDropdown,
-    id
+    id,
+    hideEditButton
 }) => {
     return (
         <div id={id}>
@@ -81,6 +84,7 @@ const BannerFC: React.FC<BannerProps> = ({
                 groupSummary={groupSummary}
                 counts={counts}
                 manageGroupsDropdown={manageGroupsDropdown}
+                hideEditButton={hideEditButton}
             />
 
             <div id={filterBarId || "df-filter-summary"}>
@@ -167,12 +171,9 @@ export const ManageGroupsDropdown = React.memo(ManageGroupsDropdownFC)
 const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
     groupSummary,
     counts,
-    manageGroupsDropdown
+    manageGroupsDropdown,
+    hideEditButton
 }) => {
-    const displayEditButton = !(
-        LABKEY.ActionURL.getParameter("pageId") === "Find" || 
-        (LABKEY.ActionURL.getParameter("pageId") === undefined && LABKEY.ActionURL.getAction() === "begin")
-        )
     return (
         <div className="df-banner-titlebar">
             <RowOfButtons>
@@ -183,10 +184,9 @@ const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
                 <div className="df-banner-button">
                     {manageGroupsDropdown}
                 </div>
-                {displayEditButton &&
+                {!hideEditButton &&
                     <div className="df-banner-button">
                         <HighlightedButton href="/project/Studies/begin.view?pageId=Find"><i className='fa fa-arrow-left'></i> Edit selection</HighlightedButton>
-                        {/* <i className="fa fa-arrow-left"></i> Edit selection */}
                     </div>
                 }
                 

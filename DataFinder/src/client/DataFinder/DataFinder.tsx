@@ -281,6 +281,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                         ManageGroupsDropdownMenu()
                 }
                 id={"data-finder-app-banner"}
+                hideEditButton={true}
                  />
                 
 
