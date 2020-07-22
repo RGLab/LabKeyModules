@@ -1,5 +1,4 @@
 import * as React from 'react';
-// import 'jquery';
 import 'regenerator-runtime/runtime';
 
 // Styling imports
@@ -109,7 +108,7 @@ const AboutPage: React.FC = () => {
                     width="40%"
                     style={{alignSelf: 'center'}}
                     />
-                <br></br>
+                <p></p>
                 <p><b>Support:</b></p>
                 <ul>
                     <li>Slack: The best way to connect with the ImmuneSpace team is via the ImmuneSpace <a href="https://immunespace.herokuapp.com/">slack workspace</a></li>
