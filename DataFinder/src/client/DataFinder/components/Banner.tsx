@@ -17,7 +17,8 @@ interface BannerProps {
     links?: JSX.Element;
     dropdowns?: JSX.Element;
     filterBarId?: string;
-    id?: string
+    id?: string;
+    hideEditButton?: boolean
 }
 
 export interface IGroupSummary {
@@ -50,6 +51,7 @@ interface BannerTitleBarProps {
     groupSummary: GroupSummary;
     counts: TotalCounts;
     manageGroupsDropdown: JSX.Element;
+    hideEditButton?: boolean;
 }
 
 interface ParticipantGroupSummaryProps {
@@ -73,7 +75,8 @@ const BannerFC: React.FC<BannerProps> = ({
     counts,
     filterBarId,
     manageGroupsDropdown,
-    id
+    id,
+    hideEditButton
 }) => {
     return (
         <div id={id}>
@@ -81,6 +84,7 @@ const BannerFC: React.FC<BannerProps> = ({
                 groupSummary={groupSummary}
                 counts={counts}
                 manageGroupsDropdown={manageGroupsDropdown}
+                hideEditButton={hideEditButton}
             />
 
             <div id={filterBarId || "df-filter-summary"}>
@@ -121,7 +125,9 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
         {
             label: "Save",
             action: () => {
-                ParticipantGroupHelpers.saveParticipantGroup(groupSummary); 
+                ParticipantGroupHelpers.saveParticipantGroup(groupSummary).then(() => {
+                    updateAvailableGroups()
+                })
                 setGroupSummary((prevGroupSummary) => prevGroupSummary.with({isSaved: true})) },
             disabled: !(groupSummary.id > 0)
         },
@@ -152,7 +158,7 @@ export const ManageGroupsDropdownFC : React.FC<ManageGroupDropdownProps> = (({
 
     return (
         <>
-            <DropdownButtons title="Manage" buttonData={buttonData}></DropdownButtons>
+            <DropdownButtons title="Manage Groups" buttonData={buttonData}></DropdownButtons>
         </>
     )
 })
@@ -165,7 +171,8 @@ export const ManageGroupsDropdown = React.memo(ManageGroupsDropdownFC)
 const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
     groupSummary,
     counts,
-    manageGroupsDropdown
+    manageGroupsDropdown,
+    hideEditButton
 }) => {
     return (
         <div className="df-banner-titlebar">
@@ -175,14 +182,22 @@ const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
                     counts={counts}
                 />
                 <div className="df-banner-button">
-                    <ExploreGroupDropdown />
-                </div>
-                <div className="df-banner-button">
                     {manageGroupsDropdown}
                 </div>
+                {!hideEditButton &&
+                    <div className="df-banner-button">
+                        <HighlightedButton href="/project/Studies/begin.view?pageId=Find"><i className='fa fa-arrow-left'></i> Edit selection</HighlightedButton>
+                    </div>
+                }
+                
                 <div className="df-banner-button">
-                <HighlightedButton label="Download Data" href="/immport/Studies/exportStudyDatasets.view?"/>
-                <HighlightedButton label="Open in RStudio" href="/rstudio/start.view?"/>
+                    <span style={{ display: "inline-block", paddingRight: "10px" }}>
+                        Explore Data:
+                    </span>
+                    <HighlightedButton href="/project/Studies/begin.view?pageId=visualize">Visualize</HighlightedButton>
+                    <HighlightedButton href="/project/Studies/begin.view?pageId=analyze">Analyze</HighlightedButton>
+                    <HighlightedButton href="/immport/Studies/exportStudyDatasets.view?">Download</HighlightedButton>
+                    <HighlightedButton href="/rstudio/start.view?">Open in RStudio</HighlightedButton>
                 </div>
             </RowOfButtons>
         </div>

@@ -281,6 +281,7 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                         ManageGroupsDropdownMenu()
                 }
                 id={"data-finder-app-banner"}
+                hideEditButton={true}
                  />
                 
 
@@ -299,8 +300,8 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                     </div>
                 </OuterDropdownButton>
                 <div>
-                    <HighlightedButton label="Clear Unsaved Changes" action={clearUnsavedFilters} id={"clear-unsaved-button"}/>
-                    <HighlightedButton label="Clear All" action={clearFilters} id={"clear-all-button"}/>
+                    <HighlightedButton action={clearUnsavedFilters} id={"clear-unsaved-button"}>Clear Unsaved Changes</HighlightedButton>
+                    <HighlightedButton action={clearFilters} id={"clear-all-button"}>Clear All</HighlightedButton>
                 </div>
                 
             </RowOfButtons>
