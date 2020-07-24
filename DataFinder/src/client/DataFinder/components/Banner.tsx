@@ -186,7 +186,7 @@ const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
                 </div>
                 {!hideEditButton &&
                     <div className="df-banner-button">
-                        <HighlightedButton href="/project/Studies/begin.view?pageId=Find"><i className='fa fa-arrow-left'></i> Edit selection</HighlightedButton>
+                        <HighlightedButton href="/project/Studies/begin.view?pageId=Find" id="df-find-button">Edit selection</HighlightedButton>
                     </div>
                 }
                 
@@ -194,10 +194,10 @@ const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
                     <span style={{ display: "inline-block", paddingRight: "10px" }}>
                         Explore Data:
                     </span>
-                    <HighlightedButton href="/project/Studies/begin.view?pageId=visualize">Visualize</HighlightedButton>
-                    <HighlightedButton href="/project/Studies/begin.view?pageId=analyze">Analyze</HighlightedButton>
-                    <HighlightedButton href="/immport/Studies/exportStudyDatasets.view?">Download</HighlightedButton>
-                    <HighlightedButton href="/rstudio/start.view?">Open in RStudio</HighlightedButton>
+                    <HighlightedButton href="/project/Studies/begin.view?pageId=visualize" id="df-visualize-button">Visualize</HighlightedButton>
+                    <HighlightedButton href="/project/Studies/begin.view?pageId=analyze" id="df-analyze-button">Analyze</HighlightedButton>
+                    <HighlightedButton href="/immport/Studies/exportStudyDatasets.view?" id="df-download-button">Download</HighlightedButton>
+                    <HighlightedButton href="/rstudio/start.view?" id="df-rstudio-button">Open in RStudio</HighlightedButton>
                 </div>
             </RowOfButtons>
         </div>

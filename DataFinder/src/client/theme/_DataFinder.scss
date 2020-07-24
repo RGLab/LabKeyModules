@@ -18,6 +18,10 @@
 .df-tab-title {
   width: 50%;
   text-align: center;
+
+  &.active>a{
+    background-color: #fff;
+  }
 }
 
 .nav-tabs > li > a {

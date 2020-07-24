@@ -12,6 +12,7 @@ import { HighlightedButton, RowOfButtons } from "./components/reusable/Buttons";
 import { OuterDropdownButton } from './components/reusable/Dropdowns'
 import { SelectedParticipants, SelectedStudies } from "./components/TabContent";
 import { Loader } from "./components/reusable/Loader";
+import { sum, map } from "d3";
 
 interface DataFinderControllerProps {
     mdx:  CubeMdx,
@@ -300,8 +301,25 @@ const DataFinderController = React.memo<DataFinderControllerProps>(({mdx, studyI
                     </div>
                 </OuterDropdownButton>
                 <div>
-                    <HighlightedButton action={clearUnsavedFilters} id={"clear-unsaved-button"}>Clear Unsaved Changes</HighlightedButton>
-                    <HighlightedButton action={clearFilters} id={"clear-all-button"}>Clear All</HighlightedButton>
+                    <HighlightedButton 
+                        action={clearUnsavedFilters} 
+                        id={"clear-unsaved-button"}
+                        disabled={
+                            groupSummary.get("isSaved")
+                        }
+                        >
+                            Clear Unsaved Changes
+                    </HighlightedButton>
+                    <HighlightedButton 
+                        action={clearFilters} 
+                        id={"clear-all-button"} 
+                        disabled={
+                            selectedFilters.Study.size === 0 &&
+                            selectedFilters.Subject.size === 0 &&
+                            selectedFilters.Data.reduce((prev, curr) => {return(prev + curr.size)}, 0) === 0
+                        }>
+                            Clear All
+                    </HighlightedButton>
                 </div>
                 
             </RowOfButtons>

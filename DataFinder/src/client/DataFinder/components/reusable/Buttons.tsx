@@ -5,6 +5,7 @@ interface HighlightedButtonProps {
     action?: () => void;
     href?: string;
     id?: string;
+    disabled?: boolean
 }
 
 interface RowOfButtonProps {
@@ -13,8 +14,8 @@ interface RowOfButtonProps {
 
 
 // Button or link with highlighted style
-export const HighlightedButton: React.FC<HighlightedButtonProps> = ({href, action, id, children}) => {
-    return <a href={href} className="btn df-highlighted-button" onClick={action} id={id}>
+export const HighlightedButton: React.FC<HighlightedButtonProps> = ({href, action, id, disabled, children}) => {
+    return <a href={href} className={"btn df-highlighted-button" + (disabled ? " disabled" : "")} onClick={action} id={id}>
         {children}
     </a>;
   };
