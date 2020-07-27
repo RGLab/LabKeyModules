@@ -563,8 +563,8 @@ const ResourcesPage: React.FC = () => {
                         <img className="hr-staticImg" src={imgPath + report.img}/>
                     </td>
                     <td className="hr-infoCol">
-                        <h2>{report.study}</h2>
-                        <a href={fullUrl}>{report.title}</a>
+                        <h2>{report.title}</h2>
+                        <a href={fullUrl}>{report.study}</a>
                         <p>{report.text}</p>
                     </td>
                 </tr>
