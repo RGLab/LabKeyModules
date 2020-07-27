@@ -104,8 +104,8 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
         let participantCount, studyCount
         data.Timepoint.Timepoint.forEach(cd => {
             if (cd.member == c.label) {
-                participantCount = cd.participantCount
-                studyCount = cd.studyCount
+              participantCount = cd.participantCount === null ? 0 : cd.participantCount
+              studyCount = cd.studyCount === null ? 0 : cd.studyCount
             }           
         })
       return({
@@ -123,8 +123,8 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
         let participantCount, studyCount
         data.Assay.Assay.forEach(cd => {
             if (cd.member == c.label) {
-                participantCount = cd.participantCount
-                studyCount = cd.studyCount
+              participantCount = cd.participantCount === null ? 0 : cd.participantCount
+              studyCount = cd.studyCount === null ? 0 : cd.studyCount
             }           
         })
         return({
@@ -138,8 +138,8 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
       d = data.Assay.Assay
       axisData = d.map((cd) => { return ({ 
           label: cd.member, 
-          participantCount: cd.participantCount,
-          studyCount: cd.studyCount,
+          participantCount : cd.participantCount === null ? 0 : cd.participantCount,
+          studyCount : cd.studyCount === null ? 0 : cd.studyCount,
           data: { level: cd.level, member: cd.member } }) })
     }
     axisData.sort((a, b) => {
