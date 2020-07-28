@@ -276,7 +276,7 @@ export const sendParticipantGroup = (groupSummary, saveAsCallback) => {
 
 export const saveParticipantGroup = (groupSummary) => {
     if (groupSummary.id > 0) {
-        getSessionParticipantGroup().then((data) => {
+        return getSessionParticipantGroup().then((data) => {
                 const description = JSON.parse(data.description)
                 description.summary.isSaved = true
                 data.label = description.summary.label           

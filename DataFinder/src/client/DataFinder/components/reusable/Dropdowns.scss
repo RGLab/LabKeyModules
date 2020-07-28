@@ -78,7 +78,7 @@
       &:hover {
         color: #f7f7f7;
         text-decoration: none;
-        background-color: #597530;  
+        background-color: #3495d2; // This is the color on prod. It will look weird on test/local where colors are different
       }
 
     }

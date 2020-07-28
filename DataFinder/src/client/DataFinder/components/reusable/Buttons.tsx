@@ -2,10 +2,10 @@ import * as React from 'react';
 import "./Buttons.scss"
 
 interface HighlightedButtonProps {
-    label: string;
     action?: () => void;
     href?: string;
     id?: string;
+    disabled?: boolean
 }
 
 interface RowOfButtonProps {
@@ -14,13 +14,13 @@ interface RowOfButtonProps {
 
 
 // Button or link with highlighted style
-const HighlightedButtonFC: React.FC<HighlightedButtonProps> = (({label, href, action, id}) => {
-    return <a href={href} className="btn df-highlighted-button" onClick={action} id={id}>
-        {label}
+export const HighlightedButton: React.FC<HighlightedButtonProps> = ({href, action, id, disabled, children}) => {
+    return <a href={href} className={"btn df-highlighted-button" + (disabled ? " disabled" : "")} onClick={action} id={id}>
+        {children}
     </a>;
-  });
+  };
 
-export const HighlightedButton = React.memo(HighlightedButtonFC)
+// export const HighlightedButton = React.memo(HighlightedButtonFC)
 
 
 // Floats all children in a nice little row

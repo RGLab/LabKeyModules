@@ -3,6 +3,7 @@ import { drawAssayTimepointViewer } from "./d3/AssayTimepointViewer.d3"
 import { HeatmapDatum, Filter, IAssayData, PlotDatum, FilterCategory, } from '../../typings/CubeData';
 
 import "./AssayTimepointViewer.scss"
+import { map } from 'd3';
 
 // React stuff ==================================== //
 
@@ -31,6 +32,13 @@ export interface AxisDatum<data> {
   participantCount: number;
   studyCount: number;
   data: data
+}
+
+interface LegendProps {
+  labels: string[];
+  colors: string[];
+  title: string;
+  width: number;
 }
 
 // helpers
@@ -96,8 +104,8 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
         let participantCount, studyCount
         data.Timepoint.Timepoint.forEach(cd => {
             if (cd.member == c.label) {
-                participantCount = cd.participantCount
-                studyCount = cd.studyCount
+              participantCount = cd.participantCount === null ? 0 : cd.participantCount
+              studyCount = cd.studyCount === null ? 0 : cd.studyCount
             }           
         })
       return({
@@ -115,8 +123,8 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
         let participantCount, studyCount
         data.Assay.Assay.forEach(cd => {
             if (cd.member == c.label) {
-                participantCount = cd.participantCount
-                studyCount = cd.studyCount
+              participantCount = cd.participantCount === null ? 0 : cd.participantCount
+              studyCount = cd.studyCount === null ? 0 : cd.studyCount
             }           
         })
         return({
@@ -130,8 +138,8 @@ const createAxisData = (data: IAssayData, axis: string, showSampleType: boolean,
       d = data.Assay.Assay
       axisData = d.map((cd) => { return ({ 
           label: cd.member, 
-          participantCount: cd.participantCount,
-          studyCount: cd.studyCount,
+          participantCount : cd.participantCount === null ? 0 : cd.participantCount,
+          studyCount : cd.studyCount === null ? 0 : cd.studyCount,
           data: { level: cd.level, member: cd.member } }) })
     }
     axisData.sort((a, b) => {
@@ -171,13 +179,17 @@ export const AssayTimepointViewerContainer: React.FC<AssayTimepointViewerContain
       "#A1D99B",
       "#74C476",
       "#41AB5D",
-      "#238B45",
-      "#005A32"
+      "#238B45"
     ]
   }
   const height = yaxisData.length * 17 + 55
   return (
     <div>
+      <div className="df-barplot-title">
+        <h4 >Assay by Study Day</h4>
+        
+        </div>
+      
       <AssayTimepointViewer
         data={heatmapData}
         name={name}
@@ -189,8 +201,52 @@ export const AssayTimepointViewerContainer: React.FC<AssayTimepointViewerContain
         colors={options.colors}
         showSampleType={showSampleType}
       />
+      <Legend2 labels={["0", "1-9", "10-49", "50-99", "100-499", "500-999", ">1000"]} colors={options.colors} title="Number of Participants " width={300}/>
     </div>
   )
+}
+
+const Legend: React.FC<LegendProps> = ({labels, colors, title, width}) => {
+  return <div className="df-legend">
+  
+  <table style={{}}>
+    <tr>
+      <td className={"legend-label"}><span>{title}</span></td>
+      {
+        labels.map((l) => {
+          return(<td className={"legend-label"}>{l}</td>)
+        })
+      }
+    </tr>
+    <tr>
+      <td></td>
+      {
+        colors.map((color) => {
+          return(<td className={"legend-color"} style={{backgroundColor: color, width: width/colors.length}}></td>)
+        })
+      }
+    </tr>
+    
+  </table>
+  </div>
+}
+
+const Legend2: React.FC<LegendProps> = ({labels, colors, title, width}) => {
+  return <div className="df-legend2">
+  
+  <span className="legend2-label">{title}</span>
+  <table >
+    {colors.map((c, i) => {
+      return(
+        <tr>
+          <td className="legend2-color" style={{backgroundColor: c}}></td>
+          <td className={"legend2-label"} >{labels[i]}</td>
+        </tr>
+      )
+    })}
+    
+  </table>
+  </div>
 }
 
 function AssayTimepointViewer(props: AssayTimepointViewerProps) {
@@ -199,6 +255,6 @@ function AssayTimepointViewer(props: AssayTimepointViewerProps) {
   });
 
   return <>
-    <div className={props.name} />
+    <div className={props.name} style={{display: "inline-block"}}/>
   </>
 }

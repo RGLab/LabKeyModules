@@ -63,7 +63,7 @@ export const AssayFilterIndicatorList: React.FC<AssayFilterIndicatorListProps> =
             filters.getIn(["SampleType", "Assay"]) == undefined &&
             filters.getIn(["Timepoint", "Timepoint"]) == undefined &&
             filters.getIn(["Timepoint", "SampleType"]) == undefined)) {
-        filterFlags = <em className="filter-indicator">No filters currently applied</em>
+        filterFlags = <em className="filter-indicator no-filters">No filters currently applied</em>
     } else {
         // These should be in the same order as the filter indicators in the banner
         const filterMap = Map<string, SelectedFilter>({
@@ -142,7 +142,7 @@ const FilterIndicatorList: React.FC<FilterIndicatorListProps> = ({ filterClass, 
     let filterFlags
     // debugger;
     if (filters.size == 0) {
-        filterFlags = <em className="filter-indicator">No filters currently applied</em>
+        filterFlags = <em className="filter-indicator no-filters">No filters currently applied</em>
     } else {
         const filterKeys = filters.keySeq();
         filterFlags = filterKeys.map((key: string) => {

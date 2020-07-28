@@ -28,3 +28,42 @@
     border-top: 10px solid lightsteelblue;
     z-index: 100000000000;
   }
+
+  .legend-color {
+    height: 10px;
+    border: 1px solid #e5e5e5
+  }
+
+  .legend-label {
+    font-size: .7em;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    white-space: nowrap;
+  }
+
+  .legend2-color {
+    width: 10px;
+    height: 15px;
+    border: 1px solid #e5e5e5
+  }
+
+  .legend2-label {
+    font-size: .7em;
+    text-align: left;
+    color: #888;
+    font-style: italic;
+    white-space: nowrap;
+    padding-left: 2px;
+  }
+
+  .df-legend2 {
+    float: right;
+    text-align: center;
+    padding-right: 15px;
+    padding-top: 15px;
+  }
+
+  .df-legend {
+    text-align: center;
+  }
