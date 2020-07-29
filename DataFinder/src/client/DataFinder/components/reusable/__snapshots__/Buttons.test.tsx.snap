@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<HighlightedButton /> render with all props 1`] = `
+<a
+  className="btn df-highlighted-button"
+  id="this-id"
+  onClick={[MockFunction]}
+>
+  Click me!
+</a>
+`;

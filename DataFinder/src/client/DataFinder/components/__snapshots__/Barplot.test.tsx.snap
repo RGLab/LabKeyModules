@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Barplot /> Render 1`] = `
+<div
+  className="Age"
+>
+  <div
+    className="df-barplot-title"
+  >
+    <h4>
+      Age
+    </h4>
+  </div>
+  <div
+    className="datafinder-barplot"
+    id="barplot-container-Age"
+    style={
+      Object {
+        "height": 260,
+        "width": 300,
+      }
+    }
+  >
+    <svg />
+  </div>
+  <div
+    id="xaxis-Age"
+  >
+    <svg />
+  </div>
+</div>
+`;

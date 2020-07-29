@@ -1,0 +1,69 @@
+/* -------- tooltip ----------- */
+#heatmap-label {
+    float: right;
+    position: absolute;
+    text-align: left;
+    width: auto;
+    height: 50px;
+    padding: 2px;
+    padding-bottom: 0;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 100000000000;
+  }
+  
+  .arrow-down {
+    float: right;
+    position: absolute;
+    background: transparent;
+    opacity: 0;
+    padding-bottom: 0;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid lightsteelblue;
+    z-index: 100000000000;
+  }
+
+  .legend-color {
+    height: 10px;
+    border: 1px solid #e5e5e5
+  }
+
+  .legend-label {
+    font-size: .7em;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    white-space: nowrap;
+  }
+
+  .legend2-color {
+    width: 10px;
+    height: 15px;
+    border: 1px solid #e5e5e5
+  }
+
+  .legend2-label {
+    font-size: .7em;
+    text-align: left;
+    color: #888;
+    font-style: italic;
+    white-space: nowrap;
+    padding-left: 2px;
+  }
+
+  .df-legend2 {
+    float: right;
+    text-align: center;
+    padding-right: 15px;
+    padding-top: 15px;
+  }
+
+  .df-legend {
+    text-align: center;
+  }

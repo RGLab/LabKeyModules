@@ -1,0 +1,14 @@
+<view xmlns="http://labkey.org/data/xml/view" 
+    frame="<%= htmlWebpackPlugin.options.frame %>" 
+    title="<%= htmlWebpackPlugin.options.title %>">
+        <dependencies>
+            <dependency path="Ext4"/>
+            <dependency path="query/olap.js"/>
+            <dependency path="immport/participantGroupWindow.js"/>
+            <dependency path="immport/participantGroupAPI.js"/>
+            <% if (htmlWebpackPlugin.options.mode !== 'dev') { %>
+            <dependency path="DataFinder/gen/<%= htmlWebpackPlugin.options.name %>.js"/>
+            <dependency path="DataFinder/gen/<%= htmlWebpackPlugin.options.name %>.css" />
+            <% } %>
+        </dependencies>
+</view>

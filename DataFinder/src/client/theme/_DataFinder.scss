@@ -1,0 +1,42 @@
+// TODO:  Organize this
+// TODO:  Move banner-related css into separate file so only that is loaded with the banner on non-datafinder pages
+
+.wrapper {
+  width: 300px;
+  background-color: #f7f7f9;
+  padding: 15px;
+  border: 2px solid #aaaaaa;
+}
+
+#data-finder-viz > .tab-content {
+  background-color: #fff;
+  padding: 15px;
+  border: 1px solid #dddddd;
+  border-top: transparent;
+}
+
+.df-tab-title {
+  width: 50%;
+  text-align: center;
+
+  &.active>a{
+    background-color: #fff;
+  }
+}
+
+.nav-tabs > li > a {
+  margin-right: 0;
+  position: relative;
+  display: block;
+  padding: 2px 0px 0px 0px;
+  font-size: 1.2em;
+  border-bottom: 1px solid #d0d0d0
+}
+
+.btn-group {
+  vertical-align: baseline;
+}
+
+
+
+

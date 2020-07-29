@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+      "target": "es2016",
+      "jsx": "react",
+      "sourceMap": false,
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true,
+      "esModuleInterop": true,
+      "types": ["jest"] // don't implicitly include any @types, only those included via import
+    },
+    "exclude": [
+      "resources"
+    ]
+}
+  
+  
