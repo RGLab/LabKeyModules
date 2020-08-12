@@ -49,10 +49,10 @@ subdir <- "/share/files/Studies/R_API_resources/"
 # labkey.url.params <- list(
 #   from = "2018-01-01",
 #   to = "2020-01-01",
-#   by = "week"
+#   by = "week",
+#   plotType = "bar"
 # )
-# labkey.url.base <- "https://www.immunespace.org"
-# plotType <- "line"
+# labkey.url.base <- "https://test.immunespace.org"
 ```
 
 ```{r preprocess}
@@ -84,7 +84,8 @@ dateBy <- ifelse(labkey.url.params$by %in% c("day", "week", "month", "year"),
 breaks <- seq(from, to, by = dateBy)
 
 # colFilter from `export as Script` in schema-browser
-usersToExclude <- labkey.selectRows(baseUrl = labkey.url.base,
+# Use PROD always as many of excluded users are 'inactive' on TEST
+usersToExclude <- labkey.selectRows(baseUrl = "https://www.immunespace.org",
                             folderPath = "/home",
                             schemaName = "core",
                             queryName = "SiteUsers",
@@ -354,9 +355,11 @@ usersOverTimeMsg <- 0
 ```{r isr-user, eval=ISR_inits_present}
 # Filter to single connection per user per day for accurate aggregation
 ISR_inits[, date2 := as.Date(as.POSIXct(date2, format="%Y-%m-%d", tz="UTC")) ]
+ISR_inits <- ISR_inits[ !X12 %in% exclusionEmails ]
 ISR_inits <- ISR_inits[ !is.na(date2) & date2 >= as.Date(from) & date2 <= as.Date(to)  ]
 ISR_users <- ISR_inits[ , list(X12, date2) ]
 ISR_users <- ISR_users[ !duplicated(ISR_users) ]
+
 
 # Group by Date break
 ISR_usersOverTime <- ISR_users[ , Date := as.Date(cut(date2, breaks = labkey.url.params$by)) ]
