@@ -594,6 +594,26 @@ sourceSummaryWide <- dcast(sourceSummary, shortDate ~ condensedSource, value.var
 sourceSummaryWide[ is.na(sourceSummaryWide)] <- 0
 setorder(sourceSummaryWide, shortDate)
 
+# Handle missing data
+expectedCols <- c("Bioconductor",
+                  "Cran",
+                  "Email Link",
+                  "Facebook",
+                  "HIPC",
+                  "ImmPort",
+                  "ImmuneData",
+                  "Journals",
+                  "NCBI",
+                  "NIAID",
+                  "RGLab Domain",
+                  "Search Engine",
+                  "Twitter",
+                  "Other")
+missingCols <- setdiff(expectedCols, colnames(sourceSummaryWide))
+for(column in missingCols){
+  sourceSummaryWide[[column]] <- 0
+}
+
 # Stacked area chart shows unique user sessions from each condensed source per month
 someColors <- brewer.pal(12, "Paired")
 addlColors <- brewer.pal(3, "Greys")[1:2]
