@@ -42,7 +42,17 @@ getCurrentRDS <- function(filename){
 
 ```{r global-vars}
 # Location of cronjob artifacts
-subdir <- "/share/files/Studies/R_API_resources"
+subdir <- "/share/files/Studies/R_API_resources/"
+
+# testing only
+# subdir <- "~/Documents/FHCRC/MonitorISData/"
+# labkey.url.params <- list(
+#   from = "2018-01-01",
+#   to = "2020-01-01",
+#   by = "week"
+# )
+# labkey.url.base <- "https://www.immunespace.org"
+# plotType <- "line"
 ```
 
 ```{r preprocess}
@@ -61,7 +71,6 @@ if (from > to){
   stop("Please select a start date that is earlier than the end date.")
 }
 
-# Set plotting parameters
 plotType <- ifelse(labkey.url.params$plotType %in% c("bar", "line"),
                    labkey.url.params$plotType,
                    "bar")
@@ -74,6 +83,7 @@ dateBy <- ifelse(labkey.url.params$by %in% c("day", "week", "month", "year"),
 # common axis labels
 breaks <- seq(from, to, by = dateBy)
 
+# colFilter from `export as Script` in schema-browser
 usersToExclude <- labkey.selectRows(baseUrl = labkey.url.base,
                             folderPath = "/home",
                             schemaName = "core",
@@ -83,6 +93,7 @@ usersToExclude <- labkey.selectRows(baseUrl = labkey.url.base,
                                                      "CONTAINS_ONE_OF",
                                                      "Developers;Administrators;LabKey;excludeFromLogs")),
                             containerFilter = NULL)
+
 
 # Admin emails no longer in the DB
 oldAdminEmails <- c("rsautera@fhcrc.org",
@@ -313,7 +324,6 @@ if (plotType == "line") {
 <br>
 
 ```{r tomcat-logs}
-
 # To determine how ImmuneSpaceR has been used, we parse the server logs. Since the server logs
 # all types of GET / POSTS and other requests, there is a fair amount of filtering that must 
 # be done to find the requests that help us understand usage.
@@ -326,7 +336,8 @@ if (plotType == "line") {
 # Add this line
 # 00 0-23/6 * * * rsync -a -v /labkey/apps/tomcat/logs/localhost_access_log.* /share/tomcat-logs/
 # This will sync logs to `/share/tomcat-logs/` every six hour.
-logs_dt <- getCurrentRDS("_logs.rds")
+# 
+# The logs are parsed using the `ImmuneSpaceCronjobs` package
 ```
 
 
@@ -342,12 +353,13 @@ usersOverTimeMsg <- 0
 ## 9. ImmuneSpaceR Users Over Time
 ```{r isr-user, eval=ISR_inits_present}
 # Filter to single connection per user per day for accurate aggregation
+ISR_inits[, date2 := as.Date(as.POSIXct(date2, format="%Y-%m-%d", tz="UTC")) ]
+ISR_inits <- ISR_inits[ !is.na(date2) & date2 >= as.Date(from) & date2 <= as.Date(to)  ]
 ISR_users <- ISR_inits[ , list(X12, date2) ]
 ISR_users <- ISR_users[ !duplicated(ISR_users) ]
 
 # Group by Date break
-tmp <- as.POSIXct(ISR_users$date2, format="%Y-%m-%d", tz="UTC")
-ISR_usersOverTime <- ISR_users[ , Date := as.Date(cut(tmp, breaks = labkey.url.params$by)) ]
+ISR_usersOverTime <- ISR_users[ , Date := as.Date(cut(date2, breaks = labkey.url.params$by)) ]
 ISR_usersOverTime <- ISR_usersOverTime[ , list(Users = .N), by = Date ]
 
 p <- ISR_usersOverTime %>%
@@ -470,8 +482,12 @@ datatable(ISR_study,
 ## 16. Studies accessed via UI (pageviews)
 ```{r study-views}
 log_study <- getCurrentRDS("log_study")
+log_study[, date2 := as.Date(as.POSIXct(date2, format="%Y-%m-%d", tz="UTC")) ]
+log_study <- log_study[ !is.na(date2) & date2 >= as.Date(from) & date2 <= as.Date(to)  ]
+log_study <- log_study[ , Date := as.Date(cut(date2, breaks = labkey.url.params$by)) ]
+log_study_summarized <- log_study[ , list(Views = .N), by = study ]
 
-datatable(log_study,
+datatable(log_study_summarized,
           colnames = c("Study", "Unique pageviews"),
           caption = paste0("From ", from, " to ", to),
           width = 600)
@@ -481,8 +497,12 @@ datatable(log_study,
 ## 17. Modules accessed via UI (pageviews)
 ```{r module-views}
 log_module <- getCurrentRDS("log_module")
+log_module[, date2 := as.Date(as.POSIXct(date2, format="%Y-%m-%d", tz="UTC")) ]
+log_module <- log_module[ !is.na(date2) & date2 >= as.Date(from) & date2 <= as.Date(to)  ]
+log_module <- log_module[ , Date := as.Date(cut(date2, breaks = labkey.url.params$by)) ]
+log_module_summarized <- log_module[ , list(Views = .N), by = module ]
 
-datatable(log_module,
+datatable(log_module_summarized,
           colnames = c("Module", "Unique pageviews"),
           caption = paste0("From ", from, " to ", to),
           width = 600)
@@ -494,8 +514,12 @@ datatable(log_module,
 # Get study-specific reports, incl. IS1 using search string based on minimal URL
 # then update the report column match study id.
 log_reports <- getCurrentRDS("log_reports")
+log_reports[, date2 := as.Date(as.POSIXct(date2, format="%Y-%m-%d", tz="UTC")) ]
+log_reports <- log_reports[ !is.na(date2) & date2 >= as.Date(from) & date2 <= as.Date(to)  ]
+log_reports <- log_reports[ , Date := as.Date(cut(date2, breaks = labkey.url.params$by)) ]
+log_reports_summarized <- log_reports[ , list(Views = .N), by = report ]
 
-datatable(log_reports,
+datatable(log_reports_summarized,
           colnames = c("Report", "Unique pageviews"),
           caption = paste0("From ", from, " to ", to),
           width = 600)
@@ -505,6 +529,7 @@ datatable(log_reports,
 ## 19. Rstudio accessed via UI (pageviews)
 ```{r rstudio}
 log_rstudio <- getCurrentRDS("log_rstudio")
+log_rstudio <- log_rstudio[ !is.na(Date) & Date >= as.Date(from) & Date <= as.Date(to) ]
 
 p <- log_rstudio %>%
   plot_ly(x = ~Date,
@@ -525,6 +550,7 @@ We had **`r round(mean(log_rstudio$Sessions, na.rm = TRUE), 2)` RStudio sessions
 ## 20. Google Analytics Plots
 ```{r googleAnalytics}
 gaData <- getCurrentRDS("googleAnalyticsArtifact")
+gaData <- gaData[ !is.na(date) & date >= as.Date(from) & date <= as.Date(to) ]
 
 # Manually curated 'best guesses'
 gaData$condensedSource <- sapply(gaData$fullReferrer, function(x){
@@ -560,12 +586,13 @@ gaData$condensedSource <- sapply(gaData$fullReferrer, function(x){
 })
 
 # summarize usageSessions by condensedSource by day
-gaData$shortDate <- format(as.Date(gaData$date), "%Y-%b")
+gaData[, shortDate := format(as.Date(date), "%Y-%m")]
 sourceSummary <- gaData[, list(users = sum(usageSessions)), by = c("condensedSource", "shortDate") ]
 
 # melt data so each day has values for every condensedSource
 sourceSummaryWide <- dcast(sourceSummary, shortDate ~ condensedSource, value.var = "users")
 sourceSummaryWide[ is.na(sourceSummaryWide)] <- 0
+setorder(sourceSummaryWide, shortDate)
 
 # Stacked area chart shows unique user sessions from each condensed source per month
 someColors <- brewer.pal(12, "Paired")
