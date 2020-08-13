@@ -36,6 +36,7 @@
     "bootstrap": "^3.4.1",
     "d3": "^5.15.0",
     "d3-color": "^1.4.0",
+    "font-awesome": "4.7.0",
     "immutable": "3.8.2",
     "jquery": "^3.5.1",
     "react": "16.8.6",
