@@ -4,7 +4,7 @@
     <transforms>
         <transform id="copy" type="org.labkey.di.pipeline.TransformTask">
             <source schemaName="assay.ExpressionMatrix.matrix" queryName="InputSamples" containerFilter="AllFolders"/>
-            <destination schemaName="HIPCMatrix" queryName="InputSamples_precompute" targetOption="truncate" >
+            <destination schemaName="VirtualStudyBase" queryName="InputSamples_precompute" targetOption="truncate" >
                 <columnTransforms>
                     <!-- NOTE:  LabKey automatically creates a "Folder" column which is populated
                     with whichever folder the etl is run from, so this preserves the

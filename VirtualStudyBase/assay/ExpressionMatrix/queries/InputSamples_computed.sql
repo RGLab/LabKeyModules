@@ -13,4 +13,4 @@ SELECT
 FROM
 -- Only want to work within each virtual study, not at project level
 -- as in /Studies
-  hipcmatrix.InputSamples_precompute
+  virtualstudybase.InputSamples_precompute
