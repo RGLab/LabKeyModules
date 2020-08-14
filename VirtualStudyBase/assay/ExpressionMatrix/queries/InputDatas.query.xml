@@ -1,0 +1,19 @@
+<tables xmlns="http://labkey.org/data/xml">
+  <table tableName="InputDatas" tableDbType="NOT_IN_DB">
+    <columns>
+      <column columnName="Run">
+        <fk>
+          <!-- NOTE: This makes the DataInput.TargetProtocolApplication.Run into a lookup to the assay.ExpressionMatrix.<protocol>.Runs table. -->
+          <fkTable>Runs</fkTable>
+          <fkColumnName>RowId</fkColumnName>
+        </fk>
+      </column>
+      <column columnName="TargetProtocolApplication">
+        <isHidden>true</isHidden>
+      </column>
+      <column columnName="Role">
+        <isHidden>true</isHidden>
+      </column>
+    </columns>
+  </table>
+</tables>
