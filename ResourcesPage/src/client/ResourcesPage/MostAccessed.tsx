@@ -1,212 +1,174 @@
 import * as React from "react";
-import * as Bootstrap from 'react-bootstrap'
+import {MenuItem, DropdownButton, Tab, TabPane, TabContainer} from "react-bootstrap";
 import { 
     MaBarPlot,
-    MaBarPlotDatum,
     MaBarPlotProps,
     MaLinePlot,
-    MaLinePlotDatum,
     MaLinePlotProps,
-    MaPlotTitles
-} from './components/mostAccessedPlots'
+} from './PlotComponents/mostAccessedPlots'
+import {
+    createBarPlotProps, 
+    createLinePlotProps,
+} from './MostAccessed/utils'
+import {
+    PLOT_OPTIONS, 
+    BY_STUDY_ORDER_OPTIONS,
+    AddlInfoLine,
+    AddlInfoBar
+} from './MostAccessed/constants'
 
+interface props {
+    transformedMaData: {
+        byStudy: Object[],
+        byMonth: Object[]
+    };
+    labkeyBaseUrl: string;
+}
 
+export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUrl}: props ) => {
 
-export const MostAccessed = (transformedMaData, labkeyBaseUrl) => {
-
-    const [maBarOrderBy, setMaBarOrderBy] = React.useState("total")
-    const [maPlotToShow, setMaPlotToShow] = React.useState("study")
-
-    // --- Most Accessed
+    const [plotToShow, setPlotToShow] = React.useState(PLOT_OPTIONS[0].value)
+    const [maBarOrderBy, setMaBarOrderBy] = React.useState(BY_STUDY_ORDER_OPTIONS[2].value)
     const [maLinePlotProps, setMaLinePlotProps] = React.useState<MaLinePlotProps>()
     const [maBarPlotProps, setMaBarPlotProps] = React.useState<MaBarPlotProps>()
 
     React.useEffect(() => {
-        
-        // Remove zero values to avoid odd looking chart since sorting is done
-        // using a quicksort that leaves secondary sort in groups
-        const tmp = JSON.parse(JSON.stringify(transformedMaData.byStudy))
-        var tmpStudyData = tmp.filter(el => el[maBarOrderBy] > 10)
-        tmpStudyData.sort((a,b) => (a[maBarOrderBy] > b[maBarOrderBy]) ? 1 : -1)
-    
-        // logic for updating titles
-        const barTitles: MaPlotTitles = {
-            x: 'Number of User Interactions',
-            y: 'Study Id',
-            main: 'ImmuneSpace Usage by ImmuneSpaceR API and UI'
-        }
-    
-        const barData = []
-        const barLabels = []
-        tmpStudyData.forEach(element => {
-            let datum: MaBarPlotDatum = {
-                UI: element['UI'],
-                ISR: element['ISR'],
-                total: element['total'] 
-            }
-            barData.push(datum)
-            barLabels.push(element['study'])
-        })
-    
-        // logic for updating props
-        let barProps: MaBarPlotProps = {
-            data: barData,
-            labels: barLabels,
-            titles: barTitles,
-            name: "byStudy",
-            width: 700,
-            height: 800,
-            linkBaseText: labkeyBaseUrl + '/project/Studies/'
-        }
-        
-        setMaBarPlotProps(barProps)
-    
-        // logic for updating titles
-        const lineTitles: MaPlotTitles = {
-            x: 'Date',
-            y: 'Number of User Interactions',
-            main: 'ImmuneSpace Usage over Time'
-        }
-    
-        const lineData = []
-        const lineLabels = []
-        transformedMaData.byMonth.forEach(element => {
-            let datum: MaLinePlotDatum = {
-                UI: element['UI'],
-                ISR: element['ISR'],
-                total: element['total'] 
-            }
-            lineData.push(datum)
-            lineLabels.push(element['date'])
-        })
-    
-        // logic for updating props
-        let lineProps: MaLinePlotProps = {
-            data: lineData,
-            titles: lineTitles,
-            labels: lineLabels,
-            name: "byMonth",
-            width: 1100,
-            height: 600,
-            linkBaseText: 'test month'
-        }
-        
-        setMaLinePlotProps(lineProps)
+        createLinePlotProps(transformedMaData.byMonth, setMaLinePlotProps)
+    }, [transformedMaData])
+
+    React.useEffect(() => {
+        createBarPlotProps(transformedMaData.byStudy, maBarOrderBy, labkeyBaseUrl, setMaBarPlotProps)
         
     }, [transformedMaData, maBarOrderBy])
-
-    const plotOptions = [
-        {value: 'study', label: 'By Study'},
-        {value: 'month', label:  'By Month'},
-    ]
-
-    const byStudyOrderOptions = [
-        {value: 'UI', label: 'UI Pageviews'},
-        {value: 'ISR', label:  'ImmuneSpaceR connections'},
-        {value: 'total', label: 'All interactions'}
-    ]
 
     function onSelectChangeBarOrder(eventKey){
         setMaBarOrderBy(eventKey)
     }
 
-    const ByStudyDropdown: React.FC = () => {
+    const barDropdown = React.useCallback( (orderOptions, onSelect) => {
         return(
-            <Bootstrap.DropdownButton title='Select Order' id='ma-bar-order-select-dropdown'>
-                <Bootstrap.MenuItem 
-                    eventKey={byStudyOrderOptions[0].value} 
-                    onSelect={onSelectChangeBarOrder}>
-                    {byStudyOrderOptions[0].label}
-                </Bootstrap.MenuItem>
-                <Bootstrap.MenuItem 
-                    eventKey={byStudyOrderOptions[1].value} 
-                    onSelect={onSelectChangeBarOrder}>
-                    {byStudyOrderOptions[1].label}
-                </Bootstrap.MenuItem>
-                <Bootstrap.MenuItem 
-                    eventKey={byStudyOrderOptions[2].value} 
-                    onSelect={onSelectChangeBarOrder}>
-                    {byStudyOrderOptions[2].label}
-                </Bootstrap.MenuItem>
-            </Bootstrap.DropdownButton>
+            <div>
+                <DropdownButton title='Select Order' id='ma-bar-order-select-dropdown'>
+                    <MenuItem 
+                        eventKey={orderOptions[0].value} 
+                        onSelect={onSelect}>
+                        {orderOptions[0].label}
+                    </MenuItem>
+                    <MenuItem 
+                        eventKey={orderOptions[1].value} 
+                        onSelect={onSelect}>
+                        {orderOptions[1].label}
+                    </MenuItem>
+                    <MenuItem 
+                        eventKey={orderOptions[2].value} 
+                        onSelect={onSelect}>
+                        {orderOptions[2].label}
+                    </MenuItem>
+                </DropdownButton>
+            </div>
         )
+    }, [])
+
+    const getPlot = React.useCallback((props, Component) => {
+        return(
+            <Component
+                data={props.data}
+                labels={props.labels}
+                titles={props.titles}
+                name={props.name}
+                width={props.width}
+                height={props.height}
+                linkBaseText={props.linkBaseText}
+            />
+        )
+    }, [])
+
+    function onSelectChangePlot(eventKey){
+        setPlotToShow(eventKey)
     }
 
-    const ByStudyAddlInfo: React.FC = () => {
-        if(maPlotToShow == "study"){
-            return(
-                <ul>
-                    <li>Hover over each bar for specific study data</li>
-                    <li>Click on the Y-axis label to go to study overview page</li>
-                    <li>Toggle between a chronological view of user interactions "By Month" or on a per study basis with "By Study"</li>
-                </ul>
-                
-            )
-        }else{
-            return(
-                <ul>
-                    <li>Toggle between a chronological view of user interactions "By Month" or on a per study basis with "By Study"</li>
-                </ul>
-                
-            )
-        }
-    }
-
-    const MaPlot: React.FC = () => {
-        if(maPlotToShow == "study"){
-            return(
-                <MaBarPlot
-                    data={maBarPlotProps.data}
-                    labels={maBarPlotProps.labels}
-                    titles={maBarPlotProps.titles}
-                    name={maBarPlotProps.name}
-                    width={maBarPlotProps.width}
-                    height={maBarPlotProps.height}
-                    linkBaseText={maBarPlotProps.linkBaseText}
-                />
-            )
-        }else{
-            return(
-                <MaLinePlot
-                    data={maLinePlotProps.data}
-                    labels={maLinePlotProps.labels}
-                    titles={maLinePlotProps.titles}
-                    name={maLinePlotProps.name}
-                    width={maLinePlotProps.width}
-                    height={maLinePlotProps.height}
-                    linkBaseText={maLinePlotProps.linkBaseText}
-                />
-            )
-        }
-    }
-
-    return(
-        <div id="#most-accessed">
-            <h2>ImmuneSpace Usage Over Time or By Study</h2>
-            <p>The plots below allow you to view ImmuneSpace usage since the launch of the platform in 2016</p>
-            <p><b>For More Information:</b></p>
-            <ByStudyAddlInfo/>
-            <br></br>
+    const getMainDropDown = React.useCallback(() => {
+        return(
             <table>
                 <tr>
                     <td>
-                        <Bootstrap.DropdownButton title='Select Plot Type' id='ma-type-select-dropdown'>
-                            <Bootstrap.MenuItem eventKey={plotOptions[0].value} onSelect={onSelectChangePlot}>
-                                {plotOptions[0].label}
-                            </Bootstrap.MenuItem>
-                            <Bootstrap.MenuItem eventKey={plotOptions[1].value} onSelect={onSelectChangePlot}>
-                                {plotOptions[1].label}
-                            </Bootstrap.MenuItem>
-                        </Bootstrap.DropdownButton>
+                        <DropdownButton title='Select Plot Type' id='ma-type-select-dropdown'>
+                            <MenuItem eventKey={PLOT_OPTIONS[0].value} key={PLOT_OPTIONS[0].value} onSelect={onSelectChangePlot}>
+                                {PLOT_OPTIONS[0].label}
+                            </MenuItem>
+                            <MenuItem eventKey={PLOT_OPTIONS[1].value} key={PLOT_OPTIONS[1].value} onSelect={onSelectChangePlot}>
+                                {PLOT_OPTIONS[1].label}
+                            </MenuItem>
+                        </DropdownButton>
                     </td>
                     <td>
-                        { maPlotToShow == "study" ? <ByStudyDropdown/> : null}
+                        {plotToShow == PLOT_OPTIONS[0].value ? barDropdown(BY_STUDY_ORDER_OPTIONS, onSelectChangeBarOrder) : null}
                     </td>
                 </tr>
             </table>
-            <div id="maPlot">
-                <MaPlot/>
+        ) 
+    }, [plotToShow])
+
+    const generateChildId = React.useCallback((eventKey: any, type: any) => {
+        return eventKey;
+    }, []);
+
+    interface plotTabProps {
+        optionSelection: string;
+        props: Object;
+        Component: React.FC;
+    }
+
+    const PlotTab = React.memo<plotTabProps>(( {optionSelection, props, Component} : plotTabProps) => {
+        return(
+            <div>
+                {optionSelection == PLOT_OPTIONS[0].value ? <AddlInfoBar/> : <AddlInfoLine/>}
+                {getPlot(props, Component)}
             </div>
-        </div>
+        )
+    });
+
+    const getTabContent = React.useCallback(() => {
+        if(typeof(maBarPlotProps) !== "undefined" && typeof(maLinePlotProps) !== "undefined"){
+            return(
+                <Tab.Content>
+                    <TabPane eventKey={PLOT_OPTIONS[0].value}>
+                        <PlotTab
+                            optionSelection={PLOT_OPTIONS[0].value}
+                            props={maBarPlotProps}
+                            Component={MaBarPlot}
+                        />
+                    </TabPane>
+                    <TabPane eventKey={PLOT_OPTIONS[1].value}>
+                        <PlotTab
+                            optionSelection={PLOT_OPTIONS[1].value}
+                            props={maLinePlotProps}
+                            Component={MaLinePlot}
+                        />
+                    </TabPane>
+                </Tab.Content>
+        )
+        }else{
+            return(
+                <div>
+                    <i aria-hidden="true" className="fa fa-spinner fa-pulse" style={{marginRight:'5px'}}/>
+                    Loading plots ...
+                </div>
+            )
+        }
+        
+    }, [maBarPlotProps, maLinePlotProps])
+
+    return(
+        <TabContainer activeKey={plotToShow} generateChildId={generateChildId}>
+            <div>
+                <h2>ImmuneSpace Usage Over Time or By Study</h2>
+                <p>The plots below allow you to view ImmuneSpace usage since the launch of the platform in 2016</p>
+                <p><b>For More Information:</b></p>
+                {getMainDropDown()}
+                <br></br>
+                {getTabContent()}
+            </div>   
+        </TabContainer>
     )
-}
+});

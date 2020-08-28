@@ -1,5 +1,5 @@
-import {BarPlotDatum} from "./components/mostCitedBarPlot"
-import {ScatterPlotDatum} from "./components/similarStudyScatterPlot"
+import {BarPlotDatum} from "./PlotComponents/mostCitedBarPlot"
+import {ScatterPlotDatum} from "./PlotComponents/similarStudyScatterPlot"
 
 // --- Helpers
 function getRangeFromIntArray(objectArray, elementName){

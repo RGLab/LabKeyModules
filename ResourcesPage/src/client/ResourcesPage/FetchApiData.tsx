@@ -1,16 +1,14 @@
-import * as React from "react";
-
-interface props {
+interface Props {
     apiBase: string;
     fileSuffix: string;
-    setData: function;
-    setErrors: function;
+    setData: (data) => void;
+    setErrors: (errors) => void;
 }
 
-export const fetchApiData = React.memo<props>(( { apiBase, fileSuffix, setData, setErrors }: props) => {
-    const res = await fetch(apiBase + fileSuffix);
-    res
-        .json()
-        .then(res => setData(res))
-        .catch(err => setErrors(err));
+export const fetchApiData = async (props: Props) => {
+    fetch(props.apiBase + props.fileSuffix)
+        .then(response => response.json())
+        .then(data => props.setData(data))
+        .catch(errors => props.setErrors(errors));
+    
 }

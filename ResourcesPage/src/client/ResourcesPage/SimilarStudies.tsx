@@ -1,205 +1,175 @@
 import React from "react";
-import {MenuItem, Nav, Navbar, NavDropdown, NavItem, Tab, TabPane} from 'react-bootstrap';
+import {DropdownButton, MenuItem, Tab, TabPane, TabContainer} from 'react-bootstrap';
 import {
-    ScatterPlotDatum,
     ScatterPlotProps,
-    ScatterPlot
-} from './components/similarStudyScatterPlot'
+    ScatterPlot,
+    ScatterPlotDataRange,
+    ScatterPlotDatum
+} from './PlotComponents/similarStudyScatterPlot'
+import {DROPDOWN_OPTIONS, LABELS} from './SimilarStudies/constants'
+import {makePropsWithIndex} from './SimilarStudies/utils'
+                  
 
+interface props {
+    transformedSsData: ScatterPlotDatum[];
+    ssDataRange: ScatterPlotDataRange;
+    labkeyBaseUrl: string;
+}
 
-export const SimilarStudies = (transformedSsData, ssDataRange, labkeyBaseUrl) => {
-
-    const labels = {
-        assays: [
-            'elisa',
-            'elispot',
-            'hai',
-            'neutralizingAntibodyTiter',
-            'geneExpression',
-            'flowCytometry',
-            'pcr',
-            'mbaa'
-        ],
-        condition: [
-            'healthy',
-            'influenza',
-            'cmv',
-            'tuberculosis',
-            'yellowFever',
-            'meningitis',
-            'malaria',
-            'hiv',
-            'dengue',
-            'ebola',
-            'hepatitis',
-            'smallpox',
-            'dermatomyositis',
-            'westNile',
-            'zika',
-            'varicellaZoster',
-            'unknown'
-        ],
-        studyDesign: [
-            'minimumAge',
-            'maximumAge',
-            'numberOfParticipants',
-            'clinicalTrial'
-        ]
-    }
+// ---- Main ------
+export const SimilarStudies = React.memo<props>( ( {transformedSsData, ssDataRange, labkeyBaseUrl}: props) => {
     
-    var categoricalLabels = labels.assays
-                              .concat(labels.condition)
-                              .concat('clinicalTrial')
-    
+    const [ssPlotPropsList, setSsPlotPropsList] = React.useState<Object>()
+    const [plotsToShow, setPlotsToShow] = React.useState(DROPDOWN_OPTIONS[0].value)
+
     React.useEffect(() => {
-        
-        function getLabelType(label){
-            if(labels.assays.includes(label)){
-                return("assays")
-            }else if(labels.condition.includes(label)){
-                return("condition")
-            }else{
-                return("studyDesign")
-            }
-        }
-    
-        function makePropsWithIndex(label, index, dataType){
-            // For plotting categorical values, ensure that colored dots
-            // are plotted last to be visually on top by having them plot last
-            transformedSsData.sort((a,b) => 
-                (a[dataType][label] > b[dataType][label]) ? 1 : -1
-            )
-    
-            // deep copy to ensure sort stays put
-            const sortedData = JSON.parse(JSON.stringify(transformedSsData))
-    
-            let plotProps: ScatterPlotProps = {
-                data: sortedData,
-                name: label,
-                width: 300,
-                height: 300,
-                dataRange: ssDataRange,
-                linkBaseText: labkeyBaseUrl + "/project/Studies/",
-                colorIndex: index,
-                categoricalVar: categoricalLabels.includes(label),
-                dataType: getLabelType(label)
-            }
-            
-            return(plotProps)
-        }
-    
         const plotPropsList = {}
     
-        Object.keys(labels).forEach(function(key){
+        Object.keys(LABELS).forEach(function(key){
             const subList = []
-            labels[key].forEach(function(label, index){
-                subList.push(makePropsWithIndex(label, index, key))
+            LABELS[key].forEach(function(label, index){
+                subList.push(makePropsWithIndex(
+                    transformedSsData, 
+                    label, 
+                    key,
+                    ssDataRange,
+                    labkeyBaseUrl,
+                    index
+                    )
+                )
             })
             plotPropsList[key] = subList
         })
-    
+
         setSsPlotPropsList(plotPropsList)
     
     }, [transformedSsData, ssDataRange])  
 
-        // --- Similar Studies
-        const [ssPlotsToShow, setSsPlotsToShow] = React.useState("assays")
-        const [ssPlotPropsList, setSsPlotPropsList] = React.useState({})
-        // Offer selection of plots
-        const dropdownOptions = [
-            {value: 'assays', label: 'Assay Data Available'},
-            {value: 'studyDesign', label:  'Study Design'},
-            {value: 'condition', label: 'Condition Studied'}
-        ]
-
-        function CreatePlotGrid(propsList){
-            const rowsOfPlots = []
-            const PLOTS_IN_ROW = 4
-
-            // slice returns i to end of array even if i + x is greater
-            // than the length
-            for(var i = 0; 
-                i <= propsList.length - PLOTS_IN_ROW + 1; 
-                i = i + PLOTS_IN_ROW){
-                    var copy = JSON.parse(JSON.stringify(propsList))
-                    var propsSet = copy.slice(i, i + PLOTS_IN_ROW)
-                    rowsOfPlots.push(CreateRowOfPlots(propsSet))
-            }
-
-            return(rowsOfPlots)
+    const CreatePlotGrid = React.useCallback((propsList: ScatterPlotProps[]) => {
+        const rowsOfPlots = []
+        const PLOTS_IN_ROW = 4
+    
+        // slice returns i to end of array even if i + x is greater than Array.length
+        for(var i = 0; 
+            i <= propsList.length - PLOTS_IN_ROW + 1; 
+            i = i + PLOTS_IN_ROW){
+                var copy = JSON.parse(JSON.stringify(propsList))
+                var propsSet = copy.slice(i, i + PLOTS_IN_ROW)
+                rowsOfPlots.push(CreateRowOfPlots(propsSet))
         }
+    
+        return(rowsOfPlots)
+    },[ssPlotPropsList])
+    
+    const CreateRowOfPlots = React.useCallback((propsSet) => {
+        const plotList = []
+        for(var i = 0; i < propsSet.length; i++){
+            plotList.push(CreateSingleScatterPlot(propsSet[i]))
+        }
+    
+        return(
+            <tr>
+                {plotList}
+            </tr>
+        )
+    },[])
+    
+    const CreateSingleScatterPlot = React.useCallback((props) => {
+        return(
+            <td>
+                <ScatterPlot 
+                    data={props.data}
+                    name={props.name}
+                    width={props.width}
+                    height={props.height}
+                    dataRange={props.dataRange}
+                    linkBaseText={props.linkBaseText}
+                    colorIndex={props.colorIndex}
+                    categoricalVar={props.categoricalVar}
+                    dataType={props.dataType}
+                />
+            </td>
+        )
+    },[])
 
-        function CreateRowOfPlots(propsSet){
-            // console.log(propsSet[0])
-            const plotList = []
-            for(var i = 0; i < propsSet.length; i++){
-                plotList.push(CreateSingleScatterPlot(propsSet[i]))
-            }
+    function onSelectChangePlot(eventKey){
+        setPlotsToShow(eventKey)
+    }
 
+    const getDropDown = React.useCallback(() => {
+        return(
+            <div>
+                <DropdownButton title='Select Plot Set' id='order-select-dropdown'>
+                    <MenuItem eventKey={DROPDOWN_OPTIONS[0].value} key={DROPDOWN_OPTIONS[0].value} onSelect={onSelectChangePlot}>
+                        {DROPDOWN_OPTIONS[0].label}
+                    </MenuItem>
+                    <MenuItem eventKey={DROPDOWN_OPTIONS[1].value} key={DROPDOWN_OPTIONS[1].value} onSelect={onSelectChangePlot}>
+                        {DROPDOWN_OPTIONS[1].label}
+                    </MenuItem>
+                    <MenuItem eventKey={DROPDOWN_OPTIONS[2].value} key={DROPDOWN_OPTIONS[2].value} onSelect={onSelectChangePlot}>
+                        {DROPDOWN_OPTIONS[2].label}
+                    </MenuItem>
+                </DropdownButton>
+            </div>
+        )
+    }, [])
+
+    interface plotPropsList {
+        plotPropsList: ScatterPlotProps[];
+    }
+
+    const PlotGrid = React.memo<plotPropsList>(( { plotPropsList }: plotPropsList) => {
+        return(
+            <div>
+                {CreatePlotGrid(plotPropsList)}
+            </div>
+        )
+    })
+
+    const getTabContent = React.useCallback(() => {
+        if(typeof(ssPlotPropsList) !== "undefined"){
             return(
-                <tr>
-                    {plotList}
-                </tr>
+                <Tab.Content>
+                    <TabPane eventKey={DROPDOWN_OPTIONS[0].value}>
+                        <PlotGrid plotPropsList={ssPlotPropsList[DROPDOWN_OPTIONS[0].value]} />
+                    </TabPane>
+                    <TabPane eventKey={DROPDOWN_OPTIONS[1].value}>
+                        <PlotGrid plotPropsList={ssPlotPropsList[DROPDOWN_OPTIONS[1].value]} />
+                    </TabPane>
+                    <TabPane eventKey={DROPDOWN_OPTIONS[2].value}>
+                        <PlotGrid plotPropsList={ssPlotPropsList[DROPDOWN_OPTIONS[2].value]} />
+                    </TabPane>
+                </Tab.Content>
             )
-        }
-
-        function CreateSingleScatterPlot(props){
-            // console.log(props)
-            return(
-                <td>
-                    <ScatterPlot 
-                        data={props.data}
-                        name={props.name}
-                        width={props.width}
-                        height={props.height}
-                        dataRange={props.dataRange}
-                        linkBaseText={props.linkBaseText}
-                        colorIndex={props.colorIndex}
-                        categoricalVar={props.categoricalVar}
-                        dataType={props.dataType}
-                     />
-                </td>
-            )
-        }
-
-        const PlotGrid: React.FC = () => {
-            const plotGrid = CreatePlotGrid(ssPlotPropsList[ssPlotsToShow])
-
+        }else{
             return(
                 <div>
-                    {plotGrid}
+                    <i aria-hidden="true" className="fa fa-spinner fa-pulse" style={{marginRight:'5px'}}/>
+                    Loading plots ...
                 </div>
             )
         }
+        
+    }, [ssPlotPropsList, plotsToShow])
 
-        function onSelectChangeOrder(eventKey){
-            setSsPlotsToShow(eventKey)
-        }
+    const generateChildId = React.useCallback((eventKey: any, type: any) => {
+        return eventKey;
+    }, []);
 
-        return(
-            <div id="#similar-studies">
+    return(
+        <TabContainer activeKey={plotsToShow} generateChildId={generateChildId}>
+            <div>
                 <h2>Similar Studies based on Assay Data or Study Design</h2>
                 <p>The plots below show the results of a UMAP dimension reduction analysis of studies based on their meta-data, including assay data available, study design characteristics, and condition studied. Binary factor distance is measured using the Jaccard method, while continuous variables use Euclidean distance.</p>
                 <p><b>For More Information:</b></p>
                 <ul>
                     <li>Hover over a point for a link to the study overview page</li>
-                    <li>Toggle between plots with labels for Assay Data Available, Study Design, or Condition Studied using the dropdown menu</li>
+                    <li>Toggle between plots with LABELS for Assay Data Available, Study Design, or Condition Studied using the dropdown menu</li>
                 </ul>
                 <br></br>
-                <Bootstrap.DropdownButton title='Select Plot Set' id='order-select-dropdown'>
-                    <Bootstrap.MenuItem eventKey={dropdownOptions[0].value} onSelect={onSelectChangeOrder}>
-                        {dropdownOptions[0].label}
-                    </Bootstrap.MenuItem>
-                    <Bootstrap.MenuItem eventKey={dropdownOptions[1].value} onSelect={onSelectChangeOrder}>
-                        {dropdownOptions[1].label}
-                    </Bootstrap.MenuItem>
-                    <Bootstrap.MenuItem eventKey={dropdownOptions[2].value} onSelect={onSelectChangeOrder}>
-                        {dropdownOptions[2].label}
-                    </Bootstrap.MenuItem>
-                </Bootstrap.DropdownButton>
-                <div>
-                    <PlotGrid/>
-                </div>
+                {getDropDown()}
+                {getTabContent()}
             </div>
-        )
-    }
+        </TabContainer>
+    )
+})

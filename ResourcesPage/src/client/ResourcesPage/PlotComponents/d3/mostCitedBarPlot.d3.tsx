@@ -14,10 +14,15 @@ export function drawBarPlot(props: BarPlotProps) {
 
     // select div
     const svg = d3
-        .select("#barplot-" + name)
+        .select("#mc-barplot-" + name)
         .attr("height", props.height)
         .attr("width", props.width)
-        .attr("id", "barplot-" + name); // why give it same id??
+        .attr("id", "mc-barplot-" + name); // why give it same id??
+
+    // ensure old elements are removed before each redraw
+    // Otherwise rects will not be redrawn
+    svg.selectAll("g > *").remove();
+    svg.selectAll("rect").remove();
 
     // set margins
     const margin = {
@@ -148,6 +153,7 @@ export function drawBarPlot(props: BarPlotProps) {
                     .duration(3000)
                     .style("opacity", 0)
             })      
+        
 
     // Legend
     const minYear = Math.round(d3.min(data, function(d) { return d.datePublishedFloat }))

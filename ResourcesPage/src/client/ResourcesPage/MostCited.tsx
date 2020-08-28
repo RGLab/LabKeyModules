@@ -1,65 +1,105 @@
 import * as React from "react";
-import {MenuItem, Nav, Navbar, NavDropdown, NavItem, Tab, TabPane} from 'react-bootstrap';
-import {BarPlotDatum, BarPlotProps, BarPlotTitles} from './components/mostCitedBarPlot'
+import {DropdownButton, MenuItem} from 'react-bootstrap';
+import {BarPlot, BarPlotProps, BarPlotTitles, BarPlotDatum} from './PlotComponents/mostCitedBarPlot'
 
-export const MostCited = (transformedPmData, pmDataRange) => {
-    const [pmOrderBy, setPmOrderBy] = React.useState("studyNum")
-    const [pmPlotData, setPmPlotData] = React.useState<BarPlotProps>({
-        data: [{
-            label: '',
-            value: 0,
-            hoverOverText: '',
-            datePublishedStr: '',
-            datePublishedFloat: 0,
-            datePublishedPercent: 0,
-            studyNum: 0
-        }],
-        titles: {
-            x: '',
-            y: '',
-            main: ''
-        },
-        name: "",
-        height: 500,
-        width: 500,
-        dataRange: [],
-        linkBaseText: ''
-    });
+// Offer selection of plots
+const DROPDOWN_OPTIONS = [
+    {value: 'value', label: 'Most Cited'},
+    {value: 'studyNum', label:  'Study ID'},
+    {value: 'datePublishedFloat', label: 'Most Recent'}
+]
+
+interface props {
+    transformedPmData: {
+        byPubId: BarPlotDatum[]
+    };
+    pmDataRange: {
+        byPubId: number[]
+    };
+}
+
+export const MostCited = React.memo<props>(( {transformedPmData, pmDataRange}: props) => {
+    const [pmOrderBy, setPmOrderBy] = React.useState(DROPDOWN_OPTIONS[0].value)
+    const [pmPlotData, setPmPlotData] = React.useState<BarPlotProps>()
 
     React.useEffect(() => {
-        transformedPmData.byPubId.sort((a,b) => (a[pmOrderBy] > b[pmOrderBy]) ? 1 : -1)
+        if(transformedPmData.byPubId.length > 0){
+            var copy = JSON.parse(JSON.stringify(transformedPmData))
+            copy.byPubId.sort((a,b) => (a[pmOrderBy] > b[pmOrderBy]) ? 1 : -1)
     
-        // logic for updating titles
-        const titles: BarPlotTitles = {
-            x: 'Number of Citations',
-            y: 'Study and PubMed Id',
-            main: 'Number of Citations by PubMed Id'
-        }
-    
-        // logic for updating props
-        let plotProps: BarPlotProps = {
-            data: transformedPmData.byPubId,
-            titles: titles,
-            name: "byPubId",
-            width: 850,
-            height: 700,
-            dataRange: pmDataRange.byPubId,
-            linkBaseText: 'https://www.ncbi.nlm.nih.gov/pubmed/'
-        }
-        setPmPlotData(plotProps)
-    }, [transformedPmData, pmDataRange, pmOrderBy])
-    
+            // logic for updating titles
+            const titles: BarPlotTitles = {
+                x: 'Number of Citations',
+                y: 'Study and PubMed Id',
+                main: 'Number of Citations by PubMed Id'
+            }
         
-    // Offer selection of plots
-    const dropdownOptions = [
-        {value: 'value', label: 'Most Cited'},
-        {value: 'studyNum', label:  'Study ID'},
-        {value: 'datePublishedFloat', label: 'Most Recent'}
-    ]
+            // logic for updating props
+            const plotProps: BarPlotProps = {
+                data: copy.byPubId,
+                titles: titles,
+                name: "byPubId",
+                width: 850,
+                height: 700,
+                dataRange: pmDataRange.byPubId,
+                linkBaseText: 'https://www.ncbi.nlm.nih.gov/pubmed/'
+            }
+            setPmPlotData(plotProps)
+        }
+    }, [transformedPmData, pmDataRange, pmOrderBy])
 
     function onSelectChangeOrder(eventKey){
         setPmOrderBy(eventKey)
     }
+
+    const getDropDown = React.useCallback(() => {
+        return(
+            <div>
+                <DropdownButton title='Select Order' id='order-select-dropdown'>
+                    <MenuItem eventKey={DROPDOWN_OPTIONS[0].value} onSelect={onSelectChangeOrder}>
+                        {DROPDOWN_OPTIONS[0].label}
+                    </MenuItem>
+                    <MenuItem eventKey={DROPDOWN_OPTIONS[1].value} onSelect={onSelectChangeOrder}>
+                        {DROPDOWN_OPTIONS[1].label}
+                    </MenuItem>
+                    <MenuItem eventKey={DROPDOWN_OPTIONS[2].value} onSelect={onSelectChangeOrder}>
+                        {DROPDOWN_OPTIONS[2].label}
+                    </MenuItem>
+                </DropdownButton>
+            </div>
+        )
+    }, [])
+
+
+  
+
+    const getContent = React.useCallback(() => {
+        if(typeof(pmPlotData) !== "undefined"){
+            // const currentDiv = document.getElementById(pmPlotData.name)
+            // if(currentDiv){
+            //     currentDiv.parentNode.removeChild(currentDiv)
+            // }
+            return(
+                <BarPlot
+                    data={pmPlotData.data} 
+                    titles={pmPlotData.titles}
+                    name={pmPlotData.name} 
+                    height={pmPlotData.height} 
+                    width={pmPlotData.width} 
+                    dataRange={pmPlotData.dataRange}
+                    linkBaseText={pmPlotData.linkBaseText}
+                />
+            )
+        }else{
+            return(
+                <div>
+                    <i aria-hidden="true" className="fa fa-spinner fa-pulse" style={{marginRight:'5px'}}/>
+                    Loading plots ...
+                </div>
+            )
+        }
+        
+    },[pmPlotData])
 
     return(
         <div id="#most-cited">
@@ -71,26 +111,8 @@ export const MostCited = (transformedPmData, pmDataRange) => {
                 <li>Update the ordering of the publications using the dropdown menu below</li>
             </ul>
             <br></br>
-            <Bootstrap.DropdownButton title='Select Order' id='order-select-dropdown'>
-                <Bootstrap.MenuItem eventKey={dropdownOptions[0].value} onSelect={onSelectChangeOrder}>
-                    {dropdownOptions[0].label}
-                </Bootstrap.MenuItem>
-                <Bootstrap.MenuItem eventKey={dropdownOptions[1].value} onSelect={onSelectChangeOrder}>
-                    {dropdownOptions[1].label}
-                </Bootstrap.MenuItem>
-                <Bootstrap.MenuItem eventKey={dropdownOptions[2].value} onSelect={onSelectChangeOrder}>
-                    {dropdownOptions[2].label}
-                </Bootstrap.MenuItem>
-            </Bootstrap.DropdownButton>
-            <BarPlot
-                data={pmPlotData.data} 
-                titles={pmPlotData.titles}
-                name={pmPlotData.name} 
-                height={pmPlotData.height} 
-                width={pmPlotData.width} 
-                dataRange={pmPlotData.dataRange}
-                linkBaseText={pmPlotData.linkBaseText}
-            />
+            {getDropDown()}
+            {getContent()}
         </div>
     )
-}
+})

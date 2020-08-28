@@ -21,11 +21,10 @@ import {fetchApiData} from "./FetchApiData"
 import './ResourcesPage.scss';
 
 // Typings
-import {BarPlotDatum} from "./components/mostCitedBarPlot"
-import {ScatterPlotDatum, ScatterPlotDataRange} from "./components/similarStudyScatterPlot"
+import {BarPlotDatum} from "./PlotComponents/mostCitedBarPlot"
+import {ScatterPlotDatum, ScatterPlotDataRange} from "./PlotComponents/similarStudyScatterPlot"
 import {
     TAB_REPORTS,
-    TAB_STUDYSTATS,
     TAB_MOSTACCESSED,
     TAB_MOSTCITED,
     TAB_SIMILARSTUDIES,
@@ -37,56 +36,6 @@ import { MostAccessed } from './MostAccessed';
 import { MostCited } from './MostCited';
 import { SimilarStudies } from './SimilarStudies'
 
-/*  ----------------
-   StudyStats Data
------------------- */
-
-const labkeyBaseUrl = LABKEY.ActionURL.getBaseURL()
-const apiBase = labkeyBaseUrl + '_rapi/'
-
-// RAW
-
-const [pmData, setPmData] = React.useState({}); 
-const [pmHasError, setPmErrors] = React.useState(false);
-
-const [ssData, setSsData] = React.useState({}) 
-const [ssHasError, setSsErrors] = React.useState(false)
-
-const [maData, setMaData] = React.useState({}); 
-const [maHasError, setMaErrors] = React.useState(false);
-
-React.useEffect(() => {
-    fetchApiData(apiBase, "pubmed_data", setPmData, setPmErrors);
-    fetchApiData(apiBase, "study_data", setSsData, setSsErrors);
-    fetchApiData(apiBase, "log_data", setMaData, setMaErrors);
-}, []);
-
-// TRANSFORMED
-
-const [transformedPmData, setTransformedPmData] = React.useState({
-    byPubId: Array<BarPlotDatum>()
-});
-const [pmDataRange, setPmDataRange] = React.useState({
-    byPubId: Array<number>()
-});
-
-const [transformedSsData, setTransformedSsData] = React.useState(
-    Array<ScatterPlotDatum>()
-)
-const [ssDataRange, setSsDataRange] = React.useState<ScatterPlotDataRange>({x: [], y: []})
-
-const [transformedMaData, setTransformedMaData] = React.useState({
-    byStudy: Array<Object>(),
-    byMonth: Array<Object>()
-});
-
-React.useEffect(() => {
-    transformSdyMetaData(ssData, setTransformedSsData, setSsDataRange)
-    transformLogData(maData, setTransformedMaData)
-    transformCiteData(pmData, setTransformedPmData, setPmDataRange)
-}, [ssData, maData, pmData]);
-
-// Handling of errors in data retrieval or transformation?
 
 /*  ----------------
       Main
@@ -94,10 +43,74 @@ React.useEffect(() => {
 
 const ResourcesPage: React.FC = () => {
 
-    const generateChildId = React.useCallback((eventKey: any, type: any) => {
-        return eventKey;
-    }, []);
+    const labkeyBaseUrl = LABKEY.ActionURL.getBaseURL()
+    const apiBase = labkeyBaseUrl + '_rapi/'
 
+    /*  ----------------
+        StudyStats Data
+    ------------------ */
+
+    // RAW
+
+    const [pmData, setPmData] = React.useState({}); 
+    const [pmHasError, setPmErrors] = React.useState(false);
+
+    const [ssData, setSsData] = React.useState({}) 
+    const [ssHasError, setSsErrors] = React.useState(false)
+
+    const [maData, setMaData] = React.useState(); 
+    const [maHasError, setMaErrors] = React.useState(false);
+
+    React.useEffect(() => {
+        fetchApiData({apiBase, fileSuffix: "pubmed_data", setData: setPmData, setErrors: setPmErrors});
+        fetchApiData({apiBase, fileSuffix: "sdy_metadata", setData: setSsData, setErrors: setSsErrors});
+        fetchApiData({apiBase, fileSuffix: "log_data", setData: setMaData, setErrors: setMaErrors});
+    }, [])
+    
+    // TRANSFORMED
+    
+
+    const [transformedSsData, setTransformedSsData] = React.useState(
+        Array<ScatterPlotDatum>()
+    )
+    const [ssDataRange, setSsDataRange] = React.useState<ScatterPlotDataRange>({
+        x: [], y: []
+    })
+
+    React.useEffect(() => {
+        if(typeof(ssData) !== "undefined"){
+            transformSdyMetaData(ssData, setTransformedSsData, setSsDataRange)
+        }
+    }, [ssData]);
+
+    const [transformedMaData, setTransformedMaData] = React.useState({
+        byStudy: Array<Object>(),
+        byMonth: Array<Object>()
+    });
+
+    React.useEffect(() => {
+        if(typeof(maData) !== "undefined"){
+            transformLogData(maData, setTransformedMaData)
+        }
+    }, [maData]);
+
+    const [transformedPmData, setTransformedPmData] = React.useState({
+        byPubId: Array<BarPlotDatum>()
+    });
+
+    const [pmDataRange, setPmDataRange] = React.useState({
+        byPubId: Array<number>()
+    });
+
+    React.useEffect(() => {
+        if(typeof(pmData) !== "undefined"){
+            transformCiteData(pmData, setTransformedPmData, setPmDataRange)
+        }
+    }, [pmData]);
+
+    /*  ----------------
+        NavBar & Content
+    ------------------ */
     const getNavbar = React.useCallback(() => {
         const items = tabInfo.map((tab, index) => {
 
@@ -139,7 +152,7 @@ const ResourcesPage: React.FC = () => {
                         labkeyBaseUrl={labkeyBaseUrl}
                     />
                 </TabPane>
-                <TabPane eventKey={TAB_MOSTCITED}>
+                <TabPane eventKey={TAB_MOSTCITED} mountOnEnter={true}>
                     <MostCited
                         transformedPmData={transformedPmData}
                         pmDataRange={pmDataRange}
@@ -161,6 +174,10 @@ const ResourcesPage: React.FC = () => {
             </Tab.Content>
         )
     }, [transformedPmData, transformedSsData, transformedMaData]);
+
+    const generateChildId = React.useCallback((eventKey: any, type: any) => {
+        return eventKey;
+    }, []);
 
     return(
         <Tab.Container defaultActiveKey={TAB_REPORTS} generateChildId={generateChildId}>
