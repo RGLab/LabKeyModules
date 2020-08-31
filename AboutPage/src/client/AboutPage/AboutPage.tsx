@@ -36,7 +36,7 @@ const AboutPage: React.FC = () => {
     }
 
     const [rSessionResults, setRSessionResults] = React.useState<string>("Loading R Session Info ...")
-
+    const [rSessionParsed, setRSessionParsed] = React.useState<DocumentFragment>()
     var cnfReport = {
         failure: function(){
             setRSessionResults("Unknown Error within R Session Info Report")
@@ -60,6 +60,21 @@ const AboutPage: React.FC = () => {
         fetchData()
         LABKEY.Report.execute(cnfReport);
     }, [])
+
+    // Want to load scripts from Rmd output once and in order they have been delivered to avoid rendering issues, 
+    // e.g. DataTable / jQuery conflict
+    React.useEffect(() => {
+        const slotHtml = document.createRange().createContextualFragment(rSessionResults)
+        var scriptNodes = slotHtml.querySelectorAll("script[src]")
+        scriptNodes.forEach(function(el){
+            const cln = document.createElement('script')
+            cln.async = false
+            document.head.appendChild(cln)
+            cln.src = el.getAttribute('src')
+            el.parentNode.removeChild(el)
+        })
+        setRSessionParsed(slotHtml)
+    }, [rSessionResults])
 
     // --------- ABOUT -----------------
     const About: React.FC = () => { 
@@ -381,21 +396,30 @@ const AboutPage: React.FC = () => {
     const RSessionInfo: React.FC = () => { 
         const divRef = React.useRef(null)
 
-        // To minimize calls to the LABKEY.report() to init, must ensure that <scripts> associated with the report
-        // are loaded when html is inserted.  `dangerouslySetHtml` doesn't do this, so must append html as new node.
-        // When appending the child node, there is no way to determine when the script has loaded as the append does not
-        // have a callback fn.  So using setTimeout to ensure htmlwidgets.js is actually ready (comes from streamfile)
         React.useEffect(() => {
-            const slotHtml = document.createRange().createContextualFragment(rSessionResults) // Create a 'tiny' document and parse the html string
             divRef.current.innerHTML = '' // Clear the container
-            divRef.current.appendChild(slotHtml) // Append the new content
-            var el = document.querySelector('.labkey-knitr')
-            if(el){
-                setTimeout( function(){
-                    window['HTMLWidgets'].staticRender()  
-                }, 1000)
-            } 
-        }, [rSessionResults])
+            divRef.current.appendChild(rSessionParsed.cloneNode(true)) // appendChild() is by reference not copy
+            const el = document.querySelector('.labkey-knitr')
+            if( typeof el !== undefined ){
+                var tmp = setInterval(renderHtmlWidget, 500)
+                var stopper = 0
+                
+                function renderHtmlWidget(){
+                    const jQueryLoaded = typeof window['jQuery'] !== undefined
+                    const DataTableLoaded = typeof window['jQuery']().DataTable !== undefined
+                    if(jQueryLoaded && DataTableLoaded){
+                        window['HTMLWidgets'].staticRender()
+                        clearInterval(tmp) 
+                    }else{
+                        stopper++
+                        if(stopper == 10){
+                            console.log("DataTable and jQuery libraries loaded improperly")
+                            clearInterval(tmp)
+                        }
+                    }
+                }
+            }
+        }, [rSessionParsed])
 
         return (
             <div ref={divRef}>Loading R Session Info</div>

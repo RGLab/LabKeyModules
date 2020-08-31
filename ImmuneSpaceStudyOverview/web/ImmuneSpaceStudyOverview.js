@@ -197,7 +197,7 @@ LABKEY.ext.ImmuneSpaceStudyOverview = Ext.extend( Ext.Panel, {
                                         tag: 'span'
                                     },{
                                         cls: 'paddingRight25px',
-                                        href: 'http://open.immport.org/immport-open/public/study/study/displayStudyDetail/' + SDY,
+                                        href: 'http://www.immport.org/immport-open/public/study/study/displayStudyDetail/' + SDY,
                                         html: SDY,
                                         tag: 'a',
                                         target: '_blank',

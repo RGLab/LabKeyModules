@@ -1,0 +1,29 @@
+<tables xmlns="http://labkey.org/data/xml">
+  <table tableName="InputSamples" tableDbType="NOT_IN_DB">
+    <columns>
+      <column columnName="Run">
+        <fk>
+          <!-- NOTE: This makes the MaterialInput.TargetProtocolApplication.Run into a lookup to the assay.ExpressionMatrix.<protocol>.Runs table. -->
+          <fkTable>Runs</fkTable>
+          <fkColumnName>RowId</fkColumnName>
+        </fk>
+      </column>
+      <column columnName="TargetProtocolApplication">
+        <isHidden>true</isHidden>
+      </column>
+      <column columnName="Material">
+        <isHidden>true</isHidden>
+      </column>
+      <column columnName="Biosample">
+        <fk>
+          <fkDbSchema>study</fkDbSchema>
+          <fkTable>gene_expression_files</fkTable>
+          <fkColumnName>biosample_accession</fkColumnName>
+        </fk>
+      </column>
+      <column columnName="Role">
+        <isHidden>true</isHidden>
+      </column>
+    </columns>
+  </table>
+</tables>

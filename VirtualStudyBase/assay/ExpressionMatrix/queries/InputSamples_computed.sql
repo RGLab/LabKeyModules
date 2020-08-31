@@ -11,7 +11,6 @@ SELECT
   Role,
   Source_Container AS folder
 FROM
--- Must use full path to access data held in /Studies 
--- HIPCMatrix must be enabled for the /HIPC/ folder
-  Project."hipcmatrix".InputSamples_precompute
--- https://www.labkey.org/Documentation/wiki-page.view?name=crossFolderQueries
+-- Only want to work within each virtual study, not at project level
+-- as in /Studies
+  virtualstudybase.InputSamples_precompute
