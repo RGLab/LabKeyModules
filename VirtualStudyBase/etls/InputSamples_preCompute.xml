@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etl xmlns="http://labkey.org/etl/xml">
+    <name>Cache result of InputSamples in a list for performance</name>
+    <transforms>
+        <transform id="copy" type="org.labkey.di.pipeline.TransformTask">
+            <source schemaName="assay.ExpressionMatrix.matrix" queryName="InputSamples" containerFilter="AllFolders"/>
+            <destination schemaName="VirtualStudyBase" queryName="InputSamples_precompute" targetOption="truncate" >
+                <columnTransforms>
+                    <!-- NOTE:  LabKey automatically creates a "Folder" column which is populated
+                    with whichever folder the etl is run from, so this preserves the
+                    "Folder" column in InputSamples, which will be copied into the "Folder"
+                    column in InputSamples_computed -->
+                    <column source="Folder" target="Source_Container"/>
+                </columnTransforms>
+            </destination>
+        </transform>
+    </transforms>
+    <incrementalFilter className="SelectAllFilterStrategy" />
+    <!-- run at midnight -->
+    <schedule><cron expression="0 0 0 * * ?" /></schedule>
+</etl>

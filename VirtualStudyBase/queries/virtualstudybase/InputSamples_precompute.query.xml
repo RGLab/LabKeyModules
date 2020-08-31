@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns="http://labkey.org/data/xml">
+    <metadata>
+        <tables xmlns="http://labkey.org/data/xml">
+            <table tableName="InputSamples_precompute" >
+                <columns>
+                <column columnName="run">
+                    <!-- <fk>
+                    <fkTable>Runs</fkTable>
+                    <fkColumnName>RowId</fkColumnName>
+                    </fk> -->
+                </column>
+                <column columnName="source_container">
+                    <fk>
+                        <fkDbSchema>core</fkDbSchema>
+                        <fkTable>Containers</fkTable>
+                        <fkColumnName>EntityId</fkColumnName>
+                    </fk>
+                </column>
+                <column columnName="targetprotocolapplication">
+                    <isHidden>true</isHidden>
+                    <fk>
+                        <fkDbSchema>exp</fkDbSchema>
+                        <fkTable>ProtocolApplications</fkTable>
+                        <fkColumnName>RowId</fkColumnName>
+                    </fk>
+                </column>
+                <column columnName="material">
+                    <isHidden>true</isHidden>
+                </column>
+                <column columnName="biosample">
+                    <fk>
+                    <fkDbSchema>study</fkDbSchema>
+                    <fkTable>gene_expression_files</fkTable>
+                    <fkColumnName>biosample_accession</fkColumnName>
+                    </fk>
+                </column>
+                <column columnName="role">
+                    <isHidden>true</isHidden>
+                </column>
+                </columns>
+            </table>
+        </tables>
+    </metadata>
+</query>
