@@ -24,4 +24,5 @@ include 'AboutPage',
     'SDY269',
     'study_pubinfo',
     'SupportIssues',
+    'VirtualStudyBase',
     'WelcomePageViews'
