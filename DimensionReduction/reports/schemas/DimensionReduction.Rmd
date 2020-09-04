@@ -70,10 +70,10 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts) {
           "elisa" = "value_preferred",
           "elispot" = "spot_number_reported",
           "mbaa" = "concentration_value",
-          "pcr" = "value_reported",
+          "pcr" = "value_reported", # value_preferred missing for some studes for PCR
           "fcs_analyzed_result" = "population_cell_number",
-          "hai" = "value_reported",
-          "neut_ab_titer" = "value_reported"
+          "hai" = "value_preferred",
+          "neut_ab_titer" = "value_preferred"
         )
     grpByCol <- switch( assay,
           "elisa" = "analyte",
@@ -125,10 +125,10 @@ getAssayData <- function(assay, con, pidsFilt, filteredPids, timePts) {
   # ---------------- HAI, NAb ----------------- 
   # Grouping by biosample instead of biosample * virus, otherwise same mechanics as other assays
   if( assay %in% c("hai","neut_ab_titer") ){
-    dat$value_reported <- as.numeric(dat$value_reported)
-    dat <- dat[, lapply(.SD, mean), .(biosample_accession, participant_id, stc_key), .SDcols = c("value_reported")]
+    # dat$value_reported <- as.numeric(dat$value_reported)
+    dat <- dat[, lapply(.SD, mean), .(biosample_accession, participant_id, stc_key), .SDcols = c("value_preferred")]
     sum_col <- paste0("mean_", assay)
-    setnames(dat, "value_reported", sum_col)
+    setnames(dat, "value_preferred", sum_col)
     
     
   # ---- ELISA, ELISPOT, MBAA, PCR, FCS  ------ 
@@ -651,7 +651,7 @@ makePlot <- function(label, aggregateBy, demog, numComponents, plotType, allMat)
     re <- re[participant_id %in% subIDs ]
     # create response value from fold-change compared to baseline for each virus
     re <- re[, list(arm_accession, study_time_collected, study_time_collected_unit,
-                    response = value_reported/mean(value_reported[study_time_collected<=0])),
+                    response = value_preferred/mean(value_preferred[study_time_collected<=0])),
              by = "virus,participant_id"]
     # determine mean response for each study day across virus
     re <- re[, mr := mean(response, na.rm=T), by = "study_time_collected"]
