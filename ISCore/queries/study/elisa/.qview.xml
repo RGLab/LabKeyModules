@@ -16,7 +16,7 @@
         <cv:column name='analyte'/>
         <cv:column name='study_time_collected'/>
         <cv:column name='study_time_collected_unit'/>
-        <cv:column name='value_reported'/>
+        <cv:column name='value_preferred'/>
         <cv:column name='unit_reported'/>
     </cv:columns>
 </cv:customView>
