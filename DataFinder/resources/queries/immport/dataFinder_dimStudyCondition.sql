@@ -45,7 +45,9 @@ SELECT study_accession,
 
         WHEN condition_studied like '%varicella%' THEN 'Varicella Zoster'
 
+        WHEN description       like '%COVID-19%' THEN 'COVID-19'
+
         ELSE 'Unknown'
     
     END AS condition_studied 
-FROM (SELECT study_accession, lower(condition_studied) condition_studied FROM immport.study) study;
+FROM (SELECT study_accession, lower(condition_studied) condition_studied, description FROM immport.study) study;
