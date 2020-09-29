@@ -9,6 +9,30 @@ const DROPDOWN_OPTIONS = [
     {value: 'datePublishedFloat', label: 'Most Recent'}
 ]
 
+function updatePmPlotData(transformedPmData, pmDataRange, pmOrderBy){
+    if(transformedPmData.byPubId.length > 0){
+        var copy = JSON.parse(JSON.stringify(transformedPmData))
+        copy.byPubId.sort((a,b) => (a[pmOrderBy] > b[pmOrderBy]) ? 1 : -1)
+
+        const titles: BarPlotTitles = {
+            x: 'Number of Citations',
+            y: 'Study and PubMed Id',
+            main: 'Number of Citations by PubMed Id'
+        }
+    
+        const plotProps: BarPlotProps = {
+            data: copy.byPubId,
+            titles: titles,
+            name: "byPubId",
+            width: 850,
+            height: 700,
+            dataRange: pmDataRange.byPubId,
+            linkBaseText: 'https://www.ncbi.nlm.nih.gov/pubmed/'
+        }
+    return(plotProps)
+    }
+}
+
 interface props {
     transformedPmData: {
         byPubId: BarPlotDatum[]
@@ -20,31 +44,16 @@ interface props {
 
 export const MostCited = React.memo<props>(( {transformedPmData, pmDataRange}: props) => {
     const [pmOrderBy, setPmOrderBy] = React.useState(DROPDOWN_OPTIONS[0].value)
-    const [pmPlotData, setPmPlotData] = React.useState<BarPlotProps>()
 
-    React.useEffect(() => {
-        if(transformedPmData.byPubId.length > 0){
-            var copy = JSON.parse(JSON.stringify(transformedPmData))
-            copy.byPubId.sort((a,b) => (a[pmOrderBy] > b[pmOrderBy]) ? 1 : -1)
-    
-            const titles: BarPlotTitles = {
-                x: 'Number of Citations',
-                y: 'Study and PubMed Id',
-                main: 'Number of Citations by PubMed Id'
-            }
-        
-            const plotProps: BarPlotProps = {
-                data: copy.byPubId,
-                titles: titles,
-                name: "byPubId",
-                width: 850,
-                height: 700,
-                dataRange: pmDataRange.byPubId,
-                linkBaseText: 'https://www.ncbi.nlm.nih.gov/pubmed/'
-            }
-            setPmPlotData(plotProps)
-        }
-    }, [transformedPmData, pmDataRange, pmOrderBy])
+    interface plotProps {
+        transformedPmData: {
+            byPubId: BarPlotDatum[]
+        };
+        pmDataRange: {
+            byPubId: number[]
+        };
+        pmOrderBy: string;
+    }
 
     function onSelectChangeOrder(eventKey){
         setPmOrderBy(eventKey)
@@ -68,10 +77,8 @@ export const MostCited = React.memo<props>(( {transformedPmData, pmDataRange}: p
         )
     }, [])
 
-
-  
-
     const getContent = React.useCallback(() => {
+        const pmPlotData = updatePmPlotData(transformedPmData, pmDataRange, pmOrderBy)
         if(typeof(pmPlotData) !== "undefined"){
             return(
                 <BarPlot
@@ -93,7 +100,7 @@ export const MostCited = React.memo<props>(( {transformedPmData, pmDataRange}: p
             )
         }
         
-    },[pmPlotData])
+    },[pmOrderBy])
 
     return(
         <div id="#most-cited">
