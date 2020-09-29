@@ -1,10 +1,14 @@
 import * as React from "react";
-import {MenuItem, DropdownButton, Tab, TabPane, TabContainer} from "react-bootstrap";
+import {
+    MenuItem, 
+    DropdownButton, 
+    Tab, 
+    TabPane, 
+    TabContainer
+} from "react-bootstrap";
 import { 
     MaBarPlot,
-    MaBarPlotProps,
     MaLinePlot,
-    MaLinePlotProps,
 } from './PlotComponents/mostAccessedPlots'
 import {
     createBarPlotProps, 
@@ -29,41 +33,28 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
 
     const [plotToShow, setPlotToShow] = React.useState(PLOT_OPTIONS[0].value)
     const [maBarOrderBy, setMaBarOrderBy] = React.useState(BY_STUDY_ORDER_OPTIONS[2].value)
-    const [maLinePlotProps, setMaLinePlotProps] = React.useState<MaLinePlotProps>()
-    const [maBarPlotProps, setMaBarPlotProps] = React.useState<MaBarPlotProps>()
-
-    React.useEffect(() => {
-        createLinePlotProps(transformedMaData.byMonth, setMaLinePlotProps)
-    }, [transformedMaData])
-
-    React.useEffect(() => {
-        createBarPlotProps(transformedMaData.byStudy, maBarOrderBy, labkeyBaseUrl, setMaBarPlotProps)
-        
-    }, [transformedMaData, maBarOrderBy])
 
     function onSelectChangeBarOrder(eventKey){
         setMaBarOrderBy(eventKey)
     }
 
+    const makeBarMenuItem = React.useCallback((selection, onSelect) => {
+        return(
+            <MenuItem 
+                eventKey={selection.value} 
+                onSelect={onSelect}>
+                    {selection.label}
+            </MenuItem>
+        )
+    }, [])
+
     const barDropdown = React.useCallback( (orderOptions, onSelect) => {
         return(
             <div>
                 <DropdownButton title='Select Order' id='ma-bar-order-select-dropdown'>
-                    <MenuItem 
-                        eventKey={orderOptions[0].value} 
-                        onSelect={onSelect}>
-                        {orderOptions[0].label}
-                    </MenuItem>
-                    <MenuItem 
-                        eventKey={orderOptions[1].value} 
-                        onSelect={onSelect}>
-                        {orderOptions[1].label}
-                    </MenuItem>
-                    <MenuItem 
-                        eventKey={orderOptions[2].value} 
-                        onSelect={onSelect}>
-                        {orderOptions[2].label}
-                    </MenuItem>
+                    {makeBarMenuItem(orderOptions[0], onSelect)}
+                    {makeBarMenuItem(orderOptions[1], onSelect)}
+                    {makeBarMenuItem(orderOptions[2], onSelect)}
                 </DropdownButton>
             </div>
         )
@@ -87,6 +78,17 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
         setPlotToShow(eventKey)
     }
 
+    const makeMainMenuItem = React.useCallback((selection, onSelect) => {
+        return(
+            <MenuItem 
+                eventKey={selection.value} 
+                key={selection.value} 
+                onSelect={onSelect}>
+                    {selection.label}
+            </MenuItem>
+        )
+    }, [])
+
     const getMainDropDown = React.useCallback(() => {
         return(
             <table>
@@ -94,12 +96,8 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
                     <tr>
                         <td>
                             <DropdownButton title='Select Plot Type' id='ma-type-select-dropdown'>
-                                <MenuItem eventKey={PLOT_OPTIONS[0].value} key={PLOT_OPTIONS[0].value} onSelect={onSelectChangePlot}>
-                                    {PLOT_OPTIONS[0].label}
-                                </MenuItem>
-                                <MenuItem eventKey={PLOT_OPTIONS[1].value} key={PLOT_OPTIONS[1].value} onSelect={onSelectChangePlot}>
-                                    {PLOT_OPTIONS[1].label}
-                                </MenuItem>
+                                {makeMainMenuItem(PLOT_OPTIONS[0], onSelectChangePlot)}
+                                {makeMainMenuItem(PLOT_OPTIONS[1], onSelectChangePlot)}
                             </DropdownButton>
                         </td>
                         <td>
@@ -130,24 +128,26 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
         )
     });
 
+    const makeTabPane = React.useCallback((selection, plotProps, plotComponent) => {
+        return(
+            <TabPane eventKey={selection.value}>
+                <PlotTab
+                    optionSelection={selection.value}
+                    props={plotProps}
+                    Component={plotComponent}
+                />
+            </TabPane>
+        )
+    }, [])
+
     const getTabContent = React.useCallback(() => {
-        if(typeof(maBarPlotProps) !== "undefined" && typeof(maLinePlotProps) !== "undefined"){
+        if(transformedMaData.byMonth.length > 0 && transformedMaData.byStudy.length > 0){
+            const maLinePlotProps = createLinePlotProps(transformedMaData.byMonth)
+            const maBarPlotProps = createBarPlotProps(transformedMaData.byStudy, maBarOrderBy, labkeyBaseUrl)
             return(
                 <Tab.Content>
-                    <TabPane eventKey={PLOT_OPTIONS[0].value}>
-                        <PlotTab
-                            optionSelection={PLOT_OPTIONS[0].value}
-                            props={maBarPlotProps}
-                            Component={MaBarPlot}
-                        />
-                    </TabPane>
-                    <TabPane eventKey={PLOT_OPTIONS[1].value}>
-                        <PlotTab
-                            optionSelection={PLOT_OPTIONS[1].value}
-                            props={maLinePlotProps}
-                            Component={MaLinePlot}
-                        />
-                    </TabPane>
+                    {makeTabPane(PLOT_OPTIONS[0], maBarPlotProps, MaBarPlot)}
+                    {makeTabPane(PLOT_OPTIONS[1], maLinePlotProps, MaLinePlot)}
                 </Tab.Content>
         )
         }else{
@@ -159,7 +159,7 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
             )
         }
         
-    }, [maBarPlotProps, maLinePlotProps])
+    }, [transformedMaData, maBarOrderBy])
 
     return(
         <TabContainer defaultActiveKey={plotToShow} generateChildId={generateChildId}>

@@ -7,7 +7,7 @@ import {
 } from '../PlotComponents/mostAccessedPlots'
 
 
-export const createLinePlotProps = (data, handleresults) => {
+export function createLinePlotProps (data) {
     // logic for updating titles
     const lineTitles: MaPlotTitles = {
         x: 'Date',
@@ -38,10 +38,10 @@ export const createLinePlotProps = (data, handleresults) => {
         linkBaseText: 'test month'
     }
 
-    handleresults(lineProps);
+    return(lineProps)
 }
 
-export const createBarPlotProps = (data, order, labkeyBaseUrl, handleresults) => {
+export function createBarPlotProps(data, order, labkeyBaseUrl) {
     // Remove zero values to avoid odd looking chart since sorting is done
         // using a quicksort that leaves secondary sort in groups
         const tmp = JSON.parse(JSON.stringify(data))
@@ -78,5 +78,5 @@ export const createBarPlotProps = (data, order, labkeyBaseUrl, handleresults) =>
             linkBaseText: labkeyBaseUrl + '/project/Studies/'
         }
 
-        handleresults(barProps);
+        return(barProps)
 }
