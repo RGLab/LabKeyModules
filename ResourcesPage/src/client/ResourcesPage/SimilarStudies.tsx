@@ -121,7 +121,11 @@ export const SimilarStudies = React.memo<props>( ( {transformedSsData, ssDataRan
     const PlotGrid = React.memo<plotPropsList>(( { plotPropsList }: plotPropsList) => {
         return(
             <div>
-                {CreatePlotGrid(plotPropsList)}
+                <table>
+                    <tbody>
+                        {CreatePlotGrid(plotPropsList)}
+                    </tbody>
+                </table>
             </div>
         )
     })
@@ -157,7 +161,7 @@ export const SimilarStudies = React.memo<props>( ( {transformedSsData, ssDataRan
     }, []);
 
     return(
-        <TabContainer activeKey={plotsToShow} generateChildId={generateChildId}>
+        <TabContainer defaultActiveKey={plotsToShow} generateChildId={generateChildId}>
             <div>
                 <h2>Similar Studies based on Assay Data or Study Design</h2>
                 <p>The plots below show the results of a UMAP dimension reduction analysis of studies based on their meta-data, including assay data available, study design characteristics, and condition studied. Binary factor distance is measured using the Jaccard method, while continuous variables use Euclidean distance.</p>

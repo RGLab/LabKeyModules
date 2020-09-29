@@ -10,5 +10,4 @@ export const fetchApiData = async (props: Props) => {
         .then(response => response.json())
         .then(data => props.setData(data))
         .catch(errors => props.setErrors(errors));
-    
 }

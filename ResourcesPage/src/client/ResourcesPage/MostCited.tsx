@@ -27,14 +27,12 @@ export const MostCited = React.memo<props>(( {transformedPmData, pmDataRange}: p
             var copy = JSON.parse(JSON.stringify(transformedPmData))
             copy.byPubId.sort((a,b) => (a[pmOrderBy] > b[pmOrderBy]) ? 1 : -1)
     
-            // logic for updating titles
             const titles: BarPlotTitles = {
                 x: 'Number of Citations',
                 y: 'Study and PubMed Id',
                 main: 'Number of Citations by PubMed Id'
             }
         
-            // logic for updating props
             const plotProps: BarPlotProps = {
                 data: copy.byPubId,
                 titles: titles,
@@ -75,10 +73,6 @@ export const MostCited = React.memo<props>(( {transformedPmData, pmDataRange}: p
 
     const getContent = React.useCallback(() => {
         if(typeof(pmPlotData) !== "undefined"){
-            // const currentDiv = document.getElementById(pmPlotData.name)
-            // if(currentDiv){
-            //     currentDiv.parentNode.removeChild(currentDiv)
-            // }
             return(
                 <BarPlot
                     data={pmPlotData.data} 

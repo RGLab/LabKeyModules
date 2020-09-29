@@ -90,21 +90,23 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
     const getMainDropDown = React.useCallback(() => {
         return(
             <table>
-                <tr>
-                    <td>
-                        <DropdownButton title='Select Plot Type' id='ma-type-select-dropdown'>
-                            <MenuItem eventKey={PLOT_OPTIONS[0].value} key={PLOT_OPTIONS[0].value} onSelect={onSelectChangePlot}>
-                                {PLOT_OPTIONS[0].label}
-                            </MenuItem>
-                            <MenuItem eventKey={PLOT_OPTIONS[1].value} key={PLOT_OPTIONS[1].value} onSelect={onSelectChangePlot}>
-                                {PLOT_OPTIONS[1].label}
-                            </MenuItem>
-                        </DropdownButton>
-                    </td>
-                    <td>
-                        {plotToShow == PLOT_OPTIONS[0].value ? barDropdown(BY_STUDY_ORDER_OPTIONS, onSelectChangeBarOrder) : null}
-                    </td>
-                </tr>
+                <tbody>
+                    <tr>
+                        <td>
+                            <DropdownButton title='Select Plot Type' id='ma-type-select-dropdown'>
+                                <MenuItem eventKey={PLOT_OPTIONS[0].value} key={PLOT_OPTIONS[0].value} onSelect={onSelectChangePlot}>
+                                    {PLOT_OPTIONS[0].label}
+                                </MenuItem>
+                                <MenuItem eventKey={PLOT_OPTIONS[1].value} key={PLOT_OPTIONS[1].value} onSelect={onSelectChangePlot}>
+                                    {PLOT_OPTIONS[1].label}
+                                </MenuItem>
+                            </DropdownButton>
+                        </td>
+                        <td>
+                            {plotToShow == PLOT_OPTIONS[0].value ? barDropdown(BY_STUDY_ORDER_OPTIONS, onSelectChangeBarOrder) : null}
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         ) 
     }, [plotToShow])
@@ -160,7 +162,7 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
     }, [maBarPlotProps, maLinePlotProps])
 
     return(
-        <TabContainer activeKey={plotToShow} generateChildId={generateChildId}>
+        <TabContainer defaultActiveKey={plotToShow} generateChildId={generateChildId}>
             <div>
                 <h2>ImmuneSpace Usage Over Time or By Study</h2>
                 <p>The plots below allow you to view ImmuneSpace usage since the launch of the platform in 2016</p>
