@@ -1,14 +1,13 @@
 import React from "react";
 import {DropdownButton, MenuItem, Tab, TabPane, TabContainer} from 'react-bootstrap';
 import {
-    ScatterPlotProps,
-    ScatterPlot,
     ScatterPlotDataRange,
     ScatterPlotDatum
 } from './PlotComponents/similarStudyScatterPlot'
+import {PlotGrid} from './SimilarStudies/plotHelpers'
 import {DROPDOWN_OPTIONS, LABELS} from './SimilarStudies/constants'
 import {makePropsWithIndex} from './SimilarStudies/utils'
-                  
+        
 
 interface props {
     transformedSsData: ScatterPlotDatum[];
@@ -16,15 +15,9 @@ interface props {
     labkeyBaseUrl: string;
 }
 
-// ---- Main ------
-export const SimilarStudies = React.memo<props>( ( {transformedSsData, ssDataRange, labkeyBaseUrl}: props) => {
-    
-    const [ssPlotPropsList, setSsPlotPropsList] = React.useState<Object>()
-    const [plotsToShow, setPlotsToShow] = React.useState(DROPDOWN_OPTIONS[0].value)
-
-    React.useEffect(() => {
-        const plotPropsList = {}
-    
+function createSsPlotPropsList(transformedSsData, ssDataRange, labkeyBaseUrl){
+    let ssPlotPropsList = {}
+    if(transformedSsData.length > 0){
         Object.keys(LABELS).forEach(function(key){
             const subList = []
             LABELS[key].forEach(function(label, index){
@@ -38,111 +31,62 @@ export const SimilarStudies = React.memo<props>( ( {transformedSsData, ssDataRan
                     )
                 )
             })
-            plotPropsList[key] = subList
+            ssPlotPropsList[key] = subList
         })
+    }
+    return(ssPlotPropsList)
+}
 
-        setSsPlotPropsList(plotPropsList)
+// ---- Main ------
+export const SimilarStudies = React.memo<props>( ( {transformedSsData, ssDataRange, labkeyBaseUrl}: props) => {
     
-    }, [transformedSsData, ssDataRange])  
-
-    const CreatePlotGrid = React.useCallback((propsList: ScatterPlotProps[]) => {
-        const rowsOfPlots = []
-        const PLOTS_IN_ROW = 4
-    
-        // slice returns i to end of array even if i + x is greater than Array.length
-        for(var i = 0; 
-            i <= propsList.length - PLOTS_IN_ROW + 1; 
-            i = i + PLOTS_IN_ROW){
-                var copy = JSON.parse(JSON.stringify(propsList))
-                var propsSet = copy.slice(i, i + PLOTS_IN_ROW)
-                rowsOfPlots.push(CreateRowOfPlots(propsSet))
-        }
-    
-        return(rowsOfPlots)
-    },[ssPlotPropsList])
-    
-    const CreateRowOfPlots = React.useCallback((propsSet) => {
-        const plotList = []
-        for(var i = 0; i < propsSet.length; i++){
-            plotList.push(CreateSingleScatterPlot(propsSet[i]))
-        }
-    
-        return(
-            <tr>
-                {plotList}
-            </tr>
-        )
-    },[])
-    
-    const CreateSingleScatterPlot = React.useCallback((props) => {
-        return(
-            <td>
-                <ScatterPlot 
-                    data={props.data}
-                    name={props.name}
-                    width={props.width}
-                    height={props.height}
-                    dataRange={props.dataRange}
-                    linkBaseText={props.linkBaseText}
-                    colorIndex={props.colorIndex}
-                    categoricalVar={props.categoricalVar}
-                    dataType={props.dataType}
-                />
-            </td>
-        )
-    },[])
+    // const [ssPlotPropsList, setSsPlotPropsList] = React.useState<Object>()
+    const [plotsToShow, setPlotsToShow] = React.useState(DROPDOWN_OPTIONS[0].value)
 
     function onSelectChangePlot(eventKey){
         setPlotsToShow(eventKey)
     }
 
+    const makeMenuItem = React.useCallback((selection) => {
+        return(
+            <MenuItem 
+                eventKey={selection.value} 
+                key={selection.value}
+                onSelect={onSelectChangePlot}>
+                    {selection.label}
+            </MenuItem>
+        )
+    }, [])
+
     const getDropDown = React.useCallback(() => {
         return(
             <div>
                 <DropdownButton title='Select Plot Set' id='order-select-dropdown'>
-                    <MenuItem eventKey={DROPDOWN_OPTIONS[0].value} key={DROPDOWN_OPTIONS[0].value} onSelect={onSelectChangePlot}>
-                        {DROPDOWN_OPTIONS[0].label}
-                    </MenuItem>
-                    <MenuItem eventKey={DROPDOWN_OPTIONS[1].value} key={DROPDOWN_OPTIONS[1].value} onSelect={onSelectChangePlot}>
-                        {DROPDOWN_OPTIONS[1].label}
-                    </MenuItem>
-                    <MenuItem eventKey={DROPDOWN_OPTIONS[2].value} key={DROPDOWN_OPTIONS[2].value} onSelect={onSelectChangePlot}>
-                        {DROPDOWN_OPTIONS[2].label}
-                    </MenuItem>
+                    {makeMenuItem(DROPDOWN_OPTIONS[0])}
+                    {makeMenuItem(DROPDOWN_OPTIONS[1])}
+                    {makeMenuItem(DROPDOWN_OPTIONS[2])}
                 </DropdownButton>
             </div>
         )
     }, [])
 
-    interface plotPropsList {
-        plotPropsList: ScatterPlotProps[];
-    }
-
-    const PlotGrid = React.memo<plotPropsList>(( { plotPropsList }: plotPropsList) => {
+    const makeTabPane = React.useCallback((selection, ssPlotPropsList) => {
         return(
-            <div>
-                <table>
-                    <tbody>
-                        {CreatePlotGrid(plotPropsList)}
-                    </tbody>
-                </table>
-            </div>
+            <TabPane eventKey={selection.value}>
+                <PlotGrid plotPropsList={ssPlotPropsList[selection.value]} />
+            </TabPane>
         )
-    })
+    }, [])
 
     const getTabContent = React.useCallback(() => {
-        if(typeof(ssPlotPropsList) !== "undefined"){
+        
+        if(transformedSsData.length > 0){
+            const ssPlotPropsList = createSsPlotPropsList(transformedSsData, ssDataRange, labkeyBaseUrl)
             return(
                 <Tab.Content>
-                    <TabPane eventKey={DROPDOWN_OPTIONS[0].value}>
-                        <PlotGrid plotPropsList={ssPlotPropsList[DROPDOWN_OPTIONS[0].value]} />
-                    </TabPane>
-                    <TabPane eventKey={DROPDOWN_OPTIONS[1].value}>
-                        <PlotGrid plotPropsList={ssPlotPropsList[DROPDOWN_OPTIONS[1].value]} />
-                    </TabPane>
-                    <TabPane eventKey={DROPDOWN_OPTIONS[2].value}>
-                        <PlotGrid plotPropsList={ssPlotPropsList[DROPDOWN_OPTIONS[2].value]} />
-                    </TabPane>
+                    {makeTabPane(DROPDOWN_OPTIONS[0], ssPlotPropsList)}
+                    {makeTabPane(DROPDOWN_OPTIONS[1], ssPlotPropsList)}
+                    {makeTabPane(DROPDOWN_OPTIONS[2], ssPlotPropsList)}
                 </Tab.Content>
             )
         }else{
@@ -154,7 +98,7 @@ export const SimilarStudies = React.memo<props>( ( {transformedSsData, ssDataRan
             )
         }
         
-    }, [ssPlotPropsList, plotsToShow])
+    }, [transformedSsData, plotsToShow])
 
     const generateChildId = React.useCallback((eventKey: any, type: any) => {
         return eventKey;
