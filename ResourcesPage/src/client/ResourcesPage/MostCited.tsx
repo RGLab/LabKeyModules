@@ -1,37 +1,8 @@
 import * as React from "react";
 import {DropdownButton, MenuItem} from 'react-bootstrap';
-import {BarPlot, BarPlotProps, BarPlotTitles, BarPlotDatum} from './PlotComponents/mostCitedBarPlot'
-
-// Offer selection of plots
-const DROPDOWN_OPTIONS = [
-    {value: 'value', label: 'Most Cited'},
-    {value: 'studyNum', label:  'Study ID'},
-    {value: 'datePublishedFloat', label: 'Most Recent'}
-]
-
-function updatePmPlotData(transformedPmData, pmDataRange, pmOrderBy){
-    if(transformedPmData.byPubId.length > 0){
-        var copy = JSON.parse(JSON.stringify(transformedPmData))
-        copy.byPubId.sort((a,b) => (a[pmOrderBy] > b[pmOrderBy]) ? 1 : -1)
-
-        const titles: BarPlotTitles = {
-            x: 'Number of Citations',
-            y: 'Study and PubMed Id',
-            main: 'Number of Citations by PubMed Id'
-        }
-    
-        const plotProps: BarPlotProps = {
-            data: copy.byPubId,
-            titles: titles,
-            name: "byPubId",
-            width: 850,
-            height: 700,
-            dataRange: pmDataRange.byPubId,
-            linkBaseText: 'https://www.ncbi.nlm.nih.gov/pubmed/'
-        }
-    return(plotProps)
-    }
-}
+import {BarPlot, BarPlotDatum} from './PlotComponents/mostCitedBarPlot'
+import {updatePmPlotData} from './MostCited/utils'
+import {DROPDOWN_OPTIONS} from './MostCited/constants'
 
 interface props {
     transformedPmData: {
