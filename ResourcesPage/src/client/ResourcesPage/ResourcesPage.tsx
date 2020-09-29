@@ -51,7 +51,6 @@ const ResourcesPage: React.FC = () => {
     ------------------ */
 
     // RAW
-
     const [pmData, setPmData] = React.useState({}); 
     const [pmHasError, setPmErrors] = React.useState(false);
 
@@ -68,8 +67,6 @@ const ResourcesPage: React.FC = () => {
     }, [])
     
     // TRANSFORMED
-    
-
     const [transformedSsData, setTransformedSsData] = React.useState(
         Array<ScatterPlotDatum>()
     )
