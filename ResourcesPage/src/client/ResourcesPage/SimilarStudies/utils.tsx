@@ -1,7 +1,7 @@
 import {categoricalLabels, LABELS} from './constants'
 import {ScatterPlotProps} from '../PlotComponents/similarStudyScatterPlot'
 
-export const makePropsWithIndex = (data, label, dataType, dataRange, labkeyBaseUrl, index, ) => {
+function makePropsWithIndex (data, label, dataType, dataRange, labkeyBaseUrl, index, ){
     // For plotting categorical values, ensure that colored dots
     // are plotted last to be visually on top by having them plot last
     data.sort((a,b) => 
@@ -34,4 +34,26 @@ const getLabelType = (label) => {
     }else{
         return("studyDesign")
     }
+}
+
+export function createSsPlotPropsList(transformedSsData, ssDataRange, labkeyBaseUrl){
+    let ssPlotPropsList = {}
+    if(transformedSsData.length > 0){
+        Object.keys(LABELS).forEach(function(key){
+            const subList = []
+            LABELS[key].forEach(function(label, index){
+                subList.push(makePropsWithIndex(
+                    transformedSsData, 
+                    label, 
+                    key,
+                    ssDataRange,
+                    labkeyBaseUrl,
+                    index
+                    )
+                )
+            })
+            ssPlotPropsList[key] = subList
+        })
+    }
+    return(ssPlotPropsList)
 }

@@ -5,36 +5,14 @@ import {
     ScatterPlotDatum
 } from './PlotComponents/similarStudyScatterPlot'
 import {PlotGrid} from './SimilarStudies/plotHelpers'
-import {DROPDOWN_OPTIONS, LABELS} from './SimilarStudies/constants'
-import {makePropsWithIndex} from './SimilarStudies/utils'
+import {DROPDOWN_OPTIONS} from './SimilarStudies/constants'
+import {createSsPlotPropsList} from './SimilarStudies/utils'
         
 
 interface props {
     transformedSsData: ScatterPlotDatum[];
     ssDataRange: ScatterPlotDataRange;
     labkeyBaseUrl: string;
-}
-
-function createSsPlotPropsList(transformedSsData, ssDataRange, labkeyBaseUrl){
-    let ssPlotPropsList = {}
-    if(transformedSsData.length > 0){
-        Object.keys(LABELS).forEach(function(key){
-            const subList = []
-            LABELS[key].forEach(function(label, index){
-                subList.push(makePropsWithIndex(
-                    transformedSsData, 
-                    label, 
-                    key,
-                    ssDataRange,
-                    labkeyBaseUrl,
-                    index
-                    )
-                )
-            })
-            ssPlotPropsList[key] = subList
-        })
-    }
-    return(ssPlotPropsList)
 }
 
 // ---- Main ------
