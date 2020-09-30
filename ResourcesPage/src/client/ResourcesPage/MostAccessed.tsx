@@ -74,16 +74,17 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
         )
     }, [])
 
-    function onSelectChangePlot(eventKey){
-        setPlotToShow(eventKey)
-    }
+    const makeMainMenuItem = React.useCallback((selection) => {
+        function onSelectChangePlot(eventKey){
+            console.log(eventKey)
+            setPlotToShow(eventKey)
+        }
 
-    const makeMainMenuItem = React.useCallback((selection, onSelect) => {
         return(
             <MenuItem 
                 eventKey={selection.value} 
                 key={selection.value} 
-                onSelect={onSelect}>
+                onSelect={onSelectChangePlot}>
                     {selection.label}
             </MenuItem>
         )
@@ -96,8 +97,8 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
                     <tr>
                         <td>
                             <DropdownButton title='Select Plot Type' id='ma-type-select-dropdown'>
-                                {makeMainMenuItem(PLOT_OPTIONS[0], onSelectChangePlot)}
-                                {makeMainMenuItem(PLOT_OPTIONS[1], onSelectChangePlot)}
+                                {makeMainMenuItem(PLOT_OPTIONS[0])}
+                                {makeMainMenuItem(PLOT_OPTIONS[1])}
                             </DropdownButton>
                         </td>
                         <td>
@@ -138,12 +139,12 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
                 />
             </TabPane>
         )
-    }, [])
+    }, [transformedMaData, maBarOrderBy])
 
     const getTabContent = React.useCallback(() => {
         if(transformedMaData.byMonth.length > 0 && transformedMaData.byStudy.length > 0){
-            const maLinePlotProps = createLinePlotProps(transformedMaData.byMonth)
-            const maBarPlotProps = createBarPlotProps(transformedMaData.byStudy, maBarOrderBy, labkeyBaseUrl)
+            let maLinePlotProps = createLinePlotProps(transformedMaData.byMonth)
+            let maBarPlotProps = createBarPlotProps(transformedMaData.byStudy, maBarOrderBy, labkeyBaseUrl)
             return(
                 <Tab.Content>
                     {makeTabPane(PLOT_OPTIONS[0], maBarPlotProps, MaBarPlot)}
@@ -162,7 +163,7 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
     }, [transformedMaData, maBarOrderBy])
 
     return(
-        <TabContainer defaultActiveKey={plotToShow} generateChildId={generateChildId}>
+        <TabContainer activeKey={plotToShow} generateChildId={generateChildId}>
             <div>
                 <h2>ImmuneSpace Usage Over Time or By Study</h2>
                 <p>The plots below allow you to view ImmuneSpace usage since the launch of the platform in 2016</p>
