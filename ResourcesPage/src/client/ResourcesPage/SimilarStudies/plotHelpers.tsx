@@ -31,20 +31,20 @@ function CreatePlotGrid (propsList: ScatterPlotProps[]){
         i = i + PLOTS_IN_ROW){
             var copy = JSON.parse(JSON.stringify(propsList))
             var propsSet = copy.slice(i, i + PLOTS_IN_ROW)
-            rowsOfPlots.push(CreateRowOfPlots(propsSet))
+            rowsOfPlots.push(CreateRowOfPlots(propsSet, i))
     }
 
     return(rowsOfPlots)
 }
     
-function CreateRowOfPlots(propsSet){
+function CreateRowOfPlots(propsSet, index){
     const plotList = []
     for(var i = 0; i < propsSet.length; i++){
         plotList.push(CreateSingleScatterPlot(propsSet[i]))
     }
 
     return(
-        <tr>
+        <tr key={'plot-row-' + index}>
             {plotList}
         </tr>
     )
@@ -52,8 +52,8 @@ function CreateRowOfPlots(propsSet){
 
 function CreateSingleScatterPlot(props){
     return(
-        <td>
-            <ScatterPlot 
+        <td key={props.name}>
+            <ScatterPlot
                 data={props.data}
                 name={props.name}
                 width={props.width}

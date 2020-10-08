@@ -20,6 +20,11 @@ import {
     AddlInfoLine,
     AddlInfoBar
 } from './MostAccessed/constants'
+import {
+    noop,
+    generateChildId
+} from './utils'
+
 
 interface props {
     transformedMaData: {
@@ -110,10 +115,6 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
         ) 
     }, [plotToShow])
 
-    const generateChildId = React.useCallback((eventKey: any, type: any) => {
-        return eventKey;
-    }, []);
-
     interface plotTabProps {
         optionSelection: string;
         props: Object;
@@ -163,7 +164,7 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
     }, [transformedMaData, maBarOrderBy])
 
     return(
-        <TabContainer activeKey={plotToShow} generateChildId={generateChildId}>
+        <TabContainer activeKey={plotToShow} generateChildId={generateChildId} onSelect={noop}>
             <div>
                 <h2>ImmuneSpace Usage Over Time or By Study</h2>
                 <p>The plots below allow you to view ImmuneSpace usage since the launch of the platform in 2016</p>
