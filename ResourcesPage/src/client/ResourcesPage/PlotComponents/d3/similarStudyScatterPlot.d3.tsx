@@ -2,8 +2,6 @@ import * as d3 from 'd3';
 import { ScatterPlotProps } from '../similarStudyScatterPlot';
 
 export function drawScatterPlot(props: ScatterPlotProps) {
-    
-    console.log(props)
 
     // props
     const data = props.data;
@@ -20,7 +18,6 @@ export function drawScatterPlot(props: ScatterPlotProps) {
     // Helper
     function makeNamePretty(string){
         // find uppercase letters
-        console.log(string)
         var positions = [];
         for(var i = 0; i < string.length; i++){
             if(string[i].match(/[A-Z]/) != null){
@@ -170,32 +167,32 @@ export function drawScatterPlot(props: ScatterPlotProps) {
         .data(data)
         .enter()
         .append("circle")
-        .attr("class", "circle")
-        .attr("r", 3.5)
-        .attr("cx", function(d){ return xaxisScale(d.x) + margin.left })
-        .attr("cy", function(d){ return yaxisScale(d.y) + margin.top})
-        .style("fill", function(d) { 
-            const fill = getFillColor(name, categoricalVar, colorIndex, d[dataType][name])
-            return(fill)
-        }) 
-        .on("mouseover", function(d){
-            tooltip
-                .transition()
-                .duration(50)
-                .style("opacity", .9);		
-            tooltip.html(
-                    "<a href=" + linkBaseText + d.study + "/begin.view?>" + 
-                    d.study + 
-                    "</a>"
-                )	
-                .style("left", (d3.event.pageX) + "px")		
-                .style("top", (d3.event.pageY - 28) + "px");	
-            })		
-        .on("mouseout", function(d){
-            tooltip
-                .transition()
-                .duration(2000)
-                .style("opacity", 0)
+            .attr("class", "circle")
+            .attr("r", 3.5)
+            .attr("cx", function(d){ return xaxisScale(d.x) + margin.left })
+            .attr("cy", function(d){ return yaxisScale(d.y) + margin.top})
+            .style("fill", function(d) { 
+                const fill = getFillColor(name, categoricalVar, colorIndex, d[dataType][name])
+                return(fill)
             }) 
+            .on("mouseover", function(d){
+                tooltip
+                    .transition()
+                    .duration(50)
+                    .style("opacity", .9);		
+                tooltip.html(
+                        "<a href=" + linkBaseText + d.study + "/begin.view?>" + 
+                        d.study + 
+                        "</a>"
+                    )	
+                    .style("left", (d3.event.pageX) + "px")		
+                    .style("top", (d3.event.pageY - 28) + "px");	
+                })		
+            .on("mouseout", function(d){
+                tooltip
+                    .transition()
+                    .duration(2000)
+                    .style("opacity", 0)
+                }) 
 
 }
