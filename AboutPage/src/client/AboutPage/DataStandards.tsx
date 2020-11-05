@@ -2,7 +2,7 @@ import * as React from "react";
 
 export const DataStandards = () => {
     return(
-        <div id="DataStandards">
+        <div id="DataStandards-content">
             <p>The HIPC data standards working group defines the metadata, assay results and controlled vocabularies used by HIPC centers to submit experimental results to NIAID/ImmPort. Most of the standards we develop are incorporated into the ImmPort data deposition templates. All HIPC centers submit data directly to ImmPort using the templates available on the <a href="http://www.immport.org/immport-open/public/home/dataTemplates">ImmPort Website</a>.</p>
             <p>HIPC specifies content for some experiment types. This includes:</p>
             <ul>

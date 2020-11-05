@@ -13,7 +13,7 @@ export const DataReleases = React.memo<props>(({ setDivToShow, dataReleasesResul
     }
 
     return(
-        <div id="DataReleases" style={{padding: "15px"}}>
+        <div id="DataReleases-content" style={{padding: "15px"}}>
             <table style={{width: "100%", border: "1px solid black"}}>
                 <thead>
                 <tr>

@@ -72,7 +72,7 @@ export const Reports = () => {
     })
 
     return(
-        <div id="Reports">
+        <div id="Reports-content">
             <table>
                 <tbody>
                     {reportsList}

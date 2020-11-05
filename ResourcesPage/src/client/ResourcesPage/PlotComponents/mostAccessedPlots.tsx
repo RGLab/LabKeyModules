@@ -48,7 +48,7 @@ export const MaBarPlot: React.FC<MaBarPlotProps> = (props) => {
     // This will look for the id given by props.name to svg-element
     React.useEffect(() => {
             drawMaBarPlot(props);
-    });
+    }, []);
 
     return (
         <div id={props.name} >
@@ -61,7 +61,7 @@ export const MaLinePlot: React.FC<MaLinePlotProps> = (props) => {
     // This will look for the id given by props.name to svg-element
     React.useEffect(() => {
             drawMaLinePlot(props);
-    });
+    }, []);
 
     return (
         <div id={props.name} >

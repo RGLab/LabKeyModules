@@ -130,7 +130,7 @@ const AboutPage: React.FC = () => {
 
             // Non-dropdown
             return (
-                <NavItem eventKey={tab.tag} key={tab.tag}>{tab.text}</NavItem>
+                <NavItem eventKey={tab.tag} id={tab.id} key={tab.tag}>{tab.text}</NavItem>
             )
         })
 

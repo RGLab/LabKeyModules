@@ -2,7 +2,7 @@ import * as React from "react";
 
 export const About = () => {
     return(
-        <div id="About">
+        <div id="About-content">
             <p>
                 ImmuneSpace blossomed from a shared idea that generating large
                 amounts collaborative data, cross-center and cross-assay,

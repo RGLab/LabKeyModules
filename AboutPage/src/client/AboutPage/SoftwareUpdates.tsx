@@ -4,7 +4,7 @@ import * as React from "react";
 export const SoftwareUpdates = () => {
 
     return(
-        <div id="SoftwareUpdates">
+        <div id="SoftwareUpdates-content">
             <p><b>26 Dec 2019</b></p>
             <ul>
                 <li>Upgraded to <a href="https://www.labkey.org/wiki/Documentation/Archive/19.2/page.view?name=releasenotes192">LabKey 19.2</a></li>
