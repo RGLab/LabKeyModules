@@ -165,7 +165,7 @@ export const MostAccessed = React.memo<props>(( {transformedMaData, labkeyBaseUr
 
     return(
         <TabContainer activeKey={plotToShow} generateChildId={generateChildId} onSelect={noop}>
-            <div>
+            <div id="most-accessed-content">
                 <h2>ImmuneSpace Usage Over Time or By Study</h2>
                 <p>The plots below allow you to view ImmuneSpace usage since the launch of the platform in 2016</p>
                 <p><b>For More Information:</b></p>

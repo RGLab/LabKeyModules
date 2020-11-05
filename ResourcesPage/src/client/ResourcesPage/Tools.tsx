@@ -2,7 +2,7 @@ import * as React from "react";
 
 export const Tools = () => { 
     return(
-        <div id="Tools">
+        <div id="tools-content">
             <h3>Online Bioinformatics Tools Created by HIPC Members:</h3>
             <a href="http://icahn.mssm.edu/immuneregulation" target="_blank">ImmuneRegulation</a>
             <p>
