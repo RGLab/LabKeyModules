@@ -1,0 +1,11 @@
+<view xmlns="http://labkey.org/data/xml/view" 
+    frame="<%= htmlWebpackPlugin.options.frame %>" 
+    title="<%= htmlWebpackPlugin.options.title %>">
+
+    <% if (htmlWebpackPlugin.options.mode !== 'dev') { %>
+    <dependencies>
+        <dependency path="DataAccess/gen/<%= htmlWebpackPlugin.options.name %>.css" />
+        <dependency path="DataAccess/gen/<%= htmlWebpackPlugin.options.name %>.js"/>
+    </dependencies>
+    <% } %>
+</view>
