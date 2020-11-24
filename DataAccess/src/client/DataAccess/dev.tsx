@@ -10,7 +10,7 @@ const render = () => {
         <AppContainer>
             <DataAccess/>
         </AppContainer>,
-        document.getElementById('app')
+        document.getElementById('data-access')
     )
 };
 

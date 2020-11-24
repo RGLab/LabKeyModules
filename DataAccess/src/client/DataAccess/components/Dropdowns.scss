@@ -1,0 +1,86 @@
+// Top level dropdown
+.df-outer-dropdown {
+  height: auto;
+  width: 500px;
+
+  & >div>button i {
+    padding-left: 5px;
+  }
+
+  & > div {
+    & > .dropdown-menu {
+      display: none;
+      width: max-content;
+    }
+  }
+
+  & > div.open {
+    & > .dropdown-menu {
+      display: block;
+      width: max-content;
+    }
+  }
+}
+
+.df-dropdown-option {
+  height: auto;
+
+  & > a {
+    padding: 0;
+
+    & > button {
+      background: none;
+      border: none;
+      float: inherit;
+      background: none;
+      padding: 3px 28px;
+
+      & > i {
+        padding-left: 10px;
+      }
+    }
+  }
+}
+
+
+
+// Nested dropdown (like in manageGroups)
+.df-sub-dropdown {
+  width: 100%;
+  font-size: inherit;
+  font-style: inherit;
+  font-weight: inherit;
+  background: none;
+
+  & > div {
+    width: 100%;
+    padding: 0;
+    color: #494949;
+
+    &.open {
+      & > .dropdown-menu {
+        display: contents;
+      }
+    }
+
+    & > button { 
+      width: 100%;
+      text-align: left;
+      background: none;
+      padding: 3px 33px;
+      border: none;
+      font-weight: normal;
+
+      &:focus {
+        outline: none;
+      }
+
+      &:hover {
+        color: #f7f7f7;
+        text-decoration: none;
+        background-color: #3495d2; // This is the color on prod. It will look weird on test/local where colors are different
+      }
+
+    }
+  }
+}
