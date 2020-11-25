@@ -1,0 +1,19 @@
+<cv:customView xmlns:cv='http://labkey.org/data/xml/queryCustomView'>
+    <cv:columns>
+        <cv:column name='ParticipantId'>
+          <cv:properties>
+            <cv:property name='columnTitle' value='Participant ID'/>
+          </cv:properties>
+        </cv:column>
+        <cv:column name='ImmSigCol/study'/>
+        <cv:column name='gender'/>
+        <cv:column name='age_reported'/>
+        <cv:column name='age_unit'/>
+        <cv:column name='age_event'/>
+        <cv:column name='ethnicity'/>
+        <cv:column name='race'/>
+        <cv:column name='species'/>
+        <cv:column name='ImmSigCol/cohort'/>
+    </cv:columns>
+</cv:customView>
+

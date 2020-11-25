@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<query xmlns='http://labkey.org/data/xml/query'>
+    <metadata>
+        <tables xmlns='http://labkey.org/data/xml'>
+            <table tableName='demographics' tableDbType='TABLE'>
+                <buttonBarOptions position='both' includeStandardButtons='false'>
+                    <includeScript>ISCore/ButtonBarNavigation.js</includeScript>
+                    <item text='Grid Views' permission='ADMIN' insertPosition='end'>
+                        <originalText>Grid Views</originalText>
+                    </item>
+                    <item text='Export' insertPosition='end'>
+                        <originalText>Export</originalText>
+                    </item>
+                    <item text='Insert' permission='ADMIN' insertPosition='end' suppressWarning='true'>
+                        <originalText>Insert</originalText>
+                    </item>
+                    <item text='Manage' permission='ADMIN' insertPosition='end' suppressWarning='true'>
+                        <originalText>Manage</originalText>
+                    </item>
+                    <item text='Delete' permission='ADMIN' insertPosition='end' suppressWarning='true'>
+                        <originalText>Delete</originalText>
+                    </item>
+                </buttonBarOptions>
+                <columns>
+                    <column columnName="ImmSigCol" wrappedColumnName="lsid">
+                        <dimension>true</dimension>
+                        <fk>
+                            <fkDbSchema>study</fkDbSchema>
+                            <fkTable>ImmSig_demographics</fkTable>
+                            <fkColumnName>lsid</fkColumnName>
+                        </fk>
+                        <shownInInsertView>false</shownInInsertView>
+                        <shownInUpdateView>false</shownInUpdateView>
+                        <columnTitle>Imm Sig Col</columnTitle>
+                    </column>
+                </columns>
+            </table>
+        </tables>
+    </metadata>
+</query>
+
