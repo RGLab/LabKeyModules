@@ -2,7 +2,7 @@
 <query xmlns='http://labkey.org/data/xml/query'>
     <metadata>
         <tables xmlns='http://labkey.org/data/xml'>
-            <table tableName='ImmSig_demographics' tableDbType='TABLE'>
+            <table tableName='ImmSig2_demographics' tableDbType='TABLE'>
                 <columns>
                     <column columnName='study'>
                         <url>/project/Studies/${study}/begin.view</url>

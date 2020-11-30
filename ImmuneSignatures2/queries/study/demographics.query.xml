@@ -26,7 +26,7 @@
                         <dimension>true</dimension>
                         <fk>
                             <fkDbSchema>study</fkDbSchema>
-                            <fkTable>ImmSig_demographics</fkTable>
+                            <fkTable>ImmSig2_demographics</fkTable>
                             <fkColumnName>lsid</fkColumnName>
                         </fk>
                         <shownInInsertView>false</shownInInsertView>
