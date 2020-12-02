@@ -1,3 +1,5 @@
+@import "../helpers/colors.scss";
+
 // assay-data selector
 .df-assay-data-selector {
   float: left;
@@ -17,12 +19,12 @@
     & button,
     .open > .btn-default.dropdown-toggle:hover,
     .open > .btn-default.dropdown-toggle:focus {
-      background-color: #238b45;
+      background-color: $sample-color;
       color: #fff;
     }
 
     & .open button {
-      background-color: #238b45;
+      background-color: $sample-color;
       color: #fff;
     }
   }
@@ -54,7 +56,7 @@
     border: 1px solid #bbb;
     height: 25px;
     width: 25px;
-    background-color: #238b45;
+    background-color: $sample-color;
     color: #fff;
     border: 2px solid #f7f7f7;
 
