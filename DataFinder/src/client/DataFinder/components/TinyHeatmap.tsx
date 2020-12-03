@@ -2,6 +2,7 @@ import React from 'react';
 import * as d3 from "d3";
 import { TinyHeatmapInfo } from '../../typings/StudyCard'
 import { D3TinyHeatmap } from './d3/TinyHeatmap.d3';
+import { samplePalette } from '../helpers/colors'
 import "./TinyHeatmap.scss"
 
 // Barplot ---------------------------------------- //
@@ -14,16 +15,7 @@ export const createTinyHeatmapConsts = () => {
     // Combine with info for tiny heatmap
     // Things that are the same for all heatmaps
     const heatmapWidth = 260
-    const heatmapColors = [
-        "#FFFFFF",
-        "#EDF8E9",
-        "#C7E9C0",
-        "#A1D99B",
-        "#74C476",
-        "#41AB5D",
-        "#238B45",
-        "#005A32"
-    ];
+    const heatmapColors = samplePalette;
     const heatmapBreaks = [
         1, 5, 10, 20, 50, 100
     ]

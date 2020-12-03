@@ -9,6 +9,7 @@ import { List, Iterable } from 'immutable'
 import { Loader } from './reusable/Loader';
 import { SimpleDropdown } from './reusable/Dropdowns';
 
+import { participantColor, studyColor, sampleColor } from '../helpers/colors'
 
 const BarplotMemo = React.memo(Barplot)
 const AssayTimepointMemo = React.memo(AssayTimepointViewerContainer)
@@ -123,7 +124,7 @@ export const SelectedParticipants: React.FC<SelectedParticipantsProps> = ({filte
             width={250}
             categories={filterCategories.Condition}
             countMetric={"participantCount"}
-            barColor={"#af88e3"}/>
+            barColor={studyColor}/>
         <BarplotMemo 
             data={plotData.getIn(["Study", "ResearchFocus"])}
             name={"ResearchFocus"}
@@ -131,7 +132,7 @@ export const SelectedParticipants: React.FC<SelectedParticipantsProps> = ({filte
             width={250}
             categories={filterCategories.ResearchFocus}
             countMetric={"participantCount"}
-            barColor={"#af88e3"}/>
+            barColor={studyColor}/>
         <BarplotMemo 
             data={plotData.getIn(["Subject", "Age"])}
             name={"Age"}
@@ -139,7 +140,7 @@ export const SelectedParticipants: React.FC<SelectedParticipantsProps> = ({filte
             width={250}
             categories={filterCategories.Age}
             countMetric={"participantCount"}
-            barColor={"#95cced"}/>
+            barColor={participantColor}/>
         <BarplotMemo 
             data={plotData.getIn(["Subject", "Race"])}
             name={"Race"}
@@ -147,7 +148,7 @@ export const SelectedParticipants: React.FC<SelectedParticipantsProps> = ({filte
             width={250}
             categories={filterCategories.Race}
             countMetric={"participantCount"}
-            barColor={"#95cced"}/>
+            barColor={participantColor}/>
         <BarplotMemo 
             data={plotData.getIn(["Subject", "Gender"])}
             name={"Gender"}
@@ -155,7 +156,7 @@ export const SelectedParticipants: React.FC<SelectedParticipantsProps> = ({filte
             width={250}
             categories={filterCategories.Gender}
             countMetric={"participantCount"}
-            barColor={"#95cced"}/>
+            barColor={participantColor}/>
         <BarplotMemo
             data={plotData.getIn(["Data", "SampleType", "SampleType"])}
             name={"SampleType"}
@@ -163,7 +164,7 @@ export const SelectedParticipants: React.FC<SelectedParticipantsProps> = ({filte
             width={250}
             categories={filterCategories.SampleType}
             countMetric={"participantCount"}
-            barColor={"#74C476"}/>
+            barColor={sampleColor}/>
         <AssayTimepointMemo
             name={"heatmap1"}
             data={plotData.Data.toJS()}

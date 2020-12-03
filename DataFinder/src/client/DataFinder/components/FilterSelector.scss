@@ -1,4 +1,5 @@
 @import "./reusable/Dropdowns.scss";
+@import "../helpers/colors.scss";
 
 // Filter dropdowns
 .df-filter-dropdown {
@@ -37,7 +38,7 @@
       }
 
       & > li > a:hover {
-        background-color: #238b45;
+        background-color: $sample-color;
       }
     }
   }
