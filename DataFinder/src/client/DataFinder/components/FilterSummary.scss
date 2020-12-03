@@ -1,3 +1,4 @@
+@import "../helpers/colors.scss";
 
 .filterbar {
     // border: 1px solid #aaaaaa;
@@ -23,17 +24,17 @@
     margin-left: 15px;
   
     &.Study {
-      background: #54278f;
+      background: $study-color;
       color: white;
     }
   
     &.Subject {
-      background: #6baed6;
+      background: $pariticipant-color;
       color: white;
     }
   
     &.Data {
-      background: #238b45;
+      background: $sample-color;
       color: white;
     }
 

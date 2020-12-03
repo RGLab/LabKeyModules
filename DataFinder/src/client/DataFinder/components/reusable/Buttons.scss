@@ -1,14 +1,16 @@
+// $highlight-color: #ff5b00; // bright orange
+$highlight-color: #255c97; // dark blue
 
 .df-highlighted-button {
     margin: 9px 5px;
-    background-color: #de7e3a;
+    background-color: $highlight-color;
     border-radius: 2px;
     color: white;
     padding-top: 0;
     height: 20px;
     
     &:hover {
-      border: 1px solid #cf6319;
+      border: 1px solid  $highlight-color;
       color: white;
     }
   }

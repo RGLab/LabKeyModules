@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { drawAssayTimepointViewer } from "./d3/AssayTimepointViewer.d3"
 import { HeatmapDatum, Filter, IAssayData, PlotDatum, FilterCategory, } from '../../typings/CubeData';
+import { samplePalette } from '../helpers/colors'
 
 import "./AssayTimepointViewer.scss"
-import { map } from 'd3';
 
 // React stuff ==================================== //
 
@@ -172,15 +172,7 @@ export const AssayTimepointViewerContainer: React.FC<AssayTimepointViewerContain
       500,
       1000
     ],
-    "colors": [
-      "#FFFFFF",
-      "#EDF8E9",
-      "#C7E9C0",
-      "#A1D99B",
-      "#74C476",
-      "#41AB5D",
-      "#238B45"
-    ]
+    "colors": samplePalette
   }
   const height = yaxisData.length * 17 + 55
   return (
