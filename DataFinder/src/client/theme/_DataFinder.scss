@@ -33,6 +33,10 @@
   border-bottom: 1px solid #d0d0d0
 }
 
+.nav-tabs > li.active > a {
+  background-color: #fff;
+}
+
 .btn-group {
   vertical-align: baseline;
 }
