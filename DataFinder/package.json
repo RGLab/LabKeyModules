@@ -67,7 +67,7 @@
     "postcss-loader": "3.0.0",
     "react-hot-loader": "4.8.8",
     "react-test-renderer": "16.8.6",
-    "resolve-url-loader": "3.1.0",
+    "resolve-url-loader": "^3.1.2",
     "sass-loader": "7.1.0",
     "style-loader": "1.0.0",
     "ts-jest": "24.1.0",
@@ -76,7 +76,7 @@
     "url-loader": "1.1.2",
     "webpack": "4.33.0",
     "webpack-cli": "3.3.2",
-    "webpack-dev-server": "3.6.0",
+    "webpack-dev-server": "^3.11.0",
     "xhr-mock": "2.5.1"
   },
   "jest": {
