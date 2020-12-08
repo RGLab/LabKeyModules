@@ -196,7 +196,7 @@ const BannerTitleBarFC: React.FC<BannerTitleBarProps> = (({
                     </span>
                     <HighlightedButton href="/project/Studies/begin.view?pageId=visualize" id="df-visualize-button">Visualize</HighlightedButton>
                     <HighlightedButton href="/project/Studies/begin.view?pageId=analyze" id="df-analyze-button">Analyze</HighlightedButton>
-                    <HighlightedButton href="/immport/Studies/begin.view?pageId=DataAccess" id="df-download-button">Access Data</HighlightedButton>
+                    <HighlightedButton href="/project/Studies/begin.view?pageId=DataAccess" id="df-download-button">Access Data</HighlightedButton>
                     <HighlightedButton href="/rstudio/start.view?" id="df-rstudio-button">Open in RStudio</HighlightedButton>
                 </div>
             </RowOfButtons>
