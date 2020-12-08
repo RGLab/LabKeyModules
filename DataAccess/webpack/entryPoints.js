@@ -8,7 +8,7 @@ module.exports = {
         // For each webpart, include an object matching
         {
             name: 'DataAccess',
-            frame: 'none',
+            frame: 'portal',
             title: 'Data Access',
             path: './src/client/DataAccess'
         }]
