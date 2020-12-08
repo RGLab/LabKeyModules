@@ -1,2 +1,24 @@
 @import '../theme/_DataAccess.scss';
+.data-access-top {
+    $theme-colors: (
+        'primary': #255c97, 
+        'secondary': #FF5B00,
+        'success': #22BA6A,
+        'info': #EFB116, 
+        'warning': #F98E00,
+        'danger': #CC5874
+    );
+    .btn-primary {
+        background-image: none;
+    }
+    @import "~bootstrap/scss/bootstrap";
+}
 @import "~@labkey/components/dist/assets/scss/theme/index.scss";
+
+.data-access-title {
+    font-size: 20px;
+}
+
+.assay-dropdown {
+    display: inline;
+}
