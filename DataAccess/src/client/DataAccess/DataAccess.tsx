@@ -61,7 +61,7 @@ export const DataAccess: React.FC = () => {
     
 
     React.useEffect(() => {
-        const qwp = new LABKEY.QueryWebPart({
+        new LABKEY.QueryWebPart({
             renderTo: "data-access-grid",
             title: selectedQuery.label, 
             schemaName: selectedQuery.schema,
