@@ -1,0 +1,118 @@
+String moduleName = "${project.name}"
+String moduleBuildDir = "${project.parent.labKeyModulesDir}/${moduleName}"
+String moduleXmlTemplate = "${project.parent.labKeyModulesDir}/module.template.xml"
+String buildTime = new Date().format('yyyy-MM-dd:HH-mm')
+
+if(moduleName == 'extraWebapp'){
+    deploy.doLast {
+        mkdir "${project.parent.deployDir}/extraWebapp"
+        copy {
+            from "."
+            exclude "build.gradle", "enlistment.properties"
+            into "${project.parent.deployDir}/extraWebapp"
+        }
+    }
+}else{
+    String dirToZip = ""
+    String enlistmentId = ""
+    def moduleProps = new Properties()
+    
+    if(project.parent.reactModules.contains(moduleName)){
+
+        dirToZip = "${moduleBuildDir}/resources"
+
+        npm_run_build {
+            // input files listed are monitored for changes
+            // and only rebuilt when needed
+            // Note: Cannot use '*' for string matching, so
+            // may need to specify different files
+            inputs.files fileTree("src")
+            inputs.files fileTree("webpack")
+            inputs.file "package.json"
+            inputs.file "package-lock.json"
+            inputs.file "module.properties"
+            inputs.file "postcss.config.js"
+            inputs.file "tsconfig.json"
+            //inputs.file "declarations.d.ts"
+            
+            outputs.dir "resources" // set in where ??
+        }
+
+        task prepModule {
+            dependsOn npm_run_build
+        }
+
+    }else{
+        dirToZip = "${moduleBuildDir}"
+        task prepModule {
+             // placeholder
+        }
+    }
+
+    task ensureEnlistmentId {
+        // To ensure enlistmentId is ported over from old ant builds
+        // the `enlistment.id` format is still used and then
+        // transitioned to `EnlistmentId`
+        dependsOn prepModule
+        File enlistmentPropsFile = new File("${moduleBuildDir}/enlistment.properties")
+        if(!enlistmentPropsFile.exists()){
+            enlistmentId = java.util.UUID.randomUUID()
+            enlistmentPropsFile.text = """
+# $buildTime
+
+enlistment.id=${enlistmentId}
+"""
+        }
+        file(enlistmentPropsFile).withInputStream{moduleProps.load(it)}
+        enlistmentId = moduleProps.getProperty('enlistment.id')
+        moduleProps.setProperty('EnlistmentId', enlistmentId)
+        
+    }
+
+    task createModuleProps {
+        dependsOn ensureEnlistmentId
+        file("${moduleBuildDir}/module.properties").withInputStream{
+            moduleProps.load(it);
+        }
+        def standardPropsMap = [
+             'BuildOS' : project.parent.buildOS,
+             'BuildPath' : "${moduleBuildDir}.module",
+             'BuildTime' : buildTime,
+             'BuildType' : project.parent.buildType,
+             'BuildUser' : project.parent.buildUser,
+             'SourcePath': moduleBuildDir,
+             'Revision': "Not built from a Subversion source tree",
+             'URL': "Not built from a Subversion source tree" 
+        ]
+        standardPropsMap.each { key, value ->
+            moduleProps.setProperty(key, value)
+        }
+    }
+
+    // Filter fn assumes standard @prop@ decoration in template file
+    task createModuleXml{
+        dependsOn createModuleProps
+        copy {
+            from moduleXmlTemplate
+            into "${dirToZip}/config"
+            include "**/*"
+            filter(
+                org.apache.tools.ant.filters.ReplaceTokens, 
+                tokens: moduleProps,
+                beginToken: '@@',
+                endToken: '@@' 
+            )
+            rename 'module.template.xml', 'module.xml'
+        }
+    }
+
+    task zipModule(type: Zip, dependsOn: 'createModuleXml') {
+        from "${dirToZip}"
+        archiveFileName = "${moduleName}.module"
+        destinationDirectory = file("${project.parent.externalModulesDir}")
+    }
+
+    deploy {
+        dependsOn zipModule
+    }
+}
