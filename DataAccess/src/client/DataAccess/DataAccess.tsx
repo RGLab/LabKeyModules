@@ -26,7 +26,6 @@ const getQueries = () => {
             failure: (error) => {
                 reject(error.exception) },
             success: (data) => {
-                console.log(data)
                 resolve(data) }
         })
     })
@@ -37,8 +36,6 @@ export const DataAccess: React.FC = () => {
     const [selectedQuery, setSelectedQuery] = React.useState<QueryInfo>({schema: "study", query: "demographics", label: "Demographics"})
     const [webpartReady, setWebpartReady] = React.useState<Boolean>(false)
     const [dropdownConfig, setDropdownConfig] = React.useState(null)
-    // const queryConfig: QueryConfig = { schemaQuery: SchemaQuery.create(selectedQuery.schema, selectedQuery.query) }
-    
 
     React.useEffect(() => {
         getQueries().then((data: any) => {
@@ -114,7 +111,6 @@ export const DataAccess: React.FC = () => {
     // Must return a React Fragment
     return <>
     <div className="data-access-top">
-        {/* <AssayDropdown setSelectedQuery={setSelectedQuery}></AssayDropdown> */}
         <span className="data-access-title">{selectedQuery.label}</span>
     </div>
     {!webpartReady && <Loader/>}
