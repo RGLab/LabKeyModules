@@ -1,4 +1,5 @@
 import React from 'react';
+import {Loader} from './components/Loader'
 
 // Styling imports
 import './DataAccess.scss';
@@ -30,6 +31,7 @@ const demographicsQuery = {schema: "study", query: "demographics", label: "Demog
 
 export const DataAccess: React.FC = () => {
     const [selectedQuery, setSelectedQuery] = React.useState<QueryInfo>({schema: "study", query: "demographics", label: "Demographics"})
+    const [webpartReady, setWebpartReady] = React.useState<Boolean>(false)
     // const queryConfig: QueryConfig = { schemaQuery: SchemaQuery.create(selectedQuery.schema, selectedQuery.query) }
     
     const dropdownConfig = {
@@ -73,7 +75,8 @@ export const DataAccess: React.FC = () => {
                 includeStandardButtons: true,
                 items:[
                     dropdownConfig
-                    ]}
+                    ]},
+            success: () => setWebpartReady(true)
         })
     }, [selectedQuery])
 
@@ -83,6 +86,7 @@ export const DataAccess: React.FC = () => {
         {/* <AssayDropdown setSelectedQuery={setSelectedQuery}></AssayDropdown> */}
         <span className="data-access-title">{selectedQuery.label}</span>
     </div>
+    {!webpartReady && <Loader/>}
     <div id="data-access-grid"></div>
     </>
 }
