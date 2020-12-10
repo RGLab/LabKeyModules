@@ -9,7 +9,7 @@ module.exports = {
         {
             name: 'DataAccess',
             frame: 'portal',
-            title: 'Data Access',
+            title: 'Download Data',
             path: './src/client/DataAccess'
         }]
 };

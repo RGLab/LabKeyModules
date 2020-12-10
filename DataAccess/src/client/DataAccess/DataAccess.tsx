@@ -1,7 +1,7 @@
 import React from 'react';
-import {Loader} from './components/Loader'
 import { Query} from '@labkey/api';
 import {ButtonData} from './components/Dropdowns'
+import {LoadingSpinner} from '@labkey/components'
 
 // Styling imports
 import './DataAccess.scss';
@@ -43,10 +43,10 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({title, buttonData}) => {
             <span style={{paddingLeft:"5px"}}><i className="fa fa-caret-down"></i></span>
         </button>
         <ul className="dropdown-menu dropdown-menu-right">
-            {buttonData.map((bd) => {
+            {buttonData ? buttonData.map((bd) => {
                 if (bd.label == "-") return <li key={bd.label} className="divider"></li>
                 return(<li><a key={bd.label} href={bd.href} onClick={bd.action}>{bd.label}</a></li>)
-            })}
+            }) : <LoadingSpinner/>}
         </ul>
     </div>
 }
@@ -55,7 +55,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({title, buttonData}) => {
 export const DataAccess: React.FC = () => {
     const [selectedQuery, setSelectedQuery] = React.useState<QueryInfo>({schema: "study", query: "demographics", label: "Demographics"})
     const [webpartReady, setWebpartReady] = React.useState<Boolean>(false)
-    const [buttonData, setButtonData] = React.useState<ButtonData[]>([])
+    const [buttonData, setButtonData] = React.useState<ButtonData[]>(null)
 
     React.useEffect(() => {
         getQueries().then((data: any) => {
@@ -102,7 +102,8 @@ export const DataAccess: React.FC = () => {
         </div>
 
         <span><i>Note: Gene expression and cytometry data is best accessed through <a href="https://rglab.github.io/ImmuneSpaceR/">ImmuneSpaceR</a>.</i></span>
-        {!webpartReady && <Loader />}
-        <div id="data-access-grid"></div>
+        {!webpartReady && <div><LoadingSpinner/></div>}
+        <div id="data-access-grid">
+        </div>
     </>
 }
