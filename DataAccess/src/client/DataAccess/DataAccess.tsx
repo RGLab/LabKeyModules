@@ -40,7 +40,7 @@ export const DataAccess: React.FC = () => {
     React.useEffect(() => {
         getQueries().then((data: any) => {
             const rows = data.rows
-            const ds = rows.map(row => ({schema: "study", query: row.Name, label: row.Label}))
+            const ds = rows.map(row => ({ schema: "study", query: row.Name, label: row.Label }))
             const dc = {
                 text: "Choose Dataset",
                 items: [
@@ -48,23 +48,11 @@ export const DataAccess: React.FC = () => {
                         text: "Demographics",
                         handler: () => setSelectedQuery(demographicsQuery)
                     },
-                    {
-                        text: "Assays",
-                        items: ds.map((queryInfo) => ({
-                            text: queryInfo.label,
-                            handler: () => setSelectedQuery(queryInfo)
-                        })
-                        )
-                    },
-                    {
-                        text: "Analyzed Results",
-                        items: analyzedResults.map((queryInfo) => ({
-                            text: queryInfo.label,
-                            handler: () => setSelectedQuery(queryInfo)
-                        })
-                        )
-                    }
-        
+                    '-',
+                    ...ds.map((queryInfo) => ({
+                        text: queryInfo.label,
+                        handler: () => setSelectedQuery(queryInfo)
+                    }))
                 ]
             }
             setDropdownConfig(dc)
