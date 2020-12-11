@@ -95,7 +95,7 @@ export const DataAccess: React.FC = () => {
     // Must return a React Fragment
     return <>
         <div className={"data-access-top"}>
-            {/* <span style={{ display: "inline-block" }}>Choose Dataset:</span> */}
+            <span style={{ display: "inline-block", paddingRight: "10px" }}>Select Dataset:</span>
             <div style={{ display: "inline-block" }}>
                 <DropdownMenu title={selectedQuery.label} buttonData={buttonData}></DropdownMenu>
             </div>
