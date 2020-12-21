@@ -23,9 +23,9 @@
         <property name='organizationUrl' value='@@OrganizationURL@@'/>
         <property name='requiredServerVersion' value='@@RequiredServerVersion@@'/>
         <property name='sourcePath' value='@@SourcePath@@'/>
-        <property name='svnRevision' value='@@Revision@@'/>
-        <property name='svnUrl' value='@@URL@@'/>
+        <property name='vcsRevision' value='@@Revision@@'/>
+        <property name='vcsUrl' value='@@URL@@'/>
         <property name='url' value='@@InfoURL@@'/>
-        <property name='version' value='@@Version@@'/>
+        <property name='schemaVersion' value='@@Version@@'/>
     </bean>
 </beans>
