@@ -1,0 +1,12 @@
+<view xmlns="http://labkey.org/data/xml/view" 
+    frame="<%= htmlWebpackPlugin.options.frame %>" 
+    title="<%= htmlWebpackPlugin.options.title %>">
+    <dependencies>
+        <dependency path="ISCore/ButtonBarNavigation.js"/>
+        <% if (htmlWebpackPlugin.options.mode !== 'dev') { %>
+            <dependency path="DataAccess/gen/<%= htmlWebpackPlugin.options.name %>.css" />
+            <dependency path="DataAccess/gen/<%= htmlWebpackPlugin.options.name %>.js"/>
+        <% } %>
+    </dependencies>
+
+</view>
