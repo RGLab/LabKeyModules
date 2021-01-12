@@ -1,0 +1,102 @@
+<div class='ISCore'>
+
+<div class="overview-spacing">
+    <span class="bold-text">Principal Investigator:</span> <span>Steven Kleinstein</span>
+</div>
+<div class="overview-spacing">
+    <span class="bold-text">Title:</span> <span>Placeholder</span>
+</div>
+<div class="overview-spacing">
+    <span class="bold-text">Condition studied:</span> <span class="paddingRight25px">Placeholder</span> <span class="bold-text">Number of participants:</span> <span id="subjects"></span>
+</div>
+<div class="overview-spacing">
+    <span class="bold-text">Brief description:</span> <span>Placeholder</span>
+</div>
+<div class="overview-spacing">
+    <span class="bold-text">Description:</span>
+    <a class="showSummary">show</a>
+    <div class="hidden">
+        placeholder
+    </div>
+</div>
+<div class="overview-spacing">
+    <span class="bold-text">Objectives:</span>
+    <a class="showSummary">show</a>
+    <div class="hidden">
+        placeholder
+    </div>
+</div>
+<div class="overview-spacing">
+    <span class="bold-text">Endpoints:</span>
+    <a class="showSummary">show</a>
+    <div class="hidden">
+    <ol>
+        <li>tmp 1
+        </li>
+        <li>tmp 2
+        </li>
+    </ol>
+    </div>
+</div>
+<div class="overview-spacing">
+    <span class="bold-text">Available datasets:</span> <span id="datasets"><br></span>
+</div>
+<div class="overview-spacing">
+    <span class="bold-text">Available raw data files:</span> <span id="raw_files"><br></span>
+</div>
+<div class="overview-spacing">
+    <span class="bold-text">Sponsoring organization:</span> <span>NIAID</span>
+</div>
+<div>
+    <a class="labkey-text-link bold-text" href="http://immunology.sciencemag.org/content/2/14/eaal4656" title="ImmuneSignatues" target="_blank">PROCEED TO PAPER</a>
+</div>
+</div>
+
+
+<script type="text/javascript">
+jQuery( '.showSummary' ).click(
+    function(){
+        var e = jQuery(this);
+        e.next().toggleClass( 'hidden' );
+        e.text( e.text() == 'show' ? 'hide' : 'show' );
+    }
+);
+LABKEY.requiresCss( "ISCore/Common/ISCore.css" );
+LABKEY.requiresScript( "ISCore/Common/ISCore.js", true, function() {
+        Ext.each( [ 'datasets', 'raw_files' ], function( t ){
+            LABKEY.Query.selectRows({
+                requiredVersion: 12.3,
+                schemaName: 'study',
+                queryName: 'ISC_' + t,
+                success: function( results ){ onSuccessTbls( results, '#' + t ) },
+                failure: LABKEY.ext.ISCore.onFailure
+            });
+        });
+
+        function onSuccessTbls( results, target ){
+            var
+                rows = results.rows,
+                length = rows.length,
+                datasets = [];
+            for ( var idxRow = 0; idxRow < length; idxRow ++ ){
+                var row = rows[ idxRow ];
+                datasets.push(
+                    '<a href=\"' +
+                    LABKEY.ActionURL.buildURL( 'study', 'dataset', null, { datasetId: row['Id'].value } ) +
+                    '\">' + row['Label'].value + '</a>'
+                );
+            }
+            jQuery( target )[0].innerHTML = length == 0 ? 'None' : datasets.join(', ');
+        };
+
+        LABKEY.Query.executeSql({
+            schemaName: 'study',
+            sql: 'SELECT COUNT(*) as cnt \
+                  FROM demographics',
+            success: function(r){ jQuery( '#subjects' )[0].innerHTML = r.rows[0].cnt; }
+        });
+
+    jQuery('.ISCore').parent().next().css('margin-after', 0);
+    jQuery('.ISCore').parent().next().css('margin-before', 0);
+});
+</script>
