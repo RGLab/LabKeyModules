@@ -1,6 +1,7 @@
 import React from 'react';
-import {Loader} from './components/Loader'
 import { Query} from '@labkey/api';
+import {ButtonData} from './components/Dropdowns'
+import {LoadingSpinner} from '@labkey/components'
 
 // Styling imports
 import './DataAccess.scss';
@@ -31,53 +32,54 @@ const getQueries = () => {
     })
 }
 
+interface DropdownMenuProps {
+    title: string,
+    buttonData: ButtonData[]
+}
+const DropdownMenu: React.FC<DropdownMenuProps> = ({title, buttonData}) => {
+    return <div className="dropdown dropdown-rollup data-access-dropdown">
+        <button className="btn dropdown-toggle" data-toggle="dropdown" type="button" aria-expanded="false">
+            <span>{title}</span>
+            <span style={{paddingLeft:"5px"}}><i className="fa fa-caret-down"></i></span>
+        </button>
+        <ul className="dropdown-menu dropdown-menu-right">
+            {buttonData ? buttonData.map((bd) => {
+                if (bd.label == "-") return <li key={bd.label} className="divider"></li>
+                return(<li><a key={bd.label} href={bd.href} onClick={bd.action}>{bd.label}</a></li>)
+            }) : <LoadingSpinner/>}
+        </ul>
+    </div>
+}
+
 
 export const DataAccess: React.FC = () => {
     const [selectedQuery, setSelectedQuery] = React.useState<QueryInfo>({schema: "study", query: "demographics", label: "Demographics"})
     const [webpartReady, setWebpartReady] = React.useState<Boolean>(false)
-    const [dropdownConfig, setDropdownConfig] = React.useState(null)
+    const [buttonData, setButtonData] = React.useState<ButtonData[]>(null)
 
     React.useEffect(() => {
         getQueries().then((data: any) => {
             const rows = data.rows
-            const ds = rows.map(row => ({ schema: "study", query: row.Name, label: row.Label }))
-            const dc = {
-                text: "Choose Dataset",
-                items: [
-                    {
-                        text: "Demographics",
-                        handler: () => setSelectedQuery(demographicsQuery)
-                    },
-                    '-',
-                    ...ds.map((queryInfo) => ({
-                        text: queryInfo.label,
-                        handler: () => setSelectedQuery(queryInfo)
-                    }))
-                ]
-            }
-            setDropdownConfig(dc)
-            // initialize QueryWebPart
-            new LABKEY.QueryWebPart({
-                renderTo: "data-access-grid",
-                title: selectedQuery.label, 
-                schemaName: selectedQuery.schema,
-                queryName: selectedQuery.query,
-                showRstudioButton: true, 
-                showSurroundingBorder: false,
-                frame: "none",
-                buttonBar: {
-                    includeStandardButtons: true,
-                    items:[
-                        dc
-                        ]},
-                success: () => setWebpartReady(true)
-            })
+            const datasets = rows.map(row => ({ schema: "study", query: row.Name, label: row.Label }))
+            const bd: ButtonData[] = [
+                {
+                    label: "Demographics",
+                    action: () => setSelectedQuery({ schema: "study", query: "demographics", label: "Demographics" })
+                },
+                { 
+                    label: '-'
+                },
+                ...datasets.map((queryInfo) => ({
+                    label: queryInfo.label,
+                    action: () => setSelectedQuery(queryInfo)
+                }))
+            ]
+            setButtonData(bd)
         })
     }, [])
     
 
     React.useEffect(() => {
-        if (dropdownConfig != null) {
             new LABKEY.QueryWebPart({
                 renderTo: "data-access-grid",
                 title: selectedQuery.label, 
@@ -86,22 +88,22 @@ export const DataAccess: React.FC = () => {
                 showRstudioButton: true, 
                 showSurroundingBorder: false,
                 frame: "none",
-                buttonBar: {
-                    includeStandardButtons: true,
-                    items:[
-                        dropdownConfig
-                        ]},
                 success: () => setWebpartReady(true)
             })
-        }
     }, [selectedQuery])
 
     // Must return a React Fragment
     return <>
-    <div className="data-access-top">
-        <span className="data-access-title">{selectedQuery.label}</span>
-    </div>
-    {!webpartReady && <Loader/>}
-    <div id="data-access-grid"></div>
+        <div className={"data-access-top"}>
+            <span style={{ display: "inline-block", paddingRight: "10px" }}>Select Dataset:</span>
+            <div style={{ display: "inline-block" }}>
+                <DropdownMenu title={selectedQuery.label} buttonData={buttonData}></DropdownMenu>
+            </div>
+        </div>
+
+        <span><i>Note: Gene expression and cytometry data is best accessed through <a href="https://rglab.github.io/ImmuneSpaceR/">ImmuneSpaceR</a>.</i></span>
+        {!webpartReady && <div><LoadingSpinner/></div>}
+        <div id="data-access-grid">
+        </div>
     </>
 }
