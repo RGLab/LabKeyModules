@@ -479,6 +479,11 @@ library(illuminaio)
   }
   nms <- grep("feature_id", colnames(exprs), value = TRUE, invert = TRUE)
   rep <- gef$biosample_accession[ match(nms, gef[[colToUse]]) ]
+  
+  # remove samples without matching biosample accession
+  nms <- nms[!is.na(rep)]
+  rep <- rep[!is.na(rep)]
+
   setnames(exprs, nms, rep)
   return(exprs)
 }
@@ -527,6 +532,7 @@ makeRawMatrix <- function(metaData, gef, study, inputFiles){
   # Subset to biosamples in selectedBiosamples from UI
   exprs <- exprs[ , colnames(exprs) %in% c("feature_id", gef$biosample_accession),
                   with = FALSE ]
+  print(colnames(exprs))
 
   # Check that all gef samples are in the matrix - may not be the case if some
   # were removed for QC issues.  User should re-run matrix with these samples
@@ -570,11 +576,21 @@ normalizeMatrix <- function(exprs, study, metaData){
   # no platform  == isRNASeq
   if (metaData$platform == "NA") {
     library(DESeq)
+    print(colnames(em))
+    print(head(em))
+    org <- colnames(em)
+    colnames(em) <- seq_len(ncol(em))
     cds <- newCountDataSet(countData = em, conditions = colnames(em))
+    message("done new")
     cds <- estimateSizeFactors(cds)
+    message("done sizef")
     cdsBlind <- estimateDispersions(cds, method = "blind" )
+    message("done disp")
     vsd <- varianceStabilizingTransformation(cdsBlind)
+    message("done trans")
     norm_exprs <- exprs(vsd)
+    message("done deseq")
+    colnames(norm_exprs) <- org
   } else {
     cnames <- colnames(em)
     norm_exprs <- preprocessCore::normalize.quantiles(em)
@@ -592,6 +608,7 @@ normalizeMatrix <- function(exprs, study, metaData){
   fid <- grep("feature_id", names(norm_exprs))
   setcolorder(norm_exprs, c(fid, smpls))
 
+  message("done normalization")
   return(norm_exprs)
 }
 
