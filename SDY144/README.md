@@ -1,10 +1,10 @@
-# LyoplateVisualization
+# SDY144
 
-Interface for visualizing FCS files with ability to display gated data. 
+Queries and reports to be transfered to ImmuneSpace
 
 ## Dependencies 
 
-<!-- _list any dependencies on other modules or repos_ -->
+ISCore
 
 ## Setup 
 

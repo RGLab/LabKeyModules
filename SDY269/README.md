@@ -1,6 +1,6 @@
-# LyoplateVisualization
+# SDY169
 
-Interface for visualizing FCS files with ability to display gated data. 
+Queries and reports to be transfered to ImmuneSpace
 
 ## Dependencies 
 

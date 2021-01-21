@@ -1,6 +1,6 @@
-# LyoplateVisualization
+# About Page
 
-Interface for visualizing FCS files with ability to display gated data. 
+React-based module for displaying info about ImmuneSpace
 
 ## Dependencies 
 

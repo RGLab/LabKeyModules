@@ -1,6 +1,6 @@
-# LyoplateVisualization
+# ImmuneSpaceStudyOverview
 
-Interface for visualizing FCS files with ability to display gated data. 
+<!-- _summary of the purpose of the module and how it works_ -->
 
 ## Dependencies 
 

@@ -1,4 +1,4 @@
-# WelcomePageViews
+# HIPCCyto
 
 <!-- _summary of the purpose of the module and how it works_ -->
 
@@ -12,5 +12,5 @@
 
 ## Resources
 
-<!-- _Links to any helpful resources like LabKey or Notion documentation or external sources used when developing this module_ -->
+https://github.com/RGLab/HIPCCyto/
 

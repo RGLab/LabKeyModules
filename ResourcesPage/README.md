@@ -1,10 +1,10 @@
-# LyoplateVisualization
+# Resources Page
 
-Interface for visualizing FCS files with ability to display gated data. 
+React-based module for site-wide resources
 
 ## Dependencies 
 
-<!-- _list any dependencies on other modules or repos_ -->
+[Plumber API](https://github.com/RGLab/ImmuneSpaceLabKeyAPI)
 
 ## Setup 
 

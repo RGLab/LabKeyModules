@@ -1,6 +1,6 @@
-# LyoplateVisualization
+# Dimension Reduction
 
-Interface for visualizing FCS files with ability to display gated data. 
+Visualize PCA, UMAP, or TSNE 
 
 ## Dependencies 
 
