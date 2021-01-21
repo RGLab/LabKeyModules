@@ -23,30 +23,22 @@ LabKeyModules develompent is closely tied to the ImmuneSpace servers as well as 
 
 ## Code Structure
 * Each module gets its own directory. Each module directory should include a README, based on README_TEMPLATE.md, outlining the basic functionality, dependencies, any other special considerations, and linking to relevant documentation online or in Notion.  
-* For more details, refer to [LabKey's documentation](https://www.labkey.org/Documentation/wiki-page.view?name=simpleModules) on developing modules. 
-* For React-based modules, follow guidelines outlined in [immunespace-frontend-tools](https://github.com/RGLab/ImmunespaceFrontendTools)
+* For more details, refer to [LabKey's documentation](https://www.labkey.org/Documentation/wiki-page.view?name=simpleModules) on developing modules.   
+* For React-based modules, follow guidelines outlined in [immunespace-frontend-tools](https://github.com/RGLab/ImmunespaceFrontendTools)  
 
 ## Testing
 
 Any changes should be tested. A PR without corresponding tests will not be accepted. Add integration tests to [UITesting](https://github.com/RGLab/UITesting) and cross-link PRs. Unit test React-based modules using Jest. 
 
-## Helpful Documentation and References
-
-### SQL 
-
-LabKey has their own flavor of SQL, so refer to [LabKey SQL reference](https://www.labkey.org/Documentation/wiki-page.view?name=labkeysql) when writing SQL scripts. Refer to [LabKey's SQL script conventions](https://www.labkey.org/Documentation/wiki-page.view?name=sqlScriptConventions) for guidelines on developing SQL scripts. 
-
-### ETL
-
-We use LabKey ETLs in several different modules for tasks such as loading, caching, or updating data. See the [LabKey ETL documentation](https://www.labkey.org/Documentation/wiki-page.view?name=etlModule) for details on how to set up an ETL. An existing ETL can be run from the DataIntegration module. 
-
-### Javascript
-
-[LabKey javascript API reference](https://www.labkey.org/download/clientapi_docs/javascript-api/)
-
 ## Documenting
 
 If you are creating a new module, be sure to include a README in the module directory, following the README_TEMPLATE.md format. When making changes to a module, be sure to update the README file for that module. If a module requires additional documentation, add a Notion page. 
+
+## Declaring dependencies
+Any dependencies on other modules should be specified in the local build.gradle file. [More documentation on dependency declaration](https://www.labkey.org/Documentation/Archive/20.11/wiki-page.view?name=gradleDepend). These, as well as any external dependencies should also be summarized in the README.  
+
+## Versioning
+Each module has its own version number, specified in the `SchemaVersion` property of the module.properties file. LabKey uses module versioning for some business logic like [deciding when to run a SQL script](https://www.labkey.org/Documentation/wiki-page.view?name=sqlScripts) so you may need to update `SchemaVersion` to get your module to work. At the very least, the minor version number should be updated when updates to a module get merged into dev. 
 
 ## Style Guide
 
@@ -93,3 +85,16 @@ Refer to [google's html style guide](https://google.github.io/styleguide/htmlcss
 ### TypeScript and React
 Our React-based modules are based on [LabKey's guidelines](https://www.labkey.org/Documentation/wiki-page.view?name=reactJSdev) and modeled on LabKey's [demo module](https://github.com/LabKey/tutorialModules/tree/develop/demo). Refer to [immunespace-frontend-tools](https://github.com/RGLab/ImmunespaceFrontendTools) for a full development and style guide for React modules. 
 
+## Helpful Documentation and References
+
+### SQL 
+
+LabKey has their own flavor of SQL, so refer to [LabKey SQL reference](https://www.labkey.org/Documentation/wiki-page.view?name=labkeysql) when writing SQL scripts. Refer to [LabKey's SQL script conventions](https://www.labkey.org/Documentation/wiki-page.view?name=sqlScriptConventions) for guidelines on developing SQL scripts. 
+
+### ETL
+
+We use LabKey ETLs in several different modules for tasks such as loading, caching, or updating data. See the [LabKey ETL documentation](https://www.labkey.org/Documentation/wiki-page.view?name=etlModule) for details on how to set up an ETL. An existing ETL can be run from the DataIntegration module. 
+
+### Javascript
+
+[LabKey javascript API reference](https://www.labkey.org/download/clientapi_docs/javascript-api/)
