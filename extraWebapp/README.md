@@ -1,6 +1,6 @@
-# LyoplateVisualization
+# extraWebApp
 
-Interface for visualizing FCS files with ability to display gated data. 
+Resources for front page and other random stuff like the rstudio viewer panel. Not a real module. extraWebApp is a (deprecated) LabKey standard directory for extra stuff. 
 
 ## Dependencies 
 

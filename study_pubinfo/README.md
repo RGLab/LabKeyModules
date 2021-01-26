@@ -1,6 +1,6 @@
-# LyoplateVisualization
+# study_pubinfo
 
-Interface for visualizing FCS files with ability to display gated data. 
+Add PubMed statistics and citations information
 
 ## Dependencies 
 

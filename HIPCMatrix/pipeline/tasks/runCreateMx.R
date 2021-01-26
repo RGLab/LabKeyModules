@@ -479,6 +479,11 @@ library(illuminaio)
   }
   nms <- grep("feature_id", colnames(exprs), value = TRUE, invert = TRUE)
   rep <- gef$biosample_accession[ match(nms, gef[[colToUse]]) ]
+  
+  # remove samples without matching biosample accession
+  nms <- nms[!is.na(rep)]
+  rep <- rep[!is.na(rep)]
+
   setnames(exprs, nms, rep)
   return(exprs)
 }
@@ -570,11 +575,16 @@ normalizeMatrix <- function(exprs, study, metaData){
   # no platform  == isRNASeq
   if (metaData$platform == "NA") {
     library(DESeq)
+    # newCountDataSet does not take duplicated column names, so assign temporary unique names
+    orginal_colnames <- colnames(em)
+    colnames(em) <- seq_len(ncol(em))
+
     cds <- newCountDataSet(countData = em, conditions = colnames(em))
     cds <- estimateSizeFactors(cds)
     cdsBlind <- estimateDispersions(cds, method = "blind" )
     vsd <- varianceStabilizingTransformation(cdsBlind)
     norm_exprs <- exprs(vsd)
+    colnames(norm_exprs) <- orginal_colnames
   } else {
     cnames <- colnames(em)
     norm_exprs <- preprocessCore::normalize.quantiles(em)
@@ -591,7 +601,7 @@ normalizeMatrix <- function(exprs, study, metaData){
   smpls <- grep("feature_id", names(norm_exprs), invert = TRUE)
   fid <- grep("feature_id", names(norm_exprs))
   setcolorder(norm_exprs, c(fid, smpls))
-
+  
   return(norm_exprs)
 }
 

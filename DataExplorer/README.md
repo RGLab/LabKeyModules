@@ -1,6 +1,6 @@
-# LyoplateVisualization
+# Data Explorer
 
-Interface for visualizing FCS files with ability to display gated data. 
+Visualize datasets
 
 ## Dependencies 
 
