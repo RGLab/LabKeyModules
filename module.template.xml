@@ -26,6 +26,6 @@
         <property name='vcsRevision' value='@@Revision@@'/>
         <property name='vcsUrl' value='@@URL@@'/>
         <property name='url' value='@@InfoURL@@'/>
-        <property name='schemaVersion' value='@@Version@@'/>
+        <property name='schemaVersion' value='@@SchemaVersion@@'/>
     </bean>
 </beans>
