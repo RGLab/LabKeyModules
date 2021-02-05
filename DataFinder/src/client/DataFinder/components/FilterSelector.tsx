@@ -2,9 +2,8 @@ import "./FilterSelector.scss"
 import * as React from 'react';
 import { Filter, FilterCategory, SelectedFilter, FilterCategories, AssayData, SelectedFilters } from '../../typings/CubeData'
 import { List} from 'immutable'
-import { FilterDeletor } from './FilterSummary'
+import { FilterDeletor, CubeMdx } from '@immunespace/components'
 import { DataFilters } from './DataFilters';
-import { CubeMdx } from '../../typings/Cube';
 
 // Types 
 export interface FilterDropdownProps {

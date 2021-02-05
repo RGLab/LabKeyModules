@@ -23,26 +23,6 @@ interface Ext4 {
     Msg: any;
 }
 
-interface SelectRowsResponse {
-    schemaName: string;
-    queryName: string;
-    formatVersion: number;
-    metaData: SelectRowsMetadata;
-    rowCount: number;
-    rows: any[];
-}
-interface SelectRowsMetadata {
-    description: string;
-    fields: any[];
-    id?: string;
-    importMessage: string;
-    importTemplates: any[];
-    root: string;
-    title: string;
-    totalProperty: string;
-}
-
-
 
 // Filter-related types
 // interface Filter {
