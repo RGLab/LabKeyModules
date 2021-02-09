@@ -89,7 +89,7 @@ module.exports = {
     },
 
     resolve: {
-        extensions: constants.extensions.TYPESCRIPT
+        extensions: constants.extensions.TYPESCRIPT.concat(constants.extensions.STYLE)
     },
 
     plugins: plugins
