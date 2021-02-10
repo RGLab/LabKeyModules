@@ -1,0 +1,16 @@
+---
+output: rmarkdown::html_document
+---
+
+***
+
+## PUBLICATION INFO
+* **Title:** Temporal Manuscript
+* **Publication Date:** August 24, 2017
+* **Journal:** Science Immunology
+* **Authors:** The HIPC-CHI Signatures Project Team and the HIPC-I Consortium
+* **Manuscript Link:** <http://immunology.sciencemag.org/content/2/14/eaal4656>
+* **Contact Name:** Dr. Steven Kleinstein
+* **Contact Email:** steven.kleinstein@yale.edu
+
+Reproduction of analysis and figures from Temporal manuscript.
