@@ -8,5 +8,11 @@
         "immutable": "3.8.2",
         "react": "16.8.6",
         "react-dom": "16.8.6"
+    },
+    "scripts": {
+        "setup": "npm install",
+        "build": "",
+        "build-prod": "npm install",
+        "clean": "rm -rf node_modules"
     }
 }

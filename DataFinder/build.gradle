@@ -39,6 +39,9 @@ if(moduleName == 'extraWebapp'){
         }
 
         task prepModule {
+            // Fist install any dependencies in top level package.json
+            dependsOn project.parent.tasks.npmInstall
+            // then build module
             dependsOn npm_run_build
         }
 
