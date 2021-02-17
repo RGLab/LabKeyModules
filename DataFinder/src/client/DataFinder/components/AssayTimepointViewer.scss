@@ -1,3 +1,5 @@
+@use "~@immunespace/theme/dist/immunespace";
+
 /* -------- tooltip ----------- */
 #heatmap-label {
     float: right;
@@ -8,7 +10,7 @@
     padding: 2px;
     padding-bottom: 0;
     font: 12px sans-serif;
-    background: lightsteelblue;
+    background: immunespace.$secondary;
     border: 0px;
     pointer-events: none;
     opacity: 0;
@@ -25,7 +27,7 @@
     height: 0;
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
-    border-top: 10px solid lightsteelblue;
+    border-top: 10px solid immunespace.$secondary;
     z-index: 100000000000;
   }
 

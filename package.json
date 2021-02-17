@@ -2,8 +2,8 @@
     "name": "labkeymodules",
     "version": "0.1.0",
     "dependencies": {
-        "@immunespace/components": "0.1.4",
-        "@immunespace/theme": "0.1.1",
+        "@immunespace/components": "^0.1.4-fb-cleanup-components.2",
+        "@immunespace/theme": "0.1.2",
         "@labkey/api": "0.2.3",
         "immutable": "3.8.2",
         "react": "16.8.6",

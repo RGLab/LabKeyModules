@@ -3,7 +3,7 @@ import { SelectedFilters, TotalCounts, GroupInfo } from "../../typings/CubeData"
 import { HighlightedButton, DropdownButtons, RowOfButtons, FilterSummary } from "@immunespace/components";
 import * as ParticipantGroupHelpers from "../helpers/ParticipantGroup"
 import { Record } from "immutable";
-import "./Banner.scss"
+import "./Banner.scss";
 
 interface BannerProps {
     groupSummary: GroupSummary;
