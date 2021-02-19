@@ -5,7 +5,7 @@
  */
 const webpack = require('webpack');
 const constants = require('./constants');
-const entryPoints = require('./entryPoints');
+const entryPoints = require(path.resolve(dir, "../entryPoints.js"));
 
 const devServer = {
     host: 'localhost',
