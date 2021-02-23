@@ -10,6 +10,7 @@ module.exports = {
             name: 'AboutPage',
             frame: 'portal',
             title: 'About Page',
-            path: './src/client/AboutPage'
+            path: './src/client/AboutPage',
+            domElementId: 'about-page'
         }]
 };

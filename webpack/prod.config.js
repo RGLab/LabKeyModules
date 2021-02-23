@@ -2,11 +2,17 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const constants = require('./constants');
-const lkModule = "AboutPage";
+const lkModule = process.env.LK_MODULE;
 const entryPoints = require("../" + lkModule + "/entryPoints.js");
+const fs = require('fs');
 
 let entries = {};
 let plugins = [];
+const templates = {
+    main: fs.existsSync('./webpack/app.template.html') ? './webpack/app.template.html' : '../webpack/app.template.html',
+    view : fs.existsSync('./webpack/app.view.template.xml') ? './webpack/app.view.template.xml' : '../webpack/app.view.template.xml',
+    webpart: fs.existsSync('./webpack/app.webpart.template.xml') ? './webpack/app.webpart.template.xml' : '../webpack/app.webpart.template.xml'
+}
 for (let i = 0; i < entryPoints.apps.length; i++) {
     const entryPoint = entryPoints.apps[i];
 
@@ -19,19 +25,20 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
             title: entryPoint.title,
             frame: entryPoint.frame,
             filename: '../../../views/' + entryPoint.name + '.view.xml',
-            template: '../webpack/app.view.template.xml'
+            template: templates.view
         }),
         new HtmlWebpackPlugin({
             inject: false,
             filename: '../../../views/' + entryPoint.name + '.html',
-            template: '../webpack/app.template.html'
+            template: templates.main,
+            domElementId: entryPoint.domElementId
         }),
         new HtmlWebpackPlugin({
             inject: false,
             name: entryPoint.name,
             title: entryPoint.title,
             filename: '../../../views/' + entryPoint.name + '.webpart.xml',
-            template: '../webpack/app.webpart.template.xml'
+            template: templates.webpart
         }),
         new HtmlWebpackPlugin({
             inject: false,
@@ -40,14 +47,15 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
             title: entryPoint.title + " Dev",
             frame: entryPoint.frame,
             filename: '../../../views/' + entryPoint.name + 'Dev.view.xml',
-            template: '../webpack/app.view.template.xml'
+            template: templates.view
         }),
         new HtmlWebpackPlugin({
             inject: false,
             mode: 'dev',
             name: entryPoint.name,
             filename: '../../../views/' + entryPoint.name + 'Dev.html',
-            template: '../webpack/app.template.html'
+            template: templates.main,
+            domElementId: entryPoint.domElementId
         }),
         new HtmlWebpackPlugin({
             inject: false,
@@ -55,7 +63,7 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
             name: entryPoint.name + "Dev",
             title: entryPoint.title + " Dev",
             filename: '../../../views/' + entryPoint.name + 'Dev.webpart.xml',
-            template: '../webpack/app.webpart.template.xml'
+            template: templates.webpart
         })
     ]);
 }

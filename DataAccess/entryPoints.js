@@ -10,6 +10,7 @@ module.exports = {
             name: 'DataAccess',
             frame: 'portal',
             title: 'Download Data',
-            path: './src/client/DataAccess'
+            path: './src/client/DataAccess',
+            domElementId: 'data-access'
         }]
 };

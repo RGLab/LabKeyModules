@@ -3,9 +3,10 @@
  *
  * Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
  */
-const webpack = require('webpack');
 const constants = require('./constants');
-const entryPoints = require(path.resolve(dir, "../entryPoints.js"));
+const lkModule = process.env.LK_MODULE;
+const entryPoints = require(`../${lkModule}/entryPoints.js`);
+const webpack = require(`../${lkModule}/node_modules/webpack`);
 
 const devServer = {
     host: 'localhost',
@@ -46,7 +47,7 @@ for (let i = 0; i < entryPoints.apps.length; i++) {
 
 module.exports = {
     // Note:  __dirname is a node-generated global variable, which is the directory of this file.
-    context: constants.context(__dirname),
+    context: constants.context(lkModule),
 
     mode: 'development',
 
@@ -55,7 +56,7 @@ module.exports = {
     entry: entries,
 
     output: {
-        path: constants.outputPath(__dirname),
+        path: constants.outputPath(lkModule),
         publicPath: devServerURL + '/',
         filename: "[name].js",
         crossOriginLoading: 'anonymous'
@@ -73,12 +74,6 @@ module.exports = {
 
     plugins: [
         // enable HMR globally
-        new webpack.HotModuleReplacementPlugin(),
-
-        // prints more readable modules names in the browser console on HMR updates
-        new webpack.NamedModulesPlugin(),
-
-        // do not emit compiled assets that include errors
-        new webpack.NoEmitOnErrorsPlugin()
+        new webpack.HotModuleReplacementPlugin()
     ]
 };
