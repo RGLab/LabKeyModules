@@ -10,6 +10,7 @@ module.exports = {
             name: 'ResourcesPage',
             frame: 'portal',
             title: 'Resources Page',
-            path: './src/client/ResourcesPage'
+            path: './src/client/ResourcesPage',
+            domElementId: 'resources-page'
         }]
 };

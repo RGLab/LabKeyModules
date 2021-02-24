@@ -4,5 +4,5 @@ import * as ReactDOM from 'react-dom'
 import { App } from './ResourcesPage'
 
 window.addEventListener('DOMContentLoaded', (event) => {
-    ReactDOM.render(<App/>, document.getElementById('app'));
+    ReactDOM.render(<App/>, document.getElementById('resources-page'));
 });
