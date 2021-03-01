@@ -11,15 +11,8 @@
     "test": "cross-env NODE_ENV=test jest"
   },
   "dependencies": {
-    "@types/react": "16.8.19",
-    "@types/react-bootstrap": "0.32.19",
-    "@types/react-dom": "16.8.4",
     "bootstrap": "^3.4.1",
-    "d3": "^5.15.0",
-    "d3-color": "^1.4.0",
-    "react-dropdown": "^1.6.4",
     "react-iframe": "^1.8.0",
-    "react-vis": "^1.11.7",
     "regenerator-runtime": "^0.13.3"
   },
   "devDependencies": {
