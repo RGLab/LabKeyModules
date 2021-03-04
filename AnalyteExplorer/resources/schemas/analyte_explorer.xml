@@ -1,43 +1,13 @@
 <tables xmlns="http://labkey.org/data/xml">
   <table tableName="blood_transcript_modules" tableDbType="TABLE">
-    <columns>
-      <column columnName="id"/>
-      <column columnName="module_name"/>
-      <column columnName="genes"/>
-      <column columnName="matched_gene_ontology_terms"/>
-      <column columnName="number_of_genes"/>
-      <column columnName="module_category"/>
-    </columns>
+    <tableUrl></tableUrl>
   </table>
 
     <table tableName="gene_signatures" tableDbType="TABLE">
-    <columns>
-      <column columnName="id"/>
-      <column columnName="uid"/>
-      <column columnName="subgroup"/>
-      <column columnName="comparison"/>
-      <column columnName="cohort"/>
-      <column columnName="publication_reference"/>
-      <column columnName="disease_studied"/>
-      <column columnName="updated_symbols"/>
-      <column columnName="updated_response_behavior"/>
-      <column columnName="pubmed_titles"/>
-      <column columnName="timepoint_concat"/>
-    </columns>
+    <tableUrl></tableUrl>
   </table>
 
   <table tableName="gene_expression" tableDbType="TABLE">
-    <columns>
-      <column columnName="id"/>
-      <column columnName="cohort"/>
-      <column columnName="cell_type"/>
-      <column columnName="study"/>
-      <column columnName="mapped_condition"/>
-      <column columnName="timepoint"/>
-      <column columnName="analyte"/>
-      <column columnName="mean_fold_change"/>
-      <column columnName="sd_fold_change"/>
-      <column columnName="feature"/>
-    </columns>
+    <tableUrl></tableUrl>
   </table>
 </tables>
