@@ -5,10 +5,10 @@ CREATE TABLE analyte_explorer.blood_transcript_modules
 (
     id                              INT         NOT NULL,
     module_name                     TEXT        NOT NULL,
-    genes                           TEXT        NOT NULL,
+    genes                           TEXT,
     matched_gene_ontology_terms     TEXT        NOT NULL,
-    number_of_genes                 TEXT        NOT NULL,
-    module_category                 TEXT        NOT NULL,
+    number_of_genes                 INT         NOT NULL,
+    module_category                 TEXT,
 
     CONSTRAINT PK_blood_transcript_modules PRIMARY KEY (id)
 );
@@ -32,16 +32,16 @@ CREATE TABLE analyte_explorer.gene_signatures
 
 CREATE TABLE analyte_explorer.gene_expression
 (
-    id                              INT         NOT NULL,
-    cohort                          TEXT        NOT NULL,
-    cell_type                       TEXT        NOT NULL,
-    study                           TEXT        NOT NULL,
-    mapped_condition                TEXT        NOT NULL,
-    timepoint                       TEXT        NOT NULL,
-    analyte                         TEXT        NOT NULL,
-    mean_fold_change                TEXT        NOT NULL,
-    sd_fold_change                  TEXT        NOT NULL,
-    feature                         TEXT        NOT NULL,
+    id                              INT                     NOT NULL,
+    cohort                          TEXT                    NOT NULL,
+    cell_type                       TEXT                    NOT NULL,
+    study                           TEXT                    NOT NULL,
+    mapped_condition                TEXT                    NOT NULL,
+    timepoint                       FLOAT                   NOT NULL,
+    analyte                         TEXT                    NOT NULL,
+    mean_fold_change                DOUBLE PRECISION,
+    sd_fold_change                  DOUBLE PRECISION,
+    feature                         TEXT                    NOT NULL,
     
     CONSTRAINT PK_gene_expression PRIMARY KEY (id)
 );
