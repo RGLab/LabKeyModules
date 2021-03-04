@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <etl xmlns="http://labkey.org/etl/xml">
-    <name>Analyte Explorer: Gene Signatures</name>
+    <name>Step #2: Gene Signatures Metadata</name>
     <description>Preprocess gene signatures metadata</description>
     <transforms>
         <transform id="preprocess" type="TaskRefTransformStep">

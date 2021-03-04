@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <etl xmlns="http://labkey.org/etl/xml">
-    <name>Analyte Explorer: Modules</name>
+    <name>Step #1: Blood Transcript Modules Metadata</name>
     <description>Preprocess blood transcript modules metadata</description>
     <transforms>
         <transform id="preprocess" type="TaskRefTransformStep">

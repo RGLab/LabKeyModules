@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <etl xmlns="http://labkey.org/etl/xml">
-    <name>Analyte Explorer: Gene Expression</name>
+    <name>Step #3: Gene Expression</name>
     <description>Preprocess gene expression data</description>
     <transforms>
         <transform id="preprocess" type="TaskRefTransformStep">
