@@ -1,6 +1,7 @@
-const config = require('../webpack/dev.config')
+const config = require("./../../webpack/dev.config.js");
 const entryPoints = require("../entryPoints.js");
 
+const devServerURL = 'http://' + config.devServer.host + ':' + config.devServer.port;
 debugger;
 config.entry[entryPoints.banner.name] = [
     // activate HMR for React
