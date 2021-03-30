@@ -169,7 +169,7 @@ export const createLoadedStudies = (studyInfoRes: SelectRowsResponse) => {
     // Remove two null studies (Project, and template)
     loadedStudiesArray.pop()
     loadedStudiesArray.pop()
-    return(loadedStudiesArray)
+    return(loadedStudiesArray.filter(value => value != "[Study].[SDY1648]"))
 }
 export const createTotalCounts = ([subjectResponse, studyResponse]) => {
     return ({ study: studyResponse.cells[0][0].value || 0, participant: subjectResponse.cells[0][0].value || 0 })
