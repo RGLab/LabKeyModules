@@ -33,8 +33,7 @@ makes any changes to UI functionality, there should be a related UITesting PR. -
     * Module-specific README lists out any dependencies  
     * Sufficient instructions for setup  
     * Links to any relevant LabKey documentation   
-- [ ] Does it have new or updated tests?  
+- [ ] Are any new features tested via UITesting or jest?  
 - [ ] Does it have any new dependencies? Is it justifiable?  
 - [ ] Is there code duplication that could be reduced?  
 - [ ] Are there performance improvements that could be made?  
-- [ ] Make sure module version is bumped before merging to dev.  
