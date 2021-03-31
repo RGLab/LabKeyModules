@@ -7,9 +7,10 @@ module.exports = {
     apps: [
         // For each webpart, include an object matching
         {
-            name: 'ResourcesPage',
+            name: 'DataAccess',
             frame: 'portal',
-            title: 'Resources Page',
-            path: './src/client/ResourcesPage'
+            title: 'Download Data',
+            path: './src/client/DataAccess',
+            domElementId: 'data-access'
         }]
 };

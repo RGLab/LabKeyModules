@@ -7,11 +7,8 @@ import { toggleFilter, setAndOr } from './helpers/SelectedFilters';
 import { DataFinderFilters } from './components/FilterSelector'
 import  { Tabs } from "./components/Tabs";
 import { Banner, GroupSummary, ManageGroupsDropdown } from "./components/Banner";
-import { CubeMdx } from "../typings/Cube";
-import { HighlightedButton, RowOfButtons } from "./components/reusable/Buttons";
-import { OuterDropdownButton } from './components/reusable/Dropdowns'
+import { CubeMdx, HighlightedButton, RowOfButtons, OuterDropdownButton, Loader, SelectRowsResponse } from "@immunespace/components";
 import { SelectedParticipants, SelectedStudies } from "./components/TabContent";
-import { Loader } from "./components/reusable/Loader";
 import { sum, map } from "d3";
 
 interface DataFinderControllerProps {

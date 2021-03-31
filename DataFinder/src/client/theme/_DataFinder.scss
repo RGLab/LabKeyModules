@@ -1,5 +1,6 @@
 // TODO:  Organize this
 // TODO:  Move banner-related css into separate file so only that is loaded with the banner on non-datafinder pages
+@import '~@immunespace/components/dist/scss/index.scss';
 
 .wrapper {
   width: 300px;

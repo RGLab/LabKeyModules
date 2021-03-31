@@ -40,6 +40,7 @@ if(moduleName == 'extraWebapp'){
 
         task prepModule {
             dependsOn npm_run_build
+            dependsOn project.parent.tasks.npmInstall
         }
 
     }else{

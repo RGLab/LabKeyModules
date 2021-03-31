@@ -1,5 +1,6 @@
-@import "./reusable/Dropdowns.scss";
-@import "../helpers/colors.scss";
+@use "~@immunespace/theme/dist/immunespace";
+@import "~@immunespace/components/dist/scss/components/Dropdowns.scss";
+
 
 // Filter dropdowns
 .df-filter-dropdown {
@@ -38,7 +39,7 @@
       }
 
       & > li > a:hover {
-        background-color: $sample-color;
+        background-color: immunespace.$sample-color;
       }
     }
   }

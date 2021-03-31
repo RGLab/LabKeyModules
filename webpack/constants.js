@@ -1,13 +1,15 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const devMode = process.env.NODE_ENV !== 'production';
+const lkModule = process.env.LK_MODULE;
 
 module.exports = {
     context: function(dir) {
         return path.resolve(dir, '..');
     },
     extensions: {
-        TYPESCRIPT: [ '.jsx', '.js', '.tsx', '.ts' ]
+        TYPESCRIPT: [ '.jsx', '.js', '.tsx', '.ts' ],
+        STYLE: [ '.scss' ]
     },
     loaders: {
         STYLE_LOADERS: [
@@ -28,31 +30,17 @@ module.exports = {
                             importLoaders: 1
                         }
                     },{
-                        loader: 'postcss-loader',
-                        options: {
-                            sourceMap: 'inline'
-                        }
-                    },{
-                        loader: 'resolve-url-loader'
-                    },{
                         loader: 'sass-loader',
                         options: {
                             sourceMap: true
                         }
                     }]
             },
-
-            { test: /\.woff(\?v=\d+\.\d+\.\d+)?$/, loader: "url-loader?limit=10000&mimetype=application/font-woff" },
-            { test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, loader: "url-loader?limit=10000&mimetype=application/font-woff" },
-            { test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: "url-loader?limit=10000&mimetype=application/octet-stream" },
-            { test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: "file-loader" },
-            { test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: "url-loader?limit=10000&mimetype=image/svg+xml" },
-            { test: /\.png(\?v=\d+\.\d+\.\d+)?$/, loader: "url-loader?limit=10000&mimetype=image/png" }
-        ],
+         ],
         TYPESCRIPT_LOADERS: [
             {
                 test: /^(?!.*spec\.tsx?$).*\.tsx?$/,
-                loaders: [{
+                use: [{
                     loader: 'babel-loader',
                     options: {
                         babelrc: false,
@@ -75,7 +63,7 @@ module.exports = {
         TYPESCRIPT_LOADERS_DEV: [
             {
                 test: /^(?!.*spec\.tsx?$).*\.tsx?$/,
-                loaders: [{
+                use: [{
                     loader: 'babel-loader',
                     options: {
                         babelrc: false,
@@ -100,6 +88,6 @@ module.exports = {
         ]
     },
     outputPath: function(dir) {
-        return path.resolve(dir, '../resources/web/ResourcesPage/gen');
+        return path.resolve(dir, '../resources/web/' + lkModule + '/gen');
     }
 };
