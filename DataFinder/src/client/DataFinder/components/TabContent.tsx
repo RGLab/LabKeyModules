@@ -4,10 +4,8 @@ import { Barplot, } from './Barplot'
 import { SelectedFilters, FilterCategories, PlotData } from '../../typings/CubeData';
 import { StudyCard } from './StudyCard'
 import { StudyDict, StudyParticipantCount } from '../../typings/StudyCard';
-import { RowOfButtons } from './reusable/Buttons';
-import { List, Iterable } from 'immutable'
-import { Loader } from './reusable/Loader';
-import { SimpleDropdown } from './reusable/Dropdowns';
+import { RowOfButtons, Loader, SimpleDropdown } from '@immunespace/components';
+import { List, Iterable } from 'immutable';
 
 import { participantColor, studyColor, sampleColor } from '../helpers/colors'
 

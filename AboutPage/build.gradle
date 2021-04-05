@@ -51,6 +51,7 @@ if(moduleName == 'extraWebapp'){
 
         task prepModule {
             dependsOn copyImageResources
+            dependsOn project.parent.tasks.npmInstall
         }
 
     }else{

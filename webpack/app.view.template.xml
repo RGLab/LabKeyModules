@@ -4,8 +4,8 @@
 
     <% if (htmlWebpackPlugin.options.mode !== 'dev') { %>
     <dependencies>
-        <dependency path="AboutPage/gen/<%= htmlWebpackPlugin.options.name %>.css" />
-        <dependency path="AboutPage/gen/<%= htmlWebpackPlugin.options.name %>.js"/>
+        <dependency path="<%= htmlWebpackPlugin.options.name %>/gen/<%= htmlWebpackPlugin.options.name %>.css" />
+        <dependency path="<%= htmlWebpackPlugin.options.name %>/gen/<%= htmlWebpackPlugin.options.name %>.js"/>
     </dependencies>
     <% } %>
 </view>

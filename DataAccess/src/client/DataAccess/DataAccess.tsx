@@ -1,6 +1,6 @@
 import React from 'react';
 import { Query} from '@labkey/api';
-import {ButtonData} from './components/Dropdowns'
+import {ButtonData} from '@immunespace/components'
 import {LoadingSpinner} from '@labkey/components'
 
 // Styling imports

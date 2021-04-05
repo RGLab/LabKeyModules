@@ -83,7 +83,8 @@ Refer to [google's html style guide](https://google.github.io/styleguide/htmlcss
 *  All new class names should be lower case, and use dashes as separators. If they are specific to a module, the class name should start with the module name eg `datafinder-button`. If they are shared between modules, it should start with `immunespace-` eg `immunespace-button`.
 
 ### TypeScript and React
-Our React-based modules are based on [LabKey's guidelines](https://www.labkey.org/Documentation/wiki-page.view?name=reactJSdev) and modeled on LabKey's [demo module](https://github.com/LabKey/tutorialModules/tree/develop/demo). Refer to [immunespace-frontend-tools](https://github.com/RGLab/ImmunespaceFrontendTools) for a full development and style guide for React modules. 
+Our React-based modules are based on [LabKey's guidelines](https://www.labkey.org/Documentation/wiki-page.view?name=reactJSdev) and modeled on LabKey's [demo module](https://github.com/LabKey/tutorialModules/tree/develop/demo). Refer to [immunespace-frontend-tools](https://github.com/RGLab/ImmunespaceFrontendTools) for the React style guide, and the [Notion page](https://www.notion.so/rglab/Developing-a-React-js-module-30954accc68d4512bc5e55564f21bf16) for full documentation on how to develop React modules. 
+
 
 ## Helpful Documentation and References
 

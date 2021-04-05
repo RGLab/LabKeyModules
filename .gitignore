@@ -43,7 +43,7 @@ DataAccess/resources/web
 DataAccess/resources/views
 
 # Npm and React libraries
-*/node_modules/
+node_modules
 
 # Gradle
 .gradle/
