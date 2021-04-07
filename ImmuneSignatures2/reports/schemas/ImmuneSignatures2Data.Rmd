@@ -1,0 +1,59 @@
+
+
+```{r setup, echo = FALSE}
+library(knitr)
+library(kableExtra)
+library(magrittr)
+getFileUrl <- function(filename) {
+  file.path("/_webdav/HIPC/IS2/%40files/data", paste0("2021_03_08_", filename))
+}
+getFileLink <- function(filename) {
+  paste0("<a href=\"", getFileUrl(filename), "\">", filename, "</a>")
+}
+```
+
+<div id="is2-downloads" class="table-condensed">
+```{r downloads, echo = FALSE}
+files = c(
+  all_noNorm_eset.rds = "All subjects, log2-normalized expression",
+  all_noNorm_eset_withResponse_eset.rds = "All subjects with immune response data, log2-normalized expression",
+  all_norm_eset.rds = "All subjects, cross-study normalized and batch corrected expression",
+  all_norm_withResponse_eset.rds = "All subjects with immune response data, cross-study normalized and batch corrected expression",
+  young_noNorm_eset.rds = "Subjects age 18-50, log2-normalized expression",
+  young_noNorm_withResponse_eset.rds = "Subjects age 18-50 with immune response data, log2-normalized expression",
+  young_norm_eset.rds = "Subjects age 18-50, cross-study normalized and batch corrected expression", 
+  young_norm_withResponse_eset.rds = "Subjects age 18-50 with immune response data, cross-study normalized and batch corrected expression",
+  old_noNorm_eset.rds = "Subjects age 60-90, log2-normalized expression",
+  old_noNorm_withResponse_eset.rds = "Subjects age 60-90 with immune response data, log2-normalized expression",
+  old_norm_batchCorrectedFromYoung_eset.rds ="Subjects age 60-90, cross-study normalized and batch corrected using correction coefficients from young",
+  old_norm_batchCorrectedFromYoung_withResponse_eset.rds = "Subjects age 60-90 with immune response data, cross-study normalized and batch corrected using correction coefficients from young",
+  extendedOld_noNorm_eset.rds = "Subjects age 50-90, log2-normalized expression",
+  extendedOld_noNorm_withResponse_eset.rds = "Subjects age 50-90 with immune response data, log2-normalized coutns",
+  extendedOld_norm_batchCorrectedFromYoung_eset.rds = "Subjects age 50-90, log2-normalized counts",
+  extendedOld_norm_batchCorrectedFromYoung_withResponse_eset.rds = "Subjects age 50-90 with immune response data, cross-study normalized and batch corrected using correction coefficients from young"
+)
+filedf <- data.frame(File = as.character(getFileLink(names(files))), Description = as.character(files))
+
+knitr::kable(filedf, escape = FALSE, format = "html")
+```
+</div>
+
+<style>
+
+
+  #is2-downloads td, #is2-downloads th {
+    border: 1px solid #ddd;
+    padding: 3px;
+  }
+  #is2-downloads tr:nth-child(even){background-color: #f2f2f2;}
+  #is2-downloads tr:hover {background-color: #ddd;}
+  #is2-downloads th {
+    background-color: #255c97;
+    text-align: left;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 3px;
+  }
+
+</style>
