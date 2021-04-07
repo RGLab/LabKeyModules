@@ -1,0 +1,240 @@
+.register {
+  // background-color: $white;
+
+  // enable these settings if not using lity lightbox library
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  right: 0;
+  top: 0;
+  top: 10rem;
+  opacity: 1;
+
+  // position: relative;
+  margin: auto;
+  width: 100%;
+  transition: all 0.5s ease-in-out;
+
+  @include media-query(tab) {
+    // top: 5rem;
+  }
+
+  &::before {
+    // enable these settings if not using lity lightbox library
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    margin-top: -90px;
+    min-height: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: -1;
+
+    @include media-query(tab) {
+      // enable these settings if not using lity lightbox library
+      margin-top: 0;
+    }
+  }
+
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: row;
+    margin: 0;
+    width: 100%;
+  }
+
+  &__close {
+    cursor: pointer;
+    font-family: $nunito-sans;
+    font-weight: $font-weight--black;
+    fill: $white;
+    width: 15px;
+    height: 15px;
+    margin: 10px 10px;
+  }
+
+  &__content,
+  &__title {
+    color: $white;
+    margin-top: 0;
+  }
+
+  &__content {
+    background-color: $blue;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 1.5rem 2rem;
+
+    @include media-query(tab) {
+      // padding: 2.25rem 3rem;
+    }
+
+    @include media-query(desk) {
+      // padding: 3rem 4rem;
+      height: 100%;
+      min-height: 480px;
+      width: 100%;
+      max-width: 390px;
+    }
+  }
+
+  &__title {
+    font-weight: $font-weight--normal;
+  }
+
+  &__sign-in {
+    form {
+    }
+
+    label,
+    .label {
+      color: $white;
+      font-size: 1rem;
+      font-weight: $font-weight--normal;
+      line-height: 1.375rem;
+      margin: 1rem 0 0 0;
+    }
+
+    input {
+      color: $gray;
+      border: 0;
+      width: 100%;
+      max-width: 325px;
+      height: auto;
+      min-height: 48px;
+      margin: 0.25rem 0;
+    }
+
+    .input-wrap {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+
+      &__forgot-password {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 1rem 0 0 0;
+
+        .label {
+          margin-top: 0;
+        }
+      }
+    }
+
+    .label-password,
+    .forgot-password {
+      display: inline-block;
+      color: $white;
+      line-height: 1.375rem;
+    }
+
+    .forgot-password {
+      font-size: 0.875rem;
+      font-weight: $font-weight--black;
+    }
+
+    .submit-btn {
+      background-color: $orange;
+      border: 0;
+      border-radius: 8px;
+      color: $white;
+      width: 100%;
+      max-width: 325px;
+      margin: 1rem 0;
+      padding: 1rem;
+      font-weight: $font-weight--black;
+      text-transform: uppercase;
+    }
+  }
+
+  &__register {
+    margin-top: 1rem;
+
+    label,
+    .label {
+      color: $white;
+      font-size: 1rem;
+      font-weight: $font-weight--normal;
+      line-height: 1.375rem;
+      margin: 1rem 0 0 0;
+    }
+
+    input {
+      color: $gray;
+      border: 0;
+      width: 100%;
+      max-width: 325px;
+      height: auto;
+      min-height: 48px;
+      margin: 0.25rem 0;
+      // padding: .5rem;
+    }
+    .input-wrap {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .register-btn {
+      background-color: $dark-blue;
+      border: 0;
+      border-radius: 8px;
+      color: $white;
+      width: 100%;
+      max-width: 325px;
+      margin: 1rem 0;
+      padding: 1rem;
+      font-weight: $font-weight--black;
+      text-transform: uppercase;
+    }
+  }
+}
+
+.lity {
+  background: rgba(0, 0, 0, 0.75);
+}
+.lity-close {
+  font-family: $nunito-sans;
+
+  // use these settings to position lity close button
+  cursor: pointer;
+  position: absolute;
+  right: 50px;
+  top: 22px;
+  text-shadow: none;
+  // default lity settings
+  // position: fixed;
+  // right: 550px;
+  // top: 110px;
+
+  @include media-query(desk) {
+    right: 25px;
+    top: 25px;
+  }
+
+  &:hover,
+  &:focus,
+  &:active,
+  &:visited {
+    font-family: $nunito-sans;
+    text-shadow: none;
+  }
+
+  &:active {
+    top: 25px;
+  }
+}

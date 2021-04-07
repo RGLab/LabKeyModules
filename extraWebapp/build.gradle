@@ -7,7 +7,7 @@ if(moduleName == 'extraWebapp'){
     deploy.doLast {
         mkdir "${project.parent.deployDir}/extraWebapp"
         copy {
-            from "."
+            from "./build"
             exclude "build.gradle", "enlistment.properties"
             into "${project.parent.deployDir}/extraWebapp"
         }
