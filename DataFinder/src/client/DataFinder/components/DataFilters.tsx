@@ -1,8 +1,7 @@
 import React from 'react'
 import { SelectedFilters, Filter, AssayData, FilterCategories, SelectedFilter } from '../../typings/CubeData'
-import { CubeMdx } from '../../typings/Cube'
+import { CubeMdx, FilterDeletor } from '@immunespace/components'
 import { Map, List } from 'immutable'
-import { FilterDeletor } from './FilterSummary'
 import { getPlotData, createPlotData } from '../helpers/CubeHelpers'
 import "./DataFilters.scss"
 

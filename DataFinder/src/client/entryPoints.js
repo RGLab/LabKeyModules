@@ -9,7 +9,8 @@ module.exports = {
             name: 'DataFinder',
             frame: 'none',
             title: 'Data Finder',
-            path: './src/client/DataFinder'
+            path: './src/client/DataFinder',
+            domElementId: 'data-finder'
         }],
     banner: {
         name: "Banner",

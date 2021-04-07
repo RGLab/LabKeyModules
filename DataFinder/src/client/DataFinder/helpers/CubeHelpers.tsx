@@ -4,10 +4,9 @@
 // js object, then have an additional function which translates it into the 
 // proper immutable object. I'm open to other suggestions. -HM
 
-import { CubeMdx } from "../../typings/Cube";
+import { CubeMdx, CellSet, SelectRowsResponse } from "@immunespace/components";
 import { Query} from '@labkey/api';
 import { SelectedFilters, PlotData, IPlotData, Filter, PlotDatum } from "../../typings/CubeData";
-import * as Cube from '../../typings/Cube'
 import { HeatmapDatum, FilterCategories } from '../../typings/CubeData'
 import { createCubeFilters } from './SelectedFilters'
 import * as StudyCardTypes from '../../typings/StudyCard'
@@ -37,11 +36,11 @@ export const getStudyInfo = () => {
 // Cube ---------------
 // Study info ---- 
 export const getStudyCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
-    return new Promise<Cube.CellSet>((resolve, reject) => {
+    return new Promise<CellSet>((resolve, reject) => {
         mdx.query({
             configId: "DataFinder:/DataFinderCube",
             schemaName: 'immport',
-            success: function (cs: Cube.CellSet) {
+            success: function (cs: CellSet) {
                 resolve(cs);
             },
             name: 'DataFinderCube',
@@ -63,11 +62,11 @@ export const getStudyCounts = (mdx: CubeMdx, filters: SelectedFilters) => {
 // Update StudyParticipantCounts from Cube response
 export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters, loadedStudiesArray: string[]) => {
 
-    return new Promise<Cube.CellSet>((resolve, reject) => {
+    return new Promise<CellSet>((resolve, reject) => {
         mdx.query({
             configId: "DataFinder:/DataFinderCube",
             schemaName: 'immport',
-            success: function (cs: Cube.CellSet) {
+            success: function (cs: CellSet) {
                 resolve(cs)
             },
             name: 'DataFinderCube',
@@ -90,12 +89,12 @@ export const getStudyParticipantCounts = (mdx: CubeMdx, filters: SelectedFilters
 
 export const getPlotData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string, loadedStudiesArray: string[], showEmpty = true) => {
 
-    return new Promise<Cube.CellSet>((resolve, reject) => {
+    return new Promise<CellSet>((resolve, reject) => {
         // debugger
         mdx.query({
             configId: "DataFinder:/DataFinderCube",
             schemaName: 'immport',
-            success: function (cs: Cube.CellSet, mdx, config) {
+            success: function (cs: CellSet, mdx, config) {
                 resolve(cs)
             },
             name: 'DataFinderCube',
@@ -135,11 +134,11 @@ export const getPlotData = (mdx: CubeMdx, filters: SelectedFilters, countLevel: 
 
 export const getTotalCounts = (mdx: CubeMdx, filters: SelectedFilters, countLevel: string, loadedStudiesArray: string[]) => {
     const onRowsLevel = countLevel == "[Study].[Name]" ? "[Study].[(All)]" : "[Subject].[(All)]"
-    return new Promise<Cube.CellSet>((resolve, reject) => {
+    return new Promise<CellSet>((resolve, reject) => {
         mdx.query({
             configId: "DataFinder:/DataFinderCube",
             schemaName: 'immport',
-            success: function (cs: Cube.CellSet, mdx, config) {
+            success: function (cs: CellSet, mdx, config) {
                 resolve(cs)
             },
             name: 'DataFinderCube',
@@ -170,17 +169,17 @@ export const createLoadedStudies = (studyInfoRes: SelectRowsResponse) => {
     // Remove two null studies (Project, and template)
     loadedStudiesArray.pop()
     loadedStudiesArray.pop()
-    return(loadedStudiesArray)
+    return(loadedStudiesArray.filter(value => value != "[Study].[SDY1648]"))
 }
 export const createTotalCounts = ([subjectResponse, studyResponse]) => {
     return ({ study: studyResponse.cells[0][0].value || 0, participant: subjectResponse.cells[0][0].value || 0 })
 }
 
-export const createParticipantIds = (participantIdsCs: Cube.CellSet) => {
+export const createParticipantIds = (participantIdsCs: CellSet) => {
     return (participantIdsCs.axes[1].positions.map(position => position[0].name))
 }
 
-export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse, Cube.CellSet]) => {
+export const createStudyDict = ([studyInfoCs, studyCountCs]: [SelectRowsResponse, CellSet]) => {
 
     const studyDict: StudyCardTypes.StudyDict = {};
     studyInfoCs.rows.map((e, i) => {
@@ -254,7 +253,7 @@ export const createFilterCategories_old = (categoriesResponse: SelectRowsRespons
     return (categories)
 }
 
-export const createFilterCategories = (categoriesCs: Cube.CellSet) => {
+export const createFilterCategories = (categoriesCs: CellSet) => {
     let categories: FilterCategories = {};
     const sortorder = (level, label) => {
         if (label === "Unknown") return(99999)
@@ -303,7 +302,7 @@ export const createFilterCategories = (categoriesCs: Cube.CellSet) => {
     return(categories)
 }
 
-export const createSelectedParticipants = (studyParticipantCountCs: Cube.CellSet) => {
+export const createSelectedParticipants = (studyParticipantCountCs: CellSet) => {
     const studyParticipantCountArray: StudyCardTypes.IStudyParticipantCount[] = []
     const pids: string[] = []
     studyParticipantCountCs.cells.forEach((cell) => {
@@ -328,7 +327,7 @@ export const createSelectedParticipants = (studyParticipantCountCs: Cube.CellSet
     return ({ studyParticipantCounts: studyParticipantCounts, pids: pids })
 }
 
-const cs2cd = (participantCounts: Cube.CellSet, studyCounts: Cube.CellSet) => {
+const cs2cd = (participantCounts: CellSet, studyCounts: CellSet) => {
 
     const results: { dim: string, levelArray: string[], data: PlotDatum }[] = participantCounts.cells.map((cell, cellIndex) => {
         const hierarchy = cell[0].positions[1][0].level.uniqueName.replace(/\[|\]/g, "") // remove "[" and "]"
@@ -372,7 +371,7 @@ const cs2cd = (participantCounts: Cube.CellSet, studyCounts: Cube.CellSet) => {
 
 
 
-export const createPlotData = (participantCounts: Cube.CellSet, studyCounts: Cube.CellSet) => {
+export const createPlotData = (participantCounts: CellSet, studyCounts: CellSet) => {
     const plotData = cs2cd(participantCounts, studyCounts)
     return new PlotData(plotData);
 }

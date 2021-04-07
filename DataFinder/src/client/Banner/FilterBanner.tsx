@@ -1,7 +1,7 @@
 import React from 'react'
 import { SelectedFilters, TotalCounts } from '../typings/CubeData';
 import { Banner, GroupSummary } from '../DataFinder/components/Banner';
-import { DropdownButtons } from '../DataFinder/components/reusable/Dropdowns';
+import { DropdownButtons } from '@immunespace/components';
 import { getSessionParticipantGroup } from '../DataFinder/helpers/ParticipantGroup'
 import './Banner.scss'
 
