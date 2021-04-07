@@ -15,7 +15,7 @@ getFileLink <- function(filename) {
 ```{r downloads, echo = FALSE}
 files = c(
   all_noNorm_eset.rds = "All subjects, log2-normalized expression",
-  all_noNorm_eset_withResponse_eset.rds = "All subjects with immune response data, log2-normalized expression",
+  all_noNorm_withResponse_eset.rds = "All subjects with immune response data, log2-normalized expression",
   all_norm_eset.rds = "All subjects, cross-study normalized and batch corrected expression",
   all_norm_withResponse_eset.rds = "All subjects with immune response data, cross-study normalized and batch corrected expression",
   young_noNorm_eset.rds = "Subjects age 18-50, log2-normalized expression",
