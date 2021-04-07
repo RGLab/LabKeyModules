@@ -2,7 +2,6 @@
 
 ```{r setup, echo = FALSE}
 library(knitr)
-library(kableExtra)
 library(magrittr)
 getFileUrl <- function(filename) {
   file.path("/_webdav/HIPC/IS2/%40files/data", paste0("2021_03_08_", filename))
