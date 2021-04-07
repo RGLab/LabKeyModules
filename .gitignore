@@ -48,3 +48,4 @@ DataAccess/resources/views
 # Gradle
 .gradle/
 .envrc
+node_modules
