@@ -1,30 +1,47 @@
 import React, { useRef } from "react";
-import {chkRemember, newLogin} from '../js/login';
+import {newRegistration, newLogin} from '../js/login';
+import { CSSTransition } from 'react-transition-group'; 
 
-const RegisterModal = (props) => {
+
+interface RegisterModalProps {
+  isOpen: boolean,
+  setRegModalOpen: (arg: boolean) => void,
+}
+
+const RegisterModal: React.FC<RegisterModalProps> = (props) => {
   const loginEmailInput = useRef(null);
   const loginPasswordInput = useRef(null);
   const registerEmailInput = useRef(null);
 
-  const closeModal = (e) => {
+  const closeModal = (e: React.MouseEvent) => {
     props.setRegModalOpen(false);
   };
 
-  const loginFunc = (e) => {
+  const loginFunc = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     newLogin();
   };
 
-  const registerFunc = (e) => {
-
+  const registerFunc = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    newRegistration();
   }
 
   return (
-    <section
+    
+    <CSSTransition
+      in={props.isOpen}
+      timeout={300}
+      classNames="register"
+      unmountOnExit
+    >
+
+<section
       id="register-modal"
       className="register register-modal"
       aria-hidden="true"
     >
+      
       <div className="container">
         <div className="register__content">
           <header className="register__header">
@@ -96,7 +113,7 @@ const RegisterModal = (props) => {
                     type="text"
                     name="email"
                     defaultValue=""
-                    size="40"
+                    size={40}
                     className=""
                     id="email-sign-in"
                     aria-required="true"
@@ -109,7 +126,7 @@ const RegisterModal = (props) => {
                     Password
                   </label>
                   <a
-                    href="#"
+                    href={`${window.location.href}login/home/resetpassword.view`}
                     target="_blank"
                     title="Forgot Password"
                     className="forgot-password"
@@ -122,7 +139,7 @@ const RegisterModal = (props) => {
                     type="password"
                     name="password"
                     defaultValue=""
-                    size="40"
+                    size={40}
                     className=""
                     id="password"
                     aria-required="true"
@@ -135,7 +152,7 @@ const RegisterModal = (props) => {
                 Sign In
               </button>
             </form>
-            <form action="#" method="POST" className="register__register">
+            <form action="#" onSubmit={registerFunc} className="register__register">
               <div style={{ display: "none" }}>
                 {/* <!-- Hidden input fields may be inserted here --> */}
                 <input
@@ -153,7 +170,7 @@ const RegisterModal = (props) => {
                     type="text"
                     name="email"
                     defaultValue=""
-                    size="40"
+                    size={40}
                     className=""
                     id="email-register"
                     aria-required="true"
@@ -169,7 +186,10 @@ const RegisterModal = (props) => {
           </div>
         </div>
       </div>
+      
     </section>
+    </CSSTransition>
+    
   );
 };
 

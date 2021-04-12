@@ -1,8 +1,8 @@
 /* From Matt Bellew @ LabKey, recommended way to login via api June 2017 */
 
-import {Utils, ActionURL, Ajax} from '@labkey/api';
+import {Utils, Ajax} from '@labkey/api';
 
-const LABKEY = {};
+
 
 export function chkRemember(){
     // examine cookies to determine if user wants the email pre-populated on form
@@ -25,25 +25,24 @@ export function newLogin(){
     // } else {
     //     Utils.deleteCookie('email', true);
     // }
-    let baseurl = (ActionURL.buildURL('login', 'loginApi.api', "home"));
-    console.log(baseurl);
-    console.log(ActionURL.getContainer());
-
+    
+    const homePageUrl = window.location.href;
     Ajax.request({
-        url: LABKEY.ActionURL.buildURL('login', 'loginApi.api', this.containerPath),
+        url: `${homePageUrl}login/home/loginApi.api`,
         method: 'POST',
         params: {
             //remember: document.getElementById('remember').value,
             remember: false,
             email: document.getElementById('email-sign-in').value,
             password: document.getElementById('password').value,
-            returnUrl: ActionURL.getParameter("returnUrl"),
+            returnUrl: `${homePageUrl}project/Studies/begin.view`,
         },
         success: Utils.getCallbackWrapper(function (response) {
             if(response && response.returnUrl){
                 window.location = response.returnUrl;
             }
-            window.location = ActionURL.buildURL('project', 'begin', '/Studies')
+            //window.location = ActionURL.buildURL('project', 'begin', '/Studies')
+            window.location.href = `${homePageUrl}project/Studies/begin.view`;
         }, this),
         failure: Utils.getCallbackWrapper(function (response) {
             if(document.getElementById('errors') && response && response.exception) {
@@ -61,3 +60,8 @@ export function newLogin(){
         }, this)
     });
 }
+
+export const newRegistration = () => {
+    window.location.href = `${window.location.href}login/home/register.view?`;
+}
+

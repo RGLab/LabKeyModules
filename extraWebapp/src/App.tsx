@@ -1,21 +1,22 @@
-import React, { useEffect, useRef, useState } from "react";
-import logo from "./logo.svg";
-import "./App.css";
+import React, { SyntheticEvent, useEffect, useRef, useState } from "react";
 import "./scss/main.scss";
+import "./App.css";
+
 import { common } from "./js/modules/common";
-import SmoothScroll from "smooth-scroll";
-import Glide from "@glidejs/glide";
 import Stickyfill from "stickyfilljs";
-import lity from "lity";
-import $ from "jquery";
 import Registermodal from "./components/RegisterModal";
+import ImmunespaceHeaderLogo from "./assets/logo-immunespace-whiteblue-desk.svg";
+import ImmunespaceFooterLogo from "./assets/footer-logo-immunespace-whiteblue.png";
+import ComingSoonWatermark from './assets/coming-soon.jpg';
+
 
 function App() {
-  const registerModal = $("#register-modal");
-  console.log(`.:: DEBUG ::. registerModal: `, registerModal);
+  //const registerModal = $("#register-modal");
+  //console.log(`.:: DEBUG ::. registerModal: `, registerModal);
   const [regModalOpen, setRegModalOpen] = useState(false);
 
-  const regBtnClick = (e) => {
+  const regBtnClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     console.log(`.:: DEBUG ::. You clicked the Sign-in Button.`);
     setRegModalOpen(true);
   };
@@ -29,7 +30,7 @@ function App() {
               <li className="header__logo">
                 <a href="#" title="immuneSpace Home">
                   <img
-                    src="./assets/logo-immunespace-whiteblue-desk.svg"
+                    src={ImmunespaceHeaderLogo}
                     alt="immuneSpace Logo"
                     className="header__logo-img"
                   />
@@ -37,7 +38,7 @@ function App() {
               </li>
               <li className="header__cta-item">
                 <a
-                  href="#"
+                  href=""
                   className="header__cta-link"
                   title="Register or Sign In"
                   onClick={regBtnClick}
@@ -122,8 +123,9 @@ function App() {
                 >
                   <span className="tri-block__icon">
                     {/* ?xml version="1.0" encoding="UTF-8"?  */}
+                    <img src={ComingSoonWatermark} alt="coming soon" className="coming-soon-img" />
                     <svg
-                      className="icon icon-svg"
+                      className="icon icon-svg ae-icon"
                       width="155px"
                       height="113px"
                       viewBox="0 0 155 113"
@@ -298,7 +300,8 @@ function App() {
                       </g>
                     </svg>
                   </span>
-                  <span className="tri-block__link-text">Analyte Explorer</span>
+                  {/* Remove ae__link-text class when Analyte Explorer is working */}
+                  <span className="tri-block__link-text ae__link-text">Analyte Explorer (Coming Soon)</span>
                 </a>
                 <p>
                   This analysis allows the user to visualize log fold change of
@@ -1045,9 +1048,7 @@ function App() {
           <div className="container">
             <div className="video-block__content">
               <div className="video-block__responsive-video">
-                {/* <iframe width=“560” height=“315" src="https://www.youtube.com/embed/FWtn2zGKPoI" frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen></iframe> */}
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/FWtn2zGKPoI" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
                 {/* <!-- <iframe width=“560” height=“315" src=“https://www.youtube.com/embed/FWtn2zGKPoI” frameborder=“0" allow=“accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture” allowfullscreen></iframe> --> */}
               </div>
               <div className="video-block__copy">
@@ -1101,8 +1102,10 @@ function App() {
             </div>
           </div>
         </section>
-        {regModalOpen && <Registermodal setRegModalOpen={setRegModalOpen} />}
-
+        {
+          
+            <Registermodal isOpen={regModalOpen} setRegModalOpen={setRegModalOpen} />
+        }
         {/* <section
           id="register-modal"
           className="register register-modal is-disabled"
@@ -1263,8 +1266,8 @@ function App() {
               <a href="#" title="immuneSpace Home">
                 <img
                   className="footer__img"
-                  src="./assets/footer-logo-immunespace-whiteblue.png"
-                  srcSet="./assets/footer-logo-immunespace-whiteblue.svg"
+                  src={ImmunespaceFooterLogo}
+                  srcSet={ImmunespaceFooterLogo}
                   alt="immuneSpace logo"
                 />
               </a>

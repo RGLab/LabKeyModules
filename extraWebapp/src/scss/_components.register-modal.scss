@@ -1,3 +1,8 @@
+
+
+
+
+
 .register {
   // background-color: $white;
 
@@ -6,13 +11,14 @@
   z-index: 9999;
   left: 0;
   right: 0;
-  top: 0;
-  top: 10rem;
+  top: 25%;
   opacity: 1;
 
   // position: relative;
   margin: auto;
   width: 100%;
+  
+  
   transition: all 0.5s ease-in-out;
 
   @include media-query(tab) {
@@ -29,7 +35,7 @@
     top: 0;
     margin-top: -90px;
     min-height: 100%;
-    height: 100vh;
+    //height: 100vh;
     background: rgba(0, 0, 0, 0.65);
     z-index: -1;
 
@@ -44,6 +50,7 @@
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    height: 100%;
   }
 
   &__header {
@@ -96,8 +103,8 @@
   }
 
   &__sign-in {
-    form {
-    }
+    // form {
+    // }
 
     label,
     .label {
@@ -237,4 +244,26 @@
   &:active {
     top: 25px;
   }
+}
+
+.register-enter {
+  opacity: 0;
+}
+
+.register-enter-active {
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.register-exit {
+  opacity: 1;
+}
+
+.register-exit-active {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.register-exit-done {
+  opacity: 0;
 }
