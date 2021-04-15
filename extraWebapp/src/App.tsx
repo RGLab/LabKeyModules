@@ -26,7 +26,7 @@ function App() {
           <nav className="header__nav" role="nav">
             <ul>
               <li className="header__logo">
-                <a href="#" title="immuneSpace Home">
+                <a href="" title="immuneSpace Home">
                   <img
                     src={ImmunespaceHeaderLogo}
                     alt="immuneSpace Logo"
@@ -115,7 +115,7 @@ function App() {
             <div className="tri-block__content">
               <div className="tri-block__block">
                 <a
-                  href="#"
+                  href=""
                   className="tri-block__cta"
                   title="Analyte Explorer link"
                 >
@@ -304,7 +304,7 @@ function App() {
                   </span>
                   {/* Remove ae__link-text class when Analyte Explorer is working */}
                   <span className="tri-block__link-text ae__link-text">
-                    Analyte Explorer (Coming Soonsdfsdfsdfsdfsdfsdf)
+                    Analyte Explorer (Coming Soon)
                   </span>
                 </a>
                 <p>
@@ -314,7 +314,7 @@ function App() {
               </div>
               <div className="tri-block__block">
                 <a
-                  href="#"
+                  href=""
                   className="tri-block__cta"
                   title="Reproducable Analyses link"
                 >
@@ -678,7 +678,7 @@ function App() {
                 </p>
               </div>
               <div className="tri-block__block">
-                <a href="#" className="tri-block__cta" title="Data Finder link">
+                <a href="" className="tri-block__cta" title="Data Finder link">
                   <span className="tri-block__icon">
                     {/* <!-- ?xml version="1.0" encoding="UTF-8"? --> */}
                     <svg
@@ -1074,7 +1074,7 @@ function App() {
                   to access the tutorials.
                 </p>
                 <a
-                  href="#"
+                  href=""
                   className="video-block__cta"
                   title="Video tutorials link"
                 >
@@ -1102,11 +1102,7 @@ function App() {
                   stimuli — This large data problem has given birth to
                   ImmuneSpace
                 </p>
-                <a
-                  href="#"
-                  className="history-block__cta"
-                  title="About Us link"
-                >
+                <a href="" className="history-block__cta" title="About Us link">
                   <span className="history-block__link-text">About Us</span>
                 </a>
               </div>
@@ -1276,7 +1272,7 @@ function App() {
         <div className="container">
           <div className="footer__content">
             <div className="footer__logo">
-              <a href="#" title="immuneSpace Home">
+              <a href="" title="immuneSpace Home">
                 <img
                   className="footer__img"
                   src={ImmunespaceFooterLogo}
@@ -1392,7 +1388,7 @@ function App() {
                   LabKey Software
                 </a>
                 , supported by{" "}
-                <a href="#" title="HIPC" target="_blank">
+                <a href="" title="HIPC" target="_blank">
                   HIPC
                 </a>{" "}
                 and{" "}
