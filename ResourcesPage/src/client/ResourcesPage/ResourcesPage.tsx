@@ -191,7 +191,9 @@ const ResourcesPage: React.FC = () => {
 export const App: React.FC = () => {
 
     const filterBanner = document.getElementById('filter-banner')
-    filterBanner.style.display = 'none'
+    if (filterBanner) {
+        filterBanner.style.display = 'none'
+    }
 
     // Must return a React Fragment
     return <ResourcesPage/>
