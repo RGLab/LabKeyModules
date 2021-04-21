@@ -315,7 +315,7 @@ function App() {
               </div>
               <div className="tri-block__block">
                 <a
-                  href="https://www.immunespace.org/project/Studies/begin.view?pageId=Resources"
+                  href="/project/Studies/begin.view?pageId=Resources"
                   className="tri-block__cta"
                   title="Reproducable Analyses link"
                 >
@@ -676,7 +676,11 @@ function App() {
                 <p>Browse highlighted reports.</p>
               </div>
               <div className="tri-block__block">
-                <a href="" className="tri-block__cta" title="Data Finder link">
+                <a
+                  href="/project/Studies/begin.view?"
+                  className="tri-block__cta"
+                  title="Data Finder link"
+                >
                   <span className="tri-block__icon">
                     {/* <!-- ?xml version="1.0" encoding="UTF-8"? --> */}
                     <svg
