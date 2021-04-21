@@ -1280,7 +1280,11 @@ function App() {
         <div className="container">
           <div className="footer__content">
             <div className="footer__logo">
-              <a href="" title="immuneSpace Home">
+              <a
+                href=""
+                title="immuneSpace Home"
+                className="entrance-page-footer-link-non-social"
+              >
                 <img
                   className="footer__img"
                   src={ImmunespaceFooterLogo}
@@ -1291,7 +1295,7 @@ function App() {
               <ul className="footer__mobile-social-nav h-o-d">
                 <li>
                   <a
-                    href="https://twitter.com/"
+                    href="https://twitter.com/intent/follow?original_referer=https%3A%2F%2Fwww.immunespace.org%2F&ref_src=twsrc%5Etfw&region=follow_link&screen_name=immunespace&tw_p=followbutton"
                     className="footer__twitter"
                     title="Follow us on Twitter"
                     target="_blank"
@@ -1332,7 +1336,7 @@ function App() {
                 </li>
                 <li>
                   <a
-                    href="mailto:someemail@address.com?Subject=Contact+Us"
+                    href="mailto:ops@immunespace.org"
                     className="footer__email"
                   >
                     <svg
@@ -1392,11 +1396,17 @@ function App() {
                   href="https://www.labkey.com/"
                   title="LabKey Software"
                   target="_blank"
+                  className="entrance-page-footer-link-non-social"
                 >
                   LabKey Software
                 </a>
                 , supported by{" "}
-                <a href="" title="HIPC" target="_blank">
+                <a
+                  href="http://www.immuneprofiling.org/"
+                  title="HIPC"
+                  target="_blank"
+                  className="entrance-page-footer-link-non-social"
+                >
                   HIPC
                 </a>{" "}
                 and{" "}
@@ -1404,6 +1414,7 @@ function App() {
                   href="https://www.niaid.nih.gov/"
                   title="National Institute of Allergy and Infectious Diseases (NIAID) link"
                   target="_blank"
+                  className="entrance-page-footer-link-non-social"
                 >
                   NIAID
                 </a>
@@ -1455,7 +1466,7 @@ function App() {
                 </li>
                 <li>
                   <a
-                    href="mailto:someemail@address.com?Subject=Contact+Us"
+                    href="mailto:ops@immunespace.org"
                     className="footer__email"
                   >
                     <span>contact us</span>
