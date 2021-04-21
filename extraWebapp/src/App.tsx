@@ -114,199 +114,200 @@ function App() {
           <div className="container">
             <div className="tri-block__content">
               <div className="tri-block__block">
-                <a
+                {/* Uncomment the a tag below when AE is working */}
+                {/* <a
                   href=""
                   className="tri-block__cta"
                   title="Analyte Explorer link"
-                >
-                  <span className="tri-block__icon">
-                    {/* ?xml version="1.0" encoding="UTF-8"?  */}
-                    <img
-                      src={ComingSoonWatermark}
-                      alt="coming soon"
-                      className="coming-soon-img"
-                    />
-                    <svg
-                      className="icon icon-svg ae-icon"
-                      width="155px"
-                      height="113px"
-                      viewBox="0 0 155 113"
-                      version="1.1"
-                      xmlns="http://www.w3.org/2000/svg"
-                      xmlnsXlink="http://www.w3.org/1999/xlink"
+                > */}
+                <span className="tri-block__icon">
+                  {/* ?xml version="1.0" encoding="UTF-8"?  */}
+                  <img
+                    src={ComingSoonWatermark}
+                    alt="coming soon"
+                    className="coming-soon-img"
+                  />
+                  <svg
+                    className="icon icon-svg ae-icon"
+                    width="155px"
+                    height="113px"
+                    viewBox="0 0 155 113"
+                    version="1.1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlnsXlink="http://www.w3.org/1999/xlink"
+                  >
+                    <title>Analyte Explorer Icon</title>
+                    <defs>
+                      <rect
+                        id="path-1"
+                        x="0"
+                        y="0"
+                        width="155"
+                        height="113"
+                      ></rect>
+                    </defs>
+                    <g
+                      id="Page-1"
+                      stroke="none"
+                      strokeWidth="1"
+                      fill="none"
+                      fillRule="evenodd"
                     >
-                      <title>Analyte Explorer Icon</title>
-                      <defs>
-                        <rect
-                          id="path-1"
-                          x="0"
-                          y="0"
-                          width="155"
-                          height="113"
-                        ></rect>
-                      </defs>
-                      <g
-                        id="Page-1"
-                        stroke="none"
-                        strokeWidth="1"
-                        fill="none"
-                        fillRule="evenodd"
-                      >
-                        <g id="Group">
-                          <mask id="mask-2" fill="white">
-                            <use xlinkHref="#path-1"></use>
-                          </mask>
-                          <g id="Rectangle"></g>
-                          <g id="analyte_exp" mask="url(#mask-2)">
-                            <g transform="translate(-25.000000, 0.000000)">
-                              <rect
-                                id="Rectangle-Copy-4"
-                                x="0"
-                                y="0"
-                                width="202"
-                                height="119"
-                              ></rect>
-                              <g
-                                id="Group-7"
-                                strokeWidth="1"
-                                fillRule="evenodd"
-                                transform="translate(27.000000, 15.000000)"
-                              >
-                                <g id="Group-35-Copy">
-                                  <path
-                                    d="M18,13.5014153 C18,15.4346947 16.4318641,17 14.4985847,17 C12.5681359,17 11,15.4346947 11,13.5014153 C11,11.5681359 12.5681359,10 14.4985847,10 C16.4318641,10 18,11.5681359 18,13.5014153"
-                                    id="Fill-1"
-                                    fill="#0F91F2"
-                                    fillRule="nonzero"
-                                  ></path>
-                                  <path
-                                    d="M31,13.5014153 C31,15.4346947 29.4318641,17 27.4985847,17 C25.5681359,17 24,15.4346947 24,13.5014153 C24,11.5681359 25.5681359,10 27.4985847,10 C29.4318641,10 31,11.5681359 31,13.5014153"
-                                    id="Fill-3"
-                                    fill="#0F91F2"
-                                    fillRule="nonzero"
-                                  ></path>
-                                  <path
-                                    d="M44,13.5014153 C44,15.4346947 42.4318641,17 40.5014153,17 C38.5681359,17 37,15.4346947 37,13.5014153 C37,11.5681359 38.5681359,10 40.5014153,10 C42.4318641,10 44,11.5681359 44,13.5014153"
-                                    id="Fill-5"
-                                    fill="#FF5B00"
-                                    fillRule="nonzero"
-                                  ></path>
-                                  <polygon
-                                    id="Stroke-9"
-                                    stroke="#0F91F2"
-                                    strokeWidth="4.3"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    points="140 96 0 96 0 0 140 0 140 36.4142895"
-                                  ></polygon>
-                                  <line
-                                    x1="0"
-                                    y1="26"
-                                    x2="140"
-                                    y2="26"
-                                    id="Stroke-11"
-                                    stroke="#0F91F2"
-                                    strokeWidth="4.3"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  ></line>
-                                </g>
-                                <line
-                                  x1="37"
-                                  y1="26"
-                                  x2="37"
-                                  y2="96"
-                                  id="Path-5"
+                      <g id="Group">
+                        <mask id="mask-2" fill="white">
+                          <use xlinkHref="#path-1"></use>
+                        </mask>
+                        <g id="Rectangle"></g>
+                        <g id="analyte_exp" mask="url(#mask-2)">
+                          <g transform="translate(-25.000000, 0.000000)">
+                            <rect
+                              id="Rectangle-Copy-4"
+                              x="0"
+                              y="0"
+                              width="202"
+                              height="119"
+                            ></rect>
+                            <g
+                              id="Group-7"
+                              strokeWidth="1"
+                              fillRule="evenodd"
+                              transform="translate(27.000000, 15.000000)"
+                            >
+                              <g id="Group-35-Copy">
+                                <path
+                                  d="M18,13.5014153 C18,15.4346947 16.4318641,17 14.4985847,17 C12.5681359,17 11,15.4346947 11,13.5014153 C11,11.5681359 12.5681359,10 14.4985847,10 C16.4318641,10 18,11.5681359 18,13.5014153"
+                                  id="Fill-1"
+                                  fill="#0F91F2"
+                                  fillRule="nonzero"
+                                ></path>
+                                <path
+                                  d="M31,13.5014153 C31,15.4346947 29.4318641,17 27.4985847,17 C25.5681359,17 24,15.4346947 24,13.5014153 C24,11.5681359 25.5681359,10 27.4985847,10 C29.4318641,10 31,11.5681359 31,13.5014153"
+                                  id="Fill-3"
+                                  fill="#0F91F2"
+                                  fillRule="nonzero"
+                                ></path>
+                                <path
+                                  d="M44,13.5014153 C44,15.4346947 42.4318641,17 40.5014153,17 C38.5681359,17 37,15.4346947 37,13.5014153 C37,11.5681359 38.5681359,10 40.5014153,10 C42.4318641,10 44,11.5681359 44,13.5014153"
+                                  id="Fill-5"
+                                  fill="#FF5B00"
+                                  fillRule="nonzero"
+                                ></path>
+                                <polygon
+                                  id="Stroke-9"
                                   stroke="#0F91F2"
-                                  strokeWidth="4"
-                                ></line>
-                                <line
-                                  x1="29"
-                                  y1="39"
-                                  x2="7.72393057"
-                                  y2="39"
-                                  id="Path-6"
-                                  stroke="#0F91F2"
-                                  strokeWidth="4"
-                                  strokeLinecap="round"
-                                ></line>
-                                <line
-                                  x1="29"
-                                  y1="48"
-                                  x2="7.72393057"
-                                  y2="48"
-                                  id="Path-6-Copy"
-                                  stroke="#0F91F2"
-                                  strokeWidth="4"
-                                  strokeLinecap="round"
-                                ></line>
-                                <line
-                                  x1="29"
-                                  y1="68"
-                                  x2="7.72393057"
-                                  y2="68"
-                                  id="Path-6-Copy-2"
-                                  stroke="#0F91F2"
-                                  strokeWidth="4"
-                                  strokeLinecap="round"
-                                ></line>
-                                <line
-                                  x1="29"
-                                  y1="76"
-                                  x2="7.72393057"
-                                  y2="76"
-                                  id="Path-6-Copy-3"
-                                  stroke="#0F91F2"
-                                  strokeWidth="4"
-                                  strokeLinecap="round"
-                                ></line>
-                                <line
-                                  x1="29"
-                                  y1="85"
-                                  x2="7.72393057"
-                                  y2="85"
-                                  id="Path-6-Copy-4"
-                                  stroke="#0F91F2"
-                                  strokeWidth="4"
-                                  strokeLinecap="round"
-                                ></line>
-                                <line
-                                  x1="37"
-                                  y1="26"
-                                  x2="37"
-                                  y2="96"
-                                  id="Path-5"
-                                  stroke="#0F91F2"
-                                  strokeWidth="4"
-                                ></line>
-                                <polyline
-                                  id="Path-7"
-                                  stroke="#FF5B00"
-                                  strokeWidth="4"
+                                  strokeWidth="4.3"
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
-                                  points="40.5 58.9865344 56.0952527 43 70.0659248 64.7044823 87.8721433 54.0454545 133.091013 54.0454545"
-                                ></polyline>
-                                <polyline
-                                  id="Path-8"
-                                  stroke="#FF5B00"
-                                  strokeWidth="4"
+                                  points="140 96 0 96 0 0 140 0 140 36.4142895"
+                                ></polygon>
+                                <line
+                                  x1="0"
+                                  y1="26"
+                                  x2="140"
+                                  y2="26"
+                                  id="Stroke-11"
+                                  stroke="#0F91F2"
+                                  strokeWidth="4.3"
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
-                                  points="41.0528894 60.1396877 52.4349236 72.8547906 70.5558194 43 84.824146 66.8 131.545806 54.2700767"
-                                ></polyline>
+                                ></line>
                               </g>
+                              <line
+                                x1="37"
+                                y1="26"
+                                x2="37"
+                                y2="96"
+                                id="Path-5"
+                                stroke="#0F91F2"
+                                strokeWidth="4"
+                              ></line>
+                              <line
+                                x1="29"
+                                y1="39"
+                                x2="7.72393057"
+                                y2="39"
+                                id="Path-6"
+                                stroke="#0F91F2"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                              ></line>
+                              <line
+                                x1="29"
+                                y1="48"
+                                x2="7.72393057"
+                                y2="48"
+                                id="Path-6-Copy"
+                                stroke="#0F91F2"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                              ></line>
+                              <line
+                                x1="29"
+                                y1="68"
+                                x2="7.72393057"
+                                y2="68"
+                                id="Path-6-Copy-2"
+                                stroke="#0F91F2"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                              ></line>
+                              <line
+                                x1="29"
+                                y1="76"
+                                x2="7.72393057"
+                                y2="76"
+                                id="Path-6-Copy-3"
+                                stroke="#0F91F2"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                              ></line>
+                              <line
+                                x1="29"
+                                y1="85"
+                                x2="7.72393057"
+                                y2="85"
+                                id="Path-6-Copy-4"
+                                stroke="#0F91F2"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                              ></line>
+                              <line
+                                x1="37"
+                                y1="26"
+                                x2="37"
+                                y2="96"
+                                id="Path-5"
+                                stroke="#0F91F2"
+                                strokeWidth="4"
+                              ></line>
+                              <polyline
+                                id="Path-7"
+                                stroke="#FF5B00"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                points="40.5 58.9865344 56.0952527 43 70.0659248 64.7044823 87.8721433 54.0454545 133.091013 54.0454545"
+                              ></polyline>
+                              <polyline
+                                id="Path-8"
+                                stroke="#FF5B00"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                points="41.0528894 60.1396877 52.4349236 72.8547906 70.5558194 43 84.824146 66.8 131.545806 54.2700767"
+                              ></polyline>
                             </g>
                           </g>
                         </g>
                       </g>
-                    </svg>
-                  </span>
-                  {/* Remove ae__link-text class when Analyte Explorer is working */}
-                  <span className="tri-block__link-text ae__link-text">
-                    Analyte Explorer (Coming Soon)
-                  </span>
-                </a>
+                    </g>
+                  </svg>
+                </span>
+                {/* Remove tri-block__cta & ae__link-text classes when Analyte Explorer is working */}
+                <span className="tri-block__cta tri-block__link-text ae__link-text">
+                  Analyte Explorer (Coming Soon)
+                </span>
+                {/* </a> */}
                 <p>
                   This analysis allows the user to visualize log fold change of
                   a gene or gene set over time by cohort.
@@ -314,7 +315,7 @@ function App() {
               </div>
               <div className="tri-block__block">
                 <a
-                  href=""
+                  href="https://www.immunespace.org/project/Studies/begin.view?pageId=Resources"
                   className="tri-block__cta"
                   title="Reproducable Analyses link"
                 >
@@ -672,10 +673,7 @@ function App() {
                     Reproducable Analyses
                   </span>
                 </a>
-                <p>
-                  This analysis allows the user to visualize log fold change of
-                  a gene or gene set over time by cohort.
-                </p>
+                <p>Browse highlighted reports.</p>
               </div>
               <div className="tri-block__block">
                 <a href="" className="tri-block__cta" title="Data Finder link">
@@ -1048,7 +1046,9 @@ function App() {
             </div>
           </div>
         </section>
-        <section className="video-block">
+
+        {/* Unhide the tutorial block after tutorial is made */}
+        <section className="video-block" style={{ display: "none" }}>
           <div className="container">
             <div className="video-block__content">
               <div className="video-block__responsive-video">
@@ -1102,7 +1102,11 @@ function App() {
                   stimuli — This large data problem has given birth to
                   ImmuneSpace
                 </p>
-                <a href="" className="history-block__cta" title="About Us link">
+                <a
+                  href="/project/home/begin.view?"
+                  className="history-block__cta"
+                  title="About Us link"
+                >
                   <span className="history-block__link-text">About Us</span>
                 </a>
               </div>
