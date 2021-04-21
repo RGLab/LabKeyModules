@@ -26,7 +26,7 @@ function App() {
           <nav className="header__nav" role="nav">
             <ul>
               <li className="header__logo">
-                <a href="" title="immuneSpace Home">
+                <a href="" title="immuneSpace Home" id="header__logo-link">
                   <img
                     src={ImmunespaceHeaderLogo}
                     alt="immuneSpace Logo"
