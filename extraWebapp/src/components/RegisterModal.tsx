@@ -1,6 +1,7 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { newRegistration, newLogin } from "../js/login";
 import { CSSTransition } from "react-transition-group";
+import "./RegisterModal.scss";
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ const RegisterModal: React.FC<RegisterModalProps> = (props) => {
   const loginEmailInput = useRef(null);
   const loginPasswordInput = useRef(null);
   const registerEmailInput = useRef(null);
+  const [errorMsg, setErrorMsg] = useState<string>("");
 
   const closeModal = (e: React.MouseEvent) => {
     props.setRegModalOpen(false);
@@ -18,7 +20,7 @@ const RegisterModal: React.FC<RegisterModalProps> = (props) => {
 
   const loginFunc = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    newLogin();
+    newLogin(setErrorMsg);
   };
 
   const registerFunc = (e: React.FormEvent<HTMLFormElement>) => {
@@ -130,7 +132,7 @@ const RegisterModal: React.FC<RegisterModalProps> = (props) => {
                     </label>
                     <a
                       href={`${window.location.href}login/home/resetpassword.view`}
-                      target="_blank"
+                      target="_self"
                       title="Forgot Password"
                       className="forgot-password"
                     >
@@ -150,6 +152,7 @@ const RegisterModal: React.FC<RegisterModalProps> = (props) => {
                       ref={loginPasswordInput}
                     />
                   </span>
+                  {errorMsg !== "" && <span id="error">{`${errorMsg}`}</span>}
                 </div>
                 <button className="submit-btn" type="submit">
                   Sign In
