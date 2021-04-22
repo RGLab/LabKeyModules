@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { newRegistration, newLogin } from "../js/login";
 import { CSSTransition } from "react-transition-group";
 import "./RegisterModal.scss";
@@ -9,9 +9,6 @@ interface RegisterModalProps {
 }
 
 const RegisterModal: React.FC<RegisterModalProps> = (props) => {
-  const loginEmailInput = useRef(null);
-  const loginPasswordInput = useRef(null);
-  const registerEmailInput = useRef(null);
   const [errorMsg, setErrorMsg] = useState<string>("");
 
   const closeModal = (e: React.MouseEvent) => {
@@ -123,7 +120,6 @@ const RegisterModal: React.FC<RegisterModalProps> = (props) => {
                       id="email-sign-in"
                       aria-required="true"
                       aria-invalid="false"
-                      ref={loginEmailInput}
                     />
                   </span>
                   <div className="input-wrap__forgot-password">
@@ -149,7 +145,6 @@ const RegisterModal: React.FC<RegisterModalProps> = (props) => {
                       id="password"
                       aria-required="true"
                       aria-invalid="false"
-                      ref={loginPasswordInput}
                     />
                   </span>
                   {errorMsg !== "" && <span id="error">{`${errorMsg}`}</span>}
@@ -175,7 +170,7 @@ const RegisterModal: React.FC<RegisterModalProps> = (props) => {
                   <label className="label" htmlFor="email">
                     First Time User?
                   </label>
-                  <span className="email">
+                  {/* <span className="email">
                     <input
                       type="text"
                       name="email"
@@ -185,9 +180,8 @@ const RegisterModal: React.FC<RegisterModalProps> = (props) => {
                       id="email-register"
                       aria-required="true"
                       aria-invalid="false"
-                      ref={registerEmailInput}
                     />
-                  </span>
+                  </span> */}
                 </div>
                 <button className="register-btn" type="submit">
                   Register
