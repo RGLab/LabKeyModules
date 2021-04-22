@@ -309,8 +309,8 @@ function App() {
                 </span>
                 {/* </a> */}
                 <p>
-                  This analysis allows the user to visualize log fold change of
-                  a gene or gene set over time by cohort.
+                  Visualize analyte expression patterns over time for various
+                  disease states, aggregated by cohort.
                 </p>
               </div>
               <div className="tri-block__block">
@@ -673,7 +673,10 @@ function App() {
                     Reproducable Analyses
                   </span>
                 </a>
-                <p>Browse highlighted reports.</p>
+                <p>
+                  Browse R generated reports for reanalyzed studies and virtual
+                  meta-analysis studies.
+                </p>
               </div>
               <div className="tri-block__block">
                 <a
@@ -1042,9 +1045,9 @@ function App() {
                   <span className="tri-block__link-text">Data Finder</span>
                 </a>
                 <p>
-                  The Data Explorer can be used to quickly plot a selected
-                  immunological response variable (e.g. HAI) in one or more
-                  cohorts across multiple analytes (when applicable).{" "}
+                  Find participant-level data from all studies. Download or
+                  explore this data using our broad range of visualization and
+                  computational tools.
                 </p>
               </div>
             </div>

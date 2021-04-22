@@ -28,7 +28,6 @@
   color: #61dafb;
 }
 
-
 .coming-soon-img {
   /* position: absolute;
   top: 0;
@@ -36,7 +35,7 @@
   width: 113px;
   height: 113px;
   background-color: white;
-  margin-top: .5rem;
+  margin-top: 5px;
 }
 
 .ae-icon {
@@ -47,6 +46,9 @@
 }
 
 /* Remove below when Analyte Explorer is finished */
+.ae__link-text {
+}
+
 .ae__link-text::after {
   display: none;
 }
