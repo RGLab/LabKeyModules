@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import "./scss/main.scss";
 import "./App.css";
 
-import Stickyfill from "stickyfilljs";
 import Registermodal from "./components/RegisterModal";
 import ImmunespaceHeaderLogo from "./assets/logo-immunespace-whiteblue-desk.svg";
 import ImmunespaceFooterLogo from "./assets/footer-logo-immunespace-whiteblue.png";
@@ -23,10 +22,14 @@ function App() {
     <body>
       <header id="site-header" className="header">
         <div className="container">
-          <nav className="header__nav" role="nav">
+          <nav className="header__nav" role="navigation">
             <ul>
               <li className="header__logo">
-                <a href="" title="immuneSpace Home" id="header__logo-link">
+                <a
+                  href={`${window.location.href}`}
+                  title="immuneSpace Home"
+                  id="header__logo-link"
+                >
                   <img
                     src={ImmunespaceHeaderLogo}
                     alt="immuneSpace Logo"
@@ -35,8 +38,9 @@ function App() {
                 </a>
               </li>
               <li className="header__cta-item">
+                {/* Probably should switch the a tag out for a button in the future */}
                 <a
-                  href=""
+                  href={`${window.location.href}`}
                   className="header__cta-link"
                   title="Register or Sign In"
                   onClick={regBtnClick}
@@ -62,7 +66,7 @@ function App() {
                   where datasets can be easily explored and analyzed using
                   state-of-the-art computational tools.
                 </p>
-                <a href="#" className="hero__cta is-hidden">
+                <a href="/" className="hero__cta is-hidden">
                   <span className="hero__link-text">How to get started</span>
                   <svg
                     className="hero__svg-arrow-right"
@@ -1060,6 +1064,7 @@ function App() {
             <div className="video-block__content">
               <div className="video-block__responsive-video">
                 <iframe
+                  title="Tutorial Video"
                   width="560"
                   height="315"
                   src="https://www.youtube.com/embed/FWtn2zGKPoI"
@@ -1081,7 +1086,7 @@ function App() {
                   to access the tutorials.
                 </p>
                 <a
-                  href=""
+                  href="/"
                   className="video-block__cta"
                   title="Video tutorials link"
                 >
@@ -1284,7 +1289,7 @@ function App() {
           <div className="footer__content">
             <div className="footer__logo">
               <a
-                href=""
+                href={`${window.location.href}`}
                 title="immuneSpace Home"
                 className="entrance-page-footer-link-non-social"
               >
@@ -1302,6 +1307,7 @@ function App() {
                     className="footer__twitter"
                     title="Follow us on Twitter"
                     target="_blank"
+                    rel="noopener noreferrer"
                   >
                     <svg
                       viewBox="0 0 15 13"
@@ -1399,6 +1405,7 @@ function App() {
                   href="https://www.labkey.com/"
                   title="LabKey Software"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="entrance-page-footer-link-non-social"
                 >
                   LabKey Software
@@ -1408,6 +1415,7 @@ function App() {
                   href="http://www.immuneprofiling.org/"
                   title="HIPC"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="entrance-page-footer-link-non-social"
                 >
                   HIPC
@@ -1417,6 +1425,7 @@ function App() {
                   href="https://www.niaid.nih.gov/"
                   title="National Institute of Allergy and Infectious Diseases (NIAID) link"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="entrance-page-footer-link-non-social"
                 >
                   NIAID
@@ -1431,6 +1440,7 @@ function App() {
                     className="footer__twitter"
                     title="Follow Us on Twitter"
                     target="_blank"
+                    rel="noopener noreferrer"
                   >
                     <span>follow us</span>
                     <svg
