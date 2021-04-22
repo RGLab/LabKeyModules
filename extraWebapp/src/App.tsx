@@ -19,7 +19,7 @@ function App() {
   };
 
   return (
-    <body>
+    <div id="body">
       <header id="site-header" className="header">
         <div className="container">
           <nav className="header__nav" role="navigation">
@@ -1536,7 +1536,7 @@ function App() {
           </div>
         </div>
       </footer>
-    </body>
+    </div>
   );
 }
 
