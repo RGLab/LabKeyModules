@@ -15,8 +15,8 @@ Tags:
  * Import npm dependencies
  *
  */
-@import "../../node_modules/lity/dist/lity.css";
-@import "../../node_modules/animate.css/source/animate.css";
+@import "~lity/dist/lity.css";
+@import "~animate.css/source/animate.css";
 
 /** Import theme styles */
 @import "./base.normalize";
