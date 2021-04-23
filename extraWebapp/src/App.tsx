@@ -25,11 +25,7 @@ function App() {
           <nav className="header__nav" role="navigation">
             <ul>
               <li className="header__logo">
-                <a
-                  href={`${window.location.href}`}
-                  title="immuneSpace Home"
-                  id="header__logo-link"
-                >
+                <a href="/" title="immuneSpace Home" id="header__logo-link">
                   <img
                     src={ImmunespaceHeaderLogo}
                     alt="immuneSpace Logo"
@@ -40,7 +36,7 @@ function App() {
               <li className="header__cta-item">
                 {/* Probably should switch the a tag out for a button in the future */}
                 <a
-                  href={`${window.location.href}`}
+                  href="/"
                   className="header__cta-link"
                   title="Register or Sign In"
                   onClick={regBtnClick}
@@ -1058,46 +1054,8 @@ function App() {
           </div>
         </section>
 
-        {/* Unhide the tutorial block after tutorial is made */}
-        <section className="video-block" style={{ display: "none" }}>
-          <div className="container">
-            <div className="video-block__content">
-              <div className="video-block__responsive-video">
-                <iframe
-                  title="Tutorial Video"
-                  width="560"
-                  height="315"
-                  src="https://www.youtube.com/embed/FWtn2zGKPoI"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-                {/* <!-- <iframe width=“560” height=“315" src=“https://www.youtube.com/embed/FWtn2zGKPoI” frameborder=“0" allow=“accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture” allowfullscreen></iframe> --> */}
-              </div>
-              <div className="video-block__copy">
-                <h2 className="video-block__title">
-                  Overall introduction to ImmuneSpace
-                </h2>
-                <p>
-                  This is the first tutorial that will introduce you to
-                  ImmuneSpace and show you how to register and login to the
-                  site. You will also learn about the main site navigation, how
-                  to reach important pages including the support page, and how
-                  to access the tutorials.
-                </p>
-                <a
-                  href="/"
-                  className="video-block__cta"
-                  title="Video tutorials link"
-                >
-                  <span className="video-block__link-text">
-                    Video Tutorials
-                  </span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Insert tutorial block here after tutorial has been made*/}
+
         <section className="history-block">
           <div className="container">
             <div className="history-block__content">
@@ -1131,165 +1089,13 @@ function App() {
             setRegModalOpen={setRegModalOpen}
           />
         }
-        {/* <section
-          id="register-modal"
-          className="register register-modal is-disabled"
-          aria-hidden="true"
-        >
-          <div className="container">
-            <div className="register__content">
-              <header className="register__header">
-                 <!-- ?xml version="1.0" encoding="UTF-8"? --> 
-                <svg
-                  className="register__close"
-                  viewBox="0 0 18 18"
-                  version="1.1"
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlnsXlink="http://www.w3.org/1999/xlink"
-                >
-                  <title>Close button SVG</title>
-                  <g
-                    id="Landing-Page"
-                    stroke="none"
-                    strokeWidth="1"
-                    fill="none"
-                    fillRule="evenodd"
-                  >
-                    <g
-                      id="Home-Login"
-                      transform="translate(-797.000000, -95.000000)"
-                      stroke="#FFFFFF"
-                    >
-                      <g
-                        id="Group-22"
-                        transform="translate(448.000000, 72.000000)"
-                      >
-                        <g
-                          id="Group-16"
-                          transform="translate(350.000000, 24.000000)"
-                        >
-                          <line
-                            x1="-4.54747351e-13"
-                            y1="4.4408921e-16"
-                            x2="16"
-                            y2="16"
-                            id="Path-9"
-                          ></line>
-                          <line
-                            x1="-4.54747351e-13"
-                            y1="4.4408921e-16"
-                            x2="16"
-                            y2="16"
-                            id="Path-9"
-                            transform="translate(8.000000, 8.000000) scale(-1, 1) translate(-8.000000, -8.000000) "
-                          ></line>
-                        </g>
-                      </g>
-                    </g>
-                  </g>
-                </svg>
-              </header>
-              <div className="register__form">
-                <h3 className="register__title">Sign In</h3>
-                <form action="#" method="POST" className="register__sign-in">
-                  <div style={{ display: "none" }}>
-                     <!-- Hidden input fields may be inserted here --> 
-                    <input
-                      type="hidden"
-                      name="some-hidden-field"
-                      value="somevalue"
-                    />
-                  </div>
-                  <div className="input-wrap input-wrap__column">
-                    <label className="label" htmlFor="email">
-                      Email
-                    </label>
-                    <span className="email">
-                      <input
-                        type="text"
-                        name="email"
-                        value=""
-                        size="40"
-                        className=""
-                        id="email"
-                        aria-required="true"
-                        aria-invalid="false"
-                      />
-                    </span>
-                    <div className="input-wrap__forgot-password">
-                      <label
-                        className="label label-password"
-                        htmlFor="password"
-                      >
-                        Password
-                      </label>
-                      <a
-                        href="#"
-                        target="_blank"
-                        title="Forgot Password"
-                        className="forgot-password"
-                      >
-                        Forgot Password?
-                      </a>
-                    </div>
-                    <span className="password">
-                      <input
-                        type="text"
-                        name="password"
-                        value=""
-                        size="40"
-                        className=""
-                        id="password"
-                        aria-required="true"
-                        aria-invalid="false"
-                      />
-                    </span>
-                  </div>
-                  <button className="submit-btn" type="submit">
-                    Sign In
-                  </button>
-                </form>
-                <form action="#" method="POST" className="register__register">
-                  <div style={{ display: "none" }}>
-                     <!-- Hidden input fields may be inserted here --> 
-                    <input
-                      type="hidden"
-                      name="some-hidden-field"
-                      value="somevalue"
-                    />
-                  </div>
-                  <div className="input-wrap input-wrap__column">
-                    <label className="label" htmlFor="email">
-                      First Time User?
-                    </label>
-                    <span className="email">
-                      <input
-                        type="text"
-                        name="email"
-                        value=""
-                        size="40"
-                        className=""
-                        id="email"
-                        aria-required="true"
-                        aria-invalid="false"
-                      />
-                    </span>
-                  </div>
-                  <button className="register-btn" type="submit">
-                    Register
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </section> */}
       </main>
       <footer className="footer" role="contentinfo">
         <div className="container">
           <div className="footer__content">
             <div className="footer__logo">
               <a
-                href={`${window.location.href}`}
+                href="/"
                 title="immuneSpace Home"
                 className="entrance-page-footer-link-non-social"
               >
