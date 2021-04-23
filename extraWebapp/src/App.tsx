@@ -8,8 +8,6 @@ import ImmunespaceFooterLogo from "./assets/footer-logo-immunespace-whiteblue.pn
 import ComingSoonWatermark from "./assets/coming-soon.jpg";
 
 function App() {
-  //const registerModal = $("#register-modal");
-  //console.log(`.:: DEBUG ::. registerModal: `, registerModal);
   const [regModalOpen, setRegModalOpen] = useState(false);
 
   const regBtnClick = (e: React.MouseEvent) => {

@@ -41,6 +41,7 @@ AboutPage/resources/views
 AboutPage/resources/web
 DataAccess/resources/web
 DataAccess/resources/views
+extraWebapp/build
 
 # Npm and React libraries
 node_modules
