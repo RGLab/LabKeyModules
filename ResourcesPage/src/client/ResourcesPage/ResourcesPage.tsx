@@ -44,7 +44,7 @@ import { SimilarStudies } from './SimilarStudies'
 const ResourcesPage: React.FC = () => {
 
     const labkeyBaseUrl = LABKEY.ActionURL.getBaseURL()
-    const apiBase = labkeyBaseUrl + '_rapi/'
+    const apiBase = labkeyBaseUrl + '_proxy/plumber/'
 
     /*  ----------------
         StudyStats Data
