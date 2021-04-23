@@ -14,7 +14,6 @@ function App() {
 
   const regBtnClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log(`.:: DEBUG ::. You clicked the Sign-in Button.`);
     setRegModalOpen(true);
   };
 
