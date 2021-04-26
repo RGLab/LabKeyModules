@@ -13,6 +13,7 @@ if(moduleName == 'extraWebapp'){
     }
 
     deploy {
+        dependsOn project.parent.tasks.npmInstall
         dependsOn "npmInstall"
         dependsOn "npmBuild"
         tasks.findByName("npmBuild").mustRunAfter "npmInstall"
