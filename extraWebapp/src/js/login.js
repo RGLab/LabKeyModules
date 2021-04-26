@@ -19,11 +19,11 @@ import { Utils, Ajax } from "@labkey/api";
 //   }
 // }
 
-export function newLogin(setErrorMsg) {
+export const newLogin = (setErrorMsg) => {
   const homePageUrl = window.location.href;
 
   Ajax.request({
-    url: `${homePageUrl}login/home/loginApi.api`,
+    url: `/login/home/loginApi.api`,
     method: "POST",
     params: {
       remember: false,
@@ -51,8 +51,8 @@ export function newLogin(setErrorMsg) {
       }
     }, this),
   });
-}
+};
 
 export const newRegistration = () => {
-  window.location.href = `${window.location.href}login/home/register.view?`;
+  window.location.href = `/login/home/register.view?`;
 };

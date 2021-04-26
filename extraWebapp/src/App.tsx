@@ -7,7 +7,7 @@ import ImmunespaceHeaderLogo from "./assets/logo-immunespace-whiteblue-desk.svg"
 import ImmunespaceFooterLogo from "./assets/footer-logo-immunespace-whiteblue.png";
 import ComingSoonWatermark from "./assets/coming-soon.jpg";
 
-function App() {
+const App = () => {
   const [regModalOpen, setRegModalOpen] = useState(false);
 
   const regBtnClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -1341,6 +1341,6 @@ function App() {
       </footer>
     </div>
   );
-}
+};
 
 export default App;
