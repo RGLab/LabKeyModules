@@ -38,10 +38,9 @@ export function newLogin(setErrorMsg) {
       window.location.href = `${homePageUrl}project/Studies/begin.view`;
     }, this),
     failure: Utils.getCallbackWrapper(function (response) {
-      console.log(response);
       if (response && response.exception) {
         // Want special point to password reset not given by LK response
-        console.log(response.exception);
+
         if (response.exception.includes("did not match")) {
           setErrorMsg(
             "Invalid Username or Password. You can reset your password via the Forgot Password link above."

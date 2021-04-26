@@ -11,7 +11,9 @@ interface RegisterModalProps {
 const RegisterModal: React.FC<RegisterModalProps> = (props) => {
   const [errorMsg, setErrorMsg] = useState<string>("");
 
-  const closeModal = (e: React.MouseEvent) => {
+  const closeModal: React.MouseEventHandler<SVGSVGElement> = (
+    e: React.MouseEvent
+  ) => {
     props.setRegModalOpen(false);
   };
 

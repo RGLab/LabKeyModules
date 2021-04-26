@@ -10,7 +10,7 @@ import ComingSoonWatermark from "./assets/coming-soon.jpg";
 function App() {
   const [regModalOpen, setRegModalOpen] = useState(false);
 
-  const regBtnClick = (e: React.MouseEvent) => {
+  const regBtnClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     setRegModalOpen(true);
   };
