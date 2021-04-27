@@ -20,8 +20,6 @@ import { Utils, Ajax } from "@labkey/api";
 // }
 
 export const newLogin = (setErrorMsg) => {
-  const homePageUrl = window.location.href;
-
   Ajax.request({
     url: `/login/home/loginApi.api`,
     method: "POST",
@@ -29,13 +27,13 @@ export const newLogin = (setErrorMsg) => {
       remember: false,
       email: document.getElementById("email-sign-in").value,
       password: document.getElementById("password").value,
-      returnUrl: `${homePageUrl}project/Studies/begin.view`,
+      returnUrl: `/project/Studies/begin.view`,
     },
     success: Utils.getCallbackWrapper(function (response) {
       if (response && response.returnUrl) {
         window.location = response.returnUrl;
       }
-      window.location.href = `${homePageUrl}project/Studies/begin.view`;
+      window.location.href = `/project/Studies/begin.view`;
     }, this),
     failure: Utils.getCallbackWrapper(function (response) {
       if (response && response.exception) {
