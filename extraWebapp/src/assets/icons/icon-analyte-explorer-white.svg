@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="202px" height="119px" viewBox="0 0 202 119" version="1.1" xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Analyte Explorer Icon</title>
+  <g id="Landing-Page" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="Home" transform="translate(-145.000000, -496.000000)">
+      <g id="analyte_exp" transform="translate(145.000000, 496.000000)">
+        <rect id="Rectangle-Copy-4" x="0" y="0" width="202" height="119"></rect>
+        <g id="Group-7" transform="translate(27.000000, 15.000000)">
+          <g id="Group-35-Copy">
+            <path
+              d="M18,13.5014153 C18,15.4346947 16.4318641,17 14.4985847,17 C12.5681359,17 11,15.4346947 11,13.5014153 C11,11.5681359 12.5681359,10 14.4985847,10 C16.4318641,10 18,11.5681359 18,13.5014153"
+              id="Fill-1" fill="#0F91F2"></path>
+            <path
+              d="M31,13.5014153 C31,15.4346947 29.4318641,17 27.4985847,17 C25.5681359,17 24,15.4346947 24,13.5014153 C24,11.5681359 25.5681359,10 27.4985847,10 C29.4318641,10 31,11.5681359 31,13.5014153"
+              id="Fill-3" fill="#0F91F2"></path>
+            <path
+              d="M44,13.5014153 C44,15.4346947 42.4318641,17 40.5014153,17 C38.5681359,17 37,15.4346947 37,13.5014153 C37,11.5681359 38.5681359,10 40.5014153,10 C42.4318641,10 44,11.5681359 44,13.5014153"
+              id="Fill-5" fill="#FF5B00"></path>
+            <polygon id="Stroke-9" stroke="#0F91F2" stroke-width="4.3" stroke-linecap="round" stroke-linejoin="round"
+              points="140 96 0 96 0 0 140 0 140 36.4142895"></polygon>
+            <line x1="0" y1="26" x2="140" y2="26" id="Stroke-11" stroke="#0F91F2" stroke-width="4.3"
+              stroke-linecap="round" stroke-linejoin="round"></line>
+          </g>
+          <line x1="37" y1="26" x2="37" y2="96" id="Path-5" stroke="#0F91F2" stroke-width="4"></line>
+          <line x1="29" y1="39" x2="7.72393057" y2="39" id="Path-6" stroke="#0F91F2" stroke-width="4"
+            stroke-linecap="round"></line>
+          <line x1="29" y1="48" x2="7.72393057" y2="48" id="Path-6-Copy" stroke="#0F91F2" stroke-width="4"
+            stroke-linecap="round"></line>
+          <line x1="29" y1="68" x2="7.72393057" y2="68" id="Path-6-Copy-2" stroke="#0F91F2" stroke-width="4"
+            stroke-linecap="round"></line>
+          <line x1="29" y1="76" x2="7.72393057" y2="76" id="Path-6-Copy-3" stroke="#0F91F2" stroke-width="4"
+            stroke-linecap="round"></line>
+          <line x1="29" y1="85" x2="7.72393057" y2="85" id="Path-6-Copy-4" stroke="#0F91F2" stroke-width="4"
+            stroke-linecap="round"></line>
+          <line x1="37" y1="26" x2="37" y2="96" id="Path-5" stroke="#0F91F2" stroke-width="4"></line>
+          <polyline id="Path-7" stroke="#FF5B00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"
+            points="40.5 58.9865344 56.0952527 43 70.0659248 64.7044823 87.8721433 54.0454545 133.091013 54.0454545">
+          </polyline>
+          <polyline id="Path-8" stroke="#FF5B00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"
+            points="41.0528894 60.1396877 52.4349236 72.8547906 70.5558194 43 84.824146 66.8 131.545806 54.2700767">
+          </polyline>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

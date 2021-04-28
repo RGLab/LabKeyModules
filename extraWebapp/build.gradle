@@ -1,16 +1,36 @@
+//https://www.youtube.com/watch?v=2GPvZEfzy8A&t=349s&ab_channel=MikeM%C3%B8llerNielsen
+
+
+
 String moduleName = "${project.name}"
 String moduleBuildDir = "${project.parent.labKeyModulesDir}/${moduleName}"
 String moduleXmlTemplate = "${project.parent.labKeyModulesDir}/module.template.xml"
 String buildTime = new Date().format('yyyy-MM-dd:HH-mm')
 
 if(moduleName == 'extraWebapp'){
-    deploy.doLast {
+    task npmBuild(type: NpmTask) {
+        args = ["run", "build"]
+    }
+    
+    task buildModule {
+        dependsOn npmInstall
+        dependsOn project.parent.tasks.npmInstall
+        dependsOn npmBuild
+        tasks.findByName("npmBuild").mustRunAfter "npmInstall"
+   }
+
+    task copyModule {
+        dependsOn buildModule
         mkdir "${project.parent.deployDir}/extraWebapp"
-        copy {
-            from "."
-            exclude "build.gradle", "enlistment.properties"
-            into "${project.parent.deployDir}/extraWebapp"
-        }
+           copy {
+             from "./build"
+             exclude "build.gradle", "enlistment.properties"
+             into "${project.parent.deployDir}/extraWebapp"
+         }
+     }
+
+    deploy {
+       dependsOn copyModule
     }
 }else{
     String dirToZip = ""
@@ -33,24 +53,16 @@ if(moduleName == 'extraWebapp'){
             inputs.file "module.properties"
             inputs.file "postcss.config.js"
             inputs.file "tsconfig.json"
-            inputs.file "declarations.d.ts"
+            //inputs.file "declarations.d.ts"
             
             outputs.dir "resources" // set in where ??
         }
 
-        task copyImageResources {
-            dependsOn npm_run_build
-            String imgDir = "${dirToZip}/web/ResourcesPage/images"
-            mkdir imgDir
-            copy {
-                from "./images"
-                include "*"
-                into imgDir
-            }
-        }
-
         task prepModule {
-            dependsOn copyImageResources
+            // Fist install any dependencies in top level package.json
+            dependsOn project.parent.tasks.npmInstall
+            // then build module
+            dependsOn npm_run_build
         }
 
     }else{
