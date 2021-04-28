@@ -11,18 +11,26 @@ if(moduleName == 'extraWebapp'){
     task npmBuild(type: NpmTask) {
         args = ["run", "build"]
     }
+    
+    task buildModule {
+        dependsOn npmInstall
+        dependsOn project.parent.tasks.npmInstall
+        dependsOn npmBuild
+        tasks.findByName("npmBuild").mustRunAfter "npmInstall"
+   }
+
+    task copyModule {
+        dependsOn buildModule
+        mkdir "${project.parent.deployDir}/extraWebapp"
+           copy {
+             from "./build"
+             exclude "build.gradle", "enlistment.properties"
+             into "${project.parent.deployDir}/extraWebapp"
+         }
+     }
 
     deploy {
-        dependsOn project.parent.tasks.npmInstall
-        dependsOn "npmInstall"
-        dependsOn "npmBuild"
-        tasks.findByName("npmBuild").mustRunAfter "npmInstall"
-        mkdir "${project.parent.deployDir}/extraWebapp"
-        copy {
-            from "./build"
-            exclude "build.gradle", "enlistment.properties"
-            into "${project.parent.deployDir}/extraWebapp"
-        }
+       dependsOn copyModule
     }
 }else{
     String dirToZip = ""
