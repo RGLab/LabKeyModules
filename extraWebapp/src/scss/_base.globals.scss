@@ -1,0 +1,81 @@
+
+body {
+  color: $blue;
+  font-family: $nunito-sans;
+  font-weight: 400;
+  margin: 0;
+  padding: 0;
+  background: $white;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+h1, h2, h3, h4, h5, p {
+  font-family: $nunito-sans;
+}
+
+.container {
+  padding: 0 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+
+  @include media-query(tab) {
+    // padding: 0 .5rem;
+  }
+
+  @include media-query(desk) {
+    padding: 0;
+  }
+}
+
+.h-o-d {
+  @include media-query(desk){
+    display: none;
+  }
+}
+
+.h-o-m {
+  @include media-query(mobile) {
+    display: none;
+  }
+}
+
+.is-disabled {
+  display: none;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+
+/** --- Bobber --------- */
+@keyframes bobberLtr {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(0.375rem, 0);
+  }
+}

@@ -1,0 +1,42 @@
+#support {
+  position: fixed;
+  top: 150px;
+  z-index: 200;
+  right: 0;
+}
+
+#visible-button {
+  position: relative;
+  top: 0;
+  right: 48px;
+  background: $green;
+  border: none;
+  display: flex;
+  color: #fff;
+  height: 48px;
+  margin: 0;
+  border-radius: 6px 6px 0 0;
+  padding: 10px 16px;
+  transform: rotate(-90deg);
+  transform-origin: top right;
+  box-shadow: rgba(#000, 0.2) -1px 0 10px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+  outline: 0;
+
+  span {
+    display: block;
+  }
+
+  &:hover {
+    background: $green-hover;
+    cursor: pointer;
+  }
+
+  img {
+    margin-right: 10px;
+    display: inline-block;
+  }
+}

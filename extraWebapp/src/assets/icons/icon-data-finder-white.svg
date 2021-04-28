@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="170px" height="114px" viewBox="0 0 170 114" version="1.1" xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Data Finder Icon</title>
+  <g id="Landing-Page" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="Home" transform="translate(-813.000000, -496.000000)">
+      <g id="Group-14" transform="translate(816.000000, 496.000000)">
+        <g id="Group-35" transform="translate(0.000000, 15.000000)">
+          <path
+            d="M19,13.5014153 C19,15.4346947 17.4318641,17 15.4985847,17 C13.5681359,17 12,15.4346947 12,13.5014153 C12,11.5681359 13.5681359,10 15.4985847,10 C17.4318641,10 19,11.5681359 19,13.5014153"
+            id="Fill-1" fill="#B4BBBF"></path>
+          <path
+            d="M32,13.5014153 C32,15.4346947 30.4318641,17 28.4985847,17 C26.5681359,17 25,15.4346947 25,13.5014153 C25,11.5681359 26.5681359,10 28.4985847,10 C30.4318641,10 32,11.5681359 32,13.5014153"
+            id="Fill-3" fill="#B4BBBF"></path>
+          <path
+            d="M45,13.5014153 C45,15.4346947 43.4318641,17 41.5014153,17 C39.5681359,17 38,15.4346947 38,13.5014153 C38,11.5681359 39.5681359,10 41.5014153,10 C43.4318641,10 45,11.5681359 45,13.5014153"
+            id="Fill-5" fill="#B4BBBF"></path>
+          <polygon id="Stroke-9" stroke="#B4BBBF" stroke-width="4.3" stroke-linecap="round" stroke-linejoin="round"
+            points="140 96 0 96 0 0 140 0 140 36.4142895"></polygon>
+          <line x1="0" y1="26" x2="140" y2="26" id="Stroke-11" stroke="#B4BBBF" stroke-width="4.3"
+            stroke-linecap="round" stroke-linejoin="round"></line>
+          <polyline id="Stroke-19" stroke="#B4BBBF" stroke-width="4.3" stroke-linecap="round"
+            points="46 43 18 43 18 83"></polyline>
+          <line x1="20" y1="55" x2="57" y2="55" id="Stroke-21" stroke="#B4BBBF" stroke-width="4.3"
+            stroke-linecap="round"></line>
+          <line x1="20" y1="67" x2="45" y2="67" id="Stroke-23" stroke="#B4BBBF" stroke-width="4.3"
+            stroke-linecap="round"></line>
+          <line x1="19" y1="83" x2="49" y2="83" id="Stroke-25" stroke="#B4BBBF" stroke-width="4.3"
+            stroke-linecap="round"></line>
+          <polyline id="Stroke-27" stroke="#B4BBBF" stroke-width="4.3" stroke-linecap="round"
+            points="102 43 77 43 77 83"></polyline>
+          <line x1="79" y1="55" x2="110" y2="55" id="Stroke-29" stroke="#B4BBBF" stroke-width="4.3"
+            stroke-linecap="round"></line>
+          <line x1="79" y1="67" x2="117" y2="67" id="Stroke-31" stroke="#B4BBBF" stroke-width="4.3"
+            stroke-linecap="round"></line>
+          <line x1="78" y1="83" x2="90" y2="83" id="Stroke-33" stroke="#B4BBBF" stroke-width="4.3"
+            stroke-linecap="round"></line>
+        </g>
+        <g id="Group-12" transform="translate(134.000000, 10.000000)">
+          <g id="Group-3" transform="translate(0.400000, 0.700000)">
+            <rect id="Rectangle" stroke="#FFFFFF" stroke-width="3.3" stroke-linejoin="round" x="0" y="13.2" width="24.2"
+              height="19.8" rx="3.3"></rect>
+            <path
+              d="M12.1,1.65 C13.6187831,1.65 14.9937831,2.26560847 15.9890873,3.2609127 C16.9843915,4.25621694 17.6,5.63121694 17.6,7.15 L17.6,7.15 L17.6,12.1 L7.15,12.65 L6.6,7.15 C6.6,5.63121694 7.21560847,4.25621694 8.2109127,3.2609127 C9.20621694,2.26560847 10.5812169,1.65 12.1,1.65 L12.1,1.65 Z"
+              id="Rectangle" stroke="#FFFFFF" stroke-width="3.3"></path>
+            <g id="Group-2" transform="translate(9.350000, 18.700000)">
+              <circle id="Oval" fill="#FFFFFF" cx="2.75" cy="2.75" r="2.75"></circle>
+              <line x1="2.75" y1="3.85" x2="2.75" y2="8.25" id="Line" stroke="#FFFFFF" stroke-width="3.3"
+                stroke-linecap="round"></line>
+            </g>
+          </g>
+        </g>
+        <path
+          d="M19,28.5014153 C19,30.4346947 17.4318641,32 15.4985847,32 C13.5681359,32 12,30.4346947 12,28.5014153 C12,26.5681359 13.5681359,25 15.4985847,25 C17.4318641,25 19,26.5681359 19,28.5014153"
+          id="Fill-1" fill="#FF5B00"></path>
+        <path
+          d="M32,28.5014153 C32,30.4346947 30.4318641,32 28.4985847,32 C26.5681359,32 25,30.4346947 25,28.5014153 C25,26.5681359 26.5681359,25 28.4985847,25 C30.4318641,25 32,26.5681359 32,28.5014153"
+          id="Fill-3" fill="#0F91F2"></path>
+        <path
+          d="M45,28.5014153 C45,30.4346947 43.4318641,32 41.5014153,32 C39.5681359,32 38,30.4346947 38,28.5014153 C38,26.5681359 39.5681359,25 41.5014153,25 C43.4318641,25 45,26.5681359 45,28.5014153"
+          id="Fill-5" fill="#0F91F2"></path>
+        <polygon id="Stroke-9" stroke="#0F91F2" stroke-width="4.3" stroke-linecap="round" stroke-linejoin="round"
+          points="140 111 0 111 0 15 140 15 140 51.4142895"></polygon>
+        <line x1="0" y1="41" x2="140" y2="41" id="Stroke-11" stroke="#0F91F2" stroke-width="4.3" stroke-linecap="round"
+          stroke-linejoin="round"></line>
+        <line x1="20" y1="70" x2="57" y2="70" id="Stroke-21" stroke="#0F91F2" stroke-width="4.3" stroke-linecap="round">
+        </line>
+        <line x1="20" y1="82" x2="45" y2="82" id="Stroke-23" stroke="#0F91F2" stroke-width="4.3" stroke-linecap="round">
+        </line>
+        <line x1="19" y1="98" x2="49" y2="98" id="Stroke-25" stroke="#0F91F2" stroke-width="4.3" stroke-linecap="round">
+        </line>
+        <line x1="79" y1="70" x2="110" y2="70" id="Stroke-29" stroke="#0F91F2" stroke-width="4.3"
+          stroke-linecap="round"></line>
+        <line x1="79" y1="82" x2="117" y2="82" id="Stroke-31" stroke="#0F91F2" stroke-width="4.3"
+          stroke-linecap="round"></line>
+        <line x1="78" y1="98" x2="90" y2="98" id="Stroke-33" stroke="#0F91F2" stroke-width="4.3" stroke-linecap="round">
+        </line>
+        <g id="Group-12" transform="translate(119.000000, 0.000000)">
+          <circle id="Oval" fill="#1A1A1A" cx="23.9555556" cy="23.9555556" r="23.9555556"></circle>
+          <g id="Group-3" transform="translate(13.688889, 6.844444)">
+            <rect id="Rectangle" stroke="#FFFFFF" stroke-width="2.93333333" stroke-linejoin="round" x="0" y="11.7333333"
+              width="21.5111111" height="17.6" rx="2.93333333"></rect>
+            <path
+              d="M10.7555556,1.46666667 C12.1055849,1.46666667 13.3278072,2.01387419 14.212522,2.89858907 C15.0972369,3.78330394 15.6444444,5.00552617 15.6444444,6.35555556 L15.6444444,6.35555556 L15.6444444,10.7555556 L6.35555556,11.2444444 L5.86666667,6.35555556 C5.86666667,5.00552617 6.41387419,3.78330394 7.29858907,2.89858907 C8.18330394,2.01387419 9.40552617,1.46666667 10.7555556,1.46666667 Z"
+              id="Rectangle" stroke="#FFFFFF" stroke-width="2.93333333"></path>
+            <g id="Group-2" transform="translate(8.311111, 16.622222)">
+              <circle id="Oval" fill="#FFFFFF" cx="2.44444444" cy="2.44444444" r="2.44444444"></circle>
+              <line x1="2.44444444" y1="3.42222222" x2="2.44444444" y2="7.33333333" id="Line" stroke="#FFFFFF"
+                stroke-width="2.93333333" stroke-linecap="round"></line>
+            </g>
+          </g>
+        </g>
+        <polyline id="Stroke-19" stroke="#0F91F2" stroke-width="4.3" stroke-linecap="round" points="46 58 18 58 18 98">
+        </polyline>
+        <polyline id="Stroke-27" stroke="#0F91F2" stroke-width="4.3" stroke-linecap="round" points="102 58 77 58 77 98">
+        </polyline>
+      </g>
+    </g>
+  </g>
+</svg>
