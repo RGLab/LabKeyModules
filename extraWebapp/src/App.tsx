@@ -667,7 +667,7 @@ const App = () => {
                     </svg>
                   </span>
                   <span className="tri-block__link-text">
-                    Reproducable Analyses
+                    Reproducible Analyses
                   </span>
                 </a>
                 <p>
