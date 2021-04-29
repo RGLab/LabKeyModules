@@ -16,8 +16,8 @@ LabKeyModules develompent is closely tied to the ImmuneSpace servers as well as 
 4. Create a feature branch off the UITesting `dev` branch matching the name of the LKM feature branch and update tests so that it passes on your local  
 5. Submit PRs to both LKM and UITesting and any other packages with related updates and request a review  
 6. For the PR to be accepted, it must meet coding guidelines outlined below, and pass tests on the TEST server.  
-7. Merge PRs into `dev` branch and submit `dev` -> `master` PRs.   
-8. `dev` -> `master` PRs must pass all tests and go through code review  
+7. Merge PRs into `dev` branch and submit `dev` -> `main` PRs.   
+8. `dev` -> `main` PRs must pass all tests and go through code review  
 9. Install updates on PROD server.  
 
 
@@ -51,7 +51,7 @@ LabKeyModules is built on many different coding languages, including but not lim
 
 ### R
 
-Please refer to the R style guide described in [ImmuneSpaceR](https://github.com/RGLab/ImmuneSpaceR/blob/master/CONTRIBUTING.md#package-development-guide) for guidelines on R code. Run [`styler::style_file()`](https://styler.r-lib.org/reference/style_file.html) on any R or Rmd files you edit for automatic style enforcement. 
+Please refer to the R style guide described in [ImmuneSpaceR](https://github.com/RGLab/ImmuneSpaceR/blob/main/CONTRIBUTING.md#package-development-guide) for guidelines on R code. Run [`styler::style_file()`](https://styler.r-lib.org/reference/style_file.html) on any R or Rmd files you edit for automatic style enforcement. 
 
 ### SQL
 

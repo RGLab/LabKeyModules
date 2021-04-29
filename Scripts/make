@@ -46,7 +46,7 @@ if [ $2 ] ; then
 elif [ `hostname | head -c10` = 'ImmuneTest' ] ; then
     BUILD_TYPE=dev
 elif [ `hostname | head -c10` = 'ImmuneProd' ] ; then
-    BUILD_TYPE=master
+    BUILD_TYPE=main
 else
     echo 'Build type cannot be detected, must be specified as the second parameter'
     exit 1
