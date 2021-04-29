@@ -1,0 +1,36 @@
+/*!
+
+Theme Name: immuneSpace
+Theme URI: https://www.immunespace.org/
+Description: ImmuneSpace Custom SCSS Theme
+Version: 1.1.0
+Author: Cognition Studio
+Author URI: https://cognitionstudio.com
+
+Tags:
+
+*/
+
+/**
+ * Import npm dependencies
+ *
+ */
+@import "~lity/dist/lity.css";
+@import "~animate.css/source/animate.css";
+
+/** Import theme styles */
+@import "./base.normalize";
+@import "./settings.fonts";
+@import "./settings.variables";
+@import "./settings.responsive";
+// @import "./typography";
+@import "./settings.typography";
+@import "./base.globals";
+@import "./components.buttons";
+@import "./components.header";
+@import "./components.hero";
+@import "./components.tri-block";
+@import "./components.video-block";
+@import "./components.history-block";
+@import "./components.register-modal"; //src\scss\_components.register-modal.scss
+@import "./components.footer";

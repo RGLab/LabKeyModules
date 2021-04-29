@@ -1,0 +1,55 @@
+p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.caps {
+  text-transform: uppercase;
+}
+
+a {
+  color: $green-hover;
+}
+
+.reversed {
+  a {
+    color: #fff;
+
+    &:hover {
+      color: $blue;
+    }
+  }
+}
+
+h1,
+.h1 {
+  font-family: $serif;
+  font-size: 44px;
+  font-weight: 300;
+  margin: 0;
+  line-height: 52px;
+}
+
+h2,
+.h2 {
+  font-family: $sans-serif;
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.emphatic {
+  text-transform: uppercase;
+
+  &::before {
+    content: "";
+    height: 6px;
+    width: 56px;
+    background: $blue;
+    display: block;
+    margin: 0 0 14px;
+
+    #reimbursement & {
+      background: #fff;
+    }
+  }
+}
