@@ -22,7 +22,7 @@ output: rmarkdown::html_document
 ***
 
 ## OVERVIEW
-This markdown file outputs the results of the HIPC ImmuneSignatures Project using the original parameters and data coming directly from <https://www.immunespace.org> unless noted. This markdown uses heavily refactored code to improve efficiency.  However, all original code developed for the production of the manuscript is included in the /OrigCode folder within the package for reference.  This can be viewed at <https://github.com/rglab/ImmuneSignatures/tree/master/OrigCode>. 
+This markdown file outputs the results of the HIPC ImmuneSignatures Project using the original parameters and data coming directly from <https://www.immunespace.org> unless noted. This markdown uses heavily refactored code to improve efficiency.  However, all original code developed for the production of the manuscript is included in the /OrigCode folder within the package for reference.  This can be viewed at <https://github.com/rglab/ImmuneSignatures/tree/main/OrigCode>. 
 
 #### Figure 1 - Analysis Workflow
 As seen in the figure below, the analysis first starts by extracting data from ImmuneSpace for four "Discovery" studies (SDY212, SDY63, SDY404, and SDY400) and processing that data based on two age cohorts (younger <= 35 years and old > 60 years).  Meta-Analysis are run on these datasets to identify individual and sets of genes that predict immune system response to an influenza vaccine based on day zero transcriptional data.  These signature genes and modules are then validated on one study per age cohort.

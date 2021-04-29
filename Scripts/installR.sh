@@ -14,7 +14,7 @@ if [ `whoami` = 'root' ] ; then
             INTERACTIVE=yes
         elif [ `hostname | head -c10` = 'ImmuneProd' ] ; then
             LK_MODULES_PATH=/home/immunespace/
-            BUILD_TYPE=master
+            BUILD_TYPE=main
             INTERACTIVE=yes
         else
             echo 'Build type cannot be detected, must be specified'

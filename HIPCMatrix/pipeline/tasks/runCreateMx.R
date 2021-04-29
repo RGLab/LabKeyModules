@@ -479,7 +479,7 @@ library(illuminaio)
   }
   nms <- grep("feature_id", colnames(exprs), value = TRUE, invert = TRUE)
   rep <- gef$biosample_accession[ match(nms, gef[[colToUse]]) ]
-  
+
   # remove samples without matching biosample accession
   nms <- nms[!is.na(rep)]
   rep <- rep[!is.na(rep)]
@@ -601,7 +601,7 @@ normalizeMatrix <- function(exprs, study, metaData){
   smpls <- grep("feature_id", names(norm_exprs), invert = TRUE)
   fid <- grep("feature_id", names(norm_exprs))
   setcolorder(norm_exprs, c(fid, smpls))
-  
+
   return(norm_exprs)
 }
 
@@ -745,7 +745,7 @@ runCreateMx <- function(labkey.url.base,
   )
 
   if (study %in% names(metaData$illuminaManifestFile)){
-    manifestUrl <- paste0("https://github.com/RGLab/UpdateAnno/raw/master/CreateMatrixAssets/IlluminaManifests/", metaData$illuminaManifestFile[[study]])
+    manifestUrl <- paste0("https://github.com/RGLab/UpdateAnno/raw/main/CreateMatrixAssets/IlluminaManifests/", metaData$illuminaManifestFile[[study]])
     tmpFl <- tempfile()
     download.file(url = manifestUrl, destfile = tmpFl, quiet = TRUE)
     metaData$illuminaManifestFile[[study]] <- tmpFl
