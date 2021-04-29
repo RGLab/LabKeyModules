@@ -314,7 +314,7 @@ const App = () => {
                 <a
                   href="/project/Studies/begin.view?pageId=Resources"
                   className="tri-block__cta"
-                  title="Reproducable Analyses link"
+                  title="Reproducible Analyses link"
                 >
                   <span className="tri-block__icon">
                     {/* <!-- ?xml version="1.0" encoding="UTF-8"? --> */}
