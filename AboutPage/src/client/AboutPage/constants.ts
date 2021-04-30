@@ -25,21 +25,21 @@ export const tabInfo = [
         tag: TAB_DATAPROCESSING,
         text: "Data Processing",
         subMenu: [
-            {
+            /*{
                 id: "cytometry",
                 tag: TAB_CYTOMETRY,
                 text: "Cytometry",
-            },
+            },*/
             {
                 id: "gene-expression",
                 tag: TAB_GENEEXPRESSION,
                 text: "Gene Expression",
-            },
-            {
+            }
+            /*{
                 id: "immune-response",
                 tag: TAB_IMMUNERESPONSE,
                 text: "Immune Response",
-            }
+            }*/
         ]
     },
     {

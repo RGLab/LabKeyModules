@@ -22,9 +22,10 @@ vcs.properties
 
 ImmuneSpace/config/module.xml
 
-# Rproj-related files 
+# Rproj-related files
 *.Rproj*
 .Rproj.user
+.Rhistory
 
 .idea/
 
