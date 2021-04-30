@@ -1,0 +1,108 @@
+.hero {
+  // background: url(../assets/hero-background-v02-desk.svg) no-repeat 50%/cover;
+  background-color: $hero-background;
+  background-image: url(../assets/hero-background-mobile.svg);
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size: contain;
+
+  @include media-query(tab){
+    background-image: url(../assets/hero-background-v03-desk.svg);
+    background-size: 70%;
+  }
+
+  @include media-query(lg){
+    background-size: 65%;
+  }
+
+  @include media-query(desk){
+    background-size: 60%;
+
+  }
+
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    // align-content: center;
+    flex-direction: column;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.5rem 0;
+    height: 100%;
+    min-height: 450px;
+    width: 100%;
+    max-width: 100%;
+
+    @include media-query(tab){
+      padding: 0;
+      max-width: 635px;
+      // justify-content: flex-start;
+    }
+  }
+
+  &__copy {
+    color: $white;
+
+    h1 {
+      max-width: 450px;
+    }
+
+    p {
+      font-size: 1.25rem;
+      font-weight: $font-weight--semibold;
+      line-height: 26px;
+      max-width: 450px;
+
+      @include media-query(tab){
+        max-width: 635px;
+      }
+
+      @include media-query(desk){
+        font-weight: $font-weight--normal;
+      }
+
+    }
+
+    a {
+
+    }
+  }
+
+  &__cta {
+    color: $white;
+    display: block;
+    font-weight: $font-weight--black;
+    margin: 1rem 0;
+    position: relative;
+
+    svg {
+      width: 32px;
+      height: 15px;
+      display: block;
+      fill: $blue;
+      position: absolute;
+      left: 190px;
+      bottom: 2px;
+    }
+
+    &:hover {
+
+      &__link-text {
+        color: $white;
+      }
+
+      svg {
+        fill: $blue;
+      }
+    }
+  }
+
+  &__link-text {
+    text-transform: uppercase;
+  }
+}

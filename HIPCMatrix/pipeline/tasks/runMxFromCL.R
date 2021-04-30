@@ -1,6 +1,6 @@
 # Main CL script
-source("/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/makeAllMxVarsDf.R")
-source("/share/github/LabKeyModules/HIPCMatrix/pipeline/tasks/runCreateMx.R") # dependencies sourced here
+source("~/LabKeyModules/HIPCMatrix/pipeline/tasks/makeAllMxVarsDf.R")
+source("~/LabKeyModules/HIPCMatrix/pipeline/tasks/runCreateMx.R") # dependencies sourced here
 
 runMxFromCL <- function(studies = NULL, onTest = TRUE){
 
