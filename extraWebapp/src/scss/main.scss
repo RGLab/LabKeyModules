@@ -33,7 +33,7 @@ Tags:
 
 /* Import ImmuneSpace Themes */
 @use "~@immunespace/theme/dist/immunespace";
-@use "~@immunespace/theme/dist/settings.fonts" as fonts;
-@use "~@immunespace/theme/dist/settings.mixins" as mixins;
-@use "~@immunespace/theme/dist/settings.typography" as typography;
-@use "~@immunespace/theme/dist/settings.responsive" as responsive;
+@use "~@immunespace/theme/dist/immunespace.fonts" as fonts;
+@use "~@immunespace/theme/dist/immunespace.mixins" as mixins;
+@use "~@immunespace/theme/dist/immunespace.typography" as typography;
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;

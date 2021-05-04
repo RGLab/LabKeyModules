@@ -1,5 +1,5 @@
 @use "~@immunespace/theme/dist/immunespace";
-@use "~@immunespace/theme/dist/settings.responsive" as responsive;
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
 
 body {
   color: immunespace.$blue;
