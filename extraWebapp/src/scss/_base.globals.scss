@@ -1,11 +1,13 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/settings.responsive" as responsive;
 
 body {
-  color: $blue;
-  font-family: $nunito-sans;
+  color: immunespace.$blue;
+  font-family: immunespace.$nunito-sans;
   font-weight: 400;
   margin: 0;
   padding: 0;
-  background: $white;
+  background: immunespace.$white;
 }
 
 html {
@@ -30,8 +32,13 @@ ul {
   list-style: none;
 }
 
-h1, h2, h3, h4, h5, p {
-  font-family: $nunito-sans;
+h1,
+h2,
+h3,
+h4,
+h5,
+p {
+  font-family: immunespace.$nunito-sans;
 }
 
 .container {
@@ -40,23 +47,23 @@ h1, h2, h3, h4, h5, p {
   margin: 0 auto;
   width: 100%;
 
-  @include media-query(tab) {
+  @include responsive.media-query(tab) {
     // padding: 0 .5rem;
   }
 
-  @include media-query(desk) {
+  @include responsive.media-query(desk) {
     padding: 0;
   }
 }
 
 .h-o-d {
-  @include media-query(desk){
+  @include responsive.media-query(desk) {
     display: none;
   }
 }
 
 .h-o-m {
-  @include media-query(mobile) {
+  @include responsive.media-query(mobile) {
     display: none;
   }
 }
@@ -68,7 +75,6 @@ h1, h2, h3, h4, h5, p {
 .is-hidden {
   display: none !important;
 }
-
 
 /** --- Bobber --------- */
 @keyframes bobberLtr {

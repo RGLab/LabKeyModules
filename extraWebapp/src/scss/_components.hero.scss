@@ -1,23 +1,26 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/settings.responsive" as responsive;
+@use "./settings.variables" as variables;
+
 .hero {
   // background: url(../assets/hero-background-v02-desk.svg) no-repeat 50%/cover;
-  background-color: $hero-background;
+  background-color: variables.$hero-background;
   background-image: url(../assets/hero-background-mobile.svg);
   background-repeat: no-repeat;
   background-position: top right;
   background-size: contain;
 
-  @include media-query(tab){
+  @include responsive.media-query(tab) {
     background-image: url(../assets/hero-background-v03-desk.svg);
     background-size: 70%;
   }
 
-  @include media-query(lg){
+  @include responsive.media-query(lg) {
     background-size: 65%;
   }
 
-  @include media-query(desk){
+  @include responsive.media-query(desk) {
     background-size: 60%;
-
   }
 
   .container {
@@ -38,7 +41,7 @@
     width: 100%;
     max-width: 100%;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       padding: 0;
       max-width: 635px;
       // justify-content: flex-start;
@@ -46,7 +49,7 @@
   }
 
   &__copy {
-    color: $white;
+    color: immunespace.$white;
 
     h1 {
       max-width: 450px;
@@ -54,29 +57,27 @@
 
     p {
       font-size: 1.25rem;
-      font-weight: $font-weight--semibold;
+      font-weight: immunespace.$font-weight--semibold;
       line-height: 26px;
       max-width: 450px;
 
-      @include media-query(tab){
+      @include responsive.media-query(tab) {
         max-width: 635px;
       }
 
-      @include media-query(desk){
-        font-weight: $font-weight--normal;
+      @include responsive.media-query(desk) {
+        font-weight: immunespace.$font-weight--normal;
       }
-
     }
 
     a {
-
     }
   }
 
   &__cta {
-    color: $white;
+    color: immunespace.$white;
     display: block;
-    font-weight: $font-weight--black;
+    font-weight: immunespace.$font-weight--black;
     margin: 1rem 0;
     position: relative;
 
@@ -84,20 +85,19 @@
       width: 32px;
       height: 15px;
       display: block;
-      fill: $blue;
+      fill: immunespace.$blue;
       position: absolute;
       left: 190px;
       bottom: 2px;
     }
 
     &:hover {
-
       &__link-text {
-        color: $white;
+        color: immunespace.$white;
       }
 
       svg {
-        fill: $blue;
+        fill: immunespace.$blue;
       }
     }
   }

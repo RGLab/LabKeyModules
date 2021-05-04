@@ -1,6 +1,9 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/settings.responsive" as responsive;
+
 .header {
-  background-color: $background;
-  border-bottom: 4px solid $blue;
+  background-color: immunespace.$background;
+  border-bottom: 4px solid immunespace.$blue;
   height: 100%;
   width: 100%;
 
@@ -14,13 +17,13 @@
 
     width: 100%;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       justify-content: space-between;
       align-items: center;
       flex-direction: row;
     }
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       max-width: calc(100% - 40px);
     }
   }
@@ -35,12 +38,12 @@
     height: 100%;
     max-height: 32px;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       // height: 100%;
       // max-height: 32px;
     }
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       // height: 100%;
       max-height: 44px;
     }
@@ -53,7 +56,7 @@
     padding: 1rem 0;
     width: 100%;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       flex-direction: row;
     }
 
@@ -65,7 +68,7 @@
       list-style-type: none;
       width: 100%;
 
-      @include media-query(tab){
+      @include responsive.media-query(tab) {
         justify-content: space-between;
       }
 
@@ -83,25 +86,25 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background: $blue;
+      background: immunespace.$blue;
       border-radius: 8px;
       padding: 1rem;
       max-height: 40px;
 
       &:hover {
-        background: $dark-blue;
+        background: immunespace.$dark-blue;
         transition: all 300ms ease-in-out;
       }
 
-      @include media-query(tab){
+      @include responsive.media-query(tab) {
         max-height: 44px;
       }
     }
 
     span {
-      color: $white;
-      font-weight: $font-weight--bold;
-      letter-spacing: .5px;
+      color: immunespace.$white;
+      font-weight: immunespace.$font-weight--bold;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
     }
   }
