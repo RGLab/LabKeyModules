@@ -90,6 +90,7 @@ const AboutPage: React.FC = () => {
   >();
   const [rScriptsLoaded, setRScriptsLoaded] = React.useState(false);
 
+  // finds the value of "tab" parameter in url
   const getCurrentTabParam = (): string => {
     const params = new URL(`${document.location}`).searchParams;
     const tabName = params.get("tab");
