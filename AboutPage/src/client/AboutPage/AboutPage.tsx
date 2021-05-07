@@ -102,6 +102,13 @@ const AboutPage: React.FC = () => {
     getCurrentTabParam() ?? "About"
   );
 
+  /* 
+    When a new tab is selected, append the appropriate parameter to the end of the url
+    and updates the url. Creates new history entries that allows user to traverse tabs 
+    using the foward and back buttons. Does not refresh the page.
+
+    https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
+  */
   const changeTabParam = (newActiveTab: string) => {
     // window.history.pushState({ tab: newActiveTab }, "", `?tab=${newActiveTab}`);
     const url = new URL(`${window.location}`);
@@ -110,6 +117,8 @@ const AboutPage: React.FC = () => {
     setActiveTab(newActiveTab);
   };
 
+  // handles forward/back button clicks
+  // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
   window.onpopstate = (e) => {
     setActiveTab(getCurrentTabParam() ?? "About");
   };
@@ -251,7 +260,6 @@ const AboutPage: React.FC = () => {
     );
   }, [dataReleasesResults, setDivToShow, rSessionParsed, rScriptsLoaded]);
 
-  console.log(`render ${activeTab}`);
   return (
     <Tab.Container
       activeKey={activeTab}
