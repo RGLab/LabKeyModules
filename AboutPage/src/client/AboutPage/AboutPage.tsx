@@ -35,13 +35,7 @@ import { Cytometry } from "./Cytometry";
 import { GeneExpression } from "./GeneExpression";
 import { ImmuneResponse } from "./ImmuneResponse";
 
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  useParams,
-} from "react-router-dom";
+import { active } from "d3-transition";
 
 const fetchData = (handleResults: (any) => void) => {
   let mappedData;
@@ -91,11 +85,34 @@ const AboutPage: React.FC = () => {
   const [rSessionResults, setRSessionResults] = React.useState<string>(
     "Loading R Session Info ..."
   );
-  const [
-    rSessionParsed,
-    setRSessionParsed,
-  ] = React.useState<DocumentFragment>();
+  const [rSessionParsed, setRSessionParsed] = React.useState<
+    DocumentFragment
+  >();
   const [rScriptsLoaded, setRScriptsLoaded] = React.useState(false);
+
+  const getCurrentTabParam = (): string => {
+    const params = new URL(`${document.location}`).searchParams;
+    const tabName = params.get("tab");
+    return tabName;
+  };
+
+  const defaultAciveTab = getCurrentTabParam() ?? "About";
+
+  const [activeTab, setActiveTab] = React.useState(
+    getCurrentTabParam() ?? "About"
+  );
+
+  const changeTabParam = (newActiveTab: string) => {
+    // window.history.pushState({ tab: newActiveTab }, "", `?tab=${newActiveTab}`);
+    const url = new URL(`${window.location}`);
+    url.searchParams.set("tab", newActiveTab);
+    window.history.pushState({}, "", `${url}`);
+    setActiveTab(newActiveTab);
+  };
+
+  window.onpopstate = (e) => {
+    setActiveTab(getCurrentTabParam() ?? "About");
+  };
 
   // Only declare this on the first render
   const cnfReport = React.useMemo(
@@ -133,6 +150,9 @@ const AboutPage: React.FC = () => {
   React.useEffect(() => {
     fetchData(setDataReleasesResults);
     LABKEY.Report.execute(cnfReport);
+
+    // append the ?tab parameter to the url on page load
+    changeTabParam(defaultAciveTab);
   }, []);
 
   // Want to load scripts from Rmd output once and in order they have been delivered to avoid rendering issues,
@@ -160,8 +180,6 @@ const AboutPage: React.FC = () => {
     return eventKey;
   }, []);
 
-  const testClick = (e) => {};
-
   const getNavbar = React.useCallback(() => {
     const items = tabInfo.map((tab, index) => {
       // Drop down item
@@ -183,13 +201,7 @@ const AboutPage: React.FC = () => {
 
       // Non-dropdown
       return (
-        <NavItem
-          eventKey={tab.tag}
-          id={tab.id}
-          key={tab.tag}
-          onClick={testClick}
-          href="#DataAccess"
-        >
+        <NavItem eventKey={tab.tag} id={tab.id} key={tab.tag}>
           {tab.text}
         </NavItem>
       );
@@ -239,10 +251,12 @@ const AboutPage: React.FC = () => {
     );
   }, [dataReleasesResults, setDivToShow, rSessionParsed, rScriptsLoaded]);
 
+  console.log(`render ${activeTab}`);
   return (
     <Tab.Container
-      defaultActiveKey={TAB_ABOUT}
+      activeKey={activeTab}
       generateChildId={generateChildId}
+      onSelect={(tab) => changeTabParam(`${tab}`)}
     >
       <div>
         {getNavbar()}
