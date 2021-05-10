@@ -852,7 +852,7 @@ runCreateMx <- function(labkey.url.base,
   }
 
   # Allow for work on server or local
-  LKModules <- "~/LabKeyModules"
+  LKModules <- "/labkey/git/LabKeyModules"
 
   file.copy(from = file.path(LKModules, "HIPCMatrix/pipeline/tasks/create-matrix.R"),
             to = paste0(analysis.directory, "/", output.tsv, "-create-matrix-snapshot.R"))

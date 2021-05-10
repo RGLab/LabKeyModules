@@ -330,10 +330,10 @@ runCreateGS <- function(labkeyUrlBase,
     ## COPY-OVER-SCRIPT-FILES------------------------------------------------------------------------------------------
     # only overwrite if onCl = T
     # otherwise no file should be present
-    file.copy(from = "~/LabKeyModules/HIPCCyto/pipeline/tasks/create-gatingset.R",
+    file.copy(from = "/labkey/git/LabKeyModules/HIPCCyto/pipeline/tasks/create-gatingset.R",
               to = paste0(analysisDirectory, "/create-gatingset-snapshot.R"),
               overwrite = onCl)
-    file.copy(from = "~/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
+    file.copy(from = "/labkey/git/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R",
               to = paste0(analysisDirectory, "/runGS-snapshot.R"),
               overwrite = onCl)
 

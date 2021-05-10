@@ -27,7 +27,7 @@ library(Rlabkey)
 co <- labkey.setCurlOptions(sslversion = 1)
 library(formatR)
 
-scriptPath <- "~/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
+scriptPath <- "/labkey/git/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
 source(file.path(scriptPath,"helperFunctions.r"))
 knit_hooks$set(htmlcap = function(before, options, envir) {
     if(!before) {

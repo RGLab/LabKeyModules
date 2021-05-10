@@ -2,7 +2,7 @@
 # From the /share/files/Studies/<SDY>/@files/rawdata/gene_expression/create-matrix/<Run> dir
 
 # To load libraries
-source("~/LabKeyModules/HIPCMatrix/pipeline/tasks/runCreateMx.R")
+source("/labkey/git/LabKeyModules/HIPCMatrix/pipeline/tasks/runCreateMx.R")
 
 # Get vars from table written out at time
 varDf <- read.table("create-matrix-vars.tsv",
