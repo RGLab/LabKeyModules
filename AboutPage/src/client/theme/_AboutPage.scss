@@ -1,5 +1,38 @@
 // You can include here any css that will be shared between webparts
 
+@use "~@immunespace/theme/dist/immunespace";
+
 .navbar .container {
   margin-left: 0px;
+}
+
+div#about-page {
+  ul.nav.navbar-nav {
+    float: none;
+    li {
+      text-align: center;
+      a {
+        color: immunespace.$dark-gray;
+        font-weight: immunespace.$font-weight--black;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+.nav-menu-indicator-container {
+  height: 0.25rem;
+  width: 100%;
+}
+
+.nav-menu-indicator {
+  content: "";
+  display: block;
+  margin: 0;
+  border: none;
+  transition: 0.3s;
+  background: immunespace.$dark-gray;
+  width: 130px;
+  height: 0.25rem;
+  transition: 0.3s ease-in-out;
 }
