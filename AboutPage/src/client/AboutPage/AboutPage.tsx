@@ -96,21 +96,25 @@ const AboutPage: React.FC = () => {
     return tabName;
   };
 
-  const defaultAciveTab = getCurrentTabParam() ?? "About";
+  /*  ----------------
+       Navigation
+------------------ */
 
+  const defaultAciveTab = getCurrentTabParam() ?? "About";
   const [activeTab, setActiveTab] = React.useState(
     getCurrentTabParam() ?? "About"
   );
 
+  // The indicator is the moving bar underneath the nav bar
   const [indicatorMargin, setIndicatorMargin] = React.useState("0");
-
   const [indicatorWidth, setIndicatorWidth] = React.useState("68px");
 
-  const updateIndicator = (newActiveTab: string) => {
+  // Resizes and moves the indicator under the correct tab
+  const updateIndicator = (tabName: string) => {
     const tabQuery =
-      newActiveTab === "data-processing"
+      tabName === "data-processing"
         ? "div#about-page ul.nav.navbar-nav li.dropdown a"
-        : `div#about-page ul.nav.navbar-nav li a#${newActiveTab}`;
+        : `div#about-page ul.nav.navbar-nav li a#${tabName}`;
     const navBarLeftSideSpace = document
       .querySelector(".nav.navbar-nav")
       .getBoundingClientRect().left;
@@ -122,6 +126,7 @@ const AboutPage: React.FC = () => {
     const tabLeftSideSpace = document
       .querySelector(tabQuery)
       .getBoundingClientRect().left;
+
     setIndicatorMargin(`${tabLeftSideSpace - navBarLeftSideSpace}px`);
   };
 
@@ -307,7 +312,7 @@ const AboutPage: React.FC = () => {
   }, [dataReleasesResults, setDivToShow, rSessionParsed, rScriptsLoaded]);
 
   return (
-    <Tab.Container
+    <TabContainer
       activeKey={activeTab}
       generateChildId={generateChildId}
       onSelect={(tab) => changeTabParam(`${tab}`)}
@@ -316,7 +321,7 @@ const AboutPage: React.FC = () => {
         {getNavbar()}
         {getTabContent()}
       </div>
-    </Tab.Container>
+    </TabContainer>
   );
 };
 
