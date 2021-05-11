@@ -15,7 +15,7 @@ interface QueryInfo {
 const analyzedResults = [
     {schema: "study", query: "fcs_analyzed_result", label: "Flow cytometry analyzed results"},
     {schema: "gene_expression", query: "DGEA_filteredGEAR", label: "Differential gene expression analysis results"}
-]; 
+];
 
 const demographicsQuery = {schema: "study", query: "demographics", label: "Demographics"}
 
@@ -66,7 +66,7 @@ export const DataAccess: React.FC = () => {
                     label: "Demographics",
                     action: () => setSelectedQuery({ schema: "study", query: "demographics", label: "Demographics" })
                 },
-                { 
+                {
                     label: '-'
                 },
                 ...datasets.map((queryInfo) => ({
@@ -77,15 +77,15 @@ export const DataAccess: React.FC = () => {
             setButtonData(bd)
         })
     }, [])
-    
+
 
     React.useEffect(() => {
             new LABKEY.QueryWebPart({
                 renderTo: "data-access-grid",
-                title: selectedQuery.label, 
+                title: selectedQuery.label,
                 schemaName: selectedQuery.schema,
                 queryName: selectedQuery.query,
-                showRstudioButton: true, 
+                showRStudioButton: true,
                 showSurroundingBorder: false,
                 frame: "none",
                 success: () => setWebpartReady(true)
