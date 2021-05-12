@@ -85,9 +85,8 @@ const AboutPage: React.FC = () => {
   const [rSessionResults, setRSessionResults] = React.useState<string>(
     "Loading R Session Info ..."
   );
-  const [rSessionParsed, setRSessionParsed] = React.useState<
-    DocumentFragment
-  >();
+  const [rSessionParsed, setRSessionParsed] =
+    React.useState<DocumentFragment>();
   const [rScriptsLoaded, setRScriptsLoaded] = React.useState(false);
 
   // finds the value of "tab" parameter in url
@@ -97,11 +96,47 @@ const AboutPage: React.FC = () => {
     return tabName;
   };
 
-  const defaultAciveTab = getCurrentTabParam() ?? "About";
+  /*  ----------------
+       Navigation
+------------------ */
 
+  const defaultAciveTab = getCurrentTabParam() ?? "About";
   const [activeTab, setActiveTab] = React.useState(
     getCurrentTabParam() ?? "About"
   );
+
+  // The indicator is the moving bar underneath the nav bar
+  const [indicatorMargin, setIndicatorMargin] = React.useState("0");
+  const [indicatorWidth, setIndicatorWidth] = React.useState("68px");
+
+  // Resizes and moves the indicator under the correct tab
+  const updateIndicator = (tabName: string) => {
+    const tabQuery =
+      tabName === "data-processing"
+        ? "div#about-page ul.nav.navbar-nav li.dropdown a"
+        : `div#about-page ul.nav.navbar-nav li a#${tabName}`;
+    const navBarLeftSideSpace = document
+      .querySelector(".nav.navbar-nav")
+      .getBoundingClientRect().left;
+
+    setIndicatorWidth(
+      `${(document.querySelector(tabQuery) as HTMLElement).offsetWidth}px`
+    );
+
+    const tabLeftSideSpace = document
+      .querySelector(tabQuery)
+      .getBoundingClientRect().left;
+
+    setIndicatorMargin(`${tabLeftSideSpace - navBarLeftSideSpace}px`);
+  };
+
+  const nonNavTabNames = [
+    TAB_ABOUT,
+    TAB_DATASTANDARDS,
+    TAB_DATARELEASES,
+    TAB_SOFTWAREUPDATES,
+    TAB_RSESSIONINFO,
+  ];
 
   /* 
     When a new tab is selected, append the appropriate parameter to the end of the url
@@ -111,11 +146,15 @@ const AboutPage: React.FC = () => {
     https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
   */
   const changeTabParam = (newActiveTab: string) => {
-    // window.history.pushState({ tab: newActiveTab }, "", `?tab=${newActiveTab}`);
     const url = new URL(`${window.location}`);
     url.searchParams.set("tab", newActiveTab);
     window.history.pushState({}, "", `${url}`);
     setActiveTab(newActiveTab);
+
+    // Only move the indicator if clicking on a non dropdown
+    if (nonNavTabNames.includes(newActiveTab)) {
+      updateIndicator(newActiveTab);
+    }
   };
 
   // handles forward/back button clicks
@@ -201,15 +240,20 @@ const AboutPage: React.FC = () => {
             </MenuItem>
           );
         });
-
         return (
-          <NavDropdown title={tab.text} id={tab.id} key={tab.tag}>
+          <NavDropdown
+            title={tab.text}
+            id={tab.id}
+            key={tab.tag}
+            onClick={(e) => updateIndicator(`${tab.id}`)} // Moves the indicator when clicking on the dropdown button, but not when clicking on the dropdown options
+          >
             {menuItems}
           </NavDropdown>
         );
       }
 
       // Non-dropdown
+
       return (
         <NavItem eventKey={tab.tag} id={tab.id} key={tab.tag}>
           {tab.text}
@@ -220,9 +264,15 @@ const AboutPage: React.FC = () => {
     return (
       <Navbar>
         <Nav style={{ marginLeft: "0" }}>{items}</Nav>
+        <div className="nav-menu-indicator-container">
+          <span
+            className="nav-menu-indicator"
+            style={{ marginLeft: indicatorMargin, width: indicatorWidth }}
+          ></span>
+        </div>
       </Navbar>
     );
-  }, []);
+  }, [indicatorMargin, indicatorWidth]);
 
   const getTabContent = React.useCallback(() => {
     return (
@@ -262,7 +312,7 @@ const AboutPage: React.FC = () => {
   }, [dataReleasesResults, setDivToShow, rSessionParsed, rScriptsLoaded]);
 
   return (
-    <Tab.Container
+    <TabContainer
       activeKey={activeTab}
       generateChildId={generateChildId}
       onSelect={(tab) => changeTabParam(`${tab}`)}
@@ -271,7 +321,7 @@ const AboutPage: React.FC = () => {
         {getNavbar()}
         {getTabContent()}
       </div>
-    </Tab.Container>
+    </TabContainer>
   );
 };
 
