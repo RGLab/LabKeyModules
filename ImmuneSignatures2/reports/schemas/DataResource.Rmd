@@ -28,6 +28,7 @@ of infections and vaccinations studied. We hereby present the Immune Signatures 
 compendium of standardized systems vaccinology datasets to allow comparative analysis 
 predicting the response across multiple vaccine types and pathogens. 
 
+<img src="/ImmuneSignatures2/images/HIPCFigure-small.png" class="center" style="width:500px;"></img>
 
 ## Reproduction of analysis and figures from Data Resource Manuscript _(WIP)_
 

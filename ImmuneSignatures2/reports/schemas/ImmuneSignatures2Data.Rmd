@@ -29,7 +29,8 @@ files = c(
   extendedOld_noNorm_eset.rds = "Subjects age 50-90, log2-normalized expression",
   extendedOld_noNorm_withResponse_eset.rds = "Subjects age 50-90 with immune response data, log2-normalized coutns",
   extendedOld_norm_batchCorrectedFromYoung_eset.rds = "Subjects age 50-90, log2-normalized counts",
-  extendedOld_norm_batchCorrectedFromYoung_withResponse_eset.rds = "Subjects age 50-90 with immune response data, cross-study normalized and batch corrected using correction coefficients from young"
+  extendedOld_norm_batchCorrectedFromYoung_withResponse_eset.rds = "Subjects age 50-90 with immune response data, cross-study normalized and batch corrected using correction coefficients from young",
+  all_immdata_with_response.rds = "Immune response data for all subjects where available"
 )
 filedf <- data.frame(File = as.character(getFileLink(names(files))), Description = as.character(files))
 
