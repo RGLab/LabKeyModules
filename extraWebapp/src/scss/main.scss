@@ -15,22 +15,25 @@ Tags:
  * Import npm dependencies
  *
  */
-@import "~lity/dist/lity.css";
-@import "~animate.css/source/animate.css";
+
+// @use "~lity/dist/lity.css";
+// @use "~animate.css/source/animate.css";
 
 /** Import theme styles */
-@import "./base.normalize";
-@import "./settings.fonts";
-@import "./settings.variables";
-@import "./settings.responsive";
-// @import "./typography";
-@import "./settings.typography";
-@import "./base.globals";
-@import "./components.buttons";
-@import "./components.header";
-@import "./components.hero";
-@import "./components.tri-block";
-@import "./components.video-block";
-@import "./components.history-block";
-@import "./components.register-modal"; //src\scss\_components.register-modal.scss
-@import "./components.footer";
+@use "./base.normalize" as normalize;
+@use "./base.globals" as globals;
+@use "./components.buttons" as buttons;
+@use "./components.header" as headers;
+@use "./components.hero" as hero;
+@use "./components.tri-block" as tri-block;
+@use "./components.video-block" as video-block;
+@use "./components.history-block" as hisotry-block;
+@use "./components.register-modal" as register-modal;
+@use "./components.footer" as footer;
+
+/* Import ImmuneSpace Themes */
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.fonts" as fonts;
+@use "~@immunespace/theme/dist/immunespace.mixins" as mixins;
+@use "~@immunespace/theme/dist/immunespace.typography" as typography;
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;

@@ -1,5 +1,8 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
+
 .video-block {
-  background-color: $white;
+  background-color: immunespace.$white;
 
   .container {
     display: flex;
@@ -17,20 +20,20 @@
     flex-direction: column;
     padding: 1.25rem 0;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       flex-direction: row;
       // padding: 1.25rem 0;
       width: 100%;
     }
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       padding: 2.5rem 0;
     }
   }
 
   &__responsive-video {
     // display: block;
-    position:relative;
+    position: relative;
     padding-bottom: 46.5%;
     padding-top: 30px;
     height: 0;
@@ -46,20 +49,22 @@
     // min-width: 560px;
     // max-width: 560px;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       padding-bottom: 33%;
       max-width: 60%;
     }
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       padding-bottom: 30.5%;
       max-width: 65%;
     }
 
-    iframe, embed, object {
+    iframe,
+    embed,
+    object {
       position: absolute;
-      left:0;
-      top:0;
+      left: 0;
+      top: 0;
       width: 100%;
       max-width: 560px;
       height: 100%;
@@ -76,28 +81,28 @@
   }
 
   &__youtube {
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       margin-left: -12px;
     }
   }
 
   &__title {
     font-size: 1.5rem;
-    font-weight: $font-weight--normal;
+    font-weight: immunespace.$font-weight--normal;
     line-height: 32px;
   }
 
   &__copy {
-    color: $background;
+    color: immunespace.$background;
     width: 100%;
     max-width: 100%;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       padding-left: 1.5rem;
       max-width: 40%;
     }
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       // padding-left: 2.5rem;
       max-width: 35%;
     }
@@ -108,10 +113,10 @@
   }
 
   &__cta {
-    color: $background;
+    color: immunespace.$background;
     display: block;
     font-size: 0.875rem;
-    font-weight: $font-weight--bold;
+    font-weight: immunespace.$font-weight--bold;
     line-height: 19px;
     position: relative;
 
@@ -123,7 +128,7 @@
         background: url("../assets/icons/icon-arrow-right-blue.svg") no-repeat;
         width: 34px;
         height: 19px;
-        fill: $blue;
+        fill: immunespace.$blue;
         position: absolute;
         right: -50px;
         bottom: 0;
@@ -131,9 +136,7 @@
     }
 
     &:hover {
-
       span {
-
         &::after {
           animation-direction: alternate;
           animation-duration: 600ms;
