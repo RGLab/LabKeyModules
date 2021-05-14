@@ -7,14 +7,14 @@
 }
 
 .navbar.navbar-default {
-  background-color: immunespace.$white;
+  //background-color: immunespace.$white;
   border: none;
 }
 
 div#about-page {
   ul.nav.navbar-nav {
     float: none;
-    background-color: immunespace.$white;
+    //background-color: immunespace.$white;
     li {
       text-align: center;
       a {
@@ -28,7 +28,7 @@ div#about-page {
     .open {
       a {
         color: immunespace.$dark-gray;
-        background-color: immunespace.$white;
+        //background-color: immunespace.$white;
       }
     }
   }
