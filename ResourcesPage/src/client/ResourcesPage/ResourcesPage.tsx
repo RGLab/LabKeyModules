@@ -93,7 +93,7 @@ const ResourcesPage: React.FC = () => {
 
   // handles forward/back button clicks
   // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
-  window.onpopstate = (event) => {
+  window.onpopstate = (event: PopStateEvent) => {
     setActiveTab(event.state.tab ?? TAB_REPORTS);
   };
 

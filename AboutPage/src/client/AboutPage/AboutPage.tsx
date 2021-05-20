@@ -110,10 +110,13 @@ const AboutPage: React.FC = () => {
 
   // Resizes and moves the indicator under the correct tab
   const updateIndicator = (tabName: string) => {
+    // find the actual clickable tab element on the page
     const tabQuery =
       tabName === "data-processing"
         ? "div#about-page ul.nav.navbar-nav li.dropdown a"
         : `div#about-page ul.nav.navbar-nav li a#${tabName}`;
+
+    // calculate the spacing between the left side of screen and left side of navbar
     const navBarLeftSideSpace = document
       .querySelector(".nav.navbar-nav")
       .getBoundingClientRect().left;
@@ -122,6 +125,8 @@ const AboutPage: React.FC = () => {
       `${(document.querySelector(tabQuery) as HTMLElement).offsetWidth}px`
     );
 
+    // calculate the spacing between the left side of the screen and
+    // left side of selected tab element
     const tabLeftSideSpace = document
       .querySelector(tabQuery)
       .getBoundingClientRect().left;
@@ -158,7 +163,7 @@ const AboutPage: React.FC = () => {
 
   // handles forward/back button clicks
   // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
-  window.onpopstate = (event) => {
+  window.onpopstate = (event: PopStateEvent) => {
     const currentTab = event.state.tab;
     setActiveTab(currentTab ?? "About");
 
