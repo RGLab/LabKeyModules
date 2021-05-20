@@ -89,16 +89,15 @@ const AboutPage: React.FC = () => {
     React.useState<DocumentFragment>();
   const [rScriptsLoaded, setRScriptsLoaded] = React.useState(false);
 
+  /*  ----------------
+       Linkable Tabs
+    ------------------ */
   // finds the value of "tab" parameter in url
   const getCurrentTabParam = (): string => {
     const params = new URL(`${document.location}`).searchParams;
     const tabName = params.get("tab");
     return tabName;
   };
-
-  /*  ----------------
-       Navigation
------------------- */
 
   const defaultAciveTab = getCurrentTabParam() ?? "About";
   const [activeTab, setActiveTab] = React.useState(
@@ -148,7 +147,7 @@ const AboutPage: React.FC = () => {
   const changeTabParam = (newActiveTab: string) => {
     const url = new URL(`${window.location}`);
     url.searchParams.set("tab", newActiveTab);
-    window.history.pushState({}, "", `${url}`);
+    window.history.pushState({ tab: newActiveTab }, "", `${url}`);
     setActiveTab(newActiveTab);
 
     // Only move the indicator if clicking on a non dropdown
@@ -159,8 +158,16 @@ const AboutPage: React.FC = () => {
 
   // handles forward/back button clicks
   // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
-  window.onpopstate = (e) => {
-    setActiveTab(getCurrentTabParam() ?? "About");
+  window.onpopstate = (event) => {
+    const currentTab = event.state.tab;
+    setActiveTab(currentTab ?? "About");
+
+    // Only move the indicator if clicking on a non dropdown
+    if (nonNavTabNames.includes(currentTab)) {
+      updateIndicator(currentTab);
+    } else {
+      updateIndicator("data-processing");
+    }
   };
 
   // Only declare this on the first render

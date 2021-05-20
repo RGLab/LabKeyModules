@@ -59,6 +59,10 @@ const ResourcesPage: React.FC = () => {
   const labkeyBaseUrl = LABKEY.ActionURL.getBaseURL();
   const apiBase = labkeyBaseUrl + "_proxy/plumber/";
 
+  /*  ----------------
+      Linkable Tabs
+    ------------------ */
+
   // finds the value of "tab" parameter in url
   const getCurrentTabParam = (): string => {
     const params = new URL(`${document.location}`).searchParams;
@@ -83,14 +87,14 @@ const ResourcesPage: React.FC = () => {
     // window.history.pushState({ tab: newActiveTab }, "", `?tab=${newActiveTab}`);
     const url = new URL(`${window.location}`);
     url.searchParams.set("tab", newActiveTab);
-    window.history.pushState({}, "", `${url}`);
+    window.history.pushState({ tab: newActiveTab }, "", `${url}`);
     setActiveTab(newActiveTab);
   };
 
   // handles forward/back button clicks
   // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
-  window.onpopstate = (e) => {
-    setActiveTab(getCurrentTabParam() ?? TAB_REPORTS);
+  window.onpopstate = (event) => {
+    setActiveTab(event.state.tab ?? TAB_REPORTS);
   };
 
   React.useEffect(() => {
