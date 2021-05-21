@@ -99,7 +99,6 @@ const AboutPage: React.FC = () => {
     return tabName;
   };
 
-  const defaultAciveTab = getCurrentTabParam() ?? "About";
   const [activeTab, setActiveTab] = React.useState(
     getCurrentTabParam() ?? "About"
   );
@@ -154,7 +153,6 @@ const AboutPage: React.FC = () => {
     url.searchParams.set("tab", newActiveTab);
     window.history.pushState({ tab: newActiveTab }, "", `${url}`);
     setActiveTab(newActiveTab);
-
     // Only move the indicator if clicking on a non dropdown
     if (nonNavTabNames.includes(newActiveTab)) {
       updateIndicator(newActiveTab);
@@ -213,7 +211,7 @@ const AboutPage: React.FC = () => {
     LABKEY.Report.execute(cnfReport);
 
     // append the ?tab parameter to the url on page load
-    changeTabParam(defaultAciveTab);
+    changeTabParam(activeTab);
   }, []);
 
   // Want to load scripts from Rmd output once and in order they have been delivered to avoid rendering issues,
@@ -323,6 +321,7 @@ const AboutPage: React.FC = () => {
     );
   }, [dataReleasesResults, setDivToShow, rSessionParsed, rScriptsLoaded]);
 
+  console.log("render");
   return (
     <TabContainer
       activeKey={activeTab}

@@ -98,7 +98,7 @@ const ResourcesPage: React.FC = () => {
   };
 
   React.useEffect(() => {
-    changeTabParam(defaultAciveTab);
+    changeTabParam(activeTab);
   }, []);
 
   /*  ----------------
