@@ -166,7 +166,7 @@ const App = () => {
                   ImmuneSpace
                 </p>
                 <a
-                  href="/project/home/begin.view?"
+                  href="/project/home/begin.view?tab=About"
                   className="history-block__cta"
                   title="About Us link"
                 >

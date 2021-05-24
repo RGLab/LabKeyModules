@@ -162,16 +162,32 @@ const AboutPage: React.FC = () => {
   // handles forward/back button clicks
   // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
   window.onpopstate = (event: PopStateEvent) => {
-    const currentTab = event.state.tab;
-    setActiveTab(currentTab ?? "About");
+    // if the back button takes the user out of About Page, do not update tabs and indicators
+    if (
+      event.state !== null &&
+      ["data-processing", ...nonNavTabNames].includes(event.state.tab)
+    ) {
+      const currentTab = event.state.tab;
+      setActiveTab(currentTab);
 
-    // Only move the indicator if clicking on a non dropdown
-    if (nonNavTabNames.includes(currentTab)) {
-      updateIndicator(currentTab);
-    } else {
-      updateIndicator("data-processing");
+      // Only move the indicator if clicking on a non dropdown
+      if (nonNavTabNames.includes(currentTab)) {
+        updateIndicator(currentTab);
+      } else {
+        updateIndicator("data-processing");
+      }
     }
   };
+
+  // append the ?tab parameter to the url on page load
+  React.useEffect(() => {
+    const defaultActiveTab = getCurrentTabParam() ?? "About";
+    const url = new URL(`${window.location}`);
+    url.searchParams.set("tab", defaultActiveTab);
+    window.history.replaceState({ tab: defaultActiveTab }, "", `${url}`);
+  }, []);
+
+  /***** End Linkable Tabs *****/
 
   // Only declare this on the first render
   const cnfReport = React.useMemo(
@@ -209,9 +225,6 @@ const AboutPage: React.FC = () => {
   React.useEffect(() => {
     fetchData(setDataReleasesResults);
     LABKEY.Report.execute(cnfReport);
-
-    // append the ?tab parameter to the url on page load
-    changeTabParam(activeTab);
   }, []);
 
   // Want to load scripts from Rmd output once and in order they have been delivered to avoid rendering issues,
@@ -321,7 +334,6 @@ const AboutPage: React.FC = () => {
     );
   }, [dataReleasesResults, setDivToShow, rSessionParsed, rScriptsLoaded]);
 
-  console.log("render");
   return (
     <TabContainer
       activeKey={activeTab}
