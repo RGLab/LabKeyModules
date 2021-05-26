@@ -30,6 +30,7 @@ import {
   TAB_RSESSIONINFO,
   TAB_SOFTWAREUPDATES,
   tabInfo,
+  TAB_DATAPROCESSING,
 } from "./constants";
 import { Cytometry } from "./Cytometry";
 import { GeneExpression } from "./GeneExpression";
@@ -106,12 +107,21 @@ const AboutPage: React.FC = () => {
   // The indicator is the moving bar underneath the nav bar
   const [indicatorMargin, setIndicatorMargin] = React.useState("0");
   const [indicatorWidth, setIndicatorWidth] = React.useState("68px");
+  const nonDropdownTabNames = [
+    TAB_ABOUT,
+    TAB_DATASTANDARDS,
+    TAB_DATARELEASES,
+    TAB_SOFTWAREUPDATES,
+    TAB_RSESSIONINFO,
+  ];
+
+  const dropdownTabNames = [TAB_GENEEXPRESSION];
 
   // Resizes and moves the indicator under the correct tab
   const updateIndicator = (tabName: string) => {
     // find the actual clickable tab element on the page
     const tabQuery =
-      tabName === "data-processing"
+      tabName === TAB_DATAPROCESSING
         ? "div#about-page ul.nav.navbar-nav li.dropdown a"
         : `div#about-page ul.nav.navbar-nav li a#${tabName}`;
 
@@ -133,14 +143,6 @@ const AboutPage: React.FC = () => {
     setIndicatorMargin(`${tabLeftSideSpace - navBarLeftSideSpace}px`);
   };
 
-  const nonNavTabNames = [
-    TAB_ABOUT,
-    TAB_DATASTANDARDS,
-    TAB_DATARELEASES,
-    TAB_SOFTWAREUPDATES,
-    TAB_RSESSIONINFO,
-  ];
-
   /* 
     When a new tab is selected, append the appropriate parameter to the end of the url
     and updates the url. Creates new history entries that allows user to traverse tabs 
@@ -153,9 +155,11 @@ const AboutPage: React.FC = () => {
     url.searchParams.set("tab", newActiveTab);
     window.history.pushState({ tab: newActiveTab }, "", `${url}`);
     setActiveTab(newActiveTab);
-    // Only move the indicator if clicking on a non dropdown
-    if (nonNavTabNames.includes(newActiveTab)) {
+    // Only move the indicator if clicking on a dropdown item
+    if (nonDropdownTabNames.includes(newActiveTab)) {
       updateIndicator(newActiveTab);
+    } else {
+      updateIndicator(TAB_DATAPROCESSING);
     }
   };
 
@@ -165,16 +169,16 @@ const AboutPage: React.FC = () => {
     // if the back button takes the user out of About Page, do not update tabs and indicators
     if (
       event.state !== null &&
-      ["data-processing", ...nonNavTabNames].includes(event.state.tab)
+      [...dropdownTabNames, ...nonDropdownTabNames].includes(event.state.tab)
     ) {
       const currentTab = event.state.tab;
       setActiveTab(currentTab);
 
-      // Only move the indicator if clicking on a non dropdown
-      if (nonNavTabNames.includes(currentTab)) {
+      // Only move the indicator if clicking on a dropdown item
+      if (nonDropdownTabNames.includes(currentTab)) {
         updateIndicator(currentTab);
       } else {
-        updateIndicator("data-processing");
+        updateIndicator(TAB_DATAPROCESSING);
       }
     }
   };
@@ -185,6 +189,12 @@ const AboutPage: React.FC = () => {
     const url = new URL(`${window.location}`);
     url.searchParams.set("tab", defaultActiveTab);
     window.history.replaceState({ tab: defaultActiveTab }, "", `${url}`);
+
+    if (nonDropdownTabNames.includes(defaultActiveTab)) {
+      updateIndicator(defaultActiveTab);
+    } else {
+      updateIndicator(TAB_DATAPROCESSING);
+    }
   }, []);
 
   /***** End Linkable Tabs *****/
@@ -264,12 +274,7 @@ const AboutPage: React.FC = () => {
           );
         });
         return (
-          <NavDropdown
-            title={tab.text}
-            id={tab.id}
-            key={tab.tag}
-            onClick={(e) => updateIndicator(`${tab.id}`)} // Moves the indicator when clicking on the dropdown button, but not when clicking on the dropdown options
-          >
+          <NavDropdown title={tab.text} id={tab.id} key={tab.tag}>
             {menuItems}
           </NavDropdown>
         );

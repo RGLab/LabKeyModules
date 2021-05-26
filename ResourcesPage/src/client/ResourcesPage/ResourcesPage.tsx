@@ -45,6 +45,7 @@ import {
   TAB_SIMILARSTUDIES,
   TAB_TOOLS,
   TAB_IMMUNESPACER,
+  TAB_STUDYSTATS,
   tabInfo,
 } from "./constants";
 import { MostAccessed } from "./MostAccessed";
@@ -62,6 +63,13 @@ const ResourcesPage: React.FC = () => {
   /*  ----------------
       Linkable Tabs
     ------------------ */
+  const nonDropdownTabNames = [TAB_REPORTS, TAB_TOOLS, TAB_IMMUNESPACER];
+
+  const dropdownTabNames = [
+    TAB_MOSTACCESSED,
+    TAB_MOSTCITED,
+    TAB_SIMILARSTUDIES,
+  ];
 
   // finds the value of "tab" parameter in url
   const getCurrentTabParam = (): string => {
@@ -69,8 +77,6 @@ const ResourcesPage: React.FC = () => {
     const tabName = params.get("tab");
     return tabName;
   };
-
-  const defaultAciveTab = getCurrentTabParam() ?? TAB_REPORTS;
 
   const [activeTab, setActiveTab] = React.useState(
     getCurrentTabParam() ?? TAB_REPORTS
@@ -84,7 +90,6 @@ const ResourcesPage: React.FC = () => {
     https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
   */
   const changeTabParam = (newActiveTab: string) => {
-    // window.history.pushState({ tab: newActiveTab }, "", `?tab=${newActiveTab}`);
     const url = new URL(`${window.location}`);
     url.searchParams.set("tab", newActiveTab);
     window.history.pushState({ tab: newActiveTab }, "", `${url}`);
@@ -94,11 +99,21 @@ const ResourcesPage: React.FC = () => {
   // handles forward/back button clicks
   // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
   window.onpopstate = (event: PopStateEvent) => {
-    setActiveTab(event.state.tab ?? TAB_REPORTS);
+    //setActiveTab(event.state.tab ?? TAB_REPORTS);
+    if (
+      event.state !== null &&
+      [...dropdownTabNames, ...nonDropdownTabNames].includes(event.state.tab)
+    ) {
+      setActiveTab(event.state.tab);
+    }
   };
 
   React.useEffect(() => {
-    changeTabParam(activeTab);
+    const defaultActiveTab = getCurrentTabParam() ?? TAB_REPORTS;
+    const url = new URL(`${window.location}`);
+    url.searchParams.set("tab", defaultActiveTab);
+    window.history.replaceState({ tab: defaultActiveTab }, "", `${url}`);
+    //changeTabParam(activeTab);
   }, []);
 
   /*  ----------------
