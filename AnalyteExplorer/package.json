@@ -10,7 +10,11 @@
     "clean": "rimraf resources/web/AnalyteExplorer/gen && rimraf resources/views",
     "test": "cross-env NODE_ENV=test jest"
   },
-  "dependencies": {},
+  "dependencies": {
+    "bootstrap": "^4.6.0",
+    "react-bootstrap": "^1.6.0",
+    "react-icons": "^4.2.0"
+  },
   "devDependencies": {
     "cross-env": "5.2.1",
     "rimraf": "3.0.2",
