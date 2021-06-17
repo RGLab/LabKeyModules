@@ -4,12 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import AEDropdown from "./components/AEDropdown";
 import SecondarySelectorSimple from "./components/SecondarySelectorSimple";
 import GetStarted from "./components/GetStarted";
-import {
-  ANALYTE_GENE,
-  ANALYTE_PGS,
-  ANALYTE_BTM,
-  analyteOptions,
-} from "./helpers/constants";
+import { ANALYTE_GENE, ANALYTE_BTM, analyteOptions } from "./helpers/constants";
 import "./AnalyteExplorer.scss";
 
 const AnalyteExplorer: React.FC = () => {
