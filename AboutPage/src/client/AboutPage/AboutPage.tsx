@@ -79,7 +79,6 @@ const fetchData = (handleResults: (any) => void) => {
 };
 
 const AboutPage: React.FC = () => {
-  const [divToShow, setDivToShow] = React.useState<string>("About");
   const [dataReleasesResults, setDataReleasesResults] = React.useState<string>(
     "Loading Data Releases"
   );
@@ -321,10 +320,7 @@ const AboutPage: React.FC = () => {
           <ImmuneResponse />
         </TabPane>
         <TabPane eventKey={TAB_DATARELEASES}>
-          <DataReleases
-            dataReleasesResults={dataReleasesResults}
-            setDivToShow={setDivToShow}
-          />
+          <DataReleases dataReleasesResults={dataReleasesResults} />
         </TabPane>
         <TabPane eventKey={TAB_SOFTWAREUPDATES}>
           <SoftwareUpdates />
@@ -337,7 +333,7 @@ const AboutPage: React.FC = () => {
         </TabPane>
       </Tab.Content>
     );
-  }, [dataReleasesResults, setDivToShow, rSessionParsed, rScriptsLoaded]);
+  }, [dataReleasesResults, rSessionParsed, rScriptsLoaded]);
 
   return (
     <TabContainer
@@ -345,7 +341,7 @@ const AboutPage: React.FC = () => {
       generateChildId={generateChildId}
       onSelect={(tab) => changeTabParam(`${tab}`)}
     >
-      <div>
+      <div id="about-page-content">
         {getNavbar()}
         {getTabContent()}
       </div>
