@@ -9,11 +9,11 @@ if [ `whoami` = 'root' ] ; then
             BUILD_TYPE=$2
             INTERACTIVE=no
         elif [ `hostname | head -c10` = 'ImmuneTest' ] ; then
-            LK_MODULES_PATH=/home/immunespace/
+            LK_MODULES_PATH=/labkey/git/
             BUILD_TYPE=dev
             INTERACTIVE=yes
         elif [ `hostname | head -c10` = 'ImmuneProd' ] ; then
-            LK_MODULES_PATH=/home/immunespace/
+            LK_MODULES_PATH=/labkey/git/
             BUILD_TYPE=main
             INTERACTIVE=yes
         else

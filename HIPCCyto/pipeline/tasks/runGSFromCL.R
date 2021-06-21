@@ -1,6 +1,6 @@
 # Main CL script
-source("~/LabKeyModules/HIPCCyto/pipeline/tasks/makeAllWsVarsDf.R")
-source("~/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R") # dependencies sourced here
+source("/labkey/git/LabKeyModules/HIPCCyto/pipeline/tasks/makeAllWsVarsDf.R")
+source("/labkey/git/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R") # dependencies sourced here
 
 runGSFromCL <- function(studies = NULL, onTest = TRUE) {
 

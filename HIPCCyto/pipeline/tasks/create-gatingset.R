@@ -7,7 +7,7 @@
 # Wrapper function, separated for sourcing when running on CL
 # running from UI.
 
-source("~/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R")
+source("/labkey/git/LabKeyModules/HIPCCyto/pipeline/tasks/runCreateGS.R")
 
 #--------------------------------
 # PARAMS & EXECUTION
