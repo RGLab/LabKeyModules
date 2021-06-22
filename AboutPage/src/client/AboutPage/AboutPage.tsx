@@ -11,7 +11,7 @@ import {SoftwareUpdates} from "./SoftwareUpdates";
 import {RSessionInfo} from "./RSessionInfo";
 import {ScriptLoader} from "./ScriptLoader";
 import {MenuItem, Nav, Navbar, NavDropdown, NavItem, Tab, TabPane} from "react-bootstrap";
-import {
+import { 
     TAB_ABOUT,
     TAB_CYTOMETRY,
     TAB_DATARELEASES,
@@ -19,7 +19,7 @@ import {
     TAB_GENEEXPRESSION,
     TAB_IMMUNERESPONSE,
     TAB_RSESSIONINFO,
-    TAB_SOFTWAREUPDATES,
+    TAB_SOFTWAREUPDATES,  
     tabInfo
 } from "./constants";
 import {Cytometry} from "./Cytometry";

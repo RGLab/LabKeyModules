@@ -1,4 +1,3 @@
-
 export const TAB_ABOUT = "About";
 export const TAB_DATASTANDARDS = "DataStandards";
 export const TAB_DATAPROCESSING = "DataProcessing";
