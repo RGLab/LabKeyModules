@@ -19,12 +19,12 @@
   },
   "plugins": ["react", "@typescript-eslint"],
   "rules": {
-    "prettier/prettier": [
-      "error",
-      {
-        "usePrettierrc": true
-      }
-    ],
+    // "prettier/prettier": [
+    //   "error",
+    //   {
+    //     "usePrettierrc": true
+    //   }
+    // ],
     "jsx-quotes": ["error", "prefer-double"],
     "quotes": ["error", "double"]
   },
