@@ -1,15 +1,6 @@
-suppressPackageStartupMessages(library(Rlabkey))
-suppressPackageStartupMessages(library(UpdateAnno))
-suppressPackageStartupMessages(library(data.table))
-suppressPackageStartupMessages(library(ImmuneSpaceR))
-suppressPackageStartupMessages(library(Biobase))
+library(AnalyteExplorer)
 
-source("utils.R")
-source("blood_transcript_modules.R")
-source("gene_signatures.R")
-source("gene_expression.R")
-
-${rLabkeySessionId}
+rLabkeySessionId <- "${rLabkeySessionId}"
 data_name <- labkey.url.params$data_name
 
 data <- process_data(data_name)

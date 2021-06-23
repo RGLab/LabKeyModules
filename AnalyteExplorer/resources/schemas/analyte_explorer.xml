@@ -1,5 +1,5 @@
 <tables xmlns="http://labkey.org/data/xml">
-  <table tableName="blood_transcript_modules" tableDbType="TABLE">
+  <table tableName="blood_transcription_modules" tableDbType="TABLE">
     <tableUrl></tableUrl>
   </table>
 

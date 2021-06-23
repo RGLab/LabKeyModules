@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ReportDescriptor descriptorType="rReportDescriptor" reportName="preprocess" xmlns="http://labkey.org/query/xml">
     <Properties>
-        <Prop name="includedReports">module:AnalyteExplorer/reports/schemas/utils.R</Prop>
-        <Prop name="includedReports">module:AnalyteExplorer/reports/schemas/blood_transcript_modules.R</Prop>
-        <Prop name="includedReports">module:AnalyteExplorer/reports/schemas/gene_signatures.R</Prop>
-        <Prop name="includedReports">module:AnalyteExplorer/reports/schemas/gene_expression.R</Prop>
         <Prop name="runInBackground">true</Prop>
     </Properties>
     <tags/>

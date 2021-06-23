@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <etl xmlns="http://labkey.org/etl/xml">
-    <name>Step #1: Blood Transcript Modules Metadata</name>
-    <description>Preprocess blood transcript modules metadata</description>
+    <name>Step #1: Blood Transcription Modules Metadata</name>
+    <description>Preprocess blood transcription modules metadata</description>
     <transforms>
         <transform id="preprocess" type="TaskRefTransformStep">
             <description>preprocess</description>
             <taskref ref="org.labkey.di.pipeline.RunReportTask">
                 <settings>
                     <setting name="reportId" value="module:AnalyteExplorer/preprocess.R"/>
-                    <setting name="data_name" value="blood_transcript_modules"/>
+                    <setting name="data_name" value="blood_transcription_modules"/>
                 </settings>
             </taskref>
         </transform>
