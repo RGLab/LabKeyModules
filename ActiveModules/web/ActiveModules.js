@@ -42,6 +42,16 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                         };
 
                         var generateActiveModules = function(){
+                            var modules = [
+                                'GeneExpressionExplorer',
+                                'GeneSetEnrichmentAnalysis',
+                                'ImmuneResponsePredictor',
+                                'DimensionReduction',
+                                'DataExplorer'
+                            ]
+                            if ( ! LABKEY.ext.ISCore.isStudyFolder ){
+                                modules.pop()
+                            }
                             var filters = [
                                 LABKEY.Filter.create(
                                     'Name',
@@ -50,12 +60,7 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                                 ),
                                 LABKEY.Filter.create(
                                     'Name',
-                                    [
-                                        'GeneExpressionExplorer',
-                                        'GeneSetEnrichmentAnalysis',
-                                        'ImmuneResponsePredictor',
-                                        'DimensionReduction'
-                                    ].join(';'),
+                                    modules.join(';'),
                                     LABKEY.Filter.Types.IN
                                 )
                             ];

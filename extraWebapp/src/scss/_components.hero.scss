@@ -1,0 +1,108 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
+@use "./settings.variables" as variables;
+
+.hero {
+  // background: url(../assets/hero-background-v02-desk.svg) no-repeat 50%/cover;
+  background-color: variables.$hero-background;
+  background-image: url(../assets/hero-background-mobile.svg);
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size: contain;
+
+  @include responsive.media-query(tab) {
+    background-image: url(../assets/hero-background-v03-desk.svg);
+    background-size: 70%;
+  }
+
+  @include responsive.media-query(lg) {
+    background-size: 65%;
+  }
+
+  @include responsive.media-query(desk) {
+    background-size: 60%;
+  }
+
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    // align-content: center;
+    flex-direction: column;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.5rem 0;
+    height: 100%;
+    min-height: 450px;
+    width: 100%;
+    max-width: 100%;
+
+    @include responsive.media-query(tab) {
+      padding: 0;
+      max-width: 635px;
+      // justify-content: flex-start;
+    }
+  }
+
+  &__copy {
+    color: immunespace.$white;
+
+    h1 {
+      max-width: 450px;
+    }
+
+    p {
+      font-size: 1.25rem;
+      font-weight: immunespace.$font-weight--semibold;
+      line-height: 26px;
+      max-width: 450px;
+
+      @include responsive.media-query(tab) {
+        max-width: 635px;
+      }
+
+      @include responsive.media-query(desk) {
+        font-weight: immunespace.$font-weight--normal;
+      }
+    }
+
+    a {
+    }
+  }
+
+  &__cta {
+    color: immunespace.$white;
+    display: block;
+    font-weight: immunespace.$font-weight--black;
+    margin: 1rem 0;
+    position: relative;
+
+    svg {
+      width: 32px;
+      height: 15px;
+      display: block;
+      fill: immunespace.$blue;
+      position: absolute;
+      left: 190px;
+      bottom: 2px;
+    }
+
+    &:hover {
+      &__link-text {
+        color: immunespace.$white;
+      }
+
+      svg {
+        fill: immunespace.$blue;
+      }
+    }
+  }
+
+  &__link-text {
+    text-transform: uppercase;
+  }
+}

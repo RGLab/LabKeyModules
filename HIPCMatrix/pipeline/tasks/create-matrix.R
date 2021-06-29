@@ -7,9 +7,7 @@
 # 2. other libraries loaded in createMatrixWrapper.R
 # 3. Using full path because script is copied to study-specific directory for
 # running from UI.
-LKModules <- ifelse(dir.exists("/share/github/LabKeyModules"),
-                      "/share/github/LabKeyModules",
-                      "~/LabKeyModules")
+LKModules <- "/labkey/git/LabKeyModules"
 source(file.path(LKModules, "HIPCMatrix/pipeline/tasks/runCreateMx.R"))
 
 #--------------------------------

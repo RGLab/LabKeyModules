@@ -174,7 +174,7 @@ panel <- labkey.selectRows(labkey.url.base, "HIPC/Lyoplate","lists","Populations
 mapping <- solve_LSAP(adist(cv.ratio$Population, panel$Population))
 cv.ratio <- cbind(cv.ratio[, list(panel, ratio)], Population = panel$Population[mapping])
 path <- "/share/files/HIPC/Lyoplate/@files"
-scriptPath <- "/share/github/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
+scriptPath <- "/labkey/git/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
 source(file.path(scriptPath, "helperFunctions.r"))
 data <- data.table(labkey.selectRows(labkey.url.base, folderPath = "HIPC/Lyoplate", "study", "cell_population_statistics"))
 data <- data[, lp := car::logit(Proportion, adjust = 1e-5)]

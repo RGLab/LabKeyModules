@@ -1,0 +1,153 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
+
+.video-block {
+  background-color: immunespace.$white;
+
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  &__content {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    // align-content: center;
+    flex-direction: column;
+    padding: 1.25rem 0;
+
+    @include responsive.media-query(tab) {
+      flex-direction: row;
+      // padding: 1.25rem 0;
+      width: 100%;
+    }
+
+    @include responsive.media-query(desk) {
+      padding: 2.5rem 0;
+    }
+  }
+
+  &__responsive-video {
+    // display: block;
+    position: relative;
+    padding-bottom: 46.5%;
+    padding-top: 30px;
+    height: 0;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+
+    // Total fixed height width solution - iframe not responsive
+    // height: 100%;
+    // min-height: 315px;
+    // max-height: 315px;
+    // width: 100%;
+    // min-width: 560px;
+    // max-width: 560px;
+
+    @include responsive.media-query(tab) {
+      padding-bottom: 33%;
+      max-width: 60%;
+    }
+
+    @include responsive.media-query(desk) {
+      padding-bottom: 30.5%;
+      max-width: 65%;
+    }
+
+    iframe,
+    embed,
+    object {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      max-width: 560px;
+      height: 100%;
+      max-height: 315px;
+
+      // Total fixed height width solution - iframe not responsive
+      // height: 100%;
+      // min-height: 315px;
+      // max-height: 315px;
+      // width: 100%;
+      // min-width: 560px;
+      // max-width: 560px;
+    }
+  }
+
+  &__youtube {
+    @include responsive.media-query(tab) {
+      margin-left: -12px;
+    }
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: immunespace.$font-weight--normal;
+    line-height: 32px;
+  }
+
+  &__copy {
+    color: immunespace.$background;
+    width: 100%;
+    max-width: 100%;
+
+    @include responsive.media-query(tab) {
+      padding-left: 1.5rem;
+      max-width: 40%;
+    }
+
+    @include responsive.media-query(desk) {
+      // padding-left: 2.5rem;
+      max-width: 35%;
+    }
+
+    p {
+      line-height: 20px;
+    }
+  }
+
+  &__cta {
+    color: immunespace.$background;
+    display: block;
+    font-size: 0.875rem;
+    font-weight: immunespace.$font-weight--bold;
+    line-height: 19px;
+    position: relative;
+
+    span {
+      position: relative;
+
+      &::after {
+        content: "";
+        background: url("../assets/icons/icon-arrow-right-blue.svg") no-repeat;
+        width: 34px;
+        height: 19px;
+        fill: immunespace.$blue;
+        position: absolute;
+        right: -50px;
+        bottom: 0;
+      }
+    }
+
+    &:hover {
+      span {
+        &::after {
+          animation-direction: alternate;
+          animation-duration: 600ms;
+          animation-iteration-count: infinite;
+          animation-name: bobberLtr;
+        }
+      }
+    }
+  }
+
+  &__link-text {
+    text-transform: uppercase;
+  }
+}

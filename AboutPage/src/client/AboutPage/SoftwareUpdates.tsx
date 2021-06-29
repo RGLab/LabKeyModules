@@ -5,6 +5,44 @@ export const SoftwareUpdates = () => {
 
     return(
         <div id="SoftwareUpdates-content">
+            <p><b>10 May 2021</b></p>
+            <ul>
+                <li>Upgraded to latest <a href="https://www.labkey.org/Documentation/wiki-page.view?name=whatsnew213">21.3 version</a> of LabKey</li>
+            </ul>
+            <p>&nbsp;</p>
+            <p><b>28 April 2021</b></p>
+            <ul>
+                <li>Updated entrance page</li>
+            </ul>
+            <p>&nbsp;</p>
+            <p><b>11 January 2021</b></p>
+            <ul>
+                <li>Upgraded to latest <a href="https://www.labkey.org/Documentation/wiki-page.view?name=whatsnew2011">20.11 version</a> of LabKey</li>
+            </ul>
+            <p>&nbsp;</p>
+            <p><b>9 December 2020</b></p>
+            <ul>
+                <li>Rolled out <a href="https://twitter.com/ImmuneSpace/status/1336717242340413440">new logo</a></li>
+                <li>Upgrade to ImmuneSpaceR version 1.18.1</li>
+            </ul>
+            <p>&nbsp;</p>
+            <p><b>3 August 2020</b></p>
+            <ul>
+                <li>Launched <a href="https://twitter.com/ImmuneSpace/status/1290290316604395520">new Data Finder</a></li>
+                <li>Rolled out <a href="https://twitter.com/ImmuneSpace/status/1290290329887752195">Resources page</a></li>
+            </ul>
+            <p>&nbsp;</p>
+            <p><b>10 June 2020</b></p>
+            <ul>
+                <li>Upgraded to latest <a href="https://www.labkey.org/Documentation/wiki-page.view?name=whatsnew203">20.3 version</a> of LabKey</li>
+                <li>Upgraded Java to openJDK-14</li>
+            </ul>
+            <p>&nbsp;</p>
+            <p><b>6 January 2020</b></p>
+            <ul>
+                <li>Upgraded to latest <a href="https://www.labkey.org/Documentation/wiki-page.view?name=whatsnew193">19.3 version</a> of LabKey</li>
+            </ul>
+            <p>&nbsp;</p>
             <p><b>26 Dec 2019</b></p>
             <ul>
                 <li>Upgraded to <a href="https://www.labkey.org/wiki/Documentation/Archive/19.2/page.view?name=releasenotes192">LabKey 19.2</a></li>

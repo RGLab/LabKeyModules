@@ -1,4 +1,4 @@
-@import "../helpers/colors.scss";
+@use "~@immunespace/theme/dist/immunespace";
 
 // assay-data selector
 .df-assay-data-selector {
@@ -19,12 +19,12 @@
     & button,
     .open > .btn-default.dropdown-toggle:hover,
     .open > .btn-default.dropdown-toggle:focus {
-      background-color: $sample-color;
+      background-color: immunespace.$sample-color;
       color: #fff;
     }
 
     & .open button {
-      background-color: $sample-color;
+      background-color: immunespace.$sample-color;
       color: #fff;
     }
   }
@@ -56,7 +56,7 @@
     border: 1px solid #bbb;
     height: 25px;
     width: 25px;
-    background-color: $sample-color;
+    background-color: immunespace.$sample-color;
     color: #fff;
     border: 2px solid #f7f7f7;
 
@@ -65,7 +65,7 @@
     }
 
     &:disabled {
-      background-color: $sample-color-light;
+      background-color: immunespace.$sample-color-light;
       border: 2px solid #f7f7f7;
     }
 

@@ -41,6 +41,9 @@ final hasMooworkNodePlugin = project.getPlugins().hasPlugin(mooworkNodePluginId)
 //     download = false
 // }
 
+apply plugin: gradleNodePluginId
+apply plugin: mooworkNodePluginId
+
 // Allow for local and server builds using flexible basePath
 ext.labKeyModulesDir = System.getenv('GRADLE_LKMODS_DIR')
 ext.deployDir = System.getenv('GRADLE_DEPLOY_DIR')
@@ -67,7 +70,9 @@ if (hostname =~ /Test/){
     buildType = "Local"
 }
 
-ext.reactModules = ['DataFinder', 'ResourcesPage', 'AboutPage', 'DataAccess']
+
+
+ext.reactModules = ['DataFinder', 'ResourcesPage', 'AboutPage', 'DataAccess', 'extraWebapp']
 
 subprojects {
 
@@ -86,6 +91,7 @@ subprojects {
         }
     }
 }
+
 
 
 // Each module has individual build files for speed and ease of deployment

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/immunespace16.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://immunespace.org/" />
+    <meta property="og:title" content="Welcome to ImmuneSpace" />
+    <meta
+      property="og:description"
+      content="ImmuneSpace is a powerful data management and analysis engine where datasets can be easily explored and analyzed using state-of-the-art computational tools."
+    />
+    <meta property="og:image" content="./og-image.png" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://immunespace.org/" />
+    <meta name="twitter:title" content="Welcome to ImmuneSpace" />
+    <meta
+      name="twitter:description"
+      content="ImmuneSpace is a powerful data management and analysis engine where datasets can be easily explored and analyzed using state-of-the-art computational tools."
+    />
+    <meta name="twitter:image" content="./og-image.png" />
+    <meta name="twitter:site" content="@ImmuneSpace" />
+
+    <title>Welcome to ImmuneSpace</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css?family=Muli:400,400i,500,700,700i,800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Weird workaround for @labkey/api-->
+    <script>
+      window.LABKEY = {};
+    </script>
+    <script>
+      (function (i, s, o, g, r, a, m) {
+        i["GoogleAnalyticsObject"] = r;
+        (i[r] =
+          i[r] ||
+          function () {
+            (i[r].q = i[r].q || []).push(arguments);
+          }),
+          (i[r].l = 1 * new Date());
+        (a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]);
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m);
+      })(
+        window,
+        document,
+        "script",
+        "//www.google-analytics.com/analytics.js",
+        "ga"
+      );
+
+      ga("create", "UA-55130440-1", "auto");
+      LABKEY.user = {};
+      LABKEY.user.id = "splash-page";
+      ga("set", "&uid", LABKEY.user.id.toString()); // Set the user ID using signed-in user_id.
+      ga("send", "pageview");
+    </script>
+    <meta
+      name="description"
+      content="ImmuneSpace is a powerful data management and analysis engine where datasets can be easily explored and analyzed using state-of-the-art computational tools."
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/labkey-logo-app.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>ImmuneSpace</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>

@@ -4,7 +4,7 @@ library(plyr)
 library(tools)
 
 #Set up some standard paths
-scriptPath <- "/share/github/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
+scriptPath <- "/labkey/git/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
 path <- "/share/files/HIPC/Lyoplate/@files"
 
 # source some common functions

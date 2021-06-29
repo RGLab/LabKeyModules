@@ -22,9 +22,10 @@ vcs.properties
 
 ImmuneSpace/config/module.xml
 
-# Rproj-related files 
+# Rproj-related files
 *.Rproj*
 .Rproj.user
+.Rhistory
 
 .idea/
 
@@ -41,10 +42,12 @@ AboutPage/resources/views
 AboutPage/resources/web
 DataAccess/resources/web
 DataAccess/resources/views
+extraWebapp/build
 
 # Npm and React libraries
-*/node_modules/
+node_modules
 
 # Gradle
 .gradle/
 .envrc
+node_modules
