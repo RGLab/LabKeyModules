@@ -1,0 +1,114 @@
+@use "~@immunespace/theme/dist/immunespace";
+.analyte-selector-main {
+  position: relative;
+}
+.analyte-selector-dropdown {
+  position: relative;
+  display: flex;
+
+  align-items: center;
+  width: 690px;
+  height: 78px;
+  border: 1px solid black;
+  font-family: immunespace.$nunito-sans;
+  border-radius: 50px;
+}
+
+.analyte-selector {
+  height: 100%;
+  width: 230px;
+}
+
+.analyte-selector-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.analyte-selector-label-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+
+  div {
+    border-right: 1px solid black;
+    width: 100%;
+    z-index: -2;
+  }
+
+  input {
+    display: block;
+    border: none;
+    background-color: transparent;
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  input:focus {
+    outline: none;
+  }
+
+  input#analyte-filters:hover {
+    cursor: pointer;
+  }
+}
+
+.analyte-selector-label-wrapper::after {
+  display: none;
+  content: "";
+  height: 100%;
+  width: 100%;
+  background-color: gray;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  opacity: 50%;
+  border-radius: 50px;
+}
+
+.analyte-selector-label-wrapper:hover div {
+  border-right: none;
+}
+
+.analyte-selector-label-wrapper:hover::after {
+  display: block;
+}
+
+.analyte-selector-dropdown-menu {
+  display: block;
+  width: 400px;
+  height: 350px;
+  border-radius: 50px;
+  margin-top: 3rem;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+
+  .analyte-selector-dropdown-content {
+    width: 100%;
+    height: 100%;
+    padding: 50px 0;
+
+    .analyte-selector-dropdown-options {
+      width: 100%;
+      height: 50px;
+
+      span {
+        display: inline-block;
+        font-size: 2rem;
+        margin-left: 30px;
+      }
+    }
+
+    .analyte-selector-dropdown-options:hover {
+      background-color: lightgray;
+      cursor: pointer;
+    }
+  }
+}

@@ -5,6 +5,7 @@ import AEDropdown from "./components/AEDropdown";
 import SecondarySelectorSimple from "./components/SecondarySelectorSimple";
 import GetStarted from "./components/GetStarted";
 import { ANALYTE_GENE, ANALYTE_BTM, analyteOptions } from "./helpers/constants";
+import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
 import "./AnalyteExplorer.scss";
 
 const AnalyteExplorer: React.FC = () => {
@@ -45,7 +46,8 @@ const AnalyteExplorer: React.FC = () => {
 
   return (
     <main id="ae-main">
-      <section className="ae-select-nav-container">
+      <AnalyteSelectorMain />
+      {/* <section className="ae-select-nav-container">
         <div className="ae-analyte-selector-container">
           <div className="ae-analyte-selector-content">
             <h1>Analyte Explorer</h1>
@@ -66,7 +68,7 @@ const AnalyteExplorer: React.FC = () => {
         <div className="ae-plot-content">
           {!plotView ? <GetStarted /> : generatePlot()}
         </div>
-      </section>
+      </section> */}
     </main>
   );
 };
