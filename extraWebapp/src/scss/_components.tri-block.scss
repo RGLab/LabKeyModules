@@ -1,5 +1,8 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
+
 .tri-block {
-  background-color: $white;
+  background-color: immunespace.$white;
 
   .container {
     display: flex;
@@ -18,22 +21,21 @@
     flex-flow: wrap;
     padding: 1.25rem 0;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       flex-direction: row;
       width: 100%;
     }
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       padding: 2.5rem 0;
     }
-
   }
 
   &__block {
     width: 100%;
     margin-top: 2rem;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       padding-right: 1rem;
       margin-top: 1.5rem;
       width: auto;
@@ -41,19 +43,19 @@
       min-width: 300px;
     }
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       margin-top: 1rem;
       width: 33.333%;
       min-width: 300px;
     }
 
     p {
-      color: $background;
+      color: immunespace.$background;
       // font-weight: $font-weight--normal;
       line-height: 20px;
       max-width: 400px;
 
-      @include media-query(tab){
+      @include responsive.media-query(tab) {
         max-width: unset;
       }
     }
@@ -65,28 +67,26 @@
     height: 100%;
     max-height: 113px;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       max-height: 91px;
     }
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       max-height: 113px;
     }
 
     svg {
-
     }
   }
 
   &__copy {
-
   }
 
   &__cta {
-    color: $background;
+    color: immunespace.$background;
     display: block;
     font-size: 0.875rem;
-    font-weight: $font-weight--bold;
+    font-weight: immunespace.$font-weight--bold;
     line-height: 19px;
     position: relative;
 
@@ -95,9 +95,7 @@
     // }
 
     &:hover {
-
       .tri-block__link-text {
-
         &::after {
           // transform: translateX(7px);
           // transition: all .2s ease-in-out;
@@ -121,7 +119,7 @@
       background: url("../assets/icons/icon-arrow-right-blue.svg");
       width: 34px;
       height: 19px;
-      fill: $blue;
+      fill: immunespace.$blue;
       // position: absolute;
       right: -15px;
       bottom: -5px;
@@ -129,7 +127,6 @@
     }
 
     &:hover {
-
       &::after {
         animation-direction: alternate;
         animation-duration: 600ms;
@@ -138,5 +135,4 @@
       }
     }
   }
-
 }

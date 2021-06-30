@@ -1,5 +1,62 @@
 // You can include here any css that will be shared between webparts
 
+@use "~@immunespace/theme/dist/immunespace";
+
 .navbar .container {
   margin-left: 0px;
 }
+
+.navbar.navbar-default {
+  //background-color: immunespace.$white;
+  border: none;
+}
+
+div#about-page {
+  ul.nav.navbar-nav {
+    float: none;
+    //background-color: immunespace.$white;
+    li {
+      text-align: center;
+      a {
+        color: #787878;
+        font-weight: immunespace.$font-weight--black;
+        font-size: 14px;
+        padding-bottom: 7px;
+      }
+    }
+    .active,
+    .open {
+      a {
+        color: immunespace.$dark-gray;
+        //background-color: immunespace.$white;
+      }
+    }
+  }
+}
+
+.nav-menu-indicator-container {
+  height: 0.25rem;
+  width: 100%;
+  border-bottom: 1px solid #b4bbbf;
+}
+
+.nav-menu-indicator {
+  content: "";
+  display: block;
+  margin: 0;
+  border: none;
+  background: immunespace.$dark-gray;
+  width: 130px;
+  height: 0.25rem;
+  transition: 0.3s ease-in-out;
+}
+
+// div#About-content {
+//   .About-content-primary {
+//     display: flex;
+//     justify-content: space-between;
+//     img {
+//       transform: rotate(270deg);
+//     }
+//   }
+// }

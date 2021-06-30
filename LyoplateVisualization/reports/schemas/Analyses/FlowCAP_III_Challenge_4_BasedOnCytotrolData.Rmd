@@ -20,7 +20,7 @@ opts_chunk$set(fig.align = "left", fig.width = 12, fig.height = 12)
 
 ```{r echo=FALSE, eval=TRUE}
 path <- "/share/files/HIPC/Lyoplate/@files"
-scriptPath <- "~/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
+scriptPath <- "/labkey/git/LabKeyModules/LyoplateVisualization/reports/schemas/HelperScripts"
 suppressPackageStartupMessages({
     library(data.table)
     library(car)
