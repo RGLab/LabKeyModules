@@ -10,9 +10,6 @@
     <span class="bold-text">Condition studied:</span> <span class="paddingRight25px">Placeholder</span> <span class="bold-text">Number of participants:</span> <span id="subjects"></span>
 </div> -->
 <div class="overview-spacing">
-    <span class="bold-text">Number of participants:</span> <span id="subjects"></span>
-</div>
-<div class="overview-spacing">
     <span class="bold-text">Brief description:</span> 
     <span>Identification of vaccine response signatures in order to determine common
         signatures associated with successful responses across different vaccines</span>
@@ -123,13 +120,6 @@ LABKEY.requiresScript( "ISCore/Common/ISCore.js", true, function() {
             }
             jQuery( target )[0].innerHTML = length == 0 ? 'None' : datasets.join(', ');
         };
-
-        LABKEY.Query.executeSql({
-            schemaName: 'study',
-            sql: 'SELECT COUNT(*) as cnt \
-                  FROM demographics',
-            success: function(r){ jQuery( '#subjects' )[0].innerHTML = r.rows[0].cnt; }
-        });
 
     jQuery('.ISCore').parent().next().css('margin-after', 0);
     jQuery('.ISCore').parent().next().css('margin-before', 0);

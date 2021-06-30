@@ -1,5 +1,5 @@
 ---
-output: rmarkdown::html_document
+output: html_document_base
 ---
 
 ***

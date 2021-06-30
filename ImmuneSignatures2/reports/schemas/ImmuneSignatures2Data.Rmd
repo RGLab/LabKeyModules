@@ -32,7 +32,10 @@ files = c(
   extendedOld_norm_batchCorrectedFromYoung_withResponse_eset.rds = "Subjects age 50-90 with immune response data, cross-study normalized and batch corrected using correction coefficients from young",
   all_immdata_with_response.rds = "Immune response data for all subjects where available"
 )
-filedf <- data.frame(File = as.character(getFileLink(names(files))), Description = as.character(files))
+filedf <- data.frame(File = as.character(getFileLink(names(files))), 
+                     Description = as.character(files), 
+                     Participants = c(1405, 1221, 1405, 1221, 820, 699, 820, 699, 456, 404, 380, 335, 585, 522, 408, 363, 1263), 
+                     Samples = c(4795, 4104, 4795, 4104, 3177, 2689, 3177, 2689, 1247, 1066, 1026, 859, 1618, 1415, 1105, 938, 1263))
 
 knitr::kable(filedf, escape = FALSE, format = "html")
 ```
