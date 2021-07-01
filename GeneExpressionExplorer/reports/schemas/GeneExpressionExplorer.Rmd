@@ -137,6 +137,7 @@ dt <- dt[, c("gene_symbol", PD$biosample_accession), with = FALSE]
 #data <- data.table(melt(exprs(ssEM), varnames = c("gene_symbol", "biosample_accession")))
 ssdt <- dt[gene_symbol %in% input_genes, ]
 data <- melt(ssdt, variable.name = "biosample_accession", id.vars = "gene_symbol")
+setDT(data)
 data <- merge(data, PD, by = "biosample_accession")
 if (normalize) {
   data[, value := value[study_time_collected == timePoint & tolower(study_time_collected_unit) == timePointUnit]  -

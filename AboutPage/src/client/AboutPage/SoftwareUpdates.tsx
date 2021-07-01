@@ -5,6 +5,11 @@ export const SoftwareUpdates = () => {
 
     return(
         <div id="SoftwareUpdates-content">
+            <p><b>30 June 2021</b></p>
+            <ul>
+                <li>Upgraded to latest 21.6 version of LabKey</li>
+            </ul>
+            <p>&nbsp;</p>
             <p><b>10 May 2021</b></p>
             <ul>
                 <li>Upgraded to latest <a href="https://www.labkey.org/Documentation/wiki-page.view?name=whatsnew213">21.3 version</a> of LabKey</li>
