@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etl xmlns="http://labkey.org/etl/xml">
+    <name>Step #2: Gene Signatures Metadata</name>
+    <description>Preprocess gene signatures metadata</description>
+    <transforms>
+        <transform id="preprocess" type="TaskRefTransformStep">
+            <description>preprocess</description>
+            <taskref ref="org.labkey.di.pipeline.RunReportTask">
+                <settings>
+                    <setting name="reportId" value="module:AnalyteExplorer/preprocess.R"/>
+                    <setting name="data_name" value="gene_signatures"/>
+                </settings>
+            </taskref>
+        </transform>
+    </transforms>
+</etl>

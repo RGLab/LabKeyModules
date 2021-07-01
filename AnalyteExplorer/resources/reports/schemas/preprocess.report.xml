@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ReportDescriptor descriptorType="rReportDescriptor" reportName="preprocess" xmlns="http://labkey.org/query/xml">
+    <Properties>
+        <Prop name="runInBackground">true</Prop>
+    </Properties>
+    <tags/>
+</ReportDescriptor>
