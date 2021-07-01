@@ -1,14 +1,18 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
+@use "./settings.variables" as variables;
+
 .footer {
-  background-color: $footer-background;
+  background-color: variables.$footer-background;
   padding: 1.5rem 0;
   height: auto;
   min-height: 120px;
 
-  @include media-query(tab){
+  @include responsive.media-query(tab) {
     min-height: unset;
   }
 
-  @include media-query(desk){
+  @include responsive.media-query(desk) {
     min-height: 120px;
   }
 
@@ -20,13 +24,13 @@
     justify-content: space-between;
     padding: 0;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       flex-direction: row;
       // justify-content: space-between;
       align-items: center;
     }
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       flex-direction: row;
       justify-content: space-between;
       align-items: flex-start;
@@ -40,7 +44,7 @@
     justify-content: space-between;
     order: 1;
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       margin-top: -10px;
     }
 
@@ -48,11 +52,11 @@
       // position: unset;
       // width: auto;
 
-      &.footer__mobile-social-nav  {
+      &.footer__mobile-social-nav {
         width: auto;
         min-width: unset;
 
-        @include media-query(tab){
+        @include responsive.media-query(tab) {
           display: none;
         }
 
@@ -91,7 +95,7 @@
     max-width: 152px;
     height: 23px;
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       width: 211px;
       max-width: 211px;
       height: 32px;
@@ -104,49 +108,49 @@
     width: auto;
     order: 2;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       margin: 0;
       text-align: left;
     }
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       margin: 0 75px 0 0;
       width: auto;
       max-width: 350px;
     }
 
     p {
-      color: $white;
+      color: immunespace.$white;
       font-size: 0.875rem;
       margin: 0;
 
-      @include media-query(tab){
+      @include responsive.media-query(tab) {
         font-size: 1rem;
       }
-
     }
   }
 
   &__social {
     order: 3;
 
-    @include media-query(tab){
+    @include responsive.media-query(tab) {
       // margin-top: 10px;
     }
   }
 
-  &__email, &__twitter {
+  &__email,
+  &__twitter {
     position: relative;
 
     span {
-      color: $white;
+      color: immunespace.$white;
       font-size: 11px;
 
-      @include media-query(tab){
+      @include responsive.media-query(tab) {
         display: none;
       }
 
-      @include media-query(desk){
+      @include responsive.media-query(desk) {
         display: inline-block;
         font-size: 0.875rem;
       }
@@ -154,9 +158,9 @@
 
     svg {
       // display: block;
-      fill: $white;
+      fill: immunespace.$white;
 
-      @include media-query(desk){
+      @include responsive.media-query(desk) {
         position: absolute;
       }
     }
@@ -165,19 +169,18 @@
   ul {
     list-style-type: none;
 
-    @include media-query(desk){
+    @include responsive.media-query(desk) {
       min-width: 200px;
     }
 
     li {
-
-      @include media-query(tab){
+      @include responsive.media-query(tab) {
         display: inline-block;
-        padding: 0 .5rem;
+        padding: 0 0.5rem;
         width: auto;
       }
 
-      @include media-query(desk){
+      @include responsive.media-query(desk) {
         // display: inline-block;
         // width: auto;
         // min-width: 90px;
@@ -194,12 +197,11 @@
   }
 
   &__twitter {
-
     svg {
       width: 15px;
       height: 13px;
 
-      @include media-query(desk){
+      @include responsive.media-query(desk) {
         left: 65px;
         bottom: 4px;
       }
@@ -207,12 +209,11 @@
   }
 
   &__email {
-
     svg {
       width: 21px;
       height: 12px;
 
-      @include media-query(desk){
+      @include responsive.media-query(desk) {
         left: 75px;
         bottom: 5px;
       }

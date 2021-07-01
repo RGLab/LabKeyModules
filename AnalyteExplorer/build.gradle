@@ -40,7 +40,9 @@ if(moduleName == 'extraWebapp'){
 
         task copyImageResources {
             dependsOn npm_run_build
-            String imgDir = "${dirToZip}/web/AboutPage/images"
+
+            String imgDir = "${dirToZip}/web/ResourcesPage/images"
+
             mkdir imgDir
             copy {
                 from "./images"
