@@ -1,24 +1,27 @@
 {
-  "name": "aboutpage",
+  "name": "analytexplorer",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "setup": "npm install",
     "build": "npm run build-prod",
-    "start": "cross-env NODE_ENV=development LK_MODULE=AboutPage webpack serve --config ../webpack/dev.config.js",
-    "build-prod": "npm run clean && cross-env NODE_ENV=production LK_MODULE=AboutPage webpack --config ../webpack/prod.config.js",
-    "clean": "rimraf resources/web/AboutPage/gen && rimraf resources/views",
+    "start": "cross-env NODE_ENV=development LK_MODULE=AnalyteExplorer webpack serve --config ../webpack/dev.config.js",
+    "build-prod": "npm run clean && cross-env NODE_ENV=production LK_MODULE=AnalyteExplorer webpack --config ../webpack/prod.config.js",
+    "clean": "rimraf resources/web/AnalyteExplorer/gen && rimraf resources/views",
     "test": "cross-env NODE_ENV=test jest"
   },
   "dependencies": {
-    "@types/jquery": "^3.5.0",
-    "bootstrap": "^3.4.1",
-    "d3-color": "^1.4.0",
-    "font-awesome": "4.7.0",
-    "jquery": "^3.5.1"
+    "bootstrap": "^4.6.0",
+    "react-bootstrap": "^1.6.0",
+    "react-icons": "^4.2.0"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.27.0",
+    "@typescript-eslint/parser": "^4.27.0",
     "cross-env": "5.2.1",
+    "eslint": "^7.28.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-react": "^7.24.0",
     "prettier": "2.3.1",
     "rimraf": "3.0.2",
     "webpack": "5.22.0",
@@ -44,10 +47,5 @@
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     }
-  },
-  "eslintConfig": {
-    "extends": [
-      "../.eslintrc.json"
-    ]
   }
 }

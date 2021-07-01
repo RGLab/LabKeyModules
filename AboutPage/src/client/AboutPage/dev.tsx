@@ -11,8 +11,8 @@ const render = () => {
             <App/>
         </AppContainer>,
         document.getElementById('about-page')
-    )
-};
+)
+}; 
 
 declare const module: any;
 

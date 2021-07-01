@@ -1,0 +1,28 @@
+/* Import ImmuneSpace Themes */
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.fonts" as fonts;
+
+main#ae-main {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.ae-analyte-selector-container {
+  margin-bottom: 1rem;
+}
+
+.ae-plot-content {
+  min-width: 500px;
+  min-height: 500px;
+}
+
+.ae-analyte-selector-container,
+.ae-plot-content {
+  border: 1px solid #828282;
+}
+
+.ae-analyte-selector-content,
+.ae-get-started {
+  margin: 1.5rem;
+}

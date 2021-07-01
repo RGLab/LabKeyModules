@@ -1,0 +1,43 @@
+@use "~@immunespace/theme/dist/immunespace";
+
+.disease-selector {
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.disease-display {
+  display: flex;
+  height: 25px;
+  margin-top: 0.5rem;
+}
+
+.disease-btn {
+  height: 24px;
+  color: immunespace.$white;
+  background-color: immunespace.$indigo;
+  margin-right: 0.3rem;
+  padding-left: 8px;
+  padding-right: 6px;
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: 20px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .disease-btn-text {
+    display: block;
+  }
+
+  .disease-close-icon {
+    height: 12px;
+    margin-top: 2px;
+    margin-left: 2px;
+  }
+
+  .disease-close-icon:hover {
+    cursor: pointer;
+  }
+}

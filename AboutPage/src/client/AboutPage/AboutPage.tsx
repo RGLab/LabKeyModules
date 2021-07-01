@@ -36,8 +36,6 @@ import { Cytometry } from "./Cytometry";
 import { GeneExpression } from "./GeneExpression";
 import { ImmuneResponse } from "./ImmuneResponse";
 
-import { active } from "d3-transition";
-
 const fetchData = (handleResults: (any) => void) => {
   let mappedData;
 
@@ -51,20 +49,17 @@ const fetchData = (handleResults: (any) => void) => {
           <tr key={index} data-item={arr}>
             <td
               data-title="Version"
-              style={{ textAlign: "center", border: "1px solid black" }}
-            >
+              style={{ textAlign: "center", border: "1px solid black" }}>
               {arr.version}
             </td>
             <td
               data-title="Date"
-              style={{ textAlign: "center", border: "1px solid black" }}
-            >
+              style={{ textAlign: "center", border: "1px solid black" }}>
               {arr.date.slice(0, 10)}
             </td>
             <td
               data-title="Affected Studies"
-              style={{ border: "1px solid black" }}
-            >
+              style={{ border: "1px solid black" }}>
               {arr.affected_studies}
             </td>
             <td data-title="Description" style={{ border: "1px solid black" }}>
@@ -197,6 +192,16 @@ const AboutPage: React.FC = () => {
   }, []);
 
   /***** End Linkable Tabs *****/
+  
+  const [dataReleasesResults, setDataReleasesResults] = React.useState<string>(
+    "Loading Data Releases"
+  );
+  const [rSessionResults, setRSessionResults] = React.useState<string>(
+    "Loading R Session Info ..."
+  );
+  const [rSessionParsed, setRSessionParsed] =
+    React.useState<DocumentFragment>();
+  const [rScriptsLoaded, setRScriptsLoaded] = React.useState(false);
 
   // Only declare this on the first render
   const cnfReport = React.useMemo(
@@ -272,13 +277,39 @@ const AboutPage: React.FC = () => {
             </MenuItem>
           );
         });
+
+      scriptNodes.forEach(function (el) {
+        loader.addScript(el.getAttribute("src"));
+        el.parentNode.removeChild(el);
+      });
+
+      loader.load();
+      setRSessionParsed(slotHtml);
+    }
+  }, [rSessionResults]);
+
+  const generateChildId = React.useCallback((eventKey: any, type: any) => {
+    return eventKey;
+  }, []);
+
+  const getNavbar = React.useCallback(() => {
+    const items = tabInfo.map((tab, index) => {
+      // Drop down item
+      if (tab.subMenu && tab.subMenu.length > 0) {
+        const menuItems = tab.subMenu.map((sub) => {
+          return (
+            <MenuItem eventKey={sub.tag} id={sub.tag} key={sub.tag}>
+              {sub.text}
+            </MenuItem>
+          );
+        });
         return (
           <NavDropdown title={tab.text} id={tab.id} key={tab.tag}>
             {menuItems}
           </NavDropdown>
         );
       }
-
+      
       // Non-dropdown
 
       return (

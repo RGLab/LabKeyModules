@@ -1,0 +1,1 @@
+<view xmlns="http://labkey.org/data/xml/view" frame="none" title="Analyte Explorer"><dependencies><dependency path="AnalyteExplorer/gen/AnalyteExplorer.css"/><dependency path="AnalyteExplorer/gen/AnalyteExplorer.js"/></dependencies></view>
