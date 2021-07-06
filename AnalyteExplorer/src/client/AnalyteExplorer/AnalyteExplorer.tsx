@@ -6,7 +6,9 @@ import SecondarySelectorSimple from "./components/SecondarySelectorSimple";
 import GetStarted from "./components/GetStarted";
 import { ANALYTE_GENE, ANALYTE_BTM, analyteOptions } from "./helpers/constants";
 import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
+import "./components/AnalyteSelectorMain.scss";
 import "./AnalyteExplorer.scss";
+import "./test.css";
 
 const AnalyteExplorer: React.FC = () => {
   const [selectedAnalyte, setSelectedAnalyte] =

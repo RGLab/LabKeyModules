@@ -1,5 +1,5 @@
 import React from "react";
-import { AiTwotoneSafetyCertificate } from "react-icons/ai";
+//import { AiTwotoneSafetyCertificate } from "react-icons/ai";
 import "./AnalyteSelectorMain.scss";
 
 const AnalyteSelectorMain = () => {
@@ -77,7 +77,7 @@ const AnalyteSelectorMain = () => {
           </div>
         </div>
       </div>
-      <div className="mock-outside">
+      {/* <div className="mock-outside">
         <div
           className="analyte-selector-dropdown-menu"
           style={{ marginLeft: `${(selected % 4) * 100}px` }}>
@@ -99,7 +99,7 @@ const AnalyteSelectorMain = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

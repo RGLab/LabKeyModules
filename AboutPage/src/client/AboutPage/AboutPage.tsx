@@ -36,6 +36,8 @@ import { Cytometry } from "./Cytometry";
 import { GeneExpression } from "./GeneExpression";
 import { ImmuneResponse } from "./ImmuneResponse";
 
+import { active } from "d3-transition";
+
 const fetchData = (handleResults: (any) => void) => {
   let mappedData;
 
@@ -141,7 +143,6 @@ const AboutPage: React.FC = () => {
     When a new tab is selected, append the appropriate parameter to the end of the url
     and updates the url. Creates new history entries that allows user to traverse tabs 
     using the foward and back buttons. Does not refresh the page.
-
     https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
   */
   const changeTabParam = (newActiveTab: string) => {
@@ -192,16 +193,6 @@ const AboutPage: React.FC = () => {
   }, []);
 
   /***** End Linkable Tabs *****/
-  
-  const [dataReleasesResults, setDataReleasesResults] = React.useState<string>(
-    "Loading Data Releases"
-  );
-  const [rSessionResults, setRSessionResults] = React.useState<string>(
-    "Loading R Session Info ..."
-  );
-  const [rSessionParsed, setRSessionParsed] =
-    React.useState<DocumentFragment>();
-  const [rScriptsLoaded, setRScriptsLoaded] = React.useState(false);
 
   // Only declare this on the first render
   const cnfReport = React.useMemo(
@@ -211,12 +202,12 @@ const AboutPage: React.FC = () => {
       },
       reportId: "module:RSessionInfo/RSessionInfo.Rmd",
       success: function (result) {
-        var errors = result.errors;
-        var outputParams = result.outputParams;
+        const errors = result.errors;
+        const outputParams = result.outputParams;
         if (errors && errors.length > 0) {
           setRSessionResults("Error in retrieving R Session Info");
         } else if (outputParams && outputParams.length > 0) {
-          var p = outputParams[0];
+          const p = outputParams[0];
           setRSessionResults(p.value);
         } else {
           setRSessionResults(
@@ -247,36 +238,10 @@ const AboutPage: React.FC = () => {
     const slotHtml = document
       .createRange()
       .createContextualFragment(rSessionResults);
-    let scriptNodes = slotHtml.querySelectorAll("script[src]");
+    const scriptNodes = slotHtml.querySelectorAll("script[src]");
 
     if (scriptNodes.length > 0) {
       const loader = new ScriptLoader(onRScriptsLoaded, onRScriptLoadTimeout);
-
-      scriptNodes.forEach(function (el) {
-        loader.addScript(el.getAttribute("src"));
-        el.parentNode.removeChild(el);
-      });
-
-      loader.load();
-      setRSessionParsed(slotHtml);
-    }
-  }, [rSessionResults]);
-
-  const generateChildId = React.useCallback((eventKey: any, type: any) => {
-    return eventKey;
-  }, []);
-
-  const getNavbar = React.useCallback(() => {
-    const items = tabInfo.map((tab, index) => {
-      // Drop down item
-      if (tab.subMenu && tab.subMenu.length > 0) {
-        const menuItems = tab.subMenu.map((sub) => {
-          return (
-            <MenuItem eventKey={sub.tag} id={sub.tag} key={sub.tag}>
-              {sub.text}
-            </MenuItem>
-          );
-        });
 
       scriptNodes.forEach(function (el) {
         loader.addScript(el.getAttribute("src"));
@@ -309,7 +274,7 @@ const AboutPage: React.FC = () => {
           </NavDropdown>
         );
       }
-      
+
       // Non-dropdown
 
       return (
@@ -325,8 +290,10 @@ const AboutPage: React.FC = () => {
         <div className="nav-menu-indicator-container">
           <span
             className="nav-menu-indicator"
-            style={{ marginLeft: indicatorMargin, width: indicatorWidth }}
-          ></span>
+            style={{
+              marginLeft: indicatorMargin,
+              width: indicatorWidth,
+            }}></span>
         </div>
       </Navbar>
     );
@@ -370,8 +337,7 @@ const AboutPage: React.FC = () => {
     <TabContainer
       activeKey={activeTab}
       generateChildId={generateChildId}
-      onSelect={(tab) => changeTabParam(`${tab}`)}
-    >
+      onSelect={(tab) => changeTabParam(`${tab}`)}>
       <div id="about-page-content">
         {getNavbar()}
         {getTabContent()}
