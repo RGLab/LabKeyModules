@@ -1,17 +1,25 @@
 library(ImmuneSignatures2)
 
-rLabkeySessionId <- "${rLabkeySessionId}"
+${rLabkeySessionId}
 task_name <- labkey.url.params$task_name
 
-outputDir = "/share/files/HIPC/IS2/@files/data/html_outputs"
-dataCacheDir = "/share/files/HIPC/IS2/@files/data"
-timestamp =  strftime(Sys.time(), "%Y_%m_%d_")
+outputDir <- "/share/files/HIPC/IS2/@files/data/html_outputs"
+dataCacheDir <- "/share/files/HIPC/IS2/@files/data"
+timestamp <-  strftime(Sys.time(), "%Y_%m_%d_")
 
 if (!dir.exists(outputDir)) dir.create(outputDir, recursive = TRUE)
 if (!dir.exists(dataCacheDir)) dir.create(dataCacheDir, recursive = TRUE)
 
-rmarkdown::render(input = system.file("preprocess", paste0(task_name, ".Rmd"), package = "ImmuneSignatures2"),
-       output_file = file.path(outputDir, paste0(task_name, ".html")),
+inputFile <- system.file("preprocess", paste0(task_name, ".Rmd"), package = "ImmuneSignatures2")
+outputFile <- file.path(outputDir, paste0(task_name, ".html"))
+
+message("Rendering ", inputFile)
+message("Output will be written to ", outputFile)
+
+con <- ImmuneSpaceR::CreateConnection("IS2", verbose = TRUE)
+
+rmarkdown::render(input = inputFile,
+       output_file = outputFile,
        params = list(
          outputDir = outputDir,
          dataCacheDir = dataCacheDir,

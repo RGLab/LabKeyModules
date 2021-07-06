@@ -3,7 +3,7 @@
     <name>Step #1: Generate Base ExpressionSet</name>
     <description>Merge all expressionsets and perform quality control filtering</description>
     <transforms>
-        <transform id="preprocess" type="TaskRefTransformStep">
+        <transform id="preprocessImmSig2" type="TaskRefTransformStep">
             <description>preprocess</description>
             <taskref ref="org.labkey.di.pipeline.RunReportTask">
                 <settings>
