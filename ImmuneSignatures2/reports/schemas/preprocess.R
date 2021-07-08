@@ -5,7 +5,7 @@ task_name <- labkey.url.params$task_name
 
 outputDir <- "/share/files/HIPC/IS2/@files/data/html_outputs"
 dataCacheDir <- "/share/files/HIPC/IS2/@files/data"
-timestamp <-  strftime(Sys.time(), "%Y_%m_%d_")
+timestamp <- ""
 
 if (!dir.exists(outputDir)) dir.create(outputDir, recursive = TRUE)
 if (!dir.exists(dataCacheDir)) dir.create(dataCacheDir, recursive = TRUE)
@@ -16,12 +16,15 @@ outputFile <- file.path(outputDir, paste0(task_name, ".html"))
 message("Rendering ", inputFile)
 message("Output will be written to ", outputFile)
 
-con <- ImmuneSpaceR::CreateConnection("IS2", verbose = TRUE)
 
 rmarkdown::render(input = inputFile,
-       output_file = outputFile,
-       params = list(
-         outputDir = outputDir,
-         dataCacheDir = dataCacheDir,
-         timestamp = timestamp
-       ))
+                  output_file = outputFile,
+                  params = list(
+                    outputDir = outputDir,
+                    dataCacheDir = dataCacheDir,
+                    timestamp = timestamp
+                  ))
+
+
+write_processing_metadata(file.path(dataCacheDir, "processing_metadata.csv"),
+                          task_name = task_name)

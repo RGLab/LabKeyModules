@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <etl xmlns="http://labkey.org/etl/xml">
-    <name>Step #2: Create Final ExpressionSets</name>
+    <name>Step #3: Create Final ExpressionSets</name>
     <description>Perform cross-study normalization and batch correction and save analysis-ready esets</description>
     <transforms>
         <transform id="preprocess" type="TaskRefTransformStep">
