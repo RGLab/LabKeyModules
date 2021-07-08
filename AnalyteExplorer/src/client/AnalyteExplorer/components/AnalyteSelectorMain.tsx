@@ -7,26 +7,16 @@ import "./AnalyteSelectorMain.scss";
 interface CheckboxButtonProps {
   id: string;
   labelText: string;
-  checked: boolean;
+  isChecked: boolean;
   onClickCallback: (disease: string) => void;
 }
 
 const CheckboxButton: React.FC<CheckboxButtonProps> = ({
   id,
   labelText,
-  checked,
+  isChecked,
   onClickCallback,
 }) => {
-  const [isChecked, setIsChecked] = React.useState(false);
-
-  React.useEffect(() => {
-    setIsChecked(checked);
-  }, [checked]);
-
-  const oChangeCallback = () => {
-    onClickCallback(id);
-    setIsChecked(!isChecked);
-  };
   return (
     <div className="analyte-filter-checkbox-container">
       <input
@@ -36,7 +26,7 @@ const CheckboxButton: React.FC<CheckboxButtonProps> = ({
         name={id}
         value={id}
         checked={isChecked}
-        onChange={oChangeCallback}></input>
+        onChange={() => onClickCallback(id)}></input>
       <label htmlFor={id}>{`${labelText}`}</label>
     </div>
   );
@@ -45,11 +35,10 @@ const CheckboxButton: React.FC<CheckboxButtonProps> = ({
 const AnalyteSelectorMain: React.FC = () => {
   const [selected, setSelected] = React.useState(0); //0 means nothing is selected
   const [hovered, setHovered] = React.useState(0);
-
   const [diseaseCondFilters, setDiseaseCondFilters] = React.useState({});
 
   const defaultDiseaseCondFilters = {
-    "health": false,
+    "healthy": false,
     "ebola": false,
     "hepatitis": false,
     "dermatomyositis": false,
@@ -103,9 +92,8 @@ const AnalyteSelectorMain: React.FC = () => {
   }, [dropdownRef, typeSelectorRef, nameSelectorRef, filterSelectorRef]);
 
   const diseaseCondOnClick = (disease: string) => {
-    let diseaseCondFiltersNew = diseaseCondFilters;
+    let diseaseCondFiltersNew = { ...diseaseCondFilters };
     diseaseCondFiltersNew[`${disease}`] = !diseaseCondFiltersNew[`${disease}`];
-    console.log(diseaseCondFilters);
     setDiseaseCondFilters(diseaseCondFiltersNew);
   };
 
@@ -114,55 +102,31 @@ const AnalyteSelectorMain: React.FC = () => {
     setDiseaseCondFilters(defaultDiseaseCondFilters);
   };
 
+  const submitFilters = (event) => {
+    event.preventDefault();
+    //console.log(event);
+  };
+
   const generateFilterOptions = (diseaseCondFilters: object) => {
-    console.log("create filters");
     return (
       <div className="analyte-filter-content">
         <form>
           <h2 className="analyte-filter-name">Disease Condition</h2>
           <div className="analyte-filter-options-container">
             <div className="analyte-filter-form-content">
-              {Object.entries(diseaseCondFilters).map(([disease, checked]) => {
-                return (
-                  <CheckboxButton
-                    key={disease}
-                    id={disease}
-                    labelText={disease}
-                    checked={checked}
-                    onClickCallback={diseaseCondOnClick}
-                  />
-                );
-              })}
-              {/* <CheckboxButton
-                id="healthy"
-                labelText="Healthy"
-                onClickCallback={diseaseCondOnClick}
-              />
-              <CheckboxButton
-                id="ebola"
-                labelText="Ebola"
-                onClickCallback={diseaseCondOnClick}
-              />
-              <CheckboxButton
-                id="hepatitis"
-                labelText="Hepatitis"
-                onClickCallback={diseaseCondOnClick}
-              />
-              <CheckboxButton
-                id="dermatomyositis"
-                labelText="Dermatomyositis"
-                onClickCallback={diseaseCondOnClick}
-              />
-              <CheckboxButton
-                id="hiv"
-                labelText="HIV"
-                onClickCallback={diseaseCondOnClick}
-              />
-              <CheckboxButton
-                id="herpes-zoster"
-                labelText="Herpes Zoster"
-                onClickCallback={diseaseCondOnClick}
-              /> */}
+              {Object.entries(diseaseCondFilters).map(
+                ([disease, checked]: [string, boolean]) => {
+                  return (
+                    <CheckboxButton
+                      key={disease}
+                      id={disease}
+                      labelText={disease}
+                      isChecked={checked}
+                      onClickCallback={diseaseCondOnClick}
+                    />
+                  );
+                }
+              )}
             </div>
           </div>
           <div className="analyte-filter-action-container">
@@ -170,10 +134,7 @@ const AnalyteSelectorMain: React.FC = () => {
               type="button"
               value="Reset"
               onClick={resetDiseaseCondFilters}></input>
-            <input
-              type="submit"
-              value="Apply"
-              onClick={() => console.log("moeb")}></input>
+            <input type="submit" value="Apply" onClick={submitFilters}></input>
           </div>
         </form>
       </div>
@@ -226,7 +187,16 @@ const AnalyteSelectorMain: React.FC = () => {
     return <div ref={dropdownRef} style={styles}></div>;
   };
 
-  console.log("redner");
+  const filtersApplied = Object.values(diseaseCondFilters).reduce(
+    (filters: number, isFilterApplied: boolean) => {
+      if (isFilterApplied) {
+        filters += 1;
+      }
+      return filters;
+    },
+    0
+  );
+
   return (
     <div>
       <div className="analyte-selector-main">
@@ -279,7 +249,7 @@ const AnalyteSelectorMain: React.FC = () => {
                 type="text"
                 id="analyte-filters"
                 name="analyte-filters"
-                placeholder="0 filters applied"
+                placeholder={`${filtersApplied} filters applied`}
                 readOnly></input>
             </div>
           </div>
