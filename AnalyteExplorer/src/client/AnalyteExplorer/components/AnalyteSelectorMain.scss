@@ -38,12 +38,6 @@
   height: 100%;
   cursor: pointer;
 
-  div {
-    border-right: 1px solid black;
-    width: 100%;
-    z-index: -2;
-  }
-
   input {
     display: block;
     border: none;
@@ -73,10 +67,6 @@
   z-index: -1;
   opacity: 50%;
   border-radius: 50px;
-}
-
-.analyte-selector-label-wrapper:hover div {
-  border-right: none;
 }
 
 .analyte-selector-label-wrapper:hover::after {
@@ -114,6 +104,69 @@
   }
 }
 
-.mock-outside {
+.analyte-filter-dropdown {
   width: 100%;
+  height: 259px;
+  margin-left: 0;
+}
+
+.analyte-filter-content {
+  font-family: immunespace.$nunito-sans;
+  padding: 33px 36px 0px 36px;
+  height: 100%;
+
+  form {
+    position: relative;
+    height: 100%;
+
+    h2.analyte-filter-name {
+      font-size: 16px;
+    }
+
+    .analyte-filter-options-container {
+      .analyte-filter-form-content {
+        display: grid;
+        gap: 2rem 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        padding: 1rem 1.5rem;
+        border: 1px solid black;
+        border-radius: 20px;
+
+        .analyte-filter-checkbox-container {
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+
+          label {
+            margin: 0;
+            font-size: 1.5rem;
+          }
+          label,
+          input {
+            display: inline-block;
+          }
+        }
+      }
+    }
+
+    .analyte-filter-action-container {
+      position: absolute;
+      bottom: 21px;
+      right: 0;
+
+      input {
+        width: 57px;
+        height: 25px;
+        margin-left: 1rem;
+        font-weight: immunespace.$font-weight--bold;
+        color: immunespace.$white;
+        background-color: immunespace.$immune-blue;
+        border: none;
+      }
+
+      input:hover {
+        background-color: immunespace.$dark-blue;
+      }
+    }
+  }
 }
