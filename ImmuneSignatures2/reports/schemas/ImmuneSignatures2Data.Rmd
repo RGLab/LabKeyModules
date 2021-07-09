@@ -69,6 +69,22 @@ knitr::kable(immdata, escape = FALSE, format = "html")
 ```
 </div>
 
+---
+
+### Code
+
+Rmarkdown outputs from preprocessing, including code and some summaries. 
+Preprocessing depends on the [ImmuneSignatures2](https://github.com/RGLab/ImmuneSignatures2) R package. 
+
+1. [Pull Expressionsets](/_webdav/HIPC/IS2/%40files/data/html_outputs/pull_esets.html){target="_blank"} 
+    * Pulls gene expression data from ImmuneSpace server, constructs expressionsets, 
+    and saves output to an R object on disk. 
+1. [Generate Base ExpressionSet](/_webdav/HIPC/IS2/%40files/data/html_outputs/generate_base_eset.html){target="_blank"}
+    * Perform basic QC and filtering, and save output to one ExpressionSet. 
+1. [Create Final ExpressionSets](/_webdav/HIPC/IS2/%40files/data/html_outputs/create_final_esets.html){target="_blank"}
+    * Perform cross-study normalization and batch correction, and save the different 
+    versions available in the table above. 
+
 <style>
 
 

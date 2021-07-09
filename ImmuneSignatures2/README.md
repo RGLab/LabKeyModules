@@ -21,10 +21,25 @@ __Modules__: ImmuneSpaceStudyOverview, VirtualStudyBase, HIPCMatrix
     1. Create Final Expression Sets: Perform cross-study normalization and batch correction and save analysis-ready esets
 
 ## ETLs
-There are three ETLs which perform all the preprocessing to create the analysis-ready expressionsets, which should be run in order. The ETLs utilize the [ImmuneSignatures2](https://github.com/RGLab/ImmuneSignatures2) package, and run the Rmd reports saved to the `inst/` directory. All output data are saved to `/share/files/HIPC/IS2/@files/data`. A summary of the output data will be saved to the file `dataset_metadata.csv`, including the date that each dataset was most recently updated, as well as the version of the ImmuneSignatures2 package used to run it. 
+There are three ETLs which perform all the preprocessing to create the analysis-ready expressionsets, which should be run in order. The ETLs utilize the [ImmuneSignatures2](https://github.com/RGLab/ImmuneSignatures2) package, and run the Rmd reports saved to the `inst/` directory. 
+
+### Outputs
+* All output data are saved to `/share/files/HIPC/IS2/@files/data`, with download 
+links in the `ImmuneSignatures2Data` report.   
+* A summary of the output data will be saved to the file `dataset_metadata.csv`, 
+including the date that each dataset was most recently updated, as well as the version of 
+the ImmuneSignatures2 package used to run it. This table is used to generate the
+`ImmuneSignatures2Data` report. 
+* The Rmarkdown outputs are saved to `/share/files/HIPC/IS2/@files/data/html_outputs/` 
+and linked directly from the `ImmuneSignatures2Data` report. 
+
+
 
 ## Docker 
-This module is intended to be set up to run 
+This module is intended to be set up to run within the ImmuneSignatures2 docker 
+container, defined here: ... And availabe on Docker Hub... 
+
+1. Instructions for setting up Docker on the server... 
 
 ## Resources
 
