@@ -1,19 +1,27 @@
-
+---
+output: 
+    html_document:
+        self_contained: false
+---
 
 ```{r setup, echo = FALSE}
 library(knitr)
 library(magrittr)
-getFileUrl <- function(filename) {
-  file.path("/_webdav/HIPC/IS2/%40files/data", paste0("2021_03_08_", filename))
+library(data.table)
+getFileUrl <- function(filepath) {
+  sub("/share/files", "/_webdav", filepath)
 }
-getFileLink <- function(filename) {
-  paste0("<a href=\"", getFileUrl(filename), "\">", filename, "</a>")
+getFileLink <- function(filepath, filename) {
+  paste0("<a href=\"", getFileUrl(filepath), "\">", filename, "</a>")
 }
 ```
 
-<div id="is2-downloads" class="table-condensed">
+### Expression Sets
+<div class="is2-downloads table-condensed">
 ```{r downloads, echo = FALSE}
-files = c(
+files <- fread("/share/files/HIPC/IS2/@files/data/dataset_metadata.csv")
+esets <- files[grepl("_eset\\.rds", dataset)]
+eset_descriptions = c(
   all_noNorm_eset.rds = "All subjects, log2-normalized expression",
   all_noNorm_withResponse_eset.rds = "All subjects with immune response data, log2-normalized expression",
   all_norm_eset.rds = "All subjects, cross-study normalized and batch corrected expression",
@@ -29,28 +37,64 @@ files = c(
   extendedOld_noNorm_eset.rds = "Subjects age 50-90, log2-normalized expression",
   extendedOld_noNorm_withResponse_eset.rds = "Subjects age 50-90 with immune response data, log2-normalized coutns",
   extendedOld_norm_batchCorrectedFromYoung_eset.rds = "Subjects age 50-90, log2-normalized counts",
-  extendedOld_norm_batchCorrectedFromYoung_withResponse_eset.rds = "Subjects age 50-90 with immune response data, cross-study normalized and batch corrected using correction coefficients from young",
-  all_immdata_with_response.rds = "Immune response data for all subjects where available"
+  extendedOld_norm_batchCorrectedFromYoung_withResponse_eset.rds = "Subjects age 50-90 with immune response data, cross-study normalized and batch corrected using correction coefficients from young"
 )
-filedf <- data.frame(File = as.character(getFileLink(names(files))), 
-                     Description = as.character(files), 
-                     Participants = c(1405, 1221, 1405, 1221, 820, 699, 820, 699, 456, 404, 380, 335, 585, 522, 408, 363, 1263), 
-                     Samples = c(4795, 4104, 4795, 4104, 3177, 2689, 3177, 2689, 1247, 1066, 1026, 859, 1618, 1415, 1105, 938, 1263))
+esets <- esets[, description := eset_descriptions[dataset]]
 
-knitr::kable(filedf, escape = FALSE, format = "html")
+esets <- esets[, .(
+  File = as.character(getFileLink(path, dataset)), 
+  Description = as.character(description), 
+  Participants = subjects, 
+  Samples = samples, 
+  Features = features
+)]
+
+knitr::kable(esets, escape = FALSE, format = "html")
 ```
 </div>
+
+### Other Datasets
+
+<div class="is2-downloads table-condensed">
+```{r immdata, echo = FALSE, warning=FALSE}
+immdata <- files[dataset == "all_immdata_with_response.rds"]
+immdata$description <- "Immune response data for all subjects where available"
+immdata <- immdata[, .(
+  File = as.character(getFileLink(path, dataset)), 
+  Description = as.character(description), 
+  Participants = subjects, 
+  Samples = samples
+)]
+knitr::kable(immdata, escape = FALSE, format = "html")
+```
+</div>
+
+---
+
+### Code
+
+Rmarkdown outputs from preprocessing, including code and some summaries. 
+Preprocessing depends on the [ImmuneSignatures2](https://github.com/RGLab/ImmuneSignatures2) R package. 
+
+1. [Pull Expressionsets](/_webdav/HIPC/IS2/%40files/data/html_outputs/pull_esets.html){target="_blank"} 
+    * Pulls gene expression data from ImmuneSpace server, constructs expressionsets, 
+    and saves output to an R object on disk. 
+1. [Generate Base ExpressionSet](/_webdav/HIPC/IS2/%40files/data/html_outputs/generate_base_eset.html){target="_blank"}
+    * Perform basic QC and filtering, and save output to one ExpressionSet. 
+1. [Create Final ExpressionSets](/_webdav/HIPC/IS2/%40files/data/html_outputs/create_final_esets.html){target="_blank"}
+    * Perform cross-study normalization and batch correction, and save the different 
+    versions available in the table above. 
 
 <style>
 
 
-  #is2-downloads td, #is2-downloads th {
+  .is2-downloads td, .is2-downloads th {
     border: 1px solid #ddd;
     padding: 3px;
   }
-  #is2-downloads tr:nth-child(even){background-color: #f2f2f2;}
-  #is2-downloads tr:hover {background-color: #ddd;}
-  #is2-downloads th {
+  .is2-downloads tr:nth-child(even){background-color: #f2f2f2;}
+  .is2-downloads tr:hover {background-color: #ddd;}
+  .is2-downloads th {
     background-color: #255c97;
     text-align: left;
     color: white;
