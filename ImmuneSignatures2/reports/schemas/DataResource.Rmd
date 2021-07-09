@@ -1,5 +1,5 @@
 ---
-output: html_document_base
+output: html_document
 ---
 
 ***
