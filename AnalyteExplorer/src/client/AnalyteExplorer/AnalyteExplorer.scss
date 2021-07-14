@@ -1,11 +1,13 @@
 /* Import ImmuneSpace Themes */
 @use "~@immunespace/theme/dist/immunespace";
-@use "~@immunespace/theme/dist/immunespace.fonts" as fonts;
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
+@use "../theme/components.history-block";
 
 main#ae-main {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  color: immunespace.$dark-gray;
 }
 
 .ae-analyte-selector-container {
@@ -25,4 +27,39 @@ main#ae-main {
 .ae-analyte-selector-content,
 .ae-get-started {
   margin: 1.5rem;
+}
+.ae-home {
+  &-content {
+    position: relative;
+    width: 50%;
+  }
+  &-data-processing {
+    p {
+      font-size: 14px;
+      font-weight: immunespace.$font-weight--medium;
+    }
+  }
+
+  &-tutorial-instructions {
+    display: grid;
+    gap: 3rem;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 1rem 0;
+    span {
+      display: block;
+      font-size: 14px;
+      font-weight: immunespace.$font-weight--semibold;
+    }
+  }
+}
+
+.ae-home-arrow-text {
+  &:hover {
+    text-decoration: none;
+    color: #1a1a1a;
+  }
+  span {
+    font-size: 14px;
+    font-weight: immunespace.$font-weight--bold;
+  }
 }

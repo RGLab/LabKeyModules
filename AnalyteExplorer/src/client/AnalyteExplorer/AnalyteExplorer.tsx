@@ -9,6 +9,22 @@ import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
 import "./components/AnalyteSelectorMain.scss";
 import "./AnalyteExplorer.scss";
 import "./test.css";
+import home_tutorial from "./assets/home-tutorial.png";
+
+interface ArrowTextProps {
+  text: string;
+}
+
+const ArrowText: React.FC<ArrowTextProps> = ({ text }) => {
+  return (
+    <a
+      href="#"
+      className="history-block__cta ae-home-arrow-text"
+      title="Data Processing Link">
+      <span className="history-block__link-text">{`${text}`}</span>
+    </a>
+  );
+};
 
 const AnalyteExplorer: React.FC = () => {
   const [selectedAnalyte, setSelectedAnalyte] =
@@ -49,6 +65,31 @@ const AnalyteExplorer: React.FC = () => {
   return (
     <main id="ae-main">
       <AnalyteSelectorMain />
+      <section className="ae-home-content">
+        <div className="ae-home-title">
+          <h1>Analyte Explorer</h1>
+          <h3>A search tool to visualize study data within ImmuneSpace</h3>
+        </div>
+        <img src={home_tutorial} alt="home tutorial" />
+        <div className="ae-home-tutorial-instructions">
+          <span>
+            Search our database for analytes related to HIPC study data
+          </span>
+          <span>Plot the log2 transform to visualize expression patterns</span>
+          <span>Download your search results and analyze further</span>
+        </div>
+        <div className="ae-home-data-processing">
+          <p>
+            Analyte Explorer curruently supports gene expression data for genes
+            and blood transcription modules (BTMs). For more information about
+            our data processing methods for this module visit our data
+            processing page.
+          </p>
+
+          <ArrowText text="Data Processing" />
+        </div>
+      </section>
+
       {/* <section className="ae-select-nav-container">
         <div className="ae-analyte-selector-container">
           <div className="ae-analyte-selector-content">

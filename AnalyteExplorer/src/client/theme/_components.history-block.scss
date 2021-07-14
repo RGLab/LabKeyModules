@@ -1,0 +1,101 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
+@use "./base.globals";
+
+.history-block {
+  background-color: immunespace.$white;
+
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  &__content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 1.25rem 0;
+
+    @include responsive.media-query(tab) {
+      flex-direction: row;
+      // padding: 1.25rem 0;
+      width: 100%;
+    }
+
+    @include responsive.media-query(desk) {
+      padding: 2.5rem 0;
+    }
+  }
+
+  &__title {
+    color: immunespace.$background;
+    font-size: 1.5rem;
+    font-weight: immunespace.$font-weight--normal;
+    line-height: 32px;
+    width: 100%;
+
+    @include responsive.media-query(tab) {
+      width: 35%;
+    }
+  }
+
+  &__copy {
+    color: immunespace.$background;
+    width: 100%;
+
+    @include responsive.media-query(tab) {
+      padding-left: 1.5rem;
+      width: 65%;
+    }
+
+    p {
+      margin-top: 0;
+      line-height: 20px;
+    }
+  }
+
+  &__cta {
+    color: immunespace.$background;
+    display: block;
+    font-size: 0.875rem;
+    font-weight: immunespace.$font-weight--bold;
+    line-height: 19px;
+    margin: 1rem 0;
+    position: relative;
+
+    span {
+      position: relative;
+
+      &::after {
+        content: "";
+        background: url("../AnalyteExplorer/assets/icons/icon-arrow-right-blue.svg")
+          no-repeat;
+        width: 34px;
+        height: 19px;
+        fill: immunespace.$blue;
+        position: absolute;
+        right: -50px;
+        bottom: 0;
+      }
+    }
+
+    &:hover {
+      span {
+        &::after {
+          animation-direction: alternate;
+          animation-duration: 600ms;
+          animation-iteration-count: infinite;
+          animation-name: bobberLtr;
+        }
+      }
+    }
+  }
+
+  &__link-text {
+    text-transform: uppercase;
+  }
+}

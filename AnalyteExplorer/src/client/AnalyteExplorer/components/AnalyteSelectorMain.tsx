@@ -32,10 +32,49 @@ const CheckboxButton: React.FC<CheckboxButtonProps> = ({
   );
 };
 
+interface SelectorInputProps {
+  id: string;
+  name: string;
+  placeholderText: string;
+  value: string;
+  onChangeCallback: (value: string) => void;
+}
+
+const SelectorInput: React.FC<SelectorInputProps> = ({
+  id,
+  name,
+  placeholderText,
+  value,
+  onChangeCallback,
+}) => {
+  return (
+    <input
+      type="text"
+      id={id}
+      name={name}
+      placeholder={placeholderText}
+      value={value}
+      autoComplete="off"
+      onChange={(e) => onChangeCallback(e.currentTarget.value)}></input>
+  );
+};
+
 const AnalyteSelectorMain: React.FC = () => {
   const [selected, setSelected] = React.useState(0); //0 means nothing is selected
   const [hovered, setHovered] = React.useState(0);
   const [diseaseCondFilters, setDiseaseCondFilters] = React.useState({});
+  const [typeSearched, setTypeSearched] = React.useState(null);
+  const [nameSearched, setNameSearched] = React.useState(null);
+  const [typeSelected, setTypeSelected] = React.useState(null);
+  const [nameSelected, setNameSelected] = React.useState(null);
+
+  const testDropdownOptions = [
+    "Option 1",
+    "Option 2",
+    "Option 3",
+    "Option 4",
+    "Option 5",
+  ];
 
   const defaultDiseaseCondFilters = {
     "healthy": false,
@@ -91,6 +130,18 @@ const AnalyteSelectorMain: React.FC = () => {
     };
   }, [dropdownRef, typeSelectorRef, nameSelectorRef, filterSelectorRef]);
 
+  const typeDropdownOnClick = (type: string) => {
+    setTypeSearched(type);
+    setTypeSelected(type);
+    setSelected(0);
+  };
+
+  const nameDropdownOnClick = (name: string) => {
+    setNameSearched(name);
+    setNameSelected(name);
+    setSelected(0);
+  };
+
   const diseaseCondOnClick = (disease: string) => {
     let diseaseCondFiltersNew = { ...diseaseCondFilters };
     diseaseCondFiltersNew[`${disease}`] = !diseaseCondFiltersNew[`${disease}`];
@@ -104,7 +155,7 @@ const AnalyteSelectorMain: React.FC = () => {
 
   const submitFilters = (event) => {
     event.preventDefault();
-    //console.log(event);
+    setSelected(0);
   };
 
   const generateFilterOptions = (diseaseCondFilters: object) => {
@@ -141,50 +192,31 @@ const AnalyteSelectorMain: React.FC = () => {
     );
   };
 
-  const generateDropdown = (selected: number) => {
-    const styles = {
-      display: `${selected === 0 ? "none" : "block"}`,
-      marginLeft: `${selected === 1 ? "0" : "auto"}`,
-      marginRight: `${selected === 3 ? "0" : "auto"}`,
-    };
-    if (selected === 1 || selected === 2) {
-      return (
-        <div
-          ref={dropdownRef}
-          className="analyte-selector-dropdown-menu"
-          style={styles}>
-          <div className="analyte-selector-dropdown-content">
-            <div className="analyte-selector-dropdown-options">
-              <span>Option + {selected}</span>
-            </div>
-            <div className="analyte-selector-dropdown-options">
-              <span>Option</span>
-            </div>
-            <div className="analyte-selector-dropdown-options">
-              <span>Option</span>
-            </div>
-            <div className="analyte-selector-dropdown-options">
-              <span>Option</span>
-            </div>
-            <div className="analyte-selector-dropdown-options">
-              <span>Option</span>
-            </div>
-          </div>
+  const generateDropdown = (
+    styles: object,
+    options: string[],
+    onClickCallback: (value: string) => void
+  ) => {
+    return (
+      <div
+        ref={dropdownRef}
+        className="analyte-selector-dropdown-menu"
+        style={styles}>
+        <div className="analyte-selector-dropdown-content">
+          {options.map((optionLabel: string) => {
+            return (
+              <div
+                className="analyte-selector-dropdown-options"
+                onClick={() => {
+                  onClickCallback(optionLabel);
+                }}>
+                <span>{`${optionLabel}`}</span>
+              </div>
+            );
+          })}
         </div>
-      );
-    }
-
-    if (selected === 3) {
-      return (
-        <div
-          ref={dropdownRef}
-          className="analyte-selector-dropdown-menu analyte-filter-dropdown"
-          style={styles}>
-          {generateFilterOptions(diseaseCondFilters)}
-        </div>
-      );
-    }
-    return <div ref={dropdownRef} style={styles}></div>;
+      </div>
+    );
   };
 
   const filtersApplied = Object.values(diseaseCondFilters).reduce(
@@ -211,11 +243,13 @@ const AnalyteSelectorMain: React.FC = () => {
               <label htmlFor="analyte-type" className="analyte-selector-label">
                 Analyte Type
               </label>
-              <input
-                type="text"
+              <SelectorInput
                 id="analyte-type"
                 name="analyte-type"
-                placeholder="What are you searching?"></input>
+                placeholderText="What are you searching?"
+                value={typeSearched}
+                onChangeCallback={setTypeSearched}
+              />
             </div>
           </div>
           <div className="analyte-selector">
@@ -227,11 +261,18 @@ const AnalyteSelectorMain: React.FC = () => {
               <label htmlFor="analyte" className="analyte-selector-label">
                 Analyte
               </label>
-              <input
+              <SelectorInput
+                id="analyte"
+                name="analyte"
+                placeholderText="Analyte name"
+                value={nameSearched}
+                onChangeCallback={setNameSearched}
+              />
+              {/* <input
                 type="text"
                 id="analyte"
                 name="analyte"
-                placeholder="Analyte name"></input>
+                placeholder="Analyte name"></input> */}
             </div>
           </div>
           <div className="analyte-selector">
@@ -255,7 +296,42 @@ const AnalyteSelectorMain: React.FC = () => {
           </div>
         </div>
       </div>
-      {generateDropdown(selected)}
+
+      {(() => {
+        const styles = {
+          display: `${selected === 0 ? "none" : "block"}`,
+          marginLeft: `${selected === 1 ? "0" : "auto"}`,
+          marginRight: `${selected === 3 ? "0" : "auto"}`,
+        };
+        switch (selected) {
+          case 0:
+            return <div ref={dropdownRef} style={styles}></div>;
+          case 1:
+            const dropdown = generateDropdown(
+              styles,
+              testDropdownOptions,
+              typeDropdownOnClick
+            );
+            return dropdown;
+          case 2:
+            const dropdown2 = generateDropdown(
+              styles,
+              testDropdownOptions,
+              nameDropdownOnClick
+            );
+            return dropdown2;
+          case 3:
+            return (
+              <div
+                ref={dropdownRef}
+                className="analyte-selector-dropdown-menu analyte-filter-dropdown"
+                style={styles}>
+                {generateFilterOptions(diseaseCondFilters)}
+              </div>
+            );
+        }
+      })()}
+
       <br />
     </div>
   );
