@@ -11,9 +11,13 @@
     "test": "cross-env NODE_ENV=test jest"
   },
   "dependencies": {
+    "@nivo/core": "^0.63.0",
+    "@nivo/line": "^0.63.0",
+    "@types/react-transition-group": "^4.4.2",
     "bootstrap": "^4.6.0",
     "react-bootstrap": "^1.6.0",
     "react-icons": "^4.2.0",
+    "react-transition-group": "^4.4.2",
     "styled-components": "^5.3.0"
   },
   "devDependencies": {

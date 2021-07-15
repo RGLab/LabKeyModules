@@ -6,6 +6,8 @@ import SecondarySelectorSimple from "./components/SecondarySelectorSimple";
 import GetStarted from "./components/GetStarted";
 import { ANALYTE_GENE, ANALYTE_BTM, analyteOptions } from "./helpers/constants";
 import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
+import AnalyteMetadataBox from "./components/AnalyteMetadataBox";
+import AnalyteLinePlot from "./components/data_viz/AnalyteLinePlot";
 import "./components/AnalyteSelectorMain.scss";
 import "./AnalyteExplorer.scss";
 import "./test.css";
@@ -88,6 +90,8 @@ const AnalyteExplorer: React.FC = () => {
 
           <ArrowText text="Data Processing" />
         </div>
+        {/* <AnalyteMetadataBox /> */}
+        <AnalyteLinePlot />
       </section>
 
       {/* <section className="ae-select-nav-container">
