@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etl xmlns="http://labkey.org/etl/xml">
+    <name>Step #2: Generate Base ExpressionSet</name>
+    <description>Merge all expressionsets and perform quality control filtering</description>
+    <transforms>
+        <transform id="preprocessImmSig2" type="TaskRefTransformStep">
+            <description>preprocess</description>
+            <taskref ref="org.labkey.di.pipeline.RunReportTask">
+                <settings>
+                    <setting name="reportId" value="module:ImmuneSignatures2/preprocess.R"/>
+                    <setting name="task_name" value="generate_base_eset"/>
+                </settings>
+            </taskref>
+        </transform>
+    </transforms>
+</etl>

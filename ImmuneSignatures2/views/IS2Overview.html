@@ -4,26 +4,45 @@
     <span class="bold-text">Principal Investigator:</span> <span>Steven Kleinstein</span>
 </div>
 <div class="overview-spacing">
-    <span class="bold-text">Title:</span> <span>Placeholder</span>
+    <span class="bold-text">Title:</span> <span>Immune Signatures II</span>
 </div>
 <div class="overview-spacing">
-    <span class="bold-text">Condition studied:</span> <span class="paddingRight25px">Placeholder</span> <span class="bold-text">Number of participants:</span> <span id="subjects"></span>
-</div>
-<div class="overview-spacing">
-    <span class="bold-text">Brief description:</span> <span>Placeholder</span>
+    <span class="bold-text">Brief description:</span> 
+    <span>Identification of vaccine response signatures in order to determine common
+        signatures associated with successful responses across different vaccines</span>
 </div>
 <div class="overview-spacing">
     <span class="bold-text">Description:</span>
     <a class="showSummary">show</a>
     <div class="hidden">
-        placeholder
+            <p>
+                    A central goal of the Human Immunology Project Consortium (HIPC) 
+                    is the identification of molecular “signatures” that correlate 
+                    with the outcomes of vaccinations, adjuvants or natural infections 
+                    in humans. These signature result from the computational analysis 
+                    of large-scale experimental data from high-throughput systems 
+                    biology approaches coupled with detailed clinical phenotyping in
+                    well-characterized human cohorts. 
+            </p>
+            <p>
+                    This IS2 study presents results related to one of 
+                    our motivating biological projects where we have focused on identifying 
+                    vaccination response signatures in young adults and a comparative 
+                    meta-analysis across different vaccines. We sought to determine 
+                    whether there was a common signature associated with successful 
+                    responses across different vaccines.
+            </p>
     </div>
 </div>
 <div class="overview-spacing">
     <span class="bold-text">Objectives:</span>
     <a class="showSummary">show</a>
     <div class="hidden">
-        placeholder
+        <p>
+                The goal of the highly 
+                collaborative “signatures project” proposed is identifying, 
+                standardizing and disseminating HIPC immune signatures. 
+        </p>
     </div>
 </div>
 <div class="overview-spacing">
@@ -31,9 +50,19 @@
     <a class="showSummary">show</a>
     <div class="hidden">
     <ol>
-        <li>tmp 1
+        <li>
+                Develop a data model and submission system to standardize
+                immune signatures involving genes, proteins, cell subsets and 
+                metabolites, as well as a dashboard to disseminate this information
         </li>
-        <li>tmp 2
+        <li>
+                Populate the data model by manually curating signatures from 
+                HIPC and related publications, as well as generating new signatures 
+                through a re-analysis of existing data
+        </li>
+        <li>
+                Carry out motivating 
+                biological projects
         </li>
     </ol>
     </div>
@@ -47,9 +76,9 @@
 <div class="overview-spacing">
     <span class="bold-text">Sponsoring organization:</span> <span>NIAID</span>
 </div>
-<div>
+<!-- <div>
     <a class="labkey-text-link bold-text" href="http://immunology.sciencemag.org/content/2/14/eaal4656" title="ImmuneSignatues" target="_blank">PROCEED TO PAPER</a>
-</div>
+</div> -->
 </div>
 
 
@@ -88,13 +117,6 @@ LABKEY.requiresScript( "ISCore/Common/ISCore.js", true, function() {
             }
             jQuery( target )[0].innerHTML = length == 0 ? 'None' : datasets.join(', ');
         };
-
-        LABKEY.Query.executeSql({
-            schemaName: 'study',
-            sql: 'SELECT COUNT(*) as cnt \
-                  FROM demographics',
-            success: function(r){ jQuery( '#subjects' )[0].innerHTML = r.rows[0].cnt; }
-        });
 
     jQuery('.ISCore').parent().next().css('margin-after', 0);
     jQuery('.ISCore').parent().next().css('margin-before', 0);

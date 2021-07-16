@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ReportDescriptor>
+    <Properties>
+        <Prop name="useDefaultOutputFormat">false</Prop>
+        <Prop name="rmarkdownOutputOptions">keep_md=TRUE, self_contained=FALSE, fig_caption=TRUE, smart=TRUE, highlight="default",css=NULL, theme=NULL </Prop>
+    </Properties>
+</ReportDescriptor>
