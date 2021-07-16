@@ -76,9 +76,6 @@
 <div class="overview-spacing">
     <span class="bold-text">Sponsoring organization:</span> <span>NIAID</span>
 </div>
-<!-- <div>
-    <a class="labkey-text-link bold-text" href="http://immunology.sciencemag.org/content/2/14/eaal4656" title="ImmuneSignatures Manuscript" target="_blank">PROCEED TO PAPER</a>
-</div> -->
 <div>
     <a class="labkey-text-link bold-text" id="privateSdyLink" title="IS2 Private Study" target="_blank">PROCEED TO STUDY DATA (LOGIN REQUIRED)</a>
 </div>
@@ -103,39 +100,6 @@ LABKEY.requiresCss( "ISCore/Common/ISCore.css" );
 // Get dynamic data from immport.public table, which may differ from
 // similar tables inside the private study container.
 LABKEY.requiresScript( "ISCore/Common/ISCore.js", true, function() {
-
-        // Ext.each( [ 'Assays', 'Raw data files' ], function( t ){
-        //     LABKEY.Query.selectRows({
-        //         requiredVersion: 12.3,
-        //         schemaName: 'immport.public',
-        //         queryName: 'IS1_datasets',
-        //         success: function( results ){ onSuccessTbls( results, t ) },
-        //         failure: LABKEY.ext.ISCore.onFailure,
-        //         filterArray: [
-        //             LABKEY.Filter.create('CategoryLabel', t)
-        //         ]
-        //     });
-        // });
-
-        // function onSuccessTbls( results, target ){
-        //     var
-        //         rows = results.rows,
-        //         length = rows.length,
-        //         datasets = [];
-        //     for ( var idxRow = 0; idxRow < length; idxRow ++ ){
-        //         var row = rows[ idxRow ];
-        //         datasets.push(row['Label'].value);
-        //     }
-        //     if(target == 'Raw data files'){ target = "RawDataFiles" };
-        //     jQuery( '#' + target )[0].innerHTML = length == 0 ? 'None' : datasets.join(', ');
-        // };
-
-        // LABKEY.Query.executeSql({
-        //     schemaName: 'immport.public',
-        //     sql: "SELECT COUNT(*) as cnt FROM dimdemographic WHERE Study IN ('SDY63','SDY67','SDY80','SDY212','SDY400','SDY404')",
-        //     success: function(r){ jQuery( '#subjects' )[0].innerHTML = r.rows[0].cnt; }
-        // });
-
     jQuery('.ISCore').parent().next().css('margin-after', 0);
     jQuery('.ISCore').parent().next().css('margin-before', 0);
 });
