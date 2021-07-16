@@ -51,6 +51,11 @@ main#ae-main {
       font-weight: immunespace.$font-weight--semibold;
     }
   }
+
+  &__tutorial-icon {
+    width: 50%;
+    height: 50%;
+  }
 }
 
 .ae-home-arrow-text {

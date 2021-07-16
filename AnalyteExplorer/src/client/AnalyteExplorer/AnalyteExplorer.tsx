@@ -12,6 +12,9 @@ import "./components/AnalyteSelectorMain.scss";
 import "./AnalyteExplorer.scss";
 import "./test.css";
 import home_tutorial from "./assets/home-tutorial.png";
+import tutorial1 from "./assets/tutorial1.png";
+import tutorial2 from "./assets/tutorial2.png";
+import tutorial3 from "./assets/tutorial3.png";
 
 interface ArrowTextProps {
   text: string;
@@ -72,6 +75,21 @@ const AnalyteExplorer: React.FC = () => {
           <h1>Analyte Explorer</h1>
           <h3>A search tool to visualize study data within ImmuneSpace</h3>
         </div>
+        <img
+          src={tutorial1}
+          alt="how to use first step"
+          className="ae-home__tutorial-icon"
+        />
+        <img
+          src={tutorial2}
+          alt="how to use second step"
+          className="ae-home__tutorial-icon"
+        />
+        <img
+          src={tutorial3}
+          alt="how to use third step"
+          className="ae-home__tutorial-icon"
+        />
         <img src={home_tutorial} alt="home tutorial" />
         <div className="ae-home-tutorial-instructions">
           <span>
