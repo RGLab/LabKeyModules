@@ -1,9 +1,7 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-import AEDropdown from "./components/AEDropdown";
 import SecondarySelectorSimple from "./components/SecondarySelectorSimple";
-import GetStarted from "./components/GetStarted";
 import { ANALYTE_GENE, ANALYTE_BTM, analyteOptions } from "./helpers/constants";
 import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
 import AnalyteMetadataBox from "./components/AnalyteMetadataBox";
@@ -75,28 +73,41 @@ const AnalyteExplorer: React.FC = () => {
           <h1>Analyte Explorer</h1>
           <h3>A search tool to visualize study data within ImmuneSpace</h3>
         </div>
-        <img
-          src={tutorial1}
-          alt="how to use first step"
-          className="ae-home__tutorial-icon"
-        />
-        <img
-          src={tutorial2}
-          alt="how to use second step"
-          className="ae-home__tutorial-icon"
-        />
-        <img
-          src={tutorial3}
-          alt="how to use third step"
-          className="ae-home__tutorial-icon"
-        />
-        <img src={home_tutorial} alt="home tutorial" />
+
         <div className="ae-home-tutorial-instructions">
-          <span>
+          <div>
+            <img
+              src={tutorial1}
+              alt="how to use first step"
+              className="ae-home__tutorial-icon"
+            />
+            <span>
+              Search our database for analytes related to HIPC study data
+            </span>
+          </div>
+          <div>
+            <img
+              src={tutorial2}
+              alt="how to use second step"
+              className="ae-home__tutorial-icon"
+            />
+            <span>
+              Plot the log2 transform to visualize expression patterns
+            </span>
+          </div>
+          <div>
+            <img
+              src={tutorial3}
+              alt="how to use third step"
+              className="ae-home__tutorial-icon"
+            />
+            <span>Download your search results and analyze further</span>
+          </div>
+          {/* <span>
             Search our database for analytes related to HIPC study data
           </span>
           <span>Plot the log2 transform to visualize expression patterns</span>
-          <span>Download your search results and analyze further</span>
+          <span>Download your search results and analyze further</span> */}
         </div>
         <div className="ae-home-data-processing">
           <p>
