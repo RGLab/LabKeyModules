@@ -1,150 +1,68 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-import SecondarySelectorSimple from "./components/SecondarySelectorSimple";
-import { ANALYTE_GENE, ANALYTE_BTM, analyteOptions } from "./helpers/constants";
 import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
+import DownloadPage from "./components/DownloadPage";
 import AnalyteMetadataBox from "./components/AnalyteMetadataBox";
 import AnalyteLinePlot from "./components/data_viz/AnalyteLinePlot";
 import "./components/AnalyteSelectorMain.scss";
 import "./AnalyteExplorer.scss";
 import "./test.css";
-import home_tutorial from "./assets/home-tutorial.png";
-import tutorial1 from "./assets/tutorial1.png";
-import tutorial2 from "./assets/tutorial2.png";
-import tutorial3 from "./assets/tutorial3.png";
 
-interface ArrowTextProps {
-  text: string;
-}
-
-const ArrowText: React.FC<ArrowTextProps> = ({ text }) => {
-  return (
-    <a
-      href="#"
-      className="history-block__cta ae-home-arrow-text"
-      title="Data Processing Link">
-      <span className="history-block__link-text">{`${text}`}</span>
-    </a>
-  );
-};
+import { Query, Filter } from "@labkey/api";
+import HomePage from "./components/HomePage";
 
 const AnalyteExplorer: React.FC = () => {
-  const [selectedAnalyte, setSelectedAnalyte] =
-    React.useState("Select Analyte");
+  const [typeSelected, setTypeSelected] = React.useState("");
+  const [nameSelected, setNameSelected] = React.useState("");
+  const [filtersSelected, setFiltersSelected] = React.useState<string[]>([]);
+  const [downloadPageData, setDownloadPageData] = React.useState(null);
 
-  const [diseaseCondition, setDiseaseCondition] = React.useState("");
-  const [gene, setGene] = React.useState("");
-  const [btm, setBtm] = React.useState("");
+  React.useEffect(() => {
+    let isCancelled = false;
 
-  const [plotView, setPlotView] = React.useState(false);
+    const getData = () => {
+      Query.selectRows({
+        schemaName: "lists",
+        queryName: "gene_expression",
+        filterArray: [
+          Filter.create("analyte_type", typeSelected),
+          Filter.create("analyte_id", nameSelected.toUpperCase()),
+          Filter.create(
+            "condition",
+            filtersSelected,
+            Filter.Types.CONTAINS_ONE_OF
+          ),
+        ],
+        success: (data) => {
+          console.log(data);
+          setDownloadPageData(data);
+        },
+        failure: (err) => console.log(err),
+      });
+    };
 
-  const secondarySelectorCallback = ({ disease, analyteName, analyteType }) => {
-    if (analyteType === ANALYTE_GENE) {
-      setGene(analyteName);
-    } else if (analyteType === ANALYTE_BTM) {
-      setBtm(analyteName);
+    if (
+      !isCancelled &&
+      typeSelected !== "" &&
+      nameSelected !== "" &&
+      filtersSelected.length > 0
+    ) {
+      getData();
     }
-    setDiseaseCondition(disease);
-    setPlotView(true);
-  };
-
-  const generateSecondarySelector = (analyte: string) => {
-    if (analyte === ANALYTE_GENE || analyte === ANALYTE_BTM) {
-      return (
-        <SecondarySelectorSimple
-          analyte={selectedAnalyte}
-          callback={secondarySelectorCallback}
-        />
-      );
-    }
-    return <div></div>;
-  };
-
-  const generatePlot = () => {
-    return <h1>Plot</h1>;
-  };
+    return () => {
+      isCancelled = true;
+    };
+  }, [typeSelected, nameSelected, filtersSelected]);
 
   return (
     <main id="ae-main">
-      <AnalyteSelectorMain />
-      <section className="ae-home-content">
-        <div className="ae-home-title">
-          <h1>Analyte Explorer</h1>
-          <h3>A search tool to visualize study data within ImmuneSpace</h3>
-        </div>
-
-        <div className="ae-home-tutorial-instructions">
-          <div>
-            <img
-              src={tutorial1}
-              alt="how to use first step"
-              className="ae-home__tutorial-icon"
-            />
-            <span>
-              Search our database for analytes related to HIPC study data
-            </span>
-          </div>
-          <div>
-            <img
-              src={tutorial2}
-              alt="how to use second step"
-              className="ae-home__tutorial-icon"
-            />
-            <span>
-              Plot the log2 transform to visualize expression patterns
-            </span>
-          </div>
-          <div>
-            <img
-              src={tutorial3}
-              alt="how to use third step"
-              className="ae-home__tutorial-icon"
-            />
-            <span>Download your search results and analyze further</span>
-          </div>
-          {/* <span>
-            Search our database for analytes related to HIPC study data
-          </span>
-          <span>Plot the log2 transform to visualize expression patterns</span>
-          <span>Download your search results and analyze further</span> */}
-        </div>
-        <div className="ae-home-data-processing">
-          <p>
-            Analyte Explorer curruently supports gene expression data for genes
-            and blood transcription modules (BTMs). For more information about
-            our data processing methods for this module visit our data
-            processing page.
-          </p>
-
-          <ArrowText text="Data Processing" />
-        </div>
-        {/* <AnalyteMetadataBox /> */}
-        <AnalyteLinePlot />
-      </section>
-
-      {/* <section className="ae-select-nav-container">
-        <div className="ae-analyte-selector-container">
-          <div className="ae-analyte-selector-content">
-            <h1>Analyte Explorer</h1>
-            <p>
-              Visualize analytes of interest from the cohort-level study data
-              with ImmuneSpace
-            </p>
-            <AEDropdown
-              selected={selectedAnalyte}
-              dropdownOptions={analyteOptions}
-              callback={setSelectedAnalyte}
-            />
-          </div>
-        </div>
-        {generateSecondarySelector(selectedAnalyte)}
-      </section>
-      <section className="ae-plot-container">
-        <div className="ae-plot-content">
-          {!plotView ? <GetStarted /> : generatePlot()}
-        </div>
-      </section> */}
+      <AnalyteSelectorMain
+        typeSelectedCallback={setTypeSelected}
+        nameSelectedCallback={setNameSelected}
+        filtersSelectedCallback={setFiltersSelected}
+      />
+      {downloadPageData === null ? <HomePage /> : <DownloadPage />}
     </main>
   );
 };

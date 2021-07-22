@@ -20,6 +20,23 @@
   width: 230px;
 }
 
+.analyte-selector.selected {
+  background-color: immunespace.$light-gray;
+  border-radius: 50px;
+}
+
+.analyte-selector-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 230px;
+  height: 40px;
+  margin: auto auto;
+  z-index: -10;
+}
+
 .analyte-selector-label {
   display: block;
   font-size: 12px;
@@ -86,6 +103,13 @@
     height: 100%;
     padding: 50px 0;
 
+    .analyte-selector-no-results-text {
+      display: block;
+      width: 100%;
+      text-align: center;
+      font-size: immunespace.$size-4;
+    }
+
     .analyte-selector-dropdown-options {
       width: 100%;
       height: 50px;
@@ -106,7 +130,7 @@
 
 .analyte-filter-dropdown {
   width: 100%;
-  height: 259px;
+  height: 350px;
   margin-left: 0;
 }
 

@@ -11,6 +11,7 @@
     "test": "cross-env NODE_ENV=test jest"
   },
   "dependencies": {
+    "@labkey/api": "^1.6.3",
     "@nivo/core": "^0.63.0",
     "@nivo/line": "^0.63.0",
     "@types/react-transition-group": "^4.4.2",
