@@ -108,13 +108,12 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
 
   const elevateSelections = () => {
     if (nameSelected !== "") {
-      const checkedFilters = diseaseCondFilters.map(
-        ({ condition, checked }) => {
-          if (checked) {
-            return condition.trim().replaceAll(" ", "_");
-          }
+      let checkedFilters: string[] = [];
+      for (const { condition, checked } of diseaseCondFilters) {
+        if (checked) {
+          checkedFilters.push(condition.trim().replaceAll(" ", "_"));
         }
-      );
+      }
       if (checkedFilters.length > 0) {
         typeSelectedCallback(typeSelected);
         nameSelectedCallback(nameSelected);
@@ -230,11 +229,12 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
 
   const submitFilters = (event) => {
     event.preventDefault();
-    const checkedFilters = diseaseCondFilters.map(({ condition, checked }) => {
+    let checkedFilters: string[] = [];
+    for (const { condition, checked } of diseaseCondFilters) {
       if (checked) {
-        return condition.trim().replaceAll(" ", "_");
+        checkedFilters.push(condition.trim().replaceAll(" ", "_"));
       }
-    });
+    }
     if (checkedFilters.length > 0) {
       filtersSelectedCallback(checkedFilters);
     }

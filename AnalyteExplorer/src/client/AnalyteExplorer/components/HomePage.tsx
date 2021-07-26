@@ -64,7 +64,6 @@ const HomePage: React.FC = () => {
 
         <ArrowText text="Data Processing" />
       </div>
-      {/* <AnalyteMetadataBox /> */}
     </section>
   );
 };

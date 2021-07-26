@@ -62,7 +62,11 @@ const AnalyteExplorer: React.FC = () => {
         nameSelectedCallback={setNameSelected}
         filtersSelectedCallback={setFiltersSelected}
       />
-      {downloadPageData === null ? <HomePage /> : <DownloadPage />}
+      {downloadPageData === null ? (
+        <HomePage />
+      ) : (
+        <DownloadPage data={downloadPageData} filters={filtersSelected} />
+      )}
     </main>
   );
 };

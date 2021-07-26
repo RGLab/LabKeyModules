@@ -3,6 +3,10 @@ import { ResponsiveLine } from "@nivo/line";
 import "./AnalyteLinePlot.scss";
 import { graphData } from "./mockData";
 
+interface LinePlotProps {
+  data: any;
+}
+
 const MyResponsiveLine = (data) => {
   return (
     <ResponsiveLine
@@ -23,7 +27,7 @@ const MyResponsiveLine = (data) => {
         tickSize: 5,
         tickPadding: 5,
         tickRotation: 0,
-        legend: "transportation",
+        legend: "timepoint",
         legendOffset: 36,
         legendPosition: "middle",
       }}
@@ -31,7 +35,7 @@ const MyResponsiveLine = (data) => {
         tickSize: 5,
         tickPadding: 5,
         tickRotation: 0,
-        legend: "count",
+        legend: "mean fold change",
         legendOffset: -40,
         legendPosition: "middle",
       }}
@@ -71,8 +75,8 @@ const MyResponsiveLine = (data) => {
   );
 };
 
-const AnalyteLinePlot: React.FC = () => {
-  return <div className="ae-plot-container">{MyResponsiveLine(graphData)}</div>;
+const AnalyteLinePlot: React.FC<LinePlotProps> = ({ data }) => {
+  return <div className="ae-plot-container">{MyResponsiveLine(data)}</div>;
 };
 
 export default AnalyteLinePlot;
