@@ -24,8 +24,10 @@ const AnalyteExplorer: React.FC = () => {
 
     const processData = (data: any) => {
       if (data !== undefined && data.rows !== undefined) {
-        if (data.rows.length < 1) {
+        if (data.rows.length < 1 && !isDataEmpty) {
           setIsDataEmpty(true);
+        } else if (isDataEmpty) {
+          setIsDataEmpty(false);
         }
         setDownloadPageData(data);
         setIsDataLoaded(true);
@@ -45,14 +47,12 @@ const AnalyteExplorer: React.FC = () => {
             Filter.Types.CONTAINS_ONE_OF
           ),
         ],
-        success: (data) => {
-          console.log(data);
-          setDownloadPageData(data);
-          setIsDataLoaded(true);
-        },
+        success: processData,
         failure: (err) => console.log(err),
       });
     };
+
+    const buildQuery = () => {};
 
     if (
       !isCancelled &&
@@ -69,9 +69,9 @@ const AnalyteExplorer: React.FC = () => {
     };
   }, [typeSelected, nameSelected, filtersSelected]);
 
-  console.log(nameSelected);
-  console.log(filtersSelected);
-  console.log(downloadPageData);
+  //console.log(nameSelected);
+  // console.log(filtersSelected);
+  //console.log(downloadPageData);
 
   return (
     <main id="ae-main">
@@ -86,7 +86,16 @@ const AnalyteExplorer: React.FC = () => {
       filtersSelected.length < 1 ? (
         <HomePage />
       ) : filtersSelected.length > 0 && isDataLoaded ? (
-        <DownloadPage data={downloadPageData} filters={filtersSelected} />
+        isDataEmpty ? (
+          <div>
+            <h1>
+              No data found!
+              <br /> Please try again!
+            </h1>
+          </div>
+        ) : (
+          <DownloadPage data={downloadPageData} filters={filtersSelected} />
+        )
       ) : (
         <Spinner animation="border" variant="primary" />
       )}

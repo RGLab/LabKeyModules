@@ -81,7 +81,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({ data, filters }) => {
       finalData[condition] = [...Object.values(cohorts)];
       return finalData;
     }, {});
-
+    console.log(organizedData);
     return organizedData;
   };
 

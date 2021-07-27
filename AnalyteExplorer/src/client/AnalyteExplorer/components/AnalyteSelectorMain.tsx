@@ -157,6 +157,12 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     setTypeSearched(type);
     setTypeSelected(type);
     setSelected(0);
+
+    if (nameSelected !== "") {
+      setNameSelected("");
+      setNameSearched("");
+    }
+
     for (const { type: analyteType, displayName } of ANALYTE_TYPES) {
       // this might look rly bad but ANALYTE_TYPES has a length of 2 so it's ok
       if (type === displayName) {
