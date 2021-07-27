@@ -1,5 +1,6 @@
 import React from "react";
 import AnalyteLinePlot from "./data_viz/AnalyteLinePlot";
+import { CSVLink } from "react-csv";
 
 interface DownloadPageProps {
   data: any;
@@ -84,14 +85,20 @@ const DownloadPage: React.FC<DownloadPageProps> = ({ data, filters }) => {
     return organizedData;
   };
 
-  console.log(organizeData(data.rows, filters));
+  //console.log(organizeData(data.rows, filters));
   const plotData = organizeData(data.rows, filters);
   //populateDataSkeleton(dataSkeleton, organizeData(data.rows, filters));
 
   return (
     <div>
+      <CSVLink data={data.rows}>Download Me!</CSVLink>
       {Object.entries(plotData).map(([condition, data]) => {
-        return <AnalyteLinePlot data={data} />;
+        return (
+          <React.Fragment>
+            <h2>{`${condition}`}</h2>
+            <AnalyteLinePlot data={data} />
+          </React.Fragment>
+        );
       })}
     </div>
   );

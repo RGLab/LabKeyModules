@@ -63,12 +63,14 @@ interface AnalyteSelectorMainProps {
   typeSelectedCallback: (type: string) => void;
   nameSelectedCallback: (name: string) => void;
   filtersSelectedCallback: (filters: string[]) => void;
+  setIsDataLoaded: (isLoaded: boolean) => void;
 }
 
 const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
   typeSelectedCallback,
   nameSelectedCallback,
   filtersSelectedCallback,
+  setIsDataLoaded,
 }) => {
   const [selected, setSelected] = React.useState(0); //0 means nothing is selected
   const [hovered, setHovered] = React.useState(0);
@@ -104,22 +106,6 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     borderRight: `${
       hovered === 1 || hovered === 0 ? "1px solid black" : "none"
     }`,
-  };
-
-  const elevateSelections = () => {
-    if (nameSelected !== "") {
-      let checkedFilters: string[] = [];
-      for (const { condition, checked } of diseaseCondFilters) {
-        if (checked) {
-          checkedFilters.push(condition.trim().replaceAll(" ", "_"));
-        }
-      }
-      if (checkedFilters.length > 0) {
-        typeSelectedCallback(typeSelected);
-        nameSelectedCallback(nameSelected);
-        filtersSelectedCallback(checkedFilters);
-      }
-    }
   };
 
   // closes dropdown box when the user clicks outside of the dropdown box
@@ -174,6 +160,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     for (const { type: analyteType, displayName } of ANALYTE_TYPES) {
       // this might look rly bad but ANALYTE_TYPES has a length of 2 so it's ok
       if (type === displayName) {
+        setIsDataLoaded(false);
         typeSelectedCallback(analyteType);
       }
     }
@@ -196,30 +183,9 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     }
   };
 
-  // confirm the analyte name selection
-  const nameDropdownOnClick = (name: string) => {
-    setNameSearched(name);
-    setNameSelected(name);
-    setTypeFromName(name);
-    setSelected(0);
-    nameSelectedCallback(name);
-    //elevateSelections();
-  };
-
-  // check and uncheck disease condition checkboxes
-  const diseaseCondOnClick = (disease: string) => {
-    let diseaseCondFiltersNew = [...diseaseCondFilters];
-    for (const diseaseCond of diseaseCondFiltersNew) {
-      if (diseaseCond.condition === disease) {
-        diseaseCond.checked = !diseaseCond.checked;
-      }
-    }
-    setDiseaseCondFilters(diseaseCondFiltersNew);
-  };
-
   // uncheck all disease condition checkboxes
-  const resetDiseaseCondFilters = (event) => {
-    event.preventDefault();
+  const resetDiseaseCondFilters = () => {
+    //event.preventDefault();
     const defaultCondFilters = [...diseaseCondFilters];
     for (const diseaseCond of defaultCondFilters) {
       diseaseCond.checked = false;
@@ -235,10 +201,35 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
         checkedFilters.push(condition.trim().replaceAll(" ", "_"));
       }
     }
-    if (checkedFilters.length > 0) {
+    if (checkedFilters.length > -1) {
+      setIsDataLoaded(false);
       filtersSelectedCallback(checkedFilters);
     }
     setSelected(0);
+  };
+
+  // confirm the analyte name selection
+  const nameDropdownOnClick = (name: string) => {
+    setNameSearched(name);
+    setNameSelected(name);
+    setTypeFromName(name);
+    setSelected(0);
+    setIsDataLoaded(false);
+
+    filtersSelectedCallback([]);
+    nameSelectedCallback(name);
+    //elevateSelections();
+  };
+
+  // check and uncheck disease condition checkboxes
+  const diseaseCondOnClick = (disease: string) => {
+    let diseaseCondFiltersNew = [...diseaseCondFilters];
+    for (const diseaseCond of diseaseCondFiltersNew) {
+      if (diseaseCond.condition === disease) {
+        diseaseCond.checked = !diseaseCond.checked;
+      }
+    }
+    setDiseaseCondFilters(diseaseCondFiltersNew);
   };
 
   const getSuggestedAnalyteNames = (
