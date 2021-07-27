@@ -9,15 +9,17 @@ library(HIPCMatrix)
 taskInfo <- "${pipeline, taskInfo}" # separated to make debugging locally easier
 
 ## taskInfo.tsv inputs
-jobInfo <- read.table(taskInfo,
-                      col.names = c("name", "value", "type"),
-                      header = FALSE,
-                      check.names = FALSE,
-                      stringsAsFactors = FALSE,
-                      sep = "\t",
-                      quote = "",
-                      fill = TRUE,
-                      na.strings = "")
+jobInfo <- read.table(
+  taskInfo,
+  col.names = c("name", "value", "type"),
+  header = FALSE,
+  check.names = FALSE,
+  stringsAsFactors = FALSE,
+  sep = "\t",
+  quote = "",
+  fill = TRUE,
+  na.strings = ""
+)
 
 
 selectedBiosamples <- NULL # legacy from Renan ... why?
@@ -33,28 +35,29 @@ fas_id <- "${assay run property, featureSet}"
 taskOutputParams <- "${pipeline, taskOutputParams}"
 
 
-labkey.url.base <- jobInfo$value[ jobInfo$name == "baseUrl"]
-labkey.url.path <- jobInfo$value[ jobInfo$name == "containerPath"]
+labkey.url.base <- jobInfo$value[jobInfo$name == "baseUrl"]
+labkey.url.path <- jobInfo$value[jobInfo$name == "containerPath"]
 study <- gsub("/Studies/", "", labkey.url.path)
-matrix_name <- jobInfo$value[ jobInfo$name == "protocol"]
-base_dir <- jobInfo$value[ jobInfo$name == "pipeRoot"]
+matrix_name <- jobInfo$value[jobInfo$name == "protocol"]
+base_dir <- jobInfo$value[jobInfo$name == "pipeRoot"]
 selected_biosamples <- "${selected-biosamples}"
 output.tsv <- "${output.tsv}"
 
 
-runCreateMx(study = study,
-            matrix_name = matrix_name,
-            selected_biosamples = selected_biosamples,
-            fas_id = fas_id,
-            labkey.url.base = labkey.url.base,
-            base_dir = base_dir,
-            # Need to write outputs to wd for pipeline module to correctly
-            # read them. They will be moved to correct location as part of
-            # pipeline.
-            output_dir = normalizePath("."),
-            taskOutputParams = taskOutputParams,
-            verbose = TRUE,
-            snapshot = TRUE
+runCreateMx(
+  study = study,
+  matrix_name = matrix_name,
+  selected_biosamples = selected_biosamples,
+  fas_id = fas_id,
+  labkey.url.base = labkey.url.base,
+  base_dir = base_dir,
+  # Need to write outputs to wd for pipeline module to correctly
+  # read them. They will be moved to correct location as part of
+  # pipeline.
+  output_dir = normalizePath("."),
+  taskOutputParams = taskOutputParams,
+  verbose = TRUE,
+  snapshot = TRUE
 )
 
 # Notes:
