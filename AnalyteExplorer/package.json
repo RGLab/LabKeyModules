@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@labkey/api": "^1.6.3",
-    "@nivo/core": "^0.63.0",
-    "@nivo/line": "^0.63.0",
+    "@nivo/core": "^0.73.0",
+    "@nivo/line": "^0.73.0",
     "@types/react-transition-group": "^4.4.2",
     "bootstrap": "^4.6.0",
     "react-bootstrap": "^1.6.0",

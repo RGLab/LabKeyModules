@@ -10,7 +10,7 @@ interface DownloadPageProps {
 interface NivoDataFormat {
   id: string;
   color: string;
-  data: [{ x: string | number; y: string | number }];
+  data: [{ x: number; y: number }];
 }
 
 interface MultiConditionNivoDataFormat {
@@ -85,9 +85,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({ data, filters }) => {
     return organizedData;
   };
 
-  //console.log(organizeData(data.rows, filters));
   const plotData = organizeData(data.rows, filters);
-  //populateDataSkeleton(dataSkeleton, organizeData(data.rows, filters));
 
   return (
     <div>
