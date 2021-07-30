@@ -52,8 +52,6 @@ const AnalyteExplorer: React.FC = () => {
       });
     };
 
-    const buildQuery = () => {};
-
     if (
       !isCancelled &&
       typeSelected !== "" &&
@@ -63,6 +61,7 @@ const AnalyteExplorer: React.FC = () => {
       console.log("fetching data...");
       setDownloadPageData(null);
       getData();
+      console.log("meep");
     }
     return () => {
       isCancelled = true;

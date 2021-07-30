@@ -2,8 +2,7 @@ import React from "react";
 import tutorial1 from "../assets/tutorial1.png";
 import tutorial2 from "../assets/tutorial2.png";
 import tutorial3 from "../assets/tutorial3.png";
-import AnalyteLinePlot from "./data_viz/AnalyteLinePlot";
-import { mockData } from "./data_viz/mockData";
+import ReChartsLinePlot from "./data_viz/ReChartsLinePlot";
 
 interface ArrowTextProps {
   text: string;
@@ -66,7 +65,7 @@ const HomePage: React.FC = () => {
 
         <ArrowText text="Data Processing" />
       </div>
-      <AnalyteLinePlot data={mockData} />
+      <ReChartsLinePlot />
     </section>
   );
 };

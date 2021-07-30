@@ -3,6 +3,12 @@ import "./AnalyteMetadataBox.scss";
 import { CgChevronDoubleDownO, CgChevronDoubleUpO } from "react-icons/cg";
 import { CSSTransition } from "react-transition-group";
 
+interface AnalyteMetadataBoxProps {
+  title?: string;
+  subtitle?: string;
+  body?: string;
+}
+
 const AnalyteMetadataBox: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(true);
   const metaDropdownOnClick = () => {

@@ -1,5 +1,5 @@
 import React from "react";
-import { ResponsiveLine } from "@nivo/line";
+import { ResponsiveLine, PointTooltip, PointTooltipProps } from "@nivo/line";
 import "./AnalyteLinePlot.scss";
 //import { graphData } from "./mockData";
 
@@ -7,11 +7,16 @@ interface LinePlotProps {
   data: any;
 }
 
+const CustomToolTip: PointTooltip = ({ point }) => {
+  return <div>{`x: ${point.x}`}</div>;
+};
+
 const MyResponsiveLine = (data) => {
   return (
     <ResponsiveLine
       data={data}
       margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+      colors={{ datum: "color" }}
       xScale={{ type: "linear" }}
       yScale={{
         type: "linear",
@@ -35,15 +40,16 @@ const MyResponsiveLine = (data) => {
         tickPadding: 5,
         tickRotation: 0,
         legend: "mean fold change",
-        legendOffset: -40,
+        legendOffset: -50,
         legendPosition: "middle",
       }}
-      pointSize={10}
-      pointColor={{ theme: "background" }}
-      pointBorderWidth={2}
+      pointSize={6}
+      // pointColor={{ theme: "background" }}
+      pointBorderWidth={0}
       pointBorderColor={{ from: "serieColor" }}
       pointLabelYOffset={-12}
       useMesh={true}
+      tooltip={CustomToolTip}
       legends={[
         {
           anchor: "bottom-right",
