@@ -1,8 +1,18 @@
 import React, { MouseEvent } from "react";
 import { ANALYTE_TYPE_DISPLAYNAMES, ANALYTE_TYPES } from "../helpers/constants";
 import { capitalizeFirstChar } from "@labkey/components";
-import { Query } from "@labkey/api";
+import { Query, Filter } from "@labkey/api";
 import "./AnalyteSelectorMain.scss";
+import { BsSearch } from "react-icons/bs";
+import { IFilter } from "@labkey/api/dist/labkey/Filter";
+
+const SearchButton: React.FC = () => {
+  return (
+    <button className="analyte-selector-search-btn">
+      <BsSearch className="ae-search-icon" />
+    </button>
+  );
+};
 
 interface CheckboxButtonProps {
   id: string;
@@ -295,6 +305,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
   React.useEffect(() => {
     let isCancelled = false;
     const parseNameSuggestionData = (data: any) => {
+      console.log(data);
       if (
         !isCancelled &&
         data !== undefined &&
@@ -308,19 +319,76 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     };
 
     const callLabkey = () => {
+      console.log("call");
       let filterType = "";
       for (const { type, displayName } of ANALYTE_TYPES) {
         if (displayName === typeSelected) {
           filterType = type;
         }
       }
-      const checkedFilters = diseaseCondFilters.map(
-        ({ condition, checked }) => {
-          if (checked) {
-            return condition.trim().replaceAll(" ", "_");
-          }
+
+      let filterArray: IFilter[] = [
+        Filter.create(
+          "analyte_id",
+          nameSearched.toUpperCase(),
+          Filter.Types.STARTS_WITH
+        ),
+      ];
+
+      if (filterType !== "") {
+        filterArray.push(Filter.create("analyte_type", filterType));
+      } else {
+        filterArray.push(
+          Filter.create(
+            "analyte_type",
+            "gene signature",
+            Filter.Types.NOT_EQUAL
+          )
+        );
+      }
+
+      Query.selectDistinctRows({
+        column: "analyte_id",
+        schemaName: "lists",
+        queryName: "gene_expression",
+        filterArray: filterArray,
+        maxRows: 5,
+        success: (data) => console.log(data),
+      });
+    };
+
+    callLabkey();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [typeSelected, nameSearched]);
+
+  React.useEffect(() => {
+    let isCancelled = false;
+    const parseNameSuggestionData = (data: any) => {
+      console.log(data);
+      if (
+        !isCancelled &&
+        data !== undefined &&
+        data !== null &&
+        data.rows !== undefined &&
+        data.rows !== null
+      ) {
+        setFilteredNameSuggestions(getSuggestedAnalyteNames(data.rows));
+        setRawNameSuggestions(data);
+      }
+    };
+
+    const callLabkey = () => {
+      console.log("call");
+      let filterType = "";
+      for (const { type, displayName } of ANALYTE_TYPES) {
+        if (displayName === typeSelected) {
+          filterType = type;
         }
-      );
+      }
+
       Query.executeSql({
         containerPath: "/AnalyteExplorer",
         schemaName: "lists",
@@ -329,14 +397,16 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
               WHERE gene_expression.analyte_id LIKE '${nameSearched.toUpperCase()}%'
               ${
                 filterType === ""
-                  ? ""
+                  ? `AND gene_expression.analyte_type != 'gene expression'`
                   : `AND gene_expression.analyte_type = '${filterType}'`
               }
               LIMIT 5`,
         success: parseNameSuggestionData,
       });
     };
+
     callLabkey();
+
     return () => {
       isCancelled = true;
     };
@@ -400,17 +470,19 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
               NO RESULTS FOUND
             </span>
           ) : (
-            options.map((optionLabel: string) => {
-              return (
-                <div
-                  className="analyte-selector-dropdown-options"
-                  onClick={() => {
-                    onClickCallback(optionLabel);
-                  }}>
-                  <span>{`${optionLabel}`}</span>
-                </div>
-              );
-            })
+            <ul>
+              {options.map((optionLabel: string) => {
+                return (
+                  <li
+                    className="analyte-selector-dropdown-options"
+                    onClick={() => {
+                      onClickCallback(optionLabel);
+                    }}>
+                    <span>{`${optionLabel}`}</span>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </div>
       </div>
@@ -429,12 +501,11 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
 
   //analyte-selector-dropdown
   return (
-    <div>
+    <div style={{ zIndex: 20 }}>
       <div className="analyte-selector-main">
-        {/* <AnalyteSelectorDivider /> */}
-        <div
+        {/* <div
           className="analyte-selector-divider"
-          style={analyteDividerStyles}></div>
+          style={analyteDividerStyles}></div> */}
         <div className="analyte-selector-dropdown">
           <div
             className={`analyte-selector ${selected === 1 ? "selected" : ""}`}>
@@ -472,11 +543,6 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
                 value={nameSearched}
                 onChangeCallback={nameInputOnChange}
               />
-              {/* <input
-                type="text"
-                id="analyte"
-                name="analyte"
-                placeholder="Analyte name"></input> */}
             </div>
           </div>
           <div
@@ -499,10 +565,47 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
                 readOnly></input>
             </div>
           </div>
+          <div
+            className="analyte-selector-divider"
+            style={analyteDividerStyles}></div>
         </div>
+        {(() => {
+          const styles = {
+            display: `${selected === 0 ? "none" : "block"}`,
+            marginLeft: `${selected === 1 ? "0" : "auto"}`,
+            marginRight: `${selected === 3 ? "0" : "auto"}`,
+          };
+          switch (selected) {
+            case 0:
+              return <div ref={dropdownRef} style={styles}></div>;
+            case 1:
+              const dropdown = generateDropdown(
+                styles,
+                filteredTypeSuggestions,
+                typeDropdownOnClick
+              );
+              return dropdown;
+            case 2:
+              const dropdown2 = generateDropdown(
+                styles,
+                filteredNameSuggestions,
+                nameDropdownOnClick
+              );
+              return dropdown2;
+            case 3:
+              return (
+                <div
+                  ref={dropdownRef}
+                  className="analyte-selector-dropdown-menu analyte-filter-dropdown"
+                  style={styles}>
+                  {generateFilterOptions(diseaseCondFilters)}
+                </div>
+              );
+          }
+        })()}
       </div>
 
-      {(() => {
+      {/* {(() => {
         const styles = {
           display: `${selected === 0 ? "none" : "block"}`,
           marginLeft: `${selected === 1 ? "0" : "auto"}`,
@@ -535,7 +638,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
               </div>
             );
         }
-      })()}
+      })()} */}
 
       <br />
     </div>

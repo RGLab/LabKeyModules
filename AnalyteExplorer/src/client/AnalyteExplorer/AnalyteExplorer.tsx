@@ -10,6 +10,7 @@ import "./test.css";
 
 import { Query, Filter } from "@labkey/api";
 import HomePage from "./components/HomePage";
+import LabKeyDebugPage from "./components/LabKeyDebugPage";
 
 const AnalyteExplorer: React.FC = () => {
   const [typeSelected, setTypeSelected] = React.useState("");

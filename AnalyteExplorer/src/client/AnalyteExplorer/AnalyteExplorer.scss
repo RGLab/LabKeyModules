@@ -4,9 +4,10 @@
 @use "../theme/components.history-block";
 
 main#ae-main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  // display: flex;
+  // flex-direction: column;
+  // align-items: center;
+  position: relative;
   color: immunespace.$dark-gray;
 }
 
@@ -30,8 +31,11 @@ main#ae-main {
 }
 .ae-home {
   &-content {
-    position: relative;
+    position: absolute;
+    top: 148px;
+    left: 138px;
     width: 70%;
+    z-index: -1;
   }
   &-data-processing {
     p {

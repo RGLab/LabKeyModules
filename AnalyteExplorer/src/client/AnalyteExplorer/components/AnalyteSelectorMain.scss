@@ -2,6 +2,8 @@
 
 .analyte-selector-main {
   position: relative;
+  width: 690px;
+  margin: 0 auto;
 }
 .analyte-selector-dropdown {
   position: relative;
@@ -37,23 +39,25 @@
   z-index: -10;
 }
 
-.analyte-selector-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 800;
-  text-align: center;
-}
-
 .analyte-selector-label-wrapper {
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
   width: 100%;
   height: 100%;
   cursor: pointer;
+
+  .analyte-selector-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+    &:hover {
+      cursor: pointer;
+    }
+  }
 
   input {
     display: block;
@@ -92,11 +96,13 @@
 
 .analyte-selector-dropdown-menu {
   display: block;
+  background-color: immunespace.$white;
   width: 400px;
   height: 350px;
   border-radius: 50px;
   margin-top: 3rem;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 20;
 
   .analyte-selector-dropdown-content {
     width: 100%;
@@ -113,6 +119,8 @@
     .analyte-selector-dropdown-options {
       width: 100%;
       height: 50px;
+      display: flex;
+      align-items: center;
 
       span {
         display: inline-block;
@@ -192,5 +200,23 @@
         background-color: immunespace.$dark-blue;
       }
     }
+  }
+}
+
+.analyte-selector-search-btn {
+  border: none;
+  background-color: immunespace.$immune-blue;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+
+  &:hover {
+    background-color: immunespace.$dark-blue;
+  }
+
+  .ae-search-icon {
+    width: 35px;
+    height: 35px;
+    color: immunespace.$white;
   }
 }

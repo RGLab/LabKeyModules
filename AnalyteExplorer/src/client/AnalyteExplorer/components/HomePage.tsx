@@ -2,7 +2,7 @@ import React from "react";
 import tutorial1 from "../assets/tutorial1.png";
 import tutorial2 from "../assets/tutorial2.png";
 import tutorial3 from "../assets/tutorial3.png";
-import ReChartsLinePlot from "./data_viz/ReChartsLinePlot";
+import LinePlot from "./data_viz/LinePlot";
 
 interface ArrowTextProps {
   text: string;
@@ -20,6 +20,8 @@ const ArrowText: React.FC<ArrowTextProps> = ({ text }) => {
 };
 
 const HomePage: React.FC = () => {
+
+  
   return (
     <section className="ae-home-content">
       <div className="ae-home-title">
@@ -65,7 +67,7 @@ const HomePage: React.FC = () => {
 
         <ArrowText text="Data Processing" />
       </div>
-      <ReChartsLinePlot />
+      {/* <LinePlot name={"test"} width={1000} height={1000} xLabel={"Timepoint"} yLabel={"Gene Expression"}/> */}
     </section>
   );
 };
