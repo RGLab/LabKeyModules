@@ -13,7 +13,7 @@ if (length(args) == 1) {
 }
 
 BiocManager::install("patchwork")
-
+BiocManager::install("org.Hs.eg.db")
 
 BiocManager::install("ComplexHeatmap")
 
@@ -24,5 +24,7 @@ BiocManager::install("preprocessCore", configure.args="--disable-threading", for
 devtools::install_github("dleelab/pvca", ref = "master")
 devtools::install_github("stefanavey/titer", ref = "master")
 devtools::install_github("LBMC/RAPToR", ref = "master")
+
+install.packages("tidyverse")
 
 devtools::install_github("RGLab/ImmuneSignatures2", ref = "dev", auth_token = args[2])
