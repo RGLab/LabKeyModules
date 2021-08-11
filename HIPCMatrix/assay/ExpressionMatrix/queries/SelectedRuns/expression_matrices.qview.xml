@@ -13,6 +13,7 @@
                 <cv:property name='columnTitle' value='Study'/>
             </cv:properties>
         </cv:column>
+        <cv:column name='Version'/>
         <cv:column name='download_link'/>
         <cv:column name='created'/>
         <cv:column name='createdby'/>
