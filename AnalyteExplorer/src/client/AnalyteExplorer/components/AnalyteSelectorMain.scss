@@ -2,19 +2,21 @@
 
 .analyte-selector-main {
   position: relative;
-  width: 690px;
+  display: flex;
+  flex-wrap: wrap;
+  width: 760px;
   margin: 0 auto;
 }
 .analyte-selector-dropdown {
   position: relative;
   display: flex;
-
   align-items: center;
   width: 690px;
   height: 78px;
   border: 1px solid black;
   font-family: immunespace.$nunito-sans;
   border-radius: 50px;
+  margin-right: 0;
 }
 
 .analyte-selector {
@@ -71,7 +73,8 @@
     outline: none;
   }
 
-  input#analyte-filters:hover {
+  input#analyte-filters:hover,
+  input#analyte-type:hover {
     cursor: pointer;
   }
 }

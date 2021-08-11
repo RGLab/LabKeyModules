@@ -1,28 +1,16 @@
 import React from "react";
 import AnalyteMetadataBox from "./AnalyteMetadataBox";
 import { CSVLink } from "react-csv";
+import { Spinner } from "react-bootstrap";
 
 import LinePlot, { LinePlotProps } from "./data_viz/LinePlot";
+import { ErrorMessageDownload } from "./ErrorMessage";
+import "./DownloadPage.scss";
 
 interface DownloadPageProps {
   data: any;
   filters: string[];
-}
-
-interface NivoDataFormat {
-  id: string;
-  color: string;
-  data: { x: number; y: number }[];
-}
-
-interface MultiConditionNivoDataFormat {
-  [condition: string]: NivoDataFormat[];
-}
-
-interface DataSkeleton {
-  [condition: string]: {
-    [cohort: string]: NivoDataFormat;
-  };
+  errorMsg?: string;
 }
 
 interface RowData {
@@ -36,18 +24,6 @@ interface RowData {
   sd_fold_change: number;
   study_accession: string;
   timepoint: number;
-}
-
-interface ReChartsDataFormat {
-  x: number;
-  [y: string]: number;
-}
-
-interface D3LineData {
-  cohort: string;
-  data: { x: number; y: number }[];
-  xLabel: string;
-  yLabel: string;
 }
 
 const getAverage = (numArr: number[]): number => {
@@ -64,14 +40,14 @@ const getAverage = (numArr: number[]): number => {
   return null;
 };
 
-const DownloadPage: React.FC<DownloadPageProps> = ({ data, filters }) => {
-  // let dataByFilter: { [filter: string]: [] } = filters.reduce(
-  //   (skeleton, filter) => {
-  //     skeleton[filter] = [];
-  //     return skeleton;
-  //   },
-  //   {}
-  // );
+const DownloadPage: React.FC<DownloadPageProps> = ({
+  data,
+  filters,
+  errorMsg,
+}) => {
+  if (data === null && errorMsg !== "") {
+    return <ErrorMessageDownload />;
+  }
 
   let dataByFilter: { [filter: string]: RowData[] } = {};
 
@@ -131,8 +107,10 @@ const DownloadPage: React.FC<DownloadPageProps> = ({ data, filters }) => {
     return organizeD3Data(filter, data);
   });
 
+  console.log(d3DataByFilters);
+
   return (
-    <div>
+    <div className="ae-download-content">
       <CSVLink data={data.rows}>Download Me!</CSVLink>
       {d3DataByFilters.map((d3Data) => {
         return (

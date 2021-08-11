@@ -1,14 +1,27 @@
 import React, { MouseEvent } from "react";
-import { ANALYTE_TYPE_DISPLAYNAMES, ANALYTE_TYPES } from "../helpers/constants";
+import {
+  ANALYTE_ALL,
+  ANALYTE_TYPE_DISPLAYNAMES,
+  FILTER_DROPDOWN_ROW_COUNT,
+} from "../helpers/constants";
 import { capitalizeFirstChar } from "@labkey/components";
-import { Query, Filter } from "@labkey/api";
+import {
+  convertDisplayToColumn,
+  convertColumnToDisplay,
+  binaryClosestSearch,
+} from "../helpers/helperFunctions";
+import { Query } from "@labkey/api";
 import "./AnalyteSelectorMain.scss";
 import { BsSearch } from "react-icons/bs";
-import { IFilter } from "@labkey/api/dist/labkey/Filter";
 
-const SearchButton: React.FC = () => {
+interface SearchButtonProps {
+  onClickCallback: (event: React.MouseEvent) => void;
+  disabled?: boolean;
+}
+
+const SearchButton: React.FC<SearchButtonProps> = ({ onClickCallback }) => {
   return (
-    <button className="analyte-selector-search-btn">
+    <button className="analyte-selector-search-btn" onClick={onClickCallback}>
       <BsSearch className="ae-search-icon" />
     </button>
   );
@@ -69,22 +82,29 @@ const SelectorInput: React.FC<SelectorInputProps> = ({
   );
 };
 
+export interface FilterNameSuggestions {
+  [analyte_type: string]: { analyte_id: string; analyte_type: string }[];
+}
+
 interface AnalyteSelectorMainProps {
-  typeSelectedCallback: (type: string) => void;
-  nameSelectedCallback: (name: string) => void;
-  filtersSelectedCallback: (filters: string[]) => void;
-  setIsDataLoaded: (isLoaded: boolean) => void;
+  searchBtnCallback: (
+    analyte_type: string,
+    analyte_name: string,
+    filters: string[]
+  ) => void;
+  typedFilterNameSuggestions: FilterNameSuggestions;
+  untypedFilterNameSuggestions: { analyte_id: string; analyte_type: string }[];
+  conditionData: any;
 }
 
 const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
-  typeSelectedCallback,
-  nameSelectedCallback,
-  filtersSelectedCallback,
-  setIsDataLoaded,
+  searchBtnCallback,
+  typedFilterNameSuggestions,
+  untypedFilterNameSuggestions,
+  conditionData,
 }) => {
   const [selected, setSelected] = React.useState(0); //0 means nothing is selected
   const [hovered, setHovered] = React.useState(0);
-  const [typeSearched, setTypeSearched] = React.useState("");
   const [nameSearched, setNameSearched] = React.useState("");
   const [typeSelected, setTypeSelected] = React.useState("");
   const [nameSelected, setNameSelected] = React.useState("");
@@ -92,17 +112,13 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
   const [filteredTypeSuggestions, setFilteredTypeSuggestions] = React.useState(
     ANALYTE_TYPE_DISPLAYNAMES
   );
-  const [filteredNameSuggestions, setFilteredNameSuggestions] = React.useState<
-    string[]
-  >([]);
+  const [filterNameSuggestions, setFilterNameSuggestions] = React.useState<{
+    [analyte_name: string]: string;
+  }>({});
 
-  const [diseaseCondFilters, setDiseaseCondFilters] = React.useState<
-    { condition: string; checked: boolean }[]
-  >([]);
-
-  //const [diseaseCondiFilterz, setDiseaseCondFilterz] = React.useState(new Map()<string, string>)
-
-  const [rawNameSuggestions, setRawNameSuggestions] = React.useState({});
+  const [conditionFilters, setConditionFilters] = React.useState<{
+    [condition: string]: boolean;
+  }>({});
 
   const dropdownRef = React.useRef(null);
   const typeSelectorRef = React.useRef(null);
@@ -141,86 +157,123 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     };
   }, [dropdownRef, typeSelectorRef, nameSelectorRef, filterSelectorRef]);
 
-  const typeInputOnChange = (event: React.FormEvent<HTMLInputElement>) => {
-    const suggestions = ANALYTE_TYPE_DISPLAYNAMES;
-    const userInput = event.currentTarget.value;
-    if (userInput !== "") {
-      const filteredSuggestions = suggestions.filter(
-        (suggestion) =>
-          suggestion.toLowerCase().indexOf(userInput.toLowerCase()) === 0
-      );
+  const searchBtnOnClick = () => {
+    if (nameSelected !== "") {
+      let type = "";
+      let filters: string[] = [];
+      if (typeSelected !== "" && typeSelected !== ANALYTE_ALL) {
+        type = convertDisplayToColumn(typeSelected);
+      }
 
-      setFilteredTypeSuggestions(filteredSuggestions);
-    } else {
-      setFilteredTypeSuggestions(ANALYTE_TYPE_DISPLAYNAMES);
+      for (const [condition, checked] of Object.entries(conditionFilters)) {
+        if (checked) {
+          filters.push(condition);
+        }
+      }
+
+      filters.sort();
+
+      if (filters.length > 0) {
+        //callback to download page
+        searchBtnCallback(type, nameSelected, filters);
+      }
     }
-    setTypeSearched(userInput);
   };
+
+  // const typeInputOnChange = (event: React.FormEvent<HTMLInputElement>) => {
+  //   const suggestions = ANALYTE_TYPE_DISPLAYNAMES;
+  //   const userInput = event.currentTarget.value;
+  //   if (userInput !== "") {
+  //     const filteredSuggestions = suggestions.filter(
+  //       (suggestion) =>
+  //         suggestion.toLowerCase().indexOf(userInput.toLowerCase()) === 0
+  //     );
+
+  //     setFilteredTypeSuggestions(filteredSuggestions);
+  //   } else {
+  //     setFilteredTypeSuggestions(ANALYTE_TYPE_DISPLAYNAMES);
+  //   }
+  //   setTypeSearched(userInput);
+  // };
 
   const nameInputOnChange = (event: React.FormEvent<HTMLInputElement>) => {
     const userInput = event.currentTarget.value;
+    const userInputCaps = userInput.toUpperCase();
+    let filteredNames: { [analyte_name: string]: string } = {};
+
+    if (userInput !== "") {
+      if (typeSelected === ANALYTE_ALL || typeSelected === "") {
+        console.time("search");
+        let index = binaryClosestSearch(
+          userInputCaps,
+          untypedFilterNameSuggestions,
+          0,
+          untypedFilterNameSuggestions.length - 1
+        );
+        console.timeEnd("search");
+        const suggestions = untypedFilterNameSuggestions.slice(
+          index,
+          index + FILTER_DROPDOWN_ROW_COUNT
+        );
+        for (const analyte of suggestions) {
+          if (analyte["analyte_id"].includes(userInputCaps)) {
+            filteredNames[analyte["analyte_id"]] = analyte["analyte_type"];
+          }
+        }
+      } else {
+        const columnTypeName = convertDisplayToColumn(typeSelected);
+        let index = binaryClosestSearch(
+          userInputCaps,
+          typedFilterNameSuggestions[columnTypeName],
+          0,
+          typedFilterNameSuggestions[columnTypeName].length - 1
+        );
+        const suggestions = typedFilterNameSuggestions[columnTypeName].slice(
+          index,
+          index + FILTER_DROPDOWN_ROW_COUNT
+        );
+        for (const analyte of suggestions) {
+          if (analyte["analyte_id"].includes(userInputCaps)) {
+            filteredNames[analyte["analyte_id"]] = analyte["analyte_type"];
+          }
+        }
+      }
+    }
+
+    setFilterNameSuggestions(filteredNames);
     setNameSearched(userInput);
   };
 
   // confirm the analyte type selection
   const typeDropdownOnClick = (type: string) => {
-    setTypeSearched(type);
     setTypeSelected(type);
-    setSelected(0);
 
-    if (nameSelected !== "") {
-      setNameSelected("");
+    // clear analyte and filters
+    if (nameSearched !== "") {
       setNameSearched("");
     }
-
-    for (const { type: analyteType, displayName } of ANALYTE_TYPES) {
-      // this might look rly bad but ANALYTE_TYPES has a length of 2 so it's ok
-      if (type === displayName) {
-        setIsDataLoaded(false);
-        typeSelectedCallback(analyteType);
-      }
-    }
+    setNameSelected("");
+    setFilterNameSuggestions({});
+    setSelected(0);
   };
 
+  // if type isn't set when selecting analyte, set type for user
   const setTypeFromName = (name: string) => {
-    if (typeSelected === "" && rawNameSuggestions["rows"] !== undefined) {
-      for (const { analyte_id, analyte_type } of rawNameSuggestions["rows"]) {
-        if (name === analyte_id) {
-          for (const { type, displayName } of ANALYTE_TYPES) {
-            // this might look rly bad but ANALYTE_TYPES has a length of 2 so it's ok
-            if (analyte_type === type) {
-              setTypeSelected(displayName);
-              setTypeSearched(displayName);
-              typeSelectedCallback(type);
-            }
-          }
-        }
-      }
+    if (typeSelected === "") {
+      const type = convertColumnToDisplay(filterNameSuggestions[name]);
+      setTypeSelected(type);
     }
   };
 
   // uncheck all disease condition checkboxes
   const resetDiseaseCondFilters = () => {
-    //event.preventDefault();
-    const defaultCondFilters = [...diseaseCondFilters];
-    for (const diseaseCond of defaultCondFilters) {
-      diseaseCond.checked = false;
-    }
-    setDiseaseCondFilters(defaultCondFilters);
+    const defaultConds = { ...conditionFilters };
+    Object.keys(defaultConds).forEach((key) => (defaultConds[key] = false));
+    setConditionFilters(defaultConds);
   };
 
   const submitFilters = (event) => {
     event.preventDefault();
-    let checkedFilters: string[] = [];
-    for (const { condition, checked } of diseaseCondFilters) {
-      if (checked) {
-        checkedFilters.push(condition.trim().replaceAll(" ", "_"));
-      }
-    }
-    if (checkedFilters.length > -1) {
-      setIsDataLoaded(false);
-      filtersSelectedCallback(checkedFilters);
-    }
     setSelected(0);
   };
 
@@ -230,190 +283,68 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     setNameSelected(name);
     setTypeFromName(name);
     setSelected(0);
-    setIsDataLoaded(false);
-
-    filtersSelectedCallback([]);
-    nameSelectedCallback(name);
-    //elevateSelections();
   };
 
   // check and uncheck disease condition checkboxes
   const diseaseCondOnClick = (disease: string) => {
-    let diseaseCondFiltersNew = [...diseaseCondFilters];
-    for (const diseaseCond of diseaseCondFiltersNew) {
-      if (diseaseCond.condition === disease) {
-        diseaseCond.checked = !diseaseCond.checked;
-      }
-    }
-    setDiseaseCondFilters(diseaseCondFiltersNew);
+    let newConditionFilters = { ...conditionFilters };
+    newConditionFilters[disease] = !newConditionFilters[disease];
+    setConditionFilters(newConditionFilters);
   };
 
-  const getSuggestedAnalyteNames = (
-    data: { analyte_id: string; analyte_type: string }[]
-  ): string[] => {
-    const analyteNames = data.map((analyte) => {
-      return analyte["analyte_id"];
+  React.useEffect(() => {
+    // let isCancelled = false;
+
+    // const parseDiseaseCondData = (data: any) => {
+    //   if (
+    //     !isCancelled &&
+    //     data !== undefined &&
+    //     data !== null &&
+    //     data.rows !== undefined
+    //   ) {
+    //     const conditions = {};
+    //     data.rows.forEach((condition: { condition: string }) => {
+    //       const disease = condition["condition"].replaceAll("_", " ");
+    //       conditions[disease] = false;
+    //     });
+
+    //     setConditionFilters(conditions);
+    //   }
+    // };
+
+    // const getDiseaseConds = () => {
+    //   Query.executeSql({
+    //     containerPath: "/AnalyteExplorer",
+    //     schemaName: "lists",
+    //     sql: `SELECT DISTINCT gene_expression.condition AS condition
+    //     FROM gene_expression
+    //     `,
+    //     success: parseDiseaseCondData,
+    //   });
+    // };
+
+    // if (!isCancelled) {
+    //   console.log("fetching disease cond");
+    //   getDiseaseConds();
+    // }
+
+    // return () => {
+    //   isCancelled = true;
+    // };
+    const conditions = {};
+    conditionData.rows.forEach((condition: { condition: string }) => {
+      const disease = condition["condition"].replaceAll("_", " ");
+      conditions[disease] = false;
     });
-    return analyteNames;
-  };
 
-  React.useEffect(() => {
-    let isCancelled = false;
-    const getDiseaseConditionQuery = (analyte: string): string => {
-      if (analyte === "") {
-        return `SELECT DISTINCT gene_expression.condition AS condition
-                FROM gene_expression
-                `;
-      }
-      return `SELECT DISTINCT gene_expression.condition AS condition
-              FROM gene_expression
-              WHERE gene_expression.analyte_id = '${analyte}'`;
-    };
-
-    const parseDiseaseCondData = (data: any) => {
-      if (
-        !isCancelled &&
-        data !== undefined &&
-        data !== null &&
-        data.rows !== undefined
-      ) {
-        const diseaseConds = data.rows.map(
-          (condition: { condition: string }) => {
-            const disease = condition["condition"].replaceAll("_", " ");
-            return { condition: disease, checked: false };
-          }
-        );
-
-        setDiseaseCondFilters(diseaseConds);
-      }
-    };
-
-    const getDiseaseConds = () => {
-      Query.executeSql({
-        containerPath: "/AnalyteExplorer",
-        schemaName: "lists",
-        sql: getDiseaseConditionQuery(nameSelected),
-        success: parseDiseaseCondData,
-      });
-    };
-    getDiseaseConds();
-    return () => {
-      isCancelled = true;
-    };
-  }, [nameSelected]);
-
-  React.useEffect(() => {
-    let isCancelled = false;
-    const parseNameSuggestionData = (data: any) => {
-      console.log(data);
-      if (
-        !isCancelled &&
-        data !== undefined &&
-        data !== null &&
-        data.rows !== undefined &&
-        data.rows !== null
-      ) {
-        setFilteredNameSuggestions(getSuggestedAnalyteNames(data.rows));
-        setRawNameSuggestions(data);
-      }
-    };
-
-    const callLabkey = () => {
-      console.log("call");
-      let filterType = "";
-      for (const { type, displayName } of ANALYTE_TYPES) {
-        if (displayName === typeSelected) {
-          filterType = type;
-        }
-      }
-
-      let filterArray: IFilter[] = [
-        Filter.create(
-          "analyte_id",
-          nameSearched.toUpperCase(),
-          Filter.Types.STARTS_WITH
-        ),
-      ];
-
-      if (filterType !== "") {
-        filterArray.push(Filter.create("analyte_type", filterType));
-      } else {
-        filterArray.push(
-          Filter.create(
-            "analyte_type",
-            "gene signature",
-            Filter.Types.NOT_EQUAL
-          )
-        );
-      }
-
-      Query.selectDistinctRows({
-        column: "analyte_id",
-        schemaName: "lists",
-        queryName: "gene_expression",
-        filterArray: filterArray,
-        maxRows: 5,
-        success: (data) => console.log(data),
-      });
-    };
-
-    callLabkey();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [typeSelected, nameSearched]);
-
-  React.useEffect(() => {
-    let isCancelled = false;
-    const parseNameSuggestionData = (data: any) => {
-      console.log(data);
-      if (
-        !isCancelled &&
-        data !== undefined &&
-        data !== null &&
-        data.rows !== undefined &&
-        data.rows !== null
-      ) {
-        setFilteredNameSuggestions(getSuggestedAnalyteNames(data.rows));
-        setRawNameSuggestions(data);
-      }
-    };
-
-    const callLabkey = () => {
-      console.log("call");
-      let filterType = "";
-      for (const { type, displayName } of ANALYTE_TYPES) {
-        if (displayName === typeSelected) {
-          filterType = type;
-        }
-      }
-
-      Query.executeSql({
-        containerPath: "/AnalyteExplorer",
-        schemaName: "lists",
-        sql: `SELECT DISTINCT gene_expression.analyte_id AS analyte_id, gene_expression.analyte_type AS analyte_type
-              FROM gene_expression
-              WHERE gene_expression.analyte_id LIKE '${nameSearched.toUpperCase()}%'
-              ${
-                filterType === ""
-                  ? `AND gene_expression.analyte_type != 'gene expression'`
-                  : `AND gene_expression.analyte_type = '${filterType}'`
-              }
-              LIMIT 5`,
-        success: parseNameSuggestionData,
-      });
-    };
-
-    callLabkey();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [typeSelected, nameSearched]);
+    setConditionFilters(conditions);
+  }, []);
 
   const generateFilterOptions = (
-    diseaseCondFilters: { condition: string; checked: boolean }[]
+    diseaseCondFilters: {
+      [condition: string]: boolean;
+    },
+    onClickCallback: (value: string) => void
   ) => {
     return (
       <div className="analyte-filter-content">
@@ -421,21 +352,15 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
           <h2 className="analyte-filter-name">Disease Condition</h2>
           <div className="analyte-filter-options-container">
             <div className="analyte-filter-form-content">
-              {diseaseCondFilters.map(
-                ({
-                  condition,
-                  checked,
-                }: {
-                  condition: string;
-                  checked: boolean;
-                }) => {
+              {Object.entries(diseaseCondFilters).map(
+                ([condition, checked]: [string, boolean]) => {
                   return (
                     <CheckboxButton
                       key={condition}
                       id={condition}
                       labelText={condition}
                       isChecked={checked}
-                      onClickCallback={diseaseCondOnClick}
+                      onClickCallback={onClickCallback}
                     />
                   );
                 }
@@ -467,7 +392,9 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
         <div className="analyte-selector-dropdown-content">
           {options.length < 1 ? (
             <span className="analyte-selector-no-results-text">
-              NO RESULTS FOUND
+              {nameSearched === ""
+                ? "PLEASE SEARCH AN ANALYTE"
+                : "NO RESULTS FOUND"}
             </span>
           ) : (
             <ul>
@@ -489,9 +416,10 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     );
   };
 
-  const filtersApplied = diseaseCondFilters.reduce(
-    (filters: number, diseaseCond: { condition: string; checked: boolean }) => {
-      if (diseaseCond.checked) {
+  // memoize this?
+  const filtersApplied = Object.values(conditionFilters).reduce(
+    (filters: number, checked) => {
+      if (checked) {
         filters += 1;
       }
       return filters;
@@ -499,13 +427,9 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     0
   );
 
-  //analyte-selector-dropdown
   return (
     <div style={{ zIndex: 20 }}>
       <div className="analyte-selector-main">
-        {/* <div
-          className="analyte-selector-divider"
-          style={analyteDividerStyles}></div> */}
         <div className="analyte-selector-dropdown">
           <div
             className={`analyte-selector ${selected === 1 ? "selected" : ""}`}>
@@ -517,12 +441,12 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
               <label htmlFor="analyte-type" className="analyte-selector-label">
                 Analyte Type
               </label>
-              <SelectorInput
+              <input
                 id="analyte-type"
                 name="analyte-type"
-                placeholderText="What are you searching?"
-                value={capitalizeFirstChar(typeSearched)}
-                onChangeCallback={typeInputOnChange}
+                placeholder="What are you searching?"
+                value={capitalizeFirstChar(typeSelected)}
+                readOnly
               />
             </div>
           </div>
@@ -569,6 +493,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
             className="analyte-selector-divider"
             style={analyteDividerStyles}></div>
         </div>
+        <SearchButton onClickCallback={searchBtnOnClick} />
         {(() => {
           const styles = {
             display: `${selected === 0 ? "none" : "block"}`,
@@ -588,7 +513,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
             case 2:
               const dropdown2 = generateDropdown(
                 styles,
-                filteredNameSuggestions,
+                Object.keys(filterNameSuggestions),
                 nameDropdownOnClick
               );
               return dropdown2;
@@ -598,48 +523,12 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
                   ref={dropdownRef}
                   className="analyte-selector-dropdown-menu analyte-filter-dropdown"
                   style={styles}>
-                  {generateFilterOptions(diseaseCondFilters)}
+                  {generateFilterOptions(conditionFilters, diseaseCondOnClick)}
                 </div>
               );
           }
         })()}
       </div>
-
-      {/* {(() => {
-        const styles = {
-          display: `${selected === 0 ? "none" : "block"}`,
-          marginLeft: `${selected === 1 ? "0" : "auto"}`,
-          marginRight: `${selected === 3 ? "0" : "auto"}`,
-        };
-        switch (selected) {
-          case 0:
-            return <div ref={dropdownRef} style={styles}></div>;
-          case 1:
-            const dropdown = generateDropdown(
-              styles,
-              filteredTypeSuggestions,
-              typeDropdownOnClick
-            );
-            return dropdown;
-          case 2:
-            const dropdown2 = generateDropdown(
-              styles,
-              filteredNameSuggestions,
-              nameDropdownOnClick
-            );
-            return dropdown2;
-          case 3:
-            return (
-              <div
-                ref={dropdownRef}
-                className="analyte-selector-dropdown-menu analyte-filter-dropdown"
-                style={styles}>
-                {generateFilterOptions(diseaseCondFilters)}
-              </div>
-            );
-        }
-      })()} */}
-
       <br />
     </div>
   );
