@@ -1,11 +1,12 @@
 import React, { CSSProperties } from "react";
 //import { TestPlot } from "./d3/Test.d3";
 import { D3LinePlot, D3LinePlotConfig } from "./d3/LinePlot.d3";
-import { Point } from "./d3/LinePlot.d3";
+import { StudyPoint } from "./d3/LinePlot.d3";
+import LinePlotTooltip from "./LinePlotTooltip";
 import * as d3 from "d3";
 
 export interface LinePlotProps {
-  data: Map<string, { x: number; y: number }[]>;
+  data: Map<string, { x: number; y: number; study: string }[]>;
   name: string;
   width: number;
   height: number;
@@ -26,16 +27,26 @@ const LinePlot: React.FC<LinePlotProps> = ({
     height: height,
   };
 
-  const setupData = (data: Map<string, { x: number; y: number }[]>) => {
-    let formattedData: { name: string; data: Point[] }[] = [];
+  const setupData = (
+    data: Map<string, { x: number; y: number; study: string }[]>
+  ): { name: string; study: string; data: StudyPoint[] }[][] => {
+    let linedData: { name: string; study: string; data: StudyPoint[] }[] = [];
+    let trendData: { name: string; study: string; data: StudyPoint[] }[] = [];
     for (const [cohort, linePoints] of data) {
-      formattedData.push({
-        name: cohort,
-        data: linePoints.sort((a, b) => a.x - b.x),
-      });
+      if (linePoints.length > 0) {
+        const formattedData = {
+          name: cohort,
+          study: linePoints[0].study,
+          data: linePoints.sort((a, b) => a.x - b.x),
+        };
+        if (cohort === "Average") {
+          trendData.push(formattedData);
+        }
+        linedData.push(formattedData);
+      }
     }
 
-    return formattedData;
+    return [linedData, trendData];
   };
 
   function randomLetters() {
@@ -50,13 +61,18 @@ const LinePlot: React.FC<LinePlotProps> = ({
   // };
 
   React.useEffect(() => {
-    const formattedData = setupData(data);
-    D3LinePlot.create(name, formattedData, {
-      width: width,
-      height: height,
-      xLabel: xLabel,
-      yLabel: yLabel,
-    });
+    const [formattedLineData, formattedTrendData] = setupData(data);
+    D3LinePlot.create(
+      name,
+      formattedLineData,
+      {
+        width: width,
+        height: height,
+        xLabel: xLabel,
+        yLabel: yLabel,
+      },
+      formattedTrendData
+    );
   }, []);
 
   // React.useEffect(() => {
@@ -76,7 +92,7 @@ const LinePlot: React.FC<LinePlotProps> = ({
   // }, [randomData]);
 
   return (
-    <div className={name}>
+    <div className={name} style={{ position: "relative", height: "1000px" }}>
       <div className="df-lineplot-title">
         <h4>{name}</h4>
       </div>
@@ -86,9 +102,7 @@ const LinePlot: React.FC<LinePlotProps> = ({
         style={linePlotStyles}>
         <svg></svg>
       </div>
-      <div id={"xaxis-" + name}>
-        <svg></svg>
-      </div>
+      <LinePlotTooltip name={name} />
     </div>
   );
 

@@ -49,6 +49,8 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     return <ErrorMessageDownload />;
   }
 
+  console.log(data);
+
   let dataByFilter: { [filter: string]: RowData[] } = {};
 
   for (const current of data.rows) {
@@ -66,14 +68,21 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     condition: string,
     data: RowData[]
   ): LinePlotProps => {
-    let dataMap = new Map<string, { x: number; y: number }[]>();
+    let dataMap = new Map<string, { x: number; y: number; study: string }[]>();
     let avgMap = new Map<number, number[]>();
-    for (const { cohort, timepoint, mean_fold_change } of data) {
+    for (const {
+      cohort,
+      timepoint,
+      mean_fold_change,
+      study_accession,
+    } of data) {
       if (dataMap.get(cohort) === undefined) {
-        dataMap.set(cohort, [{ x: timepoint, y: mean_fold_change }]);
+        dataMap.set(cohort, [
+          { x: timepoint, y: mean_fold_change, study: study_accession },
+        ]);
       } else {
         dataMap.set(cohort, [
-          { x: timepoint, y: mean_fold_change },
+          { x: timepoint, y: mean_fold_change, study: study_accession },
           ...dataMap.get(cohort),
         ]);
       }
@@ -85,10 +94,10 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       }
     }
 
-    let avgLineData = [];
+    let avgLineData: { x: number; y: number; study: string }[] = [];
 
     for (const [timepoint, yS] of avgMap) {
-      avgLineData.push({ x: timepoint, y: getAverage(yS) });
+      avgLineData.push({ x: timepoint, y: getAverage(yS), study: "Trend" });
     }
 
     dataMap.set("Average", avgLineData);
@@ -98,7 +107,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       data: dataMap,
       xLabel: "timepoint",
       yLabel: "mean fold change",
-      width: 700,
+      width: 1500,
       height: 700,
     };
   };

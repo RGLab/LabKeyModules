@@ -113,6 +113,7 @@ const AnalyteExplorer: React.FC = () => {
     let isCancelled = false;
 
     const processData = (data: any) => {
+      console.log(data);
       if (data !== undefined && data.rows !== undefined) {
         let typedNames: FilterNameSuggestions = {};
         for (const analyte of data.rows) {
@@ -139,9 +140,9 @@ const AnalyteExplorer: React.FC = () => {
       Query.executeSql({
         containerPath: "/AnalyteExplorer",
         schemaName: "lists",
-        sql: `SELECT DISTINCT gene_expression.analyte_id AS analyte_id, analyte_type
-                  FROM gene_expression
-                  WHERE gene_expression.analyte_type != 'gene signature'
+        sql: `SELECT DISTINCT analyte_id, analyte_type
+                  FROM analytes
+                  WHERE analytes.analyte_type != 'gene signature'
                   `,
         success: processData,
         failure: handleFailure,

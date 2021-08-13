@@ -11,22 +11,28 @@ export interface D3LinePlotConfig {
   barColor?: string;
 }
 
-export interface Point {
+export interface StudyPoint {
   x: number;
   y: number;
+  study: string;
 }
 
 interface D3LinePlot {
-  create: (id: string, data: any, config: D3LinePlotConfig) => void;
-  update: (id: string, data: any, config: D3LinePlotConfig) => void;
+  create: (
+    id: string,
+    data: { name: string; study: string; data: StudyPoint[] }[],
+    config: D3LinePlotConfig,
+    trendData?: { name: string; study: string; data: StudyPoint[] }[]
+  ) => void;
 }
 
 const xaxisTitle = { height: 40 };
 
 const createLinePlot = (
   id: string,
-  data: { name: string; data: Point[] }[],
-  config: D3LinePlotConfig
+  data: { name: string; study: string; data: StudyPoint[] }[],
+  config: D3LinePlotConfig,
+  trendData?: { name: string; study: string; data: StudyPoint[] }[]
 ) => {
   const lineplotHeight = config.height - xaxisTitle.height - 10;
   const margin = { top: 20, right: 30, bottom: 40, left: 40 },
@@ -67,20 +73,30 @@ const createLinePlot = (
     .x((d) => x(d.x))
     .y((d) => y(d.y));
 
-  let lData = data.reduce((arr, current) => {
+  let lineData: StudyPoint[][] = data.reduce((arr, current) => {
     arr.push(current.data);
     return arr;
   }, []);
 
-  const paths = svg.selectAll(".plot-line").data(lData);
-  const t = svg.transition().duration(750);
+  let circleData: { cohort: string; study: string; point: StudyPoint }[] =
+    data.reduce((arr, current) => {
+      for (const point of current.data) {
+        arr.push({ cohort: current.name, study: current.study, point: point });
+      }
+      return arr;
+    }, []);
+
+  const paths = svg.selectAll(".plot-line").data(lineData);
+  //const t = svg.transition().duration(750);
+
+  const tooltip = d3.select("#tooltip-" + id);
 
   paths.join(
     (enter) =>
       enter
         .append("path")
         .attr("fill", "none")
-        .attr("stroke", "red")
+        .attr("stroke", "black")
         .attr("stroke-width", 1.5)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
@@ -89,6 +105,53 @@ const createLinePlot = (
     (update) => update.attr("stroke", "blue"),
     (exit) => exit.remove()
   );
+
+  if (trendData !== undefined && trendData.length > 0) {
+    let trendLineData: StudyPoint[][] = [trendData[0].data];
+    const trendLine = svg.selectAll("#trend-line-" + id).data(trendLineData);
+
+    trendLine.join((enter) =>
+      enter
+        .append("path")
+        .attr("fill", "none")
+        .attr("stroke", "red")
+        .attr("stroke-width", 1.5)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .attr("id", "#trend-line-" + id)
+        .attr("d", line)
+    );
+  }
+
+  const circles = svg.selectAll("circle").data(circleData);
+
+  circles
+    .join((enter) =>
+      enter
+        .append("circle")
+        .style("fill", "blue")
+        .on("mouseenter", function (d) {
+          //using normal functions to preserve "this"
+          d3.select(this).transition().duration(1).attr("r", 8);
+          tooltip
+            .style("left", x(d.point.x) + 8 + "px")
+            .style("top", y(d.point.y) + "px")
+            .style("display", "block");
+          tooltip.html(
+            `Cohort: ${d.cohort}<br>Study: ${d.study}<br>Timepoint: ${d.point.x}<br>log2-FC: ${d.point.y}`
+          );
+        })
+        .on("mouseleave", function (d) {
+          d3.select(this)
+            .transition()
+            .duration(1)
+            .attr("r", (d) => 4);
+          tooltip.style("display", "none");
+        })
+    )
+    .attr("cx", (d) => x(d.point.x))
+    .attr("cy", (d) => y(d.point.y))
+    .attr("r", 4);
 
   svg
     .append("text")
@@ -110,38 +173,37 @@ const createLinePlot = (
     .text(config.yLabel);
 };
 
-const updateLinePlot = (id: string, data: any, config: D3LinePlotConfig) => {
-  const lineplotHeight = config.height - xaxisTitle.height - 10;
-  const margin = { top: 20, right: 30, bottom: 40, left: 40 },
-    width = config.width - margin.left - margin.right,
-    height = lineplotHeight - margin.top - margin.bottom;
+// const updateLinePlot = (id: string, data: any, config: D3LinePlotConfig) => {
+//   const lineplotHeight = config.height - xaxisTitle.height - 10;
+//   const margin = { top: 20, right: 30, bottom: 40, left: 40 },
+//     width = config.width - margin.left - margin.right,
+//     height = lineplotHeight - margin.top - margin.bottom;
 
-  const svg = d3.select("#lineplot-container-" + id).select("svg");
+//   const svg = d3.select("#lineplot-container-" + id).select("svg");
 
-  const x = d3
-    .scaleLinear()
-    .domain([0, 49])
-    .range([margin.left, config.width - margin.right]);
+//   const x = d3
+//     .scaleLinear()
+//     .domain([0, 49])
+//     .range([margin.left, config.width - margin.right]);
 
-  const y = d3
-    .scaleLinear()
-    .domain([-1, 1])
-    .range([config.height - margin.bottom, margin.top]);
+//   const y = d3
+//     .scaleLinear()
+//     .domain([-1, 1])
+//     .range([config.height - margin.bottom, margin.top]);
 
-  const line = d3
-    .line<{ x: number; y: number }>()
-    .x((d) => x(d.x))
-    .y((d) => y(d.y));
+//   const line = d3
+//     .line<{ x: number; y: number }>()
+//     .x((d) => x(d.x))
+//     .y((d) => y(d.y));
 
-  let lData = data.reduce((arr, current) => {
-    arr.push(current.data);
-    return arr;
-  }, []);
+//   let lData = data.reduce((arr, current) => {
+//     arr.push(current.data);
+//     return arr;
+//   }, []);
 
-  const paths = svg.selectAll(".plot-line").data(lData);
-};
+//   const paths = svg.selectAll(".plot-line").data(lData);
+// };
 
 export const D3LinePlot: D3LinePlot = {
   create: createLinePlot,
-  update: updateLinePlot,
 };
