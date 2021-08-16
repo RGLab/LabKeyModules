@@ -495,11 +495,15 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
         </div>
         <SearchButton onClickCallback={searchBtnOnClick} />
         {(() => {
-          const styles = {
-            display: `${selected === 0 ? "none" : "block"}`,
-            marginLeft: `${selected === 1 ? "0" : "auto"}`,
-            marginRight: `${selected === 3 ? "0" : "auto"}`,
+          let styles = {
+            display: `${selected === 0 ? "none" : "block"}`, //will need to fix
+            //marginLeft: `${selected === 1 ? "0" : "auto"}`,
+            //marginRight: `${selected === 3 ? "0" : "auto"}`,
+            //left: `${selected === 1 ? "0"}`
           };
+          if (selected === 2) {
+            styles["left"] = "20%"; //will need to fix how menu generates
+          }
           switch (selected) {
             case 0:
               return <div ref={dropdownRef} style={styles}></div>;
@@ -529,7 +533,6 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
           }
         })()}
       </div>
-      <br />
     </div>
   );
 };

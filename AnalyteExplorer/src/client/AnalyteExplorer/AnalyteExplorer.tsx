@@ -1,13 +1,14 @@
 import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+//import "bootstrap/dist/css/bootstrap.min.css";
 
+import "./components/AnalyteSelectorMain.scss";
 import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
+
+import "./AnalyteExplorer.scss";
+
 import DownloadPage from "./components/DownloadPage";
 import { FilterNameSuggestions } from "./components/AnalyteSelectorMain";
 import { Spinner } from "react-bootstrap";
-import "./components/AnalyteSelectorMain.scss";
-import "./AnalyteExplorer.scss";
-import "./test.css";
 
 import { Query, Filter } from "@labkey/api";
 import HomePage from "./components/HomePage";
@@ -260,3 +261,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+//    <div style={{ width: "1000px", height: "100vh" }}></div>

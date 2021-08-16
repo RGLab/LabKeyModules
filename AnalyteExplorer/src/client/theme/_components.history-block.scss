@@ -1,6 +1,6 @@
 @use "~@immunespace/theme/dist/immunespace";
 @use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
-@use "./base.globals";
+//@import "./base.globals";
 
 .history-block {
   background-color: immunespace.$white;

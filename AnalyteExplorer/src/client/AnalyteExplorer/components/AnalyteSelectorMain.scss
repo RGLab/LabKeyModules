@@ -1,5 +1,8 @@
 @use "~@immunespace/theme/dist/immunespace";
 
+$ae-selector-width: 690px;
+$ae-selector-height: 78px;
+
 .analyte-selector-main {
   position: relative;
   display: flex;
@@ -11,8 +14,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  width: 690px;
-  height: 78px;
+  width: $ae-selector-width;
+  height: $ae-selector-height;
   border: 1px solid black;
   font-family: immunespace.$nunito-sans;
   border-radius: 50px;
@@ -105,7 +108,10 @@
   border-radius: 50px;
   margin-top: 3rem;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  z-index: 20;
+  z-index: 2001;
+
+  position: absolute;
+  top: 100%;
 
   .analyte-selector-dropdown-content {
     width: 100%;

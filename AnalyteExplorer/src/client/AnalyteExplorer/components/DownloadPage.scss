@@ -1,7 +1,4 @@
 div.ae-download-content {
-  position: absolute;
-  top: 148px;
-  left: 138px;
-  width: 70%;
-  z-index: 0;
+  height: auto;
+  overflow-y: scroll;
 }

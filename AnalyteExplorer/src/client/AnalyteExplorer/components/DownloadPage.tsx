@@ -102,12 +102,15 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
 
     dataMap.set("Average", avgLineData);
 
+    const aeMainWidth = (document.querySelector("#ae-main") as HTMLElement)
+      .offsetWidth;
+
     return {
       name: condition,
       data: dataMap,
       xLabel: "timepoint",
       yLabel: "mean fold change",
-      width: 1500,
+      width: 700,
       height: 700,
     };
   };
@@ -116,7 +119,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     return organizeD3Data(filter, data);
   });
 
-  console.log(d3DataByFilters);
+  //console.log((document.querySelector("#ae-main") as HTMLElement).offsetWidth);
 
   return (
     <div className="ae-download-content">
