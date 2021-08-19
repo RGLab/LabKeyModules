@@ -293,44 +293,6 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
   };
 
   React.useEffect(() => {
-    // let isCancelled = false;
-
-    // const parseDiseaseCondData = (data: any) => {
-    //   if (
-    //     !isCancelled &&
-    //     data !== undefined &&
-    //     data !== null &&
-    //     data.rows !== undefined
-    //   ) {
-    //     const conditions = {};
-    //     data.rows.forEach((condition: { condition: string }) => {
-    //       const disease = condition["condition"].replaceAll("_", " ");
-    //       conditions[disease] = false;
-    //     });
-
-    //     setConditionFilters(conditions);
-    //   }
-    // };
-
-    // const getDiseaseConds = () => {
-    //   Query.executeSql({
-    //     containerPath: "/AnalyteExplorer",
-    //     schemaName: "lists",
-    //     sql: `SELECT DISTINCT gene_expression.condition AS condition
-    //     FROM gene_expression
-    //     `,
-    //     success: parseDiseaseCondData,
-    //   });
-    // };
-
-    // if (!isCancelled) {
-    //   console.log("fetching disease cond");
-    //   getDiseaseConds();
-    // }
-
-    // return () => {
-    //   isCancelled = true;
-    // };
     const conditions = {};
     conditionData.rows.forEach((condition: { condition: string }) => {
       const disease = condition["condition"].replaceAll("_", " ");
@@ -439,15 +401,15 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
               onMouseEnter={() => setHovered(1)}
               onMouseLeave={() => setHovered(0)}>
               <label htmlFor="analyte-type" className="analyte-selector-label">
-                Analyte Type
+                <div> Analyte Type</div>
+                <input
+                  id="analyte-type"
+                  name="analyte-type"
+                  placeholder="What are you searching?"
+                  value={capitalizeFirstChar(typeSelected)}
+                  readOnly
+                />
               </label>
-              <input
-                id="analyte-type"
-                name="analyte-type"
-                placeholder="What are you searching?"
-                value={capitalizeFirstChar(typeSelected)}
-                readOnly
-              />
             </div>
           </div>
           <div
@@ -458,15 +420,16 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
               onMouseEnter={() => setHovered(2)}
               onMouseLeave={() => setHovered(0)}>
               <label htmlFor="analyte" className="analyte-selector-label">
-                Analyte
+                <div>Analyte</div>
+                <input
+                  id="analyte"
+                  name="analyte"
+                  placeholder="Analyte name"
+                  value={nameSearched}
+                  onChange={nameInputOnChange}
+                  autoComplete="off"
+                />
               </label>
-              <SelectorInput
-                id="analyte"
-                name="analyte"
-                placeholderText="Analyte name"
-                value={nameSearched}
-                onChangeCallback={nameInputOnChange}
-              />
             </div>
           </div>
           <div
@@ -479,14 +442,15 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
               <label
                 htmlFor="analyte-filters"
                 className="analyte-selector-label">
-                Filters
+                <div>Filters</div>
+                <input
+                  type="text"
+                  id="analyte-filters"
+                  name="analyte-filters"
+                  placeholder={`${filtersApplied} filters applied`}
+                  readOnly
+                />
               </label>
-              <input
-                type="text"
-                id="analyte-filters"
-                name="analyte-filters"
-                placeholder={`${filtersApplied} filters applied`}
-                readOnly></input>
             </div>
           </div>
           <div

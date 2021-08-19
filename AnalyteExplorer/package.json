@@ -12,8 +12,10 @@
   },
   "dependencies": {
     "@labkey/api": "^1.6.3",
+    "@types/halogen": "^0.2.7",
     "@types/react-transition-group": "^4.4.2",
     "bootstrap": "^4.6.0",
+    "halogen": "^0.2.0",
     "react-bootstrap": "^1.6.0",
     "react-csv": "^2.0.3",
     "react-icons": "^4.2.0",

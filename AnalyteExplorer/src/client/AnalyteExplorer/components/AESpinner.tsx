@@ -1,11 +1,14 @@
 import React from "react";
 import { Spinner } from "react-bootstrap";
+import Halogen from "halogen";
 import "./AESpinner.scss";
 
 const AESpinner: React.FC = () => {
+  var color = "#4DAF7C";
+
   return (
     <div className="ae-spinner-container">
-      <Spinner className="ae-spinner" animation="border" variant="primary" />
+      <div className="circleloader"></div>
     </div>
   );
 };

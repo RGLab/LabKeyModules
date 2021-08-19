@@ -34,12 +34,12 @@ const createLinePlot = (
   config: D3LinePlotConfig,
   trendData?: { name: string; study: string; data: StudyPoint[] }[]
 ) => {
-  const lineplotHeight = config.height - xaxisTitle.height - 10;
+  const lineplotHeight = config.height - xaxisTitle.height - 10; // need to actually figure out how tall the xaxis is
   const margin = { top: 20, right: 30, bottom: 40, left: 40 },
     width = config.width - margin.left - margin.right,
     height = lineplotHeight - margin.top - margin.bottom;
 
-  const x = d3
+  const xScale = d3
     .scaleLinear()
     .domain([0, 49])
     .range([margin.left, config.width - margin.right]);
@@ -54,7 +54,7 @@ const createLinePlot = (
   const xAxis = (g) =>
     g
       .attr("transform", `translate(0,${config.height - margin.bottom})`)
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(xScale));
 
   const yAxis = (g) =>
     g.call(d3.axisLeft(y)).attr("transform", `translate(${margin.left},0)`);
@@ -65,12 +65,44 @@ const createLinePlot = (
     .attr("viewBox", `0 0 ${config.width} ${config.height}`)
     .attr("id", "svg-lineplot-" + id);
 
+  svg
+    .append("defs")
+    .append("clipPath")
+    .attr("id", "clip")
+    .append("rect")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .attr("x", 0)
+    .attr("y", 0);
+
+  const svgContent = svg
+    .append("g")
+    .attr("class", "plot-content")
+    .attr("clip-path", "url(#clip)");
+
+  const zoom = d3
+    .zoom()
+    .scaleExtent([0.5, 5])
+    .translateExtent([
+      [0, 0],
+      [width, height],
+    ])
+    .on("zoom", () => {
+      const zoomState = d3.zoomTransform(svg.node() as Element);
+
+      const newXScale = zoomState.rescaleX(xScale);
+      console.log(xScale.domain());
+      console.log(newXScale.domain());
+      xScale.domain(newXScale.domain());
+    });
+
   svg.append("g").call(xAxis);
   svg.append("g").call(yAxis);
+  svg.call(zoom);
 
   const line = d3
     .line<{ x: number; y: number }>()
-    .x((d) => x(d.x))
+    .x((d) => xScale(d.x))
     .y((d) => y(d.y));
 
   let lineData: StudyPoint[][] = data.reduce((arr, current) => {
@@ -86,7 +118,7 @@ const createLinePlot = (
       return arr;
     }, []);
 
-  const paths = svg.selectAll(".plot-line").data(lineData);
+  const paths = svgContent.selectAll(".plot-line").data(lineData);
   //const t = svg.transition().duration(750);
 
   const tooltip = d3.select("#tooltip-" + id);
@@ -108,7 +140,9 @@ const createLinePlot = (
 
   if (trendData !== undefined && trendData.length > 0) {
     let trendLineData: StudyPoint[][] = [trendData[0].data];
-    const trendLine = svg.selectAll("#trend-line-" + id).data(trendLineData);
+    const trendLine = svgContent
+      .selectAll("#trend-line-" + id)
+      .data(trendLineData);
 
     trendLine.join((enter) =>
       enter
@@ -123,7 +157,7 @@ const createLinePlot = (
     );
   }
 
-  const circles = svg.selectAll("circle").data(circleData);
+  const circles = svgContent.selectAll("circle").data(circleData);
 
   circles
     .join((enter) =>
@@ -134,7 +168,7 @@ const createLinePlot = (
           //using normal functions to preserve "this"
           d3.select(this).transition().duration(1).attr("r", 8);
           tooltip
-            .style("left", x(d.point.x) + 8 + "px")
+            .style("left", xScale(d.point.x) + 8 + "px")
             .style("top", y(d.point.y) + "px")
             .style("display", "block");
           tooltip.html(
@@ -149,7 +183,7 @@ const createLinePlot = (
           tooltip.style("display", "none");
         })
     )
-    .attr("cx", (d) => x(d.point.x))
+    .attr("cx", (d) => xScale(d.point.x))
     .attr("cy", (d) => y(d.point.y))
     .attr("r", 4);
 

@@ -110,7 +110,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       data: dataMap,
       xLabel: "timepoint",
       yLabel: "mean fold change",
-      width: 700,
+      width: 1500,
       height: 700,
     };
   };
@@ -118,6 +118,8 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
   const d3DataByFilters = Object.entries(dataByFilter).map(([filter, data]) => {
     return organizeD3Data(filter, data);
   });
+
+  console.log(d3DataByFilters);
 
   //console.log((document.querySelector("#ae-main") as HTMLElement).offsetWidth);
 
