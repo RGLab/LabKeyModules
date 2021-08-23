@@ -23,8 +23,7 @@ const LinePlot: React.FC<LinePlotProps> = ({
   yLabel,
 }) => {
   const linePlotStyles: CSSProperties = {
-    width: width,
-    height: height,
+    width: "100%",
   };
 
   const setupData = (
@@ -92,7 +91,12 @@ const LinePlot: React.FC<LinePlotProps> = ({
   // }, [randomData]);
 
   return (
-    <div className={name} style={{ position: "relative", height: "1000px" }}>
+    <div
+      className={name}
+      style={{
+        position: "relative",
+        margin: "5px 10px",
+      }}>
       <div className="df-lineplot-title">
         <h4>{name}</h4>
       </div>

@@ -111,7 +111,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       xLabel: "timepoint",
       yLabel: "mean fold change",
       width: 1500,
-      height: 700,
+      height: 843,
     };
   };
 

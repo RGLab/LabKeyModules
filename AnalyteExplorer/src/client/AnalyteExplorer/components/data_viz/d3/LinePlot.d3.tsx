@@ -34,36 +34,30 @@ const createLinePlot = (
   config: D3LinePlotConfig,
   trendData?: { name: string; study: string; data: StudyPoint[] }[]
 ) => {
-  const lineplotHeight = config.height - xaxisTitle.height - 10; // need to actually figure out how tall the xaxis is
-  const margin = { top: 20, right: 30, bottom: 40, left: 40 },
+  //const lineplotHeight = config.height - xaxisTitle.height - 10; // need to actually figure out how tall the xaxis is
+  const margin = { top: 10, right: 30, bottom: 30, left: 60 },
     width = config.width - margin.left - margin.right,
-    height = lineplotHeight - margin.top - margin.bottom;
+    height = config.height - margin.top - margin.bottom;
 
-  const xScale = d3
-    .scaleLinear()
-    .domain([0, 49])
-    .range([margin.left, config.width - margin.right]);
+  const xScale = d3.scaleLinear().domain([0, 49]).range([0, width]);
 
-  const y = d3
-    .scaleLinear()
-    .domain([-1, 1])
-    .range([config.height - margin.bottom, margin.top]);
+  const yScale = d3.scaleLinear().domain([-1, 1]).range([height, 0]);
 
   //https://stackoverflow.com/questions/42308115/d3v4-typescript-angular2-error-using-d3-line-xd-function
 
   const xAxis = (g) =>
-    g
-      .attr("transform", `translate(0,${config.height - margin.bottom})`)
-      .call(d3.axisBottom(xScale));
+    g.attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
 
-  const yAxis = (g) =>
-    g.call(d3.axisLeft(y)).attr("transform", `translate(${margin.left},0)`);
+  const yAxis = (g) => g.call(d3.axisLeft(yScale));
+  //.attr("transform", `translate(${margin.left},0)`);
 
   const svg = d3
     .select("#lineplot-container-" + id)
     .select("svg")
     .attr("viewBox", `0 0 ${config.width} ${config.height}`)
-    .attr("id", "svg-lineplot-" + id);
+    .attr("id", "svg-lineplot-" + id)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
   svg
     .append("defs")
@@ -96,14 +90,65 @@ const createLinePlot = (
       xScale.domain(newXScale.domain());
     });
 
-  svg.append("g").call(xAxis);
-  svg.append("g").call(yAxis);
+  const xAxisElement = svg.append("g").call(xAxis);
+  xAxisElement.selectAll(".domain").remove();
+  xAxisElement.style("font-size", "16px");
+  const yAxisElement = svg.append("g").call(yAxis);
+  //yAxisElement.selectAll(".domain").remove();
+  yAxisElement.style("font-size", "16px");
   svg.call(zoom);
+
+  // gridlines in x axis function
+  function make_x_gridlines() {
+    return d3.axisBottom(xScale).ticks(11);
+  }
+
+  // gridlines in y axis function
+  function make_y_gridlines() {
+    return d3.axisLeft(yScale).ticks(11);
+  }
+
+  svgContent
+    .append("g")
+    .attr("class", "grid")
+    .attr("transform", "translate(0," + height + ")")
+    .call(
+      make_x_gridlines()
+        .tickSize(-height)
+        .tickFormat(() => "")
+    );
+
+  const yGrid = svgContent
+    .append("g")
+    .attr("class", "grid")
+    .call(
+      make_y_gridlines()
+        .tickSize(-width)
+        .tickFormat(() => "")
+    );
+
+  svgContent.selectAll(".domain").remove();
+
+  svgContent
+    .selectAll(".grid line")
+    .attr("stroke", "lightgrey")
+    .attr("stroke-opacity", 0.7)
+    .attr("shape-rendering", "crispEdges");
+
+  svgContent
+    .append("line")
+    .attr("x1", 0)
+    .attr("y1", yScale(0))
+    .attr("x2", width)
+    .attr("y2", yScale(0))
+    .attr("stroke-width", 1)
+    .attr("stroke", "black")
+    .attr("transform", `translate(0, ${0.5})`); // transform is used to align the line with the y axis tick @0
 
   const line = d3
     .line<{ x: number; y: number }>()
     .x((d) => xScale(d.x))
-    .y((d) => y(d.y));
+    .y((d) => yScale(d.y));
 
   let lineData: StudyPoint[][] = data.reduce((arr, current) => {
     arr.push(current.data);
@@ -128,10 +173,11 @@ const createLinePlot = (
       enter
         .append("path")
         .attr("fill", "none")
-        .attr("stroke", "black")
-        .attr("stroke-width", 1.5)
+        .attr("stroke", "green")
+        .attr("stroke-width", 1)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
+        .attr("stroke-opacity", 0.7)
         .attr("class", "plot-line")
         .attr("d", line),
     (update) => update.attr("stroke", "blue"),
@@ -149,7 +195,7 @@ const createLinePlot = (
         .append("path")
         .attr("fill", "none")
         .attr("stroke", "red")
-        .attr("stroke-width", 1.5)
+        .attr("stroke-width", 3)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
         .attr("id", "#trend-line-" + id)
@@ -157,54 +203,54 @@ const createLinePlot = (
     );
   }
 
-  const circles = svgContent.selectAll("circle").data(circleData);
+  // const circles = svgContent.selectAll("circle").data(circleData);
 
-  circles
-    .join((enter) =>
-      enter
-        .append("circle")
-        .style("fill", "blue")
-        .on("mouseenter", function (d) {
-          //using normal functions to preserve "this"
-          d3.select(this).transition().duration(1).attr("r", 8);
-          tooltip
-            .style("left", xScale(d.point.x) + 8 + "px")
-            .style("top", y(d.point.y) + "px")
-            .style("display", "block");
-          tooltip.html(
-            `Cohort: ${d.cohort}<br>Study: ${d.study}<br>Timepoint: ${d.point.x}<br>log2-FC: ${d.point.y}`
-          );
-        })
-        .on("mouseleave", function (d) {
-          d3.select(this)
-            .transition()
-            .duration(1)
-            .attr("r", (d) => 4);
-          tooltip.style("display", "none");
-        })
-    )
-    .attr("cx", (d) => xScale(d.point.x))
-    .attr("cy", (d) => y(d.point.y))
-    .attr("r", 4);
+  // circles
+  //   .join((enter) =>
+  //     enter
+  //       .append("circle")
+  //       .style("fill", "blue")
+  //       .on("mouseenter", function (d) {
+  //         //using normal functions to preserve "this"
+  //         d3.select(this).transition().duration(1).attr("r", 8);
+  //         tooltip
+  //           .style("left", xScale(d.point.x) + 8 + "px")
+  //           .style("top", y(d.point.y) + "px")
+  //           .style("display", "block");
+  //         tooltip.html(
+  //           `Cohort: ${d.cohort}<br>Study: ${d.study}<br>Timepoint: ${d.point.x}<br>log2-FC: ${d.point.y}`
+  //         );
+  //       })
+  //       .on("mouseleave", function (d) {
+  //         d3.select(this)
+  //           .transition()
+  //           .duration(1)
+  //           .attr("r", (d) => 4);
+  //         tooltip.style("display", "none");
+  //       })
+  //   )
+  //   .attr("cx", (d) => xScale(d.point.x))
+  //   .attr("cy", (d) => y(d.point.y))
+  //   .attr("r", 4);
 
-  svg
-    .append("text")
-    .attr("class", "x label")
-    .style("font-size", "12px")
-    .attr("text-anchor", "middle")
-    .attr("x", config.width / 2)
-    .attr("y", config.height - 12)
-    .text(config.xLabel);
+  // svg
+  //   .append("text")
+  //   .attr("class", "x label")
+  //   .style("font-size", "12px")
+  //   .attr("text-anchor", "middle")
+  //   .attr("x", config.width / 2)
+  //   .attr("y", config.height - 12)
+  //   .text(config.xLabel);
 
-  svg
-    .append("text")
-    .attr("class", "y label")
-    .style("font-size", "12px")
-    .attr("text-anchor", "end")
-    .attr("x", -config.height / 2)
-    .attr("y", 12)
-    .attr("transform", "rotate(-90)")
-    .text(config.yLabel);
+  // svg
+  //   .append("text")
+  //   .attr("class", "y label")
+  //   .style("font-size", "12px")
+  //   .attr("text-anchor", "end")
+  //   .attr("x", -config.height / 2)
+  //   .attr("y", 12)
+  //   .attr("transform", "rotate(-90)")
+  //   .text(config.yLabel);
 };
 
 // const updateLinePlot = (id: string, data: any, config: D3LinePlotConfig) => {
