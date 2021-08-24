@@ -1,6 +1,4 @@
-import { saveBatches } from "@labkey/api/dist/labkey/Experiment";
 import * as d3 from "d3";
-import { path } from "d3";
 
 export interface D3LinePlotConfig {
   width: number;
@@ -65,7 +63,7 @@ const createLinePlot = (
     .attr("id", "clip")
     .append("rect")
     .attr("width", "100%")
-    .attr("height", "100%")
+    .attr("height", `${height}`)
     .attr("x", 0)
     .attr("y", 0);
 
@@ -74,29 +72,11 @@ const createLinePlot = (
     .attr("class", "plot-content")
     .attr("clip-path", "url(#clip)");
 
-  const zoom = d3
-    .zoom()
-    .scaleExtent([0.5, 5])
-    .translateExtent([
-      [0, 0],
-      [width, height],
-    ])
-    .on("zoom", () => {
-      const zoomState = d3.zoomTransform(svg.node() as Element);
-
-      const newXScale = zoomState.rescaleX(xScale);
-      console.log(xScale.domain());
-      console.log(newXScale.domain());
-      xScale.domain(newXScale.domain());
-    });
-
   const xAxisElement = svg.append("g").call(xAxis);
   xAxisElement.selectAll(".domain").remove();
   xAxisElement.style("font-size", "16px");
   const yAxisElement = svg.append("g").call(yAxis);
-  //yAxisElement.selectAll(".domain").remove();
   yAxisElement.style("font-size", "16px");
-  svg.call(zoom);
 
   // gridlines in x axis function
   function make_x_gridlines() {
@@ -135,8 +115,10 @@ const createLinePlot = (
     .attr("stroke-opacity", 0.7)
     .attr("shape-rendering", "crispEdges");
 
-  svgContent
+  // y = 0 line
+  const baseLine = svgContent
     .append("line")
+    .attr("class", "base-line")
     .attr("x1", 0)
     .attr("y1", yScale(0))
     .attr("x2", width)
@@ -198,6 +180,7 @@ const createLinePlot = (
         .attr("stroke-width", 3)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
+        .attr("class", "plot-line")
         .attr("id", "#trend-line-" + id)
         .attr("d", line)
     );
@@ -206,32 +189,144 @@ const createLinePlot = (
   // const circles = svgContent.selectAll("circle").data(circleData);
 
   // circles
-  //   .join((enter) =>
-  //     enter
-  //       .append("circle")
-  //       .style("fill", "blue")
-  //       .on("mouseenter", function (d) {
-  //         //using normal functions to preserve "this"
-  //         d3.select(this).transition().duration(1).attr("r", 8);
-  //         tooltip
-  //           .style("left", xScale(d.point.x) + 8 + "px")
-  //           .style("top", y(d.point.y) + "px")
-  //           .style("display", "block");
-  //         tooltip.html(
-  //           `Cohort: ${d.cohort}<br>Study: ${d.study}<br>Timepoint: ${d.point.x}<br>log2-FC: ${d.point.y}`
-  //         );
-  //       })
-  //       .on("mouseleave", function (d) {
-  //         d3.select(this)
-  //           .transition()
-  //           .duration(1)
-  //           .attr("r", (d) => 4);
-  //         tooltip.style("display", "none");
-  //       })
+  //   .join(
+  //     (enter) =>
+  //       enter
+  //         .append("circle")
+  //         .style("fill", "blue")
+  //         .on("mouseenter", function (d) {
+  //           //using normal functions to preserve "this"
+  //           d3.select(this).transition().duration(1).attr("r", 8);
+  //           tooltip
+  //             .style("left", xScale(d.point.x) + 8 + "px")
+  //             .style("top", yScale(d.point.y) + "px")
+  //             .style("display", "block");
+  //           tooltip.html(
+  //             `Cohort: ${d.cohort}<br>Study: ${d.study}<br>Timepoint: ${d.point.x}<br>log2-FC: ${d.point.y}`
+  //           );
+  //         })
+  //         .on("mouseleave", function (d) {
+  //           d3.select(this)
+  //             .transition()
+  //             .duration(1)
+  //             .attr("r", (d) => 4);
+  //           tooltip.style("display", "none");
+  //         }),
+  //     (exit) => exit.remove()
   //   )
   //   .attr("cx", (d) => xScale(d.point.x))
-  //   .attr("cy", (d) => y(d.point.y))
+  //   .attr("cy", (d) => yScale(d.point.y))
   //   .attr("r", 4);
+
+  svgContent
+    .selectAll("circle")
+    .data(circleData)
+    .enter()
+    .append("circle")
+    .style("fill", "blue")
+    .attr("cx", (d) => xScale(d.point.x))
+    .attr("cy", (d) => yScale(d.point.y))
+    .attr("r", 4);
+
+  // https://www.d3-graph-gallery.com/graph/interactivity_zoom.html
+  const zoom = d3
+    .zoom()
+    .scaleExtent([0.5, 5])
+    .translateExtent([
+      [0, 0],
+      [width, height],
+    ])
+    .on("zoom", () => {
+      //const zoomState = d3.zoomTransform(d3.select(".zoom-rect") as Element);
+
+      // const newXScale = zoomState.rescaleX(xScale);
+      // console.log("zoooom");
+      // console.log(xScale.domain());
+      // console.log(newXScale.domain());
+      // xScale.domain(newXScale.domain());
+
+      // recover the new scale
+      const newXScale = d3.event.transform.rescaleX(xScale);
+      const newYScale = d3.event.transform.rescaleY(yScale);
+
+      const newLine = d3
+        .line<{ x: number; y: number }>()
+        .x((d) => newXScale(d.x))
+        .y((d) => newYScale(d.y));
+
+      // update axes with these new boundaries
+      xAxisElement.call(d3.axisBottom(newXScale));
+      yAxisElement.call(d3.axisLeft(newYScale));
+
+      // redraw all the lines
+      svgContent.selectAll(".plot-line").attr("d", newLine);
+      baseLine.attr("y1", newYScale(0)).attr("y2", newYScale(0));
+
+      // reposition all circles
+
+      //svgContent.selectAll("circle").remove();
+
+      svgContent
+        .selectAll("circle")
+        .attr("cx", (d: { cohort: string; study: string; point: StudyPoint }) =>
+          newXScale(d.point.x)
+        )
+        .attr("cy", (d: { cohort: string; study: string; point: StudyPoint }) =>
+          newYScale(d.point.y)
+        )
+        .attr("r", 4);
+    });
+
+  // zoom area... not sure why this is needed?
+  // svg
+  //   .append("rect")
+  //   .attr("width", width)
+  //   .attr("height", height)
+  //   .attr("class", "zoom-rect")
+  //   .style("fill", "none")
+  //   .style("pointer-events", "all")
+  //   .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+  //   .call(zoom)
+  //   .on("dblclick.zoom", null);
+
+  svgContent.style("pointer-events", "all").call(zoom).on("dbclick.zoom", null);
+
+  const updateChart = () => {
+    const extent = d3.event.selection;
+
+    if (extent) {
+      // console.log(d3.event);
+      // console.log(xScale.invert(extent[0]));
+      // console.log(xScale.invert(extent[1]));
+
+      xScale.domain([xScale.invert(extent[0]), xScale.invert(extent[1])]);
+      svgContent.select(".brush").call(brush.move, null);
+
+      xAxisElement.transition().duration(1000).call(d3.axisBottom(xScale));
+      svgContent
+        .selectAll(".plot-line")
+        .transition()
+        .duration(1000)
+        .attr("d", line);
+    }
+  };
+
+  //https://www.d3-graph-gallery.com/graph/line_brushZoom.html
+  const brush = d3
+    .brushX() // Add the brush feature using the d3.brush function
+    .extent([
+      [0, 0],
+      [width, height],
+    ]) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
+    .on("end", updateChart);
+
+  // svgContent.append("g").attr("class", "brush").call(brush);
+
+  // svgContent.on("dblclick", function () {
+  //   xScale.domain([0, 49]);
+  //   xAxisElement.transition().call(d3.axisBottom(xScale));
+  //   svgContent.selectAll(".plot-line").transition().attr("d", line);
+  // });
 
   // svg
   //   .append("text")
