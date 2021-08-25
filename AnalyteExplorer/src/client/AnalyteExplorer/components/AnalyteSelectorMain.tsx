@@ -433,7 +433,9 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
             </div>
           </div>
           <div
-            className={`analyte-selector ${selected === 3 ? "selected" : ""}`}>
+            className={`analyte-selector with-search${
+              selected === 3 ? "selected" : ""
+            }`}>
             <div
               ref={filterSelectorRef}
               className="analyte-selector-label-wrapper"
@@ -452,12 +454,12 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
                 />
               </label>
             </div>
+            <SearchButton onClickCallback={searchBtnOnClick} />
           </div>
           <div
             className="analyte-selector-divider"
             style={analyteDividerStyles}></div>
         </div>
-        <SearchButton onClickCallback={searchBtnOnClick} />
         {(() => {
           let styles = {
             display: `${selected === 0 ? "none" : "block"}`, //will need to fix
