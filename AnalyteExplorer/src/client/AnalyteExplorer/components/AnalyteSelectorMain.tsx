@@ -356,7 +356,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
             <span className="analyte-selector-no-results-text">
               {nameSearched === ""
                 ? "PLEASE SEARCH AN ANALYTE"
-                : "NO RESULTS FOUND"}
+                : "NO MATCHING ANALYTE FOUND"}
             </span>
           ) : (
             <ul>
