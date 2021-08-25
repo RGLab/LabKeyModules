@@ -107,7 +107,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     return {
       name: condition,
       data: dataMap,
-      xLabel: "timepoint",
+      xLabel: "timepoint (days)",
       yLabel: "mean fold change",
       width: 1500,
       height: 843,

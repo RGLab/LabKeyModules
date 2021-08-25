@@ -155,7 +155,7 @@ const createLinePlot = (
       enter
         .append("path")
         .attr("fill", "none")
-        .attr("stroke", "green")
+        .attr("stroke", "#B4BBBF")
         .attr("stroke-width", 1)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
@@ -176,7 +176,7 @@ const createLinePlot = (
       enter
         .append("path")
         .attr("fill", "none")
-        .attr("stroke", "red")
+        .attr("stroke", "#FF5B00")
         .attr("stroke-width", 3)
         .attr("stroke-linejoin", "round")
         .attr("stroke-linecap", "round")
@@ -186,14 +186,14 @@ const createLinePlot = (
     );
   }
 
-  const circles = svgContent.selectAll("circle").data(circleData);
+  const circles = svgContent.selectAll(".dot").data(circleData);
 
   circles
     .join((enter) =>
       enter
         .append("circle")
         .attr("class", (d) => {
-          return d.study === "Trend" ? "trend-dot" : "cohort-dot";
+          return `dot ${d.study === "Trend" ? "trend-dot" : "cohort-dot"}`;
         })
         .on("mouseenter", function (d) {
           //using normal functions to preserve "this"
@@ -214,6 +214,42 @@ const createLinePlot = (
     .attr("cx", (d) => xScale(d.point.x))
     .attr("cy", (d) => yScale(d.point.y))
     .attr("r", 4);
+
+  const legend = svgContent.append("g").attr("class", "legend");
+
+  const legendProps = {
+    initialX: width - 100,
+    initialY: height - 50,
+    xGap: 20,
+    yGap: 30,
+  };
+
+  legend
+    .append("circle")
+    .attr("cx", legendProps.initialX)
+    .attr("cy", legendProps.initialY)
+    .attr("r", 6)
+    .style("fill", "#b4bbbf");
+  legend
+    .append("circle")
+    .attr("cx", legendProps.initialX)
+    .attr("cy", legendProps.initialY + legendProps.yGap)
+    .attr("r", 6)
+    .style("fill", "#ff5b00");
+  legend
+    .append("text")
+    .attr("x", legendProps.initialX + legendProps.xGap)
+    .attr("y", legendProps.initialY)
+    .text("Cohorts")
+    .style("font-size", "15px")
+    .attr("alignment-baseline", "middle");
+  legend
+    .append("text")
+    .attr("x", legendProps.initialX + legendProps.xGap)
+    .attr("y", legendProps.initialY + legendProps.yGap)
+    .text("Trend")
+    .style("font-size", "15px")
+    .attr("alignment-baseline", "middle");
 
   // https://www.d3-graph-gallery.com/graph/interactivity_zoom.html
   const zoom = d3
@@ -245,7 +281,7 @@ const createLinePlot = (
       // reposition all circles
 
       svgContent
-        .selectAll("circle")
+        .selectAll(".dot")
         .on(
           "mouseenter",
           function (d: { cohort: string; study: string; point: StudyPoint }) {
@@ -281,7 +317,42 @@ const createLinePlot = (
   //   .call(zoom)
   //   .on("dblclick.zoom", null);
 
-  svgContent.style("pointer-events", "all").call(zoom).on("dbclick.zoom", null);
+  const resetChart = () => {
+    xAxisElement.call(d3.axisBottom(xScale));
+    yAxisElement.call(d3.axisLeft(yScale));
+
+    svgContent.selectAll(".plot-line").attr("d", line);
+    baseLine.attr("y1", yScale(0)).attr("y2", yScale(0));
+
+    svgContent
+      .selectAll(".dot")
+      .on(
+        "mouseenter",
+        function (d: { cohort: string; study: string; point: StudyPoint }) {
+          //using normal functions to preserve "this"
+          d3.select(this).transition().duration(1).attr("r", 8);
+          tooltip
+            .style("left", xScale(d.point.x) + "px")
+            .style("top", yScale(d.point.y) - 70 + "px")
+            .style("display", "block");
+          tooltip.html(
+            `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
+          );
+        }
+      )
+      .attr("cx", (d: { cohort: string; study: string; point: StudyPoint }) =>
+        xScale(d.point.x)
+      )
+      .attr("cy", (d: { cohort: string; study: string; point: StudyPoint }) =>
+        yScale(d.point.y)
+      )
+      .attr("r", 4);
+  };
+
+  svgContent
+    .style("pointer-events", "all")
+    .call(zoom)
+    .on("dblclick.zoom", resetChart);
 
   const updateChart = () => {
     const extent = d3.event.selection;
