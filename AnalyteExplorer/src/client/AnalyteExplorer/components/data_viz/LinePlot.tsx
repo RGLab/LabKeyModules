@@ -4,6 +4,7 @@ import { D3LinePlot, D3LinePlotConfig } from "./d3/LinePlot.d3";
 import { StudyPoint } from "./d3/LinePlot.d3";
 import LinePlotTooltip from "./LinePlotTooltip";
 import * as d3 from "d3";
+import "./LinePlot.scss";
 
 export interface LinePlotProps {
   data: Map<string, { x: number; y: number; study: string }[]>;

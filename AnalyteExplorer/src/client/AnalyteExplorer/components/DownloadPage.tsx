@@ -97,13 +97,12 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     let avgLineData: { x: number; y: number; study: string }[] = [];
 
     for (const [timepoint, yS] of avgMap) {
-      avgLineData.push({ x: timepoint, y: getAverage(yS), study: "Trend" });
+      if (yS.length > 1) {
+        avgLineData.push({ x: timepoint, y: getAverage(yS), study: "Trend" });
+      }
     }
 
     dataMap.set("Average", avgLineData);
-
-    const aeMainWidth = (document.querySelector("#ae-main") as HTMLElement)
-      .offsetWidth;
 
     return {
       name: condition,

@@ -1,0 +1,9 @@
+@use "~@immunespace/theme/dist/immunespace";
+
+.cohort-dot {
+  fill: green;
+}
+
+.trend-dot {
+  fill: immunespace.$red;
+}

@@ -33,7 +33,7 @@ const createLinePlot = (
   trendData?: { name: string; study: string; data: StudyPoint[] }[]
 ) => {
   //const lineplotHeight = config.height - xaxisTitle.height - 10; // need to actually figure out how tall the xaxis is
-  const margin = { top: 10, right: 30, bottom: 30, left: 60 },
+  const margin = { top: 10, right: 30, bottom: 60, left: 60 },
     width = config.width - margin.left - margin.right,
     height = config.height - margin.top - margin.bottom;
 
@@ -186,47 +186,44 @@ const createLinePlot = (
     );
   }
 
-  // const circles = svgContent.selectAll("circle").data(circleData);
+  const circles = svgContent.selectAll("circle").data(circleData);
 
-  // circles
-  //   .join(
-  //     (enter) =>
-  //       enter
-  //         .append("circle")
-  //         .style("fill", "blue")
-  //         .on("mouseenter", function (d) {
-  //           //using normal functions to preserve "this"
-  //           d3.select(this).transition().duration(1).attr("r", 8);
-  //           tooltip
-  //             .style("left", xScale(d.point.x) + 8 + "px")
-  //             .style("top", yScale(d.point.y) + "px")
-  //             .style("display", "block");
-  //           tooltip.html(
-  //             `Cohort: ${d.cohort}<br>Study: ${d.study}<br>Timepoint: ${d.point.x}<br>log2-FC: ${d.point.y}`
-  //           );
-  //         })
-  //         .on("mouseleave", function (d) {
-  //           d3.select(this)
-  //             .transition()
-  //             .duration(1)
-  //             .attr("r", (d) => 4);
-  //           tooltip.style("display", "none");
-  //         }),
-  //     (exit) => exit.remove()
-  //   )
-  //   .attr("cx", (d) => xScale(d.point.x))
-  //   .attr("cy", (d) => yScale(d.point.y))
-  //   .attr("r", 4);
-
-  svgContent
-    .selectAll("circle")
-    .data(circleData)
-    .enter()
-    .append("circle")
-    .style("fill", "blue")
+  circles
+    .join((enter) =>
+      enter
+        .append("circle")
+        .attr("class", (d) => {
+          return d.study === "Trend" ? "trend-dot" : "cohort-dot";
+        })
+        .on("mouseenter", function (d) {
+          //using normal functions to preserve "this"
+          d3.select(this).transition().duration(1).attr("r", 8);
+          tooltip
+            .style("left", xScale(d.point.x) + "px")
+            .style("top", yScale(d.point.y) - 70 + "px")
+            .style("display", "block");
+          tooltip.html(
+            `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
+          );
+        })
+        .on("mouseleave", function (d) {
+          d3.select(this).transition().duration(1).attr("r", 4);
+          tooltip.style("display", "none");
+        })
+    )
     .attr("cx", (d) => xScale(d.point.x))
     .attr("cy", (d) => yScale(d.point.y))
     .attr("r", 4);
+
+  // svgContent
+  //   .selectAll("circle")
+  //   .data(circleData)
+  //   .enter()
+  //   .append("circle")
+  //   .style("fill", "grey")
+  //   .attr("cx", (d) => xScale(d.point.x))
+  //   .attr("cy", (d) => yScale(d.point.y))
+  //   .attr("r", 4);
 
   // https://www.d3-graph-gallery.com/graph/interactivity_zoom.html
   const zoom = d3
@@ -237,14 +234,6 @@ const createLinePlot = (
       [width, height],
     ])
     .on("zoom", () => {
-      //const zoomState = d3.zoomTransform(d3.select(".zoom-rect") as Element);
-
-      // const newXScale = zoomState.rescaleX(xScale);
-      // console.log("zoooom");
-      // console.log(xScale.domain());
-      // console.log(newXScale.domain());
-      // xScale.domain(newXScale.domain());
-
       // recover the new scale
       const newXScale = d3.event.transform.rescaleX(xScale);
       const newYScale = d3.event.transform.rescaleY(yScale);
@@ -268,6 +257,20 @@ const createLinePlot = (
 
       svgContent
         .selectAll("circle")
+        .on(
+          "mouseenter",
+          function (d: { cohort: string; study: string; point: StudyPoint }) {
+            //using normal functions to preserve "this"
+            d3.select(this).transition().duration(1).attr("r", 8);
+            tooltip
+              .style("left", newXScale(d.point.x) + "px")
+              .style("top", newYScale(d.point.y) - 70 + "px")
+              .style("display", "block");
+            tooltip.html(
+              `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
+            );
+          }
+        )
         .attr("cx", (d: { cohort: string; study: string; point: StudyPoint }) =>
           newXScale(d.point.x)
         )
@@ -328,24 +331,26 @@ const createLinePlot = (
   //   svgContent.selectAll(".plot-line").transition().attr("d", line);
   // });
 
-  // svg
-  //   .append("text")
-  //   .attr("class", "x label")
-  //   .style("font-size", "12px")
-  //   .attr("text-anchor", "middle")
-  //   .attr("x", config.width / 2)
-  //   .attr("y", config.height - 12)
-  //   .text(config.xLabel);
+  svg
+    .append("text")
+    .attr("class", "x label")
+    .style("color", "black")
+    .style("font-size", "16px")
+    .attr("text-anchor", "middle")
+    .attr("x", width / 2)
+    .attr("y", config.height - 25)
+    .text(config.xLabel);
 
-  // svg
-  //   .append("text")
-  //   .attr("class", "y label")
-  //   .style("font-size", "12px")
-  //   .attr("text-anchor", "end")
-  //   .attr("x", -config.height / 2)
-  //   .attr("y", 12)
-  //   .attr("transform", "rotate(-90)")
-  //   .text(config.yLabel);
+  svg
+    .append("text")
+    .attr("class", "y label")
+    .style("font-size", "16px")
+    .style("line-height", "16px")
+    .attr("text-anchor", "end")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 14)
+    .attr("transform", "rotate(-90)")
+    .text(config.yLabel);
 };
 
 // const updateLinePlot = (id: string, data: any, config: D3LinePlotConfig) => {

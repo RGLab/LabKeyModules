@@ -10,8 +10,10 @@ const LinePlotTooltip: React.FC<LinePlotTooltipProps> = ({ name }) => {
     position: "absolute",
     backgroundColor: "white",
     border: "1px solid black",
-    width: "200px",
-    height: "70px",
+    width: "auto",
+    minWidth: "200px",
+    height: "80px",
+    padding: "3px 3px",
     display: "none",
   } as React.CSSProperties;
   return <div id={`tooltip-${name}`} style={style}></div>;

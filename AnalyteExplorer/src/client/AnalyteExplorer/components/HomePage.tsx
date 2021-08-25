@@ -11,7 +11,7 @@ interface ArrowTextProps {
 const ArrowText: React.FC<ArrowTextProps> = ({ text }) => {
   return (
     <a
-      href="#"
+      href="https://immunespace.org/project/home/begin.view?tab=GeneExpression"
       className="history-block__cta ae-home-arrow-text"
       title="Data Processing Link">
       <span className="history-block__link-text">{`${text}`}</span>
@@ -20,8 +20,6 @@ const ArrowText: React.FC<ArrowTextProps> = ({ text }) => {
 };
 
 const HomePage: React.FC = () => {
-
-  
   return (
     <section className="ae-home-content">
       <div className="ae-home-title">

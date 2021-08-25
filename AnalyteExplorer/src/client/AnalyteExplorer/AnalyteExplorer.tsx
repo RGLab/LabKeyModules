@@ -213,9 +213,6 @@ const AnalyteExplorer: React.FC = () => {
     );
   };
 
-  //console.log(nameSelected);
-  // console.log(filtersSelected);
-
   if (errorMsg !== "") {
     return (
       <main id="ae-main">
