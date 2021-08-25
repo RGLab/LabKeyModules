@@ -215,26 +215,17 @@ const createLinePlot = (
     .attr("cy", (d) => yScale(d.point.y))
     .attr("r", 4);
 
-  // svgContent
-  //   .selectAll("circle")
-  //   .data(circleData)
-  //   .enter()
-  //   .append("circle")
-  //   .style("fill", "grey")
-  //   .attr("cx", (d) => xScale(d.point.x))
-  //   .attr("cy", (d) => yScale(d.point.y))
-  //   .attr("r", 4);
-
   // https://www.d3-graph-gallery.com/graph/interactivity_zoom.html
   const zoom = d3
     .zoom()
-    .scaleExtent([0.5, 5])
+    .scaleExtent([0.5, 7])
     .translateExtent([
       [0, 0],
       [width, height],
     ])
     .on("zoom", () => {
       // recover the new scale
+      console.log("zoom");
       const newXScale = d3.event.transform.rescaleX(xScale);
       const newYScale = d3.event.transform.rescaleY(yScale);
 
@@ -252,8 +243,6 @@ const createLinePlot = (
       baseLine.attr("y1", newYScale(0)).attr("y2", newYScale(0));
 
       // reposition all circles
-
-      //svgContent.selectAll("circle").remove();
 
       svgContent
         .selectAll("circle")
