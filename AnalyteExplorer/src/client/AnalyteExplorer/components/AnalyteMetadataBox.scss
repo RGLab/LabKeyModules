@@ -2,9 +2,12 @@
 
 .analyte-metadata-box {
   width: 700px;
-  min-height: 286px;
   font-family: immunespace.$nunito-sans;
   overflow: hidden;
+
+  .open {
+    min-height: 286px;
+  }
 
   &__content {
     padding: 1rem 2rem;
@@ -16,7 +19,7 @@
     justify-content: space-between;
     border: 1px solid black;
     z-index: 1;
-    background-color: white;
+    background-color: immunespace.$white;
 
     padding: 1rem 2rem;
     h3 {
