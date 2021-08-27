@@ -24,6 +24,12 @@ interface D3LinePlot {
   ) => void;
 }
 
+interface CircleDataType {
+  cohort: string;
+  study: string;
+  point: StudyPoint;
+}
+
 const xaxisTitle = { height: 40 };
 
 const createLinePlot = (
@@ -88,9 +94,9 @@ const createLinePlot = (
     return d3.axisLeft(yScale).ticks(11);
   }
 
-  svgContent
+  const xGrid = svgContent
     .append("g")
-    .attr("class", "grid")
+    .attr("class", "grid grid-x")
     .attr("transform", "translate(0," + height + ")")
     .call(
       make_x_gridlines()
@@ -100,7 +106,7 @@ const createLinePlot = (
 
   const yGrid = svgContent
     .append("g")
-    .attr("class", "grid")
+    .attr("class", "grid grid-y")
     .call(
       make_y_gridlines()
         .tickSize(-width)
@@ -137,13 +143,12 @@ const createLinePlot = (
     return arr;
   }, []);
 
-  let circleData: { cohort: string; study: string; point: StudyPoint }[] =
-    data.reduce((arr, current) => {
-      for (const point of current.data) {
-        arr.push({ cohort: current.name, study: current.study, point: point });
-      }
-      return arr;
-    }, []);
+  let circleData: CircleDataType[] = data.reduce((arr, current) => {
+    for (const point of current.data) {
+      arr.push({ cohort: current.name, study: current.study, point: point });
+    }
+    return arr;
+  }, []);
 
   const paths = svgContent.selectAll(".plot-line").data(lineData);
   //const t = svg.transition().duration(750);
@@ -282,27 +287,49 @@ const createLinePlot = (
 
       svgContent
         .selectAll(".dot")
-        .on(
-          "mouseenter",
-          function (d: { cohort: string; study: string; point: StudyPoint }) {
-            //using normal functions to preserve "this"
-            d3.select(this).transition().duration(1).attr("r", 8);
-            tooltip
-              .style("left", newXScale(d.point.x) + "px")
-              .style("top", newYScale(d.point.y) - 70 + "px")
-              .style("display", "block");
-            tooltip.html(
-              `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
-            );
-          }
-        )
-        .attr("cx", (d: { cohort: string; study: string; point: StudyPoint }) =>
-          newXScale(d.point.x)
-        )
-        .attr("cy", (d: { cohort: string; study: string; point: StudyPoint }) =>
-          newYScale(d.point.y)
-        )
+        .on("mouseenter", function (d: CircleDataType) {
+          //using normal functions to preserve "this"
+          d3.select(this).transition().duration(1).attr("r", 8);
+          tooltip
+            .style("left", newXScale(d.point.x) + "px")
+            .style("top", newYScale(d.point.y) - 70 + "px")
+            .style("display", "block");
+          tooltip.html(
+            `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
+          );
+        })
+        .attr("cx", (d: CircleDataType) => newXScale(d.point.x))
+        .attr("cy", (d: CircleDataType) => newYScale(d.point.y))
         .attr("r", 4);
+
+      // redraw the grids
+      function make_new_x_gridlines() {
+        return d3.axisBottom(newXScale).ticks(11);
+      }
+
+      function make_new_y_gridlines() {
+        return d3.axisLeft(newYScale).ticks(11);
+      }
+
+      xGrid.call(
+        make_new_x_gridlines()
+          .tickSize(-height)
+          .tickFormat(() => "")
+      );
+
+      yGrid.call(
+        make_new_y_gridlines()
+          .tickSize(-width)
+          .tickFormat(() => "")
+      );
+
+      svgContent.selectAll(".domain").remove();
+
+      svgContent
+        .selectAll(".grid line")
+        .attr("stroke", "lightgrey")
+        .attr("stroke-opacity", 0.7)
+        .attr("shape-rendering", "crispEdges");
     });
 
   // zoom area... not sure why this is needed?
@@ -326,26 +353,19 @@ const createLinePlot = (
 
     svgContent
       .selectAll(".dot")
-      .on(
-        "mouseenter",
-        function (d: { cohort: string; study: string; point: StudyPoint }) {
-          //using normal functions to preserve "this"
-          d3.select(this).transition().duration(1).attr("r", 8);
-          tooltip
-            .style("left", xScale(d.point.x) + "px")
-            .style("top", yScale(d.point.y) - 70 + "px")
-            .style("display", "block");
-          tooltip.html(
-            `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
-          );
-        }
-      )
-      .attr("cx", (d: { cohort: string; study: string; point: StudyPoint }) =>
-        xScale(d.point.x)
-      )
-      .attr("cy", (d: { cohort: string; study: string; point: StudyPoint }) =>
-        yScale(d.point.y)
-      )
+      .on("mouseenter", function (d: CircleDataType) {
+        //using normal functions to preserve "this"
+        d3.select(this).transition().duration(1).attr("r", 8);
+        tooltip
+          .style("left", xScale(d.point.x) + "px")
+          .style("top", yScale(d.point.y) - 70 + "px")
+          .style("display", "block");
+        tooltip.html(
+          `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
+        );
+      })
+      .attr("cx", (d: CircleDataType) => xScale(d.point.x))
+      .attr("cy", (d: CircleDataType) => yScale(d.point.y))
       .attr("r", 4);
   };
 

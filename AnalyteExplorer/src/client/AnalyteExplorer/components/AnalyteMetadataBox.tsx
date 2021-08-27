@@ -16,7 +16,7 @@ const AnalyteMetadataBox: React.FC = () => {
   };
 
   return (
-    <div className="analyte-metadata-box">
+    <div className={`analyte-metadata-box${isOpen ? " open" : ""}`}>
       <div className="analyte-metadata-box__title">
         <h3 onClick={metaDropdownOnClick}>A2M: Alpha-2-Macroglobulin</h3>
         <CSSTransition
