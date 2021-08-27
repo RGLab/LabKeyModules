@@ -161,8 +161,17 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     if (nameSelected !== "") {
       let type = "";
       let filters: string[] = [];
+
       if (typeSelected !== "" && typeSelected !== ANALYTE_ALL) {
         type = convertDisplayToColumn(typeSelected);
+      } else {
+        let index = binaryClosestSearch(
+          nameSelected.toUpperCase(),
+          untypedFilterNameSuggestions,
+          0,
+          untypedFilterNameSuggestions.length - 1
+        );
+        type = untypedFilterNameSuggestions[index]["analyte_type"];
       }
 
       for (const [condition, checked] of Object.entries(conditionFilters)) {
@@ -203,14 +212,12 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
 
     if (userInput !== "") {
       if (typeSelected === ANALYTE_ALL || typeSelected === "") {
-        console.time("search");
         let index = binaryClosestSearch(
           userInputCaps,
           untypedFilterNameSuggestions,
           0,
           untypedFilterNameSuggestions.length - 1
         );
-        console.timeEnd("search");
         const suggestions = untypedFilterNameSuggestions.slice(
           index,
           index + FILTER_DROPDOWN_ROW_COUNT

@@ -3,37 +3,27 @@ import React from "react";
 
 import "./components/AnalyteSelectorMain.scss";
 import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
-
 import "./AnalyteExplorer.scss";
-
 import DownloadPage from "./components/DownloadPage";
 import { FilterNameSuggestions } from "./components/AnalyteSelectorMain";
-import { Spinner } from "react-bootstrap";
 
 import { Query, Filter } from "@labkey/api";
 import HomePage from "./components/HomePage";
 import AESpinner from "./components/AESpinner";
 import { ErrorMessageHome } from "./components/ErrorMessage";
 import LabKeyDebugPage from "./components/LabKeyDebugPage";
+import { binaryClosestSearch } from "./helpers/helperFunctions";
 
 const AnalyteExplorer: React.FC = () => {
   const [typeSelected, setTypeSelected] = React.useState("");
   const [nameSelected, setNameSelected] = React.useState("");
   const [filtersSelected, setFiltersSelected] = React.useState<string[]>([]);
-  const [downloadPageData, setDownloadPageData] = React.useState(null);
-
-  const [isDataLoaded, setIsDataLoaded] = React.useState(true);
-  const [isDataEmpty, setIsDataEmpty] = React.useState(false);
   const [typedFilterNameSuggestions, setTypedFilterNameSuggestions] =
     React.useState<FilterNameSuggestions>({});
-
   const [untypedFilterNameSuggestions, setUntypedFilterNameSuggestions] =
     React.useState<{ analyte_id: string; analyte_type: string }[]>([]);
-
   const [conditionData, setConditionData] = React.useState(null);
-
   const [errorMsg, setErrorMsg] = React.useState("");
-  const [downloadErrorMsg, setDownloadErrorMsg] = React.useState("");
 
   // anti-spam implemented here
   const searchBtnCallback = (
@@ -65,55 +55,6 @@ const AnalyteExplorer: React.FC = () => {
     let isCancelled = false;
 
     const processData = (data: any) => {
-      if (data !== undefined && data.rows !== undefined) {
-        if (data.rows.length < 1 && !isDataEmpty) {
-          setIsDataEmpty(true);
-        } else if (isDataEmpty) {
-          setIsDataEmpty(false);
-        }
-        setDownloadPageData(data);
-        setIsDataLoaded(true);
-      }
-    };
-
-    const handleFailure = (err) => {
-      console.log(err);
-      setDownloadErrorMsg(err["exception"]);
-    };
-
-    const getData = () => {
-      Query.selectRows({
-        schemaName: "lists",
-        queryName: "gene_expression",
-        filterArray: [
-          Filter.create("analyte_id", nameSelected.toUpperCase()),
-          Filter.create(
-            "condition",
-            filtersSelected,
-            Filter.Types.CONTAINS_ONE_OF
-          ),
-        ],
-        success: processData,
-        failure: handleFailure,
-      });
-    };
-
-    if (!isCancelled && nameSelected !== "" && filtersSelected.length > 0) {
-      console.log("fetching data...");
-      setDownloadPageData(null);
-      setIsDataLoaded(false);
-      getData();
-      console.log("meep");
-    }
-    return () => {
-      isCancelled = true;
-    };
-  }, [nameSelected, filtersSelected]);
-
-  React.useEffect(() => {
-    let isCancelled = false;
-
-    const processData = (data: any) => {
       console.log(data);
       if (data !== undefined && data.rows !== undefined) {
         let typedNames: FilterNameSuggestions = {};
@@ -127,11 +68,10 @@ const AnalyteExplorer: React.FC = () => {
 
         setTypedFilterNameSuggestions(typedNames);
         setUntypedFilterNameSuggestions(data.rows);
-        setIsDataLoaded(true);
       }
     };
 
-    const handleFailure = (err) => {
+    const processFailure = (err) => {
       setErrorMsg(err["exception"]);
     };
 
@@ -146,7 +86,7 @@ const AnalyteExplorer: React.FC = () => {
                   WHERE analytes.analyte_type != 'gene signature'
                   `,
         success: processData,
-        failure: handleFailure,
+        failure: processFailure,
       });
     };
 
@@ -169,17 +109,11 @@ const AnalyteExplorer: React.FC = () => {
         data !== null &&
         data.rows !== undefined
       ) {
-        // const conditions = {};
-        // data.rows.forEach((condition: { condition: string }) => {
-        //   const disease = condition["condition"].replaceAll("_", " ");
-        //   conditions[disease] = false;
-        // });
-
         setConditionData(data);
       }
     };
 
-    const handleFailure = (err) => {
+    const processFailure = (err) => {
       setErrorMsg(err["exception"]);
     };
 
@@ -191,7 +125,7 @@ const AnalyteExplorer: React.FC = () => {
         FROM gene_expression
         `,
         success: processData,
-        failure: handleFailure,
+        failure: processFailure,
       });
     };
 
@@ -231,17 +165,15 @@ const AnalyteExplorer: React.FC = () => {
             untypedFilterNameSuggestions={untypedFilterNameSuggestions}
             conditionData={conditionData}
           />
-          {downloadPageData === null && downloadErrorMsg === "" ? (
-            isDataLoaded ? (
-              <HomePage />
-            ) : (
-              <AESpinner />
-            )
+          {nameSelected === "" &&
+          typeSelected === "" &&
+          filtersSelected.length < 1 ? (
+            <HomePage />
           ) : (
             <DownloadPage
-              data={downloadPageData}
+              analyteName={nameSelected}
+              analyteType={typeSelected}
               filters={filtersSelected}
-              errorMsg={downloadErrorMsg}
             />
           )}
         </React.Fragment>
