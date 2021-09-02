@@ -1,5 +1,4 @@
 import React from "react";
-//import "bootstrap/dist/css/bootstrap.min.css";
 
 import "./components/AnalyteSelectorMain.scss";
 import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
@@ -7,12 +6,10 @@ import "./AnalyteExplorer.scss";
 import DownloadPage from "./components/DownloadPage";
 import { FilterNameSuggestions } from "./components/AnalyteSelectorMain";
 
-import { Query, Filter } from "@labkey/api";
+import { Query } from "@labkey/api";
 import HomePage from "./components/HomePage";
 import AESpinner from "./components/AESpinner";
 import { ErrorMessageHome } from "./components/ErrorMessage";
-import LabKeyDebugPage from "./components/LabKeyDebugPage";
-import { binaryClosestSearch } from "./helpers/helperFunctions";
 
 const AnalyteExplorer: React.FC = () => {
   const [typeSelected, setTypeSelected] = React.useState("");
@@ -25,12 +22,21 @@ const AnalyteExplorer: React.FC = () => {
   const [conditionData, setConditionData] = React.useState(null);
   const [errorMsg, setErrorMsg] = React.useState("");
 
-  // anti-spam implemented here
+  /**
+   *
+   * Actions performed for clicking the search button
+   *
+   * @param analyte_type
+   * @param analyte_name
+   * @param filters -> sorted string[]
+   */
   const searchBtnCallback = (
     analyte_type: string,
     analyte_name: string,
     filters: string[]
   ) => {
+    // only update state if the new selections are different than old ones,
+    // prevents spam
     if (analyte_type !== typeSelected) {
       setTypeSelected(analyte_type);
     }
@@ -51,12 +57,14 @@ const AnalyteExplorer: React.FC = () => {
     }
   };
 
+  // Retrieves data for analyte search feature
   React.useEffect(() => {
-    let isCancelled = false;
+    let isCancelled = false; // this cancels state update if component unmounts
 
     const processData = (data: any) => {
-      console.log(data);
-      if (data !== undefined && data.rows !== undefined) {
+      if (data !== undefined && data.rows !== undefined && !isCancelled) {
+        // store analyte ids by type so that you can search for a specific
+        // type of analyte
         let typedNames: FilterNameSuggestions = {};
         for (const analyte of data.rows) {
           if (typedNames[analyte.analyte_type] === undefined) {
@@ -75,9 +83,7 @@ const AnalyteExplorer: React.FC = () => {
       setErrorMsg(err["exception"]);
     };
 
-    const callLabkey = () => {
-      console.log("fetching using executeSql");
-
+    const getData = () => {
       Query.executeSql({
         containerPath: "/AnalyteExplorer",
         schemaName: "lists",
@@ -91,7 +97,7 @@ const AnalyteExplorer: React.FC = () => {
     };
 
     if (!isCancelled) {
-      callLabkey();
+      getData();
     }
 
     return () => {
@@ -99,6 +105,7 @@ const AnalyteExplorer: React.FC = () => {
     };
   }, []);
 
+  // Retrieves names of the disease conditions
   React.useEffect(() => {
     let isCancelled = false;
 
@@ -117,7 +124,7 @@ const AnalyteExplorer: React.FC = () => {
       setErrorMsg(err["exception"]);
     };
 
-    const getDiseaseConds = () => {
+    const getData = () => {
       Query.executeSql({
         containerPath: "/AnalyteExplorer",
         schemaName: "lists",
@@ -130,8 +137,7 @@ const AnalyteExplorer: React.FC = () => {
     };
 
     if (!isCancelled) {
-      console.log("fetching disease cond");
-      getDiseaseConds();
+      getData();
     }
 
     return () => {
@@ -139,6 +145,7 @@ const AnalyteExplorer: React.FC = () => {
     };
   }, []);
 
+  // check if data that is needed for the filter menu to work has been loaded
   const isSelectorDataLoaded = () => {
     return (
       untypedFilterNameSuggestions.length > 0 &&
@@ -181,7 +188,6 @@ const AnalyteExplorer: React.FC = () => {
         <AESpinner />
       )}
     </main>
-    //<LabKeyDebugPage />
   );
 };
 
@@ -190,4 +196,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-//    <div style={{ width: "1000px", height: "100vh" }}></div>

@@ -3,7 +3,6 @@
 @use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
 @use "../theme/components.history-block";
 @use "../AnalyteExplorer/components/AnalyteSelectorMain" as selectorMain;
-//@import "~bootstrap/dist/css/bootstrap.min";
 
 body {
   font-family: immunespace.$nunito-sans;
@@ -40,13 +39,8 @@ main#ae-main {
 }
 .ae-home {
   &-content {
-    // position: absolute;
-    // top: 148px;
-    // left: 138px;
-    // width: 70%;
-    // z-index: -1;
     height: calc(100% - #{selectorMain.$ae-selector-height});
-    //width: 60%;
+
     width: 760px;
     margin-left: auto;
     margin-right: auto;
@@ -73,11 +67,7 @@ main#ae-main {
     grid-template-columns: repeat(3, 1fr);
     margin: 5rem 0;
     width: 600px;
-    // span {
-    //   display: block;
-    //   font-size: 14px;
-    //   font-weight: immunespace.$font-weight--semibold;
-    // }
+
     div {
       display: flex;
       flex-direction: column;
@@ -98,12 +88,6 @@ main#ae-main {
     height: auto;
   }
 }
-
-// .ae-home-content {
-//   div {
-//     width: 600px;
-//   }
-// }
 
 .ae-home-arrow-text {
   &:hover {
