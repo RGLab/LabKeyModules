@@ -1,13 +1,13 @@
 import React from "react";
-import tutorial1 from "../assets/tutorial1.png";
-import tutorial2 from "../assets/tutorial2.png";
-import tutorial3 from "../assets/tutorial3.png";
-import LinePlot from "./data_viz/LinePlot";
+import tutorial1 from "../assets/images/tutorial1.png";
+import tutorial2 from "../assets/images/tutorial2.png";
+import tutorial3 from "../assets/images/tutorial3.png";
 
 interface ArrowTextProps {
   text: string;
 }
 
+// same arrow as entrance page
 const ArrowText: React.FC<ArrowTextProps> = ({ text }) => {
   return (
     <a
@@ -65,7 +65,6 @@ const HomePage: React.FC = () => {
 
         <ArrowText text="Data Processing" />
       </div>
-      {/* <LinePlot name={"test"} width={1000} height={1000} xLabel={"Timepoint"} yLabel={"Gene Expression"}/> */}
     </section>
   );
 };
