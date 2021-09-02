@@ -7,6 +7,8 @@ export const capitalizeFirstLetter = (str: string): string => {
   return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
 };
 
+// convert the display name of the analyte type you see in the selector
+// into the column names of the table
 export const convertDisplayToColumn = (type: string): string => {
   if (type === undefined) {
     return type;
@@ -14,6 +16,8 @@ export const convertDisplayToColumn = (type: string): string => {
   return ANALYTE_TYPE_DISPLAY_TO_COLUMN[type];
 };
 
+// convert the column name for the analyte type to the display name
+// that you see in the selector
 export const convertColumnToDisplay = (type: string): string => {
   if (type === undefined) {
     return type;
@@ -21,6 +25,18 @@ export const convertColumnToDisplay = (type: string): string => {
   return ANALYTE_TYPE_COLUMN_TO_DISPLAY[type];
 };
 
+/**
+ *
+ * Recursive search that given a query and an array, return the index
+ * of the element matching the query or if said
+ * element doesn't exist, return the index of the next closest.
+ *
+ * @param query
+ * @param array
+ * @param left
+ * @param right
+ * @returns
+ */
 export const binaryClosestSearch = (
   query: string,
   array: { analyte_id: string; analyte_type: string }[],
@@ -48,4 +64,19 @@ export const binaryClosestSearch = (
     }
   }
   return result;
+};
+
+// finds the average of an array of numbers
+export const getAverage = (numArr: number[]): number => {
+  if (numArr !== undefined && numArr !== null) {
+    let sum = 0;
+    if (numArr.length === 0) {
+      return sum;
+    }
+    for (const num of numArr) {
+      sum += num;
+    }
+    return sum / numArr.length;
+  }
+  return null;
 };
