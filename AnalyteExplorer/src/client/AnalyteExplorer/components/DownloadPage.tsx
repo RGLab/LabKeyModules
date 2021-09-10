@@ -1,13 +1,21 @@
 import React from "react";
 import AnalyteMetadataBox from "./AnalyteMetadataBox";
 import { CSVLink } from "react-csv";
-import { Spinner } from "react-bootstrap";
 import { Query, Filter } from "@labkey/api";
 import AESpinner from "./AESpinner";
 
 import LinePlot, { LinePlotProps } from "./data_viz/LinePlot";
 import { ErrorMessageDownload } from "./ErrorMessage";
+import { AnalyteMetadataBoxProps } from "./AnalyteMetadataBox";
+import { getAverage, capitalizeKebabCase } from "../helpers/helperFunctions";
 import "./DownloadPage.scss";
+
+interface GeneMetaData {
+  alias: string[];
+  name: string;
+  summary: string;
+  type_of_gene: string;
+}
 
 interface DownloadPageProps {
   analyteName: string;
@@ -28,20 +36,6 @@ interface RowData {
   timepoint: number;
 }
 
-const getAverage = (numArr: number[]): number => {
-  if (numArr !== undefined && numArr !== null) {
-    let sum = 0;
-    if (numArr.length === 0) {
-      return sum;
-    }
-    for (const num of numArr) {
-      sum += num;
-    }
-    return sum / numArr.length;
-  }
-  return null;
-};
-
 const DownloadPage: React.FC<DownloadPageProps> = ({
   analyteName,
   analyteType,
@@ -49,14 +43,16 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
 }) => {
   const [rawData, setRawData] = React.useState(null);
   const [chartData, setChartData] = React.useState(null);
-  const [chartMetadata, setChartMetadata] = React.useState(null);
+  const [chartMetadata, setChartMetadata] =
+    React.useState<AnalyteMetadataBoxProps>(null);
   const [errorMsg, setErrMsg] = React.useState("");
 
-  // analyte Type is guaranteed to be typed
+  // analyte Type is guaranteed to be typed, not ""
 
   React.useEffect(() => {
     let isCancelled = false;
 
+    // for each condition, convert raw data into a format usable for the line plot
     const organizeD3Data = (
       condition: string,
       data: RowData[]
@@ -65,7 +61,8 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
         string,
         { x: number; y: number; study: string }[]
       >();
-      let avgMap = new Map<number, number[]>();
+
+      let avgMap = new Map<number, number[]>(); // for average trend line
       let maxTimePoint = 0;
       let maxFoldChange = 0;
       let minFoldChange = 0;
@@ -130,6 +127,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       };
     };
 
+    // converts raw data from immunespace to format usable by d3
     const processData = (data: any) => {
       if (data !== undefined && data.rows !== undefined) {
         let dataByFilter: { [filter: string]: RowData[] } = {};
@@ -154,24 +152,102 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       }
     };
 
-    const processMetaData = (data: any) => {
+    const processChartMetaData = (
+      title: string,
+      body: string,
+      subtitle: string = ""
+    ) => {
+      const metaData: AnalyteMetadataBoxProps = {
+        title: title,
+        subtitle: subtitle,
+        body: body,
+      };
+      setChartMetadata(metaData);
+    };
+
+    const processBTMMetaData = (data: any) => {
       if (data !== undefined && data.rows !== undefined) {
-        setChartMetadata(data);
-        // setAnalyteMetadata(data);
-        // if (downloadPageData !== null) {
-        //   setIsDataLoaded(true);
-        // }
+        processChartMetaData(
+          data.rows[0]["name"],
+          `Genes: ${data.rows[0]["genes"]}`
+        );
       }
     };
 
     const processFailure = (err) => {
       console.log(err);
       setErrMsg(err["exception"]);
-      //setDownloadErrorMsg(err["exception"]);
     };
 
-    const getData = () => {
-      if (analyteType === "blood transcription module") {
+    const getGeneID = async (gene: string): Promise<string> => {
+      try {
+        const query = `https://mygene.info/v3/query?q=symbol:${gene}&size=1`;
+        let apiGeneID = "";
+
+        const response = await fetch(query);
+        const responseJSON = await response.json();
+
+        if (responseJSON !== undefined && responseJSON["hits"] !== undefined) {
+          if (responseJSON["hits"].length > 0) {
+            apiGeneID = responseJSON["hits"][0]["_id"];
+          }
+        }
+        return apiGeneID;
+      } catch (err) {
+        console.log(err);
+        return "";
+      }
+    };
+
+    const getGeneMetaData = async (geneID: string): Promise<GeneMetaData> => {
+      try {
+        const query = `https://mygene.info/v3/gene/${geneID}?fields=name,alias,type_of_gene,summary`;
+        const response = await fetch(query);
+        const responseJSON = await response.json(); // is typing this a good idea?
+
+        const result = {
+          name: responseJSON["name"],
+          summary: responseJSON["summary"],
+          type_of_gene: responseJSON["type_of_gene"],
+          alias: responseJSON["alias"],
+        }; // if responseJSON has any undefined values error with be thrown here and handled
+
+        return result;
+      } catch (err) {
+        console.log(err);
+        return undefined;
+      }
+    };
+
+    const processChartMetaDataError = (analyteName: string, error: string) => {
+      processChartMetaData(analyteName, error);
+    };
+
+    const callGeneAPI = async (gene: string) => {
+      const apiGeneID = await getGeneID(gene);
+
+      if (apiGeneID !== "") {
+        const geneMetaData = await getGeneMetaData(apiGeneID);
+
+        if (geneMetaData !== undefined) {
+          const metaBoxTitle = `${analyteName}: ${capitalizeKebabCase(
+            geneMetaData["name"]
+          )}`;
+          const metaBoxBody = `${geneMetaData["summary"]}`;
+          const metaBoxSubTitle = `${capitalizeKebabCase(
+            geneMetaData["type_of_gene"]
+          )} // Aliases: ${geneMetaData["alias"]}`;
+          processChartMetaData(metaBoxTitle, metaBoxBody, metaBoxSubTitle);
+        } else {
+          processChartMetaDataError(analyteName, "UNABLE TO RETRIEVE METADATA");
+        }
+      } else {
+        processChartMetaDataError(analyteName, "NO METADATA FOUND");
+      }
+    };
+
+    const getMetaData = (type: string) => {
+      if (type === "blood transcription module") {
         Query.executeSql({
           containerPath: "/AnalyteExplorer",
           schemaName: "lists",
@@ -179,13 +255,16 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
                     FROM blood_transcription_modules
                     WHERE blood_transcription_modules.id = '${analyteName}'
                     `,
-          success: processMetaData,
+          success: processBTMMetaData,
           failure: processFailure,
         });
       } else if (analyteType === "gene") {
-        // get gene metadata somehwere
+        callGeneAPI(analyteName);
       }
+    };
 
+    // grabs data for a specific analyte under specific set of disease conditions
+    const getData = () => {
       Query.selectRows({
         schemaName: "lists",
         queryName: "gene_expression",
@@ -205,13 +284,15 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       filters.length > 0
     ) {
       console.log("fetching data...");
-      setRawData(null);
-      setChartData(null);
-      setChartMetadata(null);
-      if (errorMsg !== "") {
-        setErrMsg("");
-      }
+
+      // wipe cached data before querying new data
+      rawData !== null ? setRawData(null) : null;
+      chartData !== null ? setChartData(null) : null;
+      chartMetadata !== null ? setChartMetadata(null) : null;
+      errorMsg !== "" ? setErrMsg("") : null;
+
       getData();
+      getMetaData(analyteType);
       console.log("meep");
     }
     return () => {
@@ -222,15 +303,17 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
   const isDataLoaded =
     rawData !== null && chartData !== null && chartMetadata !== null;
 
-  console.log("load download page");
-
   return (
     <div className="ae-download-content">
       {isDataLoaded ? (
         <React.Fragment>
           <CSVLink data={rawData.rows}>Download Me!</CSVLink>
           <div className="ae-metabox-container">
-            <AnalyteMetadataBox />
+            <AnalyteMetadataBox
+              title={chartMetadata.title}
+              subtitle={chartMetadata.subtitle}
+              body={chartMetadata.body}
+            />
           </div>
           {chartData.map((d3Data) => {
             return (
