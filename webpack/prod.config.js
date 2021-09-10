@@ -77,7 +77,7 @@ plugins.push(new MiniCssExtractPlugin());
 
 // set based on the lk module calling this config
 module.exports = {
-  context: constants.context(lkModule),
+  context: constants.context(lkModule), //lkModule is the module name i.e. AnalyteExplorer
 
   mode: "production",
 
@@ -86,7 +86,7 @@ module.exports = {
   entry: entries,
 
   output: {
-    path: constants.outputPath(lkModule),
+    path: constants.outputPath(lkModule), // i.e. /AnalyteExplorer/resources/web/AnalyteExplorer/gen
     publicPath: "./", // allows context path to resolve in both js/css
     filename: "[name].js",
   },
@@ -96,7 +96,6 @@ module.exports = {
       ...constants.loaders.TYPESCRIPT_LOADERS_DEV.concat(
         constants.loaders.STYLE_LOADERS
       ),
-      ...constants.loaders.IMAGE_LOADERS,
     ],
   },
 

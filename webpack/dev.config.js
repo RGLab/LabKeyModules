@@ -74,7 +74,6 @@ module.exports = {
       ...constants.loaders.TYPESCRIPT_LOADERS_DEV.concat(
         constants.loaders.STYLE_LOADERS
       ),
-      ...constants.loaders.IMAGE_LOADERS,
     ],
   },
 
