@@ -15,12 +15,18 @@ export interface StudyPoint {
   study: string;
 }
 
+export interface D3LineData {
+  name: string;
+  study: string;
+  data: StudyPoint[];
+}
+
 interface D3LinePlot {
   create: (
     id: string,
-    data: { name: string; study: string; data: StudyPoint[] }[],
+    data: D3LineData[],
     config: D3LinePlotConfig,
-    trendData?: { name: string; study: string; data: StudyPoint[] }[]
+    trendData?: D3LineData[]
   ) => void;
 }
 
@@ -30,15 +36,15 @@ interface CircleDataType {
   point: StudyPoint;
 }
 
-const xaxisTitle = { height: 40 };
-
 const createLinePlot = (
   id: string,
-  data: { name: string; study: string; data: StudyPoint[] }[],
+  data: D3LineData[],
   config: D3LinePlotConfig,
-  trendData?: { name: string; study: string; data: StudyPoint[] }[]
+  trendData: D3LineData[] = []
 ) => {
   //const lineplotHeight = config.height - xaxisTitle.height - 10; // need to actually figure out how tall the xaxis is
+
+  // ------ Initial Setup ------
   const margin = { top: 10, right: 30, bottom: 60, left: 60 },
     width = config.width - margin.left - margin.right,
     height = config.height - margin.top - margin.bottom;
@@ -47,13 +53,10 @@ const createLinePlot = (
 
   const yScale = d3.scaleLinear().domain([-1, 1]).range([height, 0]);
 
-  //https://stackoverflow.com/questions/42308115/d3v4-typescript-angular2-error-using-d3-line-xd-function
-
   const xAxis = (g) =>
     g.attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
 
   const yAxis = (g) => g.call(d3.axisLeft(yScale));
-  //.attr("transform", `translate(${margin.left},0)`);
 
   const svg = d3
     .select("#lineplot-container-" + id)
@@ -63,6 +66,7 @@ const createLinePlot = (
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
+  // add clipPath that'll bound viewbox when zooming
   svg
     .append("defs")
     .append("clipPath")
@@ -78,11 +82,14 @@ const createLinePlot = (
     .attr("class", "plot-content")
     .attr("clip-path", "url(#clip)");
 
+  // add axis to plot
   const xAxisElement = svg.append("g").call(xAxis);
   xAxisElement.selectAll(".domain").remove();
   xAxisElement.style("font-size", "16px");
   const yAxisElement = svg.append("g").call(yAxis);
   yAxisElement.style("font-size", "16px");
+
+  // ----- Grid Lines -----
 
   // gridlines in x axis function
   function make_x_gridlines() {
@@ -113,6 +120,7 @@ const createLinePlot = (
         .tickFormat(() => "")
     );
 
+  // remove excessive grid lines from edges of plot
   svgContent.selectAll(".domain").remove();
 
   svgContent
@@ -121,7 +129,7 @@ const createLinePlot = (
     .attr("stroke-opacity", 0.7)
     .attr("shape-rendering", "crispEdges");
 
-  // y = 0 line
+  // ----- Y = 0 Line -----
   const baseLine = svgContent
     .append("line")
     .attr("class", "base-line")
@@ -133,13 +141,20 @@ const createLinePlot = (
     .attr("stroke", "black")
     .attr("transform", `translate(0, ${0.5})`); // transform is used to align the line with the y axis tick @0
 
+  // line function used for plotting data
+  //https://stackoverflow.com/questions/42308115/d3v4-typescript-angular2-error-using-d3-line-xd-function
   const line = d3
     .line<{ x: number; y: number }>()
     .x((d) => xScale(d.x))
     .y((d) => yScale(d.y));
 
+  // ----- Data Processsing ----- //
+
   let lineData: StudyPoint[][] = data.reduce((arr, current) => {
-    arr.push(current.data);
+    // removes trendline from normal cohort lines so it doesn't get plotted twice
+    if (current.name !== "Average") {
+      arr.push(current.data);
+    }
     return arr;
   }, []);
 
@@ -150,11 +165,10 @@ const createLinePlot = (
     return arr;
   }, []);
 
+  // ----- Plotting Data ----- //
+
+  // plotting lines
   const paths = svgContent.selectAll(".plot-line").data(lineData);
-  //const t = svg.transition().duration(750);
-
-  const tooltip = d3.select("#tooltip-" + id);
-
   paths.join(
     (enter) =>
       enter
@@ -191,6 +205,8 @@ const createLinePlot = (
     );
   }
 
+  // plotting circles w/ tooltip hover
+  const tooltip = d3.select("#tooltip-" + id);
   const circles = svgContent.selectAll(".dot").data(circleData);
 
   circles
@@ -220,6 +236,7 @@ const createLinePlot = (
     .attr("cy", (d) => yScale(d.point.y))
     .attr("r", 4);
 
+  // ----- Legends -----
   const legend = svgContent.append("g").attr("class", "legend");
 
   const legendProps = {
@@ -256,6 +273,7 @@ const createLinePlot = (
     .style("font-size", "15px")
     .attr("alignment-baseline", "middle");
 
+  // ----- Zoom Function -----
   // https://www.d3-graph-gallery.com/graph/interactivity_zoom.html
   const zoom = d3
     .zoom()
@@ -266,7 +284,6 @@ const createLinePlot = (
     ])
     .on("zoom", () => {
       // recover the new scale
-      console.log("zoom");
       const newXScale = d3.event.transform.rescaleX(xScale);
       const newYScale = d3.event.transform.rescaleY(yScale);
 
@@ -332,18 +349,7 @@ const createLinePlot = (
         .attr("shape-rendering", "crispEdges");
     });
 
-  // zoom area... not sure why this is needed?
-  // svg
-  //   .append("rect")
-  //   .attr("width", width)
-  //   .attr("height", height)
-  //   .attr("class", "zoom-rect")
-  //   .style("fill", "none")
-  //   .style("pointer-events", "all")
-  //   .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-  //   .call(zoom)
-  //   .on("dblclick.zoom", null);
-
+  // on mouse doubleclick the chart resets to original state
   const resetChart = () => {
     xAxisElement.call(d3.axisBottom(xScale));
     yAxisElement.call(d3.axisLeft(yScale));
@@ -374,43 +380,7 @@ const createLinePlot = (
     .call(zoom)
     .on("dblclick.zoom", resetChart);
 
-  const updateChart = () => {
-    const extent = d3.event.selection;
-
-    if (extent) {
-      // console.log(d3.event);
-      // console.log(xScale.invert(extent[0]));
-      // console.log(xScale.invert(extent[1]));
-
-      xScale.domain([xScale.invert(extent[0]), xScale.invert(extent[1])]);
-      svgContent.select(".brush").call(brush.move, null);
-
-      xAxisElement.transition().duration(1000).call(d3.axisBottom(xScale));
-      svgContent
-        .selectAll(".plot-line")
-        .transition()
-        .duration(1000)
-        .attr("d", line);
-    }
-  };
-
-  //https://www.d3-graph-gallery.com/graph/line_brushZoom.html
-  const brush = d3
-    .brushX() // Add the brush feature using the d3.brush function
-    .extent([
-      [0, 0],
-      [width, height],
-    ]) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
-    .on("end", updateChart);
-
-  // svgContent.append("g").attr("class", "brush").call(brush);
-
-  // svgContent.on("dblclick", function () {
-  //   xScale.domain([0, 49]);
-  //   xAxisElement.transition().call(d3.axisBottom(xScale));
-  //   svgContent.selectAll(".plot-line").transition().attr("d", line);
-  // });
-
+  // Adding x-axis and y-axis labels
   svg
     .append("text")
     .attr("class", "x label")
@@ -432,37 +402,6 @@ const createLinePlot = (
     .attr("transform", "rotate(-90)")
     .text(config.yLabel);
 };
-
-// const updateLinePlot = (id: string, data: any, config: D3LinePlotConfig) => {
-//   const lineplotHeight = config.height - xaxisTitle.height - 10;
-//   const margin = { top: 20, right: 30, bottom: 40, left: 40 },
-//     width = config.width - margin.left - margin.right,
-//     height = lineplotHeight - margin.top - margin.bottom;
-
-//   const svg = d3.select("#lineplot-container-" + id).select("svg");
-
-//   const x = d3
-//     .scaleLinear()
-//     .domain([0, 49])
-//     .range([margin.left, config.width - margin.right]);
-
-//   const y = d3
-//     .scaleLinear()
-//     .domain([-1, 1])
-//     .range([config.height - margin.bottom, margin.top]);
-
-//   const line = d3
-//     .line<{ x: number; y: number }>()
-//     .x((d) => x(d.x))
-//     .y((d) => y(d.y));
-
-//   let lData = data.reduce((arr, current) => {
-//     arr.push(current.data);
-//     return arr;
-//   }, []);
-
-//   const paths = svg.selectAll(".plot-line").data(lData);
-// };
 
 export const D3LinePlot: D3LinePlot = {
   create: createLinePlot,

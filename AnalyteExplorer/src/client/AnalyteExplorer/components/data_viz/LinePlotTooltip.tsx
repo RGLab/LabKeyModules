@@ -1,5 +1,4 @@
 import React from "react";
-import "./LinePlotTooltip.scss";
 
 interface LinePlotTooltipProps {
   name: string;

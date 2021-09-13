@@ -1,9 +1,6 @@
 import React, { CSSProperties } from "react";
-//import { TestPlot } from "./d3/Test.d3";
-import { D3LinePlot, D3LinePlotConfig } from "./d3/LinePlot.d3";
-import { StudyPoint } from "./d3/LinePlot.d3";
+import { D3LinePlot, D3LineData } from "./d3/LinePlot.d3";
 import LinePlotTooltip from "./LinePlotTooltip";
-import * as d3 from "d3";
 import "./LinePlot.scss";
 
 export interface LinePlotProps {
@@ -27,11 +24,12 @@ const LinePlot: React.FC<LinePlotProps> = ({
     width: "100%",
   };
 
+  // transforms input data into format suitable for the line plot, also seperate data for trend line from cohorts
   const setupData = (
     data: Map<string, { x: number; y: number; study: string }[]>
-  ): { name: string; study: string; data: StudyPoint[] }[][] => {
-    let linedData: { name: string; study: string; data: StudyPoint[] }[] = [];
-    let trendData: { name: string; study: string; data: StudyPoint[] }[] = [];
+  ): D3LineData[][] => {
+    let cohortData: D3LineData[] = [];
+    let trendData: D3LineData[] = [];
     for (const [cohort, linePoints] of data) {
       if (linePoints.length > 0) {
         const formattedData = {
@@ -42,29 +40,20 @@ const LinePlot: React.FC<LinePlotProps> = ({
         if (cohort === "Average") {
           trendData.push(formattedData);
         }
-        linedData.push(formattedData);
+        cohortData.push(formattedData);
       }
     }
 
-    return [linedData, trendData];
+    // lineData contains trendData because it makes it easier to draw
+    return [cohortData, trendData];
   };
 
-  function randomLetters() {
-    return d3
-      .shuffle("abcdefghijklmnopqrstuvwxyz".split(""))
-      .slice(0, Math.floor(1 + Math.random() * 20))
-      .sort();
-  }
-
-  // const randomizeData = () => {
-  //   TestPlot.create(randomLetters());
-  // };
-
   React.useEffect(() => {
-    const [formattedLineData, formattedTrendData] = setupData(data);
+    const [formattedCohortData, formattedTrendData] = setupData(data);
+
     D3LinePlot.create(
       name,
-      formattedLineData,
+      formattedCohortData,
       {
         width: width,
         height: height,
@@ -74,22 +63,6 @@ const LinePlot: React.FC<LinePlotProps> = ({
       formattedTrendData
     );
   }, []);
-
-  // React.useEffect(() => {
-  //   //const args = setup(props)
-  //   //D3LinePlot.update(name, [], { width: 1000, height: 100 });
-  //   const formattedData = setupData(data);
-  //   D3LinePlot.update(name, formattedData, {
-  //     width: width,
-  //     height: height,
-  //     xLabel: xLabel,
-  //     yLabel: yLabel,
-  //   });
-  // }, [data]);
-
-  // React.useEffect(() => {
-  //   TestPlot.create(randomData);
-  // }, [randomData]);
 
   return (
     <div
@@ -110,15 +83,6 @@ const LinePlot: React.FC<LinePlotProps> = ({
       <LinePlotTooltip name={name} />
     </div>
   );
-
-  // return (
-  //   <div>
-  //     <button onClick={randomizeData}>Randomize</button>
-  //     <div id="testplot-container">
-  //       <svg></svg>
-  //     </div>
-  //   </div>
-  // );
 };
 
 export default LinePlot;
