@@ -1,7 +1,4 @@
 import React from "react";
-// import tutorial1 from "../../../../resources/assets/images/tutorial1.png";
-// import tutorial2 from "../../../../resources/assets/images/tutorial2.png";
-// import tutorial3 from "../../../../resources/assets/images/tutorial3.png";
 
 interface ArrowTextProps {
   text: string;
@@ -30,7 +27,7 @@ const HomePage: React.FC = () => {
       <div className="ae-home-tutorial-instructions">
         <div>
           <img
-            src="/AnalyteExplorer/assets/images/tutorial2.png"
+            src="/AnalyteExplorer/assets/images/tutorial1.png"
             alt="how to use first step"
             className="ae-home__tutorial-icon"
           />
@@ -40,7 +37,7 @@ const HomePage: React.FC = () => {
         </div>
         <div>
           <img
-            src="/AnalyteExplorer/assets/images/tutorial1.png"
+            src="/AnalyteExplorer/assets/images/tutorial2.png"
             alt="how to use second step"
             className="ae-home__tutorial-icon"
           />
