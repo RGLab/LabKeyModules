@@ -328,6 +328,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
               {options.map((optionLabel: string) => {
                 return (
                   <li
+                    key={optionLabel}
                     className="analyte-selector-dropdown-options"
                     onClick={() => {
                       onClickCallback(optionLabel);
@@ -343,7 +344,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     );
   };
 
-  // memoize this?
+  // memoize this? idk if possible
   const filtersApplied = Object.values(conditionFilters).reduce(
     (filters: number, checked) => {
       if (checked) {
@@ -427,10 +428,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
         </div>
         {(() => {
           let styles = {
-            display: `${selected === 0 ? "none" : "block"}`, //will need to fix
-            //marginLeft: `${selected === 1 ? "0" : "auto"}`,
-            //marginRight: `${selected === 3 ? "0" : "auto"}`,
-            //left: `${selected === 1 ? "0"}`
+            display: `${selected === 0 ? "none" : "block"}`, // can make all 3 dropdowns use the same component
           };
           if (selected === 2) {
             styles["left"] = "20%"; //will need to fix how menu generates
