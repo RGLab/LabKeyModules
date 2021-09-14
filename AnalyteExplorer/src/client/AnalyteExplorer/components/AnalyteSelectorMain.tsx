@@ -1,4 +1,4 @@
-import React, { MouseEvent } from "react";
+import React from "react";
 import {
   ANALYTE_ALL,
   ANALYTE_TYPE_DISPLAYNAMES,
@@ -10,7 +10,6 @@ import {
   convertColumnToDisplay,
   binaryClosestSearch,
 } from "../helpers/helperFunctions";
-import { Query } from "@labkey/api";
 import "./AnalyteSelectorMain.scss";
 import { BsSearch } from "react-icons/bs";
 
@@ -55,33 +54,6 @@ const CheckboxButton: React.FC<CheckboxButtonProps> = ({
   );
 };
 
-interface SelectorInputProps {
-  id: string;
-  name: string;
-  placeholderText: string;
-  value: string;
-  onChangeCallback: (e: React.FormEvent<HTMLInputElement>) => void;
-}
-
-const SelectorInput: React.FC<SelectorInputProps> = ({
-  id,
-  name,
-  placeholderText,
-  value,
-  onChangeCallback,
-}) => {
-  return (
-    <input
-      type="text"
-      id={id}
-      name={name}
-      placeholder={placeholderText}
-      value={value}
-      autoComplete="off"
-      onChange={onChangeCallback}></input>
-  );
-};
-
 export interface FilterNameSuggestions {
   [analyte_type: string]: { analyte_id: string; analyte_type: string }[];
 }
@@ -109,9 +81,6 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
   const [typeSelected, setTypeSelected] = React.useState("");
   const [nameSelected, setNameSelected] = React.useState("");
 
-  const [filteredTypeSuggestions, setFilteredTypeSuggestions] = React.useState(
-    ANALYTE_TYPE_DISPLAYNAMES
-  );
   const [filterNameSuggestions, setFilterNameSuggestions] = React.useState<{
     [analyte_name: string]: string;
   }>({});
@@ -147,7 +116,6 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
           setSelected(3);
         } else {
           setSelected(0);
-          //elevateSelections();
         }
       }
     };
@@ -158,10 +126,12 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
   }, [dropdownRef, typeSelectorRef, nameSelectorRef, filterSelectorRef]);
 
   const searchBtnOnClick = () => {
+    // do nothing if no analyte selected
     if (nameSelected !== "") {
       let type = "";
       let filters: string[] = [];
 
+      // find type of analyte selected if analyte type selector is set to "All"
       if (typeSelected !== "" && typeSelected !== ANALYTE_ALL) {
         type = convertDisplayToColumn(typeSelected);
       } else {
@@ -180,7 +150,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
         }
       }
 
-      filters.sort();
+      filters.sort(); // sort filters alphabetically
 
       if (filters.length > 0) {
         //callback to download page
@@ -189,22 +159,8 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     }
   };
 
-  // const typeInputOnChange = (event: React.FormEvent<HTMLInputElement>) => {
-  //   const suggestions = ANALYTE_TYPE_DISPLAYNAMES;
-  //   const userInput = event.currentTarget.value;
-  //   if (userInput !== "") {
-  //     const filteredSuggestions = suggestions.filter(
-  //       (suggestion) =>
-  //         suggestion.toLowerCase().indexOf(userInput.toLowerCase()) === 0
-  //     );
-
-  //     setFilteredTypeSuggestions(filteredSuggestions);
-  //   } else {
-  //     setFilteredTypeSuggestions(ANALYTE_TYPE_DISPLAYNAMES);
-  //   }
-  //   setTypeSearched(userInput);
-  // };
-
+  // Updates the list of five suggestions in the analyte selector upon change in
+  // user input
   const nameInputOnChange = (event: React.FormEvent<HTMLInputElement>) => {
     const userInput = event.currentTarget.value;
     const userInputCaps = userInput.toUpperCase();
@@ -217,11 +173,13 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
           untypedFilterNameSuggestions,
           0,
           untypedFilterNameSuggestions.length - 1
-        );
+        ); // caps are used due to all filter names being in uppercase
         const suggestions = untypedFilterNameSuggestions.slice(
           index,
           index + FILTER_DROPDOWN_ROW_COUNT
         );
+        // To be considered a name suggestion the name must START with the user input
+        // THIS RULE CAN BE MODIFIED
         for (const analyte of suggestions) {
           if (analyte["analyte_id"].includes(userInputCaps)) {
             filteredNames[analyte["analyte_id"]] = analyte["analyte_type"];
@@ -483,7 +441,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
             case 1:
               const dropdown = generateDropdown(
                 styles,
-                filteredTypeSuggestions,
+                ANALYTE_TYPE_DISPLAYNAMES,
                 typeDropdownOnClick
               );
               return dropdown;
