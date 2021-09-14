@@ -1,5 +1,4 @@
 import React from "react";
-
 import "./components/AnalyteSelectorMain.scss";
 import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
 import "./AnalyteExplorer.scss";

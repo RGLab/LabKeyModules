@@ -26,6 +26,7 @@ if(moduleName == 'extraWebapp'){
             // and only rebuilt when needed
             // Note: Cannot use '*' for string matching, so
             // may need to specify different files
+            inputs.files.fileTree("resources/web/AnalyteExplorer/assets")
             inputs.files fileTree("src")
             inputs.files fileTree("webpack")
             inputs.file "package.json"
@@ -38,21 +39,22 @@ if(moduleName == 'extraWebapp'){
             outputs.dir "resources" // set in where ??
         }
 
-        task copyImageResources {
-            dependsOn npm_run_build
+        // task copyImageResources {
+        //     dependsOn npm_run_build
 
-            String imgDir = "${dirToZip}/web/ResourcesPage/images"
+        //     String imgDir = "${dirToZip}/web/AnalyteExplorer/images"
 
-            mkdir imgDir
-            copy {
-                from "./images"
-                include "*"
-                into imgDir
-            }
-        }
+        //     mkdir imgDir
+        //     copy {
+        //         from "./src/client/AnalyteExplorer/assets/images"
+        //         include "*"
+        //         into imgDir
+        //     }
+        // }
 
         task prepModule {
             dependsOn copyImageResources
+            //dependsOn npm_run_build
             dependsOn project.parent.tasks.npmInstall
         }
 
