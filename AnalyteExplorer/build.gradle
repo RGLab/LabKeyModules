@@ -39,23 +39,19 @@ if(moduleName == 'extraWebapp'){
             outputs.dir "resources" // set in where ??
         }
 
-        // task copyImageResources {
-        //     dependsOn npm_run_build
-
-        //     String imgDir = "${dirToZip}/web/AnalyteExplorer/images"
-
-        //     mkdir imgDir
-        //     copy {
-        //         from "./src/client/AnalyteExplorer/assets/images"
-        //         include "*"
-        //         into imgDir
-        //     }
-        // }
+        task copyImageResources {
+            dependsOn npm_run_build
+            String imgDir = "${dirToZip}/web/AnalyteExplorer/images"
+            mkdir imgDir
+            copy {
+                from "./images"
+                include "*"
+                into imgDir
+            }
+        }
 
         task prepModule {
             dependsOn copyImageResources
-            //dependsOn npm_run_build
-            dependsOn project.parent.tasks.npmInstall
         }
 
     }else{

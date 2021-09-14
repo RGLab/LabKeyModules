@@ -51,17 +51,20 @@ const fetchData = (handleResults: (any) => void) => {
           <tr key={index} data-item={arr}>
             <td
               data-title="Version"
-              style={{ textAlign: "center", border: "1px solid black" }}>
+              style={{ textAlign: "center", border: "1px solid black" }}
+            >
               {arr.version}
             </td>
             <td
               data-title="Date"
-              style={{ textAlign: "center", border: "1px solid black" }}>
+              style={{ textAlign: "center", border: "1px solid black" }}
+            >
               {arr.date.slice(0, 10)}
             </td>
             <td
               data-title="Affected Studies"
-              style={{ border: "1px solid black" }}>
+              style={{ border: "1px solid black" }}
+            >
               {arr.affected_studies}
             </td>
             <td data-title="Description" style={{ border: "1px solid black" }}>
@@ -143,6 +146,7 @@ const AboutPage: React.FC = () => {
     When a new tab is selected, append the appropriate parameter to the end of the url
     and updates the url. Creates new history entries that allows user to traverse tabs 
     using the foward and back buttons. Does not refresh the page.
+
     https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
   */
   const changeTabParam = (newActiveTab: string) => {
@@ -238,7 +242,7 @@ const AboutPage: React.FC = () => {
     const slotHtml = document
       .createRange()
       .createContextualFragment(rSessionResults);
-    const scriptNodes = slotHtml.querySelectorAll("script[src]");
+    let scriptNodes = slotHtml.querySelectorAll("script[src]");
 
     if (scriptNodes.length > 0) {
       const loader = new ScriptLoader(onRScriptsLoaded, onRScriptLoadTimeout);
@@ -290,10 +294,8 @@ const AboutPage: React.FC = () => {
         <div className="nav-menu-indicator-container">
           <span
             className="nav-menu-indicator"
-            style={{
-              marginLeft: indicatorMargin,
-              width: indicatorWidth,
-            }}></span>
+            style={{ marginLeft: indicatorMargin, width: indicatorWidth }}
+          ></span>
         </div>
       </Navbar>
     );
@@ -337,7 +339,8 @@ const AboutPage: React.FC = () => {
     <TabContainer
       activeKey={activeTab}
       generateChildId={generateChildId}
-      onSelect={(tab) => changeTabParam(`${tab}`)}>
+      onSelect={(tab) => changeTabParam(`${tab}`)}
+    >
       <div id="about-page-content">
         {getNavbar()}
         {getTabContent()}

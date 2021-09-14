@@ -14,6 +14,7 @@
                 <cv:property name='columnTitle' value='Study'/>
             </cv:properties>
         </cv:column>
+        <cv:column name='Version'/>
     </cv:columns>
 </cv:customView>
 
