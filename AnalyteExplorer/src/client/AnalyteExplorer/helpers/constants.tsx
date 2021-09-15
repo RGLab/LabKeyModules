@@ -26,10 +26,3 @@ export const ANALYTE_TYPE_COLUMN_TO_DISPLAY = {
   "gene": "Gene",
   "blood transcription module": "Blood Transcription Module (BTM)",
 };
-
-export const diseaseConditions = [
-  "Influenza",
-  "Herpes Zoster",
-  "Yellow Fever",
-  "Malaria",
-];
