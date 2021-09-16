@@ -440,9 +440,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
           if (selected === STATE_OF_SELECTOR.NAME_OPEN) {
             styles["left"] = "20%"; //will need to fix how menu generates
           }
-          switch (
-            selected // use enumeration
-          ) {
+          switch (selected) {
             case STATE_OF_SELECTOR.CLOSED:
               return <div ref={dropdownRef} style={styles}></div>;
             case STATE_OF_SELECTOR.TYPE_OPEN:
