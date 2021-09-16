@@ -1,14 +1,4 @@
 
-```{r test, eval = FALSE, echo = FALSE}
-
-labkey.user.email="hmiller@fredhutch.org"
-labkey.url.path="/Studies/SDY180/"
-labkey.url.base="http://10.107.229.229:8080/"
-labkey.url.params <- list("fdr"="false","dichotomize"="false","responseVar"="neut_ab_titer","cohortsTraining"="[\"Study group 1 2009-2010 Fluzone_Whole blood\"]","timePointUnit"="days","fcThreshold"="0","analysisAccession"="[null]","cohortsTesting"="[\"Study group 1 Saline_Whole blood\",\"Study group 2 2009-2010 Fluzone_Whole blood\"]","timePoint"="0","dichotomizeValue"="4")
-labkey.file.root <- "/share/files/Studies/SDY180/@files"
-labkey.pipeline.root <- "/share/files/Studies/SDY180/@files"
-```
-
 ```{r knitr-opts, echo = FALSE, message = FALSE, cache = FALSE}
 library(knitr)
 opts_chunk$set(cache = FALSE,
@@ -22,7 +12,6 @@ opts_chunk$set(cache = FALSE,
                                       "cache/ImmuneResponsePredictor/",
                                       labkey.user.email,
                                       ""))
-# __HELEN_TEST__
 ```
 
 ```{r libraries, echo = FALSE, message = FALSE, cache = FALSE}
