@@ -80,7 +80,7 @@ export const getAverage = (numArr: number[]): number => {
 };
 
 export const capitalizeKebabCase = (str: string): string => {
-  if (str === undefined || str.length < 0 || str.indexOf("-") < 0) {
+  if (str === undefined || str.length < 0) {
     return str;
   }
   const strArr = str.split("-");
@@ -91,7 +91,7 @@ export const capitalizeKebabCase = (str: string): string => {
 };
 
 export const capitalizeEveryWord = (str: string): string => {
-  if (str === undefined || str.length < 0 || str.indexOf(" ") < 0) {
+  if (str === undefined || str.length < 0) {
     return str;
   }
   const strArr = str.split(" ");
