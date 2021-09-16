@@ -433,7 +433,9 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
           if (selected === 2) {
             styles["left"] = "20%"; //will need to fix how menu generates
           }
-          switch (selected) {
+          switch (
+            selected // use enumeration
+          ) {
             case 0:
               return <div ref={dropdownRef} style={styles}></div>;
             case 1:
