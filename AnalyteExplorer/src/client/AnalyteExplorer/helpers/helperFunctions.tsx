@@ -68,11 +68,9 @@ export const binaryClosestSearch = (
 
 // finds the average of an array of numbers
 export const getAverage = (numArr: number[]): number => {
-  if (numArr !== undefined && numArr !== null) {
+  if (numArr !== undefined && numArr !== null && numArr.length > 0) {
     let sum = 0;
-    if (numArr.length === 0) {
-      return sum;
-    }
+
     for (const num of numArr) {
       sum += num;
     }
