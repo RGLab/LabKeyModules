@@ -26,3 +26,10 @@ export const ANALYTE_TYPE_COLUMN_TO_DISPLAY = {
   "gene": "Gene",
   "blood transcription module": "Blood Transcription Module (BTM)",
 };
+
+export const STATE_OF_SELECTOR = {
+  CLOSED: 0,
+  TYPE_OPEN: 1,
+  NAME_OPEN: 2,
+  FILTERS_OPEN: 3,
+};

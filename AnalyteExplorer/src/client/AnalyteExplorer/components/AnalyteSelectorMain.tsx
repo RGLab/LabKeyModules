@@ -3,6 +3,7 @@ import {
   ANALYTE_ALL,
   ANALYTE_TYPE_DISPLAYNAMES,
   FILTER_DROPDOWN_ROW_COUNT,
+  STATE_OF_SELECTOR,
 } from "../helpers/constants";
 import { capitalizeFirstChar } from "@labkey/components";
 import {
@@ -75,7 +76,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
   untypedFilterNameSuggestions,
   conditionData,
 }) => {
-  const [selected, setSelected] = React.useState(0); //0 means nothing is selected
+  const [selected, setSelected] = React.useState(STATE_OF_SELECTOR.CLOSED); //0 means nothing is selected
   const [hovered, setHovered] = React.useState(0);
   const [nameSearched, setNameSearched] = React.useState("");
   const [typeSelected, setTypeSelected] = React.useState("");
@@ -109,13 +110,13 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         if (typeSelectorRef.current.contains(event.target)) {
-          setSelected(1);
+          setSelected(STATE_OF_SELECTOR.TYPE_OPEN);
         } else if (nameSelectorRef.current.contains(event.target)) {
-          setSelected(2);
+          setSelected(STATE_OF_SELECTOR.NAME_OPEN);
         } else if (filterSelectorRef.current.contains(event.target)) {
-          setSelected(3);
+          setSelected(STATE_OF_SELECTOR.FILTERS_OPEN);
         } else {
-          setSelected(0);
+          setSelected(STATE_OF_SELECTOR.CLOSED);
         }
       }
     };
@@ -219,7 +220,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     }
     setNameSelected("");
     setFilterNameSuggestions({});
-    setSelected(0);
+    setSelected(STATE_OF_SELECTOR.CLOSED);
   };
 
   // if type isn't set when selecting analyte, set type for user
@@ -239,7 +240,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
 
   const submitFilters = (event) => {
     event.preventDefault();
-    setSelected(0);
+    setSelected(STATE_OF_SELECTOR.CLOSED);
   };
 
   // confirm the analyte name selection
@@ -247,7 +248,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     setNameSearched(name);
     setNameSelected(name);
     setTypeFromName(name);
-    setSelected(0);
+    setSelected(STATE_OF_SELECTOR.CLOSED);
   };
 
   // check and uncheck disease condition checkboxes
@@ -360,7 +361,9 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
       <div className="analyte-selector-main">
         <div className="analyte-selector-dropdown">
           <div
-            className={`analyte-selector ${selected === 1 ? "selected" : ""}`}>
+            className={`analyte-selector ${
+              selected === STATE_OF_SELECTOR.TYPE_OPEN ? "selected" : ""
+            }`}>
             <div
               ref={typeSelectorRef}
               className="analyte-selector-label-wrapper"
@@ -379,7 +382,9 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
             </div>
           </div>
           <div
-            className={`analyte-selector ${selected === 2 ? "selected" : ""}`}>
+            className={`analyte-selector ${
+              selected === STATE_OF_SELECTOR.NAME_OPEN ? "selected" : ""
+            }`}>
             <div
               ref={nameSelectorRef}
               className="analyte-selector-label-wrapper"
@@ -400,7 +405,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
           </div>
           <div
             className={`analyte-selector with-search${
-              selected === 3 ? "selected" : ""
+              selected === STATE_OF_SELECTOR.FILTERS_OPEN ? "selected" : ""
             }`}>
             <div
               ref={filterSelectorRef}
@@ -428,31 +433,33 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
         </div>
         {(() => {
           let styles = {
-            display: `${selected === 0 ? "none" : "block"}`, // can make all 3 dropdowns use the same component
+            display: `${
+              selected === STATE_OF_SELECTOR.CLOSED ? "none" : "block"
+            }`, // can make all 3 dropdowns use the same component
           };
-          if (selected === 2) {
+          if (selected === STATE_OF_SELECTOR.NAME_OPEN) {
             styles["left"] = "20%"; //will need to fix how menu generates
           }
           switch (
             selected // use enumeration
           ) {
-            case 0:
+            case STATE_OF_SELECTOR.CLOSED:
               return <div ref={dropdownRef} style={styles}></div>;
-            case 1:
+            case STATE_OF_SELECTOR.TYPE_OPEN:
               const dropdown = generateDropdown(
                 styles,
                 ANALYTE_TYPE_DISPLAYNAMES,
                 typeDropdownOnClick
               );
               return dropdown;
-            case 2:
+            case STATE_OF_SELECTOR.NAME_OPEN:
               const dropdown2 = generateDropdown(
                 styles,
                 Object.keys(filterNameSuggestions),
                 nameDropdownOnClick
               );
               return dropdown2;
-            case 3:
+            case STATE_OF_SELECTOR.FILTERS_OPEN:
               return (
                 <div
                   ref={dropdownRef}
