@@ -264,7 +264,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     };
 
     // grabs data for a specific analyte under specific set of disease conditions
-    const getData = () => {
+    const getData = (analyteName: string, filters: string[]) => {
       Query.selectRows({
         schemaName: "lists",
         queryName: "gene_expression",
@@ -285,13 +285,17 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     ) {
       console.log("fetching data...");
 
+      const filtersWithUnderscore = filters.map((filter) =>
+        filter.replaceAll(" ", "_")
+      );
+
       // wipe cached data before querying new data
       rawData !== null ? setRawData(null) : null;
       chartData !== null ? setChartData(null) : null;
       chartMetadata !== null ? setChartMetadata(null) : null;
       errorMsg !== "" ? setErrMsg("") : null;
 
-      getData();
+      getData(analyteName, filtersWithUnderscore);
       getMetaData(analyteType);
       console.log("meep");
     }
