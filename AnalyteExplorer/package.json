@@ -23,14 +23,13 @@
     "styled-components": "^5.3.0"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.14",
     "@typescript-eslint/eslint-plugin": "^4.27.0",
     "@typescript-eslint/parser": "^4.27.0",
     "cross-env": "5.2.1",
     "eslint": "^7.28.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-react": "^7.24.0",
-    "jest": "^26.6.0",
+    "jest": "26.6.0",
     "prettier": "2.3.1",
     "rimraf": "3.0.2",
     "webpack": "5.22.0",
@@ -52,7 +51,7 @@
     "moduleNameMapper": {
       "\\.(scss)$": "<rootDir>/test/styleMock.ts"
     },
-    "testRegex": "(\\.(test|spec))\\.(ts|tsx|js)$",
+    "testRegex": "(\\.(test|spec))\\.(ts|tsx|js|jsx)$",
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     }
