@@ -87,8 +87,8 @@ const AnalyteExplorer: React.FC = () => {
         containerPath: "/AnalyteExplorer",
         schemaName: "lists",
         sql: `SELECT DISTINCT analyte_id, analyte_type
-                  FROM analytes
-                  WHERE analytes.analyte_type != 'gene signature'
+                  FROM gene_expression
+                  WHERE gene_expression.analyte_type != 'gene signature'
                   `,
         success: processData,
         failure: processFailure,

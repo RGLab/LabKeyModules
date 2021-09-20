@@ -26,7 +26,7 @@ if(moduleName == 'extraWebapp'){
             // and only rebuilt when needed
             // Note: Cannot use '*' for string matching, so
             // may need to specify different files
-            inputs.files.fileTree("resources/web/AnalyteExplorer/assets")
+            inputs.files fileTree("resources/web/AnalyteExplorer/assets")
             inputs.files fileTree("src")
             inputs.files fileTree("webpack")
             inputs.file "package.json"
