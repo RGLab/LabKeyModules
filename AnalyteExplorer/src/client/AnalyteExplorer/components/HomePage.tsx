@@ -5,7 +5,7 @@ interface ArrowTextProps {
 }
 
 // same arrow as entrance page
-const ArrowText: React.FC<ArrowTextProps> = ({ text }) => {
+export const ArrowText: React.FC<ArrowTextProps> = ({ text }) => {
   return (
     <a
       href="https://immunespace.org/project/home/begin.view?tab=GeneExpression"
