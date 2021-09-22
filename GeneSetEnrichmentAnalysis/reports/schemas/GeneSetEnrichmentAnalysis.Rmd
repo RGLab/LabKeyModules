@@ -90,7 +90,7 @@ switch(set,
                       func_rnames <- baylor_rnames})
 ```
 
-## Gene set enrichment analysis of `r cohortType`
+## Gene set enrichment analysis of `r cohort_type`
 
 ```{r byDay,  cache = TRUE, dependson="cache-cohort;cache-modules", echo = FALSE}
 gsea_result <- con$run_gsea(
