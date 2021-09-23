@@ -1,6 +1,4 @@
 import React from "react";
-import { Spinner } from "react-bootstrap";
-import Halogen from "halogen";
 import "./AESpinner.scss";
 
 const AESpinner: React.FC = () => {
