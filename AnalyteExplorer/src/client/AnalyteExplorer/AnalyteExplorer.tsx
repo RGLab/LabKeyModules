@@ -78,7 +78,9 @@ const AnalyteExplorer: React.FC = () => {
     };
 
     const processFailure = (err) => {
-      setErrorMsg(err["exception"]);
+      if (!isCancelled) {
+        setErrorMsg(err["exception"]);
+      }
     };
 
     const getData = () => {
@@ -119,7 +121,9 @@ const AnalyteExplorer: React.FC = () => {
     };
 
     const processFailure = (err) => {
-      setErrorMsg(err["exception"]);
+      if (!isCancelled) {
+        setErrorMsg(err["exception"]);
+      }
     };
 
     const getData = () => {
