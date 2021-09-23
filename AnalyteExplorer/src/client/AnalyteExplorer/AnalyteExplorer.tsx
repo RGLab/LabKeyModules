@@ -29,32 +29,31 @@ const AnalyteExplorer: React.FC = () => {
    * @param analyte_name
    * @param filters -> sorted string[]
    */
-  const searchBtnCallback = (
-    analyte_type: string,
-    analyte_name: string,
-    filters: string[]
-  ) => {
-    // only update state if the new selections are different than old ones,
-    // prevents spam
-    if (analyte_type !== typeSelected) {
-      setTypeSelected(analyte_type);
-    }
+  const searchBtnCallback = React.useCallback(
+    (analyte_type: string, analyte_name: string, filters: string[]) => {
+      // only update state if the new selections are different than old ones,
+      // prevents spam
+      if (analyte_type !== typeSelected) {
+        setTypeSelected(analyte_type);
+      }
 
-    if (analyte_name !== nameSelected) {
-      setNameSelected(analyte_name);
-    }
+      if (analyte_name !== nameSelected) {
+        setNameSelected(analyte_name);
+      }
 
-    // filters are sorted alphabetically
-    if (filters.length !== filtersSelected.length) {
-      setFiltersSelected(filters);
-    } else {
-      for (let i = 0; i < filters.length; i++) {
-        if (filters[i] !== filtersSelected[i]) {
-          setFiltersSelected(filters);
+      // filters are sorted alphabetically
+      if (filters.length !== filtersSelected.length) {
+        setFiltersSelected(filters);
+      } else {
+        for (let i = 0; i < filters.length; i++) {
+          if (filters[i] !== filtersSelected[i]) {
+            setFiltersSelected(filters);
+          }
         }
       }
-    }
-  };
+    },
+    [typeSelected, nameSelected, filtersSelected]
+  );
 
   // Retrieves data for analyte search feature
   React.useEffect(() => {
@@ -145,13 +144,13 @@ const AnalyteExplorer: React.FC = () => {
   }, []);
 
   // check if data that is needed for the filter menu to work has been loaded
-  const isSelectorDataLoaded = () => {
+  const isSelectorDataLoaded = React.useMemo(() => {
     return (
       untypedFilterNameSuggestions.length > 0 &&
       Object.keys(typedFilterNameSuggestions).length > 0 &&
       conditionData !== null
     );
-  };
+  }, [untypedFilterNameSuggestions, typedFilterNameSuggestions, conditionData]);
 
   if (errorMsg !== "") {
     return (
@@ -163,7 +162,7 @@ const AnalyteExplorer: React.FC = () => {
 
   return (
     <main id="ae-main">
-      {isSelectorDataLoaded() ? (
+      {isSelectorDataLoaded ? (
         <React.Fragment>
           <AnalyteSelectorMain
             searchBtnCallback={searchBtnCallback}
