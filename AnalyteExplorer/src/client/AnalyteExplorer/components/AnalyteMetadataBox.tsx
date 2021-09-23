@@ -4,9 +4,9 @@ import { CgChevronDoubleDownO, CgChevronDoubleUpO } from "react-icons/cg";
 import { CSSTransition } from "react-transition-group";
 
 export interface AnalyteMetadataBoxProps {
-  title?: string;
+  title: string;
+  body: string;
   subtitle?: string;
-  body?: string;
 }
 
 const AnalyteMetadataBox: React.FC<AnalyteMetadataBoxProps> = ({
@@ -15,9 +15,10 @@ const AnalyteMetadataBox: React.FC<AnalyteMetadataBoxProps> = ({
   body,
 }) => {
   const [isOpen, setIsOpen] = React.useState(true);
-  const metaDropdownOnClick = () => {
+
+  const metaDropdownOnClick = React.useCallback(() => {
     setIsOpen(!isOpen);
-  };
+  }, [isOpen]);
 
   return (
     <div className={`analyte-metadata-box${isOpen ? " open" : ""}`}>
