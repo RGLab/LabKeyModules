@@ -3,7 +3,10 @@ import "./components/AnalyteSelectorMain.scss";
 import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
 import "./AnalyteExplorer.scss";
 import DownloadPage from "./components/DownloadPage";
-import { FilterNameSuggestions } from "./components/AnalyteSelectorMain";
+import {
+  TypedFilterNameSuggestions,
+  UntypedFilterNameSuggestions,
+} from "./components/AnalyteSelectorMain";
 
 import { Query } from "@labkey/api";
 import HomePage from "./components/HomePage";
@@ -15,9 +18,9 @@ const AnalyteExplorer: React.FC = () => {
   const [nameSelected, setNameSelected] = React.useState("");
   const [filtersSelected, setFiltersSelected] = React.useState<string[]>([]);
   const [typedFilterNameSuggestions, setTypedFilterNameSuggestions] =
-    React.useState<FilterNameSuggestions>({});
+    React.useState<TypedFilterNameSuggestions>({});
   const [untypedFilterNameSuggestions, setUntypedFilterNameSuggestions] =
-    React.useState<{ analyte_id: string; analyte_type: string }[]>([]);
+    React.useState<UntypedFilterNameSuggestions[]>([]);
   const [conditionData, setConditionData] = React.useState(null);
   const [errorMsg, setErrorMsg] = React.useState("");
 
@@ -63,7 +66,7 @@ const AnalyteExplorer: React.FC = () => {
       if (data !== undefined && data.rows !== undefined && !isCancelled) {
         // store analyte ids by type so that you can search for a specific
         // type of analyte
-        let typedNames: FilterNameSuggestions = {};
+        let typedNames: TypedFilterNameSuggestions = {};
         for (const analyte of data.rows) {
           if (typedNames[analyte.analyte_type] === undefined) {
             typedNames[analyte.analyte_type] = [analyte];

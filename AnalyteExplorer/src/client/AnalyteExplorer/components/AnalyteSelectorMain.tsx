@@ -19,9 +19,14 @@ interface SearchButtonProps {
   disabled?: boolean;
 }
 
-const SearchButton: React.FC<SearchButtonProps> = ({ onClickCallback }) => {
+export const SearchButton: React.FC<SearchButtonProps> = ({
+  onClickCallback,
+}) => {
   return (
-    <button className="analyte-selector-search-btn" onClick={onClickCallback}>
+    <button
+      className="analyte-selector-search-btn"
+      onClick={onClickCallback}
+      name="search-button">
       <BsSearch className="ae-search-icon" />
     </button>
   );
@@ -34,7 +39,7 @@ interface CheckboxButtonProps {
   onClickCallback: (disease: string) => void;
 }
 
-const CheckboxButton: React.FC<CheckboxButtonProps> = ({
+export const CheckboxButton: React.FC<CheckboxButtonProps> = ({
   id,
   labelText,
   isChecked,
@@ -55,8 +60,13 @@ const CheckboxButton: React.FC<CheckboxButtonProps> = ({
   );
 };
 
-export interface FilterNameSuggestions {
-  [analyte_type: string]: { analyte_id: string; analyte_type: string }[];
+export interface UntypedFilterNameSuggestions {
+  analyte_id: string;
+  analyte_type: string;
+}
+
+export interface TypedFilterNameSuggestions {
+  [analyte_type: string]: UntypedFilterNameSuggestions[];
 }
 
 interface AnalyteSelectorMainProps {
@@ -65,8 +75,8 @@ interface AnalyteSelectorMainProps {
     analyte_name: string,
     filters: string[]
   ) => void;
-  typedFilterNameSuggestions: FilterNameSuggestions;
-  untypedFilterNameSuggestions: { analyte_id: string; analyte_type: string }[];
+  typedFilterNameSuggestions: TypedFilterNameSuggestions;
+  untypedFilterNameSuggestions: UntypedFilterNameSuggestions[];
   conditionData: any;
 }
 
@@ -105,7 +115,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
   };
 
   // closes dropdown box when the user clicks outside of the dropdown box
-  // opens new dropdown if user clicks on filter
+  // opens new dropdown if user clicks on selector
   React.useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
