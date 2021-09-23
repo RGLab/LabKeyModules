@@ -9,14 +9,12 @@ export const ErrorMessageHome: React.FC = () => {
   );
 };
 
-export const ErrorMessageDownload: React.FC = () => {
-  return <ErrorMessageHome />;
-};
-
-export const ErrorMessageConditionNotFound: React.FC = () => {
+export const ErrorMessageConditionNotFound: React.FC<string[]> = (
+  types: string[]
+) => {
   return (
     <div>
-      <span>Unable to find data for TYPES</span>
+      <span>{`Unable to find data for ${types}`}</span>
     </div>
   );
 };
