@@ -5,9 +5,10 @@ import { Query, Filter } from "@labkey/api";
 import AESpinner from "./AESpinner";
 
 import LinePlot, { LinePlotProps } from "./data_viz/LinePlot";
-import { ErrorMessageDownload } from "./ErrorMessage";
+import { ErrorMessageConditionNotFound } from "./ErrorMessage"; // will need to implement this
 import { AnalyteMetadataBoxProps } from "./AnalyteMetadataBox";
 import { getAverage, capitalizeKebabCase } from "../helpers/helperFunctions";
+import { LINEPLOT_HEIGHT, LINEPLOT_WIDTH } from "./data_viz/dataVizConstants";
 import "./DownloadPage.scss";
 
 interface GeneMetaData {
@@ -36,6 +37,110 @@ interface RowData {
   timepoint: number;
 }
 
+const getGeneID = async (gene: string): Promise<string> => {
+  try {
+    const query = `https://mygene.info/v3/query?q=symbol:${gene}&size=1`;
+    let apiGeneID = "";
+
+    const response = await fetch(query);
+    const responseJSON = await response.json();
+
+    if (responseJSON !== undefined && responseJSON["hits"] !== undefined) {
+      if (responseJSON["hits"].length > 0) {
+        apiGeneID = responseJSON["hits"][0]["_id"];
+      }
+    }
+    return apiGeneID;
+  } catch (err) {
+    console.error(err);
+    return "";
+  }
+};
+
+const getGeneMetaData = async (geneID: string): Promise<GeneMetaData> => {
+  try {
+    const query = `https://mygene.info/v3/gene/${geneID}?fields=name,alias,type_of_gene,summary`;
+    const response = await fetch(query);
+    const responseJSON = await response.json(); // is typing this a good idea?
+
+    const result = {
+      name: responseJSON["name"],
+      summary: responseJSON["summary"],
+      type_of_gene: responseJSON["type_of_gene"],
+      alias: responseJSON["alias"],
+    }; // if responseJSON has any undefined values error with be thrown here and handled
+
+    return result;
+  } catch (err) {
+    console.error(err);
+    return undefined;
+  }
+};
+
+// for each condition, convert raw data into a format usable for the line plot
+const organizeD3Data = (condition: string, data: RowData[]): LinePlotProps => {
+  let dataMap = new Map<string, { x: number; y: number; study: string }[]>();
+
+  let avgMap = new Map<number, number[]>(); // for average trend line
+  let maxTimePoint = 0;
+  let maxFoldChange = 0;
+  let minFoldChange = 0;
+  for (const { cohort, timepoint, mean_fold_change, study_accession } of data) {
+    if (timepoint > maxTimePoint) {
+      maxTimePoint = timepoint;
+    }
+
+    if (mean_fold_change > maxFoldChange) {
+      maxFoldChange = mean_fold_change;
+    }
+
+    if (mean_fold_change < minFoldChange) {
+      minFoldChange = mean_fold_change;
+    }
+
+    if (dataMap.get(cohort) === undefined) {
+      dataMap.set(cohort, [
+        { x: timepoint, y: mean_fold_change, study: study_accession },
+      ]);
+    } else {
+      dataMap.set(cohort, [
+        { x: timepoint, y: mean_fold_change, study: study_accession },
+        ...dataMap.get(cohort),
+      ]);
+    }
+
+    if (avgMap.get(timepoint) === undefined) {
+      avgMap.set(timepoint, [mean_fold_change]);
+    } else {
+      avgMap.set(timepoint, [mean_fold_change, ...avgMap.get(timepoint)]);
+    }
+  }
+
+  // console.log(
+  //   `tp: ${maxTimePoint} maxfc: ${maxFoldChange} minfc: ${minFoldChange}`
+  // );
+  // if maxtimepoint < 50, make it 50, if min and max fold change are within [-1, 1], make range [-1, 1]
+
+  let avgLineData: { x: number; y: number; study: string }[] = [];
+
+  for (const [timepoint, yS] of avgMap) {
+    if (yS.length > 1) {
+      avgLineData.push({ x: timepoint, y: getAverage(yS), study: "Trend" });
+    }
+  }
+
+  dataMap.set("Average", avgLineData);
+
+  return {
+    name: condition,
+    data: dataMap,
+    xLabel: "timepoint (days)",
+    yLabel: "mean fold change",
+    width: LINEPLOT_WIDTH,
+    height: LINEPLOT_HEIGHT,
+  };
+};
+
 const DownloadPage: React.FC<DownloadPageProps> = ({
   analyteName,
   analyteType,
@@ -52,84 +157,9 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
   React.useEffect(() => {
     let isCancelled = false;
 
-    // for each condition, convert raw data into a format usable for the line plot
-    const organizeD3Data = (
-      condition: string,
-      data: RowData[]
-    ): LinePlotProps => {
-      let dataMap = new Map<
-        string,
-        { x: number; y: number; study: string }[]
-      >();
-
-      let avgMap = new Map<number, number[]>(); // for average trend line
-      let maxTimePoint = 0;
-      let maxFoldChange = 0;
-      let minFoldChange = 0;
-      for (const {
-        cohort,
-        timepoint,
-        mean_fold_change,
-        study_accession,
-      } of data) {
-        if (timepoint > maxTimePoint) {
-          maxTimePoint = timepoint;
-        }
-
-        if (mean_fold_change > maxFoldChange) {
-          maxFoldChange = mean_fold_change;
-        }
-
-        if (mean_fold_change < minFoldChange) {
-          minFoldChange = mean_fold_change;
-        }
-
-        if (dataMap.get(cohort) === undefined) {
-          dataMap.set(cohort, [
-            { x: timepoint, y: mean_fold_change, study: study_accession },
-          ]);
-        } else {
-          dataMap.set(cohort, [
-            { x: timepoint, y: mean_fold_change, study: study_accession },
-            ...dataMap.get(cohort),
-          ]);
-        }
-
-        if (avgMap.get(timepoint) === undefined) {
-          avgMap.set(timepoint, [mean_fold_change]);
-        } else {
-          avgMap.set(timepoint, [mean_fold_change, ...avgMap.get(timepoint)]);
-        }
-      }
-
-      // console.log(
-      //   `tp: ${maxTimePoint} maxfc: ${maxFoldChange} minfc: ${minFoldChange}`
-      // );
-      // if maxtimepoint < 50, make it 50, if min and max fold change are within [-1, 1], make range [-1, 1]
-
-      let avgLineData: { x: number; y: number; study: string }[] = [];
-
-      for (const [timepoint, yS] of avgMap) {
-        if (yS.length > 1) {
-          avgLineData.push({ x: timepoint, y: getAverage(yS), study: "Trend" });
-        }
-      }
-
-      dataMap.set("Average", avgLineData);
-
-      return {
-        name: condition,
-        data: dataMap,
-        xLabel: "timepoint (days)",
-        yLabel: "mean fold change",
-        width: 1500,
-        height: 843,
-      };
-    };
-
     // converts raw data from immunespace to format usable by d3
     const processData = (data: any) => {
-      if (data !== undefined && data.rows !== undefined) {
+      if (data !== undefined && data.rows !== undefined && !isCancelled) {
         let dataByFilter: { [filter: string]: RowData[] } = {};
 
         for (const current of data.rows) {
@@ -157,12 +187,14 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       body: string,
       subtitle: string = ""
     ) => {
-      const metaData: AnalyteMetadataBoxProps = {
-        title: title,
-        subtitle: subtitle,
-        body: body,
-      };
-      setChartMetadata(metaData);
+      if (!isCancelled) {
+        const metaData: AnalyteMetadataBoxProps = {
+          title: title,
+          subtitle: subtitle,
+          body: body,
+        };
+        setChartMetadata(metaData);
+      }
     };
 
     const processBTMMetaData = (data: any) => {
@@ -175,47 +207,9 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     };
 
     const processFailure = (err) => {
-      console.log(err);
-      setErrMsg(err["exception"]);
-    };
-
-    const getGeneID = async (gene: string): Promise<string> => {
-      try {
-        const query = `https://mygene.info/v3/query?q=symbol:${gene}&size=1`;
-        let apiGeneID = "";
-
-        const response = await fetch(query);
-        const responseJSON = await response.json();
-
-        if (responseJSON !== undefined && responseJSON["hits"] !== undefined) {
-          if (responseJSON["hits"].length > 0) {
-            apiGeneID = responseJSON["hits"][0]["_id"];
-          }
-        }
-        return apiGeneID;
-      } catch (err) {
-        console.log(err);
-        return "";
-      }
-    };
-
-    const getGeneMetaData = async (geneID: string): Promise<GeneMetaData> => {
-      try {
-        const query = `https://mygene.info/v3/gene/${geneID}?fields=name,alias,type_of_gene,summary`;
-        const response = await fetch(query);
-        const responseJSON = await response.json(); // is typing this a good idea?
-
-        const result = {
-          name: responseJSON["name"],
-          summary: responseJSON["summary"],
-          type_of_gene: responseJSON["type_of_gene"],
-          alias: responseJSON["alias"],
-        }; // if responseJSON has any undefined values error with be thrown here and handled
-
-        return result;
-      } catch (err) {
-        console.log(err);
-        return undefined;
+      if (!isCancelled) {
+        console.error(err);
+        setErrMsg(err["exception"]);
       }
     };
 
@@ -266,6 +260,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     // grabs data for a specific analyte under specific set of disease conditions
     const getData = (analyteName: string, filters: string[]) => {
       Query.selectRows({
+        containerPath: "/AnalyteExplorer",
         schemaName: "lists",
         queryName: "gene_expression",
         filterArray: [
@@ -304,8 +299,9 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     };
   }, [analyteName, analyteType, filters]);
 
-  const isDataLoaded =
-    rawData !== null && chartData !== null && chartMetadata !== null;
+  const isDataLoaded = React.useMemo(() => {
+    return rawData !== null && chartData !== null && chartMetadata !== null;
+  }, [rawData, chartData, chartMetadata]);
 
   return (
     <div className="ae-download-content">
