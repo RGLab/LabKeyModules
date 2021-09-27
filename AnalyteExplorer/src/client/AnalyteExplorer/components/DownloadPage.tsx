@@ -1,12 +1,13 @@
 import React from "react";
-import AnalyteMetadataBox from "./AnalyteMetadataBox";
 import { CSVLink } from "react-csv";
 import { Query, Filter } from "@labkey/api";
 import AESpinner from "./AESpinner";
 
 import LinePlot, { LinePlotProps } from "./data_viz/LinePlot";
 import { ErrorMessageConditionNotFound } from "./ErrorMessage"; // will need to implement this
-import { AnalyteMetadataBoxProps } from "./AnalyteMetadataBox";
+import AnalyteMetadataBox, {
+  AnalyteMetadataBoxProps,
+} from "./AnalyteMetadataBox";
 import { getAverage, capitalizeKebabCase } from "../helpers/helperFunctions";
 import { LINEPLOT_HEIGHT, LINEPLOT_WIDTH } from "./data_viz/dataVizConstants";
 import "./DownloadPage.scss";
