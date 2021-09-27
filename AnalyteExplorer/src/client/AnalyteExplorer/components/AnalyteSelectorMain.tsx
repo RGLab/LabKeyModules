@@ -52,7 +52,6 @@ export const CheckboxButton: React.FC<CheckboxButtonProps> = ({
         type="checkbox"
         id={id}
         name={id}
-        value={id}
         checked={isChecked}
         onChange={() => onClickCallback(id)}></input>
       <label htmlFor={id}>{`${labelText}`}</label>
@@ -105,14 +104,16 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
   const nameSelectorRef = React.useRef(null);
   const filterSelectorRef = React.useRef(null);
 
-  const analyteDividerStyles = {
-    borderLeft: `${
-      hovered === 3 || hovered === 0 ? "1px solid black" : "none"
-    }`,
-    borderRight: `${
-      hovered === 1 || hovered === 0 ? "1px solid black" : "none"
-    }`,
-  };
+  const analyteDividerStyles = React.useMemo(() => {
+    return {
+      borderLeft: `${
+        hovered === 3 || hovered === 0 ? "1px solid black" : "none"
+      }`,
+      borderRight: `${
+        hovered === 1 || hovered === 0 ? "1px solid black" : "none"
+      }`,
+    };
+  }, [hovered]);
 
   // closes dropdown box when the user clicks outside of the dropdown box
   // opens new dropdown if user clicks on selector
@@ -136,7 +137,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     };
   }, [dropdownRef, typeSelectorRef, nameSelectorRef, filterSelectorRef]);
 
-  const searchBtnOnClick = () => {
+  const searchBtnOnClick = React.useCallback(() => {
     // do nothing if no analyte selected
     if (nameSelected !== "") {
       let type = "";
@@ -168,70 +169,76 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
         searchBtnCallback(type, nameSelected, filters);
       }
     }
-  };
+  }, [typeSelected, nameSelected, conditionFilters]);
 
   // Updates the list of five suggestions in the analyte selector upon change in
   // user input
-  const nameInputOnChange = (event: React.FormEvent<HTMLInputElement>) => {
-    const userInput = event.currentTarget.value;
-    const userInputCaps = userInput.toUpperCase();
-    let filteredNames: { [analyte_name: string]: string } = {};
+  const nameInputOnChange = React.useCallback(
+    (event: React.FormEvent<HTMLInputElement>) => {
+      const userInput = event.currentTarget.value;
+      const userInputCaps = userInput.toUpperCase();
+      let filteredNames: { [analyte_name: string]: string } = {};
 
-    if (userInput !== "") {
-      if (typeSelected === ANALYTE_ALL || typeSelected === "") {
-        let index = binaryClosestSearch(
-          userInputCaps,
-          untypedFilterNameSuggestions,
-          0,
-          untypedFilterNameSuggestions.length - 1
-        ); // caps are used due to all filter names being in uppercase
-        const suggestions = untypedFilterNameSuggestions.slice(
-          index,
-          index + FILTER_DROPDOWN_ROW_COUNT
-        );
-        // To be considered a name suggestion the name must START with the user input
-        // THIS RULE CAN BE MODIFIED
-        for (const analyte of suggestions) {
-          if (analyte["analyte_id"].includes(userInputCaps)) {
-            filteredNames[analyte["analyte_id"]] = analyte["analyte_type"];
+      if (userInput !== "") {
+        if (typeSelected === ANALYTE_ALL || typeSelected === "") {
+          let index = binaryClosestSearch(
+            userInputCaps,
+            untypedFilterNameSuggestions,
+            0,
+            untypedFilterNameSuggestions.length - 1
+          ); // caps are used due to all filter names being in uppercase
+          const suggestions = untypedFilterNameSuggestions.slice(
+            index,
+            index + FILTER_DROPDOWN_ROW_COUNT
+          );
+          // To be considered a name suggestion the name must START with the user input
+          // THIS RULE CAN BE MODIFIED
+          for (const analyte of suggestions) {
+            if (analyte["analyte_id"].includes(userInputCaps)) {
+              filteredNames[analyte["analyte_id"]] = analyte["analyte_type"];
+            }
           }
-        }
-      } else {
-        const columnTypeName = convertDisplayToColumn(typeSelected);
-        let index = binaryClosestSearch(
-          userInputCaps,
-          typedFilterNameSuggestions[columnTypeName],
-          0,
-          typedFilterNameSuggestions[columnTypeName].length - 1
-        );
-        const suggestions = typedFilterNameSuggestions[columnTypeName].slice(
-          index,
-          index + FILTER_DROPDOWN_ROW_COUNT
-        );
-        for (const analyte of suggestions) {
-          if (analyte["analyte_id"].includes(userInputCaps)) {
-            filteredNames[analyte["analyte_id"]] = analyte["analyte_type"];
+        } else {
+          const columnTypeName = convertDisplayToColumn(typeSelected);
+          let index = binaryClosestSearch(
+            userInputCaps,
+            typedFilterNameSuggestions[columnTypeName],
+            0,
+            typedFilterNameSuggestions[columnTypeName].length - 1
+          );
+          const suggestions = typedFilterNameSuggestions[columnTypeName].slice(
+            index,
+            index + FILTER_DROPDOWN_ROW_COUNT
+          );
+          for (const analyte of suggestions) {
+            if (analyte["analyte_id"].includes(userInputCaps)) {
+              filteredNames[analyte["analyte_id"]] = analyte["analyte_type"];
+            }
           }
         }
       }
-    }
 
-    setFilterNameSuggestions(filteredNames);
-    setNameSearched(userInput);
-  };
+      setFilterNameSuggestions(filteredNames);
+      setNameSearched(userInput);
+    },
+    [typeSelected, untypedFilterNameSuggestions, typedFilterNameSuggestions]
+  );
 
   // confirm the analyte type selection
-  const typeDropdownOnClick = (type: string) => {
-    setTypeSelected(type);
+  const typeDropdownOnClick = React.useCallback(
+    (type: string) => {
+      setTypeSelected(type);
 
-    // clear analyte and filters
-    if (nameSearched !== "") {
-      setNameSearched("");
-    }
-    setNameSelected("");
-    setFilterNameSuggestions({});
-    setSelected(STATE_OF_SELECTOR.CLOSED);
-  };
+      // clear analyte and filters
+      if (nameSearched !== "") {
+        setNameSearched("");
+      }
+      setNameSelected("");
+      setFilterNameSuggestions({});
+      setSelected(STATE_OF_SELECTOR.CLOSED);
+    },
+    [nameSearched]
+  );
 
   // if type isn't set when selecting analyte, set type for user
   const setTypeFromName = (name: string) => {
@@ -242,16 +249,16 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
   };
 
   // uncheck all disease condition checkboxes
-  const resetDiseaseCondFilters = () => {
+  const resetDiseaseCondFilters = React.useCallback(() => {
     const defaultConds = { ...conditionFilters };
     Object.keys(defaultConds).forEach((key) => (defaultConds[key] = false));
     setConditionFilters(defaultConds);
-  };
+  }, [conditionFilters]);
 
-  const submitFilters = (event) => {
+  const submitFilters = React.useCallback((event) => {
     event.preventDefault();
     setSelected(STATE_OF_SELECTOR.CLOSED);
-  };
+  }, []);
 
   // confirm the analyte name selection
   const nameDropdownOnClick = (name: string) => {
@@ -355,16 +362,27 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     );
   };
 
-  // memoize this? idk if possible
-  const filtersApplied = Object.values(conditionFilters).reduce(
-    (filters: number, checked) => {
-      if (checked) {
-        filters += 1;
-      }
-      return filters;
-    },
-    0
-  );
+  const filtersApplied = React.useMemo(() => {
+    return Object.values(conditionFilters).reduce(
+      (numFiltersApplied: number, checked) => {
+        if (checked) {
+          numFiltersApplied += 1;
+        }
+        return numFiltersApplied;
+      },
+      0
+    );
+  }, [conditionFilters]);
+
+  const dropdownMenuStyles = React.useMemo(() => {
+    let styles = {
+      display: `${selected === STATE_OF_SELECTOR.CLOSED ? "none" : "block"}`, // can make all 3 dropdowns use the same component
+    };
+    if (selected === STATE_OF_SELECTOR.NAME_OPEN) {
+      styles["left"] = "20%"; //will need to fix how menu generates
+    }
+    return styles;
+  }, [selected]);
 
   return (
     <div style={{ zIndex: 20 }}>
@@ -380,7 +398,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
               onMouseEnter={() => setHovered(1)}
               onMouseLeave={() => setHovered(0)}>
               <label htmlFor="analyte-type" className="analyte-selector-label">
-                <div> Analyte Type</div>
+                <div>Analyte Type</div>
                 <input
                   id="analyte-type"
                   name="analyte-type"
@@ -442,27 +460,19 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
             style={analyteDividerStyles}></div>
         </div>
         {(() => {
-          let styles = {
-            display: `${
-              selected === STATE_OF_SELECTOR.CLOSED ? "none" : "block"
-            }`, // can make all 3 dropdowns use the same component
-          };
-          if (selected === STATE_OF_SELECTOR.NAME_OPEN) {
-            styles["left"] = "20%"; //will need to fix how menu generates
-          }
           switch (selected) {
             case STATE_OF_SELECTOR.CLOSED:
-              return <div ref={dropdownRef} style={styles}></div>;
+              return <div ref={dropdownRef} style={dropdownMenuStyles}></div>;
             case STATE_OF_SELECTOR.TYPE_OPEN:
               const dropdown = generateDropdown(
-                styles,
+                dropdownMenuStyles,
                 ANALYTE_TYPE_DISPLAYNAMES,
                 typeDropdownOnClick
               );
               return dropdown;
             case STATE_OF_SELECTOR.NAME_OPEN:
               const dropdown2 = generateDropdown(
-                styles,
+                dropdownMenuStyles,
                 Object.keys(filterNameSuggestions),
                 nameDropdownOnClick
               );
@@ -472,7 +482,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
                 <div
                   ref={dropdownRef}
                   className="analyte-selector-dropdown-menu analyte-filter-dropdown"
-                  style={styles}>
+                  style={dropdownMenuStyles}>
                   {generateFilterOptions(conditionFilters, diseaseCondOnClick)}
                 </div>
               );
