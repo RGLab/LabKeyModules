@@ -4,6 +4,9 @@ import {
 } from "./constants";
 
 export const capitalizeFirstLetter = (str: string): string => {
+  if (str === undefined || str.length < 1) {
+    return str;
+  }
   return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
 };
 
