@@ -7,6 +7,7 @@ import {
 } from "../helpers/constants";
 import { capitalizeFirstChar } from "@labkey/components";
 import {
+  capitalizeFirstLetter,
   convertDisplayToColumn,
   convertColumnToDisplay,
   binaryClosestSearch,
@@ -403,7 +404,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
                   id="analyte-type"
                   name="analyte-type"
                   placeholder="What are you searching?"
-                  value={capitalizeFirstChar(typeSelected)}
+                  value={capitalizeFirstLetter(typeSelected)}
                   readOnly
                 />
               </label>
