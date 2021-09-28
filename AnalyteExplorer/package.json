@@ -12,17 +12,15 @@
   },
   "dependencies": {
     "@labkey/api": "^1.6.3",
-    "@types/halogen": "^0.2.7",
     "@types/react-transition-group": "^4.4.2",
     "bootstrap": "^4.6.0",
-    "halogen": "^0.2.0",
     "react-bootstrap": "^1.6.0",
     "react-csv": "^2.0.3",
     "react-icons": "^4.2.0",
-    "react-transition-group": "^4.4.2",
-    "styled-components": "^5.3.0"
+    "react-transition-group": "^4.4.2"
   },
   "devDependencies": {
+    "@testing-library/react": "12.1.0",
     "@typescript-eslint/eslint-plugin": "^4.27.0",
     "@typescript-eslint/parser": "^4.27.0",
     "cross-env": "5.2.1",
