@@ -58,22 +58,22 @@ knitr::kable(esets, escape = FALSE, format = "html")
 
 <div class="is2-downloads table-condensed">
 ```{r immdata, echo = FALSE, warning=FALSE}
-immdata_tbl <- files[dataset == "all_immdata_with_response.rds"]
-immdata_tbl$description <- "Immune response data for all subjects where available. This dataset includes one entry per participant, with metadata and the derived immune response call."
-immdata_tbl <- immdata_tbl[, .(
-  File = as.character(getFileLink(path, dataset)), 
-  Description = as.character(description), 
-  Participants = subjects, 
+immdata<- files[dataset == "all_immdata_with_response.rds"]
+immdata$description <- "Immune response data for all subjects where available. This dataset includes one entry per participant, with metadata and the derived immune response call."
+immdata_tbl <- immdata[, .(
+  File = as.character(getFileLink(path, dataset)),
+  Description = as.character(description),
+  Participants = subjects,
   Samples = samples
 )]
 knitr::kable(immdata_tbl, escape = FALSE, format = "html")
 ```
 </div>
 
-#### Preview  
+#### Preview
 
 ```{r immdata-preview, echo = FALSE}
-immdata <- readRDS(immdata_tbl$path)
+immdata <- readRDS(immdata$path)
 immdata
 ```
 
