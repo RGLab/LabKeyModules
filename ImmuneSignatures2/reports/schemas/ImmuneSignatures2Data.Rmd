@@ -2,6 +2,7 @@
 output: 
     html_document:
         self_contained: false
+        df_print: paged
 ---
 
 ```{r setup, echo = FALSE}
@@ -58,16 +59,35 @@ knitr::kable(esets, escape = FALSE, format = "html")
 <div class="is2-downloads table-condensed">
 ```{r immdata, echo = FALSE, warning=FALSE}
 immdata <- files[dataset == "all_immdata_with_response.rds"]
-immdata$description <- "Immune response data for all subjects where available"
-immdata <- immdata[, .(
+immdata$description <- "Immune response data for all subjects where available. This dataset includes one entry per participant, with metadata and the derived immune response call."
+immdata_tbl <- immdata[, .(
   File = as.character(getFileLink(path, dataset)), 
   Description = as.character(description), 
   Participants = subjects, 
   Samples = samples
 )]
-knitr::kable(immdata, escape = FALSE, format = "html")
+knitr::kable(immdata_tbl, escape = FALSE, format = "html")
+#immdata <- readRDS(immdata$path)
 ```
 </div>
+
+#### Preview  
+
+```{r immdata-preview, echo = FALSE}
+immdata
+```
+
+### Raw data
+<a href="/study/HIPC/IS2/dataset.view?datasetId=5014">Gene expression data files</a>
+
+### Immune Response Data
+<a href="/study/HIPC/IS2/dataset.view?datasetId=5004">Enzyme-Linked ImmunoSpot (ELISPOT)</a><br>
+<a href="/study/HIPC/IS2/dataset.view?datasetId=5005">Hemagglutination inhibition (HAI)</a><br>
+<a href="/study/HIPC/IS2/dataset.view?datasetId=5009">Neutralizing antibody titer</a><br>
+
+Immune Response Data for all assays is also available as an R object:
+
+<a href="/_webdav/HIPC/IS2/@files/data/immdata_all.rds">immdata_all.rds</a><br>
 
 ---
 

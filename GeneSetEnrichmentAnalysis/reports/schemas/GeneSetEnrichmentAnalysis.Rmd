@@ -1,23 +1,24 @@
+
 ```{r knitr-opts, echo = FALSE}
 library(knitr)
 opts_chunk$set(message = FALSE, echo = FALSE, warning=FALSE)
 opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/GeneSetEnrichmentAnalysis/", labkey.user.email, ""))
+
 ```
 
 ```{r lib, cache = FALSE, message = FALSE, echo = FALSE}
-library(Rlabkey)
-library(ImmuneSpaceR)
-library(UpdateAnno)
-library(Biobase)
-library(limma)
-library(pheatmap)
-library(reshape2)
-library(gplots)
-library(gtools)
-library(data.table)
-library(digest)
-library(heatmaply)
-library(DT)
+suppressPackageStartupMessages({
+  library(HIPCMatrix)
+  library(Rlabkey)
+  library(pheatmap)
+  library(reshape2)
+  library(gplots)
+  library(gtools)
+  library(data.table)
+  library(digest)
+  library(heatmaply)
+  library(DT)
+})
 ```
 
 
@@ -55,26 +56,26 @@ format_table <- function(x, ...){
 
 ```{r DataFinder-cache, cache = FALSE}
 cached_pids <- labkey.selectRows(
-    baseUrl = labkey.url.base, folderPath = labkey.url.path,
-    schemaName = "study", queryName = "demographics", viewName="",
-    colFilter=NULL, containerFilter=NULL, colNameOpt = "rname")$participantid
+    baseUrl = labkey.url.base, 
+    folderPath = labkey.url.path,
+    schemaName = "study", 
+    queryName = "demographics", 
+    viewName="",
+    colFilter=NULL, 
+    containerFilter=NULL, 
+    colNameOpt = "rname")$participantid
 ```
 
 ```{r connection, cache = TRUE, dependson="functions", cache.extra=digest(cached_pids)}
 # When the list of patient_ids change, recreate the connection
-con <- CreateConnection()
+con <- HMX$new()
 ```
 
 ```{r params, cache = FALSE}
-cohortType <- labkey.url.params$cohort
+cohort_type <- labkey.url.params$cohort
 set <- labkey.url.params$signature
-contrast <- "study_time_collected"
 ```
 
-```{r cache-cohort, cache = TRUE, cache.extra=cohortType, dependson="connection"}
-# When the cohort changes, we need to re-download the EM
-EM <- con$getGEMatrix(cohortType = cohortType)
-```
 ```{r cache-modules, cache = TRUE, cache.extra=set, dependson="connection"}
 # When the modules/set changes, we need to re-assign these values
 switch(set,
@@ -89,59 +90,28 @@ switch(set,
                       func_rnames <- baylor_rnames})
 ```
 
-```{r camera, cache = TRUE, dependson="cache-cohort;cache-modules"}
-indices <- ids2indices(gene_sets, fData(EM)$gene_symbol)
-pData(EM)[, contrast] <- as.factor(pData(EM)[, contrast])
-if( length(unique(pData(EM)[, contrast])) < 2){
-  stop("Cohort does not have multiple timepoints for differential expression data. Unable to analyze.")
-}
-mm <- model.matrix(formula(paste("~participant_id +", contrast)), EM)
-colnames(mm) <- make.names(colnames(mm))
-```
+## Gene set enrichment analysis of `r cohort_type`
 
-## Gene set enrichment analysis of `r cohortType`
-
-```{r byDay,  cache = TRUE, dependson="camera", echo = FALSE}
-lev <- levels(pData(EM)[, contrast])
-lev_label <- paste0(contrast, lev[2:length(lev)])
-lev <- make.names(lev_label)
-cam_list <- vector('list', length = length(lev))
-for(i in 1:length(lev)){
-  contrasti <- lev[[i]]
-    # Check if it's RNA-seq or microarrays
-  if(max(Biobase::exprs(EM))>100)
-    res <- camera(voom(EM), index = indices, design = mm, contrast = makeContrasts(contrasti, levels=mm), allow.neg.cor = TRUE, inter.gene.cor = NULL)
-  else
-    res <- camera(EM, index = indices, design = mm, contrast = makeContrasts(contrasti, levels=mm), allow.neg.cor = TRUE, inter.gene.cor = NULL)
-
-  dt <- data.table(res) 
-  dt[, Module := rownames(res)]
-  dt[, Coefficient := lev_label[[i]]]
-  dt[, PValue := ifelse(Direction=="Up", -10*log10(PValue), 10*log10(PValue))]
-  cam_list[[i]] <- dt
-}
-table <- rbindlist(cam_list)
-setcolorder(table, c("Module", "Coefficient", "NGenes", "Correlation", "Direction", "PValue", "FDR"))
-table <- table[order(abs(PValue), decreasing = TRUE)]
-if(contrast == "study_time_collected"){
- table <- table[, Coefficient := gsub(contrast, "Day ", table[, Coefficient])]
- table <- table[mixedorder(Coefficient)]
-}
+```{r byDay,  cache = TRUE, dependson="cache-cohort;cache-modules", echo = FALSE}
+gsea_result <- con$run_gsea(
+  cohort_type = cohort_type, 
+  gene_sets = gene_sets
+)
 ```
 
 ```{r heatmap-matrix, cache = TRUE, dependson="byDay"}
 PValThresh <- 30
 palette <- colorpanel(20, low = "#268bd2", mid = "#fdf6e3", high = "#dc322f")
-DEM <- unique(table[abs(PValue)>PValThresh, Module])
+DEM <- unique(gsea_result[abs(PValue_10log10)>PValThresh, Module])
 if(length(DEM) > 20){
-    DEM <- table[1:20, Module]
+    DEM <- gsea_result[1:20, Module]
 }
 
 draw_heatmap <- FALSE
 infostring <- ""
 if(length(DEM) > 0){
-  DEM <- table[Module %in% DEM, list(Module, Coefficient, PValue)]
-  DEM <- dcast(DEM, formula = Module ~ Coefficient, value.var = "PValue")[, c("Module", mixedsort(unique(table$Coefficient))), with = FALSE]
+  DEM <- gsea_result[Module %in% DEM, list(Module, Coefficient, PValue)]
+  DEM <- dcast(DEM, formula = Module ~ Coefficient, value.var = "PValue")[, c("Module", mixedsort(unique(gsea_result$Coefficient))), with = FALSE]
   mat <- as.matrix(DEM[, 2:ncol(DEM), with = FALSE])
   rownames(mat) <- DEM$Module
   draw_heatmap <- TRUE
@@ -152,11 +122,11 @@ if(length(DEM) > 0){
 
 
 ```{r kable, cache = TRUE, dependson="byDay"}
-table <- table[, Module := func_rnames(Module)]
-table <- table[, PValue := abs(PValue)]
-setnames(table, "PValue", "10log10(p)")
-#format_table(table)
-datatable(table, escape = 1)
+gsea_result <- gsea_result[, Module := func_rnames(Module)]
+gsea_result <- gsea_result[, PValue := abs(PValue)]
+setnames(gsea_result, "PValue", "10log10(p)")
+#format_gsea_result(gsea_result)
+datatable(gsea_result, escape = 1)
 ```
 
 <div align='center'>

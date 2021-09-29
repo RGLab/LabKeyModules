@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <webpart title='IS2PubOverview' xmlns='http://labkey.org/data/xml/webpart'>
-    <view name='IS2PubOverview'/>
+<!-- TODO: Change this to IS2PubOverview when finalized -->
+    <view name='IS2PubOverview_preview'/>
 </webpart>
 
