@@ -8,9 +8,9 @@ export const SoftwareUpdates = () => {
             <p><b>1 Oct 2021</b></p>
             <ul>
                 <li>
-                    Installed <a href="https://github.com/RGLab/HIPCMatrix">HIPCMatrix </a> 
+                    Installed <a href="https://github.com/RGLab/HIPCMatrix">HIPCMatrix </a>
                     package v1.0.0 for gene expression preprocessing, feature annotation,
-                    and analysis. 
+                    and analysis.
                 </li>
             </ul>
             <p>&nbsp;</p>
