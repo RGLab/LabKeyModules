@@ -11,7 +11,9 @@ opts_chunk$set(cache = FALSE,
                cache.path = file.path(labkey.file.root,
                                       "cache/ImmuneResponsePredictor/",
                                       labkey.user.email,
-                                      ""))
+                                      ""), 
+               # only show outputs where specified. 
+               results = "hide")
 ```
 
 ```{r libraries, echo = FALSE, message = FALSE, cache = FALSE}
@@ -127,6 +129,9 @@ if ( length(params$cohorts_testing) == 0 ) {
     ylab(paste0("Predicted ", params$assay, " response")) + 
     theme_IS() 
 }
+```
+
+```{r plot-pred, results = "markup"}
 # print(p)
 ggplotly(p)
 ```
@@ -167,6 +172,9 @@ rownames(mat) <- ifelse(nchar(rownames(mat)) > 15, paste0(substr(rownames(mat), 
 #         dendrogram = "none",
 #         cluster_cols = FALSE,
 #         show_colnames = FALSE)
+```
+
+```{r plot, results = "markup"}
 heatmaply(x = mat2,
           dendrogram = "row",
           scale = "row",
@@ -179,7 +187,7 @@ heatmaply(x = mat2,
 
 
 ## Table of genes selected by the elastic net
-```{r kable}
+```{r kable, results = "markup"}
 predictors <- irp$predictors[, .(
   `Gene Symbol` = paste0('<a href="http://immunet.princeton.edu/predictions/gene/?network=immune_global&gene=', 
                          gene_symbol, 
