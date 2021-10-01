@@ -6,7 +6,7 @@ if (grepl("^IS", con$study)) {
   stop("Do not update ImmuneSignatures Annotation!")
 }
 
-con$updateFAS()
+# con$updateFAS()
 
 if (con$study == "Studies") {
   ge_studies <- unique(con$listGEMatrices()$folder)
@@ -37,7 +37,7 @@ if (con$study == "Studies") {
   if (all(sapply(success, isTRUE))) {
     cat("All matrices successfully updated!")
   } else {
-    log_message(
+    cat(
       "Some studies failed to update: \n",
       paste0(sapply(ge_studies[!sapply(success, isTRUE)], function(sdy) {
         paste0(sdy, ": ", success[[sdy]])
