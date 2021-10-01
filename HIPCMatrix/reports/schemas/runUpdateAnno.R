@@ -6,7 +6,7 @@ if (grepl("^IS", con$study)) {
   stop("Do not update ImmuneSignatures Annotation!")
 }
 
-# con$updateFAS()
+con$updateFAS()
 
 if (con$study == "Studies") {
   ge_studies <- unique(con$listGEMatrices()$folder)
