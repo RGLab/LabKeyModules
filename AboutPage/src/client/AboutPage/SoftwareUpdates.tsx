@@ -8,8 +8,11 @@ export const SoftwareUpdates = () => {
             <p><b>1 Oct 2021</b></p>
             <ul>
                 <li>
+                    Updated Rlabkey to version 2.7.0.
+                </li>
+                <li>
                     Installed <a href="https://github.com/RGLab/HIPCMatrix">HIPCMatrix </a>
-                    package v1.0.0 for gene expression preprocessing, feature annotation,
+                    package v1.0.2 for gene expression preprocessing, feature annotation,
                     and analysis.
                 </li>
             </ul>
