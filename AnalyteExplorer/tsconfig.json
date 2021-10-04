@@ -7,7 +7,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "types": ["jest"], // don't implicitly include any @types, only those included via import
-    "lib": ["dom", "ESNext.String"]
+    "lib": ["dom", "ESNext.String", "ES2017"]
   },
   "exclude": ["resources"]
 }
