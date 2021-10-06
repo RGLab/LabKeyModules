@@ -1,4 +1,5 @@
 import React from "react";
+
 import { CSVLink } from "react-csv";
 import { Query, Filter } from "@labkey/api";
 import AESpinner from "./AESpinner";
@@ -245,7 +246,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       }
     };
 
-    const getMetaData = (type: string) => {
+    const getMetaData = (type: string, analyte: string) => {
       if (type === "blood transcription module") {
         Query.executeSql({
           containerPath: "/AnalyteExplorer",
@@ -258,7 +259,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
           failure: processFailure,
         });
       } else if (type === "gene") {
-        callGeneAPI(type);
+        callGeneAPI(analyte);
       }
     };
 
@@ -296,7 +297,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       errorMsg !== "" ? setErrMsg("") : null;
 
       getData(analyteName, filtersWithUnderscore);
-      getMetaData(analyteType);
+      getMetaData(analyteType, analyteName);
       console.log("meep");
     }
     return () => {

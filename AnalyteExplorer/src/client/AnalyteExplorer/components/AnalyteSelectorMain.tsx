@@ -1,11 +1,11 @@
 import React from "react";
+
 import {
   ANALYTE_ALL,
   ANALYTE_TYPE_DISPLAYNAMES,
   FILTER_DROPDOWN_ROW_COUNT,
   STATE_OF_SELECTOR,
 } from "../helpers/constants";
-import { capitalizeFirstChar } from "@labkey/components";
 import {
   capitalizeFirstLetter,
   convertDisplayToColumn,
