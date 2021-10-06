@@ -1,4 +1,6 @@
 import React from "react";
+import "regenerator-runtime/runtime";
+
 import "./components/AnalyteSelectorMain.scss";
 import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
 import "./AnalyteExplorer.scss";

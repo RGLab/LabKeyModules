@@ -1,4 +1,5 @@
 import React from "react";
+
 import { CSVLink } from "react-csv";
 import { Query, Filter } from "@labkey/api";
 import AESpinner from "./AESpinner";
@@ -37,46 +38,6 @@ interface RowData {
   study_accession: string;
   timepoint: number;
 }
-
-const getGeneID = async (gene: string): Promise<string> => {
-  try {
-    const query = `https://mygene.info/v3/query?q=symbol:${gene}&size=1`;
-    let apiGeneID = "";
-
-    const response = await fetch(query);
-    const responseJSON = await response.json();
-
-    if (responseJSON !== undefined && responseJSON["hits"] !== undefined) {
-      if (responseJSON["hits"].length > 0) {
-        apiGeneID = responseJSON["hits"][0]["_id"];
-      }
-    }
-    return apiGeneID;
-  } catch (err) {
-    console.error(err);
-    return "";
-  }
-};
-
-const getGeneMetaData = async (geneID: string): Promise<GeneMetaData> => {
-  try {
-    const query = `https://mygene.info/v3/gene/${geneID}?fields=name,alias,type_of_gene,summary`;
-    const response = await fetch(query);
-    const responseJSON = await response.json(); // is typing this a good idea?
-
-    const result = {
-      name: responseJSON["name"],
-      summary: responseJSON["summary"],
-      type_of_gene: responseJSON["type_of_gene"],
-      alias: responseJSON["alias"],
-    }; // if responseJSON has any undefined values error with be thrown here and handled
-
-    return result;
-  } catch (err) {
-    console.error(err);
-    return undefined;
-  }
-};
 
 // for each condition, convert raw data into a format usable for the line plot
 const organizeD3Data = (condition: string, data: RowData[]): LinePlotProps => {
@@ -140,6 +101,49 @@ const organizeD3Data = (condition: string, data: RowData[]): LinePlotProps => {
     width: LINEPLOT_WIDTH,
     height: LINEPLOT_HEIGHT,
   };
+};
+
+const getGeneID = async (gene: string): Promise<string> => {
+  try {
+    const query = `https://mygene.info/v3/query?q=symbol:${gene}&size=1`;
+    console.log(query);
+    let apiGeneID = "";
+
+    const response = await fetch(query);
+    console.log(response);
+    const responseJSON = await response.json();
+    console.log(responseJSON);
+
+    if (responseJSON !== undefined && responseJSON["hits"] !== undefined) {
+      if (responseJSON["hits"].length > 0) {
+        apiGeneID = responseJSON["hits"][0]["_id"];
+      }
+    }
+    return apiGeneID;
+  } catch (err) {
+    console.error(err);
+    return "";
+  }
+};
+
+const getGeneMetaData = async (geneID: string): Promise<GeneMetaData> => {
+  try {
+    const query = `https://mygene.info/v3/gene/${geneID}?fields=name,alias,type_of_gene,summary`;
+    const response = await fetch(query);
+    const responseJSON = await response.json(); // is typing this a good idea?
+
+    const result = {
+      name: responseJSON["name"],
+      summary: responseJSON["summary"],
+      type_of_gene: responseJSON["type_of_gene"],
+      alias: responseJSON["alias"],
+    }; // if responseJSON has any undefined values error with be thrown here and handled
+
+    return result;
+  } catch (err) {
+    console.error(err);
+    return undefined;
+  }
 };
 
 const DownloadPage: React.FC<DownloadPageProps> = ({
@@ -220,6 +224,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
 
     const callGeneAPI = async (gene: string) => {
       const apiGeneID = await getGeneID(gene);
+      console.log(apiGeneID);
 
       if (apiGeneID !== "") {
         const geneMetaData = await getGeneMetaData(apiGeneID);
@@ -241,7 +246,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       }
     };
 
-    const getMetaData = (type: string) => {
+    const getMetaData = (type: string, analyte: string) => {
       if (type === "blood transcription module") {
         Query.executeSql({
           containerPath: "/AnalyteExplorer",
@@ -253,8 +258,8 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
           success: processBTMMetaData,
           failure: processFailure,
         });
-      } else if (analyteType === "gene") {
-        callGeneAPI(analyteName);
+      } else if (type === "gene") {
+        callGeneAPI(analyte);
       }
     };
 
@@ -292,7 +297,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       errorMsg !== "" ? setErrMsg("") : null;
 
       getData(analyteName, filtersWithUnderscore);
-      getMetaData(analyteType);
+      getMetaData(analyteType, analyteName);
       console.log("meep");
     }
     return () => {

@@ -63,7 +63,7 @@ module.exports = {
     crossOriginLoading: "anonymous",
   },
 
-  // devtool: "cheap-module-source-map", // to handle cross-origin errors
+  devtool: "cheap-module-source-map", // to handle cross-origin errors
 
   resolve: {
     extensions: constants.extensions.TYPESCRIPT,
