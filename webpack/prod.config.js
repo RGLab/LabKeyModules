@@ -81,7 +81,7 @@ module.exports = {
 
   mode: "production",
 
-  devtool: "source-map", // look at the different options of devtool
+  //devtool: "source-map", // look at the different options of devtool
 
   entry: entries,
 
