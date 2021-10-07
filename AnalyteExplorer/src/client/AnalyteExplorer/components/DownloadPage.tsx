@@ -106,13 +106,10 @@ const organizeD3Data = (condition: string, data: RowData[]): LinePlotProps => {
 const getGeneID = async (gene: string): Promise<string> => {
   try {
     const query = `https://mygene.info/v3/query?q=symbol:${gene}&size=1`;
-    console.log(query);
     let apiGeneID = "";
 
     const response = await fetch(query);
-    console.log(response);
     const responseJSON = await response.json();
-    console.log(responseJSON);
 
     if (responseJSON !== undefined && responseJSON["hits"] !== undefined) {
       if (responseJSON["hits"].length > 0) {
@@ -224,7 +221,6 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
 
     const callGeneAPI = async (gene: string) => {
       const apiGeneID = await getGeneID(gene);
-      console.log(apiGeneID);
 
       if (apiGeneID !== "") {
         const geneMetaData = await getGeneMetaData(apiGeneID);
