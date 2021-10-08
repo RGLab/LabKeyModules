@@ -205,6 +205,22 @@ const createLinePlot = (
     );
   }
 
+  // scaling tooltip x position to match the scaling of responsive svg chart
+  const scaleTooltipX = (x: number): number => {
+    const currentSVGWidth = document
+      .querySelector(`#svg-lineplot-${id}`)
+      .getBoundingClientRect().width;
+    return x * (Math.round((currentSVGWidth / config.width) * 100) / 100);
+  };
+
+  // scaling tooltip y position to match the scaling of responsive svg chart
+  const scaleTooltipY = (y: number): number => {
+    const currentSVGHeight = document
+      .querySelector(`#svg-lineplot-${id}`)
+      .getBoundingClientRect().height;
+    return y * (Math.round((currentSVGHeight / config.height) * 100) / 100);
+  };
+
   // plotting circles w/ tooltip hover
   const tooltip = d3.select("#tooltip-" + id);
   const circles = svgContent.selectAll(".dot").data(circleData);
@@ -220,12 +236,22 @@ const createLinePlot = (
           //using normal functions to preserve "this"
           d3.select(this).transition().duration(1).attr("r", 8);
           tooltip
-            .style("left", xScale(d.point.x) + "px")
-            .style("top", yScale(d.point.y) - 70 + "px")
+            .style(
+              "left",
+              scaleTooltipX(parseFloat(d3.select(this).attr("cx"))) + "px"
+            )
+            .style(
+              "top",
+              scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 90 + "px"
+            )
             .style("display", "block");
           tooltip.html(
             `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
           );
+
+          // tooltip2.style("visibility", "visible");
+          // tooltip2.style("left", d3.select(this).attr("cx"));
+          // tooltip2.style("top", d3.select(this).attr("cy"));
         })
         .on("mouseleave", function (d) {
           d3.select(this).transition().duration(1).attr("r", 4);
@@ -308,8 +334,14 @@ const createLinePlot = (
           //using normal functions to preserve "this"
           d3.select(this).transition().duration(1).attr("r", 8);
           tooltip
-            .style("left", newXScale(d.point.x) + "px")
-            .style("top", newYScale(d.point.y) - 70 + "px")
+            .style(
+              "left",
+              scaleTooltipX(parseFloat(d3.select(this).attr("cx"))) + "px"
+            )
+            .style(
+              "top",
+              scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 90 + "px"
+            )
             .style("display", "block");
           tooltip.html(
             `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
@@ -363,8 +395,14 @@ const createLinePlot = (
         //using normal functions to preserve "this"
         d3.select(this).transition().duration(1).attr("r", 8);
         tooltip
-          .style("left", xScale(d.point.x) + "px")
-          .style("top", yScale(d.point.y) - 70 + "px")
+          .style(
+            "left",
+            scaleTooltipX(parseFloat(d3.select(this).attr("cx"))) + "px"
+          )
+          .style(
+            "top",
+            scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 90 + "px"
+          )
           .style("display", "block");
         tooltip.html(
           `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`

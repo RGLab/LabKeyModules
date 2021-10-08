@@ -22,6 +22,7 @@ const LinePlot: React.FC<LinePlotProps> = ({
   yLabel,
 }) => {
   const linePlotStyles: CSSProperties = {
+    position: "relative",
     width: "100%",
   };
 
@@ -56,8 +57,8 @@ const LinePlot: React.FC<LinePlotProps> = ({
         className="lineplot-barplot"
         style={linePlotStyles}>
         <svg></svg>
+        <LinePlotTooltip name={name} />
       </div>
-      <LinePlotTooltip name={name} />
     </div>
   );
 };
