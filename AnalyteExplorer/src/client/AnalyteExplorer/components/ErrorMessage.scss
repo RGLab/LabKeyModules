@@ -8,3 +8,14 @@ div.ae-error-message-home {
     font-size: 30px;
   }
 }
+
+div.ae-error-condition-not-found {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.5rem 0;
+  span {
+    color: red;
+    font-size: 16px;
+  }
+}

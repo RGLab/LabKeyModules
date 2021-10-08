@@ -9,12 +9,15 @@ export const ErrorMessageHome: React.FC = () => {
   );
 };
 
-export const ErrorMessageConditionNotFound: React.FC<string[]> = (
-  types: string[]
-) => {
-  return (
-    <div>
-      <span>{`Unable to find data for ${types}`}</span>
-    </div>
-  );
-};
+interface ErrorMessageConditionNotFoundProps {
+  types: string[];
+}
+
+export const ErrorMessageConditionNotFound: React.FC<ErrorMessageConditionNotFoundProps> =
+  ({ types }) => {
+    return (
+      <div className="ae-error-condition-not-found">
+        <span>{`Unable to find data for ${types}`}</span>
+      </div>
+    );
+  };

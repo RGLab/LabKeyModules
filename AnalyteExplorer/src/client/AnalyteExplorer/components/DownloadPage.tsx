@@ -153,11 +153,17 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
   const [chartMetadata, setChartMetadata] =
     React.useState<AnalyteMetadataBoxProps>(null);
   const [errorMsg, setErrMsg] = React.useState("");
+  const [conditionsNotFound, setConditionsNotFound] = React.useState<string[]>(
+    []
+  );
 
   // analyte Type is guaranteed to be typed, not ""
 
   React.useEffect(() => {
     let isCancelled = false;
+    const filtersWithUnderscore = filters.map((filter) =>
+      filter.replaceAll(" ", "_")
+    );
 
     // converts raw data from immunespace to format usable by d3
     const processData = (data: any) => {
@@ -174,6 +180,11 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
           }
         }
 
+        const returnedConditions = Object.keys(dataByFilter);
+        const conditionsNoData = filtersWithUnderscore.filter(
+          (condition) => !returnedConditions.includes(condition)
+        );
+
         const d3DataByFilters = Object.entries(dataByFilter).map(
           ([filter, data]) => {
             return organizeD3Data(filter, data);
@@ -181,6 +192,9 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
         );
         setRawData(data);
         setChartData(d3DataByFilters);
+        if (conditionsNoData.length > 0) {
+          setConditionsNotFound(conditionsNoData);
+        }
       }
     };
 
@@ -282,10 +296,6 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     ) {
       console.log("fetching data...");
 
-      const filtersWithUnderscore = filters.map((filter) =>
-        filter.replaceAll(" ", "_")
-      );
-
       // wipe cached data before querying new data
       rawData !== null ? setRawData(null) : null;
       chartData !== null ? setChartData(null) : null;
@@ -310,6 +320,11 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       {isDataLoaded ? (
         <React.Fragment>
           <CSVLink data={rawData.rows}>Download Me!</CSVLink>
+          {conditionsNotFound.length > 0 ? (
+            <ErrorMessageConditionNotFound types={conditionsNotFound} />
+          ) : (
+            <></>
+          )}
           <div className="ae-metabox-container">
             <AnalyteMetadataBox
               title={chartMetadata.title}
