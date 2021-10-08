@@ -7,6 +7,7 @@ export const tooltipStyle = {
   height: "80px",
   padding: "3px 3px",
   display: "none",
+  whiteSpace: "nowrap",
 } as React.CSSProperties;
 
 export const LINEPLOT_WIDTH = 1500;
