@@ -36,6 +36,13 @@ interface CircleDataType {
   point: StudyPoint;
 }
 
+const roundTwoDecimal = (num: number): number => {
+  if (num === null || num === 0) {
+    return num;
+  }
+  return Math.round(num * 100) / 100;
+};
+
 const createLinePlot = (
   id: string,
   data: D3LineData[],
@@ -210,7 +217,7 @@ const createLinePlot = (
     const currentSVGWidth = document
       .querySelector(`#svg-lineplot-${id}`)
       .getBoundingClientRect().width;
-    return x * (Math.round((currentSVGWidth / config.width) * 100) / 100);
+    return x * roundTwoDecimal(currentSVGWidth / config.width);
   };
 
   // scaling tooltip y position to match the scaling of responsive svg chart
@@ -218,7 +225,7 @@ const createLinePlot = (
     const currentSVGHeight = document
       .querySelector(`#svg-lineplot-${id}`)
       .getBoundingClientRect().height;
-    return y * (Math.round((currentSVGHeight / config.height) * 100) / 100);
+    return y * roundTwoDecimal(currentSVGHeight / config.height);
   };
 
   // plotting circles w/ tooltip hover
@@ -246,7 +253,11 @@ const createLinePlot = (
             )
             .style("display", "block");
           tooltip.html(
-            `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
+            `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${
+              d.study
+            }<br><b>Timepoint:</b> ${
+              d.point.x
+            }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}`
           );
 
           // tooltip2.style("visibility", "visible");
@@ -344,7 +355,11 @@ const createLinePlot = (
             )
             .style("display", "block");
           tooltip.html(
-            `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
+            `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${
+              d.study
+            }<br><b>Timepoint:</b> ${
+              d.point.x
+            }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}`
           );
         })
         .attr("cx", (d: CircleDataType) => newXScale(d.point.x))
@@ -405,7 +420,11 @@ const createLinePlot = (
           )
           .style("display", "block");
         tooltip.html(
-          `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${d.study}<br><b>Timepoint:</b> ${d.point.x}<br><b>log2-FC:</b> ${d.point.y}`
+          `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${
+            d.study
+          }<br><b>Timepoint:</b> ${
+            d.point.x
+          }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}`
         );
       })
       .attr("cx", (d: CircleDataType) => xScale(d.point.x))
