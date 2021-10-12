@@ -1,6 +1,5 @@
 import React from "react";
 import "regenerator-runtime/runtime";
-
 import "./components/AnalyteSelectorMain.scss";
 import AnalyteSelectorMain from "./components/AnalyteSelectorMain";
 import "./AnalyteExplorer.scss";
@@ -14,6 +13,7 @@ import { Query } from "@labkey/api";
 import HomePage from "./components/HomePage";
 import AESpinner from "./components/AESpinner";
 import { ErrorMessageHome } from "./components/ErrorMessage";
+import CohortMetaDataGrid from "./components/CohortMetadataGrid";
 
 const AnalyteExplorer: React.FC = () => {
   const [typeSelected, setTypeSelected] = React.useState("");
@@ -182,7 +182,8 @@ const AnalyteExplorer: React.FC = () => {
           {nameSelected === "" &&
           typeSelected === "" &&
           filtersSelected.length < 1 ? (
-            <HomePage />
+            //<HomePage />
+            <CohortMetaDataGrid />
           ) : (
             <DownloadPage
               analyteName={nameSelected}
