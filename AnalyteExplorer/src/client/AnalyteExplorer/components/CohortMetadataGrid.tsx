@@ -18,8 +18,6 @@ const CohortMetaDataGridImpl: React.FC<IMPLProps> = ({
   queryModels,
   title,
 }) => {
-  console.log(queryModels);
-  console.log("here");
   const model = queryModels.assayModel;
   return (
     <div className="cohort-metadata-grid">
