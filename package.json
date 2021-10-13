@@ -21,7 +21,7 @@
     "@babel/preset-react": "7.0.0",
     "@types/d3": "^5.7.2",
     "@types/enzyme": "3.10.7",
-    "@types/jest": "26.0.14",
+    "@types/jest": "27.0.2",
     "@types/react": "16.8.19",
     "@types/react-bootstrap": "0.32.19",
     "@types/react-dom": "16.8.4",
@@ -50,7 +50,7 @@
     "sass": "1.32.7",
     "sass-loader": "10.1.1",
     "style-loader": "1.0.0",
-    "ts-jest": "26.5.1",
+    "ts-jest": "27.0.5",
     "ts-loader": "6.0.2",
     "typescript": "^3.1.6",
     "url-loader": "1.1.2"
