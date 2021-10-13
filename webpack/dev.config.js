@@ -23,7 +23,9 @@ const devServer = {
   },
 
   compress: true,
-  overlay: true,
+  client: {
+    overlay: true,
+  },
 };
 
 const devServerURL = "http://" + devServer.host + ":" + devServer.port;
