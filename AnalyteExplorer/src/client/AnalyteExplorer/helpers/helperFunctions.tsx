@@ -1,7 +1,14 @@
 import {
   ANALYTE_TYPE_DISPLAY_TO_COLUMN,
   ANALYTE_TYPE_COLUMN_TO_DISPLAY,
+  FILTER_DROPDOWN_ROW_COUNT,
+  ANALYTE_ALL,
 } from "./constants";
+
+import {
+  TypedFilterNameSuggestions,
+  UntypedFilterNameSuggestions,
+} from "../components/AnalyteSelectorMain";
 
 export const capitalizeFirstLetter = (str: string): string => {
   if (str === undefined || str.length < 1) {
@@ -102,4 +109,91 @@ export const capitalizeEveryWord = (str: string): string => {
     strArr[i] = capitalizeFirstLetter(strArr[i]);
   }
   return strArr.join(" ");
+};
+
+export const getFilteredNames = (
+  userInputCaps: string,
+  typeSelected: string,
+  typedFilterNameSuggestions: TypedFilterNameSuggestions,
+  untypedFilterNameSuggestions: UntypedFilterNameSuggestions[]
+) => {
+  let filteredNames: { [analyte_name: string]: string } = {};
+
+  if (userInputCaps !== "") {
+    if (typeSelected === ANALYTE_ALL || typeSelected === "") {
+      let index = binaryClosestSearch(
+        userInputCaps,
+        untypedFilterNameSuggestions,
+        0,
+        untypedFilterNameSuggestions.length - 1
+      ); // caps are used due to all filter names being in uppercase
+      const suggestions = untypedFilterNameSuggestions.slice(
+        index,
+        index + FILTER_DROPDOWN_ROW_COUNT
+      );
+      // To be considered a name suggestion the name must START with the user input
+      // THIS RULE CAN BE MODIFIED
+      for (const analyte of suggestions) {
+        if (analyte["analyte_id"].includes(userInputCaps)) {
+          filteredNames[analyte["analyte_id"]] = analyte["analyte_type"];
+        }
+      }
+    } else {
+      const columnTypeName = convertDisplayToColumn(typeSelected);
+      let index = binaryClosestSearch(
+        userInputCaps,
+        typedFilterNameSuggestions[columnTypeName],
+        0,
+        typedFilterNameSuggestions[columnTypeName].length - 1
+      );
+      const suggestions = typedFilterNameSuggestions[columnTypeName].slice(
+        index,
+        index + FILTER_DROPDOWN_ROW_COUNT
+      );
+      for (const analyte of suggestions) {
+        if (analyte["analyte_id"].includes(userInputCaps)) {
+          filteredNames[analyte["analyte_id"]] = analyte["analyte_type"];
+        }
+      }
+    }
+  }
+  return filteredNames;
+};
+
+export const searchBtnOnClickHelper = (
+  nameSelected: string,
+  typeSelected: string,
+  conditionFilters: {
+    [condition: string]: boolean;
+  },
+  untypedFilterNameSuggestions: UntypedFilterNameSuggestions[]
+) => {
+  let type = "";
+  let filters: string[] = [];
+
+  // find type of analyte selected if analyte type selector is set to "All"
+  if (typeSelected !== "" && typeSelected !== ANALYTE_ALL) {
+    type = convertDisplayToColumn(typeSelected);
+  } else {
+    let index = binaryClosestSearch(
+      nameSelected.toUpperCase(),
+      untypedFilterNameSuggestions,
+      0,
+      untypedFilterNameSuggestions.length - 1
+    );
+    type = untypedFilterNameSuggestions[index]["analyte_type"];
+  }
+
+  for (const [condition, checked] of Object.entries(conditionFilters)) {
+    if (checked) {
+      filters.push(condition);
+    }
+  }
+
+  filters.sort(); // sort filters alphabetically
+  return {
+    name: nameSelected,
+    type: type,
+    filters: filters,
+  };
 };

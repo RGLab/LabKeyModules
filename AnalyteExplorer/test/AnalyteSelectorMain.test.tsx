@@ -4,10 +4,8 @@
 
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import {
-  SearchButton,
-  CheckboxButton,
-} from "../src/client/AnalyteExplorer/components/AnalyteSelectorMain";
+import { CheckboxButton } from "../src/client/AnalyteExplorer/components/AnalyteSelectorMainDropdowns";
+import { SearchButton } from "../src/client/AnalyteExplorer/components/AnalyteSelectorMain";
 
 describe("testing search btn", () => {
   it("seach button exists", () => {

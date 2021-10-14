@@ -143,6 +143,23 @@ const getGeneMetaData = async (geneID: string): Promise<GeneMetaData> => {
   }
 };
 
+export const processDataByFilter = (data: any) => {
+  let dataByFilter: { [filter: string]: RowData[] } = {};
+
+  if (data !== undefined && data.rows !== undefined) {
+    for (const current of data.rows) {
+      if (current !== undefined && current["condition"] !== undefined) {
+        if (dataByFilter[current["condition"]] === undefined) {
+          dataByFilter[current["condition"]] = [current];
+        } else {
+          dataByFilter[current["condition"]].push(current);
+        }
+      }
+    }
+  }
+  return dataByFilter;
+};
+
 const DownloadPage: React.FC<DownloadPageProps> = ({
   analyteName,
   analyteType,
@@ -168,17 +185,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     // converts raw data from immunespace to format usable by d3
     const processData = (data: any) => {
       if (data !== undefined && data.rows !== undefined && !isCancelled) {
-        let dataByFilter: { [filter: string]: RowData[] } = {};
-
-        for (const current of data.rows) {
-          if (current !== undefined && current["condition"] !== undefined) {
-            if (dataByFilter[current["condition"]] === undefined) {
-              dataByFilter[current["condition"]] = [current];
-            } else {
-              dataByFilter[current["condition"]].push(current);
-            }
-          }
-        }
+        const dataByFilter = processDataByFilter(data);
 
         const returnedConditions = Object.keys(dataByFilter);
         const conditionsNoData = filtersWithUnderscore.filter(

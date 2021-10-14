@@ -38,6 +38,7 @@ const AnalyteExplorer: React.FC = () => {
     (analyte_type: string, analyte_name: string, filters: string[]) => {
       // only update state if the new selections are different than old ones,
       // prevents spam
+
       if (analyte_type !== typeSelected) {
         setTypeSelected(analyte_type);
       }
@@ -168,6 +169,7 @@ const AnalyteExplorer: React.FC = () => {
       </main>
     );
   }
+  console.log(nameSelected);
 
   return (
     <main id="ae-main">
@@ -182,9 +184,9 @@ const AnalyteExplorer: React.FC = () => {
           {nameSelected === "" &&
           typeSelected === "" &&
           filtersSelected.length < 1 ? (
-            //<HomePage />
-            <CohortMetaDataGrid />
+            <HomePage />
           ) : (
+            //<CohortMetaDataGrid />
             <DownloadPage
               analyteName={nameSelected}
               analyteType={typeSelected}
