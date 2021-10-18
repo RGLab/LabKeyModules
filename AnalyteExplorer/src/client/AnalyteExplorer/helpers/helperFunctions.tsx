@@ -54,7 +54,12 @@ export const binaryClosestSearch = (
   right: number
 ): number => {
   let result = -1;
-  if (query === undefined || array.length < 1 || right - left < 0) {
+  if (
+    query === undefined ||
+    array.length < 1 ||
+    right - left < 0 ||
+    query === ""
+  ) {
     return result;
   }
 
@@ -69,7 +74,7 @@ export const binaryClosestSearch = (
   }
 
   if (result < 0) {
-    if (array[middle]["analyte_id"].includes(query)) {
+    if (array[middle]["analyte_id"].startsWith(query)) {
       return middle;
     }
   }
@@ -117,9 +122,13 @@ export const getFilteredNames = (
   typedFilterNameSuggestions: TypedFilterNameSuggestions,
   untypedFilterNameSuggestions: UntypedFilterNameSuggestions[]
 ) => {
-  let filteredNames: { [analyte_name: string]: string } = {};
+  let filteredNames: { [analyte_name: string]: string } = {}; // {name: type}
 
-  if (userInputCaps !== "") {
+  if (
+    userInputCaps !== "" &&
+    untypedFilterNameSuggestions !== undefined &&
+    typedFilterNameSuggestions !== undefined
+  ) {
     if (typeSelected === ANALYTE_ALL || typeSelected === "") {
       let index = binaryClosestSearch(
         userInputCaps,
@@ -171,29 +180,35 @@ export const searchBtnOnClickHelper = (
   let type = "";
   let filters: string[] = [];
 
-  // find type of analyte selected if analyte type selector is set to "All"
-  if (typeSelected !== "" && typeSelected !== ANALYTE_ALL) {
-    type = convertDisplayToColumn(typeSelected);
-  } else {
-    let index = binaryClosestSearch(
-      nameSelected.toUpperCase(),
-      untypedFilterNameSuggestions,
-      0,
-      untypedFilterNameSuggestions.length - 1
-    );
-    type = untypedFilterNameSuggestions[index]["analyte_type"];
-  }
-
-  for (const [condition, checked] of Object.entries(conditionFilters)) {
-    if (checked) {
-      filters.push(condition);
+  if (
+    nameSelected !== "" &&
+    conditionFilters !== undefined &&
+    untypedFilterNameSuggestions !== undefined
+  ) {
+    if (typeSelected !== "" && typeSelected !== ANALYTE_ALL) {
+      type = convertDisplayToColumn(typeSelected);
+    } else {
+      let index = binaryClosestSearch(
+        nameSelected.toUpperCase(),
+        untypedFilterNameSuggestions,
+        0,
+        untypedFilterNameSuggestions.length - 1
+      );
+      type = untypedFilterNameSuggestions[index]["analyte_type"];
     }
+
+    for (const [condition, checked] of Object.entries(conditionFilters)) {
+      if (checked) {
+        filters.push(condition);
+      }
+    }
+
+    filters.sort(); // sort filters alphabetically
   }
 
-  filters.sort(); // sort filters alphabetically
   return {
     name: nameSelected,
     type: type,
-    filters: filters,
+    filters: filters, // this is sorted
   };
 };
