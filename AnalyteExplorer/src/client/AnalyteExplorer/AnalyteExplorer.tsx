@@ -169,7 +169,6 @@ const AnalyteExplorer: React.FC = () => {
       </main>
     );
   }
-  console.log(nameSelected);
 
   return (
     <main id="ae-main">
