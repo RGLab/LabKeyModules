@@ -1,9 +1,8 @@
 import React from "react";
-
 import { CSVLink } from "react-csv";
 import { Query, Filter } from "@labkey/api";
 import AESpinner from "./AESpinner";
-
+import CohortMetaDataGrid from "./CohortMetadataGrid";
 import LinePlot, { LinePlotProps } from "./data_viz/LinePlot";
 import { ErrorMessageConditionNotFound } from "./ErrorMessage"; // will need to implement this
 import AnalyteMetadataBox, {
@@ -247,13 +246,15 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
         const geneMetaData = await getGeneMetaData(apiGeneID);
 
         if (geneMetaData !== undefined) {
-          const metaBoxTitle = `${analyteName}: ${capitalizeKebabCase(
-            geneMetaData["name"]
-          )}`;
-          const metaBoxBody = `${geneMetaData["summary"]}`;
-          const metaBoxSubTitle = `${capitalizeKebabCase(
-            geneMetaData["type_of_gene"]
-          )} // Aliases: ${geneMetaData["alias"]}`;
+          const metaBoxTitle = `${analyteName}: ${
+            capitalizeKebabCase(geneMetaData["name"]) ?? ""
+          }`;
+          const metaBoxBody = `${
+            geneMetaData["summary"] ?? "NO SUMMARY INFORMATION FOUND"
+          }`;
+          const metaBoxSubTitle = `${
+            capitalizeKebabCase(geneMetaData["type_of_gene"]) ?? "Unknown"
+          } // Aliases: ${geneMetaData["alias"] ?? ""}`;
           processChartMetaData(metaBoxTitle, metaBoxBody, metaBoxSubTitle);
         } else {
           processChartMetaDataError(analyteName, "UNABLE TO RETRIEVE METADATA");
@@ -270,7 +271,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
           schemaName: "lists",
           sql: `SELECT DISTINCT id, name, genes
                     FROM blood_transcription_modules
-                    WHERE blood_transcription_modules.id = '${analyteName}'
+                    WHERE blood_transcription_modules.id = '${analyte}'
                     `,
           success: processBTMMetaData,
           failure: processFailure,
@@ -339,6 +340,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
               body={chartMetadata.body}
             />
           </div>
+          <CohortMetaDataGrid />
           {chartData.map((d3Data) => {
             return (
               <LinePlot

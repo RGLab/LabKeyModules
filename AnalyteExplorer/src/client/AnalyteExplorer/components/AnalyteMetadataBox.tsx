@@ -23,7 +23,7 @@ const AnalyteMetadataBox: React.FC<AnalyteMetadataBoxProps> = ({
   return (
     <div className={`analyte-metadata-box${isOpen ? " open" : ""}`}>
       <div className="analyte-metadata-box__title">
-        <h3 onClick={metaDropdownOnClick}>{`${title}`}</h3>
+        <h3 onClick={metaDropdownOnClick}>{`${title ?? ""}`}</h3>
         <CSSTransition
           in={!isOpen}
           timeout={300}
@@ -52,7 +52,7 @@ const AnalyteMetadataBox: React.FC<AnalyteMetadataBoxProps> = ({
         unmountOnExit>
         <div className="analyte-metadata-box__text">
           <p>{subtitle ?? ""}</p>
-          <p>{`${body}`}</p>
+          <p>{`${body ?? ""}`}</p>
         </div>
       </CSSTransition>
     </div>
