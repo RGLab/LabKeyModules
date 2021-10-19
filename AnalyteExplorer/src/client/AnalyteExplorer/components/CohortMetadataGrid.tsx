@@ -1,11 +1,12 @@
 import React from "react";
 import {
   InjectedQueryModels,
-  LoadingSpinner,
   SchemaQuery,
   withQueryModels,
   GridPanel,
 } from "@labkey/components";
+
+import "./CohortMetadataGrid.scss";
 
 interface CohortMetaDataGridProps {
   title: string;
