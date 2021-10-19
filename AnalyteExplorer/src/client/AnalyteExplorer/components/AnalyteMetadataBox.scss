@@ -20,19 +20,19 @@
     border: 1px solid black;
     z-index: 1;
     background-color: immunespace.$white;
-
     padding: 1rem 2rem;
     h3 {
       font-weight: immunespace.$font-weight--black;
       margin: 0;
       line-height: 22px;
+      max-width: calc(100% - 22px);
     }
   }
 
   &__icon {
     width: 22px;
     height: 22px;
-    //transform: rotate(180deg);
+    margin: auto 0;
 
     &:hover {
       cursor: pointer;
