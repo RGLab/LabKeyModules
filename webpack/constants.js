@@ -40,22 +40,7 @@ module.exports = {
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/, // https://stackoverflow.com/questions/41731760/webpack-problems-importing-font-awesome-library, https://gist.github.com/Turbo87/e8e941e68308d3b40ef6#gistcomment-1946990
-        use: [
-          {
-            loader: "url-loader",
-            options: {
-              limit: 10000,
-            },
-          },
-        ],
-      },
-      {
-        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: "file-loader",
-          },
-        ],
+        type: "asset", // https://webpack.js.org/guides/asset-modules/ webpack 5 asset loader
       },
     ],
     TYPESCRIPT_LOADERS: [
@@ -101,16 +86,6 @@ module.exports = {
               // this flag and the test regex will make sure that test files do not get bundled
               // see: https://github.com/TypeStrong/ts-loader/issues/267
             },
-          },
-        ],
-      },
-    ],
-    IMAGE_LOADERS: [
-      {
-        test: /\.(png|jpe?g|gif|svg)$/i,
-        use: [
-          {
-            loader: "file-loader",
           },
         ],
       },
