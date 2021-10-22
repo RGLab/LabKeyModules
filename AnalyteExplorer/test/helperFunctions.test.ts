@@ -1,5 +1,3 @@
-import { confirmAndPost } from "@labkey/api/dist/labkey/dom/Utils";
-import { generate } from "@labkey/components/dist/internal/components/lineage/vis/VisGraphGenerator";
 import {
   capitalizeFirstLetter,
   getAverage,

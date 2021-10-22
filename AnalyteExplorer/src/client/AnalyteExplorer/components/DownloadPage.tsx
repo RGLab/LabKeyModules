@@ -39,7 +39,13 @@ interface RowData {
 }
 
 // for each condition, convert raw data into a format usable for the line plot
-const organizeD3Data = (condition: string, data: RowData[]): LinePlotProps => {
+export const organizeD3Data = (
+  condition: string,
+  data: RowData[]
+): LinePlotProps => {
+  if (condition === undefined || data === undefined) {
+    return undefined;
+  }
   let dataMap = new Map<string, { x: number; y: number; study: string }[]>();
 
   let avgMap = new Map<number, number[]>(); // for average trend line
@@ -47,33 +53,39 @@ const organizeD3Data = (condition: string, data: RowData[]): LinePlotProps => {
   let maxFoldChange = 0;
   let minFoldChange = 0;
   for (const { cohort, timepoint, mean_fold_change, study_accession } of data) {
-    if (timepoint > maxTimePoint) {
-      maxTimePoint = timepoint;
-    }
+    if (
+      cohort != undefined &&
+      timepoint != undefined &&
+      mean_fold_change != undefined
+    ) {
+      if (timepoint > maxTimePoint) {
+        maxTimePoint = timepoint;
+      }
 
-    if (mean_fold_change > maxFoldChange) {
-      maxFoldChange = mean_fold_change;
-    }
+      if (mean_fold_change > maxFoldChange) {
+        maxFoldChange = mean_fold_change;
+      }
 
-    if (mean_fold_change < minFoldChange) {
-      minFoldChange = mean_fold_change;
-    }
+      if (mean_fold_change < minFoldChange) {
+        minFoldChange = mean_fold_change;
+      }
 
-    if (dataMap.get(cohort) === undefined) {
-      dataMap.set(cohort, [
-        { x: timepoint, y: mean_fold_change, study: study_accession },
-      ]);
-    } else {
-      dataMap.set(cohort, [
-        { x: timepoint, y: mean_fold_change, study: study_accession },
-        ...dataMap.get(cohort),
-      ]);
-    }
+      if (dataMap.get(cohort) === undefined) {
+        dataMap.set(cohort, [
+          { x: timepoint, y: mean_fold_change, study: study_accession },
+        ]);
+      } else {
+        dataMap.set(cohort, [
+          { x: timepoint, y: mean_fold_change, study: study_accession },
+          ...dataMap.get(cohort),
+        ]);
+      }
 
-    if (avgMap.get(timepoint) === undefined) {
-      avgMap.set(timepoint, [mean_fold_change]);
-    } else {
-      avgMap.set(timepoint, [mean_fold_change, ...avgMap.get(timepoint)]);
+      if (avgMap.get(timepoint) === undefined) {
+        avgMap.set(timepoint, [mean_fold_change]);
+      } else {
+        avgMap.set(timepoint, [mean_fold_change, ...avgMap.get(timepoint)]);
+      }
     }
   }
 
@@ -143,6 +155,7 @@ const getGeneMetaData = async (geneID: string): Promise<GeneMetaData> => {
 };
 
 export const processDataByFilter = (data: any) => {
+  //console.log(data);
   let dataByFilter: { [filter: string]: RowData[] } = {};
 
   if (data !== undefined && data.rows !== undefined) {
@@ -342,16 +355,18 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
           </div>
           <CohortMetaDataGrid />
           {chartData.map((d3Data) => {
-            return (
-              <LinePlot
-                data={d3Data.data}
-                name={d3Data.name}
-                xLabel={d3Data.xLabel}
-                yLabel={d3Data.yLabel}
-                width={d3Data.width}
-                height={d3Data.height}
-              />
-            );
+            if (d3Data !== undefined) {
+              return (
+                <LinePlot
+                  data={d3Data.data}
+                  name={d3Data.name}
+                  xLabel={d3Data.xLabel}
+                  yLabel={d3Data.yLabel}
+                  width={d3Data.width}
+                  height={d3Data.height}
+                />
+              );
+            }
           })}
         </React.Fragment>
       ) : (

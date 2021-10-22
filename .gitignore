@@ -45,6 +45,7 @@ DataAccess/resources/views
 extraWebapp/build
 AnalyteExplorer/resources/web/AnalyteExplorer/gen
 AnalyteExplorer/resources/views
+AnalyteExplorer/coverage
 
 
 # Npm and React libraries
