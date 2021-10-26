@@ -115,26 +115,7 @@ export const organizeD3Data = (
   };
 };
 
-const getGeneID = async (gene: string): Promise<string> => {
-  try {
-    const query = `https://mygene.info/v3/query?q=symbol:${gene}&size=1`;
-    let apiGeneID = "";
-
-    const response = await fetch(query);
-    const responseJSON = await response.json();
-
-    if (responseJSON !== undefined && responseJSON["hits"] !== undefined) {
-      if (responseJSON["hits"].length > 0) {
-        apiGeneID = responseJSON["hits"][0]["_id"];
-      }
-    }
-    return apiGeneID;
-  } catch (err) {
-    console.error(err);
-    return "";
-  }
-};
-
+// calls mygene.info api and returns metadata
 const getGeneMetaData = async (geneID: string): Promise<GeneMetaData> => {
   try {
     const query = `https://mygene.info/v3/gene/${geneID}?fields=name,alias,type_of_gene,summary`;
@@ -191,9 +172,6 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
 
   React.useEffect(() => {
     let isCancelled = false;
-    // const filtersWithUnderscore = filters.map((filter) =>
-    //   filter.replaceAll(" ", "_")
-    // );
 
     // converts raw data from immunespace to format usable by d3
     const processData = (data: any) => {
@@ -242,7 +220,6 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     };
 
     const processBTMMetaData = (data: any) => {
-      console.log(data);
       if (data !== undefined && data.rows !== undefined) {
         processChartMetaData(
           data.rows[0]["name"],
@@ -262,6 +239,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       processChartMetaData(analyteName, error);
     };
 
+    // calls mygene.info api & retrieves metadata for specific gene
     const processGeneMetaData = async (entrezID: string) => {
       if (entrezID !== "") {
         const geneMetaData = await getGeneMetaData(entrezID);
@@ -323,6 +301,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       }
     };
 
+    // add quotes around every string in the array
     const createSQLArray = (arr: string[]): string[] => {
       return arr.map((str) => {
         return `'${str}'`;
@@ -394,6 +373,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
               body={chartMetadata.body}
             />
           </div>
+          <h2>Cohort Information</h2>
           <CohortMetaDataGrid arm_accessions={armAccessions} />
           {chartData.map((d3Data) => {
             if (d3Data !== undefined) {

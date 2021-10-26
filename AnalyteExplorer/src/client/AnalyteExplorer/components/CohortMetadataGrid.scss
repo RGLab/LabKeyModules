@@ -1,56 +1,7 @@
 @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme";
 
-// @import "../../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/_variables";
-// @import "../../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/_mixins";
-// @import "../../../../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap/_popovers";
-
-// @import "../../../../../node_modules/react-bootstrap-toggle/dist/bootstrap2-toggle.css";
-// @import "../../../../../node_modules/react-select/scss/default";
-
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/variables.scss";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/cards.scss";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/collapsiblePanel.scss";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/expandableDndRow.scss";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/fields.scss";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/fileTree.scss";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/footer.scss";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/error.scss";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/labelHelpTip.scss";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/notification.scss";
-
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/submenu";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/notification";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/page";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/pagination-buttons";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/fileupload";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/section";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/form";
-
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/grid.scss";
-
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/cards";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/footer";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/fields";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/paging";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/detail";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/samples";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/entities";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/search";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/assays";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/lineage";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/report-list";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/control";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/menu";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/multi";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/navbar";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/breadcrumb";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/user";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/domainproperties";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/container";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/permissions";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/list";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/query-model";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/timeline";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/product-navigation";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/ontologybrowser";
-// @import "../../../../../node_modules/@labkey/components/dist/assets/scss/theme/attachment-card";
+.cohort-metadata-grid {
+  margin: 0 auto;
+  margin-top: 20px;
+  width: calc(94% - 20px);
+}

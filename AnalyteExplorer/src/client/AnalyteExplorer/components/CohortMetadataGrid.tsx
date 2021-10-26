@@ -24,7 +24,14 @@ const CohortMetaDataGridImpl: React.FC<IMPLProps> = ({
   const model = queryModels.assayModel;
   return (
     <div className="cohort-metadata-grid">
-      <GridPanel model={model} actions={actions} />;
+      <GridPanel
+        model={model}
+        actions={actions}
+        asPanel={false}
+        showOmniBox={false}
+        showButtonBar={false}
+        allowSelections={false}
+      />
     </div>
   );
 };
@@ -53,7 +60,7 @@ const CohortMetaDataGrid: React.FC<CohortMetaDataGridBaseProps> = ({
     },
   };
 
-  // key is used to force re-render
+  // key is used to force re-render, so it's just something new everytime
   // https://github.com/LabKey/labkey-ui-components/blob/9ec098596e2264fc2a420431a87603e716bc398e/packages/components/src/public/QueryModel/withQueryModels.tsx#L196
   return (
     <WrappedCohortMetaDataGrid
