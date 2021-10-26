@@ -430,8 +430,13 @@ const createLinePlot = (
       .attr("r", 4);
   };
 
-  svgContent
+  svg
+    .append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .style("fill", "none")
     .style("pointer-events", "all")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     .call(zoom)
     .on("dblclick.zoom", resetChart);
 
