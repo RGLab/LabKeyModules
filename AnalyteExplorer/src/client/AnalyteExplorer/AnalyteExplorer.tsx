@@ -137,6 +137,7 @@ const AnalyteExplorer: React.FC = () => {
         schemaName: "lists",
         sql: `SELECT DISTINCT cohorts.condition_studied AS condition
         FROM cohorts
+        WHERE cohorts.condition_studied != 'Unknown'
         `,
         success: processData,
         failure: processFailure,
