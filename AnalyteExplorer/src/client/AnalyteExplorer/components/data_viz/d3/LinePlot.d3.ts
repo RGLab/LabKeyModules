@@ -49,8 +49,6 @@ const createLinePlot = (
   config: D3LinePlotConfig,
   trendData: D3LineData[] = []
 ) => {
-  //const lineplotHeight = config.height - xaxisTitle.height - 10; // need to actually figure out how tall the xaxis is
-
   // ------ Initial Setup ------
   const margin = { top: 10, right: 30, bottom: 60, left: 60 },
     width = config.width - margin.left - margin.right,

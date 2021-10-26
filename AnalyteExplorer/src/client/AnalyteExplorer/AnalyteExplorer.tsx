@@ -93,8 +93,8 @@ const AnalyteExplorer: React.FC = () => {
         containerPath: "/AnalyteExplorer",
         schemaName: "lists",
         sql: `SELECT DISTINCT analyte_id, analyte_type
-                  FROM gene_expression
-                  WHERE gene_expression.analyte_type != 'gene signature'
+                  FROM gene_expression_summaries
+                  WHERE gene_expression_summaries.analyte_type != 'gene signature'
                   `,
         success: processData,
         failure: processFailure,
@@ -135,8 +135,8 @@ const AnalyteExplorer: React.FC = () => {
       Query.executeSql({
         containerPath: "/AnalyteExplorer",
         schemaName: "lists",
-        sql: `SELECT DISTINCT gene_expression.condition AS condition
-        FROM gene_expression
+        sql: `SELECT DISTINCT cohorts.condition_studied AS condition
+        FROM cohorts
         `,
         success: processData,
         failure: processFailure,

@@ -1,6 +1,6 @@
 import React from "react";
 import { CSVLink } from "react-csv";
-import { Query, Filter } from "@labkey/api";
+import { Query } from "@labkey/api";
 import AESpinner from "./AESpinner";
 import CohortMetaDataGrid from "./CohortMetadataGrid";
 import LinePlot, { LinePlotProps } from "./data_viz/LinePlot";
@@ -8,6 +8,7 @@ import { ErrorMessageConditionNotFound } from "./ErrorMessage"; // will need to 
 import AnalyteMetadataBox, {
   AnalyteMetadataBoxProps,
 } from "./AnalyteMetadataBox";
+import { ANALYTE_GENE_COL, ANALYTE_BTM_COL } from "../helpers/constants";
 import { getAverage, capitalizeKebabCase } from "../helpers/helperFunctions";
 import { LINEPLOT_HEIGHT, LINEPLOT_WIDTH } from "./data_viz/dataVizConstants";
 import "./DownloadPage.scss";
@@ -155,7 +156,6 @@ const getGeneMetaData = async (geneID: string): Promise<GeneMetaData> => {
 };
 
 export const processDataByFilter = (data: any) => {
-  //console.log(data);
   let dataByFilter: { [filter: string]: RowData[] } = {};
 
   if (data !== undefined && data.rows !== undefined) {
@@ -185,22 +185,29 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
   const [conditionsNotFound, setConditionsNotFound] = React.useState<string[]>(
     []
   );
+  const [armAccessions, setArmAccessions] = React.useState<string[]>([]);
 
   // analyte Type is guaranteed to be typed, not ""
 
   React.useEffect(() => {
     let isCancelled = false;
-    const filtersWithUnderscore = filters.map((filter) =>
-      filter.replaceAll(" ", "_")
-    );
+    // const filtersWithUnderscore = filters.map((filter) =>
+    //   filter.replaceAll(" ", "_")
+    // );
 
     // converts raw data from immunespace to format usable by d3
     const processData = (data: any) => {
       if (data !== undefined && data.rows !== undefined && !isCancelled) {
+        const armAccessionSet = new Set<string>();
+
+        for (const row of data.rows) {
+          armAccessionSet.add(row["arm_accession"]);
+        }
+
         const dataByFilter = processDataByFilter(data);
 
         const returnedConditions = Object.keys(dataByFilter);
-        const conditionsNoData = filtersWithUnderscore.filter(
+        const conditionsNoData = filters.filter(
           (condition) => !returnedConditions.includes(condition)
         );
 
@@ -209,8 +216,10 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
             return organizeD3Data(filter, data);
           }
         );
+
         setRawData(data);
         setChartData(d3DataByFilters);
+        setArmAccessions(Array.from(armAccessionSet));
         if (conditionsNoData.length > 0) {
           setConditionsNotFound(conditionsNoData);
         }
@@ -233,6 +242,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     };
 
     const processBTMMetaData = (data: any) => {
+      console.log(data);
       if (data !== undefined && data.rows !== undefined) {
         processChartMetaData(
           data.rows[0]["name"],
@@ -252,11 +262,9 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       processChartMetaData(analyteName, error);
     };
 
-    const callGeneAPI = async (gene: string) => {
-      const apiGeneID = await getGeneID(gene);
-
-      if (apiGeneID !== "") {
-        const geneMetaData = await getGeneMetaData(apiGeneID);
+    const processGeneMetaData = async (entrezID: string) => {
+      if (entrezID !== "") {
+        const geneMetaData = await getGeneMetaData(entrezID);
 
         if (geneMetaData !== undefined) {
           const metaBoxTitle = `${analyteName}: ${
@@ -278,7 +286,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     };
 
     const getMetaData = (type: string, analyte: string) => {
-      if (type === "blood transcription module") {
+      if (type === ANALYTE_BTM_COL) {
         Query.executeSql({
           containerPath: "/AnalyteExplorer",
           schemaName: "lists",
@@ -289,21 +297,54 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
           success: processBTMMetaData,
           failure: processFailure,
         });
-      } else if (type === "gene") {
-        callGeneAPI(analyte);
+      } else if (type === ANALYTE_GENE_COL) {
+        const processGeneEntrezID = (data: any) => {
+          if (
+            data !== undefined &&
+            data.rows !== undefined &&
+            data.rows.length > 0
+          ) {
+            processGeneMetaData(data.rows[0]["entrez"]);
+          }
+          processGeneMetaData("");
+        };
+
+        // getting gene entrez_id
+        Query.executeSql({
+          containerPath: "/AnalyteExplorer",
+          schemaName: "lists",
+          sql: `SELECT genes.entrez
+                    FROM genes
+                    WHERE genes.symbol = '${analyte}'
+                    `,
+          success: processGeneEntrezID,
+          failure: processFailure,
+        });
       }
+    };
+
+    const createSQLArray = (arr: string[]): string[] => {
+      return arr.map((str) => {
+        return `'${str}'`;
+      });
     };
 
     // grabs data for a specific analyte under specific set of disease conditions
     const getData = (analyteName: string, filters: string[]) => {
-      Query.selectRows({
+      Query.executeSql({
         containerPath: "/AnalyteExplorer",
         schemaName: "lists",
-        queryName: "gene_expression",
-        filterArray: [
-          Filter.create("analyte_id", analyteName.toUpperCase()),
-          Filter.create("condition", filters, Filter.Types.CONTAINS_ONE_OF),
-        ],
+        sql: `SELECT gene_expression_summaries.analyte_id AS analyte_id, gene_expression_summaries.analyte_type AS analyte_type, 
+                gene_expression_summaries.study_accession, gene_expression_summaries.timepoint, gene_expression_summaries.mean_fold_change, 
+                cohorts.condition_studied AS condition, cohorts.name AS cohort, cohorts.description AS cohort_description, 
+                cohorts.research_focus, cohorts.arm_accession
+                FROM gene_expression_summaries
+                INNER JOIN cohorts ON gene_expression_summaries.arm_accession = cohorts.arm_accession
+                WHERE gene_expression_summaries.analyte_id = '${analyteName}'
+                AND cohorts.condition_studied IN (${createSQLArray(
+                  filters
+                ).join(",")})
+                `,
         success: processData,
         failure: processFailure,
       });
@@ -323,7 +364,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
       chartMetadata !== null ? setChartMetadata(null) : null;
       errorMsg !== "" ? setErrMsg("") : null;
 
-      getData(analyteName, filtersWithUnderscore);
+      getData(analyteName, filters);
       getMetaData(analyteType, analyteName);
       console.log("meep");
     }
@@ -353,7 +394,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
               body={chartMetadata.body}
             />
           </div>
-          <CohortMetaDataGrid />
+          <CohortMetaDataGrid arm_accessions={armAccessions} />
           {chartData.map((d3Data) => {
             if (d3Data !== undefined) {
               return (

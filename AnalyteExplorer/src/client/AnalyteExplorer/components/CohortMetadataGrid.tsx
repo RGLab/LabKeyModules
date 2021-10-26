@@ -6,6 +6,8 @@ import {
   GridPanel,
 } from "@labkey/components";
 
+import { Filter } from "@labkey/api";
+
 import "./CohortMetadataGrid.scss";
 
 interface CohortMetaDataGridProps {
@@ -31,18 +33,37 @@ const WrappedCohortMetaDataGrid = withQueryModels<CohortMetaDataGridProps>(
   CohortMetaDataGridImpl
 );
 
-const queryConfigs = {
-  assayModel: {
-    schemaQuery: SchemaQuery.create("lists", "gene_expression"),
-  },
-};
+interface CohortMetaDataGridBaseProps {
+  arm_accessions: string[];
+}
 
-const CohortMetaDataGrid: React.FC = () => {
+const CohortMetaDataGrid: React.FC<CohortMetaDataGridBaseProps> = ({
+  arm_accessions,
+}) => {
+  const queryConfigs = {
+    assayModel: {
+      schemaQuery: SchemaQuery.create("lists", "cohorts"),
+      baseFilters: [
+        Filter.create(
+          "arm_accession",
+          arm_accessions,
+          Filter.Types.CONTAINS_ONE_OF
+        ),
+      ],
+    },
+  };
+
+  // key is used to force re-render
+  // https://github.com/LabKey/labkey-ui-components/blob/9ec098596e2264fc2a420431a87603e716bc398e/packages/components/src/public/QueryModel/withQueryModels.tsx#L196
   return (
     <WrappedCohortMetaDataGrid
+      key={
+        arm_accessions.length > 0
+          ? `${arm_accessions[0]}${Math.floor(Math.random() * 10000)}`
+          : `${Math.floor(Math.random() * 10000)}`
+      }
       title="Cohort Metadata Grid"
       queryConfigs={queryConfigs}
-      autoLoad
     />
   );
 };

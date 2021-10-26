@@ -28,9 +28,8 @@ const LinePlot: React.FC<LinePlotProps> = ({
 
   React.useEffect(() => {
     const [formattedCohortData, formattedTrendData] = setupLinePlotData(data);
-
     D3LinePlot.create(
-      name,
+      name.replaceAll(" ", "_"),
       formattedCohortData,
       {
         width: width,
@@ -44,7 +43,7 @@ const LinePlot: React.FC<LinePlotProps> = ({
 
   return (
     <div
-      className={name}
+      className={name.replaceAll(" ", "_")}
       style={{
         position: "relative",
         margin: "5px 10px",
@@ -53,11 +52,11 @@ const LinePlot: React.FC<LinePlotProps> = ({
         <h4>{name}</h4>
       </div>
       <div
-        id={"lineplot-container-" + name}
+        id={"lineplot-container-" + name.replaceAll(" ", "_")}
         className="lineplot-barplot"
         style={linePlotStyles}>
         <svg></svg>
-        <LinePlotTooltip name={name} />
+        <LinePlotTooltip name={name.replaceAll(" ", "_")} />
       </div>
     </div>
   );

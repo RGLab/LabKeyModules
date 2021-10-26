@@ -1,5 +1,7 @@
 export const ANALYTE_ALL = "All";
 export const ANALYTE_GENE = "Gene";
+export const ANALYTE_GENE_COL = "gene";
+export const ANALYTE_BTM_COL = "blood transcription module";
 export const ANALYTE_PGS = "Published Gene Set";
 export const ANALYTE_BTM = "Blood Transcription Module (BTM)";
 export const FILTER_DROPDOWN_ROW_COUNT = 5;
