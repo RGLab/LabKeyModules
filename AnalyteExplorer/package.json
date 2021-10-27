@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@testing-library/react": "12.1.0",
+    "@types/jest": "27.0.2",
     "@typescript-eslint/eslint-plugin": "^4.27.0",
     "@typescript-eslint/parser": "^4.27.0",
     "cross-env": "5.2.1",
@@ -30,6 +31,7 @@
     "jest": "27.2.5",
     "prettier": "2.3.1",
     "rimraf": "3.0.2",
+    "ts-jest": "27.0.5",
     "webpack": "5.22.0",
     "webpack-cli": "4.5.0",
     "webpack-dev-server": "4.3.1"
