@@ -193,6 +193,12 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
     []
   );
 
+  const selectAllOnClick = React.useCallback(() => {
+    const defaultConds = { ...conditionFilters };
+    Object.keys(defaultConds).forEach((key) => (defaultConds[key] = true));
+    setConditionFilters(defaultConds);
+  }, [conditionFilters]);
+
   // confirm the analyte name selection
   const nameDropdownOnClick = (name: string) => {
     setNameSearched(name);
@@ -299,7 +305,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
               <label
                 htmlFor="analyte-filters"
                 className="analyte-selector-label">
-                <div>Filters</div>
+                <div>Conditions</div>
                 <input
                   type="text"
                   id="analyte-filters"
@@ -355,7 +361,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
                     diseaseCondFilters={conditionFilters}
                     onClickCallback={diseaseCondOnClick}
                     resetCallback={resetDiseaseCondFilters}
-                    submitCallback={submitFilters}
+                    submitCallback={selectAllOnClick}
                   />
                 </div>
               );

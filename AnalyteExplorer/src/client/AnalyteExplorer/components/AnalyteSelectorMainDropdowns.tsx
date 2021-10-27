@@ -15,7 +15,7 @@ export const SelectorDropdown: React.FC<SelectorDropdownProps> = ({
       {options.length < 1 ? (
         <span className="analyte-selector-no-results-text">
           {searchTerm === ""
-            ? "PLEASE SEARCH AN ANALYTE"
+            ? "PLEASE TYPE AN ANALYTE"
             : "NO MATCHING ANALYTE FOUND"}
         </span>
       ) : (
@@ -71,7 +71,7 @@ interface FilterDropdownProps {
   };
   onClickCallback: (value: string) => void;
   resetCallback: () => void;
-  submitCallback: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  submitCallback: () => void;
 }
 
 export const FilterDropdown: React.FC<FilterDropdownProps> = ({
@@ -103,7 +103,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
         </div>
         <div className="analyte-filter-action-container">
           <input type="button" value="Reset" onClick={resetCallback}></input>
-          <input type="submit" value="Apply" onClick={submitCallback}></input>
+          <input type="button" value="All" onClick={submitCallback}></input>
         </div>
       </form>
     </div>
