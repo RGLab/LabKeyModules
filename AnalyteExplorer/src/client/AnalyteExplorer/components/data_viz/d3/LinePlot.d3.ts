@@ -430,15 +430,16 @@ const createLinePlot = (
       .attr("r", 4);
   };
 
-  svg
+  svgContent
     .append("rect")
     .attr("width", width)
     .attr("height", height)
     .style("fill", "none")
     .style("pointer-events", "all")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-    .call(zoom)
-    .on("dblclick.zoom", resetChart);
+    .lower();
+
+  svgContent.call(zoom).on("dblclick.zoom", resetChart);
 
   // Adding x-axis and y-axis labels
   svg
