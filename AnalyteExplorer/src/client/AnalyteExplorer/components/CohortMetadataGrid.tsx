@@ -24,14 +24,7 @@ const CohortMetaDataGridImpl: React.FC<IMPLProps> = ({
   const model = queryModels.assayModel;
   return (
     <div className="cohort-metadata-grid">
-      <GridPanel
-        model={model}
-        actions={actions}
-        asPanel={false}
-        showOmniBox={false}
-        showButtonBar={false}
-        allowSelections={false}
-      />
+      <GridPanel model={model} actions={actions} />
     </div>
   );
 };

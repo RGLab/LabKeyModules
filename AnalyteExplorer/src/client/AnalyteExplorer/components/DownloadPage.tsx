@@ -345,7 +345,6 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
 
       getData(analyteName, filters);
       getMetaData(analyteType, analyteName);
-      console.log("meep");
     }
     return () => {
       isCancelled = true;
@@ -373,8 +372,6 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
               body={chartMetadata.body}
             />
           </div>
-          <h2>Cohort Information</h2>
-          <CohortMetaDataGrid arm_accessions={armAccessions} />
           {chartData.map((d3Data) => {
             if (d3Data !== undefined) {
               return (
@@ -389,6 +386,8 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
               );
             }
           })}
+          <h2>Cohort Information</h2>
+          <CohortMetaDataGrid arm_accessions={armAccessions} />
         </React.Fragment>
       ) : (
         <AESpinner />
