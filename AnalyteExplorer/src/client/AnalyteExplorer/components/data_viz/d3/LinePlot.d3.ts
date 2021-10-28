@@ -312,11 +312,7 @@ const createLinePlot = (
   // https://www.d3-graph-gallery.com/graph/interactivity_zoom.html
   const zoom = d3
     .zoom()
-    .scaleExtent([0.5, 7])
-    .translateExtent([
-      [0, 0],
-      [width, height],
-    ])
+    .scaleExtent([0.25, 15])
     .on("zoom", () => {
       // recover the new scale
       const newXScale = d3.event.transform.rescaleX(xScale);
