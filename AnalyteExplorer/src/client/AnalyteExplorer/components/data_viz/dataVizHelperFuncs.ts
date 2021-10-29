@@ -6,17 +6,20 @@ export const setupLinePlotData = (
 ): D3LineData[][] => {
   let cohortData: D3LineData[] = [];
   let trendData: D3LineData[] = [];
-  for (const [cohort, linePoints] of data) {
-    if (linePoints.length > 0) {
-      const formattedData = {
-        name: cohort,
-        study: linePoints[0].study,
-        data: linePoints.sort((a, b) => a.x - b.x),
-      };
-      if (cohort === "Average") {
-        trendData.push(formattedData);
+  if (data != undefined) {
+    for (const [cohort, linePoints] of data) {
+      if (linePoints.length > 0 && cohort != undefined) {
+        const formattedData = {
+          name: cohort,
+          study: linePoints[0].study,
+          data: linePoints.sort((a, b) => a.x - b.x),
+        };
+        if (cohort === "Average") {
+          trendData.push(formattedData);
+        } else {
+          cohortData.push(formattedData);
+        }
       }
-      cohortData.push(formattedData);
     }
   }
 
