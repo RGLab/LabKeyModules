@@ -440,7 +440,6 @@ const createLinePlot = (
     .attr("height", height)
     .style("fill", "none")
     .style("pointer-events", "all")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     .lower();
 
   svgContent.call(zoom).on("dblclick.zoom", resetChart);
