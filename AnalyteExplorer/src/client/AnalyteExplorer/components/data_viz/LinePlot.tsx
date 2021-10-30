@@ -1,11 +1,21 @@
 import React, { CSSProperties } from "react";
-import { D3LinePlot, D3LineData } from "./d3/LinePlot.d3";
+import { D3LinePlot } from "./d3/LinePlot.d3";
 import LinePlotTooltip from "./LinePlotTooltip";
 import { setupLinePlotData } from "./dataVizHelperFuncs";
 import "./LinePlot.scss";
 
 export interface LinePlotProps {
-  data: Map<string, { x: number; y: number; study: string }[]>;
+  data: Map<
+    string,
+    {
+      x: number;
+      y: number;
+      study: string;
+      sd: number;
+      sample: string;
+      research: string;
+    }[]
+  >;
   name: string;
   width: number;
   height: number;

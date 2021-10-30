@@ -2,7 +2,17 @@ import { D3LineData } from "./d3/LinePlot.d3";
 
 // transforms input data into format suitable for the line plot, also seperate data for trend line from cohorts
 export const setupLinePlotData = (
-  data: Map<string, { x: number; y: number; study: string }[]>
+  data: Map<
+    string,
+    {
+      x: number;
+      y: number;
+      study: string;
+      sd: number;
+      sample: string;
+      research: string;
+    }[]
+  >
 ): D3LineData[][] => {
   let cohortData: D3LineData[] = [];
   let trendData: D3LineData[] = [];

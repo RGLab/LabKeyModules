@@ -29,10 +29,12 @@ interface DownloadPageProps {
 interface RowData {
   analyte_id: string;
   analyte_type: string;
+  arm_accession: string;
   cohort: string;
+  cohort_description: string;
   condition: string;
-  id: number;
   mean_fold_change: number;
+  research_focus: string;
   sample_type: string;
   sd_fold_change: number;
   study_accession: string;
@@ -47,13 +49,31 @@ export const organizeD3Data = (
   if (condition === undefined || data === undefined) {
     return undefined;
   }
-  let dataMap = new Map<string, { x: number; y: number; study: string }[]>();
+  let dataMap = new Map<
+    string,
+    {
+      x: number;
+      y: number;
+      study: string;
+      sd: number;
+      sample: string;
+      research: string;
+    }[]
+  >();
 
   let avgMap = new Map<number, number[]>(); // for average trend line
   let maxTimePoint = 0;
   let maxFoldChange = 0;
   let minFoldChange = 0;
-  for (const { cohort, timepoint, mean_fold_change, study_accession } of data) {
+  for (const {
+    cohort,
+    timepoint,
+    mean_fold_change,
+    study_accession,
+    sd_fold_change,
+    sample_type,
+    research_focus,
+  } of data) {
     if (
       cohort != undefined &&
       timepoint != undefined &&
@@ -73,11 +93,25 @@ export const organizeD3Data = (
 
       if (dataMap.get(cohort) === undefined) {
         dataMap.set(cohort, [
-          { x: timepoint, y: mean_fold_change, study: study_accession },
+          {
+            x: timepoint,
+            y: mean_fold_change,
+            study: study_accession,
+            sd: sd_fold_change,
+            sample: sample_type,
+            research: research_focus,
+          },
         ]);
       } else {
         dataMap.set(cohort, [
-          { x: timepoint, y: mean_fold_change, study: study_accession },
+          {
+            x: timepoint,
+            y: mean_fold_change,
+            study: study_accession,
+            sd: sd_fold_change,
+            sample: sample_type,
+            research: research_focus,
+          },
           ...dataMap.get(cohort),
         ]);
       }
@@ -95,11 +129,25 @@ export const organizeD3Data = (
   // );
   // if maxtimepoint < 50, make it 50, if min and max fold change are within [-1, 1], make range [-1, 1]
 
-  let avgLineData: { x: number; y: number; study: string }[] = [];
+  let avgLineData: {
+    x: number;
+    y: number;
+    study: string;
+    sd: number;
+    sample: string;
+    research: string;
+  }[] = [];
 
   for (const [timepoint, yS] of avgMap) {
     if (yS.length > 1) {
-      avgLineData.push({ x: timepoint, y: getAverage(yS), study: "Trend" });
+      avgLineData.push({
+        x: timepoint,
+        y: getAverage(yS),
+        study: "Trend",
+        sd: null,
+        sample: undefined,
+        research: undefined,
+      });
     }
   }
 
@@ -159,7 +207,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
   filters,
 }) => {
   const [rawData, setRawData] = React.useState(null);
-  const [chartData, setChartData] = React.useState(null);
+  const [chartData, setChartData] = React.useState<LinePlotProps[]>(null);
   const [chartMetadata, setChartMetadata] =
     React.useState<AnalyteMetadataBoxProps>(null);
   const [errorMsg, setErrMsg] = React.useState("");
@@ -315,7 +363,8 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
         schemaName: "lists",
         sql: `SELECT gene_expression_summaries.analyte_id AS analyte_id, gene_expression_summaries.analyte_type AS analyte_type, 
                 gene_expression_summaries.study_accession, gene_expression_summaries.timepoint, gene_expression_summaries.mean_fold_change, 
-                cohorts.condition_studied AS condition, cohorts.name AS cohort, cohorts.description AS cohort_description, 
+                gene_expression_summaries.sample_type, gene_expression_summaries.sd_fold_change, cohorts.condition_studied AS condition, 
+                cohorts.name AS cohort, cohorts.description AS cohort_description, 
                 cohorts.research_focus, cohorts.arm_accession
                 FROM gene_expression_summaries
                 INNER JOIN cohorts ON gene_expression_summaries.arm_accession = cohorts.arm_accession

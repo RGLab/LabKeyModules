@@ -13,6 +13,9 @@ export interface StudyPoint {
   x: number;
   y: number;
   study: string;
+  sd: number;
+  sample: string;
+  research: string;
 }
 
 export interface D3LineData {
@@ -247,7 +250,7 @@ const createLinePlot = (
             )
             .style(
               "top",
-              scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 90 + "px"
+              scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 150 + "px"
             )
             .style("display", "block");
           tooltip.html(
@@ -255,12 +258,11 @@ const createLinePlot = (
               d.study
             }<br><b>Timepoint:</b> ${
               d.point.x
-            }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}`
+            }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}
+            <br><b>sd:</b> ${roundTwoDecimal(d.point.sd)}
+            <br><b>Sample Type:</b> ${d.point.sample}
+            <br><b>Research Focus:</b> ${d.point.research}`
           );
-
-          // tooltip2.style("visibility", "visible");
-          // tooltip2.style("left", d3.select(this).attr("cx"));
-          // tooltip2.style("top", d3.select(this).attr("cy"));
         })
         .on("mouseleave", function (d) {
           d3.select(this).transition().duration(1).attr("r", 4);
@@ -345,7 +347,7 @@ const createLinePlot = (
             )
             .style(
               "top",
-              scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 90 + "px"
+              scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 150 + "px"
             )
             .style("display", "block");
           tooltip.html(
@@ -353,7 +355,10 @@ const createLinePlot = (
               d.study
             }<br><b>Timepoint:</b> ${
               d.point.x
-            }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}`
+            }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}
+              <br><b>sd:</b> ${roundTwoDecimal(d.point.sd)}
+              <br><b>Sample Type:</b> ${d.point.sample}
+              <br><b>Research Focus:</b> ${d.point.research}`
           );
         })
         .attr("cx", (d: CircleDataType) => newXScale(d.point.x))
@@ -410,7 +415,7 @@ const createLinePlot = (
           )
           .style(
             "top",
-            scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 90 + "px"
+            scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 150 + "px"
           )
           .style("display", "block");
         tooltip.html(
@@ -418,7 +423,10 @@ const createLinePlot = (
             d.study
           }<br><b>Timepoint:</b> ${
             d.point.x
-          }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}`
+          }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}
+            <br><b>sd:</b> ${roundTwoDecimal(d.point.sd)}
+            <br><b>Sample Type:</b> ${d.point.sample}
+            <br><b>Research Focus:</b> ${d.point.research}`
         );
       })
       .attr("cx", (d: CircleDataType) => xScale(d.point.x))
