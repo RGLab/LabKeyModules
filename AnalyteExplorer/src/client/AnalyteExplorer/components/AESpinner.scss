@@ -1,0 +1,30 @@
+@use "~@immunespace/theme/dist/immunespace";
+
+div.ae-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: inherit;
+
+  .circleloader {
+    box-sizing: border-box;
+    width: 80px;
+    height: 80px;
+    border-radius: 100%;
+    border: 10px solid immunespace.$light-gray;
+    border-top-color: immunespace.$immune-blue;
+    animation: spin 1s infinite linear;
+  }
+}
+
+.ae-spinner {
+  width: 100px;
+  height: 100px;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

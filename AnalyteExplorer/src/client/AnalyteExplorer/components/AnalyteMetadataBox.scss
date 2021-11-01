@@ -1,0 +1,100 @@
+@use "~@immunespace/theme/dist/immunespace";
+
+.analyte-metadata-box {
+  width: 700px;
+  font-family: immunespace.$nunito-sans;
+  overflow: hidden;
+
+  .open {
+    min-height: 286px;
+  }
+
+  &__content {
+    padding: 1rem 2rem;
+    height: 100%;
+  }
+
+  &__title {
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid black;
+    z-index: 1;
+    background-color: immunespace.$white;
+    padding: 1rem 2rem;
+    h3 {
+      font-weight: immunespace.$font-weight--black;
+      margin: 0;
+      line-height: 22px;
+      max-width: calc(100% - 22px);
+    }
+  }
+
+  &__icon {
+    width: 22px;
+    height: 22px;
+    margin: auto 0;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  &__text {
+    border: 1px solid black;
+    font-size: 16px;
+    padding: 1rem 2rem;
+    min-height: 242px;
+    z-index: -3;
+  }
+}
+
+.rotate-enter {
+  display: none;
+}
+
+.rotate-enter-active {
+  display: none;
+}
+
+.rotate-enter-done {
+  display: block;
+}
+.rotate-exit {
+  opacity: 1;
+}
+
+.rotate-exit-active {
+  transform: rotate(180deg);
+  transition: transform 300ms;
+}
+
+.rotate-exit-done {
+  transform: rotate(180deg);
+}
+
+.extend-enter {
+  transform: translate(0, -242px);
+}
+
+.extend-enter-active {
+  transform: translate(0, 0);
+  transition: transform 300ms ease-in-out;
+}
+
+.extend-enter-done {
+  transform: translate(0, 0);
+}
+
+.extend-exit {
+  display: block;
+}
+
+.extend-exit-active {
+  //   height: 0;
+  transform: translate(0, -242px);
+  transition: transform 300ms ease-in-out;
+}
+
+.extend-exit-done {
+  transform: translate(0, -242px);
+}

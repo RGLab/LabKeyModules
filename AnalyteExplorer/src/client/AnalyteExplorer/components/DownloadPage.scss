@@ -1,0 +1,12 @@
+div.ae-download-content {
+  margin: 0 auto;
+  //width: 70vw;
+  max-width: 1500px; // temp fix, find more elegant solution later
+  min-width: 760px;
+  min-height: 70vh;
+}
+
+div.ae-metabox-container {
+  display: grid;
+  place-items: center;
+}
