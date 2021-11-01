@@ -34,6 +34,9 @@
                   <column columnName='download_link'>
                     <url>/_webdav/Studies/${folder/name}/%40files/analysis/exprs_matrices/${name}.tsv</url>
                   </column>
+                  <column columnName="Version">
+                    <url>https://github.com/RGLab/HIPCMatrix/tree/${hash}</url>
+                  </column>
                 </columns>
             </table>
         </tables>

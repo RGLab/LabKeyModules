@@ -1,15 +1,7 @@
 #--------------------------------
 # DEPENDENCIES
 #--------------------------------
-
-# NOTES:
-# 1. Wrapper function, separated for sourcing when running on CL
-# 2. other libraries loaded in createMatrixWrapper.R
-# 3. Using full path because script is copied to study-specific directory for
-# running from UI.
-LKModules <- "/labkey/git/LabKeyModules"
-source(file.path(LKModules, "HIPCMatrix/pipeline/tasks/runCreateMx.R"))
-
+library(HIPCMatrix)
 #--------------------------------
 # PARAMS & EXECUTION
 #--------------------------------
@@ -17,21 +9,18 @@ source(file.path(LKModules, "HIPCMatrix/pipeline/tasks/runCreateMx.R"))
 taskInfo <- "${pipeline, taskInfo}" # separated to make debugging locally easier
 
 ## taskInfo.tsv inputs
-jobInfo <- read.table(taskInfo,
-                      col.names = c("name", "value", "type"),
-                      header = FALSE,
-                      check.names = FALSE,
-                      stringsAsFactors = FALSE,
-                      sep = "\t",
-                      quote = "",
-                      fill = TRUE,
-                      na.strings = "")
+jobInfo <- read.table(
+  taskInfo,
+  col.names = c("name", "value", "type"),
+  header = FALSE,
+  check.names = FALSE,
+  stringsAsFactors = FALSE,
+  sep = "\t",
+  quote = "",
+  fill = TRUE,
+  na.strings = ""
+)
 
-labkey.url.base     <- jobInfo$value[ jobInfo$name == "baseUrl"]
-labkey.url.path     <- jobInfo$value[ jobInfo$name == "containerPath"]
-pipeline.root       <- jobInfo$value[ jobInfo$name == "pipeRoot"]
-analysis.directory  <- jobInfo$value[ jobInfo$name == "analysisDirectory"]
-output.tsv          <- jobInfo$value[ jobInfo$name == "output.tsv"]
 
 selectedBiosamples <- NULL # legacy from Renan ... why?
 
@@ -42,18 +31,33 @@ selectedBiosamples <- NULL # legacy from Renan ... why?
 # outputting version within pipeline for reproducibility.
 # You can often find this info though in the mxName.log file
 # found in the .../create-matrix/mxName subdir.
-selectedBiosamples <- "${selected-biosamples}"
-fasId              <- "${assay run property, featureSet}"
-taskOutputParams   <- "${pipeline, taskOutputParams}"
+fas_id <- "${assay run property, featureSet}"
+taskOutputParams <- "${pipeline, taskOutputParams}"
 
-runCreateMx(labkey.url.base = labkey.url.base,
-            labkey.url.path = labkey.url.path,
-            pipeline.root = pipeline.root,
-            analysis.directory = analysis.directory,
-            output.tsv = output.tsv,
-            selectedBiosamples = selectedBiosamples,
-            fasId = fasId,
-            taskOutputParams = taskOutputParams
+
+labkey.url.base <- jobInfo$value[jobInfo$name == "baseUrl"]
+labkey.url.path <- jobInfo$value[jobInfo$name == "containerPath"]
+study <- gsub("/Studies/", "", labkey.url.path)
+matrix_name <- jobInfo$value[jobInfo$name == "protocol"]
+base_dir <- jobInfo$value[jobInfo$name == "pipeRoot"]
+selected_biosamples <- "${selected-biosamples}"
+output.tsv <- "${output.tsv}"
+
+
+runCreateMx(
+  study = study,
+  matrix_name = matrix_name,
+  selected_biosamples = selected_biosamples,
+  fas_id = fas_id,
+  labkey.url.base = labkey.url.base,
+  base_dir = base_dir,
+  # Need to write outputs to wd for pipeline module to correctly
+  # read them. They will be moved to correct location as part of
+  # pipeline.
+  output_dir = normalizePath("."),
+  taskOutputParams = taskOutputParams,
+  verbose = TRUE,
+  snapshot = TRUE
 )
 
 # Notes:

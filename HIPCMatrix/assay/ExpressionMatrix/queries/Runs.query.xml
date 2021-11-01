@@ -37,6 +37,9 @@
                   <column columnName="Name">
                     <url></url>
                   </column>
+                  <column columnName="Version">
+                    <url>https://github.com/RGLab/HIPCMatrix/tree/${hash}</url>
+                  </column>
                 </columns>
             </table>
         </tables>
