@@ -408,7 +408,7 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     <div className="ae-download-content">
       {isDataLoaded ? (
         <React.Fragment>
-          <CSVLink data={rawData.rows}>Download Me!</CSVLink>
+          <CSVLink data={rawData.rows}>Download plot data as csv</CSVLink>
           {conditionsNotFound.length > 0 ? (
             <ErrorMessageConditionNotFound types={conditionsNotFound} />
           ) : (

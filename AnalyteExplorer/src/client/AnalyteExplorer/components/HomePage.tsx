@@ -1,21 +1,5 @@
 import React from "react";
 
-interface ArrowTextProps {
-  text: string;
-}
-
-// same arrow as entrance page
-export const ArrowText: React.FC<ArrowTextProps> = ({ text }) => {
-  return (
-    <a
-      href="https://immunespace.org/project/home/begin.view?tab=GeneExpression"
-      className="history-block__cta ae-home-arrow-text"
-      title="Data Processing Link">
-      <span className="history-block__link-text">{`${text}`}</span>
-    </a>
-  );
-};
-
 const HomePage: React.FC = () => {
   return (
     <section className="ae-home-content">
@@ -41,7 +25,9 @@ const HomePage: React.FC = () => {
             alt="how to use second step"
             className="ae-home__tutorial-icon"
           />
-          <span>Plot the log2 transform to visualize expression patterns</span>
+          <span>
+            Plot the log2 fold change of a gene or gene set over time by cohort
+          </span>
         </div>
         <div>
           <img
@@ -54,13 +40,11 @@ const HomePage: React.FC = () => {
       </div>
       <div className="ae-home-data-processing">
         <p>
-          Analyte Explorer curruently supports gene expression data for genes
-          and blood transcription modules (BTMs). For more information about our
-          data processing methods for this module visit our data processing
-          page.
+          Analyte Explorer currently supports gene expression data for genes
+          and blood transcription modules (BTMs). For details about our
+          data processing methods, visit our <a href="/project/home/begin.view?tab=GeneExpression">
+          Data Processing page</a> and <a href="https://github.com/RGLab/AnalyteExplorer">GitHub repository</a>.
         </p>
-
-        <ArrowText text="Data Processing" />
       </div>
     </section>
   );
