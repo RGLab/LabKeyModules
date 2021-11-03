@@ -26,9 +26,8 @@ export const setupLinePlotData = (
         };
         if (cohort === "Average") {
           trendData.push(formattedData);
-        } else {
-          cohortData.push(formattedData);
         }
+        cohortData.push(formattedData);
       }
     }
   }

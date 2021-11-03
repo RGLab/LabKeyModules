@@ -4,7 +4,6 @@ export const tooltipStyle = {
   border: "1px solid black",
   width: "auto",
   minWidth: "200px",
-  height: "140px",
   padding: "3px 3px",
   display: "none",
   whiteSpace: "nowrap",
