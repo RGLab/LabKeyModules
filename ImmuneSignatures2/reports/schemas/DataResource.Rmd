@@ -4,34 +4,6 @@ output: html_document
 
 ***
 
-## The Immune Signatures Data Resource: A compendium of systems vaccinology datasets
-<!-- * **Title:** Data Resource Manuscript 
-* **Publication Date:** August 24, 2017
-* **Journal:** Science Immunology
-* **Authors:** The HIPC-CHI Signatures Project Team and the HIPC-I Consortium
-* **Manuscript Link:** <http://immunology.sciencemag.org/content/2/14/eaal4656>
-* **Contact Name:** Dr. Steven Kleinstein
-* **Contact Email:** steven.kleinstein@yale.edu
---> 
-
-Vaccines are among the most cost-effective public health interventions for preventing 
-morbidity and mortality caused by infectious diseases. Combining traditional immunology 
-with modern 'omic techniques and computational modeling will prompt rapid and 
-transformative advances in vaccinology and vaccine discovery. Systems vaccinology allows 
-integration of different 'omic platforms offering system-wide immune response measurements 
-with computational approaches accelerating the identification of molecular signatures. 
-The Human Immunology Project Consortium (HIPC) generated and described molecular signatures 
-that correlate with predicted immunogenicity and outcomes of vaccinations. While multiple 
-publications from HIPC have identified these signatures, there is no formal framework to 
-standardize these methods, thus impeding further comparative analysis across a wide range 
-of infections and vaccinations studied. We hereby present the Immune Signatures dataset, a 
-compendium of standardized systems vaccinology datasets to allow comparative analysis 
-predicting the response across multiple vaccine types and pathogens. 
-
-<img src="/ImmuneSignatures2/images/HIPCFigure-small.png" class="center" style="width:500px;"></img>
-
-## Reproduction of analysis and figures from Data Resource Manuscript _(WIP)_
-
-All code and figures will be reproduced here. Original code is available on [BitBucket](https://bitbucket.org/kleinstein/hipc-signatures). 
-
-
+Coming soon: all code and figures reproduced here, running in the ImmuneSignatures2 
+docker container. While we work on configuring that, you can see the code on 
+[github](https://github.com/RGLab/ImmuneSignatures2/blob/main/inst/manuscript_figures/data_resource_manuscript_figures.Rmd) 

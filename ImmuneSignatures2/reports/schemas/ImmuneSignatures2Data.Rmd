@@ -5,10 +5,18 @@ output:
         df_print: paged
 ---
 
+# The Immune Signatures Data Resource: A compendium of systems vaccinology datasets
+
+Vaccines are among the most cost-effective public health interventions for preventing infection-induced morbidity and mortality, yet much remains to be learned regarding mechanisms. The NIH/NIAID Human Immunology Project Consortium(HIPC) has leveraged systems immunology approaches to identify molecular signatures of immunogenicity in many vaccines. These data are available to the scientific community through the ImmuneSpace data portal and analysis engine leveraging the NIH/NIAID ImmPort repository. However, a barrier to progress in this area is that comparative vaccine analyses have been limited by the distributed nature of some data, potential confounders, and the absence of relevant studies in ImmPort. To support comparative analysis, we have created the Immune Signatures Data Resource, a compendium of standardized systems vaccinology datasets available through ImmuneSpace, along with code to reproduce the standardization pipeline. The current release comprises 1405 participants from 53 cohorts profiling the response to 24 vaccines and includes transcriptional profiles and antibody response measurements. This novel compendium represents a valuable resource for comparative analyses that will accelerate our understanding of mechanisms underlying vaccine responses.
+
+[Read the preprint](https://www.biorxiv.org/content/10.1101/2021.11.05.465336v1)
+
 ```{r setup, echo = FALSE}
-library(knitr)
-library(magrittr)
-library(data.table)
+suppressPackageStartupMessages({
+  library(knitr)
+  library(magrittr)
+  library(data.table)
+})
 getFileUrl <- function(filepath) {
   sub("/share/files", "/_webdav", filepath)
 }
@@ -17,7 +25,11 @@ getFileLink <- function(filepath, filename) {
 }
 ```
 
-### Expression Sets
+## Expression Sets
+__Note:__ The ImmuneSignatures data resource is derived from publicly available data on ImmPort, and available for reuse under the ImmPort [data use agreement](https://www.immport.org/agreement). 
+
+__DOI:__ [10.25504/FAIRsharing.bpkzqp](https://doi.org/10.25504/FAIRsharing.bpkzqp)
+
 <div class="is2-downloads table-condensed">
 ```{r downloads, echo = FALSE}
 files <- fread("/share/files/HIPC/IS2/@files/data/dataset_metadata.csv")
@@ -77,7 +89,7 @@ immdata <- readRDS(immdata$path)
 immdata
 ```
 
-### Raw data
+## Raw data
 <a href="/study/HIPC/IS2/dataset.view?datasetId=5014">Gene expression data files</a>
 
 ### Immune Response Data
@@ -91,7 +103,7 @@ Immune Response Data for all assays is also available as an R object:
 
 ---
 
-### Code
+## Code
 
 Rmarkdown outputs from preprocessing, including code and some summaries. 
 Preprocessing depends on the [ImmuneSignatures2](https://github.com/RGLab/ImmuneSignatures2) R package. 
