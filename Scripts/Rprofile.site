@@ -1,5 +1,5 @@
 # Extend RStduio session initialization with custom tasks
-labkey.rstudio.extend <- function() {
+assign("labkey.rstudio.extend", function() {
   library(ImmuneSpaceR)
 
   # Retrieve session information
@@ -26,5 +26,4 @@ labkey.rstudio.extend <- function() {
   } else {
     message(paste("started at", date()))
   }
-}
-
+}, envir = globalenv())
