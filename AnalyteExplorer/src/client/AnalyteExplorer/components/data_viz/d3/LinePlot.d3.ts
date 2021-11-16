@@ -92,12 +92,11 @@ const createLinePlot = (
 
   // add axis to plot
   const xAxisElement = svg.append("g").call(xAxis);
-  xAxisElement.selectAll(".domain").remove();
   xAxisElement.style("font-size", "16px");
   const yAxisElement = svg.append("g").call(yAxis);
   yAxisElement.style("font-size", "16px");
 
-  // ----- Grid Lines -----
+  // ----- Grid Lines ----- //
 
   // gridlines in x axis function
   function make_x_gridlines() {
@@ -108,6 +107,17 @@ const createLinePlot = (
   function make_y_gridlines() {
     return d3.axisLeft(yScale).ticks(11);
   }
+
+  const styleGridLines = () => {
+    // remove excessive grid lines from edges of plot
+    svgContent.selectAll(".domain").remove();
+
+    svgContent
+      .selectAll(".grid line")
+      .attr("stroke", "lightgrey")
+      .attr("stroke-opacity", 0.7)
+      .attr("shape-rendering", "crispEdges");
+  };
 
   const xGrid = svgContent
     .append("g")
@@ -128,14 +138,7 @@ const createLinePlot = (
         .tickFormat(() => "")
     );
 
-  // remove excessive grid lines from edges of plot
-  svgContent.selectAll(".domain").remove();
-
-  svgContent
-    .selectAll(".grid line")
-    .attr("stroke", "lightgrey")
-    .attr("stroke-opacity", 0.7)
-    .attr("shape-rendering", "crispEdges");
+  styleGridLines();
 
   // ----- Y = 0 Line -----
   const baseLine = svgContent
@@ -382,13 +385,7 @@ const createLinePlot = (
           .tickFormat(() => "")
       );
 
-      svgContent.selectAll(".domain").remove();
-
-      svgContent
-        .selectAll(".grid line")
-        .attr("stroke", "lightgrey")
-        .attr("stroke-opacity", 0.7)
-        .attr("shape-rendering", "crispEdges");
+      styleGridLines();
     });
 
   // on mouse doubleclick the chart resets to original state
@@ -404,6 +401,20 @@ const createLinePlot = (
       .attr("cx", (d: CircleDataType) => xScale(d.point.x))
       .attr("cy", (d: CircleDataType) => yScale(d.point.y))
       .attr("r", 4);
+
+    xGrid.call(
+      make_x_gridlines()
+        .tickSize(-height)
+        .tickFormat(() => "")
+    );
+
+    yGrid.call(
+      make_y_gridlines()
+        .tickSize(-width)
+        .tickFormat(() => "")
+    );
+
+    styleGridLines();
   };
 
   svgContent
