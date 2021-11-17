@@ -1,4 +1,5 @@
 import React from "react";
+import { AboutTheData } from "./AboutTheData";
 
 const HomePage: React.FC = () => {
   return (
@@ -39,12 +40,7 @@ const HomePage: React.FC = () => {
         </div>
       </div>
       <div className="ae-home-data-processing">
-        <p>
-          Analyte Explorer currently supports gene expression data for genes
-          and blood transcription modules (BTMs). For details about our
-          data processing methods, visit our <a href="/project/home/begin.view?tab=GeneExpression">
-          Data Processing page</a> and <a href="https://github.com/RGLab/AnalyteExplorer">GitHub repository</a>.
-        </p>
+        <AboutTheData></AboutTheData>
       </div>
     </section>
   );

@@ -92,12 +92,11 @@ const createLinePlot = (
 
   // add axis to plot
   const xAxisElement = svg.append("g").call(xAxis);
-  xAxisElement.selectAll(".domain").remove();
   xAxisElement.style("font-size", "16px");
   const yAxisElement = svg.append("g").call(yAxis);
   yAxisElement.style("font-size", "16px");
 
-  // ----- Grid Lines -----
+  // ----- Grid Lines ----- //
 
   // gridlines in x axis function
   function make_x_gridlines() {
@@ -108,6 +107,17 @@ const createLinePlot = (
   function make_y_gridlines() {
     return d3.axisLeft(yScale).ticks(11);
   }
+
+  const styleGridLines = () => {
+    // remove excessive grid lines from edges of plot
+    svgContent.selectAll(".domain").remove();
+
+    svgContent
+      .selectAll(".grid line")
+      .attr("stroke", "lightgrey")
+      .attr("stroke-opacity", 0.7)
+      .attr("shape-rendering", "crispEdges");
+  };
 
   const xGrid = svgContent
     .append("g")
@@ -128,14 +138,7 @@ const createLinePlot = (
         .tickFormat(() => "")
     );
 
-  // remove excessive grid lines from edges of plot
-  svgContent.selectAll(".domain").remove();
-
-  svgContent
-    .selectAll(".grid line")
-    .attr("stroke", "lightgrey")
-    .attr("stroke-opacity", 0.7)
-    .attr("shape-rendering", "crispEdges");
+  styleGridLines();
 
   // ----- Y = 0 Line -----
   const baseLine = svgContent
@@ -233,6 +236,52 @@ const createLinePlot = (
   const tooltip = d3.select("#tooltip-" + id);
   const circles = svgContent.selectAll(".dot").data(circleData);
 
+  //using normal functions to preserve "this"
+  const tooltipOnHover = function (d: CircleDataType) {
+    d3.select(this).transition().duration(1).attr("r", 8);
+
+    tooltip
+      .html(
+        `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${
+          d.study
+        }<br><b>Timepoint:</b> ${
+          d.point.x
+        }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}
+
+      ${
+        d.study !== "Trend"
+          ? `<br><b>sd:</b> ${roundTwoDecimal(d.point.sd)}
+      <br><b>Sample Type:</b> ${d.point.sample}
+      <br><b>Research Focus:</b> ${d.point.research}`
+          : ""
+      }
+      `
+      )
+      .style("display", "block");
+
+    const tooltipYOffset =
+      document.querySelector("#tooltip-" + id).getBoundingClientRect().height +
+      10;
+
+    tooltip
+      .style(
+        "left",
+        scaleTooltipX(parseFloat(d3.select(this).attr("cx"))) + "px"
+      )
+      .style(
+        "top",
+        scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) -
+          tooltipYOffset +
+          "px"
+      );
+  };
+
+  //using normal functions to preserve "this"
+  const tooltipOnLeave = function (d: CircleDataType) {
+    d3.select(this).transition().duration(1).attr("r", 4);
+    tooltip.style("display", "none");
+  };
+
   circles
     .join((enter) =>
       enter
@@ -240,34 +289,8 @@ const createLinePlot = (
         .attr("class", (d) => {
           return `dot ${d.study === "Trend" ? "trend-dot" : "cohort-dot"}`;
         })
-        .on("mouseenter", function (d) {
-          //using normal functions to preserve "this"
-          d3.select(this).transition().duration(1).attr("r", 8);
-          tooltip
-            .style(
-              "left",
-              scaleTooltipX(parseFloat(d3.select(this).attr("cx"))) + "px"
-            )
-            .style(
-              "top",
-              scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 150 + "px"
-            )
-            .style("display", "block");
-          tooltip.html(
-            `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${
-              d.study
-            }<br><b>Timepoint:</b> ${
-              d.point.x
-            }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}
-            <br><b>sd:</b> ${roundTwoDecimal(d.point.sd)}
-            <br><b>Sample Type:</b> ${d.point.sample}
-            <br><b>Research Focus:</b> ${d.point.research}`
-          );
-        })
-        .on("mouseleave", function (d) {
-          d3.select(this).transition().duration(1).attr("r", 4);
-          tooltip.style("display", "none");
-        })
+        .on("mouseenter", tooltipOnHover)
+        .on("mouseleave", tooltipOnLeave)
     )
     .attr("cx", (d) => xScale(d.point.x))
     .attr("cy", (d) => yScale(d.point.y))
@@ -337,30 +360,6 @@ const createLinePlot = (
 
       svgContent
         .selectAll(".dot")
-        .on("mouseenter", function (d: CircleDataType) {
-          //using normal functions to preserve "this"
-          d3.select(this).transition().duration(1).attr("r", 8);
-          tooltip
-            .style(
-              "left",
-              scaleTooltipX(parseFloat(d3.select(this).attr("cx"))) + "px"
-            )
-            .style(
-              "top",
-              scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 150 + "px"
-            )
-            .style("display", "block");
-          tooltip.html(
-            `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${
-              d.study
-            }<br><b>Timepoint:</b> ${
-              d.point.x
-            }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}
-              <br><b>sd:</b> ${roundTwoDecimal(d.point.sd)}
-              <br><b>Sample Type:</b> ${d.point.sample}
-              <br><b>Research Focus:</b> ${d.point.research}`
-          );
-        })
         .attr("cx", (d: CircleDataType) => newXScale(d.point.x))
         .attr("cy", (d: CircleDataType) => newYScale(d.point.y))
         .attr("r", 4);
@@ -386,13 +385,7 @@ const createLinePlot = (
           .tickFormat(() => "")
       );
 
-      svgContent.selectAll(".domain").remove();
-
-      svgContent
-        .selectAll(".grid line")
-        .attr("stroke", "lightgrey")
-        .attr("stroke-opacity", 0.7)
-        .attr("shape-rendering", "crispEdges");
+      styleGridLines();
     });
 
   // on mouse doubleclick the chart resets to original state
@@ -405,33 +398,23 @@ const createLinePlot = (
 
     svgContent
       .selectAll(".dot")
-      .on("mouseenter", function (d: CircleDataType) {
-        //using normal functions to preserve "this"
-        d3.select(this).transition().duration(1).attr("r", 8);
-        tooltip
-          .style(
-            "left",
-            scaleTooltipX(parseFloat(d3.select(this).attr("cx"))) + "px"
-          )
-          .style(
-            "top",
-            scaleTooltipY(parseFloat(d3.select(this).attr("cy"))) - 150 + "px"
-          )
-          .style("display", "block");
-        tooltip.html(
-          `<b>Cohort:</b> ${d.cohort}<br><b>Study:</b> ${
-            d.study
-          }<br><b>Timepoint:</b> ${
-            d.point.x
-          }<br><b>log2-FC:</b> ${roundTwoDecimal(d.point.y)}
-            <br><b>sd:</b> ${roundTwoDecimal(d.point.sd)}
-            <br><b>Sample Type:</b> ${d.point.sample}
-            <br><b>Research Focus:</b> ${d.point.research}`
-        );
-      })
       .attr("cx", (d: CircleDataType) => xScale(d.point.x))
       .attr("cy", (d: CircleDataType) => yScale(d.point.y))
       .attr("r", 4);
+
+    xGrid.call(
+      make_x_gridlines()
+        .tickSize(-height)
+        .tickFormat(() => "")
+    );
+
+    yGrid.call(
+      make_y_gridlines()
+        .tickSize(-width)
+        .tickFormat(() => "")
+    );
+
+    styleGridLines();
   };
 
   svgContent

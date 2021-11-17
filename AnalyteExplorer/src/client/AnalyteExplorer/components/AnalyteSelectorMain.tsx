@@ -82,13 +82,21 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
   const analyteDividerStyles = React.useMemo(() => {
     return {
       borderLeft: `${
-        hovered === 3 || hovered === 0 ? "1px solid black" : "none"
+        (selected === STATE_OF_SELECTOR.FILTERS_OPEN ||
+          selected === STATE_OF_SELECTOR.CLOSED) &&
+        (hovered === 3 || hovered === 0)
+          ? "1px solid black"
+          : "none"
       }`,
       borderRight: `${
-        hovered === 1 || hovered === 0 ? "1px solid black" : "none"
+        (selected === STATE_OF_SELECTOR.TYPE_OPEN ||
+          selected === STATE_OF_SELECTOR.CLOSED) &&
+        (hovered === 1 || hovered === 0)
+          ? "1px solid black"
+          : "none"
       }`,
     };
-  }, [hovered]);
+  }, [hovered, selected]);
 
   // closes dropdown box when the user clicks outside of the dropdown box
   // opens new dropdown if user clicks on selector
@@ -294,7 +302,7 @@ const AnalyteSelectorMain: React.FC<AnalyteSelectorMainProps> = ({
             </div>
           </div>
           <div
-            className={`analyte-selector with-search${
+            className={`analyte-selector with-search ${
               selected === STATE_OF_SELECTOR.FILTERS_OPEN ? "selected" : ""
             }`}>
             <div

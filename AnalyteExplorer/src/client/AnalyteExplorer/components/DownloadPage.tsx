@@ -12,6 +12,8 @@ import { ANALYTE_GENE_COL, ANALYTE_BTM_COL } from "../helpers/constants";
 import { getAverage, capitalizeKebabCase } from "../helpers/helperFunctions";
 import { LINEPLOT_HEIGHT, LINEPLOT_WIDTH } from "./data_viz/dataVizConstants";
 import "./DownloadPage.scss";
+import { AboutTheData } from "./AboutTheData";
+import {HighlightedButton} from "@immunespace/components"
 
 interface GeneMetaData {
   alias: string[];
@@ -408,7 +410,6 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
     <div className="ae-download-content">
       {isDataLoaded ? (
         <React.Fragment>
-          <CSVLink data={rawData.rows}>Download plot data as csv</CSVLink>
           {conditionsNotFound.length > 0 ? (
             <ErrorMessageConditionNotFound types={conditionsNotFound} />
           ) : (
@@ -437,6 +438,13 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
           })}
           <h2>Cohort Information</h2>
           <CohortMetaDataGrid arm_accessions={armAccessions} />
+          <h2>About the Data</h2>
+          <HighlightedButton>
+            <CSVLink data={rawData.rows}><span style={{color: "white"}}>Download CSV</span></CSVLink>
+            </HighlightedButton>
+            <div style={{padding: "10px"}}>
+              <AboutTheData></AboutTheData>
+            </div>
         </React.Fragment>
       ) : (
         <AESpinner />
