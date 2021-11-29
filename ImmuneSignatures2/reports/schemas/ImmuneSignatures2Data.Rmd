@@ -25,6 +25,10 @@ getFileLink <- function(filepath, filename) {
 }
 ```
 
+## All Data
+Zip file including all datasets listed below (4Gb). 
+<a href="/_webdav/HIPC/IS2/@files/immunesignatures2.zip">immunesignatures2.zip</a><br>
+
 ## Expression Sets
 __Note:__ The ImmuneSignatures data resource is derived from publicly available data on ImmPort, and available for reuse under the ImmPort [data use agreement](https://www.immport.org/agreement). 
 
