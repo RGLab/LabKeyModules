@@ -2,8 +2,17 @@
 output: html_document
 ---
 
-***
-
-Coming soon: all code and figures reproduced here, running in the ImmuneSignatures2 
-docker container. While we work on configuring that, you can see the code on 
-[github](https://github.com/RGLab/ImmuneSignatures2/blob/main/inst/manuscript_figures/data_resource_manuscript_figures.Rmd) 
+```{r, echo = FALSE, results = "asis"}
+params <- list(
+  cache.path = "/share/files/HIPC/IS2/@files/data/data_resource_cache/report_cache/", 
+  dataDir = "/share/files/HIPC/IS2/@files/data", 
+  dataCacheDir = file.path(dataDir, "data_resource_cache"), 
+  datePrefix = ""
+)
+cat(knitr::knit_child(
+  system.file("manuscript_figures/data_resource_manuscript_figures.Rmd", 
+              package = "ImmuneSignatures2"), 
+  envir = parent.frame(), 
+  quiet = TRUE
+))
+```

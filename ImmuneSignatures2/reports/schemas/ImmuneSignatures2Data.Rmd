@@ -26,13 +26,17 @@ getFileLink <- function(filepath, filename) {
 ```
 
 ## All Data
-Zip file including all datasets listed below (4Gb). 
-<a href="/_webdav/HIPC/IS2/@files/immunesignatures2.zip">immunesignatures2.zip</a><br>
 
-## Expression Sets
+<a href="/_webdav/HIPC/IS2/@files/immunesignatures2.zip"><button>Download immunesignatures.zip (3.96 GB)</button></a> 
+
+__DOI:__ _coming soon_
+
 __Note:__ The ImmuneSignatures data resource is derived from publicly available data on ImmPort, and available for reuse under the ImmPort [data use agreement](https://www.immport.org/agreement). 
 
-__DOI:__ [10.25504/FAIRsharing.bpkzqp](https://doi.org/10.25504/FAIRsharing.bpkzqp)
+
+
+## Expression Sets
+
 
 <div class="is2-downloads table-condensed">
 ```{r downloads, echo = FALSE}
@@ -110,7 +114,7 @@ Immune Response Data for all assays is also available as an R object:
 ## Code
 
 Rmarkdown outputs from preprocessing, including code and some summaries. 
-Preprocessing depends on the [ImmuneSignatures2](https://github.com/RGLab/ImmuneSignatures2) R package. 
+Preprocessing depends on the [ImmuneSignatures2](https://github.com/RGLab/ImmuneSignatures2) R package. (DOI: [10.5281/zenodo.5706261](https://zenodo.org/record/5706261#.YaVs1caIZQI))
 
 1. [Pull Expressionsets](/_webdav/HIPC/IS2/%40files/data/html_outputs/pull_esets.html){target="_blank"} 
     * Pulls gene expression data from ImmuneSpace server, constructs expressionsets, 
