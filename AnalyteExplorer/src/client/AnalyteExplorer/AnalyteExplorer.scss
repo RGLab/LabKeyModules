@@ -1,0 +1,101 @@
+/* Import ImmuneSpace Themes */
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
+@use "../theme/components.history-block";
+@use "../AnalyteExplorer/components/AnalyteSelectorMain" as selectorMain;
+
+body {
+  font-family: immunespace.$nunito-sans;
+}
+
+main#ae-main {
+  @import "../theme/base.globals";
+}
+
+main#ae-main {
+  position: relative;
+  color: immunespace.$dark-gray;
+  min-height: 70vh;
+  font-family: immunespace.$nunito-sans;
+}
+
+.ae-analyte-selector-container {
+  margin-bottom: 1rem;
+}
+
+.ae-plot-content {
+  min-width: 500px;
+  min-height: 500px;
+}
+
+.ae-analyte-selector-container,
+.ae-plot-content {
+  border: 1px solid #828282;
+}
+
+.ae-analyte-selector-content,
+.ae-get-started {
+  margin: 1.5rem;
+}
+.ae-home {
+  &-content {
+    height: calc(100% - #{selectorMain.$ae-selector-height});
+
+    width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 7rem;
+  }
+
+  &-title {
+    padding-left: 5px;
+    h1,
+    h3 {
+      font-weight: immunespace.$font-weight--bold;
+    }
+  }
+
+  &-data-processing {
+    p {
+      font-size: 2rem;
+      font-weight: immunespace.$font-weight--medium;
+    }
+  }
+
+  &-tutorial-instructions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 5rem 0;
+    width: 600px;
+
+    div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      span {
+        width: 70%;
+        text-align: center;
+        font-size: 14px;
+        font-weight: immunespace.$font-weight--semibold;
+      }
+    }
+  }
+
+  &__tutorial-icon {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.ae-home-arrow-text {
+  &:hover {
+    text-decoration: none;
+    color: #1a1a1a;
+  }
+  span {
+    font-size: 14px;
+    font-weight: immunespace.$font-weight--bold;
+  }
+}

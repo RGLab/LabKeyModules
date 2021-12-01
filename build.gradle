@@ -72,7 +72,7 @@ if (hostname =~ /Test/){
 
 
 
-ext.reactModules = ['DataFinder', 'ResourcesPage', 'AboutPage', 'DataAccess', 'extraWebapp']
+ext.reactModules = ['DataFinder', 'ResourcesPage', 'AboutPage', 'DataAccess', 'extraWebapp', 'AnalyteExplorer']
 
 subprojects {
 

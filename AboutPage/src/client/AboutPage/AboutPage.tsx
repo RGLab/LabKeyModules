@@ -206,12 +206,12 @@ const AboutPage: React.FC = () => {
       },
       reportId: "module:RSessionInfo/RSessionInfo.Rmd",
       success: function (result) {
-        var errors = result.errors;
-        var outputParams = result.outputParams;
+        const errors = result.errors;
+        const outputParams = result.outputParams;
         if (errors && errors.length > 0) {
           setRSessionResults("Error in retrieving R Session Info");
         } else if (outputParams && outputParams.length > 0) {
-          var p = outputParams[0];
+          const p = outputParams[0];
           setRSessionResults(p.value);
         } else {
           setRSessionResults(

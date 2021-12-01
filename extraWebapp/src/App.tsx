@@ -5,13 +5,12 @@ import "./App.css";
 import Registermodal from "./components/RegisterModal";
 import ImmunespaceHeaderLogo from "./assets/logo-immunespace-whiteblue-desk.svg";
 import ImmunespaceFooterLogo from "./assets/footer-logo-immunespace-whiteblue.png";
-//import { ReactComponent as AEIcon } from "./assets/icons/icon-analyte-explorer-white.svg";
+import { ReactComponent as AEIcon } from "./assets/icons/icon-analyte-explorer-white.svg";
 import { ReactComponent as DFIcon } from "./assets/icons/icon-data-finder-white.svg";
 import { ReactComponent as RAIcon } from "./assets/icons/icon-reproducible-analyses-white.svg";
 import { ReactComponent as TwitterIcon } from "./assets/icons/icon-social-twitter-white.svg";
 import { ReactComponent as EmailIcon } from "./assets/icons/icon-email-white.svg";
 import { ReactComponent as ArrowRight } from "./assets/icons/icon-arrow-right-blue.svg";
-import ComingSoonWatermark from "./assets/coming-soon.jpg";
 
 const App = () => {
   const [regModalOpen, setRegModalOpen] = useState(false);
@@ -42,8 +41,7 @@ const App = () => {
                   href="/"
                   className="header__cta-link"
                   title="Register or Sign In"
-                  onClick={regBtnClick}
-                >
+                  onClick={regBtnClick}>
                   <span className="h-o-m">Register or&nbsp;</span>
                   <span>Sign In</span>
                 </a>
@@ -77,30 +75,15 @@ const App = () => {
           <div className="container">
             <div className="tri-block__content">
               <div className="tri-block__block">
-                {/* Uncomment the a tag below when AE is working */}
-                {/* <a
-                  href=""
+                <a
+                  href="project/AnalyteExplorer/begin.view?"
                   className="tri-block__cta"
-                  title="Analyte Explorer link"
-                > */}
-                <span className="tri-block__icon">
-                  {/* ?xml version="1.0" encoding="UTF-8"?  */}
-                  <img
-                    src={ComingSoonWatermark}
-                    alt="coming soon"
-                    className="coming-soon-img"
-                  />
-                  {/* <img
-                    src={AEIcon}
-                    alt="Analyte Explorer"
-                    className="icon icon-svg"
-                  /> */}
-                </span>
-                {/* Remove tri-block__cta & ae__link-text classes when Analyte Explorer is working */}
-                <span className="tri-block__cta tri-block__link-text ae__link-text">
-                  Analyte Explorer (Coming Soon)
-                </span>
-                {/* </a> */}
+                  title="Analyte Explorer link">
+                  <span className="tri-block__icon">
+                    <AEIcon />
+                  </span>
+                  <span className="tri-block__link-text">Analyte Explorer</span>
+                </a>
                 <p>
                   Visualize analyte expression patterns over time for various
                   disease states, aggregated by cohort.
@@ -110,8 +93,7 @@ const App = () => {
                 <a
                   href="/project/Studies/begin.view?pageId=Resources"
                   className="tri-block__cta"
-                  title="Reproducible Analyses link"
-                >
+                  title="Reproducible Analyses link">
                   <span className="tri-block__icon">
                     {/* <!-- ?xml version="1.0" encoding="UTF-8"? --> */}
                     <RAIcon />
@@ -129,8 +111,7 @@ const App = () => {
                 <a
                   href="/project/Studies/begin.view?"
                   className="tri-block__cta"
-                  title="Data Finder link"
-                >
+                  title="Data Finder link">
                   <span className="tri-block__icon">
                     {/* <!-- ?xml version="1.0" encoding="UTF-8"? --> */}
                     <DFIcon className="icon icon-svg" />
@@ -168,8 +149,7 @@ const App = () => {
                 <a
                   href="/project/home/begin.view?tab=About"
                   className="history-block__cta"
-                  title="About Us link"
-                >
+                  title="About Us link">
                   <span className="history-block__link-text">About Us</span>
                 </a>
               </div>
@@ -190,8 +170,7 @@ const App = () => {
               <a
                 href="/"
                 title="immuneSpace Home"
-                className="entrance-page-footer-link-non-social"
-              >
+                className="entrance-page-footer-link-non-social">
                 <img
                   className="footer__img"
                   src={ImmunespaceFooterLogo}
@@ -206,16 +185,14 @@ const App = () => {
                     className="footer__twitter"
                     title="Follow us on Twitter"
                     target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                    rel="noopener noreferrer">
                     <TwitterIcon />
                   </a>
                 </li>
                 <li>
                   <a
                     href="mailto:ops@immunespace.org"
-                    className="footer__email"
-                  >
+                    className="footer__email">
                     <EmailIcon />
                   </a>
                 </li>
@@ -229,8 +206,7 @@ const App = () => {
                   title="LabKey Software"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="entrance-page-footer-link-non-social"
-                >
+                  className="entrance-page-footer-link-non-social">
                   LabKey Software
                 </a>
                 , supported by{" "}
@@ -239,8 +215,7 @@ const App = () => {
                   title="HIPC"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="entrance-page-footer-link-non-social"
-                >
+                  className="entrance-page-footer-link-non-social">
                   HIPC
                 </a>{" "}
                 and{" "}
@@ -249,8 +224,7 @@ const App = () => {
                   title="National Institute of Allergy and Infectious Diseases (NIAID) link"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="entrance-page-footer-link-non-social"
-                >
+                  className="entrance-page-footer-link-non-social">
                   NIAID
                 </a>
               </p>
@@ -263,8 +237,7 @@ const App = () => {
                     className="footer__twitter"
                     title="Follow Us on Twitter"
                     target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                    rel="noopener noreferrer">
                     <span>follow us</span>
                     <TwitterIcon />
                   </a>
@@ -272,8 +245,7 @@ const App = () => {
                 <li>
                   <a
                     href="mailto:ops@immunespace.org"
-                    className="footer__email"
-                  >
+                    className="footer__email">
                     <span>contact us</span>
                     <EmailIcon />
                   </a>

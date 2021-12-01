@@ -7,14 +7,12 @@
 }
 
 .navbar.navbar-default {
-  //background-color: immunespace.$white;
   border: none;
 }
 
 div#about-page {
   ul.nav.navbar-nav {
     float: none;
-    //background-color: immunespace.$white;
     li {
       text-align: center;
       a {
@@ -28,7 +26,6 @@ div#about-page {
     .open {
       a {
         color: immunespace.$dark-gray;
-        //background-color: immunespace.$white;
       }
     }
   }
@@ -51,12 +48,3 @@ div#about-page {
   transition: 0.3s ease-in-out;
 }
 
-// div#About-content {
-//   .About-content-primary {
-//     display: flex;
-//     justify-content: space-between;
-//     img {
-//       transform: rotate(270deg);
-//     }
-//   }
-// }

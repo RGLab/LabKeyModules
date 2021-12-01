@@ -1,0 +1,255 @@
+@use "~@immunespace/theme/dist/immunespace";
+
+$ae-selector-main-width: 690px;
+$ae-selector-width: 230px;
+$ae-selector-height: 78px;
+$ae-search-btn-container-width: 70px;
+
+.analyte-selector-main {
+  position: relative;
+  width: $ae-selector-main-width + $ae-search-btn-container-width;
+  margin: 0 auto;
+}
+.analyte-selector-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: $ae-selector-height;
+  border: 1px solid black;
+  font-family: immunespace.$nunito-sans;
+  border-radius: 50px;
+  margin-right: 0;
+}
+
+.analyte-selector {
+  height: 100%;
+  width: $ae-selector-width;
+}
+
+.analyte-selector.selected {
+  background-color: immunespace.$light-gray;
+  border-radius: 50px;
+}
+
+.analyte-selector-divider {
+  $divider-height: 40px;
+
+  position: absolute;
+  top: 18px;
+  left: $ae-selector-width;
+  width: $ae-selector-width;
+  height: $divider-height;
+  z-index: -10;
+}
+
+.analyte-selector-label-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: inherit;
+  height: 100%;
+  cursor: pointer;
+
+  &::after {
+    display: none;
+    content: "";
+    height: 100%;
+    width: inherit;
+    background-color: gray;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    opacity: 50%;
+    border-radius: 50px;
+  }
+
+  &:hover::after {
+    display: block;
+  }
+
+  .analyte-selector-label {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  input {
+    display: block;
+    font-weight: immunespace.$font-weight--normal;
+    border: none;
+    background-color: transparent;
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  input:focus {
+    outline: none;
+  }
+
+  input#analyte-filters:hover,
+  input#analyte-type:hover {
+    cursor: pointer;
+  }
+}
+
+.analyte-selector.with-search {
+  position: relative;
+  width: $ae-selector-width + $ae-search-btn-container-width;
+
+  .analyte-selector-label-wrapper {
+    width: calc(100% - 70px);
+
+    &::after {
+      width: calc(100% + 70px);
+    }
+  }
+}
+
+.analyte-selector-dropdown-menu {
+  display: block;
+  background-color: immunespace.$white;
+  width: 400px;
+  height: 350px;
+  border-radius: 50px;
+  margin-top: 3rem;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 2001;
+
+  position: absolute;
+  top: 100%;
+
+  .analyte-selector-dropdown-content {
+    width: 100%;
+    height: 100%;
+    padding: 50px 0;
+
+    .analyte-selector-no-results-text {
+      display: block;
+      width: 100%;
+      text-align: center;
+      font-size: immunespace.$size-4;
+    }
+
+    .analyte-selector-dropdown-options {
+      width: 100%;
+      height: 50px;
+      display: flex;
+      align-items: center;
+
+      span {
+        display: inline-block;
+        font-size: 2rem;
+        margin-left: 30px;
+      }
+    }
+
+    .analyte-selector-dropdown-options:hover {
+      background-color: lightgray;
+      cursor: pointer;
+    }
+  }
+}
+
+.analyte-filter-dropdown {
+  width: 100%;
+  height: 350px;
+  margin-left: 0;
+}
+
+.analyte-filter-content {
+  font-family: immunespace.$nunito-sans;
+  padding: 20px 36px 0px 36px;
+  height: 100%;
+
+  form {
+    position: relative;
+    height: 100%;
+
+    h2.analyte-filter-name {
+      font-size: 16px;
+    }
+
+    .analyte-filter-options-container {
+      .analyte-filter-form-content {
+        display: grid;
+        gap: 2rem 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        padding: 1rem 1.5rem;
+        border: 1px solid black;
+        border-radius: 20px;
+
+        .analyte-filter-checkbox-container {
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+
+          label {
+            margin: 0;
+            font-size: 1.5rem;
+          }
+          label,
+          input {
+            display: inline-block;
+          }
+        }
+      }
+    }
+
+    .analyte-filter-action-container {
+      position: absolute;
+      bottom: 21px;
+      right: 0;
+
+      input {
+        width: 57px;
+        height: 25px;
+        margin-left: 1rem;
+        font-weight: immunespace.$font-weight--bold;
+        color: immunespace.$white;
+        background-color: immunespace.$immune-blue;
+        border: none;
+      }
+
+      input:hover {
+        background-color: immunespace.$dark-blue;
+      }
+    }
+  }
+}
+
+.analyte-selector-search-btn {
+  display: block;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  border: none;
+  background-color: immunespace.$immune-blue;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+
+  &:hover {
+    background-color: immunespace.$dark-blue;
+  }
+
+  .ae-search-icon {
+    display: block;
+    margin: auto auto;
+    width: 30px;
+    height: 30px;
+    color: immunespace.$white;
+  }
+}

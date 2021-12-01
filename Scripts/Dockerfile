@@ -4,7 +4,7 @@
 # "images/labkey/rstudio-base/make"
 
 ARG version
-FROM labkey/rstudio-base:${version}
+FROM rglab/labkey-rstudio:${version}
 ARG build_type
 RUN apt-get update
 RUN apt-get install -y libgeos++-dev

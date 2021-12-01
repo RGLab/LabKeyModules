@@ -1,0 +1,73 @@
+# https://github.com/docker/build-push-action
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'R Version'
+        required: true
+        default: '4.1.2'
+
+name: docker
+
+jobs:
+  labkey:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: 'LabKey/docker-rstudio'
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./images/labkey/rstudio-base
+          push: true
+          tags: |
+            rglab/labkey-rstudio:${{ github.event.inputs.version }}
+          build-args: |
+            VERSION=${{ github.event.inputs.version }}
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+  immunespace:
+    needs: labkey
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: get R packages
+        run: |
+          ./Scripts/getRpkgs.sh
+          git diff
+      - name: Set environment for build type
+        run: echo "build_type=${GITHUB_REF##*/}" >> $GITHUB_ENV
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./Scripts
+          push: true
+          tags: |
+            rglab/immunespace-rstudio:${{ github.event.inputs.version }}_${{ env.build_type }}
+          build-args: |
+            version=${{ github.event.inputs.version }}
+            build_type=${{ env.build_type }}
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
