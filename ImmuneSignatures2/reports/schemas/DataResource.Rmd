@@ -6,7 +6,7 @@ output: html_document
 params <- list(
   cache.path = "/share/files/HIPC/IS2/@files/data/data_resource_cache/report_cache/", 
   dataDir = "/share/files/HIPC/IS2/@files/data", 
-  dataCacheDir = file.path(dataDir, "data_resource_cache"), 
+  dataCacheDir = "/share/files/HIPC/IS2/@files/data/data_resource_cache", 
   datePrefix = ""
 )
 cat(knitr::knit_child(

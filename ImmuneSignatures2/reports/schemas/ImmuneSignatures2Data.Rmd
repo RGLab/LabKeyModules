@@ -11,7 +11,7 @@ Vaccines are among the most cost-effective public health interventions for preve
 
 [Read the preprint](https://www.biorxiv.org/content/10.1101/2021.11.05.465336v1)
 
-```{r setup, echo = FALSE}
+```{r setup, echo = FALSE, warning = FALSE, message = FALSE}
 suppressPackageStartupMessages({
   library(knitr)
   library(magrittr)
