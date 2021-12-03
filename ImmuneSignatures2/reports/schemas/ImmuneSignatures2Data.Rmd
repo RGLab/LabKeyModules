@@ -33,7 +33,8 @@ __DOI:__ _coming soon_
 
 __Note:__ The ImmuneSignatures data resource is derived from publicly available data on ImmPort, and available for reuse under the ImmPort [data use agreement](https://www.immport.org/agreement). 
 
-
+__Data Format__: Most of the datasets are presented here as `.rds` files, that is, 
+R objects which can be read into an R session via `readRDS()`
 
 ## Expression Sets
 
