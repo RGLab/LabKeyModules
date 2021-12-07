@@ -112,6 +112,8 @@ LABKEY.ext.ActiveModules = Ext.extend(Ext.Panel, {
                               return Number(a) - Number(b);
                             });
 
+                            // the studies have been filtered by the Container Filters API
+                            // https://www.notion.so/rglab/Data-Finder-Developer-Guide-d4a90cd38aff407b8d624f350963080b#6d98ca08f9744b97b9570a398f05eb94
                             LABKEY.Query.selectRows({
                               schemaName: "study",
                               queryName: "Study",
