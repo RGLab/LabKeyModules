@@ -15,183 +15,219 @@
  *  limitations under the License.
  */
 
-Ext.namespace('LABKEY.ext');
+Ext.namespace("LABKEY.ext");
 
-LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
+LABKEY.ext.ActiveModules = Ext.extend(Ext.Panel, {
+  constructor: function (config) {
+    var cntMain = new Ext.Container({
+      autoHeight: true,
+      html: "<div class='placeholder' style='height: 40px;'></div>",
+      layout: "form",
+      listeners: {
+        afterrender: {
+          fn: function () {
+            var myMask = new Ext.LoadMask(cntMain.getEl(), {
+              msg: "Please, wait, while the list of active modules is loading",
+              msgCls: "mask-loading",
+            });
 
-    constructor : function(config) {
+            var onFailure = function (a, b, c) {
+              myMask.hide();
+              LABKEY.ext.ISCore.onFailure(a, b, c);
+            };
 
-        var cntMain = new Ext.Container({
-            autoHeight: true,
-            html: '<div class=\'placeholder\' style=\'height: 40px;\'></div>',
-            layout: 'form',
-            listeners: {
-                afterrender: {
-                    fn: function(){
-                        var myMask = new Ext.LoadMask(
-                            cntMain.getEl(),
+            var generateActiveModules = function () {
+              var modules = [
+                "GeneExpressionExplorer",
+                "GeneSetEnrichmentAnalysis",
+                "ImmuneResponsePredictor",
+                "DimensionReduction",
+                "DataExplorer",
+              ];
+              if (!LABKEY.ext.ISCore.isStudyFolder) {
+                modules.pop();
+              }
+              var filters = [
+                LABKEY.Filter.create(
+                  "Name",
+                  LABKEY.container.activeModules.join(";"),
+                  LABKEY.Filter.Types.IN
+                ),
+                LABKEY.Filter.create(
+                  "Name",
+                  modules.join(";"),
+                  LABKEY.Filter.Types.IN
+                ),
+              ];
+
+              LABKEY.Query.selectRows({
+                columns: ["Name", "Label", "Description"],
+                failure: onFailure,
+                filterArray: filters,
+                queryName: "modules",
+                schemaName: "core",
+                success: function (d) {
+                  myMask.hide();
+
+                  if (d.rows.length == 0) {
+                    cntMain
+                      .getEl()
+                      .mask(
+                        "There are no active modules enabled in this study.",
+                        "infoMask"
+                      );
+                  } else {
+                    cntMain.update("");
+
+                    Ext.each(d.rows, function (e) {
+                      if (!LABKEY.ext.ISCore.isStudyFolder) {
+                        LABKEY.Ajax.request({
+                          method: "GET",
+                          url: LABKEY.ActionURL.buildURL(
+                            "immport",
+                            "containersformodule.api",
+                            null,
                             {
-                                msg: 'Please, wait, while the list of active modules is loading',
-                                msgCls: 'mask-loading'
+                              name: e.Name,
                             }
-                        );
-
-                        var onFailure = function( a, b, c ){
-                            myMask.hide();
-                            LABKEY.ext.ISCore.onFailure( a, b, c);
-                        };
-
-                        var generateActiveModules = function(){
-                            var modules = [
-                                'GeneExpressionExplorer',
-                                'GeneSetEnrichmentAnalysis',
-                                'ImmuneResponsePredictor',
-                                'DimensionReduction',
-                                'DataExplorer'
-                            ]
-                            if ( ! LABKEY.ext.ISCore.isStudyFolder ){
-                                modules.pop()
-                            }
-                            var filters = [
-                                LABKEY.Filter.create(
-                                    'Name',
-                                    LABKEY.container.activeModules.join(';'),
-                                    LABKEY.Filter.Types.IN
-                                ),
-                                LABKEY.Filter.create(
-                                    'Name',
-                                    modules.join(';'),
-                                    LABKEY.Filter.Types.IN
-                                )
-                            ];
+                          ),
+                          failure: onFailure,
+                          success: function (request) {
+                            var data = JSON.parse(request.response),
+                              studies = Ext.pluck(data.result, "name"),
+                              linkedStudies = [];
+                            studies = studies.filter(function (study) {
+                              if (
+                                study === "Studies" ||
+                                study === "SDY_template"
+                              ) {
+                                return false;
+                              } else {
+                                return true;
+                              }
+                            });
+                            studies.sort(function (a, b) {
+                              a = a.replace("SDY", "");
+                              b = b.replace("SDY", "");
+                              return Number(a) - Number(b);
+                            });
 
                             LABKEY.Query.selectRows({
-                                columns: [ 'Name', 'Label', 'Description' ],
-                                failure: onFailure,
-                                filterArray: filters,
-                                queryName: 'modules',
-                                schemaName: 'core',
-                                success: function( d ){
-                                    myMask.hide();
-
-                                    if ( d.rows.length == 0 ){
-                                        cntMain.getEl().mask(
-                                            'There are no active modules enabled in this study.', 'infoMask'
-                                        );
-                                    } else {
-                                        cntMain.update('');
-
-                                        Ext.each(
-                                            d.rows,
-                                            function( e ){
-                                                if ( ! LABKEY.ext.ISCore.isStudyFolder ){
-                                                    LABKEY.Ajax.request({
-                                                        method: 'GET',
-                                                        url: LABKEY.ActionURL.buildURL(
-                                                            'immport',
-                                                            'containersformodule.api',
-                                                            null,
-                                                            {
-                                                                name: e.Name
-                                                            }
-                                                        ),
-                                                        failure: onFailure,
-                                                        success: function(request){
-                                                            var
-                                                                data = JSON.parse( request.response ),
-                                                                studies = Ext.pluck( data.result, 'name' ),
-                                                                linkedStudies = []
-                                                            ;
-                                                            studies = studies.filter( function( study ){
-                                                                if ( study === 'Studies' || study === 'SDY_template' ){
-                                                                    return false;
-                                                                } else{
-                                                                    return true;
-                                                                }
-                                                            });
-                                                            studies.sort( function( a, b ){
-                                                                a = a.replace('SDY', '');
-                                                                b = b.replace('SDY', '');
-                                                                return Number(a)-Number(b)
-                                                            });
-
-                                                            var linkedStudies = [];
-                                                            studies.forEach( function( study ){
-                                                                linkedStudies.push(
-                                                                    '<a href=\'' +
-                                                                    LABKEY.ActionURL.buildURL(
-                                                                        e.Name,
-                                                                        'begin',
-                                                                        LABKEY.ActionURL.getContainer() + '/' + study
-                                                                    ) +
-                                                                    '\'>' + study + '</a>');
-                                                            });
-                                                            $('.studies-' + e.Name).html( linkedStudies.length + ' available studies:</br>' +  linkedStudies.join(', '));
-                                                        }
-                                                    });
-                                                }
-                                                cntMain.add(
-                                                    new Ext.Container({
-                                                        html:
-                                                            '<div>' +
-                                                                '<div class=\'bold-text\'><a href=\"' +
-                                                                    LABKEY.ActionURL.buildURL( e.Name, 'begin' ) +
-                                                                '\">' + e.Label + '</a></div>' +
-                                                                (
-                                                                    e.Description == null ?
-                                                                    '' :
-                                                                    LABKEY.ext.ISCore.isStudyFolder ?
-                                                                    '<div class=\'padding5px\'>' + e.Description + '</div>' :
-                                                                    '<div style=\'padding: 5px 5px 0px 5px;\'>' + e.Description + '</div>' + '<div class=\'padding5px studies-' + e.Name  + '\'></div>' 
-                                                                ) +
-                                                            '</div>',
-                                                        style: 'padding-bottom: 5px; padding-top: 5px;'
-                                                    })
-                                                );
-                                            }
-                                        );
-
-                                        cntMain.doLayout();
-                                    }
+                              schemaName: "study",
+                              queryName: "Study",
+                              success: (data) => {
+                                // filteredStudies will be a list of study names that passed the DataFinder filters
+                                let filteredStudies = [];
+                                if (
+                                  data != undefined &&
+                                  data.rows != undefined
+                                ) {
+                                  filteredStudies = data.rows.map((study) => {
+                                    return study["Label"];
+                                  });
                                 }
-                            });
-                        };
 
-                        myMask.show();
-                        if ( ! LABKEY.ext.ISCore.isStudyFolder ){
-                            LABKEY.Ajax.request({
-                                failure: onFailure,
-                                method: 'GET',
-                                success: function( request ){
-                                    var response = JSON.parse( request.response );
-                                    if ( response.data && response.data.containers.length ){
-                                        generateActiveModules();
-                                    } else {
-                                        cntMain.update( '<div class=\'placeholder\' style=\'height: 40px;\'>No data available</div>' );
-                                    }
-                                },
-                                url: LABKEY.ActionURL.buildURL( 'study-shared', 'getSharedStudyContainerFilter.api')
+                                // filter out studies for a module that do not match the DataFinder filters
+                                const displayStudies = studies.filter((study) =>
+                                  filteredStudies.includes(study)
+                                );
+
+                                displayStudies.forEach(function (study) {
+                                  linkedStudies.push(
+                                    "<a href='" +
+                                      LABKEY.ActionURL.buildURL(
+                                        e.Name,
+                                        "begin",
+                                        LABKEY.ActionURL.getContainer() +
+                                          "/" +
+                                          study
+                                      ) +
+                                      "'>" +
+                                      study +
+                                      "</a>"
+                                  );
+                                });
+                                $(".studies-" + e.Name).html(
+                                  linkedStudies.length +
+                                    " available studies:</br>" +
+                                    linkedStudies.join(", ")
+                                );
+                              },
                             });
-                        } else{
-                            generateActiveModules();
-                        }
-                    },
-                    single: true
-                }
+                          },
+                        });
+                      }
+                      cntMain.add(
+                        new Ext.Container({
+                          html:
+                            "<div>" +
+                            "<div class='bold-text'><a href=\"" +
+                            LABKEY.ActionURL.buildURL(e.Name, "begin") +
+                            '">' +
+                            e.Label +
+                            "</a></div>" +
+                            (e.Description == null
+                              ? ""
+                              : LABKEY.ext.ISCore.isStudyFolder
+                              ? "<div class='padding5px'>" +
+                                e.Description +
+                                "</div>"
+                              : "<div style='padding: 5px 5px 0px 5px;'>" +
+                                e.Description +
+                                "</div>" +
+                                "<div class='padding5px studies-" +
+                                e.Name +
+                                "'></div>") +
+                            "</div>",
+                          style: "padding-bottom: 5px; padding-top: 5px;",
+                        })
+                      );
+                    });
+
+                    cntMain.doLayout();
+                  }
+                },
+              });
+            };
+
+            myMask.show();
+            if (!LABKEY.ext.ISCore.isStudyFolder) {
+              LABKEY.Ajax.request({
+                failure: onFailure,
+                method: "GET",
+                success: function (request) {
+                  var response = JSON.parse(request.response);
+                  if (response.data && response.data.containers.length) {
+                    generateActiveModules();
+                  } else {
+                    cntMain.update(
+                      "<div class='placeholder' style='height: 40px;'>No data available</div>"
+                    );
+                  }
+                },
+                url: LABKEY.ActionURL.buildURL(
+                  "study-shared",
+                  "getSharedStudyContainerFilter.api"
+                ),
+              });
+            } else {
+              generateActiveModules();
             }
-        });
+          },
+          single: true,
+        },
+      },
+    });
 
-        this.border         = false;
-        this.boxMinWidth    = 370;
-        this.cls            = 'ISCore';
-        this.frame          = false;
-        this.items          = cntMain,
-        this.layout         = 'fit';
-        this.renderTo       = config.webPartDivId;
-        this.webPartDivId   = config.webPartDivId;
-        this.width          = document.getElementById(config.webPartDivId).offsetWidth;
+    this.border = false;
+    this.boxMinWidth = 370;
+    this.cls = "ISCore";
+    this.frame = false;
+    (this.items = cntMain), (this.layout = "fit");
+    this.renderTo = config.webPartDivId;
+    this.webPartDivId = config.webPartDivId;
+    this.width = document.getElementById(config.webPartDivId).offsetWidth;
 
-        LABKEY.ext.ActiveModules.superclass.constructor.apply(this, arguments);
-    } // end constructor
+    LABKEY.ext.ActiveModules.superclass.constructor.apply(this, arguments);
+  }, // end constructor
 }); // end ActiveModules Panel class
-
