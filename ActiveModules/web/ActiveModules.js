@@ -47,8 +47,8 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                                 'GeneSetEnrichmentAnalysis',
                                 'ImmuneResponsePredictor',
                                 'DimensionReduction',
-                                'DataExplorer',
-                                'DifferentialExpressionAnalysis'
+                                'DifferentialExpressionAnalysis',
+                                'DataExplorer'
                             ]
                             if ( ! LABKEY.ext.ISCore.isStudyFolder ){
                                 modules.pop()
