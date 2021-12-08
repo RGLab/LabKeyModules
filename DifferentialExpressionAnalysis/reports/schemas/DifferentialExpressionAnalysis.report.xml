@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<ReportDescriptor>
+<ReportDescriptor reportName="run_DEA" >
     <hidden>false</hidden>
     <category>Gene Expression</category>
     <label>Differential Expression Analysis</label>

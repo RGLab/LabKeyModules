@@ -47,7 +47,8 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                                 'GeneSetEnrichmentAnalysis',
                                 'ImmuneResponsePredictor',
                                 'DimensionReduction',
-                                'DataExplorer'
+                                'DataExplorer',
+                                'DifferentialExpressionAnalysis'
                             ]
                             if ( ! LABKEY.ext.ISCore.isStudyFolder ){
                                 modules.pop()
@@ -142,7 +143,7 @@ LABKEY.ext.ActiveModules = Ext.extend( Ext.Panel, {
                                                                     '' :
                                                                     LABKEY.ext.ISCore.isStudyFolder ?
                                                                     '<div class=\'padding5px\'>' + e.Description + '</div>' :
-                                                                    '<div style=\'padding: 5px 5px 0px 5px;\'>' + e.Description + '</div>' + '<div class=\'padding5px studies-' + e.Name  + '\'></div>' 
+                                                                    '<div style=\'padding: 5px 5px 0px 5px;\'>' + e.Description + '</div>' + '<div class=\'padding5px studies-' + e.Name  + '\'></div>'
                                                                 ) +
                                                             '</div>',
                                                         style: 'padding-bottom: 5px; padding-top: 5px;'

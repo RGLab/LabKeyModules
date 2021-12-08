@@ -5,27 +5,22 @@ opts_chunk$set(echo = FALSE, message = FALSE)
 ```
 
 ```{r libraries, message = FALSE, echo = FALSE, warning = FALSE}
-library(UpdateAnno)
+library(HIPCMatrix)
 library(DT)
 ```
 
-```{r parameters}
-study <- basename(labkey.url.path)
-```
 
 ## Differential expression analysis
 
 Returns genes differentially expressed with an FDR of less than 20%, or top 100 lowest FDR.
 
-study: `r study`
-
 
 ```{r new-analysis}
-GEA <- UpdateAnno::updateGEAR(sdy = study, baseUrl = labkey.url.base)
-datatable(GEA)
+con <- HMX$new()
+de_result <- con$getGEAnalysis()
+knitr::kable(de_result)
 ```
 
-```{r staticRender, results='asis'}
-cat("<script>window.HTMLWidgets.staticRender();</script>")
-```
+<script>window.HTMLWidgets.staticRender();</script>")
+
 
