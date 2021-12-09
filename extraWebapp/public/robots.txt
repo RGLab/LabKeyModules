@@ -1,3 +1,5 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Disallow: /begin.view?pageId=HIPC%20Standards
+
+Allow: /
