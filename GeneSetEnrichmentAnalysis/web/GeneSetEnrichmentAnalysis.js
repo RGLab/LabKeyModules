@@ -75,7 +75,6 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
             schemaName: 'study'
         });
 
-
         /////////////////////////////////////
         //     ComboBoxes / TextFields     //
         /////////////////////////////////////
@@ -83,7 +82,7 @@ LABKEY.ext.GeneSetEnrichmentAnalysis = Ext.extend( Ext.Panel, {
         var cbCohort = new Ext.ux.form.ExtendedComboBox({
             allowBlank: false,
             disabled: true,
-            displayField: 'cohort',
+            displayField: 'studyCohort',
             fieldLabel: 'Cohort',
             id: 'cbCohort',
             lazyInit: false,
