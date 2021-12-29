@@ -42,9 +42,11 @@ LABKEY.ext.ActiveModules = Ext.extend(Ext.Panel, {
                 "GeneSetEnrichmentAnalysis",
                 "ImmuneResponsePredictor",
                 "DimensionReduction",
+                "DifferentialExpressionAnalysis",
                 "DataExplorer",
               ];
               if (!LABKEY.ext.ISCore.isStudyFolder) {
+                modules.pop();
                 modules.pop();
               }
               var filters = [
