@@ -29,7 +29,7 @@ getFileLink <- function(filepath, filename) {
 
 <a href="/_webdav/HIPC/IS2/@files/immunesignatures2.zip"><button>Download immunesignatures.zip (3.96 GB)</button></a> 
 
-__DOI:__ _coming soon_
+__DOI:__ [10.6084/m9.figshare.17096978](https://doi.org/10.6084/m9.figshare.17096978.v1)  
 
 __Note:__ The ImmuneSignatures data resource is derived from publicly available data on ImmPort, and available for reuse under the ImmPort [data use agreement](https://www.immport.org/agreement). 
 
