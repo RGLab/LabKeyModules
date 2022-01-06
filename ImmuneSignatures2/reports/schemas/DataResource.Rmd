@@ -5,14 +5,16 @@ output:
         df_print: paged
 ---
 ```{r opts, include = FALSE}
-knitr::opts_chunk$set(cache.path = "/share/files/HIPC/IS2/@files/data/data_resource_cache/parent_report_cache/",
+cache_path <- "/share/files/HIPC/IS2/@files/cache/data_resource"
+if (!dir.exists(cache_path)) dir.create(cache_path)
+knitr::opts_chunk$set(cache.path = file.path(cache_path, "parent_report_cache/"),
                       cache = TRUE)
 ```
 ```{r knit-child, echo = FALSE, warning = FALSE, message = FALSE, cache = TRUE}
 params <- list(
-  cache.path = "/share/files/HIPC/IS2/@files/data/data_resource_cache/report_cache/",
+  cache.path = file.path(cache_path, "report_cache/"),
   dataDir = "/share/files/HIPC/IS2/@files/data",
-  dataCacheDir = "/share/files/HIPC/IS2/@files/data/data_resource_cache",
+  dataCacheDir = cache_path,
   datePrefix = ""
 )
 res <- knitr::knit_child(
