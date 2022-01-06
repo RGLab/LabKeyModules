@@ -14,11 +14,14 @@ export const About = () => {
             <a
               href="https://www.immuneprofiling.org/hipc/page/show?pg=home"
               target="_blank"
-            >
+              rel="noopener noreferrer">
               HIPC
             </a>
             ) program, an organization founded by the
-            <a href="https://www.niaid.nih.gov/about/dait" target="_blank">
+            <a
+              href="https://www.niaid.nih.gov/about/dait"
+              target="_blank"
+              rel="noopener noreferrer">
               {" "}
               NIAID-DAIT
             </a>
@@ -30,7 +33,10 @@ export const About = () => {
             explored and analyzed using state-of-the-art computational tools.
             ImmuneSpace takes advantage of the considerable infrastructure
             already developed through another HIPC platform,
-            <a href="https://immport.niaid.nih.gov" target="_blank">
+            <a
+              href="https://immport.niaid.nih.gov"
+              target="_blank"
+              rel="noopener noreferrer">
               {" "}
               ImmPort
             </a>
@@ -46,12 +52,18 @@ export const About = () => {
             analyze data. Each study contains tabs to view raw data, run common
             analyses, and look at custom reports. All the analyses make use of
             the R statistical language, leveraging
-            <a href="http://rforge.net/Rserve/" target="_blank">
+            <a
+              href="http://rforge.net/Rserve/"
+              target="_blank"
+              rel="noopener noreferrer">
               {" "}
               Rserve{" "}
             </a>
             to improve performance and
-            <a href="http://yihui.name/knitr/" target="_blank">
+            <a
+              href="http://yihui.name/knitr/"
+              target="_blank"
+              rel="noopener noreferrer">
               {" "}
               knitr{" "}
             </a>
