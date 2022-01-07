@@ -1,6 +1,7 @@
 // You can include here any css that will be shared between webparts
 
 @use "~@immunespace/theme/dist/immunespace";
+@use "./About";
 
 .navbar .container {
   margin-left: 0px;
@@ -47,4 +48,3 @@ div#about-page {
   height: 0.25rem;
   transition: 0.3s ease-in-out;
 }
-

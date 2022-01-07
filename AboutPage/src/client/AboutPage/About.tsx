@@ -1,10 +1,11 @@
 import * as React from "react";
 
-export const About = () => {
+export const About: React.FC = () => {
   return (
     <div id="About-content">
       <section className="About-content-primary">
         <div className="About-content-text">
+          <h1>About ImmuneSpace</h1>
           <p>
             ImmuneSpace blossomed from a shared idea that generating large
             amounts collaborative data, cross-center and cross-assay, to
@@ -71,30 +72,21 @@ export const About = () => {
           </p>
         </div>
         <div className="About-content-img">
-          <img
-            src="/AboutPage/images/dataflow.jpeg"
-            padding-top="80%"
-            width="40%"
-            style={{ alignSelf: "center" }}
-          />
+          <img src="/AboutPage/images/flow.png" alt="dataflow" />
         </div>
       </section>
-
-      <p></p>
-
-      <p>
-        <b>Support:</b>
-      </p>
-      <ul>
-        <li>
-          Slack: The best way to connect with the ImmuneSpace team is via the
-          ImmuneSpace{" "}
+      <section className="About-content-support">
+        <p>
+          <b>Support:</b>
+        </p>
+        <p>
+          Connect with us via Slack{" "}
           <a href="https://immunespace.herokuapp.com/">slack workspace</a>
-        </li>
-        <li>
-          Email: You can also reach the team at <b>immunespace@gmail.com</b>
-        </li>
-      </ul>
+        </p>
+        <p>
+          You can also reach the team at <b>immunespace@gmail.com</b>
+        </p>
+      </section>
     </div>
   );
 };
