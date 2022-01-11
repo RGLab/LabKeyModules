@@ -6,7 +6,7 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "types": [] // don't implicitly include any @types, only those included via import
+    "types": ["jest"] // don't implicitly include any @types, only those included via import
   },
   "exclude": ["resources"]
 }
