@@ -13,7 +13,7 @@ import { getAverage, capitalizeKebabCase } from "../helpers/helperFunctions";
 import { LINEPLOT_HEIGHT, LINEPLOT_WIDTH } from "./data_viz/dataVizConstants";
 import "./DownloadPage.scss";
 import { AboutTheData } from "./AboutTheData";
-import {HighlightedButton} from "@immunespace/components"
+import { HighlightedButton } from "@immunespace/components";
 
 interface GeneMetaData {
   alias: string[];
@@ -28,7 +28,7 @@ interface DownloadPageProps {
   filters: string[];
 }
 
-interface RowData {
+export interface RowData {
   analyte_id: string;
   analyte_type: string;
   arm_accession: string;
@@ -440,11 +440,13 @@ const DownloadPage: React.FC<DownloadPageProps> = ({
           <CohortMetaDataGrid arm_accessions={armAccessions} />
           <h2>About the Data</h2>
           <HighlightedButton>
-            <CSVLink data={rawData.rows}><span style={{color: "white"}}>Download CSV</span></CSVLink>
-            </HighlightedButton>
-            <div style={{padding: "10px"}}>
-              <AboutTheData></AboutTheData>
-            </div>
+            <CSVLink data={rawData.rows}>
+              <span style={{ color: "white" }}>Download CSV</span>
+            </CSVLink>
+          </HighlightedButton>
+          <div style={{ padding: "10px" }}>
+            <AboutTheData></AboutTheData>
+          </div>
         </React.Fragment>
       ) : (
         <AESpinner />
