@@ -4,6 +4,7 @@
 import {
   processDataByFilter,
   organizeD3Data,
+  RowData,
 } from "../src/client/AnalyteExplorer/components/DownloadPage";
 
 import {
@@ -234,14 +235,17 @@ describe("test processDataByFilter", () => {
 });
 
 describe("test organizeD3Data", () => {
-  const mockData = [
+  const mockData: RowData[] = [
     {
       analyte_id: "A2M",
       analyte_type: "gene",
+      arm_accession: "ARM4355",
       cohort: "MCV4",
+      cohort_description:
+        "Immunized with MCV4, blood collected on D0,D3,D7,D14,D30,D180",
       condition: "Meningitis",
-      id: 665810,
       mean_fold_change: 0,
+      research_focus: "Vaccine Response",
       sample_type: "PBMC",
       sd_fold_change: 0,
       study_accession: "SDY1260",
@@ -250,10 +254,13 @@ describe("test organizeD3Data", () => {
     {
       analyte_id: "A2M",
       analyte_type: "gene",
+      arm_accession: "ARM4355",
       cohort: "MCV4",
+      cohort_description:
+        "Immunized with MCV4, blood collected on D0,D3,D7,D14,D30,D180",
       condition: "Meningitis",
-      id: 675898,
       mean_fold_change: 0.0377534555518258,
+      research_focus: "Vaccine Response",
       sample_type: "PBMC",
       sd_fold_change: 0.269380962457554,
       study_accession: "SDY1260",
@@ -262,10 +269,13 @@ describe("test organizeD3Data", () => {
     {
       analyte_id: "A2M",
       analyte_type: "gene",
+      arm_accession: "ARM4356",
       cohort: "MPSV4",
+      cohort_description:
+        "Immunized with MPSV4, blood collected on D0,D3,D7,D14,D30,D180",
       condition: "Meningitis",
-      id: 716250,
       mean_fold_change: 0.0377091099195492,
+      research_focus: "Vaccine Response",
       sample_type: "PBMC",
       sd_fold_change: 0.312870104463717,
       study_accession: "SDY1260",
@@ -285,17 +295,50 @@ describe("test organizeD3Data", () => {
   test("correct condition & data", () => {
     const mockDataMap = new Map<
       string,
-      { x: number; y: number; study: string }[]
+      {
+        x: number;
+        y: number;
+        study: string;
+        research: string;
+        sample: string;
+        sd: number;
+      }[]
     >([
       [
         "MCV4",
         [
-          { x: 3, y: 0.0377534555518258, study: "SDY1260" },
-          { x: 0, y: 0, study: "SDY1260" },
+          {
+            x: 3,
+            y: 0.0377534555518258,
+            study: "SDY1260",
+            research: "Vaccine Response",
+            sample: "PBMC",
+            sd: 0.269380962457554,
+          },
+          {
+            x: 0,
+            y: 0,
+            study: "SDY1260",
+            research: "Vaccine Response",
+            sample: "PBMC",
+            sd: 0,
+          },
         ],
       ],
 
-      ["MPSV4", [{ x: 7, y: 0.0377091099195492, study: "SDY1260" }]],
+      [
+        "MPSV4",
+        [
+          {
+            x: 7,
+            y: 0.0377091099195492,
+            study: "SDY1260",
+            research: "Vaccine Response",
+            sample: "PBMC",
+            sd: 0.312870104463717,
+          },
+        ],
+      ],
       ["Average", []],
     ]);
     const mockOutput = {
@@ -306,6 +349,7 @@ describe("test organizeD3Data", () => {
       width: LINEPLOT_WIDTH,
       height: LINEPLOT_HEIGHT,
     };
+
     expect(organizeD3Data(condition, mockData)).toMatchObject(mockOutput);
   });
 });
