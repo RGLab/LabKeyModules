@@ -14,7 +14,7 @@ export const DataReleases = React.memo<props>(
     // }
 
     return (
-      <div id="DataReleases-content" style={{ padding: "15px" }}>
+      <div id="DataReleases-content">
         <table style={{ width: "100%", border: "1px solid black" }}>
           <thead>
             <tr>
@@ -24,8 +24,7 @@ export const DataReleases = React.memo<props>(
                   border: "1px solid black",
                   textAlign: "center",
                   fontWeight: "bold",
-                }}
-              >
+                }}>
                 Version
               </th>
               <th
@@ -34,8 +33,7 @@ export const DataReleases = React.memo<props>(
                   border: "1px solid black",
                   textAlign: "center",
                   fontWeight: "bold",
-                }}
-              >
+                }}>
                 Date
               </th>
               <th
@@ -44,8 +42,7 @@ export const DataReleases = React.memo<props>(
                   border: "1px solid black",
                   textAlign: "center",
                   fontWeight: "bold",
-                }}
-              >
+                }}>
                 Affected Studies
               </th>
               <th
@@ -54,8 +51,7 @@ export const DataReleases = React.memo<props>(
                   border: "1px solid black",
                   textAlign: "center",
                   fontWeight: "bold",
-                }}
-              >
+                }}>
                 Description
               </th>
             </tr>
