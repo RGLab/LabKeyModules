@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`tests GeneExpression pages renders correctly test GeneExpression renders correctly 1`] = `
+<div>
+  <img
+    padding-top="80%"
+    src="/AboutPage/images/ge_standardization.png"
+    width="65%"
+  />
+  <h2>
+    Details
+  </h2>
+  <p>
+    Bulk gene expression processing and standardization in ImmuneSpace is facilitated by the 
+    <a
+      href="https://github.com/RGLab/HIPCMatrix"
+    >
+      HIPCMatrix
+    </a>
+     R package.
+  </p>
+</div>
+`;
