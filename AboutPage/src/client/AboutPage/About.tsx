@@ -84,7 +84,8 @@ export const About: React.FC = () => {
           <a href="https://immunespace.herokuapp.com/">slack workspace</a>
         </p>
         <p>
-          You can also reach the team at <b>immunespace@gmail.com</b>
+          You can also reach the team at{" "}
+          <a href="mailto:ops@immunespace.org">ops@immunespace.org</a>
         </p>
       </section>
     </div>
