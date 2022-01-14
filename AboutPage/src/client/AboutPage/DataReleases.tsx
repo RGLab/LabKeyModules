@@ -1,12 +1,12 @@
 import * as React from "react";
 
 interface props {
-  dataReleasesResults: any;
+  dataReleasesResults: JSX.Element | JSX.Element[];
 }
 
 export const DataReleases = React.memo<props>(
   ({ dataReleasesResults }: props) => {
-    const baseUrl = LABKEY.ActionURL["getBaseURL"]();
+    //const baseUrl = LABKEY.ActionURL["getBaseURL"]();
     // const softwareUpdatesLink =
     //   baseUrl + "project/home/begin.view?tab=SoftwareUpdates";
     // function handleSoftwareUpdateClick() {
@@ -86,3 +86,5 @@ export const DataReleases = React.memo<props>(
     );
   }
 );
+
+DataReleases.displayName = "DataReleases";

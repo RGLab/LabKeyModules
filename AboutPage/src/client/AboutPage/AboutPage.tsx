@@ -36,51 +36,69 @@ import { Cytometry } from "./Cytometry";
 import { GeneExpression } from "./GeneExpression";
 import { ImmuneResponse } from "./ImmuneResponse";
 
-import { active } from "d3-transition";
-
-const fetchData = (handleResults: (any) => void) => {
-  let mappedData;
+const fetchData = (handleResults: (any) => void): void => {
+  let mappedData: JSX.Element | JSX.Element[];
 
   LABKEY.Query.selectRows({
     schemaName: "lists",
     queryName: "Data Updates",
     columns: ["version", "date", "affected_studies", "description"],
     success: function (data) {
-      mappedData = data.rows.map(function (arr, index) {
-        return (
-          <tr key={index} data-item={arr}>
-            <td
-              data-title="Version"
-              style={{ textAlign: "center", border: "1px solid black" }}
-            >
-              {arr.version}
-            </td>
-            <td
-              data-title="Date"
-              style={{ textAlign: "center", border: "1px solid black" }}
-            >
-              {arr.date.slice(0, 10)}
-            </td>
-            <td
-              data-title="Affected Studies"
-              style={{ border: "1px solid black" }}
-            >
-              {arr.affected_studies}
-            </td>
-            <td data-title="Description" style={{ border: "1px solid black" }}>
-              {arr.description}
+      if (data != undefined) {
+        mappedData = data.rows.map(function (arr, index) {
+          return (
+            <tr key={index} data-item={arr}>
+              <td
+                data-title="Version"
+                style={{ textAlign: "center", border: "1px solid black" }}>
+                {arr.version}
+              </td>
+              <td
+                data-title="Date"
+                style={{ textAlign: "center", border: "1px solid black" }}>
+                {arr.date.slice(0, 10)}
+              </td>
+              <td
+                data-title="Affected Studies"
+                style={{ border: "1px solid black" }}>
+                {arr.affected_studies}
+              </td>
+              <td
+                data-title="Description"
+                style={{ border: "1px solid black" }}>
+                {arr.description}
+              </td>
+            </tr>
+          );
+        });
+        handleResults(mappedData);
+      } else {
+        handleResults(
+          <tr>
+            <td colSpan={4}>
+              {"Unable to retrieve data. Please try again later."}
             </td>
           </tr>
         );
-      });
-      handleResults(mappedData);
+      }
+    },
+    failure: function (err) {
+      handleResults(
+        <tr>
+          <td colSpan={4}>{err["exception"]}</td>
+        </tr>
+      );
     },
   });
 };
 
 const AboutPage: React.FC = () => {
-  const [dataReleasesResults, setDataReleasesResults] = React.useState<string>(
-    "Loading Data Releases"
+  const [dataReleasesResults, setDataReleasesResults] = React.useState<
+    JSX.Element | JSX.Element[]
+  >(
+    <tr>
+      <td colSpan={4}>{"Loading Data Releases"}</td>
+    </tr>
   );
   const [rSessionResults, setRSessionResults] = React.useState<string>(
     "Loading R Session Info ..."
@@ -242,7 +260,7 @@ const AboutPage: React.FC = () => {
     const slotHtml = document
       .createRange()
       .createContextualFragment(rSessionResults);
-    let scriptNodes = slotHtml.querySelectorAll("script[src]");
+    const scriptNodes = slotHtml.querySelectorAll("script[src]");
 
     if (scriptNodes.length > 0) {
       const loader = new ScriptLoader(onRScriptsLoaded, onRScriptLoadTimeout);
@@ -294,8 +312,10 @@ const AboutPage: React.FC = () => {
         <div className="nav-menu-indicator-container">
           <span
             className="nav-menu-indicator"
-            style={{ marginLeft: indicatorMargin, width: indicatorWidth }}
-          ></span>
+            style={{
+              marginLeft: indicatorMargin,
+              width: indicatorWidth,
+            }}></span>
         </div>
       </Navbar>
     );
@@ -339,8 +359,7 @@ const AboutPage: React.FC = () => {
     <TabContainer
       activeKey={activeTab}
       generateChildId={generateChildId}
-      onSelect={(tab) => changeTabParam(`${tab}`)}
-    >
+      onSelect={(tab) => changeTabParam(`${tab}`)}>
       <div id="about-page-content">
         {getNavbar()}
         {getTabContent()}
