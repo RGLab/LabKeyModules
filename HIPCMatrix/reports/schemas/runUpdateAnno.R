@@ -22,7 +22,6 @@ if (con$study == "Studies") {
           verbose = TRUE,
         )
         sdy$updateEMs()
-        sdy$uploadGEAnalysisResults()
       },
       silent = TRUE
     )
@@ -46,5 +45,4 @@ if (con$study == "Studies") {
   }
 } else {
   con$updateEMs()
-  con$uploadGEAnalysisResults()
 }
