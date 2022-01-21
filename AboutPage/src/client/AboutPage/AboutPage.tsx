@@ -60,12 +60,12 @@ const fetchData = (handleResults: (any) => void): void => {
               </td>
               <td
                 data-title="Affected Studies"
-                style={{ border: "1px solid black" }}>
+                style={{ border: "1px solid black", paddingLeft: "2px" }}>
                 {arr.affected_studies}
               </td>
               <td
                 data-title="Description"
-                style={{ border: "1px solid black" }}>
+                style={{ border: "1px solid black", paddingLeft: "2px" }}>
                 {arr.description}
               </td>
             </tr>
