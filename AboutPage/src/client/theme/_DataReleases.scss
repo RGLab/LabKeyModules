@@ -1,0 +1,15 @@
+@use "./About";
+
+#DataReleases-content {
+  max-width: About.$content-max-width;
+
+  .DataReleases-footer {
+    @include About.About-base-text;
+
+    p,
+    li {
+      margin-bottom: 10px;
+    }
+    margin-top: 20px;
+  }
+}
