@@ -1,0 +1,21 @@
+@use "./About";
+
+div#GeneExpression-content {
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 22px;
+  max-width: About.$content-max-width;
+
+  h2 {
+    font-size: 24px;
+    color: #1a1a1a;
+    margin-bottom: 22px;
+    letter-spacing: 0;
+    line-height: 32px;
+  }
+
+  img {
+    margin-top: 10px;
+    width: 100%;
+  }
+}
