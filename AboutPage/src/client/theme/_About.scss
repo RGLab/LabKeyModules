@@ -1,7 +1,9 @@
 @use "~@immunespace/theme/dist/immunespace";
 
+$content-max-width: 996px;
+
 div#About-content {
-  max-width: 1280px;
+  max-width: $content-max-width;
 }
 
 section.About-content-primary {
@@ -10,8 +12,7 @@ section.About-content-primary {
 }
 
 div.About-content-text {
-  width: 52%;
-  h1 {
+  h2 {
     font-size: 24px;
     color: #1a1a1a;
     margin-bottom: 22px;

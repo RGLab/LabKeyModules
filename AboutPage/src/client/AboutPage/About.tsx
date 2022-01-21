@@ -5,7 +5,7 @@ export const About: React.FC = () => {
     <div id="About-content">
       <section className="About-content-primary">
         <div className="About-content-text">
-          <h1>About ImmuneSpace</h1>
+          <h2>About ImmuneSpace</h2>
           <p>
             ImmuneSpace blossomed from a shared idea that generating large
             amounts collaborative data, cross-center and cross-assay, to

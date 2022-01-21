@@ -10,9 +10,9 @@ exports[`tests AboutPage pages renders correctly test About renders correctly 1`
     <div
       className="About-content-text"
     >
-      <h1>
+      <h2>
         About ImmuneSpace
-      </h1>
+      </h2>
       <p>
         ImmuneSpace blossomed from a shared idea that generating large amounts collaborative data, cross-center and cross-assay, to characterize the status of the immune system in diverse populations under normal conditions and in response to various stimuli would be a beneficial platform. The Human Immunology Project Consortium (
         <a
