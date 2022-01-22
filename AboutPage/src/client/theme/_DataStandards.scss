@@ -2,25 +2,19 @@
 
 #DataStandards-content {
   max-width: About.$content-max-width;
-  font-size: 16px;
-  letter-spacing: 0;
-  line-height: 22px;
+  @include About.About-base-text;
 
   h2 {
-    font-size: 24px;
-    color: #1a1a1a;
-    margin-bottom: 22px;
-    letter-spacing: 0;
-    line-height: 32px;
+    @include About.About-h2;
   }
 
   p,
   ul {
-    margin-bottom: 16px;
+    margin-bottom: About.$spacing-medium;
   }
 
-  li {
-    margin-bottom: 10px;
+  li:not(:last-child) {
+    margin-bottom: About.$spacing-small;
   }
 
   .DataStandards-standards {
@@ -32,18 +26,20 @@
   }
 
   .DataStandards-publications {
-    li {
+    div {
+      display: flex;
+    }
+    ul {
       p {
-        margin-bottom: 5px;
+        margin-bottom: 0;
       }
     }
   }
 
   .DataStandards-footer {
-    padding-top: 55px;
+    margin-top: About.$footer-spacing;
     p {
-      font-size: 14px;
-      margin: 0;
+      @include About.About-footer-text;
     }
   }
 }

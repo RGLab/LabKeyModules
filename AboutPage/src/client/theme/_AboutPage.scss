@@ -2,6 +2,10 @@
 
 @use "~@immunespace/theme/dist/immunespace";
 @use "./About";
+@use "./DataStandards";
+@use "./GeneExpression";
+@use "./DataReleases";
+@use "./SoftwareUpdates";
 
 .navbar .container {
   margin-left: 0px;

@@ -2,14 +2,18 @@
 
 #DataReleases-content {
   max-width: About.$content-max-width;
+  padding-top: About.$spacing-small;
 
-  .DataReleases-footer {
+  .DataReleases-info {
     @include About.About-base-text;
 
     p,
-    li {
-      margin-bottom: 10px;
+    ul {
+      margin-bottom: About.$spacing-medium;
+      li:not(:last-child) {
+        margin-bottom: About.$spacing-small;
+      }
     }
-    margin-top: 20px;
+    margin-top: About.$spacing-medium;
   }
 }
