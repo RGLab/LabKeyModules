@@ -55,7 +55,7 @@ describe("tests DataReleases pages renders correctly", () => {
             </tr>
           </tbody>
         </table>
-        <section class=\\"DataReleases-footer\\">
+        <section class=\\"DataReleases-info\\">
           <p>Version numbers use the following scheme <b>x.y.z</b> where</p>
           <ul>
             <li><b>x</b> is the version of ImmPort. The data is curated by ImmPort and ImmuneSpace gets updated after each offcial data release.</li>
@@ -148,7 +148,7 @@ describe("tests DataReleases pages renders correctly", () => {
             </tr>
           </tbody>
         </table>
-        <section class=\\"DataReleases-footer\\">
+        <section class=\\"DataReleases-info\\">
           <p>Version numbers use the following scheme <b>x.y.z</b> where</p>
           <ul>
             <li><b>x</b> is the version of ImmPort. The data is curated by ImmPort and ImmuneSpace gets updated after each offcial data release.</li>

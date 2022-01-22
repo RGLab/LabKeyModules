@@ -79,7 +79,7 @@ exports[`tests AboutPage pages renders correctly test About renders correctly 1`
     </div>
   </section>
   <section
-    className="About-content-support"
+    className="About-content-footer"
   >
     <p>
       <b>

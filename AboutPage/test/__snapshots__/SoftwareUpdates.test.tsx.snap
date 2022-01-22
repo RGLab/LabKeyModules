@@ -24,9 +24,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
     </li>
   </ul>
   <p>
-     
-  </p>
-  <p>
     <b>
       30 June 2021
     </b>
@@ -36,9 +33,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
       Upgraded to latest 21.6 version of LabKey
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       10 May 2021
@@ -56,9 +50,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
     </li>
   </ul>
   <p>
-     
-  </p>
-  <p>
     <b>
       28 April 2021
     </b>
@@ -68,9 +59,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
       Updated entrance page
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       11 January 2021
@@ -87,9 +75,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
        of LabKey
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       9 December 2020
@@ -108,9 +93,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
       Upgrade to ImmuneSpaceR version 1.18.1
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       3 August 2020
@@ -135,9 +117,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
     </li>
   </ul>
   <p>
-     
-  </p>
-  <p>
     <b>
       10 June 2020
     </b>
@@ -157,9 +136,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
     </li>
   </ul>
   <p>
-     
-  </p>
-  <p>
     <b>
       6 January 2020
     </b>
@@ -175,9 +151,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
        of LabKey
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       26 Dec 2019
@@ -197,9 +170,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
     </li>
   </ul>
   <p>
-     
-  </p>
-  <p>
     <b>
       21 May 2019
     </b>
@@ -209,9 +179,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
       Upgraded R to 3.6.0
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       20 May 2019
@@ -238,9 +205,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
     </li>
   </ul>
   <p>
-     
-  </p>
-  <p>
     <b>
       4 March 2019
     </b>
@@ -250,9 +214,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
       Upgraded R to 3.5.2
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       27 February 2019
@@ -292,9 +253,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
     </li>
   </ul>
   <p>
-     
-  </p>
-  <p>
     <b>
       15 August 2018
     </b>
@@ -319,9 +277,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
        version 1.7.4
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       4 May 2018
@@ -371,9 +326,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
     </li>
   </ul>
   <p>
-     
-  </p>
-  <p>
     <b>
       6 February 2018
     </b>
@@ -386,9 +338,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
       Upgraded R to 3.4.3
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       27 November 2017
@@ -406,9 +355,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
     </li>
   </ul>
   <p>
-     
-  </p>
-  <p>
     <b>
       24 August 2017
     </b>
@@ -421,9 +367,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
       Added functionality to automatically update and standardize the gene symbols used on the portal.
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       16 June 2017
@@ -440,9 +383,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
       Added to the Data Finder an ability to filter individual studies.
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       24 March 2017
@@ -464,9 +404,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
     </li>
   </ul>
   <p>
-     
-  </p>
-  <p>
     <b>
       13 December 2016
     </b>
@@ -480,9 +417,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
     </li>
   </ul>
   <p>
-     
-  </p>
-  <p>
     <b>
       21 July 2016
     </b>
@@ -495,9 +429,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
       Enabled markdown v2 for all reports and modules.
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       3 May 2016
@@ -524,9 +455,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
       Upgrade to LabKey 16.1.
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       22 October 2015
@@ -555,9 +483,6 @@ exports[`tests SoftwareUpdates pages renders correctly test SoftwareUpdates rend
        can now be used to plot data across studies.
     </li>
   </ul>
-  <p>
-     
-  </p>
   <p>
     <b>
       22 July 2015
