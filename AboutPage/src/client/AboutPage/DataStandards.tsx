@@ -107,8 +107,9 @@ export const DataStandards: React.FC = () => {
       </section>
 
       <section className="DataStandards-publications">
-        <h2>Publications</h2>
-
+        <div>
+          <h2>Publications</h2>
+        </div>
         <p>
           The following paper describes how to report and connect cell type
           names and gating definitions through ontologies including the Cell
