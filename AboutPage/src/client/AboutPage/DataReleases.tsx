@@ -51,7 +51,7 @@ export const DataReleases = React.memo<props>(
           </thead>
           <tbody>{dataReleasesResults}</tbody>
         </table>
-        <section className="DataReleases-footer">
+        <section className="DataReleases-info">
           <p>
             Version numbers use the following scheme <b>x.y.z</b> where
           </p>

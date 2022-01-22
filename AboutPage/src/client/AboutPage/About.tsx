@@ -75,7 +75,7 @@ export const About: React.FC = () => {
           <img src="/AboutPage/images/flow.png" alt="dataflow" />
         </div>
       </section>
-      <section className="About-content-support">
+      <section className="About-content-footer">
         <p>
           <b>Support:</b>
         </p>
