@@ -1,20 +1,9 @@
 import React from "react";
-import {ScriptLoader} from "./ScriptLoader";
+import {renderHtmlWidget} from "./helperFunctions";
 
 interface props {
     rSessionParsed: any;
     rScriptsLoaded: boolean;
-}
-
-const renderHtmlWidget = () => {
-    const jQueryLoaded = typeof window['jQuery'] !== undefined
-    const DataTableLoaded = typeof window['jQuery']().DataTable !== undefined
-    if(jQueryLoaded && DataTableLoaded){
-        window['HTMLWidgets'].staticRender();
-        ScriptLoader.restoreJQuery();
-    }else {
-        console.error("DataTable and jQuery libraries loaded improperly")
-    }
 }
 
 // Create MutationObserver that calls f when a child element has been added to elem
