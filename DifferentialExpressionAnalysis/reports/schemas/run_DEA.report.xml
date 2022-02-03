@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ReportDescriptor descriptorType="rReportDescriptor" reportName="run_DEA" xmlns="http://labkey.org/query/xml">
+    <hidden>true</hidden>
     <Properties>
         <Prop name="runInBackground">true</Prop>
     </Properties>
