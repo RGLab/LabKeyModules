@@ -1,0 +1,15 @@
+@use "./About";
+
+div#GeneExpression-content {
+  max-width: About.$content-max-width;
+  @include About.About-base-text;
+
+  h2 {
+    @include About.About-h2;
+  }
+
+  img {
+    margin-top: About.$spacing-small;
+    width: 100%;
+  }
+}

@@ -1,6 +1,11 @@
 // You can include here any css that will be shared between webparts
 
 @use "~@immunespace/theme/dist/immunespace";
+@use "./About";
+@use "./DataStandards";
+@use "./GeneExpression";
+@use "./DataReleases";
+@use "./SoftwareUpdates";
 
 .navbar .container {
   margin-left: 0px;
@@ -48,3 +53,6 @@ div#about-page {
   transition: 0.3s ease-in-out;
 }
 
+.tab-content {
+  padding-left: 15px;
+}

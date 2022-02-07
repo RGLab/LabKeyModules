@@ -1,0 +1,45 @@
+@use "./About";
+
+#DataStandards-content {
+  max-width: About.$content-max-width;
+  @include About.About-base-text;
+
+  h2 {
+    @include About.About-h2;
+  }
+
+  p,
+  ul {
+    margin-bottom: About.$spacing-medium;
+  }
+
+  li:not(:last-child) {
+    margin-bottom: About.$spacing-small;
+  }
+
+  .DataStandards-standards {
+    // this prevents collapsible margins on the h2
+    // https://www.w3.org/TR/css-flexbox-1/#:~:text=A%20flex%20container%20establishes,applies%20to%20flex%20containers.
+    div {
+      display: flex;
+    }
+  }
+
+  .DataStandards-publications {
+    div {
+      display: flex;
+    }
+    ul {
+      p {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .DataStandards-footer {
+    margin-top: About.$footer-spacing;
+    p {
+      @include About.About-footer-text;
+    }
+  }
+}

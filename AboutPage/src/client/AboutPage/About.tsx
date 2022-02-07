@@ -1,10 +1,11 @@
 import * as React from "react";
 
-export const About = () => {
+export const About: React.FC = () => {
   return (
     <div id="About-content">
       <section className="About-content-primary">
         <div className="About-content-text">
+          <h2>About ImmuneSpace</h2>
           <p>
             ImmuneSpace blossomed from a shared idea that generating large
             amounts collaborative data, cross-center and cross-assay, to
@@ -14,11 +15,14 @@ export const About = () => {
             <a
               href="https://www.immuneprofiling.org/hipc/page/show?pg=home"
               target="_blank"
-            >
+              rel="noopener noreferrer">
               HIPC
             </a>
             ) program, an organization founded by the
-            <a href="https://www.niaid.nih.gov/about/dait" target="_blank">
+            <a
+              href="https://www.niaid.nih.gov/about/dait"
+              target="_blank"
+              rel="noopener noreferrer">
               {" "}
               NIAID-DAIT
             </a>
@@ -30,7 +34,10 @@ export const About = () => {
             explored and analyzed using state-of-the-art computational tools.
             ImmuneSpace takes advantage of the considerable infrastructure
             already developed through another HIPC platform,
-            <a href="https://immport.niaid.nih.gov" target="_blank">
+            <a
+              href="https://immport.niaid.nih.gov"
+              target="_blank"
+              rel="noopener noreferrer">
               {" "}
               ImmPort
             </a>
@@ -46,12 +53,18 @@ export const About = () => {
             analyze data. Each study contains tabs to view raw data, run common
             analyses, and look at custom reports. All the analyses make use of
             the R statistical language, leveraging
-            <a href="http://rforge.net/Rserve/" target="_blank">
+            <a
+              href="http://rforge.net/Rserve/"
+              target="_blank"
+              rel="noopener noreferrer">
               {" "}
               Rserve{" "}
             </a>
             to improve performance and
-            <a href="http://yihui.name/knitr/" target="_blank">
+            <a
+              href="http://yihui.name/knitr/"
+              target="_blank"
+              rel="noopener noreferrer">
               {" "}
               knitr{" "}
             </a>
@@ -59,30 +72,22 @@ export const About = () => {
           </p>
         </div>
         <div className="About-content-img">
-          <img
-            src="/AboutPage/images/dataflow.jpeg"
-            padding-top="80%"
-            width="40%"
-            style={{ alignSelf: "center" }}
-          />
+          <img src="/AboutPage/images/flow.png" alt="dataflow" />
         </div>
       </section>
-
-      <p></p>
-
-      <p>
-        <b>Support:</b>
-      </p>
-      <ul>
-        <li>
-          Slack: The best way to connect with the ImmuneSpace team is via the
-          ImmuneSpace{" "}
+      <section className="About-content-footer">
+        <p>
+          <b>Support:</b>
+        </p>
+        <p>
+          Connect with us via Slack{" "}
           <a href="https://immunespace.herokuapp.com/">slack workspace</a>
-        </li>
-        <li>
-          Email: You can also reach the team at <b>immunespace@gmail.com</b>
-        </li>
-      </ul>
+        </p>
+        <p>
+          You can also reach the team at{" "}
+          <a href="mailto:ops@immunespace.org">ops@immunespace.org</a>
+        </p>
+      </section>
     </div>
   );
 };

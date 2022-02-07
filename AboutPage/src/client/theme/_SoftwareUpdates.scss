@@ -1,0 +1,11 @@
+@use "./About";
+
+#SoftwareUpdates-content {
+  max-width: About.$content-max-width;
+  padding-top: About.$spacing-small;
+  @include About.About-base-text;
+  p,
+  ul {
+    margin-bottom: About.$spacing-medium;
+  }
+}
