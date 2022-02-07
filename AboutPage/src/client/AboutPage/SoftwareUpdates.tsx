@@ -5,6 +5,16 @@ export const SoftwareUpdates = () => {
 
     return(
         <div id="SoftwareUpdates-content">
+            <p><b>20 Dec 2021</b></p>
+            <ul>
+                <li>
+                    Upgraded to latest 21.11.3 version of LabKey (addresses log4j issue)
+                </li>
+                <li>
+                    Upgraded Java to JDK-17.0.1_12
+                </li>
+            </ul>
+
             <p><b>1 Oct 2021</b></p>
             <ul>
                 <li>
