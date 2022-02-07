@@ -25,6 +25,8 @@ makes any changes to UI functionality, there should be a related UITesting PR. -
 
 - [ ] Build it on your own local instance and test new features or changes.  
 - [ ] Pass UITesting on your local instance on the matching UITesting branch.  
+- [ ] Pass all jest tests.
+    - [ ] Update jest test directories in .github/workflows/tests.js.yml to include new tests
 - [ ] It is functional and meets the requirements?   
 - [ ] Are any shorthand variable names are included in the [Glossary](https://www.notion.so/rglab/Glossary-of-variable-abbreviations-e205838b1f534abc903fa8c2228a6d7f)?  
 - [ ] Does it include descriptive code comments?   
