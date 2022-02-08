@@ -46,6 +46,8 @@ LABKEY.ext.ActiveModules = Ext.extend(Ext.Panel, {
                 "DataExplorer",
               ];
               if (!LABKEY.ext.ISCore.isStudyFolder) {
+                // Don't include data explorer or differential expression 
+                // at studies level
                 modules.pop();
                 modules.pop();
               }
