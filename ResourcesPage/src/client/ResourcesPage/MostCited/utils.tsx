@@ -13,13 +13,12 @@ export function updatePmPlotData(transformedPmData, pmDataRange, pmOrderBy) {
       y: "Study and PubMed Id",
       main: "Number of Citations by PubMed Id",
     };
-
     const plotProps: BarPlotProps = {
       data: copy.byPubId,
       titles: titles,
       name: "byPubId",
       width: 850,
-      height: 700,
+      height: copy.byPubId.length * 12 + 80,
       dataRange: pmDataRange.byPubId,
       linkBaseText: "https://www.ncbi.nlm.nih.gov/pubmed/",
     };
