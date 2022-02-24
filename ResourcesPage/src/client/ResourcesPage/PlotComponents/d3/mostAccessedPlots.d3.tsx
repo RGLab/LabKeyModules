@@ -219,8 +219,8 @@ export function drawMaLinePlot(props: MaLinePlotProps) {
     // const layerNames = ['UI','ISR']
     // Set scales using arguments
     const xaxisScale = d3
-        .scaleBand()
-        .domain(labels)
+        .scaleTime()
+        .domain(d3.extent(labels.map(d3.timeParse("%Y-%m"))))
         .range([0, width]);
 
     const yaxisScale = d3
@@ -239,8 +239,8 @@ export function drawMaLinePlot(props: MaLinePlotProps) {
         .attr("transform", "translate(" + margin.left + ", " + (height + margin.top) + ")")
         .call(d3.axisBottom(xaxisScale))
         .selectAll("text")
-            .attr("y", 0)
-            .attr("x", 9)
+            .attr("y", 8)
+            .attr("x", 8)
             .attr("dy", ".35em")
             .attr("transform", "rotate(45)")
             .style("text-anchor", "start");
@@ -285,7 +285,7 @@ export function drawMaLinePlot(props: MaLinePlotProps) {
     })
 
     const area = d3.area()
-                    .x((d,i) => xaxisScale(labels[i]) + margin.left)
+                    .x((d,i) => xaxisScale(labels.map(d3.timeParse("%Y-%m"))[i]) + margin.left)
                     .y0(d => yaxisScale(d[0]) + margin.top)
                     .y1(d => yaxisScale(d[1]) + margin.top)
 
