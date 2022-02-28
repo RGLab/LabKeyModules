@@ -1,0 +1,19 @@
+@use "./About";
+
+#DataReleases-content {
+  max-width: About.$content-max-width;
+  padding-top: About.$spacing-small;
+
+  .DataReleases-info {
+    @include About.About-base-text;
+
+    p,
+    ul {
+      margin-bottom: About.$spacing-medium;
+      li:not(:last-child) {
+        margin-bottom: About.$spacing-small;
+      }
+    }
+    margin-top: About.$spacing-medium;
+  }
+}

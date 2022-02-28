@@ -74,7 +74,7 @@ export function createBarPlotProps(data, order, labkeyBaseUrl) {
             titles: barTitles,
             name: "byStudy",
             width: 700,
-            height: 800,
+            height: barData.length * 10 + 80,
             linkBaseText: labkeyBaseUrl + '/project/Studies/'
         }
 

@@ -1,0 +1,59 @@
+@use "~@immunespace/theme/dist/immunespace";
+
+$content-max-width: 996px;
+$footer-spacing: 55px;
+$spacing-small: 10px;
+$spacing-medium: 16px;
+
+@mixin About-base-text {
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 22px;
+}
+
+@mixin About-h2 {
+  font-size: 24px;
+  color: #1a1a1a;
+  margin-bottom: 22px;
+  letter-spacing: 0;
+  line-height: 32px;
+}
+
+@mixin About-footer-text {
+  font-size: 14px;
+  margin: 0;
+}
+
+div#About-content {
+  max-width: $content-max-width;
+}
+
+section.About-content-primary {
+  display: flex;
+  justify-content: flex-start;
+}
+
+div.About-content-text {
+  h2 {
+    @include About-h2;
+  }
+
+  p {
+    @include About-base-text;
+    margin-bottom: $spacing-medium;
+  }
+}
+
+div.About-content-img > img {
+  width: 221px;
+  height: 477px;
+  margin-left: 105px;
+  margin-top: 47px;
+}
+
+.About-content-footer {
+  margin-top: $footer-spacing;
+  p {
+    @include About-footer-text;
+  }
+}

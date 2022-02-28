@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<HomePage /> HomePage snapshot test 1`] = `
+<section
+  className="ae-home-content"
+>
+  <div
+    className="ae-home-title"
+  >
+    <h1>
+      Analyte Explorer
+    </h1>
+    <h3>
+      A search tool to visualize study data within ImmuneSpace
+    </h3>
+  </div>
+  <div
+    className="ae-home-tutorial-instructions"
+  >
+    <div>
+      <img
+        alt="how to use first step"
+        className="ae-home__tutorial-icon"
+        src="/AnalyteExplorer/assets/images/tutorial1.png"
+      />
+      <span>
+        Search our database for analytes related to HIPC study data
+      </span>
+    </div>
+    <div>
+      <img
+        alt="how to use second step"
+        className="ae-home__tutorial-icon"
+        src="/AnalyteExplorer/assets/images/tutorial2.png"
+      />
+      <span>
+        Plot the log2 fold change of a gene or gene set over time by cohort
+      </span>
+    </div>
+    <div>
+      <img
+        alt="how to use third step"
+        className="ae-home__tutorial-icon"
+        src="/AnalyteExplorer/assets/images/tutorial3.png"
+      />
+      <span>
+        Download your search results and analyze further
+      </span>
+    </div>
+  </div>
+  <div
+    className="ae-home-data-processing"
+  >
+    <p>
+      Analyte Explorer currently supports gene expression data for genes, and blood transcription modules (BTMs) published by 
+      <a
+        href="https://www.nature.com/articles/ni.2789"
+      >
+        Li et al. 
+      </a>
+       Gene metadata is pulled from 
+      <a
+        href="https://mygene.info/"
+      >
+        mygene.info
+      </a>
+      . For details about our data processing methods, visit our
+      <a
+        href="/project/home/begin.view?tab=GeneExpression"
+      >
+         Data Processing page 
+      </a>
+       and
+      <a
+        href="https://github.com/RGLab/AnalyteExplorer"
+      >
+         GitHub repository
+      </a>
+      .
+    </p>
+  </div>
+</section>
+`;
