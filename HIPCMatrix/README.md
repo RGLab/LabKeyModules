@@ -4,8 +4,8 @@ Create expression matrix using an R pipeline job and import assay into LabKey's 
 
 ## Dependencies 
 
-Microarray, ISCore  
-[UpdateAnno](https://github.com/RGLab/UpdateAnno)
+Microarray, ISCore
+[HIPCMatrix](https://github.com/RGLab/HIPCMatrix)
 
 ## Setup 
 

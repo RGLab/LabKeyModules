@@ -1,15 +1,9 @@
 library(HIPCMatrix)
-
 con <- HMX$new()
 
-if (grepl("^IS", con$study)) {
-  stop("Do not update ImmuneSignatures Annotation!")
-}
-
-con$updateFAS()
-
 if (con$study == "Studies") {
-  ge_studies <- unique(con$listGEMatrices()$folder)
+
+  ge_studies <- unique(con$get_de_compatible_runs()$study_accession)
 
   success <- lapply(ge_studies, function(study) {
     res <- try(
@@ -21,7 +15,7 @@ if (con$study == "Studies") {
           study = paste0("/Studies/", study, "/"),
           verbose = TRUE,
         )
-        sdy$updateEMs()
+        sdy$upload_de_analysis_results()
       },
       silent = TRUE
     )
@@ -34,7 +28,7 @@ if (con$study == "Studies") {
   names(success) <- ge_studies
 
   if (all(sapply(success, isTRUE))) {
-    cat("All matrices successfully updated!")
+    cat("Differential Expression successfully run on all compatible studies!")
   } else {
     cat(
       "Some studies failed to update: \n",
@@ -44,5 +38,5 @@ if (con$study == "Studies") {
     )
   }
 } else {
-  con$updateEMs()
+  con$upload_de_analysis_results()
 }
