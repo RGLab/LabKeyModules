@@ -1,1 +1,12 @@
 // You can include here any css that will be shared between webparts
+@use "~@immunespace/theme/dist/immunespace";
+@use "./shared";
+@use "./ImmuneSpaceR";
+
+body {
+  font-family: immunespace.$nunito-sans;
+  //font-family: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+// idk why immunespace package is not supplying the font
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap");

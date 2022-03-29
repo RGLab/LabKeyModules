@@ -1,0 +1,87 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
+@use "./shared";
+@use "./components.tri-block";
+
+$content-grid-margin-top: 32px;
+
+main {
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.content-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 7fr 5fr;
+  margin-top: $content-grid-margin-top;
+}
+
+.immunespaceR-content {
+  h1 {
+    @include shared.title-style;
+    margin-bottom: 0;
+  }
+
+  h1,
+  .immunespaceR-text {
+    margin-top: 32px;
+  }
+
+  .immunespaceR-text {
+    p:first-child {
+      margin-bottom: 24px;
+    }
+  }
+
+  p {
+    @include shared.base-text-style;
+    margin: 0;
+  }
+
+  .immunespaceR-arrow {
+    display: block;
+    color: immunespace.$dark-gray;
+    margin-top: 96px;
+    span {
+      @include shared.button-text-style;
+    }
+  }
+}
+
+#immunespaceR-logo-mobile {
+  display: none;
+}
+
+.immunespaceR-logo-img {
+  display: block;
+  width: 265px;
+  height: 265px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 88px - $content-grid-margin-top;
+}
+
+@include responsive.media-query(mobile) {
+  main {
+    max-width: 607px;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #immunespaceR-logo-mobile {
+    display: block;
+    margin-left: 0;
+  }
+
+  #immunespaceR-logo-desk {
+    display: none;
+  }
+
+  .immunespaceR-arrow {
+    margin-top: 56px;
+  }
+}

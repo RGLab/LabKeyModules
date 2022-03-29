@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test ImmuneSpaceR renders correctly test ImmuneSpaceR renders correctly 1`] = `
+<main
+  className="page-content"
+>
+  <section
+    className="content-grid"
+  >
+    <div
+      className="immunespaceR-content grid-item"
+    >
+      <h1>
+        ImmuneSpaceR
+      </h1>
+      <img
+        alt="immunespaceR logo"
+        className="immunespaceR-logo-img"
+        id="immunespaceR-logo-mobile"
+        src="/ResourcesPage/images/sticker3.svg"
+      />
+      <div
+        className="immunespaceR-text"
+      >
+        <p>
+          A thin wrapper around Rlabkey to access the ImmuneSpace database from R.
+        </p>
+        <p>
+          This package simplifies access to the HIPC ImmuneSpace database for R programmers. It takes advantage of the standardization of the database to hide all the Rlabkey specific code away from the user. The study-specific datasets can be accessed via an object-oriented paradigm.
+        </p>
+      </div>
+      <a
+        className="immunespaceR-arrow"
+        href="https://github.com/RGLab/ImmuneSpaceR"
+        title="ImmuneSpaceR GitHub repo"
+      >
+        <span
+          className="tri-block__link-text"
+        >
+          Learn More
+        </span>
+      </a>
+    </div>
+    <div
+      className="immunespaceR-logo grid-item"
+    >
+      <img
+        alt="immunespaceR logo"
+        className="immunespaceR-logo-img"
+        id="immunespaceR-logo-desk"
+        src="/ResourcesPage/images/sticker3.svg"
+      />
+    </div>
+  </section>
+</main>
+`;
