@@ -2,6 +2,9 @@
 @use "~@immunespace/theme/dist/immunespace";
 @use "./shared";
 @use "./ImmuneSpaceR";
+@use "./Tools";
+@use "./StudyStatistics";
+@use "./components";
 
 body {
   font-family: immunespace.$nunito-sans;

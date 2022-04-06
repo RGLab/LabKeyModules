@@ -4,7 +4,6 @@ import {
 } from "../PlotComponents/mostCitedBarPlot";
 
 export function updatePmPlotData(transformedPmData, pmDataRange, pmOrderBy) {
-  if (transformedPmData.byPubId.length > 0) {
     var copy = JSON.parse(JSON.stringify(transformedPmData));
     copy.byPubId.sort((a, b) => (a[pmOrderBy] > b[pmOrderBy] ? 1 : -1));
 
@@ -24,5 +23,5 @@ export function updatePmPlotData(transformedPmData, pmDataRange, pmOrderBy) {
     };
 
     return plotProps;
-  }
+  
 }

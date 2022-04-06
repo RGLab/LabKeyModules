@@ -51,6 +51,7 @@ import {
 import { MostAccessed } from "./MostAccessed";
 import { MostCited } from "./MostCited";
 import { SimilarStudies } from "./SimilarStudies";
+import StudyStatistics from "./StudyStatistics";
 
 /*  ----------------
       Main
@@ -228,13 +229,22 @@ const ResourcesPage: React.FC = () => {
     );
   }, []);
 
+  //console.log(transformedMaData);
+
+  const isMaDataReady = React.useMemo(() => {
+    return (
+      transformedMaData.byMonth.length > 0 &&
+      transformedMaData.byStudy.length > 0
+    );
+  }, [transformedMaData]);
+
   const getTabContent = React.useCallback(() => {
     return (
       <Tab.Content>
         <TabPane eventKey={TAB_REPORTS}>
           <Reports />
         </TabPane>
-        <TabPane eventKey={TAB_MOSTACCESSED}>
+        {/* <TabPane eventKey={TAB_MOSTACCESSED}>
           <MostAccessed
             transformedMaData={transformedMaData}
             labkeyBaseUrl={labkeyBaseUrl}
@@ -252,9 +262,16 @@ const ResourcesPage: React.FC = () => {
             ssDataRange={ssDataRange}
             labkeyBaseUrl={labkeyBaseUrl}
           />
-        </TabPane>
+        </TabPane> */}
         <TabPane eventKey={TAB_TOOLS}>
-          <Tools />
+          <StudyStatistics
+            maData={transformedMaData}
+            mcData={transformedPmData}
+            ssData={transformedSsData}
+            ssDataRange={ssDataRange}
+            pmDataRange={pmDataRange}
+            labkeyBaseUrl={labkeyBaseUrl}
+          />
         </TabPane>
         <TabPane eventKey={TAB_IMMUNESPACER}>
           <ImmuneSpaceR />
@@ -271,8 +288,7 @@ const ResourcesPage: React.FC = () => {
     <Tab.Container
       activeKey={activeTab}
       generateChildId={generateChildId}
-      onSelect={(tab) => changeTabParam(`${tab}`)}
-    >
+      onSelect={(tab) => changeTabParam(`${tab}`)}>
       <div>
         {getNavbar()}
         {getTabContent()}

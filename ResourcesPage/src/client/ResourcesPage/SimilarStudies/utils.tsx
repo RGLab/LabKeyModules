@@ -38,7 +38,6 @@ const getLabelType = (label) => {
 
 export function createSsPlotPropsList(transformedSsData, ssDataRange, labkeyBaseUrl){
     let ssPlotPropsList = {}
-    if(transformedSsData.length > 0){
         Object.keys(LABELS).forEach(function(key){
             const subList = []
             LABELS[key].forEach(function(label, index){
@@ -54,6 +53,6 @@ export function createSsPlotPropsList(transformedSsData, ssDataRange, labkeyBase
             })
             ssPlotPropsList[key] = subList
         })
-    }
+    
     return(ssPlotPropsList)
 }

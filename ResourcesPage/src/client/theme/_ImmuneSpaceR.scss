@@ -24,7 +24,7 @@ main {
     margin-bottom: 0;
   }
 
-  h1,
+  main,
   .immunespaceR-text {
     margin-top: 32px;
   }
@@ -40,13 +40,8 @@ main {
     margin: 0;
   }
 
-  .immunespaceR-arrow {
-    display: block;
-    color: immunespace.$dark-gray;
+  a {
     margin-top: 96px;
-    span {
-      @include shared.button-text-style;
-    }
   }
 }
 

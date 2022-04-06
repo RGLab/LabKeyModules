@@ -1,4 +1,5 @@
 import * as React from "react";
+import ArrowLink from "./components/ArrowLink";
 
 export const ImmuneSpaceR: React.FC = () => {
   return (
@@ -25,12 +26,10 @@ export const ImmuneSpaceR: React.FC = () => {
               object-oriented paradigm.
             </p>
           </div>
-          <a
+          <ArrowLink
             href="https://github.com/RGLab/ImmuneSpaceR"
-            className="immunespaceR-arrow"
-            title="ImmuneSpaceR GitHub repo">
-            <span className="tri-block__link-text">Analyte Explorer</span>
-          </a>
+            text="Learn More"
+          />
         </div>
 
         <div className="immunespaceR-logo grid-item">

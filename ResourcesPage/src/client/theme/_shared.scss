@@ -6,6 +6,12 @@
   font-weight: immunespace.$font-weight--black;
 }
 
+@mixin subtitle-style {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: immunespace.$font-weight--normal;
+}
+
 @mixin subsubtitle-style {
   font-size: 16px;
   line-height: 24px;
@@ -18,9 +24,31 @@
   font-weight: immunespace.$font-weight--bold;
 }
 
+@mixin filter-text-style {
+  color: immunespace.$dark-gray;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: immunespace.$font-weight--semibold;
+}
+
+@mixin data-tabs-text-style {
+  color: immunespace.$dark-gray;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: immunespace.$font-weight--black;
+}
+
 @mixin base-text-style {
   font-size: 16px;
   line-height: 24px;
+  font-weight: immunespace.$font-weight--normal;
+}
+
+@mixin arrow-text-style {
+  display: block;
+  color: immunespace.$dark-gray;
+  text-decoration: none;
+  @include button-text-style;
 }
 
 /** --- Bobber --------- */
