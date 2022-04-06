@@ -76,10 +76,8 @@ const PlotMenu: React.FC<PlotMenuComponentProps> = ({
       if (
         dropdownRef.current &&
         dropdownButtonRef.current &&
-        dropdownRef.current.className !==
-          (event.target as HTMLElement).className &&
-        dropdownButtonRef.current.className !==
-          (event.target as HTMLElement).className
+        !dropdownRef.current.contains(event.target) &&
+        !dropdownButtonRef.current.contains(event.target)
       ) {
         setIsOpen(false);
       }
@@ -100,7 +98,7 @@ const PlotMenu: React.FC<PlotMenuComponentProps> = ({
           setIsOpen(!isOpen);
         }}
         ref={dropdownButtonRef}>
-        <span>{name}</span>
+        <span className="dropdown-name">{name}</span>
         <img
           className="dropdown-icon"
           src="/ResourcesPage/icons/arrow_drop_down.svg"
@@ -112,14 +110,13 @@ const PlotMenu: React.FC<PlotMenuComponentProps> = ({
           <ul>
             {options.map((option) => {
               return (
-                <li key={option.value}>
-                  <span
-                    onClick={() => {
-                      setIsOpen(!isOpen);
-                      onClickCallback(option.value);
-                    }}>
-                    {option.label}
-                  </span>
+                <li
+                  key={option.value}
+                  onClick={() => {
+                    setIsOpen(!isOpen);
+                    onClickCallback(option.value);
+                  }}>
+                  <span>{option.label}</span>
                 </li>
               );
             })}
@@ -353,9 +350,6 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
 
     return ssDataPackages;
   }, [ssData, ssDataRange, labkeyBaseUrl]);
-
-  console.log(McDataPackages);
-  console.log(SsDataPackages);
 
   return (
     <main className="page-content">
