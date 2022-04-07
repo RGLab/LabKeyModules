@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etl xmlns="http://labkey.org/etl/xml">
+    <name>Run Differential Expression Analysis</name>
+    <description>Run differential expression analysis over time.</description>
+    <transforms>
+        <transform id="run_DEA" type="TaskRefTransformStep">
+            <description>preprocess</description>
+            <taskref ref="org.labkey.di.pipeline.RunReportTask">
+                <settings>
+                    <setting name="reportId" value="module:DifferentialExpressionAnalysis/run_DEA.R"/>
+                </settings>
+            </taskref>
+        </transform>
+    </transforms>
+</etl>

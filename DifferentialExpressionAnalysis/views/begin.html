@@ -1,0 +1,26 @@
+
+
+<h3>Differential Expression Analysis Results</h3>
+
+<p>
+  Genes differentially expressed with an FDR of less than 20%, or top 100 lowest FDR.
+</p>
+
+<p>
+  Differential expression over time is calculated over time for each
+  cohort and sample type. Statistics are calculated using the
+  <code>ebayes</code> method from the
+  <a href="https://bioconductor.org/packages/release/bioc/html/limma.html"><code>limma</code></a>
+  package, and implemented in the <a href="https://github.com/RGLab/HIPCMatrix"><code>HIPCMatrix</code></a> package.
+</p>
+<br><div id="de-results"></div>
+<script type="text/javascript">
+  var de_webpart = new LABKEY.QueryWebPart({
+    renderTo: 'de-results',
+    frame: 'none',
+    schemaName: 'gene_expression',
+    queryName: 'DGEA_filteredGEAR',
+    viewName: 'DGEAR'
+  });
+  de_webpart.render();
+</script>

@@ -76,7 +76,7 @@ function removeEMs( dataRegion ) {
     }
 
     // Rm .summary.orig files may fail if they are not present b/c update
-    // has not occured yet via UpdateAnno::UpdateAnno().
+    // has not occured yet via RunUpdateAnno.
     function fileRm( fileSystem, rmPath){
         fileSystem.deletePath({
                     path: rmPath,
