@@ -33,11 +33,11 @@ export const SS_SELECT_PLOT_SET_MENU_PROPS: PlotMenuSpecs = {
   id: "ss-select-plot-set",
   name: "Select Plot Set",
   options: [
-    { id: "assays", value:"assays", label: "Assay Data Available"},
-    { id: "studyDesign", value:"design", label: "Study Design"},
-    {id: "condition", value:"condition", label: "Condition Studied"}
-  ]
-}
+    { id: "assays", value: "assays", label: "Assay Data Available" },
+    { id: "studyDesign", value: "design", label: "Study Design" },
+    { id: "condition", value: "condition", label: "Condition Studied" },
+  ],
+};
 
 export const MA_FOOTER_TEXT_STUDY = [
   "Hover over each bar for specific study data",
@@ -60,4 +60,4 @@ export const MC_FOOTER_TEXT = [
 export const SS_FOOTER_TEXT = [
   "Hover over a point for a link to the study overview page",
   "Toggle between plots with LABELS for Assay Data Available, Study Design, or Condition Studied using the dropdown menu",
-]
+];

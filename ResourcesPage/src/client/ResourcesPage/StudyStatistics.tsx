@@ -22,7 +22,10 @@ import {
 
 import AESpinner from "../../../../AnalyteExplorer/src/client/AnalyteExplorer/components/AESpinner";
 import * as d3 from "d3";
-import { ScatterPlotDataRange } from "./PlotComponents/similarStudyScatterPlot";
+import {
+  ScatterPlotDataRange,
+  ScatterPlotProps,
+} from "./PlotComponents/similarStudyScatterPlot";
 
 interface TOCItem {
   name: string;
@@ -372,7 +375,7 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
         <PlotArea
           title="Most Cited Publications Related to Studies to ImmuneSpace"
           anchorID="most-cited"
-          subtitle="Something"
+          subtitle=""
           menus={[MC_SELECT_ORDER_MENU_PROPS]}
           plotPackages={McDataPackages}
         />

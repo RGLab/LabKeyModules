@@ -52,6 +52,7 @@ import { MostAccessed } from "./MostAccessed";
 import { MostCited } from "./MostCited";
 import { SimilarStudies } from "./SimilarStudies";
 import StudyStatistics from "./StudyStatistics";
+import TabBar from "./components/TabBar";
 
 /*  ----------------
       Main
@@ -80,7 +81,7 @@ const ResourcesPage: React.FC = () => {
   };
 
   const [activeTab, setActiveTab] = React.useState(
-    getCurrentTabParam() ?? TAB_REPORTS
+    getCurrentTabParam() ?? TAB_STUDYSTATS
   );
 
   /* 
@@ -110,7 +111,7 @@ const ResourcesPage: React.FC = () => {
   };
 
   React.useEffect(() => {
-    const defaultActiveTab = getCurrentTabParam() ?? TAB_REPORTS;
+    const defaultActiveTab = getCurrentTabParam() ?? TAB_STUDYSTATS;
     const url = new URL(`${window.location}`);
     url.searchParams.set("tab", defaultActiveTab);
     window.history.replaceState({ tab: defaultActiveTab }, "", `${url}`);
@@ -195,48 +196,83 @@ const ResourcesPage: React.FC = () => {
   /*  ----------------
         NavBar & Content
     ------------------ */
-  const getNavbar = React.useCallback(() => {
-    const items = tabInfo.map((tab, index) => {
-      // Dropdown
-      if (tab.subMenu && tab.subMenu.length > 0) {
-        const menuItems = tab.subMenu.map((sub) => {
-          return (
-            <MenuItem eventKey={sub.tag} id={sub.tag} key={sub.tag}>
-              {sub.text}
-            </MenuItem>
-          );
-        });
+  // const getNavbar = React.useCallback(() => {
+  //   const items = tabInfo.map((tab, index) => {
+  //     // Dropdown
+  //     if (tab.subMenu && tab.subMenu.length > 0) {
+  //       const menuItems = tab.subMenu.map((sub) => {
+  //         return (
+  //           <MenuItem eventKey={sub.tag} id={sub.tag} key={sub.tag}>
+  //             {sub.text}
+  //           </MenuItem>
+  //         );
+  //       });
 
-        return (
-          <NavDropdown title={tab.text} id={tab.id} key={tab.tag}>
-            {menuItems}
-          </NavDropdown>
-        );
-      }
+  //       return (
+  //         <NavDropdown title={tab.text} id={tab.id} key={tab.tag}>
+  //           {menuItems}
+  //         </NavDropdown>
+  //       );
+  //     }
 
-      // Non-dropdown
-      return (
-        <NavItem eventKey={tab.tag} key={tab.tag}>
-          {tab.text}
-        </NavItem>
-      );
-    });
+  //     // Non-dropdown
+  //     return (
+  //       <NavItem eventKey={tab.tag} key={tab.tag}>
+  //         {tab.text}
+  //       </NavItem>
+  //     );
+  //   });
 
+  //   return (
+  //     <Navbar>
+  //       <Nav style={{ marginLeft: "0" }}>{items}</Nav>
+  //     </Navbar>
+  //   );
+  // }, []);
+
+  const getNewTabContent = React.useCallback(() => {
     return (
-      <Navbar>
-        <Nav style={{ marginLeft: "0" }}>{items}</Nav>
-      </Navbar>
+      <React.Fragment>
+        <div
+          id={`${tabInfo[0].id}-panel`}
+          role="tabpanel"
+          tabIndex={0}
+          aria-labelledby={`${tabInfo[0].id}-tab`}
+          hidden={activeTab !== TAB_STUDYSTATS}>
+          <StudyStatistics
+            maData={transformedMaData}
+            mcData={transformedPmData}
+            ssData={transformedSsData}
+            ssDataRange={ssDataRange}
+            pmDataRange={pmDataRange}
+            labkeyBaseUrl={labkeyBaseUrl}
+          />
+        </div>
+        <div
+          id={`${tabInfo[1].id}-panel`}
+          role="tabpanel"
+          tabIndex={0}
+          aria-labelledby={`${tabInfo[1].id}-tab`}
+          hidden={activeTab !== TAB_TOOLS}>
+          <Tools />
+        </div>
+        <div
+          id={`${tabInfo[2].id}-panel`}
+          role="tabpanel"
+          tabIndex={0}
+          aria-labelledby={`${tabInfo[2].id}-tab`}
+          hidden={activeTab !== TAB_IMMUNESPACER}>
+          <ImmuneSpaceR />
+        </div>
+      </React.Fragment>
     );
-  }, []);
-
-  //console.log(transformedMaData);
-
-  const isMaDataReady = React.useMemo(() => {
-    return (
-      transformedMaData.byMonth.length > 0 &&
-      transformedMaData.byStudy.length > 0
-    );
-  }, [transformedMaData]);
+  }, [
+    transformedPmData,
+    transformedSsData,
+    transformedMaData,
+    tabInfo,
+    activeTab,
+  ]);
 
   const getTabContent = React.useCallback(() => {
     return (
@@ -263,6 +299,7 @@ const ResourcesPage: React.FC = () => {
             labkeyBaseUrl={labkeyBaseUrl}
           />
         </TabPane> */}
+
         <TabPane eventKey={TAB_TOOLS}>
           <StudyStatistics
             maData={transformedMaData}
@@ -285,16 +322,27 @@ const ResourcesPage: React.FC = () => {
   }, []);
 
   return (
-    <Tab.Container
-      activeKey={activeTab}
-      generateChildId={generateChildId}
-      onSelect={(tab) => changeTabParam(`${tab}`)}>
-      <div>
-        {getNavbar()}
-        {getTabContent()}
-      </div>
-    </Tab.Container>
+    <div className="immunespace-tabContainer">
+      <TabBar tabInfo={tabInfo} onSelect={changeTabParam} />
+      {getNewTabContent()}
+    </div>
   );
+
+  // return (
+  //   <Tab.Container
+  //     activeKey={activeTab}
+  //     generateChildId={generateChildId}
+  //     onSelect={(tab) => changeTabParam(`${tab}`)}>
+  //     <div>
+  //       <TabBar
+  //         tabInfo={tabInfo}
+  //
+  //         onSelect={setActiveTab}
+  //       />
+  //       {getTabContent()}
+  //     </div>
+  //   </Tab.Container>
+  // );
 };
 
 // --------- EXPORT ------------

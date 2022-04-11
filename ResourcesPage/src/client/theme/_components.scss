@@ -1,6 +1,13 @@
 @use "~@immunespace/theme/dist/immunespace";
 @use "./shared";
 
+// nav bar
+
+#resources-page .navbar {
+  background-color: immunespace.$white;
+  //border: none;
+}
+
 // ArrowLink
 .arrow-link {
   display: block;
@@ -125,4 +132,45 @@
       }
     }
   }
+}
+
+// Tab Bar
+
+.immunespace-tabbar {
+  position: relative;
+  width: 100%;
+
+  &__tabContainer {
+    display: flex;
+    justify-content: start;
+  }
+
+  &__item {
+    @include shared.data-tabs-text-style;
+    border: none;
+    background-color: transparent;
+    padding: 8px 16px;
+
+    &.is-tabbar-selected {
+      //font-weight: bold;
+      background-color: #e7e7e7;
+    }
+  }
+
+  &__indicator {
+    position: absolute;
+    background-color: immunespace.$dark-gray;
+    bottom: 0px;
+    width: 100%;
+    height: 2px;
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; // stole this straight from material-ui
+  }
+}
+
+// Tab Container
+
+.immunespace-tabContainer {
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
 }

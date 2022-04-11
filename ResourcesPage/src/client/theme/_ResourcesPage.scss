@@ -6,6 +6,10 @@
 @use "./StudyStatistics";
 @use "./components";
 
+#resources-page {
+  width: 100vw;
+}
+
 body {
   font-family: immunespace.$nunito-sans;
   //font-family: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
