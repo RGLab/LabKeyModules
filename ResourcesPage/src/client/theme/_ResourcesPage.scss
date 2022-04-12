@@ -6,13 +6,14 @@
 @use "./StudyStatistics";
 @use "./components";
 
-#resources-page {
-  width: 100vw;
+.lk-body-ct > .container {
+  @if (calc(100vw - 100%) != 0) {
+    padding-left: calc((100vw - 100%)); // to compensate for scrollbar
+  }
 }
 
 body {
   font-family: immunespace.$nunito-sans;
-  //font-family: "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 // idk why immunespace package is not supplying the font
