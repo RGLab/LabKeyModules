@@ -174,3 +174,14 @@
   margin-left: auto;
   margin-right: auto;
 }
+
+// Tab Panel Animation
+
+.immunespace-tabpanel-enter {
+  opacity: 0;
+}
+
+.immunespace-tabpanel-enter-active {
+  opacity: 1;
+  transition: opacity 300ms linear;
+}

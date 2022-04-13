@@ -48,11 +48,13 @@ import {
   TAB_STUDYSTATS,
   tabInfo,
 } from "./constants";
-import { MostAccessed } from "./MostAccessed";
-import { MostCited } from "./MostCited";
-import { SimilarStudies } from "./SimilarStudies";
+// import { MostAccessed } from "./MostAccessed";
+// import { MostCited } from "./MostCited";
+// import { SimilarStudies } from "./SimilarStudies";
 import StudyStatistics from "./StudyStatistics";
 import TabBar from "./components/TabBar";
+
+import { CSSTransition } from "react-transition-group";
 
 /*  ----------------
       Main
@@ -233,37 +235,54 @@ const ResourcesPage: React.FC = () => {
   const getNewTabContent = React.useCallback(() => {
     return (
       <React.Fragment>
-        <div
-          id={`${tabInfo[0].id}-panel`}
-          role="tabpanel"
-          tabIndex={0}
-          aria-labelledby={`${tabInfo[0].id}-tab`}
-          hidden={activeTab !== TAB_STUDYSTATS}>
-          <StudyStatistics
-            maData={transformedMaData}
-            mcData={transformedPmData}
-            ssData={transformedSsData}
-            ssDataRange={ssDataRange}
-            pmDataRange={pmDataRange}
-            labkeyBaseUrl={labkeyBaseUrl}
-          />
-        </div>
-        <div
-          id={`${tabInfo[1].id}-panel`}
-          role="tabpanel"
-          tabIndex={0}
-          aria-labelledby={`${tabInfo[1].id}-tab`}
-          hidden={activeTab !== TAB_TOOLS}>
-          <Tools />
-        </div>
-        <div
-          id={`${tabInfo[2].id}-panel`}
-          role="tabpanel"
-          tabIndex={0}
-          aria-labelledby={`${tabInfo[2].id}-tab`}
-          hidden={activeTab !== TAB_IMMUNESPACER}>
-          <ImmuneSpaceR />
-        </div>
+        <CSSTransition
+          in={activeTab === TAB_STUDYSTATS}
+          timeout={300}
+          classNames="immunespace-tabpanel">
+          <div
+            id={`${tabInfo[0].id}-panel`}
+            role="tabpanel"
+            tabIndex={0}
+            aria-labelledby={`${tabInfo[0].id}-tab`}
+            hidden={activeTab !== TAB_STUDYSTATS}>
+            <StudyStatistics
+              maData={transformedMaData}
+              mcData={transformedPmData}
+              ssData={transformedSsData}
+              ssDataRange={ssDataRange}
+              pmDataRange={pmDataRange}
+              labkeyBaseUrl={labkeyBaseUrl}
+            />
+          </div>
+        </CSSTransition>
+
+        <CSSTransition
+          in={activeTab === TAB_TOOLS}
+          timeout={300}
+          classNames="immunespace-tabpanel">
+          <div
+            id={`${tabInfo[1].id}-panel`}
+            role="tabpanel"
+            tabIndex={0}
+            aria-labelledby={`${tabInfo[1].id}-tab`}
+            hidden={activeTab !== TAB_TOOLS}>
+            <Tools />
+          </div>
+        </CSSTransition>
+
+        <CSSTransition
+          in={activeTab === TAB_IMMUNESPACER}
+          timeout={300}
+          classNames="immunespace-tabpanel">
+          <div
+            id={`${tabInfo[2].id}-panel`}
+            role="tabpanel"
+            tabIndex={0}
+            aria-labelledby={`${tabInfo[2].id}-tab`}
+            hidden={activeTab !== TAB_IMMUNESPACER}>
+            <ImmuneSpaceR />
+          </div>
+        </CSSTransition>
       </React.Fragment>
     );
   }, [
@@ -274,48 +293,48 @@ const ResourcesPage: React.FC = () => {
     activeTab,
   ]);
 
-  const getTabContent = React.useCallback(() => {
-    return (
-      <Tab.Content>
-        <TabPane eventKey={TAB_REPORTS}>
-          <Reports />
-        </TabPane>
-        {/* <TabPane eventKey={TAB_MOSTACCESSED}>
-          <MostAccessed
-            transformedMaData={transformedMaData}
-            labkeyBaseUrl={labkeyBaseUrl}
-          />
-        </TabPane>
-        <TabPane eventKey={TAB_MOSTCITED} mountOnEnter={true}>
-          <MostCited
-            transformedPmData={transformedPmData}
-            pmDataRange={pmDataRange}
-          />
-        </TabPane>
-        <TabPane eventKey={TAB_SIMILARSTUDIES}>
-          <SimilarStudies
-            transformedSsData={transformedSsData}
-            ssDataRange={ssDataRange}
-            labkeyBaseUrl={labkeyBaseUrl}
-          />
-        </TabPane> */}
+  // const getTabContent = React.useCallback(() => {
+  //   return (
+  //     <Tab.Content>
+  //       <TabPane eventKey={TAB_REPORTS}>
+  //         <Reports />
+  //       </TabPane>
+  //       {/* <TabPane eventKey={TAB_MOSTACCESSED}>
+  //         <MostAccessed
+  //           transformedMaData={transformedMaData}
+  //           labkeyBaseUrl={labkeyBaseUrl}
+  //         />
+  //       </TabPane>
+  //       <TabPane eventKey={TAB_MOSTCITED} mountOnEnter={true}>
+  //         <MostCited
+  //           transformedPmData={transformedPmData}
+  //           pmDataRange={pmDataRange}
+  //         />
+  //       </TabPane>
+  //       <TabPane eventKey={TAB_SIMILARSTUDIES}>
+  //         <SimilarStudies
+  //           transformedSsData={transformedSsData}
+  //           ssDataRange={ssDataRange}
+  //           labkeyBaseUrl={labkeyBaseUrl}
+  //         />
+  //       </TabPane> */}
 
-        <TabPane eventKey={TAB_TOOLS}>
-          <StudyStatistics
-            maData={transformedMaData}
-            mcData={transformedPmData}
-            ssData={transformedSsData}
-            ssDataRange={ssDataRange}
-            pmDataRange={pmDataRange}
-            labkeyBaseUrl={labkeyBaseUrl}
-          />
-        </TabPane>
-        <TabPane eventKey={TAB_IMMUNESPACER}>
-          <ImmuneSpaceR />
-        </TabPane>
-      </Tab.Content>
-    );
-  }, [transformedPmData, transformedSsData, transformedMaData]);
+  //       <TabPane eventKey={TAB_TOOLS}>
+  //         <StudyStatistics
+  //           maData={transformedMaData}
+  //           mcData={transformedPmData}
+  //           ssData={transformedSsData}
+  //           ssDataRange={ssDataRange}
+  //           pmDataRange={pmDataRange}
+  //           labkeyBaseUrl={labkeyBaseUrl}
+  //         />
+  //       </TabPane>
+  //       <TabPane eventKey={TAB_IMMUNESPACER}>
+  //         <ImmuneSpaceR />
+  //       </TabPane>
+  //     </Tab.Content>
+  //   );
+  // }, [transformedPmData, transformedSsData, transformedMaData]);
 
   const generateChildId = React.useCallback((eventKey: any, type: any) => {
     return eventKey;

@@ -13,6 +13,7 @@
   "dependencies": {
     "bootstrap": "^3.4.1",
     "react-iframe": "^1.8.0",
+    "react-transition-group": "^4.4.2",
     "regenerator-runtime": "^0.13.3"
   },
   "devDependencies": {
