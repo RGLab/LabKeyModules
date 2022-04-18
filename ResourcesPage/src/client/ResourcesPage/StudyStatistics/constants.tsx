@@ -14,7 +14,7 @@ export const SELECT_ORDER_MENU_PROPS: PlotMenuSpecs = {
   name: "Select Order",
   options: [
     { id: "UI", value: "study-UI", label: "UI Pageviews" },
-    { id: "ISR", value: "study-ISR", label: "ImmuneSpaceR connections" },
+    { id: "ISR", value: "study-ISR", label: "ImmuneSpaceR Connections" },
     { id: "total", value: "study-total", label: "All Interactions" },
   ],
 };
