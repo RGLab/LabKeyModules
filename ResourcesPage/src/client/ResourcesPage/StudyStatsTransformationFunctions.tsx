@@ -1,19 +1,36 @@
 import {BarPlotDatum} from "./PlotComponents/mostCitedBarPlot"
-import {ScatterPlotDatum} from "./PlotComponents/similarStudyScatterPlot"
+import {ScatterPlotDataRange, ScatterPlotDatum} from "./PlotComponents/similarStudyScatterPlot"
 
 // --- Helpers
-function getRangeFromIntArray(objectArray, elementName){
-    const values = objectArray.map(a => parseFloat(a[elementName]))
-    const max = Math.max(...values)
-    const min = Math.min(...values)
-    return([min, max])
-}
+const getRangeFromIntArray = (objectArray: number[]): number[] => {
+  if (objectArray.length > 0) {
+    let minNum = objectArray[0];
+    let maxNum = objectArray[0];
+
+    for (let i = 0; i < objectArray.length; i++) {
+      const val = parseFloat[objectArray[i]];
+      if (val != null) {
+        if (val > maxNum) {
+          maxNum = val;
+        }
+
+        if (val < minNum) {
+          minNum = val;
+        }
+      }
+    }
+    return [minNum, maxNum];
+  }
+  return [null, null];
+};
+
+
 
 function convertDatePublishedToFloat(date: string){
-    let dateSplit = date.split("-")
-    let months = dateSplit[1] == '1' || dateSplit[1] == 'NA' ? 0 : (parseInt(dateSplit[1]) - 1) / 12
-    let monthsStr = months.toString().split('.')[1]
-    let newDate = dateSplit[0] + "." + monthsStr
+    const dateSplit = date.split("-")
+    const months = dateSplit[1] == "1" || dateSplit[1] == "NA" ? 0 : (parseInt(dateSplit[1]) - 1) / 12
+    const monthsStr = months.toString().split(".")[1]
+    const newDate = dateSplit[0] + "." + monthsStr
     return(parseFloat(newDate))
 }
 
@@ -23,14 +40,22 @@ function convertDateToPercent(date: number, dateRange: number[]){
 
 
 // --- Main
-export const transformCiteData = (pmData, setTransformedPmData, setPmDataRange) =>{
-    const tmpPlotData = {
+export interface PmDataRange {
+    byPubId: number[]
+}
+
+export interface TransformedPmData {
+    byPubId: BarPlotDatum[]
+}
+
+export const transformCiteData = (pmData, setTransformedPmData: (x: TransformedPmData) => void, setPmDataRange: (x: PmDataRange) => void): void =>{
+    const tmpPlotData: TransformedPmData = {
         // byStudy: [],
         byPubId: []
     };
     if(Object.keys(pmData).length !== 0){
         Object.keys(pmData).forEach(function(key){
-            let datum: BarPlotDatum =
+            const datum: BarPlotDatum =
             {
                 label: pmData[key].study + ": " + key,
                 value: parseInt(pmData[key].citations),
@@ -43,11 +68,16 @@ export const transformCiteData = (pmData, setTransformedPmData, setPmDataRange) 
             tmpPlotData.byPubId.push(datum)
         })
         
-        let tmpRangeData = {byPubId: Array<number>()}
-        tmpRangeData['byPubId'] = getRangeFromIntArray(tmpPlotData.byPubId, "value")
+        const tmpRangeData: PmDataRange = {
+          byPubId: getRangeFromIntArray(
+            tmpPlotData.byPubId.map((e) => e.value)
+          ),
+        };
         setPmDataRange(tmpRangeData)
 
-        let tmpRangeDates = getRangeFromIntArray(tmpPlotData.byPubId, "datePublishedFloat")
+        const tmpRangeDates = getRangeFromIntArray(
+          tmpPlotData.byPubId.map((e) => e.datePublishedFloat)
+        );
 
         tmpPlotData.byPubId = tmpPlotData.byPubId.map(function(el){
             el.datePublishedPercent = convertDateToPercent(el.datePublishedFloat, tmpRangeDates)
@@ -58,11 +88,11 @@ export const transformCiteData = (pmData, setTransformedPmData, setPmDataRange) 
     }
 }
 
-export const transformSdyMetaData = (ssData, setTransformedSsData, setSsDataRange) => {
-    const data = []
+export const transformSdyMetaData = (ssData, setTransformedSsData: (x: ScatterPlotDatum[]) => void, setSsDataRange: (value: ScatterPlotDataRange) => void): void => {
+    const data: ScatterPlotDatum[] = [];
     if(Object.keys(ssData).length !== 0){
         Object.keys(ssData).forEach(function(key){
-            let datum: ScatterPlotDatum = 
+            const datum: ScatterPlotDatum = 
             {
                 assays: {
                     elisa: parseInt(ssData[key].has_elisa[0]),
@@ -108,24 +138,31 @@ export const transformSdyMetaData = (ssData, setTransformedSsData, setSsDataRang
         setTransformedSsData(data)
 
         const MULTIPLIER = 1.1
-        var xRange = getRangeFromIntArray(data, "x")
-        var yRange = getRangeFromIntArray(data, "y")
-        xRange = [ xRange[0] * MULTIPLIER, xRange[1] * MULTIPLIER]
-        yRange = [ yRange[0] * MULTIPLIER, yRange[1] * MULTIPLIER]
+        const xRange = getRangeFromIntArray(data.map((e) => e.x)).map(
+          (num) => num * MULTIPLIER
+        );
+        const yRange = getRangeFromIntArray(data.map((e) => e.x)).map(
+          (num) => num * MULTIPLIER
+        );
         const tmpDataRanges = {x: xRange, y: yRange}
         setSsDataRange(tmpDataRanges)
     }
 }
 
-export const transformLogData = (maData, setTransformedMaData) => {
-    const data = {
+export interface TransformedMaData {
+    byMonth: {ISR: number, UI: number, date: string, total: number}[],
+    byStudy: {ISR: number, UI: number, study: string, total: number}[],
+}
+
+export const transformLogData = (maData, setTransformedMaData: (x: TransformedMaData) => void): void => {
+    const data: TransformedMaData = {
         byStudy: [],
         byMonth: []
     }
     if(Object.keys(maData.byStudy).length !== 0){
 
         Object.keys(maData.byStudy).forEach(function(key){
-            let datum = 
+            const datum = 
             {
                 ISR: parseInt(maData.byStudy[key].ISR[0]),
                 UI: parseInt(maData.byStudy[key].UI[0]),
@@ -136,7 +173,7 @@ export const transformLogData = (maData, setTransformedMaData) => {
         })
 
         Object.keys(maData.byMonth).forEach(function(key){
-            let datum = 
+            const datum = 
             {
                 ISR: parseInt(maData.byMonth[key].ISR[0]),
                 UI: parseInt(maData.byMonth[key].UI[0]),
