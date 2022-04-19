@@ -8,7 +8,7 @@ const getRangeFromIntArray = (objectArray: number[]): number[] => {
     let maxNum = objectArray[0];
 
     for (let i = 0; i < objectArray.length; i++) {
-      const val = parseFloat[objectArray[i]];
+      const val = objectArray[i];
       if (val != null) {
         if (val > maxNum) {
           maxNum = val;
@@ -70,7 +70,7 @@ export const transformCiteData = (pmData, setTransformedPmData: (x: TransformedP
         
         const tmpRangeData: PmDataRange = {
           byPubId: getRangeFromIntArray(
-            tmpPlotData.byPubId.map((e) => e.value)
+            tmpPlotData.byPubId.map((e) => (e.value))
           ),
         };
         setPmDataRange(tmpRangeData)
