@@ -6,7 +6,11 @@ import {
   MaPlotTitles,
 } from "../PlotComponents/mostAccessedPlots";
 
-export function createLinePlotProps(data) {
+import { TransformedMaData } from "../StudyStatsTransformationFunctions";
+
+export function createLinePlotProps(
+  data: TransformedMaData["byMonth"]
+): MaLinePlotProps {
   // logic for updating titles
   const lineTitles: MaPlotTitles = {
     x: "Date",
@@ -17,7 +21,7 @@ export function createLinePlotProps(data) {
   const lineData = [];
   const lineLabels = [];
   data.forEach((element) => {
-    let datum: MaLinePlotDatum = {
+    const datum: MaLinePlotDatum = {
       UI: element["UI"],
       ISR: element["ISR"],
       total: element["total"],
@@ -27,7 +31,7 @@ export function createLinePlotProps(data) {
   });
 
   // logic for updating props
-  let lineProps: MaLinePlotProps = {
+  const lineProps: MaLinePlotProps = {
     data: lineData,
     titles: lineTitles,
     labels: lineLabels,
@@ -40,11 +44,15 @@ export function createLinePlotProps(data) {
   return lineProps;
 }
 
-export function createBarPlotProps(data, order, labkeyBaseUrl) {
+export const createBarPlotProps = (
+  data: TransformedMaData["byStudy"],
+  order: string,
+  labkeyBaseUrl: string
+): MaBarPlotProps => {
   // Remove zero values to avoid odd looking chart since sorting is done
   // using a quicksort that leaves secondary sort in groups
   const tmp = JSON.parse(JSON.stringify(data));
-  var tmpStudyData = tmp.filter((el) => el[order] > 10);
+  const tmpStudyData = tmp.filter((el) => el[order] > 10); // is this necessary
   tmpStudyData.sort((a, b) => (a[order] > b[order] ? 1 : -1));
 
   // logic for updating titles
@@ -57,7 +65,7 @@ export function createBarPlotProps(data, order, labkeyBaseUrl) {
   const barData = [];
   const barLabels = [];
   tmpStudyData.forEach((element) => {
-    let datum: MaBarPlotDatum = {
+    const datum: MaBarPlotDatum = {
       UI: element["UI"],
       ISR: element["ISR"],
       total: element["total"],
@@ -67,7 +75,7 @@ export function createBarPlotProps(data, order, labkeyBaseUrl) {
   });
 
   // logic for updating props
-  let barProps: MaBarPlotProps = {
+  const barProps: MaBarPlotProps = {
     data: barData,
     labels: barLabels,
     titles: barTitles,
@@ -78,4 +86,4 @@ export function createBarPlotProps(data, order, labkeyBaseUrl) {
   };
 
   return barProps;
-}
+};
