@@ -146,37 +146,6 @@ interface CreatePlotPackage {
   plots: JSX.Element[];
 }
 
-interface StudyStatisticsPlotProps {
-  id: string;
-  plotProps: any;
-  createFunc: (props: any, id?: string) => void;
-}
-
-const StudyStatisticsPlot: React.FC<StudyStatisticsPlotProps> = ({
-  id,
-  plotProps,
-  createFunc,
-}: StudyStatisticsPlotProps) => {
-  React.useEffect(() => {
-    // clears the canvas of old graph before creating new one
-    d3.select("#" + id)
-      .selectAll("*")
-      .remove();
-
-    // if there's no data, don't create graph
-    if (plotProps.data.length > 0) {
-      createFunc(plotProps, id);
-    }
-  }, [id, plotProps, createFunc]);
-
-  // link to data finder to see how it works
-  return (
-    <div id={plotProps.name}>
-      <svg id={id}></svg>
-    </div>
-  );
-};
-
 // Refactor to new file
 interface AnchorHeadingProps {
   text: string;
@@ -300,6 +269,7 @@ const PlotArea: React.FC<PlotAreaProps> = ({
       </ul>
     );
   };
+  console.log("render");
 
   // If no correct plotPackage is found, render all available menus to allow users to select
   // plot to display
