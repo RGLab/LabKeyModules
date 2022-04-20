@@ -7,7 +7,6 @@ interface TabBarItemProps {
   label: string;
   reference: React.RefObject<HTMLButtonElement>;
   onClickCallback: (index: number) => void;
-  color?: string;
 }
 
 const TabBarItem: React.FC<TabBarItemProps> = ({
@@ -17,7 +16,6 @@ const TabBarItem: React.FC<TabBarItemProps> = ({
   label,
   reference,
   onClickCallback,
-  color = "red",
 }: TabBarItemProps) => {
   return (
     <button
@@ -46,6 +44,7 @@ interface TabInfo {
 interface TabBarProps {
   tabInfo: TabInfo[];
   onSelect: (value: string) => void;
+  defaultTab: string;
 }
 
 interface IndicatorProps {
@@ -55,13 +54,23 @@ interface IndicatorProps {
 
 const TabBar: React.FC<TabBarProps> = ({
   tabInfo,
-
   onSelect,
+  defaultTab,
 }: TabBarProps) => {
   const itemRefs = React.useRef<React.RefObject<HTMLButtonElement>[]>([]); //array of references
-  const [selected, setSelected] = React.useState(0);
+  const [selected, setSelected] = React.useState<number>(null);
   const [indicatorProperties, setIndicatorProperties] =
     React.useState<IndicatorProps>({ left: 0, width: 0 });
+
+  const defaultSelected = React.useMemo(() => {
+    for (let i = 0; i < tabInfo.length; i++) {
+      if (tabInfo[i].tag === defaultTab) {
+        return i;
+      }
+    }
+    return 0;
+  }, [defaultTab, tabInfo]);
+  //console.log(`${defaultSelected} ${selected}`);
 
   itemRefs.current = React.useMemo(() => {
     return tabInfo.map(
@@ -70,33 +79,55 @@ const TabBar: React.FC<TabBarProps> = ({
   }, [tabInfo]);
 
   const tabBarItemOnClick = (index: number) => {
-    console.log(itemRefs.current[0].current.offsetLeft);
     setSelected(index);
     onSelect(tabInfo[index].tag);
   };
 
   React.useEffect(() => {
-    if (itemRefs.current[selected].current != null) {
-      const selectedTab = itemRefs.current[selected].current;
-      const selectedTabWidth = selectedTab.offsetWidth;
-      const selectedTabXPos = selectedTab.offsetLeft;
+    const calculateIndicatorProperties = (selectedTab: HTMLButtonElement) => {
+      return {
+        left: selectedTab.offsetLeft,
+        width: selectedTab.offsetWidth,
+      };
+    };
+
+    if (itemRefs != null && itemRefs.current != null) {
+      if (
+        selected == null &&
+        itemRefs.current[defaultSelected] != null &&
+        itemRefs.current[defaultSelected].current != null
+      ) {
+        const selectedTab = itemRefs.current[defaultSelected].current;
+        setIndicatorProperties(calculateIndicatorProperties(selectedTab));
+      } else if (
+        selected != null &&
+        itemRefs.current[selected] != null &&
+        itemRefs.current[selected].current != null
+      ) {
+        const selectedTab = itemRefs.current[selected].current;
+        setIndicatorProperties(calculateIndicatorProperties(selectedTab));
+      }
+    } else {
       setIndicatorProperties({
-        left: selectedTabXPos,
-        width: selectedTabWidth,
+        left: 0,
+        width: 0,
       });
     }
-  }, [selected]);
+  }, [selected, defaultSelected]);
 
   return (
     <div className="immunespace-tabbar">
-      <div className="immunespace-tabbar__tabContainer">
+      <div
+        className="immunespace-tabbar__tabContainer"
+        role="tablist"
+        aria-label="resources page tabs">
         {tabInfo.map((info, i) => {
           return (
             <TabBarItem
               key={info.id}
               id={info.id}
               index={i}
-              selected={i === selected}
+              selected={i === (selected ?? defaultSelected)}
               label={info.label}
               reference={itemRefs.current[i]}
               onClickCallback={tabBarItemOnClick}
