@@ -4,7 +4,7 @@ import { BarPlotProps } from '../mostCitedBarPlot';
 
 // ================================================================== //
 
-export function drawBarPlot(props: BarPlotProps, id?: "") {
+export function drawBarPlot(props: BarPlotProps) {
 
     const data = props.data;
     const titles = props.titles;
@@ -14,9 +14,9 @@ export function drawBarPlot(props: BarPlotProps, id?: "") {
 
     // select div
     const svg = d3
-        .select("#" + id)
+        .select("#mc-barplot-" + name)
         .attr("viewBox", `0 0 ${props.width} ${props.height}`)
-        .attr("id", id); // why give it same id??
+        .attr("id", "mc-barplot-" + name); // why give it same id??
 
     // ensure old elements are removed before each redraw
     // Otherwise rects will not be redrawn

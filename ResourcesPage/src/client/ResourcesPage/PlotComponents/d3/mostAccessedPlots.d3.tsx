@@ -5,7 +5,7 @@ import { area } from 'd3';
 
 // ================================================================== //
 
-export function drawMaBarPlot(props: MaBarPlotProps, id?: "") {
+export function drawMaBarPlot(props: MaBarPlotProps) {
 
     const data = props.data
     const labels = props.labels
@@ -13,23 +13,21 @@ export function drawMaBarPlot(props: MaBarPlotProps, id?: "") {
     const name = props.name
     const linkBaseText = props.linkBaseText
 
-    // set margins
-    const margin = {
-        top: 50, 
-        right: 30, 
-        bottom: 30, 
-        left: 80
-    },
-    width  = props.width - margin.left - margin.right,
-    height = props.height - margin.top  - margin.bottom;
-
     // select div
     const svg = d3
-        .select("#" + id) //"#ma-barplot-"
+        .select("#ma-barplot-" + name)
         .attr("viewBox", `0 0 ${props.width} ${props.height}`)
-        .attr("id", id); // why give it same id?? // Alex: lol same
+        .attr("id", "ma-barplot-" + name); // why give it same id??
 
-    
+    // set margins
+    const margin = {
+                top: 50, 
+                right: 30, 
+                bottom: 30, 
+                left: 80
+        },
+        width  = props.width - margin.left - margin.right,
+        height = props.height - margin.top  - margin.bottom;
 
     // Set scales using arguments
     const xaxisScale = d3
@@ -192,30 +190,30 @@ export function drawMaBarPlot(props: MaBarPlotProps, id?: "") {
 
 }
 
-export function drawMaLinePlot(props: MaLinePlotProps, id?: "") {
+export function drawMaLinePlot(props: MaLinePlotProps) {
+
     const data = props.data
     const labels = props.labels
     const titles = props.titles
     const name = props.name
     const linkBaseText = props.linkBaseText
 
-    // set margins
-    const margin = {
-        top: 50, 
-        right: 30, 
-        bottom: 70, 
-        left: 60
-    },
-    width  = props.width - margin.left - margin.right,
-    height = props.height - margin.top  - margin.bottom;
-
     // select div
     const svg = d3
-        .select("#" + id)
-        .attr("viewBox", `0 0 ${props.width} ${props.height}`)
-        .attr("id", id); // why give it same id??
+        .select("#ma-lineplot-" + name)
+        .attr("height", props.height)
+        .attr("width", props.width)
+        .attr("id", "ma-lineplot-" + name); // why give it same id??
 
-
+    // set margins
+    const margin = {
+                top: 50, 
+                right: 30, 
+                bottom: 70, 
+                left: 60
+        },
+        width  = props.width - margin.left - margin.right,
+        height = props.height - margin.top  - margin.bottom;
 
     // const layerNames = ['UI','ISR']
     // Set scales using arguments
