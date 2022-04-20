@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { ScatterPlotProps } from '../similarStudyScatterPlot';
 
-export function drawScatterPlot(props: ScatterPlotProps, id?: "") {
+export function drawScatterPlot(props: ScatterPlotProps) {
 
     // props
     const data = props.data;
@@ -101,10 +101,10 @@ export function drawScatterPlot(props: ScatterPlotProps, id?: "") {
     
     // select div
     const svg = d3
-        .select("#" + id)
+        .select("#scatterplot-" + name)
         .attr("height", props.height)
         .attr("width", props.width)
-        .attr("id", id); // why give it same id??
+        .attr("id", "scatterplot-" + name); // why give it same id??
 
     // set margins
     const margin = {
