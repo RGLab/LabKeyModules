@@ -44,7 +44,7 @@ export interface MaLinePlotProps {
 }
 
 // render the d3 barplot element
-export const MaBarPlot: React.FC<MaBarPlotProps> = (props) => {
+export const MaBarPlot: React.FC<MaBarPlotProps> = (props: MaBarPlotProps) => {
   // This will look for the id given by props.name to svg-element
   React.useEffect(() => {
     drawMaBarPlot(props);
@@ -57,7 +57,9 @@ export const MaBarPlot: React.FC<MaBarPlotProps> = (props) => {
   );
 };
 
-export const MaLinePlot: React.FC<MaLinePlotProps> = (props) => {
+export const MaLinePlot: React.FC<MaLinePlotProps> = (
+  props: MaLinePlotProps
+) => {
   // This will look for the id given by props.name to svg-element
   React.useEffect(() => {
     drawMaLinePlot(props);
