@@ -1,4 +1,4 @@
-import { PlotMenuSpecs } from "../StudyStatistics";
+import { PlotMenuSpecs } from "./components";
 
 export const SELECT_PLOT_TYPE_MENU_PROPS: PlotMenuSpecs = {
   id: "select-plot-type",

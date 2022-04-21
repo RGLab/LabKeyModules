@@ -33,151 +33,30 @@ import { MaBarPlot, MaLinePlot } from "./PlotComponents/mostAccessedPlots";
 import { BarPlot } from "./PlotComponents/mostCitedBarPlot";
 import { ScatterPlot } from "./PlotComponents/similarStudyScatterPlot";
 
-interface TOCItem {
-  name: string;
-  link: string;
-}
+// Components
+import {
+  AnchorHeading,
+  TableOfContents,
+  PlotMenu,
+  PlotMenuSpecs,
+} from "./StudyStatistics/components";
 
-interface TOCProps {
-  title: string;
-  content: TOCItem[];
-}
-const TableOfContents: React.FC<TOCProps> = ({ title, content }: TOCProps) => {
-  return (
-    <div className="toc">
-      <span className="toc__title">{title}</span>
-      <div className="toc__content">
-        {content.map((item, i) => {
-          return (
-            <a key={`${item.name}-${i}`} href={item.link} className="toc__link">
-              {item.name}
-            </a>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-export interface PlotMenuSpecs {
-  id: string;
-  name: string;
-  options: { id: string; value: string; label: string }[];
-}
-
-interface PlotMenuComponentProps extends PlotMenuSpecs {
-  onClickCallback: (item: string) => void;
-}
-
-const PlotMenu: React.FC<PlotMenuComponentProps> = ({
-  name,
-  options,
-  onClickCallback,
-}: PlotMenuComponentProps) => {
-  const [isOpen, setIsOpen] = React.useState<boolean>(false);
-
-  const dropdownRef = React.useRef(null);
-  const dropdownButtonRef = React.useRef(null);
-
-  // this works, write documentation on this later - Alex
-  React.useEffect(() => {
-    // the dropdown menu closes when you click outside the dropdown menu OR on the dropdown menu itself
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        dropdownButtonRef.current &&
-        !dropdownRef.current.contains(event.target) &&
-        !dropdownButtonRef.current.contains(event.target)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, [dropdownRef, dropdownButtonRef]);
-
-  // WIP
-  return (
-    <div className="plot-dropdown-menu">
-      <div
-        className="plot-dropdown-menu__button"
-        onClick={() => {
-          setIsOpen(!isOpen);
-        }}
-        ref={dropdownButtonRef}>
-        <span className="dropdown-name">{name}</span>
-        <img
-          className="dropdown-icon"
-          src="/ResourcesPage/icons/arrow_drop_down.svg"
-          alt="dropdown"
-        />
-      </div>
-
-      <div
-        className="plot-dropdown-menu__dropdown"
-        ref={dropdownRef}
-        hidden={!isOpen}>
-        <ul>
-          {options.map((option) => {
-            return (
-              <li
-                key={option.value}
-                onClick={() => {
-                  setIsOpen(!isOpen);
-                  onClickCallback(option.value);
-                }}>
-                <span>{option.label}</span>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    </div>
-  );
-};
-
-interface CreatePlotPackage {
+// A PlotPackage contains all the metadata about a specific plot, used to render a PlotArea
+interface PlotPackage {
   id: string;
   menuIds: string[];
   footerText: string[];
   plots: JSX.Element[];
 }
 
-// Refactor to new file
-interface AnchorHeadingProps {
-  text: string;
-  anchorID: string;
-}
-const AnchorHeading: React.FC<AnchorHeadingProps> = ({
-  text,
-  anchorID,
-}: AnchorHeadingProps) => {
-  return (
-    <div className="plot-area__title">
-      <h1 id={anchorID}>{text}</h1>
-      <a href={`#${anchorID}`} className="anchor-link">
-        <img
-          src="/ResourcesPage/icons/web-hyperlink.svg"
-          alt={text}
-          className="link-icon"
-        />
-      </a>
-    </div>
-  );
-};
-
 interface PlotAreaProps {
   title: string;
   subtitle: string;
   anchorID: string;
   menus: PlotMenuSpecs[];
-  plotPackages: CreatePlotPackage[];
+  plotPackages: PlotPackage[];
 }
 
-// plotPackages are alphabetically ordered by Id (does it have to be? i don't think it has to)
 const PlotArea: React.FC<PlotAreaProps> = ({
   title,
   subtitle,
@@ -187,7 +66,14 @@ const PlotArea: React.FC<PlotAreaProps> = ({
 }: PlotAreaProps) => {
   const [currentPlotId, setCurrentPlotId] = React.useState<string>("");
 
+  /**
+   * How menus work with plots:
+   * Each menu has a list of menu options, and each menu optioon has an id that corresponds to a
+   * PlotPackage of the same id. Every time a user clicks on a dropdown menu option, the PlotPackage with
+   * the same id as the clicked dropdown option is found and its JSX content rendered.
+   */
   const currentPlotIndex = React.useMemo(() => {
+    // is this technically a state?
     // by default display the first plot in the list
     if (plotPackages != undefined) {
       if (currentPlotId === "" && plotPackages.length > 0) {
@@ -210,6 +96,7 @@ const PlotArea: React.FC<PlotAreaProps> = ({
    *
    * @param menus - List of menu spec objects that contain metadata for individual dropdown menus
    * @param currentMenuIds - List of menu IDs that correspond to the some (or all) of the dropdown menus in 'menus'
+   * @param onClickCallback - Function that triggers when the user clicks on a dropdown item
    * @returns - List of PlotMenu
    */
   const renderMenus = (
@@ -234,20 +121,19 @@ const PlotArea: React.FC<PlotAreaProps> = ({
 
   /**
    * Takes in a plotPackage and generates the specified plots. Return error
-   * message if plotPackage is corrupted. Return loading widget if data is empty.
+   * message if plotPackage is corrupted
    * Return error messages if plotPackage is invalid
    *
    * @param plotPackage
    * @returns JSX.Element
    */
-  const renderPlots = (plotPackage: CreatePlotPackage) => {
+  const renderPlots = (plotPackage: PlotPackage) => {
     if (plotPackage == undefined || plotPackage.plots == undefined) {
       return <div>Error: Unable to retrieve plot.</div>;
     }
 
     if (plotPackage.plots.length > 0) {
-      const plots: JSX.Element[] = plotPackage.plots.map((plot) => plot);
-      return <React.Fragment>{plots}</React.Fragment>;
+      return <React.Fragment>{plotPackage.plots}</React.Fragment>;
     }
 
     // if for some reason there're no plots
@@ -269,7 +155,6 @@ const PlotArea: React.FC<PlotAreaProps> = ({
       </ul>
     );
   };
-  console.log("render");
 
   // If no correct plotPackage is found, render all available menus to allow users to select
   // plot to display
@@ -328,17 +213,29 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
   ssDataRange,
   labkeyBaseUrl,
 }: StudyStatisticsProps) => {
-  const MaDataPackages: CreatePlotPackage[] = React.useMemo(() => {
-    const byStudyPackages: CreatePlotPackage[] =
-      SELECT_ORDER_MENU_PROPS.options.map((option) => {
+  /**
+   * Data is converted into PlotPackage format. Each PlotPackage contains one set of plot(s), an id,
+   * a list of menus, and a list of footer display text
+   *
+   * */
+  const MaDataPackages: PlotPackage[] = React.useMemo(() => {
+    // Each dropdown menu option has a corresponding plot
+    const byStudyPackages: PlotPackage[] = SELECT_ORDER_MENU_PROPS.options.map(
+      (option) => {
+        // Turn raw data into required d3 format
         const plotProps = createBarPlotProps(
           maData.byStudy,
           option.id,
           labkeyBaseUrl
         );
 
+        // Initialize plot components, if there's no data yet, put in loading spinner as
+        // placeholder
+        // plotJSX is an array as the PlotArea component can render more than 1 plot at once
         let plotJSX = [<AESpinner key={option.value} />];
         if (plotProps.data.length > 0) {
+          console.log(plotProps.height);
+
           plotJSX = [
             <MaBarPlot
               key={option.value}
@@ -353,12 +250,13 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
           ];
         }
         return {
-          id: option.value,
-          menuIds: [SELECT_PLOT_TYPE_MENU_PROPS.id, SELECT_ORDER_MENU_PROPS.id],
+          id: option.value, // Each plot has an id corresponding to the dropdown menu option that displays it
+          menuIds: [SELECT_PLOT_TYPE_MENU_PROPS.id, SELECT_ORDER_MENU_PROPS.id], // The dropdown menus available for interactions when the plot is displayed
           footerText: MA_FOOTER_TEXT_STUDY,
           plots: plotJSX,
         };
-      });
+      }
+    );
 
     const linePlotProps = createLinePlotProps(maData.byMonth);
 
@@ -380,7 +278,7 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
       ];
     }
 
-    const byMonthPackages: CreatePlotPackage[] = [
+    const byMonthPackages: PlotPackage[] = [
       {
         id: SELECT_PLOT_TYPE_MENU_PROPS.options[1].value,
         menuIds: [SELECT_PLOT_TYPE_MENU_PROPS.id],
@@ -391,8 +289,8 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
     return [...byStudyPackages, ...byMonthPackages];
   }, [maData, labkeyBaseUrl]);
 
-  const McDataPackages: CreatePlotPackage[] = React.useMemo(() => {
-    const byPubIdPackages: CreatePlotPackage[] =
+  const McDataPackages: PlotPackage[] = React.useMemo(() => {
+    const byPubIdPackages: PlotPackage[] =
       MC_SELECT_ORDER_MENU_PROPS.options.map((option) => {
         const plotProp = updatePmPlotData(mcData, pmDataRange, option.id);
         let plotJSX = [<AESpinner key={option.value} />];
@@ -420,14 +318,14 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
     return byPubIdPackages;
   }, [mcData, pmDataRange]);
 
-  const SsDataPackages: CreatePlotPackage[] = React.useMemo(() => {
+  const SsDataPackages: PlotPackage[] = React.useMemo(() => {
     const ssPlotPropsList = createSsPlotPropsList(
       ssData,
       ssDataRange,
       labkeyBaseUrl
     );
 
-    const ssDataPackages: CreatePlotPackage[] =
+    const ssDataPackages: PlotPackage[] =
       SS_SELECT_PLOT_SET_MENU_PROPS.options.map((option) => {
         const plotProp = ssPlotPropsList[option.id];
         let plotJSX = [<AESpinner key={option.value} />];
