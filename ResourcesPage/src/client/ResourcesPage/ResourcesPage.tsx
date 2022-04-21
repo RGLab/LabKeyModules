@@ -11,7 +11,7 @@ import "regenerator-runtime/runtime";
 // Components
 import { ImmuneSpaceR } from "./ImmuneSpaceR";
 import { Tools } from "./Tools";
-import { Reports } from "./Reports";
+//import { Reports } from "./Reports";
 import StudyStatistics from "./StudyStatistics";
 import TabBar from "./components/TabBar";
 import { CSSTransition } from "react-transition-group";
@@ -31,7 +31,6 @@ import { fetchApiData } from "./FetchApiData";
 import "./ResourcesPage.scss";
 
 // Typings
-import { BarPlotDatum } from "./PlotComponents/mostCitedBarPlot";
 import {
   ScatterPlotDatum,
   ScatterPlotDataRange,
@@ -39,10 +38,6 @@ import {
 
 // Constants
 import {
-  TAB_REPORTS,
-  TAB_MOSTACCESSED,
-  TAB_MOSTCITED,
-  TAB_SIMILARSTUDIES,
   TAB_TOOLS,
   TAB_IMMUNESPACER,
   TAB_STUDYSTATS,
@@ -60,13 +55,6 @@ const ResourcesPage: React.FC = () => {
   /*  ----------------
       Linkable Tabs
     ------------------ */
-  // const nonDropdownTabNames = [TAB_REPORTS, TAB_TOOLS, TAB_IMMUNESPACER];
-
-  // const dropdownTabNames = [
-  //   TAB_MOSTACCESSED,
-  //   TAB_MOSTCITED,
-  //   TAB_SIMILARSTUDIES,
-  // ];
 
   const tabNames = React.useMemo(() => {
     return [TAB_STUDYSTATS, TAB_TOOLS, TAB_IMMUNESPACER];
