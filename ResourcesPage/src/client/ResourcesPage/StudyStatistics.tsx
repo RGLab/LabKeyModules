@@ -74,7 +74,7 @@ const PlotArea: React.FC<PlotAreaProps> = ({
 
   React.useEffect(() => {
     setCurrentPlotId(defaultPackage);
-  }, []);
+  }, [defaultPackage]);
 
   /**
    * How menus work with plots:
@@ -82,23 +82,6 @@ const PlotArea: React.FC<PlotAreaProps> = ({
    * PlotPackage of the same id. Every time a user clicks on a dropdown menu option, the PlotPackage with
    * the same id as the clicked dropdown option is found and its JSX content rendered.
    */
-  // const currentPlotIndex = React.useMemo(() => {
-  //   // is this technically a state?
-  //   // by default display the first plot in the list
-  //   if (plotPackages != undefined) {
-  //     if (currentPlotId === "" && plotPackages.length > 0) {
-  //       return 0;
-  //     }
-
-  //     for (let i = 0; i < plotPackages.length; i++) {
-  //       if (plotPackages[i].id === currentPlotId) {
-  //         return i;
-  //       }
-  //     }
-  //   }
-
-  //   return -1;
-  // }, [currentPlotId, plotPackages]);
 
   /**
    * Returns the corresponding menus for the currently visible StudyStatisticsPlot
