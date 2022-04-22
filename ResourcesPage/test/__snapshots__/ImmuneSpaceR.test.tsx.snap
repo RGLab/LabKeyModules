@@ -30,9 +30,9 @@ exports[`test ImmuneSpaceR renders correctly test ImmuneSpaceR renders correctly
         </p>
       </div>
       <a
-        className="immunespaceR-arrow"
+        className="arrow-link"
         href="https://github.com/RGLab/ImmuneSpaceR"
-        title="ImmuneSpaceR GitHub repo"
+        title="Learn More"
       >
         <span
           className="tri-block__link-text"
