@@ -8,7 +8,7 @@ interface ToolCardProps {
   body: string;
 }
 
-const ToolCard: React.FC<ToolCardProps> = ({
+export const ToolCard: React.FC<ToolCardProps> = ({
   title,
   imgSrc,
   arrLink,
