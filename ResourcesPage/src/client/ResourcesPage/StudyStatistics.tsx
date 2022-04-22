@@ -49,12 +49,17 @@ interface PlotPackage {
   plots: JSX.Element[];
 }
 
+interface PlotPackageGroup {
+  [key: string]: PlotPackage;
+}
+
 interface PlotAreaProps {
   title: string;
   subtitle: string;
   anchorID: string;
   menus: PlotMenuSpecs[];
-  plotPackages: PlotPackage[];
+  defaultPackage: string;
+  plotPackages: PlotPackageGroup;
 }
 
 const PlotArea: React.FC<PlotAreaProps> = ({
@@ -62,9 +67,14 @@ const PlotArea: React.FC<PlotAreaProps> = ({
   subtitle,
   anchorID,
   menus,
+  defaultPackage,
   plotPackages,
 }: PlotAreaProps) => {
   const [currentPlotId, setCurrentPlotId] = React.useState<string>("");
+
+  React.useEffect(() => {
+    setCurrentPlotId(defaultPackage);
+  }, []);
 
   /**
    * How menus work with plots:
@@ -72,23 +82,23 @@ const PlotArea: React.FC<PlotAreaProps> = ({
    * PlotPackage of the same id. Every time a user clicks on a dropdown menu option, the PlotPackage with
    * the same id as the clicked dropdown option is found and its JSX content rendered.
    */
-  const currentPlotIndex = React.useMemo(() => {
-    // is this technically a state?
-    // by default display the first plot in the list
-    if (plotPackages != undefined) {
-      if (currentPlotId === "" && plotPackages.length > 0) {
-        return 0;
-      }
+  // const currentPlotIndex = React.useMemo(() => {
+  //   // is this technically a state?
+  //   // by default display the first plot in the list
+  //   if (plotPackages != undefined) {
+  //     if (currentPlotId === "" && plotPackages.length > 0) {
+  //       return 0;
+  //     }
 
-      for (let i = 0; i < plotPackages.length; i++) {
-        if (plotPackages[i].id === currentPlotId) {
-          return i;
-        }
-      }
-    }
+  //     for (let i = 0; i < plotPackages.length; i++) {
+  //       if (plotPackages[i].id === currentPlotId) {
+  //         return i;
+  //       }
+  //     }
+  //   }
 
-    return -1;
-  }, [currentPlotId, plotPackages]);
+  //   return -1;
+  // }, [currentPlotId, plotPackages]);
 
   /**
    * Returns the corresponding menus for the currently visible StudyStatisticsPlot
@@ -159,7 +169,7 @@ const PlotArea: React.FC<PlotAreaProps> = ({
   // If no correct plotPackage is found, render all available menus to allow users to select
   // plot to display
   // Handles cases where plotPackages is undefined or empty
-  if (currentPlotIndex < 0) {
+  if (Object.keys(plotPackages).length < 1) {
     const allMenuIDs = menus.map((menu) => menu.id);
     return (
       <div className="plot-area">
@@ -175,6 +185,10 @@ const PlotArea: React.FC<PlotAreaProps> = ({
     );
   }
 
+  if (currentPlotId === "") {
+    return <div></div>;
+  }
+
   return (
     <div className="plot-area">
       <AnchorHeading text={title} anchorID={anchorID} />
@@ -182,15 +196,15 @@ const PlotArea: React.FC<PlotAreaProps> = ({
       <div className="plot-area__menu-container">
         {renderMenus(
           menus,
-          plotPackages[currentPlotIndex].menuIds,
+          plotPackages[currentPlotId].menuIds,
           setCurrentPlotId
         )}
       </div>
       <div className="plot-area__plot-container">
-        {renderPlots(plotPackages[currentPlotIndex])}
+        {renderPlots(plotPackages[currentPlotId])}
       </div>
       <div className="plot-area__footer">
-        {renderFooter(plotPackages[currentPlotIndex].footerText)}
+        {renderFooter(plotPackages[currentPlotId].footerText)}
       </div>
     </div>
   );
@@ -218,10 +232,11 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
    * a list of menus, and a list of footer display text
    *
    * */
-  const MaDataPackages: PlotPackage[] = React.useMemo(() => {
+  const MaDataPackages: PlotPackageGroup = React.useMemo(() => {
     // Each dropdown menu option has a corresponding plot
-    const byStudyPackages: PlotPackage[] = SELECT_ORDER_MENU_PROPS.options.map(
-      (option) => {
+    const result: PlotPackageGroup = {};
+    SELECT_ORDER_MENU_PROPS.options.reduce(
+      (result: PlotPackageGroup, option) => {
         // Turn raw data into required d3 format
         const plotProps = createBarPlotProps(
           maData.byStudy,
@@ -249,17 +264,18 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
             />,
           ];
         }
-        return {
+        result[option.value] = {
           id: option.value, // Each plot has an id corresponding to the dropdown menu option that displays it
           menuIds: [SELECT_PLOT_TYPE_MENU_PROPS.id, SELECT_ORDER_MENU_PROPS.id], // The dropdown menus available for interactions when the plot is displayed
           footerText: MA_FOOTER_TEXT_STUDY,
           plots: plotJSX,
         };
-      }
+        return result;
+      },
+      result
     );
 
     const linePlotProps = createLinePlotProps(maData.byMonth);
-
     let plotJSX = [
       <AESpinner key={SELECT_PLOT_TYPE_MENU_PROPS.options[1].value} />,
     ];
@@ -278,83 +294,87 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
       ];
     }
 
-    const byMonthPackages: PlotPackage[] = [
-      {
-        id: SELECT_PLOT_TYPE_MENU_PROPS.options[1].value,
-        menuIds: [SELECT_PLOT_TYPE_MENU_PROPS.id],
-        footerText: MA_FOOTER_TEXT_MONTH,
-        plots: plotJSX,
-      },
-    ];
-    return [...byStudyPackages, ...byMonthPackages];
+    result[SELECT_PLOT_TYPE_MENU_PROPS.options[1].value] = {
+      id: SELECT_PLOT_TYPE_MENU_PROPS.options[1].value,
+      menuIds: [SELECT_PLOT_TYPE_MENU_PROPS.id],
+      footerText: MA_FOOTER_TEXT_MONTH,
+      plots: plotJSX,
+    };
+
+    return result;
   }, [maData, labkeyBaseUrl]);
 
-  const McDataPackages: PlotPackage[] = React.useMemo(() => {
-    const byPubIdPackages: PlotPackage[] =
-      MC_SELECT_ORDER_MENU_PROPS.options.map((option) => {
-        const plotProp = updatePmPlotData(mcData, pmDataRange, option.id);
-        let plotJSX = [<AESpinner key={option.value} />];
-        if (plotProp.data.length > 0) {
-          plotJSX = [
-            <BarPlot
-              key={option.value}
-              data={plotProp.data}
-              titles={plotProp.titles}
-              name={plotProp.name}
-              height={plotProp.height}
-              width={plotProp.width}
-              dataRange={plotProp.dataRange}
-              linkBaseText={plotProp.linkBaseText}
-            />,
-          ];
-        }
-        return {
-          id: option.value,
-          menuIds: [MC_SELECT_ORDER_MENU_PROPS.id],
-          footerText: MC_FOOTER_TEXT,
-          plots: plotJSX,
-        };
-      });
+  const McDataPackages: PlotPackageGroup = React.useMemo(() => {
+    const byPubIdPackages: PlotPackageGroup = {};
+    MC_SELECT_ORDER_MENU_PROPS.options.reduce((packages, option) => {
+      const plotProp = updatePmPlotData(mcData, pmDataRange, option.id);
+      let plotJSX = [<AESpinner key={option.value} />];
+      if (plotProp.data.length > 0) {
+        plotJSX = [
+          <BarPlot
+            key={option.value}
+            data={plotProp.data}
+            titles={plotProp.titles}
+            name={plotProp.name}
+            height={plotProp.height}
+            width={plotProp.width}
+            dataRange={plotProp.dataRange}
+            linkBaseText={plotProp.linkBaseText}
+          />,
+        ];
+      }
+      packages[option.value] = {
+        id: option.value,
+        menuIds: [MC_SELECT_ORDER_MENU_PROPS.id],
+        footerText: MC_FOOTER_TEXT,
+        plots: plotJSX,
+      };
+      return packages;
+    }, byPubIdPackages);
+
     return byPubIdPackages;
   }, [mcData, pmDataRange]);
 
-  const SsDataPackages: PlotPackage[] = React.useMemo(() => {
+  const SsDataPackages: PlotPackageGroup = React.useMemo(() => {
     const ssPlotPropsList = createSsPlotPropsList(
       ssData,
       ssDataRange,
       labkeyBaseUrl
     );
 
-    const ssDataPackages: PlotPackage[] =
-      SS_SELECT_PLOT_SET_MENU_PROPS.options.map((option) => {
-        const plotProp = ssPlotPropsList[option.id];
-        let plotJSX = [<AESpinner key={option.value} />];
-        if (plotProp.length > 0 && plotProp[0].data.length > 0) {
-          plotJSX = plotProp.map((prop, index) => {
-            return (
-              <ScatterPlot
-                key={`${prop.name}${index}`}
-                data={prop.data}
-                name={prop.name}
-                width={prop.width}
-                height={prop.height}
-                dataRange={prop.dataRange}
-                linkBaseText={prop.linkBaseText}
-                colorIndex={prop.colorIndex}
-                categoricalVar={prop.categoricalVar}
-                dataType={prop.dataType}
-              />
-            );
-          });
-        }
+    const ssDataPackages: PlotPackageGroup = {};
 
-        return {
-          id: option.value,
-          menuIds: [SS_SELECT_PLOT_SET_MENU_PROPS.id],
-          footerText: SS_FOOTER_TEXT,
-          plots: plotJSX,
-        };
-      });
+    SS_SELECT_PLOT_SET_MENU_PROPS.options.reduce((packages, option) => {
+      const plotProp = ssPlotPropsList[option.id];
+      let plotJSX = [<AESpinner key={option.value} />];
+      if (plotProp.length > 0 && plotProp[0].data.length > 0) {
+        plotJSX = plotProp.map((prop, index) => {
+          return (
+            <ScatterPlot
+              key={`${prop.name}${index}`}
+              data={prop.data}
+              name={prop.name}
+              width={prop.width}
+              height={prop.height}
+              dataRange={prop.dataRange}
+              linkBaseText={prop.linkBaseText}
+              colorIndex={prop.colorIndex}
+              categoricalVar={prop.categoricalVar}
+              dataType={prop.dataType}
+            />
+          );
+        });
+      }
+
+      packages[option.value] = {
+        id: option.value,
+        menuIds: [SS_SELECT_PLOT_SET_MENU_PROPS.id],
+        footerText: SS_FOOTER_TEXT,
+        plots: plotJSX,
+      };
+
+      return packages;
+    }, ssDataPackages);
 
     return ssDataPackages;
   }, [ssData, ssDataRange, labkeyBaseUrl]);
@@ -373,6 +393,7 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
           anchorID="most-accessed"
           subtitle="The plots below allow you to view ImmuneSpace usage since the launch of the platform in 2016"
           menus={[SELECT_PLOT_TYPE_MENU_PROPS, SELECT_ORDER_MENU_PROPS]}
+          defaultPackage="study-UI"
           plotPackages={MaDataPackages}
         />
       </section>
@@ -382,6 +403,7 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
           anchorID="most-cited"
           subtitle=""
           menus={[MC_SELECT_ORDER_MENU_PROPS]}
+          defaultPackage={MC_SELECT_ORDER_MENU_PROPS.options[0].value}
           plotPackages={McDataPackages}
         />
       </section>
@@ -391,6 +413,7 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
           anchorID="similar-studies"
           subtitle="The plots below show the results of a UMAP dimension reduction analysis of studies based on their meta-data, including assay data available, study design characteristics, and condition studied. Binary factor distance is measured using the Jaccard method, while continuous variables use Euclidean distance."
           menus={[SS_SELECT_PLOT_SET_MENU_PROPS]}
+          defaultPackage={SS_SELECT_PLOT_SET_MENU_PROPS.options[0].value}
           plotPackages={SsDataPackages}
         />
       </section>
