@@ -1,8 +1,7 @@
 import * as React from "react";
+
+// Constants
 import { TOCITEMS } from "./constants";
-import { createBarPlotProps, createLinePlotProps } from "./MostAccessed/utils";
-import { updatePmPlotData } from "./MostCited/utils";
-import { createSsPlotPropsList } from "./SimilarStudies/utils";
 import {
   SELECT_PLOT_TYPE_MENU_PROPS,
   SELECT_ORDER_MENU_PROPS,
@@ -14,8 +13,12 @@ import {
   SS_FOOTER_TEXT,
 } from "./StudyStatistics/constants";
 
-import AESpinner from "../../../../AnalyteExplorer/src/client/AnalyteExplorer/components/AESpinner";
-import * as d3 from "d3";
+// Data transformation functions
+import { createBarPlotProps, createLinePlotProps } from "./MostAccessed/utils";
+import { updatePmPlotData } from "./MostCited/utils";
+import { createSsPlotPropsList } from "./SimilarStudies/utils";
+
+// Data types
 import {
   ScatterPlotDatum,
   ScatterPlotDataRange,
@@ -40,6 +43,7 @@ import {
   PlotMenu,
   PlotMenuSpecs,
 } from "./StudyStatistics/components";
+import AESpinner from "../../../../AnalyteExplorer/src/client/AnalyteExplorer/components/AESpinner";
 
 // A PlotPackage contains all the metadata about a specific plot, used to render a PlotArea
 interface PlotPackage {
