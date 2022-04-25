@@ -57,7 +57,21 @@ const TabBar: React.FC<TabBarProps> = ({
   onSelect,
   defaultTab,
 }: TabBarProps) => {
-  const itemRefs = React.useRef<React.RefObject<HTMLButtonElement>[]>([]); //array of references
+  /**
+   * Creates a reference for every item of the tab bar and stores that array of references in
+   * another reference.
+   *
+   * Since the ".current" property of a React reference object is a plain, mutable javasript object, it can be used to store any value,
+   * even other React reference objects. The .current of a React reference object also persists across the entire lifetime of the component.
+   *
+   */
+  const generateTabRefs = (tabInfo: TabInfo[]) => {
+    return tabInfo.map(() => React.createRef<HTMLButtonElement>());
+  };
+
+  const itemRefs = React.useRef<React.RefObject<HTMLButtonElement>[]>(
+    generateTabRefs(tabInfo)
+  ); //array of references, explained above
   const [selected, setSelected] = React.useState<number>(null);
   const [indicatorProperties, setIndicatorProperties] =
     React.useState<IndicatorProps>({ left: 0, width: 0 });
@@ -70,13 +84,6 @@ const TabBar: React.FC<TabBarProps> = ({
     }
     return 0;
   }, [defaultTab, tabInfo]);
-  //console.log(`${defaultSelected} ${selected}`);
-
-  itemRefs.current = React.useMemo(() => {
-    return tabInfo.map(
-      (_, i) => itemRefs.current[i] ?? React.createRef<HTMLButtonElement>()
-    );
-  }, [tabInfo]);
 
   const tabBarItemOnClick = (index: number) => {
     setSelected(index);
