@@ -153,10 +153,24 @@ const PlotArea: React.FC<PlotAreaProps> = ({
     );
   };
 
+  if (currentPlotId === "") {
+    return <div></div>;
+  }
+
+  // Handles cases where plotPackages is undefined or empty
+  if (plotPackages == undefined || Object.keys(plotPackages).length < 1) {
+    return (
+      <div className="plot-area">
+        <div className="plot-area__plot-container">
+          <div>Error: No plots found.</div>
+        </div>
+      </div>
+    );
+  }
+
   // If no correct plotPackage is found, render all available menus to allow users to select
   // plot to display
-  // Handles cases where plotPackages is undefined or empty
-  if (Object.keys(plotPackages).length < 1) {
+  if (plotPackages[currentPlotId] == undefined) {
     const allMenuIDs = menus.map((menu) => menu.id);
     return (
       <div className="plot-area">
@@ -170,10 +184,6 @@ const PlotArea: React.FC<PlotAreaProps> = ({
         </div>
       </div>
     );
-  }
-
-  if (currentPlotId === "") {
-    return <div></div>;
   }
 
   return (
