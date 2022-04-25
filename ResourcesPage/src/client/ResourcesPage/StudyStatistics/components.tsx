@@ -17,13 +17,17 @@ export const TableOfContents: React.FC<TOCProps> = ({
     <div className="toc">
       <span className="toc__title">{title}</span>
       <div className="toc__content">
-        {content.map((item, i) => {
-          return (
-            <a key={`${item.name}-${i}`} href={item.link} className="toc__link">
-              {item.name}
-            </a>
-          );
-        })}
+        <ul>
+          {content.map((item, i) => {
+            return (
+              <li key={`${item.name}-${i}`}>
+                <a href={item.link} className="toc__link">
+                  {item.name}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );

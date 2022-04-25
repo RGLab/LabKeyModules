@@ -55,10 +55,16 @@
   }
 
   &__content {
-    padding: 12px 0px 12px;
-    display: grid;
-    row-gap: 8px;
-    grid-template-columns: 170px;
+    padding: 12px 0px;
+    ul {
+      list-style: none;
+      margin-bottom: 0;
+      padding-left: 0;
+
+      li:not(:first-child) {
+        margin-top: 8px;
+      }
+    }
   }
 
   &__link {
