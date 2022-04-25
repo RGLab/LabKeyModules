@@ -236,8 +236,6 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
         // plotJSX is an array as the PlotArea component can render more than 1 plot at once
         let plotJSX = [<AESpinner key={option.value} />];
         if (plotProps.data.length > 0) {
-          console.log(plotProps.height);
-
           plotJSX = [
             <MaBarPlot
               key={option.value}
