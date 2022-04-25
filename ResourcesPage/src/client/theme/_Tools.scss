@@ -1,17 +1,9 @@
 @use "~@immunespace/theme/dist/immunespace";
 @use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
-@use "./ImmuneSpaceR";
 @use "./shared";
-
-main.page-content {
-  margin-top: 40px;
-}
 
 h1 {
   @include shared.title-style;
-  // font-size: 56px;
-  // line-height: 80px;
-  // font-weight: 800;
   margin-top: 0;
   margin-bottom: 0;
 }

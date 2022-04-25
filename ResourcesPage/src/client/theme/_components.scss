@@ -5,7 +5,6 @@
 
 #resources-page .navbar {
   background-color: immunespace.$white;
-  //border: none;
 }
 
 // ArrowLink
@@ -117,7 +116,7 @@
 
   &__dropdown {
     position: relative;
-    background-color: white; // fix this soon
+    background-color: immunespace.$white; // fix this soon
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25),
       0px 1px 5px rgba(186, 186, 186, 0.25);
     z-index: 20;
@@ -193,5 +192,5 @@
 
 .immunespace-tabpanel-enter-active {
   opacity: 1;
-  transition: opacity 300ms linear;
+  transition: opacity 300ms linear; // transition time should match indicator transition time
 }

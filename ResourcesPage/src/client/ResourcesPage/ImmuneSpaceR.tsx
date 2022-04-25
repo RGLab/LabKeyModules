@@ -4,7 +4,7 @@ import ArrowLink from "./components/ArrowLink";
 export const ImmuneSpaceR: React.FC = () => {
   return (
     <main className="page-content">
-      <section className="content-grid">
+      <section className="content-grid__immunespaceR">
         <div className="immunespaceR-content grid-item">
           <h1>ImmuneSpaceR</h1>
           <img
