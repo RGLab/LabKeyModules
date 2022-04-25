@@ -85,7 +85,7 @@
   &__button {
     display: flex;
     justify-content: space-between;
-    padding: 4px 12px;
+    padding: 3px 12px;
 
     span {
       margin-top: auto;
@@ -101,6 +101,11 @@
 
     &:hover {
       cursor: pointer;
+    }
+
+    &:hover,
+    &.clicked {
+      background-color: #e7e7e7;
     }
   }
 

@@ -71,8 +71,8 @@ export const PlotMenu: React.FC<PlotMenuComponentProps> = ({
   const dropdownRef = React.useRef(null);
   const dropdownButtonRef = React.useRef(null);
 
+  // the dropdown menu closes when you click outside the dropdown menu OR on the dropdown menu itself
   React.useEffect(() => {
-    // the dropdown menu closes when you click outside the dropdown menu OR on the dropdown menu itself
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -94,7 +94,11 @@ export const PlotMenu: React.FC<PlotMenuComponentProps> = ({
   return (
     <div className="plot-dropdown-menu">
       <div
-        className="plot-dropdown-menu__button"
+        className={`plot-dropdown-menu__button ${isOpen ? "clicked" : ""}`}
+        role="button"
+        tabIndex={0}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
         onClick={() => {
           setIsOpen(!isOpen);
         }}
@@ -111,7 +115,7 @@ export const PlotMenu: React.FC<PlotMenuComponentProps> = ({
         className="plot-dropdown-menu__dropdown"
         ref={dropdownRef}
         hidden={!isOpen}>
-        <ul>
+        <ul role="listbox">
           {options.map((option) => {
             return (
               <li
