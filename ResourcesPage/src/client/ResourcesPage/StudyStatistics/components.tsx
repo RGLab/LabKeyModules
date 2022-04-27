@@ -5,7 +5,7 @@ interface TOCItem {
   link: string;
 }
 
-interface TOCProps {
+export interface TOCProps {
   title: string;
   content: TOCItem[];
 }
