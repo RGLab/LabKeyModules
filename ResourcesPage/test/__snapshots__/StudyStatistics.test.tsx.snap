@@ -1,0 +1,81 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Test components AnchorHeading renders with title of Hello World and anchorID of foo 1`] = `
+<div
+  className="plot-area__title"
+>
+  <h1
+    id="foo"
+  >
+    Hello World
+  </h1>
+  <a
+    className="anchor-link"
+    href="#foo"
+  >
+    <img
+      alt="Hello World"
+      className="link-icon"
+      src="/ResourcesPage/icons/web-hyperlink.svg"
+    />
+  </a>
+</div>
+`;
+
+exports[`Test components TableOfContents renders with 'Hello World' title and 5 links 1`] = `
+<div
+  className="toc"
+>
+  <span
+    className="toc__title"
+  >
+    Hello World
+  </span>
+  <div
+    className="toc__content"
+  >
+    <ul>
+      <li>
+        <a
+          className="toc__link"
+          href="plotA"
+        >
+          titleA
+        </a>
+      </li>
+      <li>
+        <a
+          className="toc__link"
+          href="plotB"
+        >
+          titleB
+        </a>
+      </li>
+      <li>
+        <a
+          className="toc__link"
+          href="plotC"
+        >
+          titleC
+        </a>
+      </li>
+      <li>
+        <a
+          className="toc__link"
+          href="plotD"
+        >
+          titleD
+        </a>
+      </li>
+      <li>
+        <a
+          className="toc__link"
+          href="plotE"
+        >
+          titleE
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+`;

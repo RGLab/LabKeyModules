@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ArrowLink renders correctly ArrowLink renders with a link to Google.com and the text of Google 1`] = `
+<a
+  className="arrow-link"
+  href="https://www.google.com/"
+  title="Google"
+>
+  <span
+    className="tri-block__link-text"
+  >
+    Google
+  </span>
+</a>
+`;
