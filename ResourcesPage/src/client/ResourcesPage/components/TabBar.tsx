@@ -144,6 +144,7 @@ const TabBar: React.FC<TabBarProps> = ({
       </div>
 
       <span
+        data-testid="tabbar_indicator"
         className="immunespace-tabbar__indicator"
         style={{
           left: `${indicatorProperties.left}px`,
