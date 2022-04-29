@@ -29,12 +29,12 @@ describe("Tools page renders correctly", () => {
 
   test("test Tools page renders correctly", () => {
     render(<Tools />);
-    expect(screen.getByText("Tools")).toBeTruthy(); // title exists
+    expect(screen.getByText("Tools")).toBeInTheDocument(); // title exists
     expect(
       screen.getByText(
         "Online bioinformatics tools created by HIPC members & more"
       )
-    ).toBeTruthy(); // subtitle exists
+    ).toBeInTheDocument(); // subtitle exists
 
     // 5 Tool cards are present
     expect(screen.getAllByRole("img")).toHaveLength(5);

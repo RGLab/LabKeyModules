@@ -13,14 +13,7 @@ import {
   PlotPackageGroup,
 } from "../src/client/ResourcesPage/StudyStatistics";
 import renderer from "react-test-renderer";
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
-import "@testing-library/jest-dom";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 afterEach(cleanup);
 
@@ -90,12 +83,12 @@ describe("<Plot Menu/>", () => {
       />
     );
 
-    expect(screen.getByRole("button")).toBeTruthy();
-    expect(screen.getByText(specs.name)).toBeTruthy();
-    expect(screen.getByRole("img")).toBeTruthy();
+    expect(screen.getByRole("button")).toBeInTheDocument();
+    expect(screen.getByText(specs.name)).toBeInTheDocument();
+    expect(screen.getByRole("img")).toBeInTheDocument();
     expect(screen.getByRole("img").hasAttribute("src"));
 
-    expect(screen.queryByRole("listbox")).toBeFalsy(); // if you use getByRole it'll throw error. https://testing-library.com/docs/react-testing-library/cheatsheet#queries
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument(); // if you use getByRole it'll throw error. https://testing-library.com/docs/react-testing-library/cheatsheet#queries
   });
 
   test("<Plot Menu /> click on dropdown button", () => {
@@ -111,10 +104,10 @@ describe("<Plot Menu/>", () => {
     fireEvent.click(screen.getByRole("button"));
 
     expect(screen.getByRole("button").classList.contains("clicked"));
-    expect(screen.getByRole("listbox")).toBeTruthy();
-    expect(screen.getByText(specs.options[0].label)).toBeTruthy();
-    expect(screen.getByText(specs.options[1].label)).toBeTruthy();
-    expect(screen.getByText(specs.options[2].label)).toBeTruthy();
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    expect(screen.getByText(specs.options[0].label)).toBeInTheDocument();
+    expect(screen.getByText(specs.options[1].label)).toBeInTheDocument();
+    expect(screen.getByText(specs.options[2].label)).toBeInTheDocument();
   });
 
   test("<Plot Menu /> clicking dropdown item closes dropdown menu", async () => {
@@ -127,10 +120,10 @@ describe("<Plot Menu/>", () => {
       />
     );
     fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByRole("listbox")).toBeTruthy();
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
     fireEvent.click(screen.getByText(specs.options[1].label));
 
-    expect(screen.queryByRole("listbox")).toBeFalsy();
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
     expect(mockOnClickCallback.mock.results[0].value).toBe(specs.options[1].id);
   });
 });
@@ -180,8 +173,8 @@ describe("<PlotArea />", () => {
   }, plotPackagesMultiple);
 
   const testMenuExists = () => {
-    expect(screen.getByRole("button")).toBeTruthy(); // Menu
-    expect(screen.getByText(menuProps.name)).toBeTruthy();
+    expect(screen.getByRole("button")).toBeInTheDocument(); // Menu
+    expect(screen.getByText(menuProps.name)).toBeInTheDocument();
   };
 
   test("<PlotArea /> renders correctly with props", () => {
@@ -196,21 +189,21 @@ describe("<PlotArea />", () => {
       />
     );
 
-    expect(screen.getByText("Fun Dogs")).toBeTruthy(); // Title
-    expect(screen.getByText("Fun stuff with dogs")).toBeTruthy(); // Subtitle
-    expect(screen.getByRole("link")).toBeTruthy(); // Anchor link
+    expect(screen.getByText("Fun Dogs")).toBeInTheDocument(); // Title
+    expect(screen.getByText("Fun stuff with dogs")).toBeInTheDocument(); // Subtitle
+    expect(screen.getByRole("link")).toBeInTheDocument(); // Anchor link
     expect(screen.getByRole("link")).toHaveAttribute("href", "#fun-dogs"); // Anchor link correct
-    expect(screen.getByAltText("Fun Dogs")).toBeTruthy(); // Anchor link icon
+    expect(screen.getByAltText("Fun Dogs")).toBeInTheDocument(); // Anchor link icon
 
-    expect(screen.getByRole("button")).toBeTruthy(); // Menu
-    expect(screen.getByText(menuProps.name)).toBeTruthy();
+    expect(screen.getByRole("button")).toBeInTheDocument(); // Menu
+    expect(screen.getByText(menuProps.name)).toBeInTheDocument();
 
     expect(
       screen.getByText(`Fake plot of ${menuProps.options[0].label}`)
-    ).toBeTruthy(); // "Plot"
+    ).toBeInTheDocument(); // "Plot"
 
-    expect(screen.getByText(footerText[0])).toBeTruthy(); // Footer texts
-    expect(screen.getByText(footerText[1])).toBeTruthy();
+    expect(screen.getByText(footerText[0])).toBeInTheDocument(); // Footer texts
+    expect(screen.getByText(footerText[1])).toBeInTheDocument();
   });
 
   test("<PlotArea /> switching plot using dropdown menu", () => {
@@ -225,19 +218,19 @@ describe("<PlotArea />", () => {
       />
     );
 
-    expect(screen.getByRole("button")).toBeTruthy();
-    expect(screen.getByText(menuProps.name)).toBeTruthy();
+    expect(screen.getByRole("button")).toBeInTheDocument();
+    expect(screen.getByText(menuProps.name)).toBeInTheDocument();
     expect(
       screen.getByText(`Fake plot of ${menuProps.options[0].label}`)
-    ).toBeTruthy();
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByRole("listbox")).toBeTruthy();
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
     fireEvent.click(screen.getByText(menuProps.options[1].label));
 
     expect(
       screen.getByText(`Fake plot of ${menuProps.options[1].label}`)
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   test("<PlotArea /> closing dropdown when clicking outside", () => {
@@ -252,19 +245,19 @@ describe("<PlotArea />", () => {
       />
     );
 
-    expect(screen.getByRole("button")).toBeTruthy();
-    expect(screen.getByText(menuProps.name)).toBeTruthy();
+    expect(screen.getByRole("button")).toBeInTheDocument();
+    expect(screen.getByText(menuProps.name)).toBeInTheDocument();
     expect(
       screen.getByText(`Fake plot of ${menuProps.options[0].label}`)
-    ).toBeTruthy();
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByRole("listbox")).toBeTruthy();
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
     fireEvent.click(
       screen.getByText(`Fake plot of ${menuProps.options[0].label}`)
     ); // clicking on a plot, which is outside of the dropdown menu
 
-    expect(screen.queryByRole("listbox")).toBeFalsy();
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 
   test("<PlotArea /> render with undefined plotPackages displays error message", () => {
@@ -278,7 +271,7 @@ describe("<PlotArea />", () => {
         plotPackages={undefined}
       />
     );
-    expect(screen.getByText("Error: No plots found.")).toBeTruthy();
+    expect(screen.getByText("Error: No plots found.")).toBeInTheDocument();
   });
 
   test("<PlotArea /> selecting an invalid plot displays error message and reveals all dropdowns", () => {
@@ -313,26 +306,26 @@ describe("<PlotArea />", () => {
       />
     );
 
-    expect(screen.getByRole("button")).toBeTruthy();
-    expect(screen.getByText(badMenuProps.name)).toBeTruthy();
+    expect(screen.getByRole("button")).toBeInTheDocument();
+    expect(screen.getByText(badMenuProps.name)).toBeInTheDocument();
     expect(
       screen.getByText(`Fake plot of ${badMenuProps.options[0].label}`)
-    ).toBeTruthy();
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByRole("listbox")).toBeTruthy();
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
     fireEvent.click(screen.getByText(badMenuProps.options[3].label));
 
     expect(
       screen.getByText("Error: Unable to generate plot. Please try again.")
-    ).toBeTruthy();
+    ).toBeInTheDocument();
 
     expect(screen.getAllByRole("button").length).toBe(2);
-    expect(screen.getByText(badMenuProps.name)).toBeTruthy();
-    expect(screen.getByText(secondMenuProps.name)).toBeTruthy();
+    expect(screen.getByText(badMenuProps.name)).toBeInTheDocument();
+    expect(screen.getByText(secondMenuProps.name)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText(badMenuProps.name));
-    expect(screen.getByRole("listbox")).toBeTruthy();
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
     fireEvent.click(screen.getByText(badMenuProps.options[1].label));
 
     expect(screen.getByText(`Fake plot of ${badMenuProps.options[1].label}`));
@@ -425,35 +418,41 @@ describe("<PlotArea />", () => {
     );
 
     expect(screen.getAllByRole("button").length).toBe(2);
-    expect(screen.getByText(animalMenuProps.name)).toBeTruthy();
-    expect(screen.getByText(dogMenuProps.name)).toBeTruthy();
-    expect(screen.getByText("Fake plot of Dog")).toBeTruthy();
+    expect(screen.getByText(animalMenuProps.name)).toBeInTheDocument();
+    expect(screen.getByText(dogMenuProps.name)).toBeInTheDocument();
+    expect(screen.getByText("Fake plot of Dog")).toBeInTheDocument();
 
     fireEvent.click(screen.getByText(animalMenuProps.name));
-    expect(screen.getByText(animalMenuProps.options[1].label)).toBeTruthy();
+    expect(
+      screen.getByText(animalMenuProps.options[1].label)
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByText(animalMenuProps.options[1].label));
 
     expect(screen.getAllByRole("button").length).toBe(1);
-    expect(screen.getByText(animalMenuProps.name)).toBeTruthy();
-    expect(screen.queryByText(dogMenuProps.name)).toBeFalsy();
-    expect(screen.getByText("Fake plot of Cat")).toBeTruthy();
+    expect(screen.getByText(animalMenuProps.name)).toBeInTheDocument();
+    expect(screen.queryByText(dogMenuProps.name)).not.toBeInTheDocument();
+    expect(screen.getByText("Fake plot of Cat")).toBeInTheDocument();
 
     fireEvent.click(screen.getByText(animalMenuProps.name));
-    expect(screen.getByText(animalMenuProps.options[0].label)).toBeTruthy();
+    expect(
+      screen.getByText(animalMenuProps.options[0].label)
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByText(animalMenuProps.options[0].label));
 
     expect(screen.getAllByRole("button").length).toBe(2);
-    expect(screen.getByText(animalMenuProps.name)).toBeTruthy();
-    expect(screen.getByText(dogMenuProps.name)).toBeTruthy();
-    expect(screen.getByText("Fake plot of Dog")).toBeTruthy();
+    expect(screen.getByText(animalMenuProps.name)).toBeInTheDocument();
+    expect(screen.getByText(dogMenuProps.name)).toBeInTheDocument();
+    expect(screen.getByText("Fake plot of Dog")).toBeInTheDocument();
 
     fireEvent.click(screen.getByText(dogMenuProps.name));
-    expect(screen.getByText(dogMenuProps.options[1].label)).toBeTruthy();
+    expect(screen.getByText(dogMenuProps.options[1].label)).toBeInTheDocument();
     fireEvent.click(screen.getByText(dogMenuProps.options[1].label));
 
     expect(screen.getAllByRole("button").length).toBe(2);
-    expect(screen.getByText(animalMenuProps.name)).toBeTruthy();
-    expect(screen.getByText(dogMenuProps.name)).toBeTruthy();
-    expect(screen.getByText("Fake plot of Austrailian Shepherd")).toBeTruthy();
+    expect(screen.getByText(animalMenuProps.name)).toBeInTheDocument();
+    expect(screen.getByText(dogMenuProps.name)).toBeInTheDocument();
+    expect(
+      screen.getByText("Fake plot of Austrailian Shepherd")
+    ).toBeInTheDocument();
   });
 });

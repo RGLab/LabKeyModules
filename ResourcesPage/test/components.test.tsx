@@ -20,8 +20,8 @@ describe("ArrowLink renders correctly", () => {
 
   test("<ArrowLink /> renders correctly", () => {
     render(<ArrowLink href="https://www.google.com/" text="Google" />);
-    expect(screen.getByTitle("Google")).toBeTruthy(); // link exists
-    expect(screen.getByText("Google")).toBeTruthy(); // link text exists
+    expect(screen.getByTitle("Google")).toBeInTheDocument(); // link exists
+    expect(screen.getByText("Google")).toBeInTheDocument(); // link text exists
     expect(screen.getByTitle("Google").hasAttribute("href")); // link works
   });
 });
@@ -63,19 +63,17 @@ describe("<TabBar />", () => {
     );
 
     // makes sure all 4 tabs exist
-    expect(screen.getByRole("tablist")).toBeTruthy();
+    expect(screen.getByRole("tablist")).toBeInTheDocument();
     expect(screen.getAllByRole("tab")).toHaveLength(4);
-    expect(screen.getByText(tabInfo[0].label)).toBeTruthy();
-    expect(screen.getByText(tabInfo[1].label)).toBeTruthy();
-    expect(screen.getByText(tabInfo[2].label)).toBeTruthy();
-    expect(screen.getByText(tabInfo[3].label)).toBeTruthy();
+    expect(screen.getByText(tabInfo[0].label)).toBeInTheDocument();
+    expect(screen.getByText(tabInfo[1].label)).toBeInTheDocument();
+    expect(screen.getByText(tabInfo[2].label)).toBeInTheDocument();
+    expect(screen.getByText(tabInfo[3].label)).toBeInTheDocument();
 
     // makes sure default tab is selected
-    expect(
-      screen
-        .getByText(tabInfo[0].label)
-        .classList.contains("is-tabbar-selected")
-    ).toBeTruthy();
+    expect(screen.getByText(tabInfo[0].label)).toHaveClass(
+      "is-tabbar-selected"
+    );
 
     // makes sure indicator is underneath the selected tab
     expect(screen.getByText(tabInfo[0].label).offsetLeft).toBe(
@@ -96,11 +94,9 @@ describe("<TabBar />", () => {
     );
 
     fireEvent.click(screen.getByText(tabInfo[1].label));
-    expect(
-      screen
-        .getByText(tabInfo[1].label)
-        .classList.contains("is-tabbar-selected")
-    ).toBeTruthy();
+    expect(screen.getByText(tabInfo[1].label)).toHaveClass(
+      "is-tabbar-selected"
+    );
 
     // makes sure callback returns the appropriate value
     expect(mockOnClickCallback.mock.calls.length).toBe(1);
