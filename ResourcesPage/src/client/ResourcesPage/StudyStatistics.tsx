@@ -53,7 +53,7 @@ interface PlotPackage {
   plots: JSX.Element[];
 }
 
-interface PlotPackageGroup {
+export interface PlotPackageGroup {
   [key: string]: PlotPackage;
 }
 
@@ -66,7 +66,7 @@ interface PlotAreaProps {
   plotPackages: PlotPackageGroup;
 }
 
-const PlotArea: React.FC<PlotAreaProps> = ({
+export const PlotArea: React.FC<PlotAreaProps> = ({
   title,
   subtitle,
   anchorID,
@@ -259,8 +259,8 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
             />,
           ];
         }
-        result[option.value] = {
-          id: option.value, // Each plot has an id corresponding to the dropdown menu option that displays it
+        result[option.id] = {
+          id: option.id, // Each plot has an id corresponding to the dropdown menu option that displays it
           menuIds: [SELECT_PLOT_TYPE_MENU_PROPS.id, SELECT_ORDER_MENU_PROPS.id], // The dropdown menus available for interactions when the plot is displayed
           footerText: MA_FOOTER_TEXT_STUDY,
           plots: plotJSX,
@@ -289,12 +289,15 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
       ];
     }
 
-    result[SELECT_PLOT_TYPE_MENU_PROPS.options[1].value] = {
-      id: SELECT_PLOT_TYPE_MENU_PROPS.options[1].value,
+    result[SELECT_PLOT_TYPE_MENU_PROPS.options[1].id] = {
+      id: SELECT_PLOT_TYPE_MENU_PROPS.options[1].id,
       menuIds: [SELECT_PLOT_TYPE_MENU_PROPS.id],
       footerText: MA_FOOTER_TEXT_MONTH,
       plots: plotJSX,
     };
+
+    result[SELECT_PLOT_TYPE_MENU_PROPS.options[0].id] =
+      result[SELECT_ORDER_MENU_PROPS.options[0].id]; // these are the same plots
 
     return result;
   }, [maData, labkeyBaseUrl]);
@@ -318,8 +321,8 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
           />,
         ];
       }
-      packages[option.value] = {
-        id: option.value,
+      packages[option.id] = {
+        id: option.id,
         menuIds: [MC_SELECT_ORDER_MENU_PROPS.id],
         footerText: MC_FOOTER_TEXT,
         plots: plotJSX,
@@ -361,8 +364,8 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
         });
       }
 
-      packages[option.value] = {
-        id: option.value,
+      packages[option.id] = {
+        id: option.id,
         menuIds: [SS_SELECT_PLOT_SET_MENU_PROPS.id],
         footerText: SS_FOOTER_TEXT,
         plots: plotJSX,
@@ -388,7 +391,7 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
           anchorID="most-accessed"
           subtitle="The plots below allow you to view ImmuneSpace usage since the launch of the platform in 2016"
           menus={[SELECT_PLOT_TYPE_MENU_PROPS, SELECT_ORDER_MENU_PROPS]}
-          defaultPackage="study-UI"
+          defaultPackage="study"
           plotPackages={MaDataPackages}
         />
       </section>
@@ -398,7 +401,7 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
           anchorID="most-cited"
           subtitle=""
           menus={[MC_SELECT_ORDER_MENU_PROPS]}
-          defaultPackage={MC_SELECT_ORDER_MENU_PROPS.options[0].value}
+          defaultPackage={MC_SELECT_ORDER_MENU_PROPS.options[0].id}
           plotPackages={McDataPackages}
         />
       </section>
@@ -408,7 +411,7 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
           anchorID="similar-studies"
           subtitle="The plots below show the results of a UMAP dimension reduction analysis of studies based on their meta-data, including assay data available, study design characteristics, and condition studied. Binary factor distance is measured using the Jaccard method, while continuous variables use Euclidean distance."
           menus={[SS_SELECT_PLOT_SET_MENU_PROPS]}
-          defaultPackage={SS_SELECT_PLOT_SET_MENU_PROPS.options[0].value}
+          defaultPackage={SS_SELECT_PLOT_SET_MENU_PROPS.options[0].id}
           plotPackages={SsDataPackages}
         />
       </section>

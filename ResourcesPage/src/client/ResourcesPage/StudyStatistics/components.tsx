@@ -126,7 +126,7 @@ export const PlotMenu: React.FC<PlotMenuComponentProps> = ({
                 key={option.value}
                 onClick={() => {
                   setIsOpen(!isOpen);
-                  onClickCallback(option.value);
+                  onClickCallback(option.id);
                 }}>
                 <span>{option.label}</span>
               </li>
