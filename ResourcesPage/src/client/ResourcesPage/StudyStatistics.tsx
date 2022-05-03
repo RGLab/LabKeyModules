@@ -126,7 +126,9 @@ export const PlotArea: React.FC<PlotAreaProps> = ({
    */
   const renderPlots = (plotPackage: PlotPackage) => {
     if (plotPackage == undefined || plotPackage.plots == undefined) {
-      return <div>Error: Unable to retrieve plot.</div>;
+      return (
+        <div className="study-stats-err">Error: Unable to retrieve plot.</div>
+      );
     }
 
     if (plotPackage.plots.length > 0) {
@@ -134,7 +136,9 @@ export const PlotArea: React.FC<PlotAreaProps> = ({
     }
 
     // if for some reason there're no plots
-    return <div>Error: No valid plots detected.</div>;
+    return (
+      <div className="study-stats-err">Error: No valid plots detected.</div>
+    );
   };
 
   /**
@@ -162,7 +166,7 @@ export const PlotArea: React.FC<PlotAreaProps> = ({
     return (
       <div className="plot-area">
         <div className="plot-area__plot-container">
-          <div>Error: No plots found.</div>
+          <div className="study-stats-err">Error: No plots found.</div>
         </div>
       </div>
     );
@@ -180,7 +184,9 @@ export const PlotArea: React.FC<PlotAreaProps> = ({
           {renderMenus(menus, allMenuIDs, setCurrentPlotId)}
         </div>
         <div className="plot-area__plot-container">
-          <div>Error: Unable to generate plot. Please try again.</div>
+          <div className="study-stats-err">
+            Error: Unable to generate plot. Please try again.
+          </div>
         </div>
       </div>
     );
@@ -214,6 +220,9 @@ interface StudyStatisticsProps {
   pmDataRange: PmDataRange;
   ssDataRange: ScatterPlotDataRange;
   labkeyBaseUrl: string;
+  maDataErr?: string;
+  mcDataErr?: string;
+  ssDataErr?: string;
 }
 
 const StudyStatistics: React.FC<StudyStatisticsProps> = ({
@@ -223,6 +232,9 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
   pmDataRange,
   ssDataRange,
   labkeyBaseUrl,
+  maDataErr = "",
+  mcDataErr = "",
+  ssDataErr = "",
 }: StudyStatisticsProps) => {
   /**
    * Data is converted into PlotPackage format. Each PlotPackage contains one set of plot(s), an id,
@@ -234,6 +246,23 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
     const result: PlotPackageGroup = {};
     SELECT_ORDER_MENU_PROPS.options.reduce(
       (result: PlotPackageGroup, option) => {
+        if (maDataErr !== "") {
+          result[option.id] = {
+            id: option.id,
+            menuIds: [
+              SELECT_PLOT_TYPE_MENU_PROPS.id,
+              SELECT_ORDER_MENU_PROPS.id,
+            ],
+            footerText: MA_FOOTER_TEXT_STUDY,
+            plots: [
+              <div key={option.id} className="study-stats-err">
+                {maDataErr}
+              </div>,
+            ],
+          };
+          return result;
+        }
+
         // Turn raw data into required d3 format
         const plotProps = createBarPlotProps(
           maData.byStudy,
@@ -270,41 +299,69 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
       result
     );
 
-    const linePlotProps = createLinePlotProps(maData.byMonth);
-    let plotJSX = [
-      <AESpinner key={SELECT_PLOT_TYPE_MENU_PROPS.options[1].value} />,
-    ];
-    if (linePlotProps.data.length > 0) {
-      plotJSX = [
-        <MaLinePlot
-          key={SELECT_PLOT_TYPE_MENU_PROPS.options[1].value}
-          data={linePlotProps.data}
-          labels={linePlotProps.labels}
-          titles={linePlotProps.titles}
-          name={linePlotProps.name}
-          width={linePlotProps.width}
-          height={linePlotProps.height}
-          linkBaseText={linePlotProps.linkBaseText}
-        />,
+    if (maDataErr !== "") {
+      result[SELECT_PLOT_TYPE_MENU_PROPS.options[1].id] = {
+        id: SELECT_PLOT_TYPE_MENU_PROPS.options[1].id,
+        menuIds: [SELECT_PLOT_TYPE_MENU_PROPS.id],
+        footerText: MA_FOOTER_TEXT_MONTH,
+        plots: [
+          <div
+            key={SELECT_PLOT_TYPE_MENU_PROPS.options[1].value}
+            className="study-stats-err">
+            {maDataErr}
+          </div>,
+        ],
+      };
+    } else {
+      const linePlotProps = createLinePlotProps(maData.byMonth);
+      let plotJSX = [
+        <AESpinner key={SELECT_PLOT_TYPE_MENU_PROPS.options[1].value} />,
       ];
-    }
+      if (linePlotProps.data.length > 0) {
+        plotJSX = [
+          <MaLinePlot
+            key={SELECT_PLOT_TYPE_MENU_PROPS.options[1].value}
+            data={linePlotProps.data}
+            labels={linePlotProps.labels}
+            titles={linePlotProps.titles}
+            name={linePlotProps.name}
+            width={linePlotProps.width}
+            height={linePlotProps.height}
+            linkBaseText={linePlotProps.linkBaseText}
+          />,
+        ];
+      }
 
-    result[SELECT_PLOT_TYPE_MENU_PROPS.options[1].id] = {
-      id: SELECT_PLOT_TYPE_MENU_PROPS.options[1].id,
-      menuIds: [SELECT_PLOT_TYPE_MENU_PROPS.id],
-      footerText: MA_FOOTER_TEXT_MONTH,
-      plots: plotJSX,
-    };
+      result[SELECT_PLOT_TYPE_MENU_PROPS.options[1].id] = {
+        id: SELECT_PLOT_TYPE_MENU_PROPS.options[1].id,
+        menuIds: [SELECT_PLOT_TYPE_MENU_PROPS.id],
+        footerText: MA_FOOTER_TEXT_MONTH,
+        plots: plotJSX,
+      };
+    }
 
     result[SELECT_PLOT_TYPE_MENU_PROPS.options[0].id] =
       result[SELECT_ORDER_MENU_PROPS.options[0].id]; // these are the same plots
 
     return result;
-  }, [maData, labkeyBaseUrl]);
+  }, [maData, maDataErr, labkeyBaseUrl]);
 
   const McDataPackages: PlotPackageGroup = React.useMemo(() => {
     const byPubIdPackages: PlotPackageGroup = {};
     MC_SELECT_ORDER_MENU_PROPS.options.reduce((packages, option) => {
+      if (mcDataErr !== "") {
+        packages[option.id] = {
+          id: option.id,
+          menuIds: [MC_SELECT_ORDER_MENU_PROPS.id],
+          footerText: MC_FOOTER_TEXT,
+          plots: [
+            <div key={option.id} className="study-stats-err">
+              {mcDataErr}
+            </div>,
+          ],
+        };
+        return packages;
+      }
       const plotProp = updatePmPlotData(mcData, pmDataRange, option.id);
       let plotJSX = [<AESpinner key={option.value} />];
       if (plotProp.data.length > 0) {
@@ -331,7 +388,7 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
     }, byPubIdPackages);
 
     return byPubIdPackages;
-  }, [mcData, pmDataRange]);
+  }, [mcData, mcDataErr, pmDataRange]);
 
   const SsDataPackages: PlotPackageGroup = React.useMemo(() => {
     const ssPlotPropsList = createSsPlotPropsList(
@@ -343,6 +400,19 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
     const ssDataPackages: PlotPackageGroup = {};
 
     SS_SELECT_PLOT_SET_MENU_PROPS.options.reduce((packages, option) => {
+      if (ssDataErr !== "") {
+        packages[option.id] = {
+          id: option.id,
+          menuIds: [SS_SELECT_PLOT_SET_MENU_PROPS.id],
+          footerText: SS_FOOTER_TEXT,
+          plots: [
+            <div key={option.id} className="study-stats-err">
+              {ssDataErr}
+            </div>,
+          ],
+        };
+        return packages;
+      }
       const plotProp = ssPlotPropsList[option.id];
       let plotJSX = [<AESpinner key={option.value} />];
       if (plotProp.length > 0 && plotProp[0].data.length > 0) {
@@ -375,7 +445,7 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
     }, ssDataPackages);
 
     return ssDataPackages;
-  }, [ssData, ssDataRange, labkeyBaseUrl]);
+  }, [ssData, ssDataRange, ssDataErr, labkeyBaseUrl]);
 
   return (
     <main className="page-content">

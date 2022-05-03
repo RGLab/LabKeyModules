@@ -107,13 +107,13 @@ const ResourcesPage: React.FC = () => {
 
   // RAW
   const [pmData, setPmData] = React.useState({});
-  const [pmHasError, setPmErrors] = React.useState(false);
+  const [pmError, setPmErrors] = React.useState("");
 
   const [ssData, setSsData] = React.useState({});
-  const [ssHasError, setSsErrors] = React.useState(false);
+  const [ssError, setSsErrors] = React.useState("");
 
   const [maData, setMaData] = React.useState();
-  const [maHasError, setMaErrors] = React.useState(false);
+  const [maError, setMaErrors] = React.useState("");
 
   React.useEffect(() => {
     fetchApiData({
@@ -202,6 +202,9 @@ const ResourcesPage: React.FC = () => {
               ssDataRange={ssDataRange}
               pmDataRange={pmDataRange}
               labkeyBaseUrl={labkeyBaseUrl}
+              maDataErr={maError}
+              mcDataErr={pmError}
+              ssDataErr={ssError}
             />
           </div>
         </CSSTransition>
@@ -241,6 +244,9 @@ const ResourcesPage: React.FC = () => {
     transformedMaData,
     tabInfo,
     activeTab,
+    pmError,
+    maError,
+    ssError,
   ]);
 
   return (
