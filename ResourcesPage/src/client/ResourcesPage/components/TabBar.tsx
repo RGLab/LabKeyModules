@@ -44,7 +44,7 @@ interface TabInfo {
 interface TabBarProps {
   tabInfo: TabInfo[];
   onSelect: (value: string) => void;
-  defaultTab: string;
+  activeTab: string;
 }
 
 interface IndicatorProps {
@@ -55,7 +55,7 @@ interface IndicatorProps {
 const TabBar: React.FC<TabBarProps> = ({
   tabInfo,
   onSelect,
-  defaultTab,
+  activeTab,
 }: TabBarProps) => {
   /**
    * Creates a reference for every item of the tab bar and stores that array of references in
@@ -66,27 +66,28 @@ const TabBar: React.FC<TabBarProps> = ({
    *
    */
   const generateTabRefs = (tabInfo: TabInfo[]) => {
-    return tabInfo.map(() => React.createRef<HTMLButtonElement>());
+    const results: { [key: string]: React.RefObject<HTMLButtonElement> } = {};
+    for (const info of tabInfo) {
+      results[info.id] = React.createRef<HTMLButtonElement>();
+    }
+    return results;
   };
 
-  const itemRefs = React.useRef<React.RefObject<HTMLButtonElement>[]>(
-    generateTabRefs(tabInfo)
-  ); //array of references, explained above
-  const [selected, setSelected] = React.useState<number>(null);
+  const itemRefs = React.useRef<{
+    [key: string]: React.RefObject<HTMLButtonElement>;
+  }>(generateTabRefs(tabInfo)); //object of references, explained above
   const [indicatorProperties, setIndicatorProperties] =
     React.useState<IndicatorProps>({ left: 0, width: 0 });
 
-  const defaultSelected = React.useMemo(() => {
-    for (let i = 0; i < tabInfo.length; i++) {
-      if (tabInfo[i].tag === defaultTab) {
-        return i;
+  const activeTabId = React.useMemo(() => {
+    for (const info of tabInfo) {
+      if (info.tag === activeTab) {
+        return info.id;
       }
     }
-    return 0;
-  }, [defaultTab, tabInfo]);
+  }, [tabInfo, activeTab]);
 
   const tabBarItemOnClick = (index: number) => {
-    setSelected(index);
     onSelect(tabInfo[index].tag);
   };
 
@@ -100,18 +101,11 @@ const TabBar: React.FC<TabBarProps> = ({
 
     if (itemRefs != null && itemRefs.current != null) {
       if (
-        selected == null &&
-        itemRefs.current[defaultSelected] != null &&
-        itemRefs.current[defaultSelected].current != null
+        activeTabId != null &&
+        itemRefs.current[activeTabId] != null &&
+        itemRefs.current[activeTabId].current != null
       ) {
-        const selectedTab = itemRefs.current[defaultSelected].current;
-        setIndicatorProperties(calculateIndicatorProperties(selectedTab));
-      } else if (
-        selected != null &&
-        itemRefs.current[selected] != null &&
-        itemRefs.current[selected].current != null
-      ) {
-        const selectedTab = itemRefs.current[selected].current;
+        const selectedTab = itemRefs.current[activeTabId].current;
         setIndicatorProperties(calculateIndicatorProperties(selectedTab));
       }
     } else {
@@ -120,7 +114,7 @@ const TabBar: React.FC<TabBarProps> = ({
         width: 0,
       });
     }
-  }, [selected, defaultSelected]);
+  }, [activeTabId]);
 
   return (
     <div className="immunespace-tabbar">
@@ -134,9 +128,9 @@ const TabBar: React.FC<TabBarProps> = ({
               key={info.id}
               id={info.id}
               index={i}
-              selected={i === (selected ?? defaultSelected)}
+              selected={info.tag === activeTab}
               label={info.label}
-              reference={itemRefs.current[i]}
+              reference={itemRefs.current[info.id]}
               onClickCallback={tabBarItemOnClick}
             />
           );

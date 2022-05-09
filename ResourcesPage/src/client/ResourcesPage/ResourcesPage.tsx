@@ -254,7 +254,7 @@ const ResourcesPage: React.FC = () => {
       <TabBar
         tabInfo={tabInfo}
         onSelect={changeTabParam}
-        defaultTab={activeTab}
+        activeTab={activeTab}
       />
       {getTabContent()}
     </div>
