@@ -15,6 +15,7 @@ params <- list(
   cache.path = file.path(cache_path, "report_cache/"),
   dataDir = "/share/files/HIPC/IS2/@files/data",
   dataCacheDir = cache_path,
+  cache = FALSE,
   datePrefix = ""
 )
 res <- knitr::knit_child(
