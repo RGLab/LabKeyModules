@@ -9,7 +9,7 @@ function makePropsWithIndex (data, label, dataType, dataRange, labkeyBaseUrl, in
     )
 
     // deep copy to ensure sort stays put
-    const sortedData = JSON.parse(JSON.stringify(data))
+    const sortedData = {...data};
 
     const plotProps: ScatterPlotProps = {
         data: sortedData,
