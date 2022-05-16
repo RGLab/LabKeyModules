@@ -41,6 +41,7 @@ import {
   TAB_TOOLS,
   TAB_IMMUNESPACER,
   TAB_STUDYSTATS,
+  TAB_NAMES,
   tabInfo,
 } from "./constants";
 
@@ -55,10 +56,6 @@ const ResourcesPage: React.FC = () => {
   /*  ----------------
       Linkable Tabs
     ------------------ */
-
-  const tabNames = React.useMemo(() => {
-    return [TAB_STUDYSTATS, TAB_TOOLS, TAB_IMMUNESPACER];
-  }, [TAB_STUDYSTATS, TAB_TOOLS, TAB_IMMUNESPACER]);
 
   // finds the value of "tab" parameter in url
   const getCurrentTabParam = (): string => {
@@ -88,7 +85,7 @@ const ResourcesPage: React.FC = () => {
   // handles forward/back button clicks
   // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
   window.onpopstate = (event: PopStateEvent) => {
-    if (event.state !== null && tabNames.includes(event.state.tab)) {
+    if (event.state !== null && TAB_NAMES.includes(event.state.tab)) {
       setActiveTab(event.state.tab);
     }
   };
