@@ -65,7 +65,7 @@ export const ScatterPlot: React.FC<ScatterPlotProps> = (props: ScatterPlotProps)
   // This will look for the id given by props.name to svg-element
   React.useEffect(() => {
     drawScatterPlot(props);
-  });
+  }, []);
 
   return (
     <div id={props.name}>
