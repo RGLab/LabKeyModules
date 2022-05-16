@@ -87,9 +87,12 @@ const TabBar: React.FC<TabBarProps> = ({
     }
   }, [tabInfo, activeTab]);
 
-  const tabBarItemOnClick = (index: number) => {
-    onSelect(tabInfo[index].tag);
-  };
+  const tabBarItemOnClick = React.useCallback(
+    (index: number) => {
+      onSelect(tabInfo[index].tag);
+    },
+    [onSelect]
+  );
 
   React.useEffect(() => {
     const calculateIndicatorProperties = (selectedTab: HTMLButtonElement) => {
