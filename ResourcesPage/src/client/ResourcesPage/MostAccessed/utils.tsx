@@ -51,6 +51,7 @@ export const createBarPlotProps = (
 ): MaBarPlotProps => {
   // Remove zero values to avoid odd looking chart since sorting is done
   // using a quicksort that leaves secondary sort in groups
+  // this deep clone is necessary as shallowclone does not work
   const tmp = JSON.parse(JSON.stringify(data));
   const tmpStudyData = tmp.filter((el) => el[order] > 10); // is this necessary
   tmpStudyData.sort((a, b) => (a[order] > b[order] ? 1 : -1));
