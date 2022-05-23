@@ -27,7 +27,7 @@ export const ImmuneSpaceR: React.FC = () => {
             </p>
           </div>
           <ArrowLink
-            href="https://github.com/RGLab/ImmuneSpaceR"
+            href="https://rglab.github.io/ImmuneSpaceR/"
             text="Learn More"
           />
         </div>
