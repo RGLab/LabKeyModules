@@ -451,7 +451,7 @@ const StudyStatistics: React.FC<StudyStatisticsProps> = ({
     <main className="page-content">
       <section id="table-of-contents">
         <TableOfContents
-          title="This page contains some interesting data about ImmuneSpace and its contents"
+          title="Explore statistics about ImmuneSpace studies and their contents below"
           content={TOCITEMS}
         />
       </section>
