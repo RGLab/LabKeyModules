@@ -1,0 +1,28 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
+@use "./shared";
+
+h1 {
+  @include shared.title-style;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+h2 {
+  @include shared.subtitle-style;
+  opacity: 70%;
+  margin-top: 8px;
+}
+
+h1,
+h2 {
+  display: block;
+}
+
+.content-grid__tools {
+  display: grid;
+  gap: 20px;
+  row-gap: 64px;
+  margin-top: 44px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}

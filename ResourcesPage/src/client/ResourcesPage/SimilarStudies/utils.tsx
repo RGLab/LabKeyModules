@@ -1,5 +1,5 @@
-import {categoricalLabels, LABELS} from './constants'
-import {ScatterPlotProps} from '../PlotComponents/similarStudyScatterPlot'
+import {categoricalLabels, LABELS} from "./constants"
+import {ScatterPlotProps, ScatterPlotDatum, ScatterPlotDataRange} from "../PlotComponents/similarStudyScatterPlot"
 
 function makePropsWithIndex (data, label, dataType, dataRange, labkeyBaseUrl, index, ){
     // For plotting categorical values, ensure that colored dots
@@ -11,7 +11,7 @@ function makePropsWithIndex (data, label, dataType, dataRange, labkeyBaseUrl, in
     // deep copy to ensure sort stays put
     const sortedData = JSON.parse(JSON.stringify(data))
 
-    let plotProps: ScatterPlotProps = {
+    const plotProps: ScatterPlotProps = {
         data: sortedData,
         name: label,
         width: 300,
@@ -36,24 +36,32 @@ const getLabelType = (label) => {
     }
 }
 
-export function createSsPlotPropsList(transformedSsData, ssDataRange, labkeyBaseUrl){
-    let ssPlotPropsList = {}
-    if(transformedSsData.length > 0){
-        Object.keys(LABELS).forEach(function(key){
-            const subList = []
-            LABELS[key].forEach(function(label, index){
-                subList.push(makePropsWithIndex(
-                    transformedSsData, 
-                    label, 
-                    key,
-                    ssDataRange,
-                    labkeyBaseUrl,
-                    index
-                    )
-                )
-            })
-            ssPlotPropsList[key] = subList
-        })
-    }
-    return(ssPlotPropsList)
+interface SSPlotPropList {
+    [key: string]: ScatterPlotProps[];
 }
+
+export const createSsPlotPropsList = (
+  transformedSsData: ScatterPlotDatum[],
+  ssDataRange: ScatterPlotDataRange,
+  labkeyBaseUrl: string
+): SSPlotPropList => {
+  const ssPlotPropsList: SSPlotPropList = {};
+  Object.keys(LABELS).forEach(function (key) {
+    const subList: ScatterPlotProps[] = [];
+    LABELS[key].forEach((label, index) => {
+      subList.push(
+        makePropsWithIndex(
+          transformedSsData,
+          label,
+          key,
+          ssDataRange,
+          labkeyBaseUrl,
+          index
+        )
+      );
+    });
+    ssPlotPropsList[key] = subList;
+  });
+
+  return ssPlotPropsList;
+};

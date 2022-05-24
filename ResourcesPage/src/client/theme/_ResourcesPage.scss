@@ -1,1 +1,28 @@
 // You can include here any css that will be shared between webparts
+@use "~@immunespace/theme/dist/immunespace";
+@use "./shared";
+@use "./ImmuneSpaceR";
+@use "./Tools";
+@use "./StudyStatistics";
+@use "./components";
+
+.lk-body-ct > .container {
+  @if (calc(100vw - 100%) != 0) {
+    padding-left: calc((100vw - 100%)); // to compensate for scrollbar
+  }
+}
+
+body {
+  font-family: immunespace.$nunito-sans;
+}
+
+main.page-content {
+  max-width: 1120px;
+  margin-top: 40px;
+  padding: 0 16px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// idk why immunespace package is not supplying the font
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap");

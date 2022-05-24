@@ -1,0 +1,201 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tools page renders correctly Tools card renders correctly 1`] = `
+<div
+  className="tool-card"
+>
+  <div
+    className="tool-card__header"
+  >
+    <img
+      alt="Google"
+      src="/beep.png"
+    />
+  </div>
+  <div
+    className="tool-card__body"
+  >
+    <a
+      className="arrow-link"
+      href="https://www.google.com/"
+      title="Google"
+    >
+      <span
+        className="tri-block__link-text"
+      >
+        Google
+      </span>
+    </a>
+    <p>
+      This is Google
+    </p>
+  </div>
+</div>
+`;
+
+exports[`Tools page renders correctly test Tools page render 1`] = `
+<main
+  className="page-content"
+>
+  <h1>
+    Tools
+  </h1>
+  <h2>
+    Online bioinformatics tools created by HIPC members & more
+  </h2>
+  <section
+    className="content-grid__tools"
+  >
+    <div
+      className="tool-card"
+    >
+      <div
+        className="tool-card__header"
+      >
+        <img
+          alt="ImmuneRegulation"
+          src="/ResourcesPage/images/ImmuneRegulator.png"
+        />
+      </div>
+      <div
+        className="tool-card__body"
+      >
+        <a
+          className="arrow-link"
+          href="http://icahn.mssm.edu/immuneregulation"
+          title="ImmuneRegulation"
+        >
+          <span
+            className="tri-block__link-text"
+          >
+            ImmuneRegulation
+          </span>
+        </a>
+        <p>
+          Web platform that allows you to interactively explore the regulation of genes of interest by querying the regulation in the eQTL, Transcription Factor, and GQAS datasets
+        </p>
+      </div>
+    </div>
+    <div
+      className="tool-card"
+    >
+      <div
+        className="tool-card__header"
+      >
+        <img
+          alt="ImmuneSigDB"
+          src="/ResourcesPage/images/blockchain.svg"
+        />
+      </div>
+      <div
+        className="tool-card__body"
+      >
+        <a
+          className="arrow-link"
+          href="http://software.broadinstitute.org/gsea/msigdb/collection_details.jsp#C7"
+          title="ImmuneSigDB"
+        >
+          <span
+            className="tri-block__link-text"
+          >
+            ImmuneSigDB
+          </span>
+        </a>
+        <p>
+          A collection of Immune Signatures gene sets that represent cell types, states, and perturbations within the immune system developed by the Haining Lab
+        </p>
+      </div>
+    </div>
+    <div
+      className="tool-card"
+    >
+      <div
+        className="tool-card__header"
+      >
+        <img
+          alt="Immcantation"
+          src="/ResourcesPage/images/immcantation.png"
+        />
+      </div>
+      <div
+        className="tool-card__body"
+      >
+        <a
+          className="arrow-link"
+          href="https://immcantation.readthedocs.io/en/stable/#"
+          title="Immcantation"
+        >
+          <span
+            className="tri-block__link-text"
+          >
+            Immcantation
+          </span>
+        </a>
+        <p>
+          The Immcantation framework provide a start-to-finish analytical ecosystem for high-throughput AIRR-seq datasets. Beginning from raw reads, Python and R packages are provided for pre-processing, population structure determination, and repertoire analysis
+        </p>
+      </div>
+    </div>
+    <div
+      className="tool-card"
+    >
+      <div
+        className="tool-card__header"
+      >
+        <img
+          alt="ReliefSeq"
+          src="/ResourcesPage/images/blockchain.svg"
+        />
+      </div>
+      <div
+        className="tool-card__body"
+      >
+        <a
+          className="arrow-link"
+          href="http://insilico.utulsa.edu/index.php/reliefseq/"
+          title="ReliefSeq"
+        >
+          <span
+            className="tri-block__link-text"
+          >
+            ReliefSeq
+          </span>
+        </a>
+        <p>
+          Machine learning feature selection method for GWAS, RNA-Seq and other high-dimensional data sets able to identify genetic variables that influence continuous or dichotomous outcomes through interactions with other genetic variables
+        </p>
+      </div>
+    </div>
+    <div
+      className="tool-card"
+    >
+      <div
+        className="tool-card__header"
+      >
+        <img
+          alt="HIPC Dashboard"
+          src="/ResourcesPage/images/HIPC_dashboard.png"
+        />
+      </div>
+      <div
+        className="tool-card__body"
+      >
+        <a
+          className="arrow-link"
+          href="http://www.hipc-dashboard.org/"
+          title="HIPC Dashboard"
+        >
+          <span
+            className="tri-block__link-text"
+          >
+            HIPC Dashboard
+          </span>
+        </a>
+        <p>
+          The Human Immunology Project Consortium aims to identify molecular signatures that correlate with the outcomes of vaccinations, adjuvants, or natural infections in humans. To facilitate the dissemination of this information to the scientific community, the Consortium has developed the HIPC Dashboard, a web interface that provides access to consistently annotated immune signatures generated by HIPC activities as well as curated from the literature
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+`;

@@ -19,7 +19,7 @@ jobs:
       matrix:
         node-version: [12.x, 14.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-        dir: [./AboutPage, ./AnalyteExplorer] # directories with jest tests
+        dir: [./AboutPage, ./AnalyteExplorer, ./ResourcesPage] # directories with jest tests
 
     steps:
     - uses: actions/checkout@v2
