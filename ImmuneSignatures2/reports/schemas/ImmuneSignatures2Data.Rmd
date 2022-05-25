@@ -114,6 +114,11 @@ Immune Response Data for all assays is also available as an R object:
 
 ## Code
 
+### Manuscript Figures
+[**Reproduction of manuscript figures**](/_webdav/HIPC/IS2/%40files/html_outputs/prevax.html){target="_blank"}
+
+
+### Preprocessing
 Rmarkdown outputs from preprocessing, including code and some summaries.
 Preprocessing depends on the [ImmuneSignatures2](https://github.com/RGLab/ImmuneSignatures2) R package. (DOI: [10.5281/zenodo.5706261](https://zenodo.org/record/5706261#.YaVs1caIZQI))
 

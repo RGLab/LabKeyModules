@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etl xmlns="http://labkey.org/etl/xml">
+    <name>ImmuneSignatures2 Code and Figures: Data Resource</name>
+    <description>Data Resource Manuscript Report</description>
+    <transforms>
+        <transform id="run_manuscript_report" type="TaskRefTransformStep">
+            <description>run_manuscript_report</description>
+            <taskref ref="org.labkey.di.pipeline.RunReportTask">
+                <settings>
+                    <setting name="reportId" value="module:ImmuneSignatures2/run_manuscript_report.R"/>
+                    <setting name="task_name" value="dataResource"/>
+                </settings>
+            </taskref>
+        </transform>
+    </transforms>
+</etl>
