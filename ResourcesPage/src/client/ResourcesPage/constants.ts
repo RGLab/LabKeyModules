@@ -7,9 +7,19 @@ export const TAB_STUDYSTATISTICS = "StudyStatistics";
 export const TAB_TOOLS = "Tools";
 export const TAB_IMMUNESPACER = "ImmuneSpaceR";
 
-export const TAB_NAMES = [TAB_STUDYSTATS, TAB_TOOLS, TAB_IMMUNESPACER];
+export const TAB_NAMES = [
+  TAB_REPORTS,
+  TAB_STUDYSTATS,
+  TAB_TOOLS,
+  TAB_IMMUNESPACER,
+];
 
 export const tabInfo = [
+  {
+    id: "reports",
+    tag: TAB_REPORTS,
+    label: "Highlighted Reports",
+  },
   {
     id: "study-stats",
     tag: TAB_STUDYSTATS,
