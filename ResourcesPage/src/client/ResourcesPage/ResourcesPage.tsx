@@ -11,7 +11,7 @@ import "regenerator-runtime/runtime";
 // Components
 import { ImmuneSpaceR } from "./ImmuneSpaceR";
 import { Tools } from "./Tools";
-//import { Reports } from "./Reports";
+import { Reports } from "./Reports";
 import StudyStatistics from "./StudyStatistics";
 import TabBar from "./components/TabBar";
 import { CSSTransition } from "react-transition-group";
@@ -41,6 +41,7 @@ import {
   TAB_TOOLS,
   TAB_IMMUNESPACER,
   TAB_STUDYSTATS,
+  TAB_REPORTS,
   TAB_NAMES,
   tabInfo,
 } from "./constants";
@@ -72,7 +73,6 @@ const ResourcesPage: React.FC = () => {
     When a new tab is selected, append the appropriate parameter to the end of the url
     and updates the url. Creates new history entries that allows user to traverse tabs 
     using the foward and back buttons. Does not refresh the page.
-
     https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
   */
   const changeTabParam = (newActiveTab: string) => {
@@ -183,7 +183,7 @@ const ResourcesPage: React.FC = () => {
     return (
       <React.Fragment>
         <CSSTransition
-          in={activeTab === TAB_STUDYSTATS}
+          in={activeTab === TAB_REPORTS}
           timeout={300}
           classNames="immunespace-tabpanel">
           <div
@@ -191,6 +191,19 @@ const ResourcesPage: React.FC = () => {
             role="tabpanel"
             tabIndex={0}
             aria-labelledby={`${tabInfo[0].id}-tab`}
+            hidden={activeTab !== TAB_REPORTS}>
+            <Reports />
+          </div>
+        </CSSTransition>
+        <CSSTransition
+          in={activeTab === TAB_STUDYSTATS}
+          timeout={300}
+          classNames="immunespace-tabpanel">
+          <div
+            id={`${tabInfo[1].id}-panel`}
+            role="tabpanel"
+            tabIndex={0}
+            aria-labelledby={`${tabInfo[1].id}-tab`}
             hidden={activeTab !== TAB_STUDYSTATS}>
             <StudyStatistics
               maData={transformedMaData}
@@ -211,10 +224,10 @@ const ResourcesPage: React.FC = () => {
           timeout={300}
           classNames="immunespace-tabpanel">
           <div
-            id={`${tabInfo[1].id}-panel`}
+            id={`${tabInfo[2].id}-panel`}
             role="tabpanel"
             tabIndex={0}
-            aria-labelledby={`${tabInfo[1].id}-tab`}
+            aria-labelledby={`${tabInfo[2].id}-tab`}
             hidden={activeTab !== TAB_TOOLS}>
             <Tools />
           </div>
@@ -225,10 +238,10 @@ const ResourcesPage: React.FC = () => {
           timeout={300}
           classNames="immunespace-tabpanel">
           <div
-            id={`${tabInfo[2].id}-panel`}
+            id={`${tabInfo[3].id}-panel`}
             role="tabpanel"
             tabIndex={0}
-            aria-labelledby={`${tabInfo[2].id}-tab`}
+            aria-labelledby={`${tabInfo[3].id}-tab`}
             hidden={activeTab !== TAB_IMMUNESPACER}>
             <ImmuneSpaceR />
           </div>
