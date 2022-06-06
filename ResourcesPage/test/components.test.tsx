@@ -101,8 +101,6 @@ describe("<TabBar />", () => {
     );
 
     // makes sure callback returns the appropriate value
-    //expect(mockOnClickCallback.mock.calls.length).toBe(1);
-    //expect(mockOnClickCallback.mock.results[0].value).toBe(tabInfo[1].tag);
 
     expect(screen.getByText(tabInfo[1].label).offsetLeft).toBe(
       screen.getByTestId("tabbar_indicator").offsetLeft
