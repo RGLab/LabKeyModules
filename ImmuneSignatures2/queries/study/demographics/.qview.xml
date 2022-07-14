@@ -14,7 +14,8 @@
         <cv:column name='race'/>
         <cv:column name='species'/>
         <cv:column name='ImmSigCol/cohort'/>
-	<cv:column name='ImmSigCol/has_gene_expression'/>
+        <cv:column name='ImmSigCol/has_gene_expression'/>
+        <cv:column name='location'/>
     </cv:columns>
 </cv:customView>
 
