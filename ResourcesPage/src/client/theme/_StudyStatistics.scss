@@ -1,0 +1,78 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "./shared";
+
+.plot-area {
+  &__title {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 32px;
+
+    h1 {
+      font-size: 32px;
+      line-height: 48px;
+      font-weight: immunespace.$font-weight--black;
+      margin: 0;
+    }
+
+    .anchor-link {
+      display: block;
+      margin-top: auto;
+      margin-bottom: auto;
+      margin-left: 16px;
+    }
+
+    .link-icon {
+      color: immunespace.$dark-gray;
+      opacity: 60%;
+      width: 16px;
+      height: 16px;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+
+  &__subtitle {
+    display: block;
+    margin-top: 8px;
+    @include shared.base-text-style;
+  }
+
+  &__menu-container {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, 170px);
+    margin-top: 32px;
+  }
+
+  &__plot-container {
+    margin-top: 32px;
+    width: 100%;
+
+    display: grid;
+    gap: 0px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  &__footer {
+    margin-top: 32px;
+
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style-position: inside;
+    }
+
+    li {
+      @include shared.base-text-style;
+    }
+  }
+}
+
+.study-stats-err {
+  color: immunespace.$red;
+  font-size: 16px;
+  font-style: italic;
+  text-align: center;
+}

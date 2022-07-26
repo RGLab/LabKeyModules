@@ -18,5 +18,6 @@
         <cv:column name='strain'/>
         <cv:column name='strain_characteristics'/>
         <cv:column name='description'/>
+        <cv:column name='location'/>
     </cv:columns>
 </cv:customView>

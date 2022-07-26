@@ -15,8 +15,7 @@ export function drawBarPlot(props: BarPlotProps) {
     // select div
     const svg = d3
         .select("#mc-barplot-" + name)
-        .attr("height", props.height)
-        .attr("width", props.width)
+        .attr("viewBox", `0 0 ${props.width} ${props.height}`)
         .attr("id", "mc-barplot-" + name); // why give it same id??
 
     // ensure old elements are removed before each redraw
