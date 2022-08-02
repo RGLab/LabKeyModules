@@ -103,6 +103,31 @@ export const DataStandards: React.FC = () => {
             </a>
             .
           </li>
+          <li>
+            <strong>
+              Mass Spectrometry-based Metabolomics, Proteomics and Lipidomics
+            </strong>
+            <br></br>
+            This HIPC data standard applies to mass spectrometry-based
+            proteomics, metabolomics and lipidomics experimental data. For more
+            information, consult{" "}
+            <a href="https://docs.google.com/document/d/1Skov6t27I92PIAnU68pCPhX-Atr9Lin4VcCijqsv5Cw/edit?usp=sharing">
+              this document
+            </a>
+            .
+          </li>
+          <li>
+            <strong>Single cell RNA-seq</strong>
+            <br></br>
+            This HIPC data standard applies to single cell transcriptional
+            profiling data (including possible feature barcoding). It includes
+            the submission of metadata to ImmPort with raw and processed data
+            submitted to GEO and SRA. For more information, consult{" "}
+            <a href="https://docs.google.com/document/d/1ra1E2lg1YLAOF4Ny1aPMnJtr27POb_HmxvzlILR65jg/edit?usp=sharing">
+              this document
+            </a>
+            .
+          </li>
         </ul>
       </section>
 
