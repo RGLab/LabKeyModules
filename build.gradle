@@ -25,7 +25,6 @@ final hasMooworkNodePlugin = project.getPlugins().hasPlugin(mooworkNodePluginId)
 // If plugins are not already loaded (i.e. run at LKMods level), then
 // load from classpaths using legacy plugin application
 
-
 // Can use following to download node for consistency environments
 // gradleNodePlugin must be applied in plugins to work
 // node {
@@ -49,6 +48,19 @@ ext.labKeyModulesDir = System.getenv('GRADLE_LKMODS_DIR')
 ext.deployDir = System.getenv('GRADLE_DEPLOY_DIR')
 ext.externalModulesDir = System.getenv('GRADLE_EXTERNAL_MODULES_DIR')
 
+// GRADLE_BUILD_TYPE should be set to 'dev','prod', or 'local'
+ext.buildType = System.getenv('GRADLE_BUILD_TYPE')
+
+if (ext.buildType == 'dev'){
+    buildType = "Development"
+}else if(ext.buildType == 'prod'){
+    buildType = "Production"
+}else if(ext.buildType == 'local'){
+    buildType = "Local"}
+else{
+    throw new GradleException("Unknown build type: ${ext.buildType}")
+}
+
 if (deployDir == null)
     throw new GradleException("deploy directory ${deployDir} does not exist.")
 
@@ -59,18 +71,6 @@ if (externalModulesDir == null){
 // Build Parameters for module.xml
 ext.buildUser = System.getProperty('user.name')
 ext.buildOS = System.getProperty('os.name')
-String hostname = java.net.InetAddress.getLocalHost().getHostName();
-
-ext.buildType = ""
-if (hostname =~ /Test/){
-    buildType = "Development"
-}else if(hostname =~ /Prod/){
-    buildType = "Production"
-}else{
-    buildType = "Local"
-}
-
-
 
 ext.reactModules = ['DataFinder', 'ResourcesPage', 'AboutPage', 'DataAccess', 'extraWebapp', 'AnalyteExplorer']
 
@@ -91,7 +91,6 @@ subprojects {
         }
     }
 }
-
 
 
 // Each module has individual build files for speed and ease of deployment
