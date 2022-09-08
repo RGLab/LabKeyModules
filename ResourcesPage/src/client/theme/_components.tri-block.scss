@@ -1,0 +1,138 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "~@immunespace/theme/dist/immunespace.responsive" as responsive;
+
+.tri-block {
+  background-color: immunespace.$white;
+
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    // align-content: center;
+    flex-direction: column;
+  }
+
+  &__content {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    // align-content: center;
+    flex-direction: column;
+    flex-flow: wrap;
+    padding: 1.25rem 0;
+
+    @include responsive.media-query(tab) {
+      flex-direction: row;
+      width: 100%;
+    }
+
+    @include responsive.media-query(desk) {
+      padding: 2.5rem 0;
+    }
+  }
+
+  &__block {
+    width: 100%;
+    margin-top: 2rem;
+
+    @include responsive.media-query(tab) {
+      padding-right: 1rem;
+      margin-top: 1.5rem;
+      width: auto;
+      max-width: 33.333%;
+      min-width: 300px;
+    }
+
+    @include responsive.media-query(desk) {
+      margin-top: 1rem;
+      width: 33.333%;
+      min-width: 300px;
+    }
+
+    p {
+      color: immunespace.$background;
+      // font-weight: $font-weight--normal;
+      line-height: 20px;
+      max-width: 400px;
+
+      @include responsive.media-query(tab) {
+        max-width: unset;
+      }
+    }
+  }
+
+  &__icon {
+    display: block;
+    margin: 0 0 2rem 0;
+    height: 100%;
+    max-height: 113px;
+
+    @include responsive.media-query(tab) {
+      max-height: 91px;
+    }
+
+    @include responsive.media-query(desk) {
+      max-height: 113px;
+    }
+
+    svg {
+    }
+  }
+
+  &__copy {
+  }
+
+  &__cta {
+    color: immunespace.$background;
+    display: block;
+    font-size: 0.875rem;
+    font-weight: immunespace.$font-weight--bold;
+    line-height: 19px;
+    position: relative;
+
+    // .tri-block__icon {
+    //   position: relative;
+    // }
+
+    &:hover {
+      .tri-block__link-text {
+        &::after {
+          // transform: translateX(7px);
+          // transition: all .2s ease-in-out;
+          animation-direction: alternate;
+          animation-duration: 600ms;
+          animation-iteration-count: infinite;
+          animation-name: bobberLtr;
+        }
+      }
+    }
+  }
+
+  &__link-text {
+    text-transform: uppercase;
+    // position: relative;
+
+    &::after {
+      content: "";
+      display: inline-block;
+      position: relative;
+      background: url("/ResourcesPage/icons/icon-arrow-right-blue.svg");
+      width: 34px;
+      height: 19px;
+      fill: immunespace.$blue;
+      // position: absolute;
+      right: -15px;
+      bottom: -5px;
+      transform: translateY(0.03125rem);
+    }
+
+    &:hover {
+      &::after {
+        animation-direction: alternate;
+        animation-duration: 600ms;
+        animation-iteration-count: infinite;
+        animation-name: bobberLtr;
+      }
+    }
+  }
+}

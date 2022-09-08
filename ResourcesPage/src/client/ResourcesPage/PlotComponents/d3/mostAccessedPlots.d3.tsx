@@ -16,8 +16,7 @@ export function drawMaBarPlot(props: MaBarPlotProps) {
     // select div
     const svg = d3
         .select("#ma-barplot-" + name)
-        .attr("height", props.height)
-        .attr("width", props.width)
+        .attr("viewBox", `0 0 ${props.width} ${props.height}`)
         .attr("id", "ma-barplot-" + name); // why give it same id??
 
     // set margins

@@ -124,7 +124,7 @@ $ae-search-btn-container-width: 70px;
   width: 400px;
   height: 350px;
   border-radius: 50px;
-  margin-top: 3rem;
+  margin-top: 2rem;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 2001;
 
@@ -151,7 +151,7 @@ $ae-search-btn-container-width: 70px;
 
       span {
         display: inline-block;
-        font-size: 2rem;
+        font-size: 1rem;
         margin-left: 30px;
       }
     }
@@ -171,7 +171,7 @@ $ae-search-btn-container-width: 70px;
 
 .analyte-filter-content {
   font-family: immunespace.$nunito-sans;
-  padding: 20px 36px 0px 36px;
+  padding: 20px 36px 20px 36px;
   height: 100%;
 
   form {
@@ -198,7 +198,7 @@ $ae-search-btn-container-width: 70px;
 
           label {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 1rem;
           }
           label,
           input {
@@ -210,8 +210,8 @@ $ae-search-btn-container-width: 70px;
 
     .analyte-filter-action-container {
       position: absolute;
-      bottom: 21px;
-      right: 0;
+      bottom: 10px;
+      right: 10px;
 
       input {
         width: 57px;

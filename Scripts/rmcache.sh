@@ -10,12 +10,12 @@ do
   if [ -d "SDY207/@files/analysis/gating_set" ]; then
     echo "rm -r ${study}/@files/analysis/gating_set*"
     rm -r ${study}/@files/analysis/gating_set
-    rm -r ${study}/@files/analysis/gating_set_gated 
+    rm -r ${study}/@files/analysis/gating_set_gated
   fi
 done
 
 # Remove HIPC ISx caches for R reports
-for study in /share/files/HIPC/IS*
+for study in /share/files/HIPC/IS1
 do
   if [ -d "${study}/@files/cache" ]; then
     echo "rm -r  ${study}/@files/cache"

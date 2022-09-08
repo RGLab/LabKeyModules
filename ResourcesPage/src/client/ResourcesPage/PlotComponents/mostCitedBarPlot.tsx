@@ -1,6 +1,6 @@
-import * as React from 'react';
-import { drawBarPlot } from './d3/mostCitedBarPlot.d3'
-import * as d3 from 'd3'
+import * as React from "react";
+import { drawBarPlot } from "./d3/mostCitedBarPlot.d3";
+import * as d3 from "d3";
 
 // Create Typing for bar plot data
 export interface BarPlotDatum {

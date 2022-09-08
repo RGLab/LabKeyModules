@@ -1,0 +1,196 @@
+@use "~@immunespace/theme/dist/immunespace";
+@use "./shared";
+
+// nav bar
+
+#resources-page .navbar {
+  background-color: immunespace.$white;
+}
+
+// ArrowLink
+.arrow-link {
+  display: block;
+  color: immunespace.$dark-gray;
+  span {
+    @include shared.subsubtitle-style;
+  }
+}
+
+// Tool Card
+
+.tool-card {
+  padding: 8px;
+  max-width: 265px;
+
+  &__header {
+    img {
+      display: block;
+      width: 56px;
+      height: 56px;
+    }
+  }
+
+  &__body {
+    margin-top: 32px;
+
+    span {
+      text-transform: none;
+    }
+
+    p {
+      display: block;
+      margin-top: 16px;
+      @include shared.base-text-style;
+    }
+  }
+}
+
+// Table of Contents
+
+.toc {
+  &__title {
+    @include shared.base-text-style;
+    opacity: 70%;
+  }
+
+  &__content {
+    padding: 12px 0px;
+    ul {
+      list-style: none;
+      margin-bottom: 0;
+      padding-left: 0;
+
+      li:not(:first-child) {
+        margin-top: 8px;
+      }
+    }
+  }
+
+  &__link {
+    display: block;
+    color: immunespace.$immune-blue;
+    text-decoration: none;
+    @include shared.subsubtitle-style;
+
+    &:focus,
+    &:hover {
+      color: immunespace.$immune-blue;
+    }
+  }
+}
+
+// dropdown menu
+
+.plot-dropdown-menu {
+  box-sizing: border-box;
+  width: 170px;
+  height: 32px;
+  border: 1px solid black;
+
+  &__button {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 12px;
+
+    span {
+      margin-top: auto;
+      margin-bottom: auto;
+      @include shared.filter-text-style;
+      font-weight: 700;
+    }
+
+    .dropdown-icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    &:hover {
+      cursor: pointer;
+    }
+
+    &:hover,
+    &.clicked {
+      background-color: #e7e7e7;
+    }
+  }
+
+  &__dropdown {
+    position: relative;
+    background-color: immunespace.$white; // fix this soon
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25),
+      0px 1px 5px rgba(186, 186, 186, 0.25);
+    z-index: 20;
+    margin-top: 8px;
+    ul {
+      list-style: none;
+      padding-left: 0;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      margin: 0;
+
+      span {
+        display: block;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        padding-left: 32px;
+        @include shared.data-tabs-text-style;
+
+        &:hover {
+          cursor: pointer;
+          background-color: immunespace.$light-gray;
+        }
+      }
+    }
+  }
+}
+
+// Tab Bar
+
+.immunespace-tabbar {
+  position: relative;
+  width: 100%;
+
+  &__tabContainer {
+    display: flex;
+    justify-content: start;
+  }
+
+  &__item {
+    @include shared.data-tabs-text-style;
+    border: none;
+    background-color: transparent;
+    padding: 8px 16px;
+
+    &.is-tabbar-selected {
+      background-color: #e7e7e7;
+    }
+  }
+
+  &__indicator {
+    position: absolute;
+    background-color: immunespace.$dark-gray;
+    bottom: 0px;
+    width: 100%;
+    height: 2px;
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms; // stole this straight from material-ui
+  }
+}
+
+// Tab Container
+
+.immunespace-tabContainer {
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// Tab Panel Animation
+
+.immunespace-tabpanel-enter {
+  opacity: 0;
+}
+
+.immunespace-tabpanel-enter-active {
+  opacity: 1;
+  transition: opacity 300ms linear; // transition time should match indicator transition time
+}
