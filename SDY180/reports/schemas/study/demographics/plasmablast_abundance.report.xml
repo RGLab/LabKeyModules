@@ -4,4 +4,8 @@
     <category>Custom Analysis</category>
     <label>Measuring plasmablast abundance by multiparameter flow cytometry</label>
     <description>This report investigate the abundance of plasmablast (and other B cell subsets) over time after vaccination with Pneumovax, Fluzone, or no vaccination (saline control group).</description>
+    <Properties>
+        <Prop name="useDefaultOutputFormat">false</Prop>
+        <Prop name="rmarkdownOutputOptions">keep_md=TRUE, self_contained=TRUE, fig_caption=TRUE, theme=NULL, css=NULL, smart=TRUE, highlight="default"</Prop>
+    </Properties>
 </ReportDescriptor>

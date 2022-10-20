@@ -3,4 +3,8 @@
     <category>Automated Gating</category>
     <description></description>
     <label>Automated gating of Seracare data (all panels)</label>
+    <Properties>
+        <Prop name="useDefaultOutputFormat">false</Prop>
+        <Prop name="rmarkdownOutputOptions">keep_md=TRUE, self_contained=TRUE, fig_caption=TRUE, theme=NULL, css=NULL, smart=TRUE, highlight="default"</Prop>
+    </Properties>
 </ReportDescriptor>

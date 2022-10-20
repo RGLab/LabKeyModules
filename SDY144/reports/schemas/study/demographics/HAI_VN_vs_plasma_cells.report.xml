@@ -4,4 +4,8 @@
     <category>Custom Analysis</category>
     <label>Correlation of HAI/VN and plasma cell counts</label>
     <description>This report reproduces Figure 2 of the paper published with SDY144.</description>
+    <Properties>
+        <Prop name="useDefaultOutputFormat">false</Prop>
+        <Prop name="rmarkdownOutputOptions">keep_md=TRUE, self_contained=TRUE, fig_caption=TRUE, theme=NULL, css=NULL, smart=TRUE, highlight="default"</Prop>
+    </Properties>
 </ReportDescriptor>

@@ -4,4 +4,8 @@
     <category>Custom Analysis</category>
     <label>Correlating HAI with flow cytometry and ELISPOT</label>
     <description>This report investigate the association between the number influenza-specific cells measured by ELISPOT measured at day 7 with the number of plasmablast measured by flow cytometry and day 7 and the HAI response measured at day 28 (log-fold day28/day0). It basically reproduces Figure 1 d-e) of Nakaya et al. (2011) published as part of the original study.</description>
+    <Properties>
+        <Prop name="useDefaultOutputFormat">false</Prop>
+        <Prop name="rmarkdownOutputOptions">keep_md=TRUE, self_contained=TRUE, fig_caption=TRUE, theme=NULL, css=NULL, smart=TRUE, highlight="default"</Prop>
+    </Properties>
 </ReportDescriptor>
