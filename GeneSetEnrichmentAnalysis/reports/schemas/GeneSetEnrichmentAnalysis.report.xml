@@ -2,6 +2,10 @@
 <ReportDescriptor>
     <hidden>true</hidden>
     <category>GeneSetEnrichment module script</category>
+    <Properties>
+        <Prop name="useDefaultOutputFormat">false</Prop>
+        <Prop name="rmarkdownOutputOptions">keep_md=TRUE, self_contained=TRUE, fig_caption=TRUE, theme=NULL, css=NULL, smart=TRUE, highlight="default"</Prop>
+    </Properties>
     <!--<label>show this instead of the file name</label>-->
     <!--<description>this is a module report</description>-->
 </ReportDescriptor>

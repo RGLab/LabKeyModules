@@ -6,6 +6,6 @@
     <description>HIPC ImmuneSignatures2 Data Resource</description>
     <Properties>
         <Prop name="useDefaultOutputFormat">false</Prop>
-        <Prop name="rmarkdownOutputOptions">self_contained=FALSE, df_print="paged", code_folding="hide"</Prop>
+        <Prop name="rmarkdownOutputOptions">self_contained=TRUE, df_print="paged", code_folding="hide"</Prop>
     </Properties>
 </ReportDescriptor>
