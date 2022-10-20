@@ -4,4 +4,8 @@
     <category>ImmuneSignatures</category>
     <label>ImmuneSignatures Report</label>
     <description>HIPC ImmuneSignatures Meta-Analysis</description>
+    <Properties>
+        <Prop name="useDefaultOutputFormat">false</Prop>
+        <Prop name="rmarkdownOutputOptions">keep_md=TRUE, self_contained=TRUE, fig_caption=TRUE, theme=NULL, css=NULL, smart=TRUE, highlight="default"</Prop>
+    </Properties>
 </ReportDescriptor>

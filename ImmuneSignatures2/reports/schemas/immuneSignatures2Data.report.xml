@@ -2,6 +2,6 @@
 <ReportDescriptor>
     <Properties>
         <Prop name="useDefaultOutputFormat">false</Prop>
-        <Prop name="rmarkdownOutputOptions">keep_md=TRUE, self_contained=FALSE, fig_caption=TRUE, smart=TRUE, highlight="default",css=NULL, theme=NULL </Prop>
+        <Prop name="rmarkdownOutputOptions">keep_md=TRUE, self_contained=TRUE, fig_caption=TRUE, theme=NULL, css=NULL, smart=TRUE, highlight="default"</Prop>
     </Properties>
 </ReportDescriptor>
