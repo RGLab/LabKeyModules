@@ -5,8 +5,6 @@ opts_chunk$set(cache = FALSE, cache.path = file.path(labkey.file.root, "cache/Da
 ```
 
 ```{r setup}
-# load libraries
-suppressMessages(library(Cairo))
 suppressMessages(library(RJSONIO))
 suppressMessages(library(ImmuneSpaceR))
 
@@ -65,29 +63,26 @@ imageHeightR    <- 15 * imageHeight / max( c(imageWidth, imageHeight) )
 con <- CreateConnection()
 
 if (!interactive || tolower(dataset) == "pcr") {
-    CairoPNG(   filename    = '${imgout:Plot.png}',
-                width       = imageWidth,
-                height      = imageHeight
-    )
+  png(filename = "${imgout:Plot.png}", width = imageWidth, height = imageHeight)
 }
 
-m_out <- con$plot(dataset,
-                        normalize_to_baseline = normalize,
-                        type                  = plotType,
-                        filter                = filter,
-                        facet                 = facet,
-                        text_size             = textSize,
-                        color                 = color,
-                        size                  = size,
-                        shape                 = shape,
-                        alpha                 = alpha,
-                        legend                = legend,
-                        show_virus_strain     = show_strains,
-                        interactive           = interactive)
+con$plot(
+  dataset,
+  normalize_to_baseline = normalize,
+  type = plotType,
+  filter = filter,
+  facet = facet,
+  text_size = textSize,
+  color = color,
+  size = size,
+  shape = shape,
+  alpha = alpha,
+  legend = legend,
+  show_virus_strain = show_strains,
+  interactive = interactive
+)
 
 if (!interactive || tolower(dataset) == "pcr") dev.off()
-
-m_out
 ```
 </div>
 
