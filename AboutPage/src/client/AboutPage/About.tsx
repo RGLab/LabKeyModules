@@ -81,7 +81,7 @@ export const About: React.FC = () => {
         </p>
         <p>
           You can also reach the team at{" "}
-          <a href="mailto:ops@immunespace.org">ops@immunespace.org</a>
+          <a href="mailto:immunespace@gmail.com">immunespace@gmail.com</a>
         </p>
       </section>
     </div>

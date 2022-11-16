@@ -191,7 +191,7 @@ const App = () => {
                 </li>
                 <li>
                   <a
-                    href="mailto:ops@immunespace.org"
+                    href="mailto:immunespace@gmail.com"
                     className="footer__email">
                     <EmailIcon />
                   </a>
@@ -244,7 +244,7 @@ const App = () => {
                 </li>
                 <li>
                   <a
-                    href="mailto:ops@immunespace.org"
+                    href="mailto:immunespace@gmail.com"
                     className="footer__email">
                     <span>contact us</span>
                     <EmailIcon />

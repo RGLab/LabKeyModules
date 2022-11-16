@@ -90,9 +90,9 @@ exports[`tests AboutPage pages renders correctly test About renders correctly 1`
       You can also reach the team at
        
       <a
-        href="mailto:ops@immunespace.org"
+        href="mailto:immunespace@gmail.com"
       >
-        ops@immunespace.org
+        immunespace@gmail.com
       </a>
     </p>
   </section>
