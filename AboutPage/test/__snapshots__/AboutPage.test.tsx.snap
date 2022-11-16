@@ -87,15 +87,6 @@ exports[`tests AboutPage pages renders correctly test About renders correctly 1`
       </b>
     </p>
     <p>
-      Connect with us via Slack
-       
-      <a
-        href="https://immunespace.herokuapp.com/"
-      >
-        slack workspace
-      </a>
-    </p>
-    <p>
       You can also reach the team at
        
       <a
