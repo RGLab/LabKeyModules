@@ -35,6 +35,11 @@ const App = () => {
                   />
                 </a>
               </li>
+              <li>
+                <h4>
+                  Coming Soon - Updated Site Based on 2022 HIPC Program
+                </h4>
+              </li>
               <li className="header__cta-item">
                 {/* Probably should switch the a tag out for a button in the future */}
                 <a
