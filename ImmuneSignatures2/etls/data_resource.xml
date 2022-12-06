@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etl xmlns="http://labkey.org/etl/xml">
+    <name>Step #4: Data Resource</name>
+    <description>Render Data Resource Manuscript Figures Report</description>
+    <transforms>
+        <transform id="render" type="TaskRefTransformStep">
+            <description>render</description>
+            <taskref ref="org.labkey.di.pipeline.RunReportTask">
+                <settings>
+                    <setting name="reportId" value="module:ImmuneSignatures2/render.R"/>
+                    <setting name="task_name" value="data_resource"/>
+                </settings>
+            </taskref>
+        </transform>
+    </transforms>
+</etl>

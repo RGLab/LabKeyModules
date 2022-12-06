@@ -35,6 +35,11 @@ const App = () => {
                   />
                 </a>
               </li>
+              <li>
+                <h4>
+                  Coming Soon - Updated Site Based on 2022 HIPC Program
+                </h4>
+              </li>
               <li className="header__cta-item">
                 {/* Probably should switch the a tag out for a button in the future */}
                 <a
@@ -191,7 +196,7 @@ const App = () => {
                 </li>
                 <li>
                   <a
-                    href="mailto:ops@immunespace.org"
+                    href="mailto:immunespace@gmail.com"
                     className="footer__email">
                     <EmailIcon />
                   </a>
@@ -244,7 +249,7 @@ const App = () => {
                 </li>
                 <li>
                   <a
-                    href="mailto:ops@immunespace.org"
+                    href="mailto:immunespace@gmail.com"
                     className="footer__email">
                     <span>contact us</span>
                     <EmailIcon />
