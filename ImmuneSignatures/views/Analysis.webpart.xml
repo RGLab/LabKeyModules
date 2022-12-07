@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<webpart title='IS1: Analysis' xmlns='http://labkey.org/data/xml/webpart'>
+    <view name='Analysis'/>
+</webpart>

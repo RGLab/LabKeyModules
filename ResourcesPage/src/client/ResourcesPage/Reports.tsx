@@ -45,8 +45,29 @@ export const Reports = () => {
             text: 'Reproduction of figures from HIPC-CHI Signatures Project Team, "Multicohort analysis reveals baseline transcriptional predictors of influenza vaccination responses." Science Immunology 25 Aug 2017: Vol. 2, Issue 14.'
         },
         {
+            study: 'ImmuneSignatures 2: Data Resource',
+            link: '/project/HIPC/IS2/begin.view?pageId=Data Resource',
+            img: 'IS2_data_resource_thumbnail.png',
+            title: 'The Immune Signatures data resource, a compendium of systems vaccinology datasets',
+            text: 'Reproduction of figures from HIPC Signatures Project Team, "Multicohort analysis reveals baseline transcriptional predictors of influenza vaccination responses." Scientific Data 20 Oct 2022.'
+        },
+        {
+            study: 'ImmuneSignatures 2: Pre-Vaccination',
+            link: '/project/HIPC/IS2/begin.view?pageId=Pre-Vaccination',
+            img: 'IS2_pre_vaccination_thumbnail.png',
+            title: 'Pan-vaccine analysis reveals innate immune endotypes predictive of antibody responses to vaccination',
+            text: 'Reproduction of figures from HIPC Signatures Project Team, "Pan-vaccine analysis reveals innate immune endotypes predictive of antibody responses to vaccination." Nature Immunology 31 Oct 2022.'
+        },
+        {
+            study: 'ImmuneSignatures 2: Temporal',
+            link: '/project/HIPC/IS2/begin.view?pageId=Temporal',
+            img: 'IS2_temporal_thumbnail.png',
+            title: 'Transcriptional atlas of the human immune response to 13 vaccines reveals a common predictor of vaccine-induced antibody responses',
+            text: 'Reproduction of figures from HIPC Signatures Project Team, "Transcriptional atlas of the human immune response to 13 vaccines reveals a common predictor of vaccine-induced antibody responses." Nature Immunology 31 Oct 2022.'
+        },
+        {
             study: 'Lyoplate',
-            link: '/project/HIPC/Lyoplate/begin.view?pageId=Analyses',
+            link: '/project/HIPC/Lyoplate/begin.view?',
             img: 'Lyoplate_report_thumbnail.png',
             title: 'Standardizing Flow Cytometry Immunophenotyping from Reagents to Analyses:  Results of the Human ImmunoPhenotyping Consortium',
             text: 'Standardization of flow cytometry assays requires careful attention to reagents, sample handling, instrument setup, and data analysis, and is essential for successful cross-study and cross-center performance and analysis of large data sets. Analyses from HIP-C attempt to determine whether automated methods were a suitable approach to streamline and further standardize analysis'
