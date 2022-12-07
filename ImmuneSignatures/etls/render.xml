@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etl xmlns="http://labkey.org/etl/xml">
+    <name>IS1: Render Report</name>
+    <description>Render Report</description>
+    <transforms>
+        <transform id="render" type="TaskRefTransformStep">
+            <description>render</description>
+            <taskref ref="org.labkey.di.pipeline.RunReportTask">
+                <settings>
+                    <setting name="reportId" value="module:ImmuneSignatures/render.R"/>
+                </settings>
+            </taskref>
+        </transform>
+    </transforms>
+</etl>

@@ -57,13 +57,6 @@ makeNavTree = function(webPartDiv) {
             text: "ImmuneSpaceR"
         }, {
             cls: "file",
-            href: "https://immunespace.herokuapp.com",
-            hrefTarget: "_blank",
-            leaf: true,
-            qtip: "Slack",
-            text: "Slack"
-        }, {
-            cls: "file",
             href: "/project/home/Support/begin.view?pageId=Data changes",
             hrefTarget: "_blank",
             leaf: true,

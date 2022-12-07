@@ -1,49 +1,53 @@
 <div class='ISCore'>
 
-<div class="overview-spacing">
-    <span class="bold-text">Principal Investigator:</span> <span>Steven H. Kleinstein</span>
-</div>
-<div class="overview-spacing">
-    <span class="bold-text">Title:</span> <span>HIPC-II Immune Signatures Data Resource and Analysis (IS2)</span>
-</div>
-<div class="overview-spacing">
-    <span class="bold-text">Brief description:</span>
-    <span>The HIPC Immune Signatures Data Resource provides integrated host response data
-    from human vaccination studies involving multiple vaccines. Pre-vaccination and
-    temporal response profiles are analyzed to identify unique and common signatures,
-    including those associated with differential antibody responses.
-</span>
-</div>
-<div class="overview-spacing">
-        <span class="bold-text">Description:</span>
-        <a class="showSummary">show</a>
-        <div class="hidden">
-                <p>
-                        A central goal of the Human Immunology Project Consortium (HIPC)
-                        is the identification of molecular “signatures” that correlate
-                        with the outcomes of vaccinations, adjuvants or natural
-                        infections in humans. These signatures result from the computational
-                        analysis of large-scale experimental data from high-throughput
-                        systems biology approaches coupled with detailed clinical
-                        phenotyping in well-characterized human cohorts.
-                </p>
-                <p>
-                        As part of the highly collaborative HIPC-II “Signatures Project,”
-                        we have created the Immune Signatures Data Resource, a compendium
-                        of standardized systems vaccinology datasets. This data resource
-                        includes code to reproduce the processing and batch normalization
-                        starting from the underlying study data in ImmPort and the Gene
-                        Expression Omnibus (GEO). In addition, we provide codes to analyze
-                        these data to identify unique and common signatures, including
-                        those associated with differential antibody responses.
+    <div class="overview-spacing">
+        <span class="bold-text">Principal Investigator:</span>
+        <span>Steven Kleinstein</span>
+    </div>
 
-                </p>
+    <div class="overview-spacing">
+        <span class="bold-text">Title:</span>
+        <span>HIPC-II Immune Signatures Data Resource and Analysis (IS2)</span>
+    </div>
+
+    <div class="overview-spacing">
+        <span class="bold-text">Brief description:</span>
+        <span>
+            The HIPC Immune Signatures Data Resource provides integrated host response data
+            from human vaccination studies involving multiple vaccines. Pre-vaccination and
+            temporal response profiles are analyzed to identify unique and common signatures,
+            including those associated with differential antibody responses.
+        </span>
+    </div>
+
+    <div class="overview-spacing">
+        <span class="bold-text">Description:</span>
+        <div class="show">
+            <p>
+                A central goal of the Human Immunology Project Consortium (HIPC)
+                is the identification of molecular “signatures” that correlate
+                with the outcomes of vaccinations, adjuvants or natural
+                infections in humans. These signatures result from the computational
+                analysis of large-scale experimental data from high-throughput
+                systems biology approaches coupled with detailed clinical
+                phenotyping in well-characterized human cohorts.
+            </p>
+            <p>
+                As part of the highly collaborative HIPC-II “Signatures Project,”
+                we have created the Immune Signatures Data Resource, a compendium
+                of standardized systems vaccinology datasets. This data resource
+                includes code to reproduce the processing and batch normalization
+                starting from the underlying study data in ImmPort and the Gene
+                Expression Omnibus (GEO). In addition, we provide codes to analyze
+                these data to identify unique and common signatures, including
+                those associated with differential antibody responses.
+            </p>
         </div>
     </div>
+
     <div class="overview-spacing">
         <span class="bold-text">Objectives:</span>
-        <a class="showSummary">show</a>
-        <div class="hidden">
+        <div class="show">
             <ol>
                 <li>
                     Create a compendium of standardized systems vaccinology datasets to
@@ -60,35 +64,18 @@
             </ol>
         </div>
     </div>
-<div class="overview-spacing">
-    <span class="bold-text">Sponsoring organization:</span> <span>NIAID</span>
-</div>
-<div>
-    <a class="labkey-text-link bold-text" id="privateSdyLink" title="IS2 Private Study" target="_blank">PROCEED TO STUDY DATA (LOGIN REQUIRED)</a>
-</div>
-</div>
 
+    <div class="overview-spacing">
+        <span class="bold-text">Sponsoring organization:</span>
+        <span>NIAID (HIPC funded)</span>
+    </div>
+
+    <div>
+        <a class="labkey-text-link bold-text" id="privateSdyLink" title="IS2 Private Study" target="_blank">PROCEED TO STUDY DATA (LOGIN REQUIRED)</a>
+    </div>
+</div>
 
 <script type="text/javascript">
-// update privateSdyLink with relative path for test or prod
-jQuery('#privateSdyLink')[0].href = LABKEY.ActionURL.getBaseURL() + "project/HIPC/IS2/begin.view?";
-
-// helper function for show / hide of some divs
-    jQuery( '.showSummary' ).click(
-            function(){
-                var e = jQuery(this);
-                e.next().toggleClass( 'hidden' );
-                e.text( e.text() == 'show' ? 'hide' : 'show' );
-            }
-        );
-
-LABKEY.requiresCss( "ISCore/Common/ISCore.css" );
-
-// Get dynamic data from immport.public table, which may differ from
-// similar tables inside the private study container.
-LABKEY.requiresScript( "ISCore/Common/ISCore.js", true, function() {
-    jQuery('.ISCore').parent().next().css('margin-after', 0);
-    jQuery('.ISCore').parent().next().css('margin-before', 0);
-});
+    // update privateSdyLink with relative path for test or prod
+    jQuery('#privateSdyLink')[0].href = LABKEY.ActionURL.getBaseURL() + "project/HIPC/IS2/begin.view?";
 </script>
-
