@@ -9,7 +9,7 @@ import { ReactComponent as AEIcon } from "./assets/icons/icon-analyte-explorer-w
 import { ReactComponent as DFIcon } from "./assets/icons/icon-data-finder-white.svg";
 import { ReactComponent as RAIcon } from "./assets/icons/icon-reproducible-analyses-white.svg";
 import { ReactComponent as TwitterIcon } from "./assets/icons/icon-social-twitter-white.svg";
-import { ReactComponent as EmailIcon } from "./assets/icons/icon-email-white.svg";
+import { ReactComponent as ChatIcon } from "./assets/icons/icon-chat.svg";
 import { ReactComponent as ArrowRight } from "./assets/icons/icon-arrow-right-blue.svg";
 
 const App = () => {
@@ -193,7 +193,7 @@ const App = () => {
                   <a
                     href="https://discuss.immunespace.org"
                     className="footer__email">
-                    <EmailIcon />
+                    <ChatIcon />
                   </a>
                 </li>
               </ul>
@@ -246,8 +246,8 @@ const App = () => {
                   <a
                     href="https://discuss.immunespace.org"
                     className="footer__email">
-                    <span>connect with us</span>
-                    <EmailIcon />
+                    <span>contact us</span>
+                    <ChatIcon />
                   </a>
                 </li>
               </ul>
