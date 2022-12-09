@@ -8,6 +8,9 @@ String moduleXmlTemplate = "${project.parent.labKeyModulesDir}/module.template.x
 String buildTime = new Date().format('yyyy-MM-dd:HH-mm')
 
 if(moduleName == 'extraWebapp'){
+
+    String deployToDir = "${project.parent.deployDir}/extraWebapp"
+
     task npmBuild(type: NpmTask) {
         args = ["run", "build"]
     }
@@ -19,15 +22,21 @@ if(moduleName == 'extraWebapp'){
         tasks.findByName("npmBuild").mustRunAfter "npmInstall"
    }
 
-    task copyModule {
+   task unDeploy(type: Delete) {
+        delete "${deployToDir}"
+   }
+
+   task copyModule {
         dependsOn buildModule
-        mkdir "${project.parent.deployDir}/extraWebapp"
+        //When we run the following, the deployed directory is deleted, but the code is never deployed
+        //dependsOn unDeploy
+        mkdir "${deployToDir}"
            copy {
              from "./build"
              exclude "build.gradle", "enlistment.properties"
-             into "${project.parent.deployDir}/extraWebapp"
+             into "${deployToDir}"
          }
-     }
+    }
 
     deploy {
        dependsOn copyModule
