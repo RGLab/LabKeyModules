@@ -191,7 +191,7 @@ const App = () => {
                 </li>
                 <li>
                   <a
-                    href="mailto:immunespace@gmail.com"
+                    href="https://discuss.immunespace.org"
                     className="footer__email">
                     <EmailIcon />
                   </a>
@@ -211,7 +211,7 @@ const App = () => {
                 </a>
                 , supported by{" "}
                 <a
-                  href="http://www.immuneprofiling.org/"
+                  href="http://www.immunespace.org/"
                   title="HIPC"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -244,9 +244,9 @@ const App = () => {
                 </li>
                 <li>
                   <a
-                    href="mailto:immunespace@gmail.com"
+                    href="https://discuss.immunespace.org"
                     className="footer__email">
-                    <span>contact us</span>
+                    <span>connect with us</span>
                     <EmailIcon />
                   </a>
                 </li>
