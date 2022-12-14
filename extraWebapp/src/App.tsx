@@ -129,7 +129,7 @@ const App = () => {
         </section>
 
         {/* Insert tutorial block here after tutorial has been made*/}
-
+        {/* history section removed - if not needed delete 
         <section className="history-block">
           <div className="container">
             <div className="history-block__content">
@@ -156,6 +156,7 @@ const App = () => {
             </div>
           </div>
         </section>
+        */}
         {
           <Registermodal
             isOpen={regModalOpen}
