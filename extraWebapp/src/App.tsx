@@ -129,34 +129,7 @@ const App = () => {
         </section>
 
         {/* Insert tutorial block here after tutorial has been made*/}
-        {/* history section removed - if not needed delete 
-        <section className="history-block">
-          <div className="container">
-            <div className="history-block__content">
-              <h2 className="history-block__title">Our Brief History: HIPC</h2>
-              <div className="history-block__copy">
-                <p>
-                  The Human Immunology Project Consortium (HIPC) program,
-                  established in 2010 by the NIAID Division of Allergy,
-                  Immunology, and Transplantation, is a major collaborative
-                  effort that is generating large amounts of cross-center and
-                  cross-assay data — including high-dimensional data — to
-                  characterize the status of the immune system in diverse
-                  populations under both normal conditions and in response to
-                  stimuli — This large data problem has given birth to
-                  ImmuneSpace
-                </p>
-                <a
-                  href="/project/home/begin.view?tab=About"
-                  className="history-block__cta"
-                  title="About Us link">
-                  <span className="history-block__link-text">About Us</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-        */}
+
         {
           <Registermodal
             isOpen={regModalOpen}
