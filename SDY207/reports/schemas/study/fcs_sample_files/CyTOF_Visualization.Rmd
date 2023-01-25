@@ -85,18 +85,18 @@ fcsfiles<-as.character(dt$link)
 #Read the CyTof data into separate flowFrames
 frames<-vector('list',length(fcsfiles))
 for(i in seq_along(frames)){
-    suppressWarnings(frames[[i]]<-read.FCS(fcsfiles[i]))
+    suppressWarnings(frames[[i]]<-load_cytoframe_from_fcs(fcsfiles[i]))
 }
-names(frames)<-as.character(fcsfiles)
+names(frames)<-basename(as.character(fcsfiles))
 
 #get some information about the size and dimension of each file
-fileinfo<-data.frame(dt,filename=as.character(fcsfiles),cells=do.call(c,lapply(frames,nrow)),dims=do.call(c,lapply(frames,ncol)))
+fileinfo<-data.frame(dt,filename=basename(as.character(fcsfiles)),cells=do.call(c,lapply(frames,nrow)),dims=do.call(c,lapply(frames,ncol)))
 ```
 
    
 ```{r construct_flowsets, cache=TRUE, echo=FALSE}
 #construct flowsets for matching files and correct some marker names
-fs<-dlply(fileinfo,.(dims),function(x)with(x,flowSet(frames[as.character(filename)])))
+fs<-dlply(fileinfo,.(dims),function(x)with(x,cytoset(frames[as.character(filename)])))
 ```
    
 ```{r transform_data,cache=TRUE,echo=FALSE}   
@@ -106,7 +106,7 @@ fs[[1]] <- transformList(colnames(fs[[1]])[-1],list(asinh))%on%fs[[1]]
           
 ```{r annotate,echo=FALSE,cache=TRUE}
 #reorder the fileinfo to match the flowset
-fileinfo<-fileinfo[match(c(sampleNames(fs[[1]]),sampleNames(fs[[2]])),as.character(fileinfo$filename)),]
+fileinfo<-fileinfo[match(c(sampleNames(fs[[1]]),sampleNames(fs[[2]])),basename(as.character(fileinfo$filename))),]
 
 # load the phenodata and set the 'name' column to match the sampleNames
 setnames(fileinfo,"filename","name")
@@ -148,7 +148,7 @@ We load a gating template definition for the CyTOF panel used in this study into
 ```{r templates, echo=FALSE, cache=FALSE, message=FALSE}
 #load gating template
 capture.output(template<-gatingTemplate(list.files(path=paste0(path, "analysis/"),pattern="csv",full=TRUE)),file="/dev/null")
-fd<-flowData(gs)
+fd<-gs_cyto_data(gs)
 colnames(fd)<-c("Time","Cell_length","DNA1","DNA2","CD3","CD3(Cd108)Dd","CD3(Cd110)Dd",
 "CD3(Cd111)Dd",      "CD3(Cd112)Dd",      "CD3(Cd113)Dd",      "CD3(Cd114)Dd",
 "CD3(Cd116)Dd",     "LiveDead" ,"Ba138(Ba138)Dd"  ,  "MuCD45" ,  "IL2"  , 
@@ -158,7 +158,7 @@ colnames(fd)<-c("Time","Cell_length","DNA1","DNA2","CD3","CD3(Cd108)Dd","CD3(Cd1
 "Tet158(Gd158)Dd" ,  "CD28"   ,  "Tet159(Tb159)Dd" ,  "Tet165(Ho165)Dd" ,  "CD45RA"  , "CD43(Er167)Dd"    ,
 "Tet168(Er168)Dd"  , "IFNgamma" ,"CD62L"  ,  "HLADR(Yb171)Dd"  ,  "CD49d(Yb172)Dd"  ,  "blank173(Yb173)Dd",
 "KLRG1"   , "MIP1a"   , "Perforin" ,"GMCSF" ,   "CD29(Dy162)Dd"   ,  "Tet164(Dy164)Dd" )
-flowData(gs)<-fd
+gs_cyto_data(gs)<-fd
 ```
 The data is gated by applying the template to the data set. Gate coordinates are derived in a data-driven manner for each sample.  
    
@@ -184,9 +184,9 @@ if ( file.exists( paste0( path,"analysis/gating_set_gated" ) ) && !regate ){
 ```{r pcaplot,echo=FALSE}
 .pcaPlot<-function(i,size){
    ii<-include[i]
-    cn<-colnames(flowData(gs[[ii]]))
-    target_pops<-flowSet(getData(gs[[ii]],"TN"),getData(gs[[ii]],"TCM"),getData(gs[[ii]],"TEM"),getData(gs[[ii]],"TEF"))
-    topca<-fsApply(target_pops,exprs)[,getNodes(gs[[ii]],path="auto")[c(9,10,11,12,13,14,15,16,17,18,19)]]
+    cn<-colnames(gs_cyto_data(gs[[ii]]))
+    target_pops<-cytoset(list(TN=gh_pop_get_data(gs[[ii]],"TN"),TCM=gh_pop_get_data(gs[[ii]],"TCM"),TEM=gh_pop_get_data(gs[[ii]],"TEM"),TEF=gh_pop_get_data(gs[[ii]],"TEF")))
+    topca<-fsApply(target_pops,exprs)[,gs_get_pop_paths(gs[[ii]],path="auto")[c(9,10,11,12,13,14,15,16,17,18,19)]]
     #topca<-fsApply(target_pops,exprs)
     colors<-rep(c("black","red","green","blue"),as.vector(fsApply(target_pops,nrow)))
     pr<-PCA(topca,graph=FALSE)
