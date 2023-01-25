@@ -75,15 +75,6 @@ export const About: React.FC = () => {
           <img src="/AboutPage/images/flow.png" alt="dataflow" />
         </div>
       </section>
-      <section className="About-content-footer">
-        <p>
-          <b>Support:</b>
-        </p>
-        <p>
-          You can also reach the team at{" "}
-          <a href="mailto:immunespace@gmail.com">immunespace@gmail.com</a>
-        </p>
-      </section>
     </div>
   );
 };

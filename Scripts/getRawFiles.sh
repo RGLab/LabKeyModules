@@ -3,6 +3,11 @@
 # Download raw files from Immport via aspera
 #
 
+# set the download & studies directories; if not defined, use defaults
+# these variables will be used by the copy2studies.sh script as well
+export DOWNLOAD_DIR=${DOWNLOAD_DIR:-/mnt/data/aspera_files}
+export STUDIES_DIR=${STUDIES_DIR:-/mnt/data/studies}
+
 # global functions and variables
 show_help() {
     echo "Usage: bash $0 SDYxxx SDYxxx ... [OPTION]"
@@ -42,22 +47,21 @@ done
 
 
 # assert valid user/machine and that helper scripts and ImmPort credential exists
-if [ `whoami` != 'immunespace' ]; then
+if [ `whoami` != 'hcc-data' ]; then
   echo "ERROR: This script should be executed by the 'immunespace' user."
   exit 1
 fi
-if [ `hostname | tail -c8` != 'Rserve2' ] &&
-   [ `hostname | tail -c12` != 'RservePeer2' ];then # RServe machine
-  echo "ERROR: This script should be executed on the RServe machine."
+if [ `hostname | head -c8` != 'hcc-data' ];then # data processing machine
+  echo "ERROR: This script should be executed on the data processing machine."
   exit 1
 fi
-asperaClient="/labkey/apps/immport-data-download-tool/bin/downloadImmportData.sh"
+asperaClient="/mnt/data/utils/immport-data-download/bin/downloadImmportData.sh"
 if [ ! -e "$asperaClient" ] ; then echo "ERROR: $asperaClient not found." ; exit 1 ; fi
-copy2study="/labkey/git/LabKeyModules/Scripts/copy2studies.sh"
+copy2study="/mnt/data/LabKeyModules/Scripts/copy2studies.sh"
 if [ ! -e "$copy2study" ] ; then echo "ERROR: $copy2study not found." ; exit 1 ; fi
 if [ $IMMPORT_USER = "" ] ; then echo "ERROR: IMMPORT_USER environment variable not found."; exit 1 ; fi
 if [ $IMMPORT_PWD = "" ] ; then echo "ERROR: IMMPORT_PWD environment variable not found."; exit 1 ; fi
-aspera=/share/aspera_files
+aspera=$DOWNLOAD_DIR
 download_logs=${aspera}/download_logs.txt
 
 # download and copy each study iteratively
@@ -80,7 +84,7 @@ do
     ERROR=0
 
 
-    # download raw files to /share/aspera_files
+    # download raw files to $DOWNLOAD_DIR
     cd $aspera
     start=`date +%s`
     if [ $VERBOSE = true ]
@@ -104,8 +108,8 @@ do
 
 
     # copy files to proper study folders
-    cd /share/aspera_files
-    studyFolder="/share/files/Studies/${SDY}/"
+    cd $DOWNLOAD_DIR
+    studyFolder="{$STUDIES_DIR}/${SDY}/"
     if [ ${ERROR} != 0 ]
     then
         echo "${red}ERROR: could not download $SDY from ImmPort.${reset}"

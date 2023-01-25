@@ -17,6 +17,7 @@ BiocManager::install(c(
 remotes::install_github(c(
   paste0("RGLab/ImmuneSpaceR@", args[1]),
   "RGLab/ImmuneSignatures",
+  "RGLab/ImmuneSignatures2",
   paste0("RGLab/HIPCMatrix@", args[1]),
   "RGLab/HIPCCyto",
   "RGLab/AnalyteExplorer",

@@ -4,19 +4,20 @@
 # It should be run by the immunespace user on the RServe machine
 # For multiple studies, input them as a space separated list enclosed with quotes
 
+DOWNLOAD_DIR=${DOWNLOAD_DIR:-/mnt/data/aspera_files}
+STUDIES_DIR=${STUDIES_DIR:-/mnt/data/studies}
 
-if [ `whoami` != 'immunespace' ];then
+
+if [ `whoami` != 'hcc-data' ]; then
   echo "ERROR: This script should be executed by the 'immunespace' user."
   exit 1
 fi
-
-if [ `hostname | tail -c8` != 'Rserve2' ] &&
-   [ `hostname | tail -c12` != 'RservePeer2' ];then # RServe machine
-  echo "ERROR: This script should be executed on the RServe machine."
+if [ `hostname | head -c8` != 'hcc-data' ];then # data processing machine
+  echo "ERROR: This script should be executed on the data processing machine."
   exit 1
 fi
 
-aspera_files="/share/aspera_files/" # where the files from immport are stored
+aspera_files=$DOWNLOAD_DIR # where the files from immport are stored
 copy_logs=${aspera_files}/copy_logs.txt
 studies=$1
 if [ "$studies" == "" ];then
@@ -34,20 +35,20 @@ fi
 for study in $studies
 do
   echo "${study}:"
-  if [ ! -d /share/files/Studies/${study}/ ];then
+  if [ ! -d $STUDIES_DIR/${study}/ ];then
     echo "ERROR: The study folder doesn't exist. Create it from the UI first."
     exit 1
   fi
   # Create the folders in the studies if they don't exist
-  dir_proto="/share/files/Studies/${study}/@files/protocols"
-  dir_ge="/share/files/Studies/${study}/@files/rawdata/gene_expression"
-  dir_flow="/share/files/Studies/${study}/@files/rawdata/flow_cytometry"
-  dir_analysis="/share/files/Studies/${study}/@files/analysis"
+  dir_proto="$STUDIES_DIR/${study}/@files/protocols"
+  dir_ge="$STUDIES_DIR/${study}/@files/rawdata/gene_expression"
+  dir_flow="$STUDIES_DIR/${study}/@files/rawdata/flow_cytometry"
+  dir_analysis="$STUDIES_DIR/${study}/@files/analysis"
   if [ ! -d ${dir_proto} ];then
     mkdir ${dir_proto}
   fi
-  if [ ! -d /share/files/Studies/${study}/@files/rawdata ];then
-    mkdir /share/files/Studies/${study}/@files/rawdata
+  if [ ! -d $STUDIES_DIR/${study}/@files/rawdata ];then
+    mkdir $STUDIES_DIR/${study}/@files/rawdata
   fi
   if [ ! -d ${dir_ge} ];then
     mkdir ${dir_ge}

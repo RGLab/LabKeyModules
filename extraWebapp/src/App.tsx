@@ -9,7 +9,7 @@ import { ReactComponent as AEIcon } from "./assets/icons/icon-analyte-explorer-w
 import { ReactComponent as DFIcon } from "./assets/icons/icon-data-finder-white.svg";
 import { ReactComponent as RAIcon } from "./assets/icons/icon-reproducible-analyses-white.svg";
 import { ReactComponent as TwitterIcon } from "./assets/icons/icon-social-twitter-white.svg";
-import { ReactComponent as EmailIcon } from "./assets/icons/icon-email-white.svg";
+import { ReactComponent as ChatIcon } from "./assets/icons/icon-chat.svg";
 import { ReactComponent as ArrowRight } from "./assets/icons/icon-arrow-right-blue.svg";
 
 const App = () => {
@@ -130,32 +130,6 @@ const App = () => {
 
         {/* Insert tutorial block here after tutorial has been made*/}
 
-        <section className="history-block">
-          <div className="container">
-            <div className="history-block__content">
-              <h2 className="history-block__title">Our Brief History: HIPC</h2>
-              <div className="history-block__copy">
-                <p>
-                  The Human Immunology Project Consortium (HIPC) program,
-                  established in 2010 by the NIAID Division of Allergy,
-                  Immunology, and Transplantation, is a major collaborative
-                  effort that is generating large amounts of cross-center and
-                  cross-assay data — including high-dimensional data — to
-                  characterize the status of the immune system in diverse
-                  populations under both normal conditions and in response to
-                  stimuli — This large data problem has given birth to
-                  ImmuneSpace
-                </p>
-                <a
-                  href="/project/home/begin.view?tab=About"
-                  className="history-block__cta"
-                  title="About Us link">
-                  <span className="history-block__link-text">About Us</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
         {
           <Registermodal
             isOpen={regModalOpen}
@@ -191,9 +165,9 @@ const App = () => {
                 </li>
                 <li>
                   <a
-                    href="mailto:immunespace@gmail.com"
+                    href="https://discuss.immunespace.org"
                     className="footer__email">
-                    <EmailIcon />
+                    <ChatIcon />
                   </a>
                 </li>
               </ul>
@@ -211,7 +185,7 @@ const App = () => {
                 </a>
                 , supported by{" "}
                 <a
-                  href="http://www.immuneprofiling.org/"
+                  href="http://www.immunespace.org/"
                   title="HIPC"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -244,10 +218,10 @@ const App = () => {
                 </li>
                 <li>
                   <a
-                    href="mailto:immunespace@gmail.com"
+                    href="https://discuss.immunespace.org"
                     className="footer__email">
                     <span>contact us</span>
-                    <EmailIcon />
+                    <ChatIcon />
                   </a>
                 </li>
               </ul>
